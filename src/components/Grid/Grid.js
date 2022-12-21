@@ -1,6 +1,7 @@
 import { useState, useEffect, } from 'react';
 import {
 	Column,
+	Icon,
 	Pressable,
 	Row,
 	Text,
@@ -14,6 +15,8 @@ import Toolbar from '../Toolbar/Toolbar';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';
 import NoRecordsFound from './NoRecordsFound';
 import AngleRight from '../Icons/AngleRight';
+import SortDown from '../Icons/SortDown';
+import SortUp from '../Icons/SortUp';
 import {
 	v4 as uuid,
 } from 'uuid';
@@ -24,39 +27,42 @@ import _ from 'lodash';
 
 	// Desired features: ---------
 	// Header cells
-		// sticky at top
-		// formatted differently
-		// menu options
+		// √ sticky at top
+		// √ formatted differently
+		// √ click header to sort by column
+		// menu options to show/hide columns (not important)
 	// selection
-		// single or multi selection mode
-		// state to keep track of selection
-		// Shift-click to add/subtract selection
-		// Range selection (not super important)
+		// √ single or multi selection mode
+		// √ state to keep track of selection
+		// √ Shift-click to add/subtract selection
+		// √ Range selection 
+		// [ ] Copy current selection
+		// Draggable selection (not super important)
 	// context menu
+		// √ onRightClick handler
 		// menu options
-		// onRightClick handler
 	// Rows
-		// Reordering
+		// Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
+			// state to keep track of current ordering
+			// handler for drag/drop
+			// target column configurable for reorder or not
+	// Columns
+		// Drag/drop reordering
+			// Drag on middle of header to new location
 			// state to keep track of current ordering
 			// handler for drag/drop
 			// column configurable for reorder or not
-			// Used primarily to change sort order in OneBuild apps
-	// Columns
 		// Resizing
+			// Drag handles on column sides
 			// state to keep track of current column sizes
 			// handler for resizing
 			// column configurable for resizable or not
-		// Reordering
-			// state to keep track of current ordering
-			// handler for drag/drop
-			// column configurable for reorder or not
 	// custom cell types
 		// Most would use text, and depend on @onehat/data for formatting
 	// editor
 		// double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
 		// Show inline editor for selected row
 	// Display tree data
-	// Copy current selection
 
 
 // helper fn from https://reactgrid.com/docs/4.0/2-implementing-core-features/3-column-and-row-reordering/
@@ -72,7 +78,8 @@ import _ from 'lodash';
 
 const
 	ROW_HEADER_ID = 'ROW_HEADER_ID',
-	ROW_TYPE_HEADER = 'ROW_TYPE_HEADER';
+	SORT_ASCENDING = 'ASC',
+	SORT_DESCENDING = 'DESC';
 
 export default function Grid(props) {
 	const
@@ -95,6 +102,9 @@ export default function Grid(props) {
 				// 	width = 150,
 				// }]
 			showHeaders = true,
+			enableSorting = true,
+			allowToggleSelection = false, // i.e. Will a single click with no shift key toggle the selection of the item clicked on?
+			selectionMode = 'multi', // multi, single
 			showRowExpander = false,
 			enableEditors = false,
 			cellEditing = false,
@@ -118,89 +128,117 @@ export default function Grid(props) {
 			disableReloadOnChangeFilters = false,
 			noneFoundText,
 
-			// #### ReactGrid overrides #### 
 			// properties
-			customCellTemplates,
-			focusLocation,
-			initialFocusLocation,
-			highlights,
-			stickyTopRows = 0,
-			stickyBottomRows = 0,
-			stickyLeftColumns = 0,
-			stickyRightColumns = 0,
-			enableFillHandle,
-			enableRangeSelection = true,
-			enableRowSelection = false,
-			enableColumnSelection = false,
-			labels,
-			disableVirtualScrolling = false,
 
-			// ReactGrid events
-			onCellsChanged,
-			onFocusLocationChanged,
-			onFocusLocationChanging,
+			// events
 			// onColumnResized,
 			// onRowsReordered,
 			// onColumnsReordered,
 			onContextMenu,
-			// canReorderColumns,
-			// canReorderRows,
 		} = props,
 		Repository = model && oneHatData.getRepository(model),
 		forceUpdate = useForceUpdate(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
+		[sortField, setSortField] = useState(Repository.getSortField() || null),
+		[isSortDirectionAsc, setIsSortDirectionAsc] = useState(Repository.getSortDirection() === SORT_ASCENDING),
+		[sortFn, setSortFn] = useState(Repository.getSortFn() || null),
 		[selection, setSelection] = useState([]), // array of indices in repository's current page
 		onRefresh = () => Repository.load(),
-		onSelect = (entity, e, rowId) => {
+		onSelect = (entity, e) => {
 			const
+				currentSelectionLength = selection.length,
 				shiftKey = e.shiftKey,
 				clickedPageIx = Repository.getIxById(entity.id);
 			let newSelection = [];
-			if (shiftKey) {
-				if (inArray(clickedPageIx, selection)) {
-					// Remove from current selection
-					newSelection = _.remove(selection, (sel) => sel !== clickedPageIx);
-				} else {
-					// Add to current selection
-					newSelection = _.clone(selection); // so we get a new object, so component rerenders
+			if (selectionMode === 'multi') {
+				if (shiftKey) {
+					if (inArray(clickedPageIx, selection)) {
+						// Remove from current selection
+						newSelection = _.remove(selection, (sel) => sel !== clickedPageIx);
+					} else {
+						// Add to current selection
+						newSelection = _.clone(selection); // so we get a new object, so component rerenders
 
-					const currentSelectionLength = selection.length;
+						if (currentSelectionLength) {
+							// Add a range of items, as the user shift-clicked a row when another was already selected
+							const
+								max = Math.max(...selection),
+								min = Math.min(...selection);
+							let i;
 
-					if (currentSelectionLength) {
-						// Add a range of items, as the user shift-clicked a row when another was already selected
-						const
-							max = Math.max(...selection),
-							min = Math.min(...selection);
-						let i;
+							if (max < clickedPageIx) {
+								// all other selections are below the current;
+								// Range is from max up to clickedPageIx
+								for (i = max +1; i < clickedPageIx; i++) {
+									newSelection.push(i);
+								}
 
-						if (max < clickedPageIx) {
-							// all other selections are below the current;
-							// Range is from max up to clickedPageIx
-							for (i = max +1; i < clickedPageIx; i++) {
-								newSelection.push(i);
-							}
-
-						} else if (min > clickedPageIx) {
-							// all other selections are above the current;
-							// Range is from min down to clickedPageIx
-							for (i = min -1; i > clickedPageIx; i--) {
-								newSelection.push(i);
+							} else if (min > clickedPageIx) {
+								// all other selections are above the current;
+								// Range is from min down to clickedPageIx
+								for (i = min -1; i > clickedPageIx; i--) {
+									newSelection.push(i);
+								}
 							}
 						}
+						newSelection.push(clickedPageIx);
 					}
-					newSelection.push(clickedPageIx);
+				} else {
+					if (inArray(clickedPageIx, selection)) {
+						// Already selected
+						if (allowToggleSelection) {
+							// Remove from current selection
+							newSelection = _.remove(selection, (sel) => sel !== clickedPageIx);
+						} else {
+							// Do nothing.
+							newSelection = selection;
+						}
+					} else {
+						// Just select it alone
+						newSelection = [clickedPageIx];
+					}
 				}
 			} else {
-				newSelection = [clickedPageIx];
+				// selectionMode === 'single'
+
+				if (inArray(clickedPageIx, selection)) {
+					// Already selected
+					if (allowToggleSelection) {
+						// Remove from current selection
+						newSelection = [];
+					} else {
+						// Do nothing.
+						newSelection = selection;
+					}
+				} else {
+					// Just select it
+					newSelection = [clickedPageIx];
+				}
 			}
+
 			setSelection(newSelection);
 		},
 		onEdit = (entity, e, rowId) => {
 			debugger;
 		},
-		onSort = (onSort) => {
-			debugger;
+		onSort = (cellData, e) => {
+			let currentSortField = sortField,
+				selectedSortField = cellData.fieldName,
+				isCurrentSortDirectionAsc = isSortDirectionAsc;
+			if (selectedSortField !== currentSortField) {
+				// Change the field, sort Asc
+				currentSortField = selectedSortField
+				isCurrentSortDirectionAsc = true;
+			} else {
+				// Toggle direction
+				isCurrentSortDirectionAsc = !isCurrentSortDirectionAsc;
+			}
+			setSortField(currentSortField);
+			setIsSortDirectionAsc(isCurrentSortDirectionAsc);
+
+			// Change sorter on OneHatData
+			Repository.sort(currentSortField, isCurrentSortDirectionAsc ? SORT_ASCENDING : SORT_DESCENDING, sortFn);
 		},
 		// onColumnsReordered = (targetColumnId, columnIds) => {
 		// 	const
@@ -429,7 +467,7 @@ export default function Grid(props) {
 			const row = _.find(rowsData, (rowData) => rowData.rowId === rowId);
 			return row && row.entity;
 		};
-
+		
 	useEffect(() => {
 		const
 			setTrue = () => setIsLoading(true),
@@ -470,30 +508,12 @@ export default function Grid(props) {
 	
 	const
 		propsToPass = {
-			enableRangeSelection,
-			stickyTopRows,
-			stickyBottomRows,
-			stickyLeftColumns,
-			stickyRightColumns,
-			disableVirtualScrolling,
 		},
 		propsToCheck = {
-			customCellTemplates,
-			focusLocation,
-			initialFocusLocation,
-			highlights,
-			enableFillHandle,
-			labels,
-			
-			onCellsChanged,
-			onFocusLocationChanged,
-			onFocusLocationChanging,
 			// onColumnResized,
 			// onRowsReordered,
 			// onColumnsReordered,
 			onContextMenu,
-			// canReorderColumns,
-			// canReorderRows,
 		};
 	_.each(propsToCheck, (prop, name) => {
 		if (!_.isEmpty(prop) || prop) {
@@ -530,14 +550,26 @@ export default function Grid(props) {
 					cellProps.width = cellData.width;
 				}
 				if (rowId === ROW_HEADER_ID) {
+					const isCellSorter = enableSorting && sortField === cellData.fieldName;
 					cell = <Pressable
 								onPress={(e) => {
-									onSort(cellData, e);
+									if (enableSorting) {
+										onSort(cellData, e);
+									}
 								}}
 								{...cellProps}
 								bg="#eee"
+								_hover={{
+									bg: '#bbb',
+								}}
+								flexDirection="row"
+								borderLeftWidth={1}
+								borderLeftColor="trueGray.100"
+								borderRightWidth={1}
+								borderRightColor="trueGray.300"
 							>
-								<Text>{cellData.header}</Text>
+								<Text flex={1}>{cellData.header}</Text>
+								{isCellSorter && <Icon as={isSortDirectionAsc ? SortDown : SortUp} textAlign="center" size="sm" mt={1} color="trueGray.700" />}
 							</Pressable>;
 				} else {
 					switch(cellData.type) {
@@ -555,24 +587,33 @@ export default function Grid(props) {
 							if (rowId === ROW_HEADER_ID) {
 								return false;
 							}
-							onSelect(entity, e, rowId);
+							onSelect(entity, e);
 						}}
 						onLongPress={(e) => {
 							if (rowId === ROW_HEADER_ID) {
 								return false;
 							}
-							onSelect(entity, e, rowId);
+							onSelect(entity, e);
 							// onEdit(entity, e);
 						}}
 						borderBottomWidth={1}
 						borderBottomColor="#eee"
 						bg={selected ? '#ffa' : '#fff'}
 					>
-						<div onClick={(e) => {
-								if (e.detail === 2) { // double-clicks only!
-									onEdit(entity, e, rowId);
+						<div
+							onClick={(e) => {
+								if (e.detail === 2) {
+									// double-click
+									onEdit(entity, e);
 								}
-							}}>
+							}}
+							onContextMenu={(e) => {
+								e.preventDefault();
+								if (onContextMenu) {
+									onContextMenu(entity, e);
+								}
+							}}
+						>
 							<Row style={{ userSelect: 'none', }}>{cellComponents}</Row>
 						</div>
 					</Pressable>;

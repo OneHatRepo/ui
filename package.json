@@ -20,7 +20,7 @@
 	},
 	"license": "UNLICENSED",
 	"dependencies": {
-		"@onehat/data": "^1.8.34",
+		"@onehat/data": "^1.9.1",
 		"js-cookie": "^3.0.1",
 		"native-base": "^3.4.25",
 		"react-hook-form": "^7.40.0"
