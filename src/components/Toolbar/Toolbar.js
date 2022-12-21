@@ -1,0 +1,17 @@
+import {
+	Row,
+} from 'native-base';
+
+export default function Toolbar(props) {
+	return <Row
+				w="100%"
+				justifyContent="center"
+				bg="trueGray.200"
+				borderBottomWidth={1}
+				borderBottomColor="trueGray.400"
+				p={2}
+				{...props}
+			>
+				{props.children}
+			</Row>;
+};
