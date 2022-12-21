@@ -1,5 +1,6 @@
 import { useState, useEffect, } from 'react';
 import {
+	Button,
 	Column,
 	Icon,
 	Pressable,
@@ -222,6 +223,34 @@ export default function Grid(props) {
 		onEdit = (entity, e, rowId) => {
 			debugger;
 		},
+		onCopySelection = () => {
+			// Get text of all selected rows
+			const
+				selectedRows = _.filter(rowsData, (rowData) => {
+					if (!rowData.entity || !rowData.isSelected) {
+						return false;
+					}
+					return rowData;
+				}),
+				headerText = _.map(rowsData[0].cellsData, (cellData) => cellData.header).join("\t"),
+				rowTexts = _.map(selectedRows, (rowData) => {
+					const {
+							entity,
+							cellsData,
+						} = rowData,
+						rowValues = _.map(cellsData, (cellData) => {
+									if (!cellData.columnConfig) {
+										return null;
+									}
+									const fieldName = cellData.columnConfig.fieldName;
+									return entity[fieldName];
+								});
+						return rowValues.join("\t");
+				}),
+				text = [headerText, ...rowTexts].join("\n");
+
+			navigator.clipboard.writeText(text);
+		},
 		onSort = (cellData, e) => {
 			let currentSortField = sortField,
 				selectedSortField = cellData.fieldName,
@@ -439,32 +468,37 @@ export default function Grid(props) {
 					});
 				}
 				
-				let selected = false;
+				let isSelected = false;
 				if (inArray(pageIx, selection)) {
-					selected = true;
+					isSelected = true;
 				}
 				rowsData.push({
 					rowId: entity.id,
 					pageIx,
 					entity,
 					cellsData,
-					selected,
+					isSelected,
 				});
 			});
 			return rowsData;
 		},
 		[columnsData, setColumnsData] = useState(getColumnsData()),
+		getRowIdByEntityId = (entityId) => {
+			const row = _.find(rowsData, (rowData) => rowData.entity && rowData.entity.id === entityId);
+			return row && row.rowId;
+		},
 		getRowIxByEntityId = (entityId) => {
 			// Get ix on current page for entityId
 			const row = _.find(rowsData, (rowData) => rowData.entity && rowData.entity.id === entityId);
 			return row && row.rowId;
 		},
-		getRowIdByEntityId = (entityId) => {
-			const row = _.find(rowsData, (rowData) => rowData.entity && rowData.entity.id === entityId);
-			return row && row.rowId;
-		},
 		getEntityByRowId = (rowId) => {
 			const row = _.find(rowsData, (rowData) => rowData.rowId === rowId);
+			return row && row.entity;
+		},
+		getEntityByRowIx = (rowIx) => {
+			// Get entity for rowIx on current page
+			const row = _.find(rowsData, (rowData) => rowData.rowIx === rowIx);
 			return row && row.entity;
 		};
 		
@@ -534,7 +568,7 @@ export default function Grid(props) {
 					rowId,
 					entity,
 					cellsData,
-					selected,
+					isSelected,
 				} = rowData,
 				cellComponents = [];
 			_.each(cellsData, (cellData, ix) => {
@@ -598,7 +632,7 @@ export default function Grid(props) {
 						}}
 						borderBottomWidth={1}
 						borderBottomColor="#eee"
-						bg={selected ? '#ffa' : '#fff'}
+						bg={isSelected ? '#ffa' : '#fff'}
 					>
 						<div
 							onClick={(e) => {
@@ -617,7 +651,7 @@ export default function Grid(props) {
 							<Row style={{ userSelect: 'none', }}>{cellComponents}</Row>
 						</div>
 					</Pressable>;
-		});
+		});	
 	
 	return <Column
 				{...testProps('GridPanelContainer')}
@@ -636,6 +670,7 @@ export default function Grid(props) {
 						overflow="scroll"
 					>
 						{rowComponents}
+						<Button onPress={() => onCopySelection()}>Copy</Button>
 					</Column>
 				)}
 
