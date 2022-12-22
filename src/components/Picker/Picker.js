@@ -2,6 +2,7 @@ import {
 	Icon,
 	Row,
 	Select,
+	Tooltip,
 } from 'native-base';
 import CaretDown from '../Icons/CaretDown';
 import testProps from '../../functions/testProps';
@@ -14,6 +15,7 @@ export default function Picker(props) {
 			cutoff = 25,
 			nullLabel = 'None',
 			_select = {},
+			tooltip,
 		} = props;
 
 	let items = [];
@@ -43,13 +45,18 @@ export default function Picker(props) {
 	}
 
 	// Set an explicit dropdownIcon to add margin to it, so it looks better
+	let select = <Select
+						placeholder="Select"
+						isDisabled={false}
+						dropdownIcon={<Icon as={CaretDown} size="sm" mr={3} color="trueGray.800" />}
+						{..._select}
+					>{items}</Select>;
+	if (tooltip) {
+		//TODO: This doesn't yet work, but doesn't do anything harmful either!
+		select = <Tooltip label={tooltip} placement="top">{select}</Tooltip>;
+	}
 	return <Row {...props}>
-				<Select
-					placeholder="Select"
-					isDisabled={false}
-					dropdownIcon={<Icon as={CaretDown} size="sm" mr={3} color="trueGray.500" />}
-					{..._select}
-				>{items}</Select>
+				{select}
 			</Row>;
 }
 

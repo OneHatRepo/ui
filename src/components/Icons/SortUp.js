@@ -1,3 +1,4 @@
+// Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc.
 import * as React from "react"
 import Svg, { Path } from "react-native-svg"
 import { Icon } from 'native-base';

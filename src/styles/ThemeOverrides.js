@@ -14,7 +14,7 @@ const ThemeOverrides = {
 		// secondary: {
 		// 	500: '#1F3854', // default for buttons
 		// },
-		selected: '#4D89CC',
+		selected: '#ffc',
 		unselected: '#bbb',
 		disabled: '#ccc',
 		control: '#1B518C',

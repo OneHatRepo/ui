@@ -1,11 +1,11 @@
 import { useEffect, } from 'react';
 import {
 	Icon,
-	IconButton,
 	Row,
 	Text,
 } from 'native-base';
 import useForceUpdate from '../../hooks/useForceUpdate';
+import IconButton from '../Buttons/IconButton';
 import AngleLeft from '../Icons/AngleLeft';
 import AnglesLeft from '../Icons/AnglesLeft';
 import AngleRight from '../Icons/AngleRight';
@@ -25,18 +25,20 @@ export default function Pagination(props) {
 			totalPages,
 			pageStart,
 			pageEnd,
-			pageTotal,
 		} = Repository,
-		paginationButtonProps = {
-			h: '20px',
-			w: '20px',
-			mx: 1,
+		iconButtonProps = {
+			_hover: {
+				bg: 'trueGray.400',
+			},
+			// mx: 1,
 		},
 		iconProps = {
-			position: 'absolute',
-			textAlign: 'center',
+			// position: 'absolute',
+			alignSelf: 'center',
 			size: 'sm',
 			color: 'trueGray.500',
+			h: 20,
+			w: 20,
 		};
 
 	useEffect(() => {
@@ -51,46 +53,50 @@ export default function Pagination(props) {
 		isDisabled = page === 1;
 	items.push(<IconButton
 					key="first"
-					{...paginationButtonProps}
+					{...iconButtonProps}
 					isDisabled={isDisabled}
 					icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
 					onPress={() => Repository.setPage(1)}
+					tooltip="First Page"
 				/>);
 	items.push(<IconButton
 					key="prev"
-					{...paginationButtonProps}
+					{...iconButtonProps}
 					isDisabled={isDisabled}
 					icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
 					onPress={() => Repository.prevPage()}
+					tooltip="Previous Page"
 				/>);
 
 	isDisabled = page === totalPages || !totalPages;
 	items.push(<IconButton
 					key="next"
-					{...paginationButtonProps}
+					{...iconButtonProps}
 					isDisabled={isDisabled}
 					icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
 					onPress={() => Repository.nextPage()}
+					tooltip="Next Page"
 				/>);
 	items.push(<IconButton
 					key="last"
-					{...paginationButtonProps}
+					{...iconButtonProps}
 					isDisabled={isDisabled}
 					icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
 					onPress={() => Repository.setPage(totalPages)}
+					tooltip="Last Page"
 				/>);
 	items.push(<IconButton
 					key="reload"
-					{...paginationButtonProps}
+					{...iconButtonProps}
 					icon={<Icon as={Rotate} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
 					onPress={() => Repository.reload()}
+					tooltip="Reload"
 				/>);
 
 	// Pagesize Picker
 	items.push(<Picker
 					_select={{
 						key: 'pageSize',
-						placeholder: 'Page Size',
 						selectedValue: pageSize,
 						onValueChange: (value) => Repository.setPageSize(value),
 						fontSize: 14,
@@ -98,6 +104,7 @@ export default function Pagination(props) {
 						ml: 1,
 						h: 7,
 					}}
+					tooltip="Page Size"
 					w={120}
 					allowNull={false}
 					key="pageSize"
@@ -119,7 +126,6 @@ export default function Pagination(props) {
 	return <Row
 				justifyContent="flex-start"
 				alignItems="center"
-				w="100%"
 				px={2}
 				{...props}
 			>
