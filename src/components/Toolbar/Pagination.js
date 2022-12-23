@@ -100,7 +100,7 @@ export default function Pagination(props) {
 						selectedValue: pageSize,
 						onValueChange: (value) => Repository.setPageSize(value),
 						fontSize: 14,
-						bg: 'trueGray.200',
+						bg: 'trueGray.100',
 						ml: 1,
 						h: 7,
 					}}

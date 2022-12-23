@@ -1,4 +1,6 @@
+import React from 'react';
 import {
+	Column,
 	Row,
 	Text,
 } from 'native-base';
@@ -7,6 +9,10 @@ import {
 	FaMinus,
 	FaPlus,
 } from 'react-icons/fa';
+import {
+	HORIZONTAL,
+	VERTICAL,
+} from '../../constants/Directions';
 import {
 	HEADER_PX,
 	HEADER_PY,
@@ -20,11 +26,12 @@ import IconButton from '../Buttons/IconButton';
 
 export default function Header(props) {
 	const {
-			testID = 'header',
+			testID = 'Header',
 			title = '',
 			isClosable = true,
 			onClose = emptyFn,
 			isCollapsible = true,
+			collapseDirection = HORIZONTAL,
 			isCollapsed = false,
 			onToggleCollapse = emptyFn,
 		} = props;
@@ -47,11 +54,49 @@ export default function Header(props) {
 						testID="collapseBtn"
 						alignSelf="center"
 						ml={1}
+						h="20px"
+						w="30px"
 					/>;
 	}
-	return <Row alignItems="center" justifyContent="flex-start" px={HEADER_PX} py={HEADER_PY} bg="primary.100" testID={testID}>
-				{closeBtn}
-				<Text flex={1} fontSize={HEADER_TEXT_FONTSIZE} color={HEADER_TEXT_COLOR} testID="text">{title}</Text>
-				{collapseBtn}
-			</Row>;
+	
+	const doubleClickStyle = {};
+	if (isCollapsible) {
+		doubleClickStyle.cursor = 'pointer';
+	}
+
+	if (isCollapsed) {
+		if (collapseDirection === VERTICAL) {
+			collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
+			return <div
+						style={{ flex: 1, width: '100%', userSelect: 'none', ...doubleClickStyle, }}
+						onClick={(e) => {
+							if (isCollapsible && e.detail === 2) { // double-click
+								onToggleCollapse(e);
+							}
+						}}
+					>
+						 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg="primary.100" testID={testID}>
+							{collapseBtn}
+							<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
+								<Text flex={1} fontSize={HEADER_TEXT_FONTSIZE} color={HEADER_TEXT_COLOR} testID="text">{title}</Text>
+							</div>
+						</Column>
+					</div>;
+		}
+	}
+
+	return <div
+				style={{ width: '100%', userSelect: 'none', ...doubleClickStyle, }}
+				onClick={(e) => {
+					if (isCollapsible && e.detail === 2) { // double-click
+						onToggleCollapse(e);
+					}
+				}}
+			>
+				<Row alignItems="center" justifyContent="flex-start" px={HEADER_PX} py={HEADER_PY} bg="primary.100" testID={testID}>
+					{closeBtn}
+					<Text flex={1} fontSize={HEADER_TEXT_FONTSIZE} color={HEADER_TEXT_COLOR} testID="text">{title}</Text>
+					{collapseBtn}
+				</Row>
+			</div>;
 }

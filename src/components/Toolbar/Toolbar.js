@@ -5,7 +5,7 @@ import {
 export default function Toolbar(props) {
 	return <Row
 				w="100%"
-				justifyContent="center"
+				justifyContent="flex-start"
 				bg="trueGray.200"
 				borderBottomWidth={1}
 				borderBottomColor="trueGray.400"

@@ -1,15 +1,29 @@
 import React, { useState, useEffect, } from 'react';
 import {
+	Box,
 	Column,
+	FlatList,
 	Icon,
 	Modal,
 	Pressable,
 	Row,
+	Spacer,
 	Text,
 } from 'native-base';
+import {
+	ROW_HEADER_ID,
+	SORT_ASCENDING,
+	SORT_DESCENDING,
+	SELECTION_MODE_SINGLE,
+	SELECTION_MODE_MULTI,
+} from '../../constants/Grid';
+import {
+	v4 as uuid,
+} from 'uuid';
 import oneHatData from '@onehat/data';
 import testProps from '../../functions/testProps';
 import inArray from '../../functions/inArray';
+import emptyFn from '../../functions/emptyFn';
 import useForceUpdate from '../../hooks/useForceUpdate';
 import Loading from '../Messages/Loading';
 import Toolbar from '../Toolbar/Toolbar';
@@ -17,22 +31,13 @@ import PaginationToolbar from '../Toolbar/PaginationToolbar';
 import NoRecordsFound from './NoRecordsFound';
 import IconButton from '../Buttons/IconButton';
 import AngleRight from '../Icons/AngleRight';
-import Clipboard from '../Icons/Clipboard';
-import Duplicate from '../Icons/Duplicate';
-import Edit from '../Icons/Edit';
-import Eye from '../Icons/Eye';
-import Trash from '../Icons/Trash';
-import Plus from '../Icons/Plus';
-import Print from '../Icons/Print';
 import SortDown from '../Icons/SortDown';
 import SortUp from '../Icons/SortUp';
-import {
-	v4 as uuid,
-} from 'uuid';
 import _ from 'lodash';
 
-// This grid is a raw NativeBase UI for @onehat/data
-
+// Grid requires the use of HOC withSelection() whenever it's used.
+// This is the *raw* component that can be combined with many HOCs
+// for various functionality.
 
 	// Desired features: ---------
 	// Header cells
@@ -68,16 +73,11 @@ import _ from 'lodash';
 	// custom cell types
 		// Most would use text, and depend on @onehat/data for formatting
 	// editor
-		// double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
+		// √ double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
 		// Show inline editor for selected row
 		// windowed editor for selected row
 			// form panel for multiple editing of selected rows
 	// Display tree data
-
-const
-	ROW_HEADER_ID = 'ROW_HEADER_ID',
-	SORT_ASCENDING = 'ASC',
-	SORT_DESCENDING = 'DESC';
 
 export default function Grid(props) {
 	const
@@ -96,64 +96,75 @@ export default function Grid(props) {
 				// 	sortable = true,
 				// 	width = 150,
 				// }]
-			selectionMode = 'multi', // multi, single
-			enableEditors = false,
-			editorType = 'inline', // inline, windowed
-			gridProps = {},
+			columns = [],
+			columnProps = {},
+			getRowProps = () => {
+				return {
+					bg: '#fff',
+					p: 2,
+				};
+			},
+			selectionMode = SELECTION_MODE_MULTI, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
+			noSelectorMeansNoResults = false,
+			// enableEditors = false,
+			flatListProps = {},
 			pullToRefresh = true,
 			hideNavColumn = true,
-			disableReloadOnChangeFilters = false,
+			disableLoadingIndicator = false,
 			noneFoundText,
+			disableReloadOnChangeFilters = false,
 
 			showRowExpander = false,
 			rowExpanderTpl = '',
 			
 			
-			// Note: A 'button' will create both a context menu item and a toolbar button that match in text label, icon, and handler.
-			// The 'presets' are defined by Grid. The 'additionals' are user-defined. 
-			presetButtons = [
-				'add',
-				'edit',
-				'delete',
-				'copy',
-				// 'view',
-				'duplicate',
-				'print',
-			],
-			additionalButtons = [],
-			contextMenuItems = [],
 			topToolbar,
 			bottomToolbar = 'pagination',
-			additionalToolbarItems = [],
+			additionalToolbarButtons = [],
 			showHeaders = true,
 			enableSorting = true,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disablePaging = false,
-			disableContextMenu = false,
 			autoSelectFirstItem = false,
+			initialScrollIndex = 0,
 
-			onSelection,
 			// onColumnResized,
 			// onRowsReordered,
 			// onColumnsReordered,
-			// onContextMenu,
+
+			// editor
+
+			onSelect = emptyFn,
+			onAdd,
+			onEdit,
+			onRemove,
+			onView,
+			onDuplicate,
+			onReset,
+			onContextMenu,
 		} = props,
 		Repository = model && oneHatData.getRepository(model),
 		forceUpdate = useForceUpdate(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[isContextMenuShown, setIsContextMenuShown] = useState(false),
-		[isEditorShown, setIsEditorShown] = useState(false),
-		[currentEntity, setCurrentEntity] = useState(), // for editor
-		[contextMenuX, setContextMenuX] = useState(0),
-		[contextMenuY, setContextMenuY] = useState(0),
 		[isSortDirectionAsc, setIsSortDirectionAsc] = useState(Repository.getSortDirection() === SORT_ASCENDING),
 		[sortField, setSortField] = useState(Repository.getSortField() || null),
 		[sortFn, setSortFn] = useState(Repository.getSortFn() || null),
-		[selection, setSelection] = useState([]), // array of indices in repository's current page
+		[selection, setLocalSelection] = useState([]), // array of indices in repository's current page
 		[columnsData, setColumnsData] = useState(),
-		onRefresh = () => Repository.load(),
-		onSelect = (entity, e) => {
+
+		// grid actions
+		onRefresh = () => Repository.reload().then(() => {
+			setIsLoading(false);
+			forceUpdate();
+		}),
+		setSelection = (newSelection) => {
+			setLocalSelection(newSelection)
+			if (onSelect && onSelect !== emptyFn) {
+				onSelect(getEntitiesByRowIndices(newSelection));
+			}
+		},
+		onRowSelect = (entity, e) => {
 			const
 				currentSelectionLength = selection.length,
 				shiftKey = e.shiftKey,
@@ -226,68 +237,6 @@ export default function Grid(props) {
 			}
 
 			setSelection(newSelection);
-			if (onSelection) {
-				onSelection(getEntitiesByRowIndices(newSelection));
-			}
-		},
-		onAdd = () => {
-			debugger;
-			const entity = Repository.add({
-				// defaults are where??
-			});
-
-			setCurrentEntity(entity);
-			setIsEditorShown(true);
-		},
-		onEdit = (e, rowId) => {
-			const entity = getEntityByRowIx(selection[0]);
-
-			setCurrentEntity(entity);
-			setIsEditorShown(true);
-		},
-		onView = () => {},
-		onDelete = () => {
-			debugger;
-		},
-		onCopyToClipboard = () => {
-			// Get text of all selected rows
-			const selectedRows = _.filter(rowsData, (rowData) => {
-				if (!rowData.entity || !rowData.isSelected) {
-					return false;
-				}
-				return rowData;
-			});
-			let text;
-			if (selectedRows.length) {
-				const
-					headerText = _.map(rowsData[0].cellsData, (cellData) => cellData.header).join("\t"),
-					rowTexts = _.map(selectedRows, (rowData) => {
-						const {
-								entity,
-								cellsData,
-							} = rowData,
-							rowValues = _.map(cellsData, (cellData) => {
-										if (!cellData.columnConfig) {
-											return null;
-										}
-										const fieldName = cellData.columnConfig.fieldName;
-										return entity[fieldName];
-									});
-							return rowValues.join("\t");
-					});
-				text = [headerText, ...rowTexts].join("\n");
-			} else {
-				text = 'Nothing selected to copy!';
-			}
-
-			// Send it to clipboard
-			navigator.clipboard.writeText(text);
-		},
-		onDuplicate = () => {
-			debugger;
-		},
-		onPrint = () => {
-			debugger;
 		},
 		onSort = (cellData, e) => {
 			let currentSortField = sortField,
@@ -310,170 +259,46 @@ export default function Grid(props) {
 			// clear the selection
 			setSelection([]);
 		},
-		onContextMenu = (entity, rowId, e) => {
-			if (!selection.length && entity) {
-				// No current selections, so select this row so operations apply to it
-				setSelection([getRowIxByEntityId(entity.id)]);
-			}
-			
-			setIsContextMenuShown(true);
-			setContextMenuX(e.pageX);
-			setContextMenuY(e.pageY);
-		},
-		getSelectedEntities = () => {
-			return _.filter(rowsData, (rowData) => {
-				if (!rowData.entity || !rowData.isSelected) {
-					return false;
-				}
-				return rowData.entity;
-			});
-		},
-		getPresetButtonProps = (type) => {
-			let text,
-				handler,
-				icon = null,
-				isDisabled = false;
-			switch(type) {
-				case 'add':
-					text = 'Add';
-					handler = onAdd;
-					icon = <Plus />;
-					break;
-				case 'edit':
-					text = 'Edit';
-					handler = onEdit;
-					icon = <Edit />;
-					isDisabled = !selection.length || selection.length !== 1;
-					break;
-				case 'delete':
-					text = 'Delete';
-					handler = onDelete;
-					icon = <Trash />;
-					isDisabled = !selection.length || selection.length !== 1;
-					break;
-				case 'view':
-					text = 'View';
-					handler = onView;
-					icon = <Eye />;
-					isDisabled = !selection.length || selection.length !== 1;
-					break;
-				case 'copy':
-					text = 'Copy';
-					handler = onCopyToClipboard;
-					icon = <Clipboard />;
-					isDisabled = !selection.length;
-					break;
-				case 'duplicate':
-					text = 'Duplicate';
-					handler = onDuplicate;
-					icon = <Duplicate />;
-					isDisabled = !selection.length || selection.length !== 1;
-					break;
-				case 'print':
-					text = 'Print';
-					handler = onPrint;
-					icon = <Print />;
-					break;
-				default:
-			}
-			return {
-				text,
-				handler,
-				icon,
-				isDisabled,
-			};
-		},
-		getContextMenuItems = () => {
-			if (disableContextMenu) {
-				return;
-			}
-			const presetButtonConfigs = _.map(presetButtons, (presetButton) => {
-				return getPresetButtonProps(presetButton);
-			});
-			return _.map([...presetButtonConfigs, ...additionalButtons, ...contextMenuItems], (config, ix) => {
+
+		// fns to build elements
+		getToolbarItems = () => {
+			const
+				iconButtonProps = {
+					_hover: {
+						bg: 'trueGray.400',
+					},
+					mx: 1,
+					px: 3,
+				};
+			return _.map(additionalToolbarButtons, (config, ix) => {
 				let {
 						text,
 						handler,
 						icon = null,
 						isDisabled = false,
 					} = config;
-				const iconProps = {
-					alignSelf: 'center',
-					size: 'sm',
-					color: isDisabled ? 'disabled' : 'trueGray.800',
-					h: 20,
-					w: 20,
-					mr: 2,
-				};
 				if (icon) {
-					icon = React.cloneElement(icon, {...iconProps});
-				}
-				return <Pressable
-							key={ix}
-							onPress={() => {
-								setIsContextMenuShown(false);
-								handler(getSelectedEntities());
-							}}
-							flexDirection="row"
-							borderBottomWidth={1}
-							borderBottomColor="trueGray.200"
-							py={2}
-							px={4}
-							_hover={{
-								bg: '#ffc',
-							}}
-							isDisabled={isDisabled}
-						>
-							{icon}
-							<Text flex={1} color={isDisabled ? 'disabled' : 'trueGray.800'}>{text}</Text>
-						</Pressable>;
-			});
-		},
-		getToolbarItems = () => {
-			if (disableContextMenu) {
-				return;
-			}
-			const
-				iconButtonProps = {
-					mx: 1,
-					_hover: {
-						bg: 'trueGray.400',
-					},
-					px: 3,
-				},
-				presetButtonConfigs = _.map(presetButtons, (presetButton) => {
-					return getPresetButtonProps(presetButton);
-				});
-			return _.map([...presetButtonConfigs, ...additionalButtons, ...additionalToolbarItems], (config, ix) => {
-				let {
-						text,
-						handler,
-						icon = null,
-						isDisabled = false,
-					} = config,
-					iconProps = {
+					const iconProps = {
 						alignSelf: 'center',
 						size: 'sm',
 						color: isDisabled ? 'disabled' : 'trueGray.800',
 						h: 20,
 						w: 20,
 					};
-				if (icon) {
 					icon = React.cloneElement(icon, {...iconProps});
 				}
 				return <IconButton
 							key={ix}
 							{...iconButtonProps}
-							onPress={() => {
-								setIsContextMenuShown(false);
-								handler(getSelectedEntities());
-							}}
+							onPress={handler}
 							icon={icon}
 							isDisabled={isDisabled}
 							tooltip={text}
 						/>;
 			});
 		},
+
+		// helper fns
 		getRowIdByEntityId = (entityId) => {
 			const row = _.find(rowsData, (rowData) => rowData.entity && rowData.entity.id === entityId);
 			return row && row.rowId;
@@ -495,6 +320,16 @@ export default function Grid(props) {
 		getEntitiesByRowIndices = (rowIndices) => {
 			return _.map(rowIndices, (rowIx) => getEntityByRowIx(rowIx));
 		},
+		getSelectedEntities = () => {
+			return _.filter(rowsData, (rowData) => {
+				if (!rowData.entity || !rowData.isSelected) {
+					return false;
+				}
+				return rowData.entity;
+			});
+		},
+
+		// fns to build the grid columns / rows
 		getColumnsData = () => {
 			const columnsData = _.map(columnsConfig, (columnConfig) => {
 					if (!columnConfig.width && !columnConfig.flex) {
@@ -690,20 +525,19 @@ export default function Grid(props) {
 								if (rowId === ROW_HEADER_ID) {
 									return false;
 								}
-								onSelect(entity, e);
+								onRowSelect(entity, e);
 							}}
 							onLongPress={(e) => {
 								if (rowId === ROW_HEADER_ID) {
 									return false;
 								}
-								onSelect(entity, e);
+								onRowSelect(entity, e);
 							}}
 							borderBottomWidth={1}
 							borderBottomColor="#eee"
 							bg={isSelected ? 'selected' : '#fff'}
 						>
 							<div
-								className="mouseClickInterceptor"
 								onClick={(e) => {
 									if (e.detail === 2) {
 										// double-click
@@ -711,17 +545,46 @@ export default function Grid(props) {
 									}
 								}}
 								onContextMenu={(e) => {
-									e.preventDefault();
-									if (!disableContextMenu && onContextMenu) {
-										onContextMenu(entity, rowId, e);
-									}
+									// e.preventDefault();
+									// if (!disableContextMenu && onContextMenu) {
+									// 	onContextMenu(entity, rowId, e);
+									// }
 								}}
 							>
 								<Row style={{ userSelect: 'none', }}>{cellComponents}</Row>
 							</div>
 						</Pressable>;
 			});
-		};
+		},
+		columnRenderer = (entity) => {
+			if (_.isArray(columns)) {
+				return _.map(columns, (config, key) => {
+					let value;
+
+					if (_.isObject(config)) {
+						if (config.renderer) {
+							return config.renderer(entity, key);
+						}
+					}
+					if (_.isString(config)) {
+						value = entity[config];
+					}
+					if (_.isFunction(config)) {
+						value = config(entity);
+					}
+					
+					if (_.isFunction(value)) {
+						return value(key);
+					}
+
+					const propsToPass = columnProps[key] || {};
+					return <Text key={key} flex={1} {...propsToPass}>{value}</Text>;
+				});
+			} else {
+				// TODO: if 'columns' is an object, parse its contents
+				throw new Error('Non-array columns not yet supported');
+			}
+		},
 		// onColumnsReordered = (targetColumnId, columnIds) => {
 		// 	const
 		// 		to = columnsData.findIndex((column) => column.columnId === targetColumnId),
@@ -753,9 +616,9 @@ export default function Grid(props) {
 
 		// 	return canReorder;
 		// },
-		// canReorderRows = (targetRowId, rowIds) => {
-		// 	return targetRowId !== ROW_HEADER_ID; // Prevent reordering rows to be above header
-		// },
+		canReorderRows = (targetRowId, rowIds) => {
+			return targetRowId !== ROW_HEADER_ID; // Prevent reordering rows to be above header
+		};
 		// getCellType = (fieldName) => {
 		// 	const
 		// 		schema = Repository.schema,
@@ -842,9 +705,8 @@ export default function Grid(props) {
 	
 	const
 		rowsData = getRowsData(),
-		rowComponents = getRowComponents(),
-		contextMenuItemComponents = getContextMenuItems(),
 		toolbarItemComponents = getToolbarItems();
+		// rowComponents = getRowComponents();
 
 	let bbar = null;
 	if (bottomToolbar === 'pagination' && !disablePaging) {
@@ -852,9 +714,11 @@ export default function Grid(props) {
 	} else if (toolbarItemComponents.length) {
 		bbar = <Toolbar>{toolbarItemComponents}</Toolbar>;
 	}
-	
+
+	const entities = Repository.getEntitiesOnPage();
+
 	return <Column
-				{...testProps('GridPanelContainer')}
+				{...testProps('Grid')}
 				flex={1}
 				w="100%"
 			>
@@ -864,58 +728,68 @@ export default function Grid(props) {
 
 				{!isLoading && (!Repository.getEntitiesOnPage().length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> : 
 					
-					<Pressable
-						onPress={() => {
-							setSelection([]);
+					<FlatList
+						refreshing={isLoading}
+						onRefresh={pullToRefresh ? onRefresh : null}
+						progressViewOffset={100}
+						data={entities}
+						keyExtractor={(entity) => {
+							return String(entity.id);
 						}}
-						flex={1}
-						w="100%"
-					>
-						<div
-							className="mouseClickInterceptor"
-							onContextMenu={(e) => {
-								e.preventDefault();
-								if (!disableContextMenu && onContextMenu) {
-									onContextMenu(null, null, e);
-								}
-							}}
-							style={{
-								flex: 1,
-								width: '100%',
-							}}
-						>
-							<Column
-								{...testProps('Grid')}
-								flex={1}
-								w="100%"
-								overflow="scroll"
-							>
-								{rowComponents}
-							</Column>
-						</div>
-					</Pressable>
+						initialNumToRender={entities.length}
+						initialScrollIndex={initialScrollIndex}
+						renderItem={(row) => {
+							const entity = row.item,
+								rowProps = getRowProps ? getRowProps(entity) : {};
+							return <Pressable
+										{...testProps(Repository.schema.name + '-' + entity.id)}
+										onPress={() => onSelect(entity)}
+										onLongPress={() => onSelect(entity)}
+									>
+										<div
+											onClick={(e) => {
+												if (e.detail === 2) {
+													// double-click
+													onEdit(e);
+												}
+											}}
+											onContextMenu={(e) => {
+												e.preventDefault();
+												if (onContextMenu) {
+													const rowIx = getRowIxByEntityId(entity.id);
+													onContextMenu(entity, rowIx, e, selection, setSelection);
+												}
+											}}
+											style={{
+												flex: 1,
+												width: '100%',
+											}}
+										>
+											<Row
+												alignItems="center"
+												borderBottomWidth={1}
+												borderBottomColor="trueGray.500"
+												{...rowProps}
+												>
+													{columnRenderer(entity)}
+													{!hideNavColumn && <AngleRight
+														color="#aaa"
+														variant="ghost"
+														w={30}
+														alignSelf="center"
+														ml={3}
+													/>}
+											</Row>
+										</div>
+									</Pressable>;
+						}}
+						bg="trueGray.200"
+						{...flatListProps}
+					/>
 				)}
 
 				{bbar}
 
-				<Modal
-					animationType="fade"
-					isOpen={isContextMenuShown && !disableContextMenu}
-					onClose={() => setIsContextMenuShown(false)}
-				>
-					<Column bg="#fff" w={160} position="absolute" top={contextMenuY} left={contextMenuX}>
-						{contextMenuItemComponents}
-					</Column>
-				</Modal>
-				<Modal
-					animationType="fade"
-					isOpen={isEditorShown}
-					onClose={() => setIsEditorShown(false)}
-				>
-					<Column bg="#fff" w={500} h={400}>
-						<Text>Editor here!</Text>
-					</Column>
-				</Modal>
 			</Column>;
 
 }
