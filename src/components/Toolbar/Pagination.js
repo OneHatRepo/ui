@@ -48,14 +48,13 @@ export default function Pagination(props) {
 		};
 	}, [Repository, forceUpdate]);
 
-
 	let items = [],
 		isDisabled = page === 1;
 	items.push(<IconButton
 					key="first"
 					{...iconButtonProps}
 					isDisabled={isDisabled}
-					icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
+					icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
 					onPress={() => Repository.setPage(1)}
 					tooltip="First Page"
 				/>);
@@ -63,7 +62,7 @@ export default function Pagination(props) {
 					key="prev"
 					{...iconButtonProps}
 					isDisabled={isDisabled}
-					icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
+					icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
 					onPress={() => Repository.prevPage()}
 					tooltip="Previous Page"
 				/>);
@@ -73,7 +72,7 @@ export default function Pagination(props) {
 					key="next"
 					{...iconButtonProps}
 					isDisabled={isDisabled}
-					icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
+					icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
 					onPress={() => Repository.nextPage()}
 					tooltip="Next Page"
 				/>);
@@ -81,17 +80,19 @@ export default function Pagination(props) {
 					key="last"
 					{...iconButtonProps}
 					isDisabled={isDisabled}
-					icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
+					icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
 					onPress={() => Repository.setPage(totalPages)}
 					tooltip="Last Page"
 				/>);
-	items.push(<IconButton
-					key="reload"
-					{...iconButtonProps}
-					icon={<Icon as={Rotate} {...iconProps} color={isDisabled ? 'trueGray.500' : 'trueGray.600'} />}
-					onPress={() => Repository.reload()}
-					tooltip="Reload"
-				/>);
+	if (!Repository.isLocal) {
+		items.push(<IconButton
+						key="reload"
+						{...iconButtonProps}
+						icon={<Icon as={Rotate} {...iconProps} color="trueGray.600" />}
+						onPress={() => Repository.reload()}
+						tooltip="Reload"
+					/>);
+	}
 
 	// Pagesize Picker
 	items.push(<Picker

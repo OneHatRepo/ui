@@ -11,6 +11,13 @@ import {
 } from '../../constants/Directions';
 import Splitter from './Splitter';
 
+// Known bug:
+// If a panel is collapsed, the drag handles to resize it won't work correctly.
+// i.e. The collapsed size won't change, but the expanded size will.
+// I'd rather have the Splitter not appear at all so it can't resize when collapsed,
+// but the way the architecture is, the container can't know if its enclosing panel 
+// is collapsed or not
+
 export default function Container(props) {
 	const {
 			center,
@@ -57,34 +64,34 @@ export default function Container(props) {
 
 	centerComponent = React.cloneElement(center, { isCollapsible: false, });
 	if (north) {
-		componentProps.collapseDirection = HORIZONTAL;
+		componentProps.collapseDirection = VERTICAL;
 		if (north.props.split) {
 			componentProps.h = northHeight;
-			northSplitter = <Splitter mode={HORIZONTAL} onResize={onNorthResize} />;
+			northSplitter = <Splitter mode={VERTICAL} onResize={onNorthResize} />;
 		}
 		northComponent = React.cloneElement(north, { ...componentProps, w: '100%', });
 	}
 	if (south) {
-		componentProps.collapseDirection = HORIZONTAL;
+		componentProps.collapseDirection = VERTICAL;
 		if (south.props.split) {
 			componentProps.h = southHeight;
-			southSplitter = <Splitter mode={HORIZONTAL} onResize={onSouthResize} />;
+			southSplitter = <Splitter mode={VERTICAL} onResize={onSouthResize} />;
 		}
 		southComponent = React.cloneElement(south, { ...componentProps, w: '100%', });
 	}
 	if (east) {
-		componentProps.collapseDirection = VERTICAL;
+		componentProps.collapseDirection = HORIZONTAL;
 		if (east.props.split) {
 			componentProps.w = eastWidth;
-			eastSplitter = <Splitter mode={VERTICAL} onResize={onEastResize} />;
+			eastSplitter = <Splitter mode={HORIZONTAL} onResize={onEastResize} />;
 		}
 		eastComponent = React.cloneElement(east, { ...componentProps, h: '100%', });
 	}
 	if (west) {
-		componentProps.collapseDirection = VERTICAL;
+		componentProps.collapseDirection = HORIZONTAL;
 		if (west.props.split) {
 			componentProps.w = westWidth;
-			westSplitter = <Splitter mode={VERTICAL} onResize={onWestResize} />;
+			westSplitter = <Splitter mode={HORIZONTAL} onResize={onWestResize} />;
 		}
 		westComponent = React.cloneElement(west, { ...componentProps, h: '100%', });
 	}

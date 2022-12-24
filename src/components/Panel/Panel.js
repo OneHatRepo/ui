@@ -12,6 +12,10 @@ import Header from './Header';
 import emptyFn from '../../functions/emptyFn';
 import _ from 'lodash';
 
+// Note on collapseDirections:
+// HORIZONTAL means the Panel collapses along the X axis.
+// VERTICAL means the Panel collapses along the Y axis.
+
 export default function Panel(props) {
 	const {
 			isDisabled = false,
@@ -27,7 +31,7 @@ export default function Panel(props) {
 			isClosable = false,
 			onClose = emptyFn,
 			isCollapsible = true,
-			collapseDirection = HORIZONTAL, // HORIZONTAL, VERTICAL
+			collapseDirection = VERTICAL, // HORIZONTAL, VERTICAL
 
 			// Content
 			topToolbar = null,
@@ -99,8 +103,8 @@ export default function Panel(props) {
 		framePropsToUse = frameProps;
 	}
 	if (localIsCollapsed) {
-		if (collapseDirection !== HORIZONTAL) {
-			return <Column {...framePropsToUse} w="50px" height="100%">
+		if (collapseDirection !== VERTICAL) {
+			return <Column {...framePropsToUse} w="33px" height="100%">
 						{isDisabled && <div className="mask"></div>}
 						{headerComponent}
 					</Column>;

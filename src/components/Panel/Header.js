@@ -31,7 +31,7 @@ export default function Header(props) {
 			isClosable = true,
 			onClose = emptyFn,
 			isCollapsible = true,
-			collapseDirection = HORIZONTAL,
+			collapseDirection = VERTICAL,
 			isCollapsed = false,
 			onToggleCollapse = emptyFn,
 		} = props;
@@ -65,7 +65,7 @@ export default function Header(props) {
 	}
 
 	if (isCollapsed) {
-		if (collapseDirection === VERTICAL) {
+		if (collapseDirection === HORIZONTAL) {
 			collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
 			return <div
 						style={{ flex: 1, width: '100%', userSelect: 'none', ...doubleClickStyle, }}

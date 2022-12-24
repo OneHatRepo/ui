@@ -18,13 +18,19 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../constants/Grid';
 import {
+	HORIZONTAL,
+	VERTICAL,
+} from '../../constants/Directions';
+import {
 	v4 as uuid,
 } from 'uuid';
 import oneHatData from '@onehat/data';
+import useBlocking from '../../hooks/useBlocking';
 import testProps from '../../functions/testProps';
 import inArray from '../../functions/inArray';
 import emptyFn from '../../functions/emptyFn';
 import useForceUpdate from '../../hooks/useForceUpdate';
+import Splitter from '../Container/Splitter';
 import Loading from '../Messages/Loading';
 import Toolbar from '../Toolbar/Toolbar';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';
@@ -84,24 +90,13 @@ export default function Grid(props) {
 		{
 			model, // @onehat/data model name
 			columnsConfig = [], // json configurations for each column in format:
-				// [{
-				// 	header,
-				// 	fieldName, // from @onehat/data model
-				// 	type, // specify which column type to use (custom or built-in)
-				// 	editable = false,
-				// 	editor,
-				// 	format,
-				// 	renderer, // React component will render the output
-				// 	resizable = true,
-				// 	sortable = true,
-				// 	width = 150,
-				// }]
 			columns = [],
 			columnProps = {},
 			getRowProps = () => {
 				return {
 					bg: '#fff',
-					p: 2,
+					py: 1,
+					px: 2,
 				};
 			},
 			selectionMode = SELECTION_MODE_MULTI, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
@@ -122,7 +117,9 @@ export default function Grid(props) {
 			bottomToolbar = 'pagination',
 			additionalToolbarButtons = [],
 			showHeaders = true,
-			enableSorting = true,
+			canColumnsSort = true,
+			canColumnsReorder = true,
+			canColumnsResize = true,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disablePaging = false,
 			autoSelectFirstItem = false,
@@ -145,12 +142,14 @@ export default function Grid(props) {
 		} = props,
 		Repository = model && oneHatData.getRepository(model),
 		forceUpdate = useForceUpdate(),
+		{ blocked } = useBlocking(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[isSortDirectionAsc, setIsSortDirectionAsc] = useState(Repository.getSortDirection() === SORT_ASCENDING),
 		[sortField, setSortField] = useState(Repository.getSortField() || null),
 		[sortFn, setSortFn] = useState(Repository.getSortFn() || null),
 		[selection, setLocalSelection] = useState([]), // array of indices in repository's current page
+		[localColumnsConfig, setLocalColumnsConfig] = useState([]),
 		[columnsData, setColumnsData] = useState(),
 
 		// grid actions
@@ -170,7 +169,7 @@ export default function Grid(props) {
 				shiftKey = e.shiftKey,
 				clickedPageIx = Repository.getIxById(entity.id);
 			let newSelection = [];
-			if (selectionMode === 'multi') {
+			if (selectionMode === SELECTION_MODE_MULTI) {
 				if (shiftKey) {
 					if (inArray(clickedPageIx, selection)) {
 						// Remove from current selection
@@ -219,7 +218,7 @@ export default function Grid(props) {
 					}
 				}
 			} else {
-				// selectionMode === 'single'
+				// selectionMode === SELECTION_MODE_SINGLE
 
 				if (inArray(clickedPageIx, selection)) {
 					// Already selected
@@ -330,34 +329,55 @@ export default function Grid(props) {
 		},
 
 		// fns to build the grid columns / rows
-		getColumnsData = () => {
-			const columnsData = _.map(columnsConfig, (columnConfig) => {
-					if (!columnConfig.width && !columnConfig.flex) {
-						// Neither is set. Set default
-						columnConfig.width = 100;
-					} else if (columnConfig.flex && columnConfig.width) {
-						// Both are set. Width overrules flex.
-						delete columnConfig.flex;
-					}
-					if (!columnConfig.columnId) {
-						columnConfig.columnId = uuid();
-					}
-					return columnConfig;
-				});
-			if (!hideNavColumn) {
-				columnsData.push({
-					type: 'nav',
-					columnId: uuid(),
-					resizable: false,
-					sortable: false,
-					width: 10,
-				});
-			}
-			return columnsData;
+		calculateLocalColumnsConfig = () => {
+			// convert json config into actual elements
+			const localColumnsConfig = [];
+			_.each(columnsConfig, (columnConfig) => {
+				// destructure so we can set defaults
+				const {
+						header,
+						fieldName, // from @onehat/data model
+						type, // specify which column type to use (custom or built-in)
+						editable = false,
+						editor,
+						format,
+						renderer, // React component will render the output
+						resizable = true,
+						sortable = true,
+						w,
+						flex,
+					} = columnConfig,
+
+					config = {
+						columnId: uuid(),
+						header,
+						fieldName,
+						type,
+						editable,
+						editor,
+						format,
+						renderer,
+						resizable,
+						sortable,
+						w,
+						flex,
+					};
+
+				if (!config.w && !config.flex) {
+					// Neither is set
+					config.w = 100; // default
+				} else if (config.flex && config.width) {
+					// Both are set. Width overrules flex.
+					delete config.flex;
+				}
+
+				localColumnsConfig.push(config);
+			});
+			return localColumnsConfig;
 		},
-		getColumnConfig = (columnId) => {
+		getColumnConfigByColumnId = (columnId) => {
 			// gets columnConfig for a single column, based on columnId
-			return _.find(columnsConfig, (columnConfig) => {
+			return _.find(localColumnsConfig, (columnConfig) => {
 				return columnConfig.columnId === columnId;
 			});	
 		},
@@ -371,7 +391,7 @@ export default function Grid(props) {
 				const headerCells = [];
 				_.each(columnsData, (columnData) => {
 					// These columns may have been reordered, so match them with columnConfig setting, but user ordering of columns
-					const columnConfig = getColumnConfig(columnData.columnId);
+					const columnConfig = getColumnConfigByColumnId(columnData.columnId);
 					if (!columnConfig) { // e.g nav cell
 						return;
 					}
@@ -391,7 +411,7 @@ export default function Grid(props) {
 					cellsData = [];
 				_.each(columnsData, (columnData) => {
 					// These columns may have been reordered, so match them with columnConfig setting, but user ordering of columns
-					const columnConfig = getColumnConfig(columnData.columnId);
+					const columnConfig = getColumnConfigByColumnId(columnData.columnId);
 					if (!columnConfig) { // e.g nav cell
 						return;
 					}
@@ -488,10 +508,10 @@ export default function Grid(props) {
 						cellProps.width = cellData.width;
 					}
 					if (rowId === ROW_HEADER_ID) {
-						const isCellSorter = enableSorting && sortField === cellData.fieldName;
+						const isCellSorter = canColumnsSort && sortField === cellData.fieldName;
 						cell = <Pressable
 									onPress={(e) => {
-										if (enableSorting) {
+										if (canColumnsSort) {
 											onSort(cellData, e);
 										}
 									}}
@@ -539,16 +559,15 @@ export default function Grid(props) {
 						>
 							<div
 								onClick={(e) => {
-									if (e.detail === 2) {
-										// double-click
+									if (e.detail === 2) { // double-click
 										onEdit(e);
 									}
 								}}
 								onContextMenu={(e) => {
-									// e.preventDefault();
-									// if (!disableContextMenu && onContextMenu) {
-									// 	onContextMenu(entity, rowId, e);
-									// }
+									e.preventDefault();
+									if (onContextMenu) {
+										onContextMenu(entity, rowId, e);
+									}
 								}}
 							>
 								<Row style={{ userSelect: 'none', }}>{cellComponents}</Row>
@@ -557,13 +576,23 @@ export default function Grid(props) {
 			});
 		},
 		columnRenderer = (entity) => {
-			if (_.isArray(columns)) {
-				return _.map(columns, (config, key) => {
+			if (_.isArray(localColumnsConfig)) {
+				return _.map(localColumnsConfig, (config, key) => {
 					let value;
 
 					if (_.isObject(config)) {
 						if (config.renderer) {
 							return config.renderer(entity, key);
+						}
+						if (config.fieldName && entity.properties[config.fieldName]) {
+							const property = entity.properties[config.fieldName];
+							// debugger;
+
+
+							value = property.displayValue;
+						}
+						if (entity[config.fieldName]) {
+	
 						}
 					}
 					if (_.isString(config)) {
@@ -572,19 +601,123 @@ export default function Grid(props) {
 					if (_.isFunction(config)) {
 						value = config(entity);
 					}
-					
 					if (_.isFunction(value)) {
 						return value(key);
 					}
 
+
 					const propsToPass = columnProps[key] || {};
-					return <Text key={key} flex={1} {...propsToPass}>{value}</Text>;
+
+					if (config.w) {
+						propsToPass.w = config.w;
+					} else if (config.flex) {
+						propsToPass.flex = config.flex;
+					}
+					// return <Text
+					// 			key={key}
+					// 			alignSelf="center"
+					// 			pl={3}
+					// 			fontSize={18}
+					// 		>{entity[fieldName]}</Text>;
+					
+					return <Text key={key} {...propsToPass}>{value}</Text>;
 				});
 			} else {
-				// TODO: if 'columns' is an object, parse its contents
-				throw new Error('Non-array columns not yet supported');
+				// TODO: if 'localColumnsConfig' is an object, parse its contents
+				throw new Error('Non-array localColumnsConfig not yet supported');
 			}
 		},
+		renderHeaders = () => {
+			const
+				sorters = Repository.sorters,
+				sorter = sorters.length === 1 ? sorters[0] : null,
+				sortField = sorter && sorter.name,
+				isSortDirectionAsc = sorter && sorter.direction === 'ASC';
+
+			// These header components should match the columns exactly
+			// so we can drag/drop them to control the columns.
+			const headerColumns = _.map(localColumnsConfig, (config, ix) => {
+				const {
+						columnId,
+						header,
+						fieldName,
+						resizable,
+						sortable,
+						w,
+						flex,
+					} = config,
+					isSorter = sortable && canColumnsSort && sortField === fieldName,
+					isReorderable = canColumnsReorder,
+					isResizable = canColumnsResize && resizable,
+					propsToPass = {
+						borderRightWidth: 2,
+						borderRightColor: '#fff',
+						px: 2,
+					}
+
+				if (w) {
+					propsToPass.w = w;
+				} else if (flex) {
+					propsToPass.flex = flex;
+				}
+
+				return <Pressable
+							key={ix}
+							onPress={(e) => {
+								if (blocked.current) {
+									return;
+								}
+								if (canColumnsSort) {
+									onSort(config, e);
+								}
+							}}
+							bg="#eee"
+							p={0}
+							_hover={{
+								bg: '#bbb',
+							}}
+							flexDirection="row"
+							borderLeftWidth={1}
+							borderLeftColor="trueGray.100"
+							borderRightWidth={1}
+							borderRightColor="trueGray.300"
+							{...propsToPass}
+						>
+							<Text flex={1}>{header}</Text>
+							{isSorter && <Icon as={isSortDirectionAsc ? SortDown : SortUp} textAlign="center" size="sm" mt={1} mr={1} color="trueGray.700" />}
+							{isResizable && <Splitter mode={HORIZONTAL} left="5px" onResize={(delta, e) => onColumnResize(delta, e, config)} />}
+						</Pressable>
+			});
+			if (!hideNavColumn) {
+				headerColumns.push(<AngleRight
+										key="navcol"
+										color="#aaa"
+										variant="ghost"
+										w={30}
+										alignSelf="center"
+										ml={3}
+									/>);
+			}
+			return <Row w="100%" h="40px" bg="trueGray.100">
+						{headerColumns}
+					</Row>
+		},
+		onColumnResize = (delta, e, config) => {
+
+			// Figure out a way to keep track of the column widths
+			// and also simultaneously figure out a way to reorder
+			// the columns.
+			// When you adjust the width of a column, does that simply
+			// change the one column's width? What happens to all other
+			// column widths?
+			// Still don't know if the view will scroll to the right 
+			// if more columns than screen space exist.
+debugger;
+			const 
+				oldWidth = getColumnWidth(config.columnId),
+				newWidth = oldWidth + delta;
+			setColumnWidth(config.columnId, newWidth);
+		};
 		// onColumnsReordered = (targetColumnId, columnIds) => {
 		// 	const
 		// 		to = columnsData.findIndex((column) => column.columnId === targetColumnId),
@@ -616,9 +749,6 @@ export default function Grid(props) {
 
 		// 	return canReorder;
 		// },
-		canReorderRows = (targetRowId, rowIds) => {
-			return targetRowId !== ROW_HEADER_ID; // Prevent reordering rows to be above header
-		};
 		// getCellType = (fieldName) => {
 		// 	const
 		// 		schema = Repository.schema,
@@ -682,13 +812,11 @@ export default function Grid(props) {
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
 
-		setColumnsData(getColumnsData());
-		if (!isReady) {
-			if (autoSelectFirstItem) {
-				setSelection([0]);
-			}
-			setIsReady(true);
+		setLocalColumnsConfig(calculateLocalColumnsConfig());
+		if (autoSelectFirstItem) {
+			setSelection([0]);
 		}
+		setIsReady(true);
 		
 		return () => {
 			Repository.off('beforeLoad', setTrue);
@@ -697,16 +825,15 @@ export default function Grid(props) {
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
 		};
-	}, [Repository, disableReloadOnChangeFilters, forceUpdate, isReady]);
+	}, []);
 
 	if (!isReady) {
 		return null;
 	}
 	
 	const
-		rowsData = getRowsData(),
+		// rowsData = getRowsData(),
 		toolbarItemComponents = getToolbarItems();
-		// rowComponents = getRowComponents();
 
 	let bbar = null;
 	if (bottomToolbar === 'pagination' && !disablePaging) {
@@ -726,6 +853,7 @@ export default function Grid(props) {
 
 				{isLoading && <Column flex={1}><Loading /></Column>}
 
+				{renderHeaders()}
 				{!isLoading && (!Repository.getEntitiesOnPage().length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> : 
 					
 					<FlatList
@@ -741,6 +869,7 @@ export default function Grid(props) {
 						renderItem={(row) => {
 							const entity = row.item,
 								rowProps = getRowProps ? getRowProps(entity) : {};
+							
 							return <Pressable
 										{...testProps(Repository.schema.name + '-' + entity.id)}
 										onPress={() => onSelect(entity)}
@@ -748,7 +877,7 @@ export default function Grid(props) {
 									>
 										<div
 											onClick={(e) => {
-												if (e.detail === 2) {
+												if (onEdit && e.detail === 2) {
 													// double-click
 													onEdit(e);
 												}

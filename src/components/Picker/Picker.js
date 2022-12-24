@@ -16,6 +16,7 @@ export default function Picker(props) {
 			nullLabel = 'None',
 			_select = {},
 			tooltip,
+			placeholder = 'Select',
 		} = props;
 
 	let items = [];
@@ -46,7 +47,7 @@ export default function Picker(props) {
 
 	// Set an explicit dropdownIcon to add margin to it, so it looks better
 	let select = <Select
-						placeholder="Select"
+						placeholder={placeholder}
 						isDisabled={false}
 						dropdownIcon={<Icon as={CaretDown} size="sm" mr={3} color="trueGray.800" />}
 						{..._select}
