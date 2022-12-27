@@ -67,7 +67,7 @@ export default function Container(props) {
 		componentProps.collapseDirection = VERTICAL;
 		if (north.props.split) {
 			componentProps.h = northHeight;
-			northSplitter = <Splitter mode={VERTICAL} onResize={onNorthResize} />;
+			northSplitter = <Splitter mode={VERTICAL} onDragStop={onNorthResize} />;
 		}
 		northComponent = React.cloneElement(north, { ...componentProps, w: '100%', });
 	}
@@ -75,7 +75,7 @@ export default function Container(props) {
 		componentProps.collapseDirection = VERTICAL;
 		if (south.props.split) {
 			componentProps.h = southHeight;
-			southSplitter = <Splitter mode={VERTICAL} onResize={onSouthResize} />;
+			southSplitter = <Splitter mode={VERTICAL} onDragStop={onSouthResize} />;
 		}
 		southComponent = React.cloneElement(south, { ...componentProps, w: '100%', });
 	}
@@ -83,7 +83,7 @@ export default function Container(props) {
 		componentProps.collapseDirection = HORIZONTAL;
 		if (east.props.split) {
 			componentProps.w = eastWidth;
-			eastSplitter = <Splitter mode={HORIZONTAL} onResize={onEastResize} />;
+			eastSplitter = <Splitter mode={HORIZONTAL} onDragStop={onEastResize} />;
 		}
 		eastComponent = React.cloneElement(east, { ...componentProps, h: '100%', });
 	}
@@ -91,7 +91,7 @@ export default function Container(props) {
 		componentProps.collapseDirection = HORIZONTAL;
 		if (west.props.split) {
 			componentProps.w = westWidth;
-			westSplitter = <Splitter mode={HORIZONTAL} onResize={onWestResize} />;
+			westSplitter = <Splitter mode={HORIZONTAL} onDragStop={onWestResize} />;
 		}
 		westComponent = React.cloneElement(west, { ...componentProps, h: '100%', });
 	}

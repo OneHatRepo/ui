@@ -128,6 +128,7 @@ export default function Pagination(props) {
 				justifyContent="flex-start"
 				alignItems="center"
 				px={2}
+				style={{ userSelect: 'none', }}
 				{...props}
 			>
 				<Text>{pageSpan} of {total}</Text>

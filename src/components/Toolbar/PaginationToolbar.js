@@ -14,6 +14,7 @@ export default function PaginationToolbar(props) {
 				bg="trueGray.200"
 				borderTopWidth={1}
 				borderTopColor="trueGray.400"
+				w="100%"
 			>
 				<Pagination {...propsToPass} w={toolbarItems.length ? null : '100%'} />
 				{toolbarItems.length ? <Row flex={1} borderLeftWidth={1} borderLeftColor="trueGray.100">{toolbarItems}</Row> : null}

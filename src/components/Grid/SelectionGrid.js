@@ -1,4 +1,4 @@
 import withSelection from '../Hoc/withSelection';
-import Grid from './Grid';
+import ModelGrid from './ModelGrid';
 
-export default withSelection(Grid);
+export default withSelection(ModelGrid);

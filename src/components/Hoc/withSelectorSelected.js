@@ -1,15 +1,15 @@
 import { useState, } from 'react';
 import {
-	SELECTOR_MODE_ALL,
-	SELECTOR_MODE_SINGLE,
-	SELECTOR_MODE_MULTI,
-} from '../../constants/SelectorModes';
+	SELECTION_MODE_ALL,
+	SELECTION_MODE_SINGLE,
+	SELECTION_MODE_MULTI,
+} from '../../constants/Selection';
 
 export default function withSelectorSelected(WrappedComponent) {
 	return (props) => {
 		const {
 				selector_id,
-				selectorMode = SELECTOR_MODE_ALL, // SELECTOR_MODE_ALL, SELECTOR_MODE_SINGLE, SELECTOR_MODE_MULTI
+				selectorMode = SELECTION_MODE_ALL, // SELECTION_MODE_ALL, SELECTION_MODE_SINGLE, SELECTION_MODE_MULTI
 				disableSelectorSelected,
 				onAfterSelectorChangeSelection,
 				noSelectorMeansNoResults = false,
