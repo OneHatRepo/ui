@@ -15,6 +15,8 @@ const ThemeOverrides = {
 		// 	500: '#1F3854', // default for buttons
 		// },
 		selected: '#ffc',
+		hover: '#eee',
+		selectedHover: '#eeb',
 		unselected: '#bbb',
 		disabled: '#ccc',
 		control: '#1B518C',

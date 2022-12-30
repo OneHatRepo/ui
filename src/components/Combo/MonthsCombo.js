@@ -1,63 +1,24 @@
-import React, { useState, useEffect, } from 'react';
-import Combo from './Combo';
-import useOneHatData from '../../data/useOneHatData';
+import ArrayCombo from './ArrayCombo';
 import withSelection from '../Hoc/withSelection';
 
+const data = [
+	[ 1, 'January', ],
+	[ 2, 'February', ],
+	[ 3, 'March', ],
+	[ 4, 'April', ],
+	[ 5, 'May', ],
+	[ 6, 'June', ],
+	[ 7, 'July', ],
+	[ 8, 'August', ],
+	[ 9, 'September', ],
+	[ 10, 'October', ],
+	[ 11, 'November', ],
+	[ 12, 'December', ],
+];
 
 function MonthsCombo(props) {
-	const
-		[isReady, setIsReady] = useState(false),
-		[unused, Repository] = useOneHatData('KeyValues', true);
-
-	useEffect(() => {
-		if (!Repository) {
-			return () => {};
-		}
-
-		(async () => {
-			await Repository.addMultiple([
-				{ key: '1', value: 'January' },
-				{ key: '2', value: 'February' },
-				{ key: '3', value: 'March' },
-				{ key: '4', value: 'April' },
-				{ key: '5', value: 'May' },
-				{ key: '6', value: 'June' },
-				{ key: '7', value: 'July' },
-				{ key: '8', value: 'August' },
-				{ key: '9', value: 'September' },
-				{ key: '10', value: 'October' },
-				{ key: '11', value: 'November' },
-				{ key: '12', value: 'December' },
-			]);
-			Repository.setSorters([
-				{
-					name: 'key',
-					direction: 'ASC',
-					fn: 'natsort',
-				}
-			]);
-			setIsReady(true);
-		})();
-
-	}, [Repository]);
-
-	if (!isReady) {
-		return null;
-	}
-
-	const columnsConfig = [
-		{
-			header: 'Month',
-			fieldName: 'value',
-			flex: 1,
-		},
-	];
-
-	return <Combo
-				Repository={Repository}
-				columnsConfig={columnsConfig}
-				showHeaders={false}
-				disablePaging={true}
+	return <ArrayCombo
+				data={data}
 				{...props}
 			/>;
 }

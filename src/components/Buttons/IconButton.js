@@ -1,3 +1,4 @@
+import React from 'react';
 import {
 	Icon,
 	Pressable,
@@ -5,7 +6,7 @@ import {
 	Tooltip,
 } from 'native-base';
 
-export default function IconButton(props) {
+const IconButton = React.forwardRef((props, ref) => {
 	const {
 			// _icon, // props for the icon component
 			// icon, // The actual icon component to use
@@ -19,6 +20,7 @@ export default function IconButton(props) {
 		icon = <Spinner {..._spinner} />;
 	}
 	const pressable = <Pressable
+							ref={ref}
 							borderRadius="md"
 							colorScheme="primary"
 							flexDirection="row"
@@ -34,4 +36,6 @@ export default function IconButton(props) {
 		ret = <Tooltip label={tooltip} placement="top">{pressable}</Tooltip>;
 	}
 	return ret;
-}
+});
+
+export default IconButton;
