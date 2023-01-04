@@ -20,13 +20,26 @@ import {
 	VERTICAL,
 } from '../../constants/Directions';
 import {
+	STYLE_GRID_HEADER_BG,
+	STYLE_GRID_HEADER_HOVER_BG,
+	STYLE_GRID_HEADER_FONTSIZE,
+	STYLE_GRID_ROW_BG,
+	STYLE_GRID_ROW_SELECTED_BG,
+	STYLE_GRID_NAV_COLUMN_COLOR,
+	STYLE_GRID_CELL_FONTSIZE,
+	STYLE_GRID_TOOLBAR_ITEMS_COLOR,
+	STYLE_GRID_TOOLBAR_ITEMS_DISABLED_COLOR,
+	STYLE_GRID_TOOLBAR_ITEMS_ICON_SIZE,
+} from '../../constants/Style';
+import {
 	v4 as uuid,
 } from 'uuid';
 import oneHatData from '@onehat/data';
 import useBlocking from '../../hooks/useBlocking';
 import useForceUpdate from '../../hooks/useForceUpdate';
+import withSelection from '../Hoc/withSelection';
+import withMultiSelection from '../Hoc/withMultiSelection';
 import emptyFn from '../../functions/emptyFn';
-import inArray from '../../functions/inArray';
 import testProps from '../../functions/testProps';
 import HeaderDragHandle from './HeaderDragHandle';
 import HeaderResizeHandle from './HeaderResizeHandle';
@@ -41,8 +54,8 @@ import SortUp from '../Icons/SortUp';
 import _ from 'lodash';
 
 // Grid requires the use of HOC withSelection() whenever it's used.
-// This is the *raw* component that can be combined with many HOCs
-// for various functionality.
+// The default export is *with* the HOC. A separate *raw* component is
+// exported which can be combined with many HOCs for various functionality.
 
 	// Desired features: ---------
 	// Header cells
@@ -64,6 +77,8 @@ import _ from 'lodash';
 			// state to keep track of current ordering
 			// √ handler for drag/drop
 			// target column configurable for reorder or not
+		// ARIA navigation (activeRow state, which can switch with key nav)
+		// ARIA enter/esc to select/deselect
 	// Columns
 		// √ Allow for column content to fill beyond the size of panel, and scroll to see more
 		// √ Drag/drop reordering
@@ -85,18 +100,8 @@ import _ from 'lodash';
 			// form panel for multiple editing of selected rows
 	// Display tree data
 
-export default function Grid(props) {
+export function Grid(props) {
 	const {
-			// Needs one of the following:
-			Repository, // @onehat/data Repository
-			model, // @onehat/data bound schema name
-			data, // raw data array
-
-			// For raw data array
-			fields,
-			idField,
-			displayField,
-
 
 			columnsConfig = [], // json configurations for each column in format:
 
@@ -110,13 +115,10 @@ export default function Grid(props) {
 					pr: 2,
 				};
 			},
+			flatListProps = {},
 
-			selection, // from withSelection() HOC, which is an array of selected entities
-			setSelection, // from withSelection() HOC, which sets the array of selected entities
-			selectionMode,
 			noSelectorMeansNoResults = false,
 			// enableEditors = false,
-			flatListProps = {},
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
@@ -136,7 +138,6 @@ export default function Grid(props) {
 			canColumnsResize = true,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disablePaging = false,
-			autoSelectFirstItem = false,
 			initialScrollIndex = 0,
 
 			// onColumnResized,
@@ -153,8 +154,28 @@ export default function Grid(props) {
 			onDuplicate,
 			onReset,
 			onContextMenu,
+
+
+
+			// data source
+			Repository,
+			model,
+			data,
+			fields,
+			idField,
+			displayField,
+
+			// withSelection() HOC
+			selection,
+			setSelection,
+			selectionMode,
+			selectNext,
+			selectPrev,
+			removeFromSelection,
+			addToSelection,
+			selectRangeTo,
+			isInSelection,
 		} = props,
-		// Repository = model && oneHatData.getRepository(model),
 		forceUpdate = useForceUpdate(),
 		{ isBlocked } = useBlocking(),
 		headerRef = useRef(),
@@ -170,113 +191,47 @@ export default function Grid(props) {
 		[LocalRepository, setLocalRepository] = useState(),
 		[localColumnsConfig, setLocalColumnsConfig] = useState([]),
 	
-		isInSelection = (item) => {
-			if (oneHatData.isEntity(item)) {
-				return inArray(item, selection);
-			}
-			// Have to compare by contents, since array items aren't getting stored by reference!
-			const
-				ix = fields.indexOf(idField),
-				found = _.find(selection, (selectedItem) => {
-					return selectedItem[ix] === item[ix];
-				});
-			return !!found;
-		},
 		onRowClick = (item, index, e) => {
 			const
-				currentSelectionLength = selection.length,
 				shiftKey = e.shiftKey;
-			let newSelection = [];
 			if (selectionMode === SELECTION_MODE_MULTI) {
 				if (shiftKey) {
 					if (isInSelection(item)) {
-						// Remove from current selection
-						if (oneHatData.isEntity(item)) {
-							newSelection = _.remove(selection, (sel) => sel !== item);
-						} else {
-							const ix = fields.indexOf(idField);
-							newSelection = _.remove(selection, (sel) => sel[ix] !== item[ix]);
-						}
+						removeFromSelection(item);
 					} else {
-						// Add to current selection
-						newSelection = _.clone(selection); // so we get a new object, so component rerenders
-
-						if (currentSelectionLength) {
-							// Add a range of items, as the user shift-clicked a row when another was already selected
-							let items,
-								currentlySelectedRowIndices = [];
-							if (LocalRepository) {
-								items = LocalRepository.getEntitiesOnPage();
-							} else {
-								items = data;
-							}
-							_.each(items, (item, ix) => {
-								if (isInSelection(item)) {
-									currentlySelectedRowIndices.push(ix);
-								}
-							});
-							const
-								max = Math.max(...currentlySelectedRowIndices),
-								min = Math.min(...currentlySelectedRowIndices);
-							let i,
-								itemAtIx;
-							if (max < index) {
-								// all other selections are below the current;
-								// Range is from max+1 up to index
-								for (i = max +1; i < index; i++) {
-									itemAtIx = items[i];
-									newSelection.push(itemAtIx);
-								}
-
-							} else if (min > index) {
-								// all other selections are above the current;
-								// Range is from min-1 down to index
-								for (i = min -1; i > index; i--) {
-									itemAtIx = items[i];
-									newSelection.push(itemAtIx);
-								}
-							}
-						}
-						newSelection.push(item);
+						selectRangeTo(item);
 					}
 				} else {
 					if (isInSelection(item)) {
 						// Already selected
 						if (allowToggleSelection) {
-							// Remove from current selection
-							if (oneHatData.isEntity(item)) {
-								newSelection = _.remove(selection, (sel) => sel !== item);
-							} else {
-								const ix = fields.indexOf(idField);
-								newSelection = _.remove(selection, (sel) => sel[ix] !== item[ix]);
-							}
+							removeFromSelection(item);
 						} else {
 							// Do nothing.
-							newSelection = selection;
 						}
 					} else {
-						// Just select it alone
-						newSelection = [item];
+						addToSelection(item);
 					}
 				}
 			} else {
 				// selectionMode is SELECTION_MODE_SINGLE
+				let newSelection;
 				if (isInSelection(item)) {
 					// Already selected
 					if (allowToggleSelection) {
-						// Remove from current selection
+						// Create empty selection
 						newSelection = [];
 					} else {
 						// Do nothing.
-						newSelection = selection;
 					}
 				} else {
-					// Just select it
+					// Select it alone
 					newSelection = [item];
 				}
+				if (newSelection) {
+					setSelection(newSelection);
+				}
 			}
-
-			setSelection(newSelection);
 		},
 		onSort = (cellData, e) => {
 			if (!Repository) {
@@ -293,7 +248,6 @@ export default function Grid(props) {
 				// Toggle direction
 				isCurrentSortDirectionAsc = !isCurrentSortDirectionAsc;
 			}
-			setSortField(currentSortField);
 			setIsSortDirectionAsc(isCurrentSortDirectionAsc);
 
 			// Change sorter on OneHatData
@@ -443,8 +397,8 @@ export default function Grid(props) {
 				if (icon) {
 					const iconProps = {
 						alignSelf: 'center',
-						size: 'sm',
-						color: isDisabled ? 'disabled' : 'trueGray.800',
+						size: STYLE_GRID_TOOLBAR_ITEMS_ICON_SIZE,
+						color: isDisabled ? STYLE_GRID_TOOLBAR_ITEMS_DISABLED_COLOR : STYLE_GRID_TOOLBAR_ITEMS_COLOR,
 						h: 20,
 						w: 20,
 					};
@@ -459,59 +413,6 @@ export default function Grid(props) {
 							tooltip={text}
 						/>;
 			});
-		},
-		calculateLocalColumnsConfig = () => {
-			// convert json config into actual elements
-			const localColumnsConfig = [];
-			_.each(columnsConfig, (columnConfig) => {
-				if (!_.isPlainObject(columnConfig)) {
-					localColumnsConfig.push(columnConfig);
-					return;
-				}
-
-				// destructure so we can set defaults
-				const {
-						header,
-						fieldName, // from @onehat/data model
-						type, // specify which column type to use (custom or built-in)
-						editable = false,
-						editor,
-						format,
-						renderer, // React component will render the output
-						reorderable = true,
-						resizable = true,
-						sortable = true,
-						w,
-						flex,
-					} = columnConfig,
-
-					config = {
-						columnId: uuid(),
-						header,
-						fieldName,
-						type,
-						editable,
-						editor,
-						format,
-						renderer,
-						reorderable,
-						resizable,
-						sortable,
-						w,
-						flex,
-					};
-
-				if (!config.w && !config.flex) {
-					// Neither is set
-					config.w = 100; // default
-				} else if (config.flex && config.width) {
-					// Both are set. Width overrules flex.
-					delete config.flex;
-				}
-
-				localColumnsConfig.push(config);
-			});
-			return localColumnsConfig;
 		},
 		renderHeaders = () => {
 			const
@@ -560,9 +461,9 @@ export default function Grid(props) {
 							}}
 							flexDirection="row"
 							h="100%"
-							bg="#eee"
+							bg={STYLE_GRID_HEADER_BG}
 							_hover={{
-								bg: '#ddd',
+								bg: STYLE_GRID_HEADER_HOVER_BG,
 							}}
 							p={0}
 							style={{ userSelect: 'none', }}
@@ -589,7 +490,18 @@ export default function Grid(props) {
 												}}
 											/>}
 							
-							<Text key="Text" overflow="hidden" textOverflow="ellipsis" flex={1} h="100%" px={2} pt={2} alignItems="center" justifyContent="center">{header}</Text>
+							<Text
+								key="Text"
+								fontSize={STYLE_GRID_HEADER_FONTSIZE}
+								overflow="hidden"
+								textOverflow="ellipsis"
+								flex={1}
+								h="100%"
+								px={2}
+								pt={2}
+								alignItems="center"
+								justifyContent="center"
+							>{header}</Text>
 							
 							{isSorter && <Icon key="Icon" as={isSortDirectionAsc ? SortDown : SortUp} textAlign="center" size="sm" mt={3} mr={2} color="trueGray.500" />}
 							
@@ -673,14 +585,7 @@ export default function Grid(props) {
 						return value(key);
 					}
 
-
 					const propsToPass = columnProps[key] || {};
-					propsToPass.key = key;
-					propsToPass.overflow = 'hidden';
-					propsToPass.textOverflow = 'ellipsis';
-					propsToPass.alignSelf = 'center';
-					propsToPass.fontSize = 18;
-
 					if (config.w) {
 						propsToPass.w = config.w;
 					} else if (config.flex) {
@@ -690,7 +595,15 @@ export default function Grid(props) {
 						propsToPass.flex = 1;
 					}
 					
-					return <Text style={{ userSelect: 'none', }} {...propsToPass}>{value}</Text>;
+					return <Text
+								key={key}
+								overflow="hidden"
+								textOverflow="ellipsis"
+								alignSelf="center"
+								style={{ userSelect: 'none', }}
+								fontSize={STYLE_GRID_CELL_FONTSIZE}
+								{...propsToPass}
+							>{value}</Text>;
 				});
 			} else {
 				// TODO: if 'localColumnsConfig' is an object, parse its contents
@@ -713,7 +626,7 @@ export default function Grid(props) {
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => onRowClick(item, index, e)}
 						onLongPress={(e) => onRowClick(item, index, e)}
-						bg={isSelected ? 'selected' : '#fff'}
+						bg={isSelected ? STYLE_GRID_ROW_SELECTED_BG : STYLE_GRID_ROW_BG}
 						w="100%"
 						{...hoverProps}
 					>
@@ -744,7 +657,7 @@ export default function Grid(props) {
 							>
 								{renderColumns(item)}
 								{!hideNavColumn && <AngleRight
-									color="#aaa"
+									color={STYLE_GRID_NAV_COLUMN_COLOR}
 									variant="ghost"
 									w={30}
 									alignSelf="center"
@@ -762,14 +675,69 @@ export default function Grid(props) {
 			LocalRepository = oneHatData.getRepository(model);
 		}
 
-		setLocalColumnsConfig(calculateLocalColumnsConfig());
+		const calculateLocalColumnsConfig = () => {
+			// convert json config into actual elements
+			const localColumnsConfig = [];
+			if (_.isEmpty(columnsConfig) && LocalRepository?.schema?.model?.displayProperty) {
+				// create a column for the displayProperty
+				localColumnsConfig.push({
+					fieldName: LocalRepository.schema.model.displayProperty,
+				});
+			} else {
+				_.each(columnsConfig, (columnConfig) => {
+					if (!_.isPlainObject(columnConfig)) {
+						localColumnsConfig.push(columnConfig);
+						return;
+					}
+
+					// destructure so we can set defaults
+					const {
+							header,
+							fieldName, // from @onehat/data model
+							type, // specify which column type to use (custom or built-in)
+							editable = false,
+							editor,
+							format,
+							renderer, // React component will render the output
+							reorderable = true,
+							resizable = true,
+							sortable = true,
+							w,
+							flex,
+						} = columnConfig,
+
+						config = {
+							columnId: uuid(),
+							header,
+							fieldName,
+							type,
+							editable,
+							editor,
+							format,
+							renderer,
+							reorderable,
+							resizable,
+							sortable,
+							w,
+							flex,
+						};
+
+					if (!config.w && !config.flex) {
+						// Neither is set
+						config.w = 100; // default
+					} else if (config.flex && config.width) {
+						// Both are set. Width overrules flex.
+						delete config.flex;
+					}
+
+					localColumnsConfig.push(config);
+				});
+			}
+			return localColumnsConfig;
+		};
 
 		if (!LocalRepository) {
-			// set up plain data
-			if (_.isEmpty(selection) && autoSelectFirstItem) {
-				const selected = data[0] ? [data[0]] : [];
-				setSelection(selected);
-			}
+			setLocalColumnsConfig(calculateLocalColumnsConfig());
 			setIsReady(true);
 			return () => {};
 		}
@@ -792,13 +760,9 @@ export default function Grid(props) {
 		LocalRepository.ons(['changePage', 'changePageSize',], resetSelection);
 		LocalRepository.ons(['changeData', 'change'], forceUpdate);
 		LocalRepository.on('changeFilters', onChangeFilters);
-		if (_.isEmpty(selection) && autoSelectFirstItem) {
-			const
-				entitiesOnPage = LocalRepository.getEntitiesOnPage(),
-				selected = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
-			setSelection(selected);
-		}
+
 		setLocalRepository(LocalRepository);
+		setLocalColumnsConfig(calculateLocalColumnsConfig());
 		setIsReady(true);
 
 		return () => {
@@ -924,3 +888,5 @@ export default function Grid(props) {
 			</Column>;
 
 }
+
+export default withMultiSelection(withSelection(Grid));

@@ -1,43 +1,57 @@
 import { useState, useEffect, } from 'react';
 import {
-	Box,
 	Button,
 	Column,
-	FormControl,
-	Input,
+	Icon,
 	Row,
 	Text,
 } from 'native-base';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
+import { yupResolver } from '@hookform/resolvers/yup';
+import useForceUpdate from '../../hooks/useForceUpdate';
 import inArray from '../../functions/inArray';
+import getFormElementFromType from './getFormElementFromType';
+import IconButton from '../Buttons/IconButton';
+import Rotate from '../Icons/Rotate';
+import Pencil from '../Icons/Pencil';
+import Footer from '../Panel/Footer';
 import Label from '../Form/Label';
-import FieldSet from '../Form/FieldSet';
-import Field from '../Form/Field';
-import BooleanCombo from '../Combo/BooleanCombo';
-import Combo from '../Combo/Combo';
-import MonthsCombo from '../Combo/MonthsCombo';
 import _ from 'lodash';
 
+// TODO: memoize field components
 
 function Form(props) {
 	const {
+			entity,
+			values = {},
+			
 			items = [],
-			defaultValues,
-			values,
+			columnDefaults = {},
 			onCancel,
 			onSave,
 		} = props,
+		forceUpdate = useForceUpdate(),
+		[isReady, setIsReady] = useState(false),
 		{
 			control,
-			formState: {
-				errors,
-			},
+			formState,
 			handleSubmit,
-			register, 
+			// register, 
+			// unregister,
 			reset,
-			watch,
+			// watch,
+			// resetField,
+			// setError,
+			// clearErrors,
+			// setValue,
+			// setFocus,
+			getValues,
+			getFieldState,
+			// trigger,
 		} = useForm({
-			defaultValues,
+			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
+			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
+			defaultValues: _.merge(values, (entity ? entity.submitValues : {})),
 			// values,
 			// resetOptions: {
 			// 	keepDirtyValues: false, // user-interacted input will be retained
@@ -48,10 +62,8 @@ function Form(props) {
 			// delayError: 0,
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
+			resolver: yupResolver(entity?.repository?.schema?.model?.validator),
 		}),
-		formatErrors = (errors) => {
-			debugger;
-		},
 		buildNextLayer = (item, ix, defaults) => {
 			const {
 					type,
@@ -60,32 +72,11 @@ function Form(props) {
 					label,
 					items,
 					...propsToPass
-				} = item;
+				} = item,
+				Element = getFormElementFromType(type),
+				rules = {}
 
-			let Element,
-				children;
-			switch (type) {
-				case 'Column':
-					Element = Column;
-					break;
-				case 'FieldSet':
-					Element = FieldSet;
-					break;
-				case 'Input':
-					Element = Input;
-					break;
-				case 'BooleanCombo':
-					Element = BooleanCombo;
-					break;
-				case 'Combo':
-					Element = Combo;
-					break;
-				case 'MonthsCombo':
-					Element = MonthsCombo;
-					break;
-				default:
-					throw new Error('type not recognized');
-			}
+			let children;
 			if (inArray(type, ['Column', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
@@ -98,68 +89,124 @@ function Form(props) {
 				throw new Error('name is required');
 			}
 		
-			const
-				rulesToCheck = [
-					'required',
-					'min',
-					'max',
-					'minLength',
-					'maxLength',
-					'pattern',
-					'validate',
-				],
-				rules = {};
-			_.each(rulesToCheck, (rule) => {
-				if (item.hasOwnProperty(rule)) {
-					rules[rule] = item[rule];
-				}
-			});
+			// // These rules are for fields *outside* the model
+			// // but which want validation on the form anyway.
+			// // The useForm() resolver disables this
+			// const
+			// 	rulesToCheck = [
+			// 		'required',
+			// 		'min',
+			// 		'max',
+			// 		'minLength',
+			// 		'maxLength',
+			// 		'pattern',
+			// 		'validate',
+			// 	];
+			// _.each(rulesToCheck, (rule) => {
+			// 	if (item.hasOwnProperty(rule)) {
+			// 		rules[rule] = item[rule];
+			// 	}
+			// });
 
 			return <Controller
 						key={'controller-' + ix}
 						name={name}
-						rules={rules}
+						// rules={rules}
 						control={control}
-						render={({ onChange, value }) => {
+						render={(args) => {
+							const {
+									field,
+									fieldState,
+									// formState,
+								} = args,
+								{
+									onChange,
+									onBlur,
+									name,
+									value,
+									// ref,
+								} = field,
+								{
+									isTouched,
+									isDirty,
+									error,
+								} = fieldState;
+								
 							let element = <Element
-												onChangeText={(text) => onChange(text)}
 												name={name}
 												value={value}
+												setValue={(value) => {
+													onChange(value);
+												}}
+												onBlur={onBlur}
 												flex={1}
-												// {...register(name, registerOptions)}
 												{...defaults}
 												{...propsToPass}
 											/>;
-							if (errors[name]) {
-								element = <Column>
+							if (error) {
+								element = <Column pt={1} flex={1}>
 												{element}
-												<Text color="red">{formatErrors(errors[name])}</Text>
+												<Text color="#f00">{error.message}</Text>
 											</Column>;
 							}
 							if (label) {
 								element = <><Label>{label}</Label>{element}</>;
 							}
-							return <Row key={ix} pb={1}>{element}</Row>;
+
+							const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
+							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : '#fff'}>{dirtyIcon}{element}</Row>;
 						}}
 					/>;
 		},
-		formComponents = _.map(items, (item, ix) => buildNextLayer(item, ix));
-		
+		formComponents = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+	
+	useEffect(() => {
+		if (!entity) {
+			return () => {};
+		}
+
+		const LocalRepository = entity.repository;
+		LocalRepository.ons(['changeData', 'change'], forceUpdate);
+
+		setIsReady(true);
+
+		return () => {
+			LocalRepository.offs(['changeData', 'change'], forceUpdate);
+		};
+	}, [entity]);
+
+	if (!isReady) {
+		return null;
+	}
+
+	// console.log('formState', formState);
+	// console.log('values', getValues());
+
 	return <Column w="100%" flex={1}>
 				<Row flex={1}>
 					{formComponents}
 				</Row>
-
-				{(onCancel || onSave) ? <Row h={30}>
+				<Footer justifyContent="flex-end" >
 					<Button.Group space={2}>
-						{onCancel && <Button key="cancelBtn" variant="ghost" onPress={onCancel}>
-										Cancel
-									</Button> }
-						{onSave && <Button key="saveBtn" onPress={handleSubmit(onSave)}>
-										Save
-									</Button>}
+						<IconButton
+							key="resetBtn"
+							onPress={reset}
+							icon={<Rotate />}
+						/>
+						{onCancel && <Button
+										key="cancelBtn"
+										variant="ghost"
+										onPress={onCancel}
+										color="#fff"
+									>Cancel</Button>}
+						{onSave && <Button
+										key="saveBtn"
+										onPress={handleSubmit(onSave)}
+										isDisabled={!_.isEmpty(formState.errors)}
+										color="#fff"
+									>Save</Button>}
 					</Button.Group>
-				</Row> : null}
+				</Footer>
 			</Column>;
 
 }

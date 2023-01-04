@@ -1,10 +1,9 @@
 import { useState, useEffect, } from 'react';
 import ArrayCombo from './ArrayCombo';
-import withSelection from '../Hoc/withSelection';
 import moment from 'moment';
 
 
-function YearsCombo(props) {
+export default function YearsCombo(props) {
 	const {
 			startYear = parseInt(moment().format('YYYY')), // default to current year
 			years = 5,
@@ -33,5 +32,3 @@ function YearsCombo(props) {
 				{...props}
 			/>;
 }
-
-export default withSelection(YearsCombo);

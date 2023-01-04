@@ -1,6 +1,6 @@
 import { useEffect, useState, } from 'react';
 import Panel from '../Panel/Panel';
-import SelectionGrid from '../Grid/SelectionGrid';
+import Grid from '../Grid/Grid';
 import _ from 'lodash';
 
 export default function GridPanel(props) {
@@ -24,6 +24,6 @@ export default function GridPanel(props) {
 	}, [selectorSelected, disableTitleChange, originalTitle]);
 
 	return <Panel title={title} {...propsToPass}>
-				<SelectionGrid {..._grid} />
+				<Grid {..._grid} />
 			</Panel>;
 }

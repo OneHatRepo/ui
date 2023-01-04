@@ -1,0 +1,2 @@
+export const FILE_MODE_IMAGE = 'FILE_MODE_IMAGE';
+export const FILE_MODE_FILE = 'FILE_MODE_FILE';

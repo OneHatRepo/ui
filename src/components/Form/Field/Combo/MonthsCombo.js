@@ -1,5 +1,4 @@
 import ArrayCombo from './ArrayCombo';
-import withSelection from '../Hoc/withSelection';
 
 const data = [
 	[ 1, 'January', ],
@@ -16,11 +15,9 @@ const data = [
 	[ 12, 'December', ],
 ];
 
-function MonthsCombo(props) {
+export default function MonthsCombo(props) {
 	return <ArrayCombo
 				data={data}
 				{...props}
 			/>;
 }
-
-export default withSelection(MonthsCombo);
