@@ -4,7 +4,7 @@ import {
 	Text,
 } from 'native-base';
 import Rotate from '../Icons/Rotate';
-import testProps from '../../functions/testProps';
+import testProps from '../../Functions/testProps';
 
 export default function NoRecordsFound(props) {
 	const 

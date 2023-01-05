@@ -3,7 +3,7 @@ import {
 	SELECTION_MODE_ALL,
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
-} from '../../constants/Selection';
+} from '../../Constants/Selection';
 
 export default function withSelectorSelected(WrappedComponent) {
 	return (props) => {

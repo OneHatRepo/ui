@@ -39,7 +39,7 @@ const ThemeOverrides = {
 	// config: {
 	// 	initialColorMode: 'dark',
 	// },
-	components: {
+	Components: {
 		Select: {
 			defaultProps: {
 				h: 50,

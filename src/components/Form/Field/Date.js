@@ -9,16 +9,14 @@ import {
 	Text,
 	Tooltip,
 } from 'native-base';
-import {
-	STYLE_DATE_READOUT_FONTSIZE,
-} from '../../../constants/Style';
+import styles from '../../../Constants/Styles';
 import Datetime from 'react-datetime'; // https://www.npmjs.com/package/react-datetime
 import "react-datetime/css/react-datetime.css";
 // import DateTimePickerModal from 'react-native-modal-datetime-picker'; // https://github.com/mmazzarolo/react-native-modal-datetime-picker
 // import DateTimePicker from '@react-native-community/datetimepicker'; // https://github.com/react-native-datetimepicker/datetimepicker
 import IconButton from '../../Buttons/IconButton';
 import withValue from '../../Hoc/withValue';
-import emptyFn from '../../../functions/emptyFn';
+import emptyFn from '../../../Functions/emptyFn';
 import Formatters from '@onehat/data/src/Util/Formatters';
 import Calendar from '../../Icons/Calendar';
 import moment from 'moment';
@@ -104,7 +102,7 @@ export function DateElement(props) {
 							h="100%"
 							ml={1}
 							p={2}
-							fontSize={STYLE_DATE_READOUT_FONTSIZE}
+							fontSize={styles.DATE_READOUT_FONTSIZE}
 							borderWidth={1}
 							borderColor="trueGray.300"
 							borderRadius={4}

@@ -4,7 +4,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import useForceUpdate from '../../hooks/useForceUpdate';
+import useForceUpdate from '../../Hooks/useForceUpdate';
 import IconButton from '../Buttons/IconButton';
 import AngleLeft from '../Icons/AngleLeft';
 import AnglesLeft from '../Icons/AnglesLeft';

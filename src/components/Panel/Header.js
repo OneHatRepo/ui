@@ -12,16 +12,9 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../constants/Directions';
-import {
-	HEADER_PX,
-	HEADER_PY,
-	HEADER_ICON_SIZE,
-	HEADER_ICON_COLOR,
-	HEADER_TEXT_FONTSIZE,
-	HEADER_TEXT_COLOR,
-} from '../../../constants/HeaderFooter';
-import emptyFn from '../../functions/emptyFn';
+} from '../../Constants/Directions';
+import styles from '../../Constants/Styles';
+import emptyFn from '../../Functions/emptyFn';
 import IconButton from '../Buttons/IconButton';
 
 export default function Header(props) {
@@ -40,7 +33,7 @@ export default function Header(props) {
 		collapseBtn = null;
 	if (isClosable) {
 		closeBtn = <IconButton
-						icon={<FaTimes size={HEADER_ICON_SIZE} color={HEADER_ICON_COLOR} />}
+						icon={<FaTimes size={styles.HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} />}
 						onPress={onClose}
 						testID="closeBtn"
 						alignSelf="center"
@@ -49,7 +42,7 @@ export default function Header(props) {
 	}
 	if (isCollapsible) {
 		collapseBtn = <IconButton
-						icon={isCollapsed ? <FaPlus size={HEADER_ICON_SIZE} color={HEADER_ICON_COLOR} /> : <FaMinus size={HEADER_ICON_SIZE}  color={HEADER_ICON_COLOR} />}
+						icon={isCollapsed ? <FaPlus size={styles.HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} /> : <FaMinus size={styles.HEADER_ICON_SIZE}  color={styles.HEADER_ICON_COLOR} />}
 						onPress={onToggleCollapse}
 						testID="collapseBtn"
 						alignSelf="center"
@@ -78,7 +71,7 @@ export default function Header(props) {
 						 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg="primary.100" testID={testID}>
 							{collapseBtn}
 							<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
-								<Text flex={1} fontSize={HEADER_TEXT_FONTSIZE} color={HEADER_TEXT_COLOR} testID="text">{title}</Text>
+								<Text flex={1} fontSize={styles.HEADER_TEXT_FONTSIZE} color={styles.HEADER_TEXT_COLOR} testID="text">{title}</Text>
 							</div>
 						</Column>
 					</div>;
@@ -93,9 +86,9 @@ export default function Header(props) {
 					}
 				}}
 			>
-				<Row alignItems="center" justifyContent="flex-start" px={HEADER_PX} py={HEADER_PY} bg="primary.100" testID={testID}>
+				<Row alignItems="center" justifyContent="flex-start" px={styles.HEADER_PX} py={styles.HEADER_PY} bg="primary.100" testID={testID}>
 					{closeBtn}
-					<Text flex={1} fontSize={HEADER_TEXT_FONTSIZE} color={HEADER_TEXT_COLOR} testID="text">{title}</Text>
+					<Text flex={1} fontSize={styles.HEADER_TEXT_FONTSIZE} color={styles.HEADER_TEXT_COLOR} testID="text">{title}</Text>
 					{collapseBtn}
 				</Row>
 			</div>;

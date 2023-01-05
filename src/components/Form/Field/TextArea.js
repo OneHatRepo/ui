@@ -2,10 +2,7 @@ import React from 'react';
 import {
 	TextArea,
 } from 'native-base';
-import {
-	STYLE_TEXTAREA_FONTSIZE,
-	STYLE_TEXTAREA_HEIGHT,
-} from '../../../constants/Style';
+import styles from '../../../Constants/Styles';
 import withTooltip from '../../Hoc/withTooltip';
 import withValue from '../../Hoc/withValue';
 
@@ -15,8 +12,8 @@ const
 					ref={props.tooltipRef}
 					onChangeText={props.setValue}
 					flex={1}
-					fontSize={STYLE_TEXTAREA_FONTSIZE}
-					h={STYLE_TEXTAREA_HEIGHT}
+					fontSize={styles.TEXTAREA_FONTSIZE}
+					h={styles.TEXTAREA_HEIGHT}
 					{...props}
 				/>;
 	},

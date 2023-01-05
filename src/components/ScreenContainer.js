@@ -9,9 +9,9 @@ import {
 	ScrollView,
 } from 'native-base';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { useDimensions } from '@react-native-community/hooks';
+import { useDimensions } from '@react-native-community/Hooks';
 import { useHeaderHeight } from '@react-navigation/elements';
-import testProps from '../functions/testProps';
+import testProps from '../Functions/testProps';
 
 export default function ScreenContainer(props) {
 	const {

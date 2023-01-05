@@ -6,12 +6,10 @@ import {
 	Text,
 	Tooltip,
 } from 'native-base';
-import {
-	STYLE_COLOR_READOUT_FONTSIZE,
-} from '../../../constants/Style';
+import styles from '../../../Constants/Styles';
 import { SketchPicker } from 'react-color'
 import withValue from '../../Hoc/withValue';
-import emptyFn from '../../../functions/emptyFn';
+import emptyFn from '../../../Functions/emptyFn';
 import _ from 'lodash';
 
 export function ColorElement(props) {
@@ -67,7 +65,7 @@ export function ColorElement(props) {
 							h="100%"
 							ml={1}
 							p={2}
-							fontSize={STYLE_COLOR_READOUT_FONTSIZE}
+							fontSize={styles.COLOR_READOUT_FONTSIZE}
 							borderWidth={1}
 							borderColor="trueGray.300"
 							borderRadius={4}

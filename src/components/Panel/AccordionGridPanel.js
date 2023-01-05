@@ -4,7 +4,7 @@ import {
 	ScrollView,
 } from 'native-base';
 import Accordion from 'react-native-collapsible/Accordion'; // https://www.npmjs.com/package/react-native-collapsible
-import testProps from '../../functions/testProps';
+import testProps from '../../Functions/testProps';
 import Footer from './Footer';
 import Toolbar from '../Toolbar/Toolbar';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';

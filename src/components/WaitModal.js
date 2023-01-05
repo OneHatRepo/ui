@@ -3,7 +3,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import withRedux from '../data/hoc/withRedux';
+import withRedux from '../Data/hoc/withRedux';
 import Loading from './Loading';
 import _ from 'lodash';
 

@@ -6,23 +6,16 @@ import {
 	Row,
 	Tooltip,
 } from 'native-base';
-import {
-	STYLE_COMBO_HEIGHT,
-	STYLE_COMBO_INPUT_FONTSIZE,
-	STYLE_COMBO_INPUT_BG,
-	STYLE_COMBO_INPUT_FOCUS_BG,
-	STYLE_COMBO_TRIGGER_BG,
-	STYLE_COMBO_TRIGGER_HOVER_BG,
-} from '../../../../constants/Style';
+import styles from '../../../../Constants/Styles';
 import withSelection from '../../../Hoc/withSelection';
 import withData from '../../../Hoc/withData';
 import withValue from '../../../Hoc/withValue';
-import emptyFn from '../../../../functions/emptyFn';
+import emptyFn from '../../../../Functions/emptyFn';
 import { Grid } from '../../../Grid/Grid';
 import IconButton from '../../../Buttons/IconButton';
 import CaretDown from '../../../Icons/CaretDown';
 import _ from 'lodash';
-import inArray from '../../../../functions/inArray';
+import inArray from '../../../../Functions/inArray';
 
 // Combo requires the use of HOC withSelection() whenever it's used.
 // The default export is *with* the HOC. A separate *raw* component is
@@ -308,7 +301,7 @@ export function Combo(props) {
 		refProps.ref = tooltipRef;
 	}
 
-	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={STYLE_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
+	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 								<Input
 									ref={inputRef}
 									value={textValue}
@@ -337,14 +330,14 @@ export function Combo(props) {
 									onBlur={onInputBlur}
 									onClick={onInputClick}
 									flex={1}
-									fontSize={STYLE_COMBO_INPUT_FONTSIZE}
+									fontSize={styles.COMBO_INPUT_FONTSIZE}
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
 									m={0}
 									h="100%"
-									bg={STYLE_COMBO_INPUT_BG}
+									bg={styles.COMBO_INPUT_BG}
 									_focus={{
-										bg: STYLE_COMBO_INPUT_FOCUS_BG,
+										bg: styles.COMBO_INPUT_FOCUS_BG,
 									}}
 									{...props._text}
 								/>
@@ -363,9 +356,9 @@ export function Combo(props) {
 									borderLeftWidth={0}
 									borderLeftRadius={0}
 									borderRightRadius="md"
-									bg={STYLE_COMBO_TRIGGER_BG}
+									bg={styles.COMBO_TRIGGER_BG}
 									_hover={{
-										bg: STYLE_COMBO_TRIGGER_HOVER_BG,
+										bg: styles.COMBO_TRIGGER_HOVER_BG,
 									}}
 								/>
 								{additionalButtons}

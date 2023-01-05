@@ -9,8 +9,8 @@ import {
 } from 'native-base';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import { yupResolver } from '@hookform/resolvers/yup';
-import useForceUpdate from '../../hooks/useForceUpdate';
-import inArray from '../../functions/inArray';
+import useForceUpdate from '../../Hooks/useForceUpdate';
+import inArray from '../../Functions/inArray';
 import getFormElementFromType from './getFormElementFromType';
 import IconButton from '../Buttons/IconButton';
 import Rotate from '../Icons/Rotate';
@@ -19,7 +19,7 @@ import Footer from '../Panel/Footer';
 import Label from '../Form/Label';
 import _ from 'lodash';
 
-// TODO: memoize field components
+// TODO: memoize field Components
 
 function Form(props) {
 	const {

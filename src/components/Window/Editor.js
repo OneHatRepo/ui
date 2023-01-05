@@ -6,7 +6,7 @@ import {
 	Row,
 } from 'native-base';
 import Form from '../forms/Form';
-import emptyFn from '../../functions/emptyFn';
+import emptyFn from '../../Functions/emptyFn';
 import _ from 'lodash';
 
 export default function EditorWindow(props) {

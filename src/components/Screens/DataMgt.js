@@ -1,28 +1,24 @@
 import React, { useState, } from 'react';
 import {
+	Button,
 	Column,
 	Row,
 } from 'native-base';
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../constants/Directions';
+} from '../../Constants/Directions';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
-} from '../../constants/Selection';
+} from '../../Constants/Selection';
 import Container from '../Container/Container';
-import GridPanel from '../Panel/GridPanel';
 import Panel from '../Panel/Panel';
 import TabPanel from '../Panel/TabPanel';
 import _ from 'lodash';
 
-// Note on collapseDirections:
-// HORIZONTAL means the Panel collapses along the X axis.
-// VERTICAL means the Panel collapses along the Y axis.
-
 export default function DataMgt(props) {
-	let {
+	const {
 			show_selector = false,
 			show_filters = false,
 			show_columns = false,
@@ -50,24 +46,30 @@ export default function DataMgt(props) {
 			eastCoastWidth = 340,
 			associatedPanels = [], // array of panel config objects.
 			associatedPanelsPerTab = 3,
-			setDynamicConfig, // fn for setting config at runtime
-
-			...propsToPass
 		} = props,
+		[isWestCoastCollapsed, setIsWestCoastCollapsed] = useState(westCoastStartsCollapsed),
+		[isEastCoastCollapsed, setIsEastCoastCollapsed] = useState(eastCoastStartsCollapsed),
+		[isIowaCollapsed, setIsIowaCollapsed] = useState(iowaStartsCollapsed),
+		[isIndianaCollapsed, setIsIndianaCollapsed] = useState(indianaStartsCollapsed),
+		[isFullscreen, setIsFullscreen] = useState(false),
+		onToggleFullscreen = () => {
+			const newIsFullScreen = !isFullscreen;
+			setIsFullscreen(!newIsFullScreen);
+			if (newIsFullScreen) {
+				setIsWestCoastCollapsed(true);
+				setIsEastCoastCollapsed(true);
+				setIsIowaCollapsed(true);
+				setIsIndianaCollapsed(true);
+			} else {
+				setIsWestCoastCollapsed(false);
+				setIsEastCoastCollapsed(false);
+				setIsIowaCollapsed(false);
+				setIsIndianaCollapsed(false);
+			}
+
+		};
 		
-		// Layout regions - names indicate their general position
-		westCoast,
-		iowa,
-		illinois,
-		indiana,
-		eastCoast,
-		midwest,
-		filters,
-		columns;
-	
-	// if (setDynamicConfig) {
-	// 	setDynamicConfig();
-	// }
+
 	
 	//   REGIONS ------------------------------------------------------------------------
 	// 	[				] [											] [					]
@@ -84,6 +86,12 @@ export default function DataMgt(props) {
 	// 	[				] [			] [					] [			] [	uploadDownload	]
 	//   --------------------------------------------------------------------------------
 
+	let westCoast,
+		iowa,
+		illinois,
+		indiana,
+		eastCoast;
+
 	// 'westCoast' section, AKA 'selector', the far-left column
 	if (show_selector && WestCoastElementType) {
 
@@ -91,7 +99,7 @@ export default function DataMgt(props) {
 
 		westCoast = <WestCoastElementType
 						title={westCoastTitle}
-						isCollapsed={westCoastStartsCollapsed}
+						startsCollapsed={westCoastStartsCollapsed}
 						collapseDirection={HORIZONTAL}
 						split={true}
 						frame={false}
@@ -124,7 +132,7 @@ export default function DataMgt(props) {
 		}
 		iowa = <Panel
 					title={iowaTitle}
-					isCollapsed={iowaStartsCollapsed}
+					startsCollapsed={iowaStartsCollapsed}
 					collapseDirection={HORIZONTAL}
 					frame={false}
 					split={false}
@@ -145,6 +153,8 @@ export default function DataMgt(props) {
 						split={false}
 						selector_id={show_selector ? illinoisSelector_id : null}
 						noSelectorMeansNoResults={illinoisNoSelectorMeansNoResults}
+						onToggleFullscreen={onToggleFullscreen}
+						isFullscreen={isFullscreen}
 						{...illinoisProps}
 					/>;
 	}
@@ -153,8 +163,8 @@ export default function DataMgt(props) {
 	if (show_editor && IndianaElementType) {
 		indiana = <IndianaElementType
 						title="Editor"
-						isCollapsed={indianaStartsCollapsed}
-						frame={true}
+						startsCollapsed={indianaStartsCollapsed}
+						frame={false}
 						split={false}
 						w={330}
 						selector_id={indianaSelector_id}
@@ -168,13 +178,12 @@ export default function DataMgt(props) {
 		const
 			tabs = [],
 			associatedPanelProps = {
-				isCollapsible: false,
+				// isCollapsible: false,
+				// selectorMode: OneHat.Globals.SINGLE,
 			};
 		if (associatedPanels.length > associatedPanelsPerTab) {
-			let ix = 0,
-				tabIx = 0,
-				panelIx = 0,
-				tabItems;
+			let tabIx = 0,
+				panelIx = 0;
 			_.each(associatedPanels, (associatedPanel) => {
 				if (panelIx === associatedPanelsPerTab) {
 					// New tab
@@ -187,133 +196,37 @@ export default function DataMgt(props) {
 						items: [],
 					};
 				}
+				if (!_.isEmpty(associatedPanelProps)) {
+					associatedPanel = React.cloneElement(associatedPanel, {...associatedPanelProps});
+				}
 				tabs[tabIx].items.push(associatedPanel);
 				panelIx++;
-				ix++;
 			});
+			eastCoast = <TabPanel
+							title="Associated Information"
+							startsCollapsed={eastCoastStartsCollapsed}
+							frame={true}
+							split={true}
+							w={eastCoastWidth}
+							tabs={tabs}
+							additionalButtons ={[
+								<Button onPress={() => { debugger; }}>Test</Button>
+							]}
+						/>;
 		} else {
-			_.each(associatedPanels, (config, ix) => {
-				if (config) {
-					eastCoast.items[eastCoast.items.length] = Ext.applyIf(config, {
-						reference: 'associated' + ix,
-						selectorMode: OneHat.Globals.SINGLE,
-						flex: 1
-					});
-				}
-			});
+			eastCoast = <Panel
+							title="Associated Information"
+							startsCollapsed={eastCoastStartsCollapsed}
+							frame={true}
+							split={true}
+							w={eastCoastWidth}
+						>
+								{_.map(associatedPanels, (associatedPanel, ix) => {
+									return React.cloneElement(associatedPanel, { key: ix, ...associatedPanelProps});
+								})}
+						</Panel>;
 		}
-
-		_.map(associatedPanels, (associatedPanel) => {
-			return React.cloneElement(associatedPanel, {...associatedPanelProps});
-		})
-		eastCoast = <TabPanel
-						title="Associated Information"
-						isCollapsed={eastCoastStartsCollapsed}
-						frame={true}
-						split={true}
-						w={eastCoastWidth}
-						tabs={tabs}
-					/>;
 	}
-
-	// eastCoast = { // far-right column
-	// 	layout: 'vbox',
-	// 	region: 'east',
-	// 	title: 'Associated Information',
-	// 	split: true,
-	// 	frame: true,
-	// 	reference: 'eastCoast',
-	// 	cls: 'eastCoast',
-	// 	itemCls: 'associated',
-	// 	collapsible: true,
-	// 	collapsed: eastCoastStartsCollapsed,
-	// 	width: eastCoastWidth,
-	// 	items: []
-	// };
-	
-	
-	
-	// midwest.items[midwest.items.length] = illinois;
-	// if (show_editor){
-	// 	midwest.items[midwest.items.length] = indiana;
-	// }
-	// items[items.length] = midwest;
-	
-	// // eastCoast region (far-right)
-	// if (!associatedPanels.length) {
-	// 	associatedPanels = []; // replace with new array, otherwise we get prototypal inheritance collisions
-	// }
-	// attachDeprecatedPanels(); // for backwards compatibility
-	// if (associatedPanels.length) {
-		
-	// 	// Split these into a tabpanel if >3
-	// 	var tabs = [],
-	// 		tabIx = 0,
-	// 		panelIx = 0,
-	// 		tabItems;
-		
-	// 	if (associatedPanels.length > associatedPanelsPerTab) {
-	// 		var ix = 0;
-	// 		Ext.each(associatedPanels, function(config, n) {
-	// 			if (config) {
-	// 				// New tab
-	// 				if (panelIx === oThis.associatedPanelsPerTab) {
-	// 					panelIx = 0;
-	// 					tabIx++;
-	// 				}
-	// 				if (panelIx === 0) {
-	// 					tabs[tabIx] = {
-	// 						title: 'Page ' + (tabIx +1),
-	// 						layout: 'vbox',
-	// 						split: true,
-	// 						frame: true,
-	// 						items: []
-	// 					};
-	// 				}
-	// 				tabItems = tabs[tabIx].items;
-	// 				tabItems[tabItems.length] = Ext.applyIf(config, {
-	// 					reference: 'associated' + ix,
-	// 					selectorMode: OneHat.Globals.SINGLE,
-	// 					flex: 1
-	// 				});
-	// 				panelIx++;
-	// 				ix++;
-	// 			}
-	// 		});
-	// 		eastCoast.xtype = 'tabpanel';
-	// 		eastCoast.deferredRender = false; // otherwise, selectorSelected won't work for panels on page 2+
-	// 		eastCoast.split = null;
-	// 		eastCoast.frame = null;
-	// 		eastCoast.items = tabs;
-	// 	} else {
-	// 		Ext.each(associatedPanels, function(config, ix) {
-	// 			if (config) {
-	// 				eastCoast.items[eastCoast.items.length] = Ext.applyIf(config, {
-	// 					reference: 'associated' + ix,
-	// 					selectorMode: OneHat.Globals.SINGLE,
-	// 					flex: 1
-	// 				});
-	// 			}
-	// 		});
-	// 	}
-	// 	items[items.length] = eastCoast;
-	// }
-	
-	// items = items;
-	
-	
-	// this.callParent(arguments);
-	
-	
-	// // Get references
-	// westCoast = this.lookupReference('westCoast');
-	// midwest = this.lookupReference('midwest');
-	// filters = this.lookupReference('filters');
-	// columns = this.lookupReference('columns');
-	// iowa = this.lookupReference('iowa');
-	// illinois = this.lookupReference('illinois');
-	// indiana = this.lookupReference('indiana');
-	// eastCoast = this.lookupReference('eastCoast');
 	
 	
 	// // Relay events
@@ -438,11 +351,19 @@ export default function DataMgt(props) {
 
 	return <Container
 				west={westCoast}
+				isWestCollapsed={isWestCoastCollapsed}
+				setIsWestCollapsed={setIsWestCoastCollapsed}
 				center={<Container
 							west={iowa}
+							isWestCollapsed={isIowaCollapsed}
+							setIsWestCollapsed={setIsIowaCollapsed}
 							center={illinois}
 							east={indiana}
+							isEastCollapsed={isIndianaCollapsed}
+							setIsEastCollapsed={setIsIndianaCollapsed}
 						/>}
 				east={eastCoast}
+				isEastCollapsed={isEastCoastCollapsed}
+				setIsEastCollapsed={setIsEastCoastCollapsed}
 			/>;
 }

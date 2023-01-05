@@ -5,7 +5,7 @@ import {
 } from 'native-base';
 import AngleLeft from '../Icons/AngleLeft';
 import { goBack } from '../../RootNavigation'; 
-import testProps from '../../functions/testProps';
+import testProps from '../../Functions/testProps';
 
 export default function BackButton(props) {
 	return <Pressable onPress={props.goBack || goBack} flexDirection="row" justifyContent="flex-start" alignItems="center" pr={5} {...testProps('backBtn')}>

@@ -2,9 +2,9 @@ import { useState, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../constants/Directions';
+} from '../../Constants/Directions';
 import Draggable from 'react-draggable';
-import useBlocking from '../../hooks/useBlocking';
+import useBlocking from '../../Hooks/useBlocking';
 import {
 	v4 as uuid,
 } from 'uuid';
@@ -54,19 +54,19 @@ export default function withDraggable(WrappedComponent) {
 				} else {
 					const nodeRect = node.getBoundingClientRect();
 					proxy = node.cloneNode(true);
-					proxy.style.top = nodeRect.top + 'px';
-					proxy.style.left = nodeRect.left + 'px';
-					proxy.style.height = nodeRect.height + 'px';
-					proxy.style.width = nodeRect.width + 'px';
+					proxy.styles.top = nodeRect.top + 'px';
+					proxy.styles.left = nodeRect.left + 'px';
+					proxy.styles.height = nodeRect.height + 'px';
+					proxy.styles.width = nodeRect.width + 'px';
 				}
 				proxy = document.body.appendChild(proxy);
-				proxy.style.zIndex = 10000;
-				proxy.style.position = 'absolute';
-				proxy.style.visibility = 'visible';
+				proxy.styles.zIndex = 10000;
+				proxy.styles.position = 'absolute';
+				proxy.styles.visibility = 'visible';
 				proxy.id = 'dragproxy';
 				proxy.className = '';
 				
-				node.style.visibility = 'hidden';
+				node.styles.visibility = 'hidden';
 
 				setIsDragging(true);
 			},
@@ -95,9 +95,9 @@ export default function withDraggable(WrappedComponent) {
 
 				const proxy = document.getElementById('dragproxy');
 				if (mode === HORIZONTAL) {
-					proxy.style.left = e.pageX + 'px';
+					proxy.styles.left = e.pageX + 'px';
 				} else {
-					proxy.style.top = e.pageY + 'px';
+					proxy.styles.top = e.pageY + 'px';
 				}
 				if (onDrag) {
 					onDrag(info, e, proxy, node);
@@ -133,19 +133,19 @@ export default function withDraggable(WrappedComponent) {
 						} else if (pageX > right) {
 							newX = right;
 						}
-						node.style.left = newX + 'px';
+						node.styles.left = newX + 'px';
 					} else {
 						if (top > pageY) {
 							newX = top;
 						} else if (pageY > bottom) {
 							newX = bottom;
 						}
-						node.style.top = newY + 'px';
+						node.styles.top = newY + 'px';
 					}
 				}
 
 				// show original node
-				node.style.visibility = 'visible';
+				node.styles.visibility = 'visible';
 
 				block();
 				if (onDragStop) {

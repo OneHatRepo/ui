@@ -10,37 +10,26 @@ import {
 import {
 	SORT_ASCENDING,
 	SORT_DESCENDING,
-} from '../../constants/Grid';
+} from '../../Constants/Grid';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
-} from '../../constants/Selection';
+} from '../../Constants/Selection';
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../constants/Directions';
-import {
-	STYLE_GRID_HEADER_BG,
-	STYLE_GRID_HEADER_HOVER_BG,
-	STYLE_GRID_HEADER_FONTSIZE,
-	STYLE_GRID_ROW_BG,
-	STYLE_GRID_ROW_SELECTED_BG,
-	STYLE_GRID_NAV_COLUMN_COLOR,
-	STYLE_GRID_CELL_FONTSIZE,
-	STYLE_GRID_TOOLBAR_ITEMS_COLOR,
-	STYLE_GRID_TOOLBAR_ITEMS_DISABLED_COLOR,
-	STYLE_GRID_TOOLBAR_ITEMS_ICON_SIZE,
-} from '../../constants/Style';
+} from '../../Constants/Directions';
+import styles from '../../Constants/Styles';
 import {
 	v4 as uuid,
 } from 'uuid';
-import useBlocking from '../../hooks/useBlocking';
-import useForceUpdate from '../../hooks/useForceUpdate';
+import useBlocking from '../../Hooks/useBlocking';
+import useForceUpdate from '../../Hooks/useForceUpdate';
 import withData from '../Hoc/withData';
 import withSelection from '../Hoc/withSelection';
 import withMultiSelection from '../Hoc/withMultiSelection';
-import emptyFn from '../../functions/emptyFn';
-import testProps from '../../functions/testProps';
+import emptyFn from '../../Functions/emptyFn';
+import testProps from '../../Functions/testProps';
 import HeaderDragHandle from './HeaderDragHandle';
 import HeaderResizeHandle from './HeaderResizeHandle';
 import IconButton from '../Buttons/IconButton';
@@ -334,16 +323,16 @@ export function Grid(props) {
 					gridRowsContainerRect = gridRowsContainer.getBoundingClientRect();
 
 				marker = document.createElement('div');
-				marker.style.position = 'absolute';
-				marker.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
-				marker.style.width = '4px';
-				marker.style.top = columnHeaderRect.top + 'px';
-				// marker.style.right = 0;
-				marker.style.backgroundColor = '#ccc';
+				marker.styles.position = 'absolute';
+				marker.styles.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
+				marker.styles.width = '4px';
+				marker.styles.top = columnHeaderRect.top + 'px';
+				// marker.styles.right = 0;
+				marker.styles.backgroundColor = '#ccc';
 
 				document.body.appendChild(marker);
 			}
-			marker.style.left = left + 'px';
+			marker.styles.left = left + 'px';
 
 			setDragColumnSlot({ ix: newIx, marker, });
 		},
@@ -409,8 +398,8 @@ export function Grid(props) {
 				if (icon) {
 					const iconProps = {
 						alignSelf: 'center',
-						size: STYLE_GRID_TOOLBAR_ITEMS_ICON_SIZE,
-						color: isDisabled ? STYLE_GRID_TOOLBAR_ITEMS_DISABLED_COLOR : STYLE_GRID_TOOLBAR_ITEMS_COLOR,
+						size: styles.GRID_TOOLBAR_ITEMS_ICON_SIZE,
+						color: isDisabled ? styles.GRID_TOOLBAR_ITEMS_DISABLED_COLOR : styles.GRID_TOOLBAR_ITEMS_COLOR,
 						h: 20,
 						w: 20,
 					};
@@ -433,7 +422,7 @@ export function Grid(props) {
 				sortField = sorter && sorter.name,
 				isSortDirectionAsc = sorter && sorter.direction === 'ASC';
 
-			// These header components should match the columns exactly
+			// These header Components should match the columns exactly
 			// so we can drag/drop them to control the columns.
 			const headerColumns = _.map(localColumnsConfig, (config, ix) => {
 				let {
@@ -478,9 +467,9 @@ export function Grid(props) {
 							}}
 							flexDirection="row"
 							h="100%"
-							bg={STYLE_GRID_HEADER_BG}
+							bg={styles.GRID_HEADER_BG}
 							_hover={{
-								bg: STYLE_GRID_HEADER_HOVER_BG,
+								bg: styles.GRID_HEADER_HOVER_BG,
 							}}
 							p={0}
 							style={{ userSelect: 'none', }}
@@ -497,19 +486,19 @@ export function Grid(props) {
 														columnHeaderRect = columnHeader.getBoundingClientRect(),
 														proxy = columnHeader.cloneNode(true);
 													
-													proxy.style.top = columnHeaderRect.top + 10 + 'px';
-													proxy.style.left = columnHeaderRect.left + 'px';
-													proxy.style.height = columnHeaderRect.height + 'px';
-													proxy.style.width = columnHeaderRect.width + 'px';
-													proxy.style.display = 'flex';
-													proxy.style.backgroundColor = '#ddd';
+													proxy.styles.top = columnHeaderRect.top + 10 + 'px';
+													proxy.styles.left = columnHeaderRect.left + 'px';
+													proxy.styles.height = columnHeaderRect.height + 'px';
+													proxy.styles.width = columnHeaderRect.width + 'px';
+													proxy.styles.display = 'flex';
+													proxy.styles.backgroundColor = '#ddd';
 													return proxy;
 												}}
 											/>}
 							
 							<Text
 								key="Text"
-								fontSize={STYLE_GRID_HEADER_FONTSIZE}
+								fontSize={styles.GRID_HEADER_FONTSIZE}
 								overflow="hidden"
 								textOverflow="ellipsis"
 								flex={1}
@@ -536,19 +525,19 @@ export function Grid(props) {
 														proxy = node.cloneNode(true),
 														verticalLine = document.createElement('div');
 													
-													verticalLine.style.position = 'absolute';
-													verticalLine.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
-													verticalLine.style.width = '1px';
-													verticalLine.style.top = 0;
-													verticalLine.style.right = 0;
-													verticalLine.style.backgroundColor = '#ddd';
+													verticalLine.styles.position = 'absolute';
+													verticalLine.styles.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
+													verticalLine.styles.width = '1px';
+													verticalLine.styles.top = 0;
+													verticalLine.styles.right = 0;
+													verticalLine.styles.backgroundColor = '#ddd';
 													proxy.appendChild(verticalLine);
 
-													proxy.style.top = nodeRect.top + 'px';
-													proxy.style.left = nodeRect.left + 'px';
-													proxy.style.height = nodeRect.height + 'px';
-													proxy.style.width = nodeRect.width + 'px';
-													proxy.style.display = 'flex';
+													proxy.styles.top = nodeRect.top + 'px';
+													proxy.styles.left = nodeRect.left + 'px';
+													proxy.styles.height = nodeRect.height + 'px';
+													proxy.styles.width = nodeRect.width + 'px';
+													proxy.styles.display = 'flex';
 
 													return proxy;
 												}}
@@ -618,7 +607,7 @@ export function Grid(props) {
 								textOverflow="ellipsis"
 								alignSelf="center"
 								style={{ userSelect: 'none', }}
-								fontSize={STYLE_GRID_CELL_FONTSIZE}
+								fontSize={styles.GRID_CELL_FONTSIZE}
 								{...propsToPass}
 							>{value}</Text>;
 				});
@@ -643,7 +632,7 @@ export function Grid(props) {
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => onRowClick(item, index, e)}
 						onLongPress={(e) => onRowClick(item, index, e)}
-						bg={isSelected ? STYLE_GRID_ROW_SELECTED_BG : STYLE_GRID_ROW_BG}
+						bg={isSelected ? styles.GRID_ROW_SELECTED_BG : styles.GRID_ROW_BG}
 						w="100%"
 						{...hoverProps}
 					>
@@ -674,7 +663,7 @@ export function Grid(props) {
 							>
 								{renderColumns(item)}
 								{!hideNavColumn && <AngleRight
-									color={STYLE_GRID_NAV_COLUMN_COLOR}
+									color={styles.GRID_NAV_COLUMN_COLOR}
 									variant="ghost"
 									w={30}
 									alignSelf="center"

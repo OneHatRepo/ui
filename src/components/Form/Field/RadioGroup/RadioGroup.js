@@ -56,14 +56,6 @@ const
 		return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} {...props}>
 					{radios}
 				</Radio.Group>;
-
-		// return <Input
-		// 			ref={props.tooltipRef}
-		// 			onChangeText={props.setValue}
-		// 			flex={1}
-		// 			fontSize={STYLE_INPUT_FONTSIZE}
-		// 			{...props}
-		// 		/>;
 	},
 	RadioGroupField = withValue(withData(RadioGroupElement));
 

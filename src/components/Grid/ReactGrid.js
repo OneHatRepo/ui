@@ -24,15 +24,15 @@ import {
 // 	stateDeriver,
 // 	updateStateProps,
 // } from '@silevis/reactgrid';
-import '@silevis/reactgrid/styles.css';
+import '@silevis/reactgrid/Styles.css';
 import './reactgrid.css';
 // import * as Silevis from '@silevis/reactgrid';
 // debugger;
 // import { useReactGridState } from '@silevis/reactgrid/src/lib/Components/StateProvider';
 import oneHatData from '@onehat/data';
-import testProps from '../../functions/testProps';
-import inArray from '../../functions/inArray';
-import useForceUpdate from '../../hooks/useForceUpdate';
+import testProps from '../../Functions/testProps';
+import inArray from '../../Functions/inArray';
+import useForceUpdate from '../../Hooks/useForceUpdate';
 import Loading from '../Messages/Loading';
 import Toolbar from '../Toolbar/Toolbar';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';

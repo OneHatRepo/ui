@@ -8,20 +8,21 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../constants/Directions';
+} from '../../Constants/Directions';
 import Header from './Header';
-import emptyFn from '../../functions/emptyFn';
+import withCollapsible from '../Hoc/withCollapsible';
+import emptyFn from '../../Functions/emptyFn';
 import _ from 'lodash';
 
 // Note on collapseDirections:
 // HORIZONTAL means the Panel collapses along the X axis.
 // VERTICAL means the Panel collapses along the Y axis.
 
-export default function Panel(props) {
+function Panel(props) {
 	const {
 			isDisabled = false,
 			frame = false,
-			scrollable = false,
+			isScrollable = false,
 			h,
 			w,
 			flex,
@@ -34,6 +35,7 @@ export default function Panel(props) {
 			onClose = emptyFn,
 			isCollapsible = true,
 			isCollapsed = false,
+			setIsCollapsed,
 			collapseDirection = VERTICAL, // HORIZONTAL, VERTICAL
 
 			// Content
@@ -44,9 +46,8 @@ export default function Panel(props) {
 
 			...propsToPass
 		} = props,
-		[localIsCollapsed, setLocalIsCollapsed] = useState(isCollapsed),
 		onToggleCollapse = () => {
-			setLocalIsCollapsed(!localIsCollapsed);
+			setIsCollapsed(!isCollapsed);
 		};
 
 	let headerComponent = header;
@@ -56,7 +57,7 @@ export default function Panel(props) {
 								isClosable={isClosable}
 								onClose={onClose}
 								isCollapsible={isCollapsible}
-								isCollapsed={localIsCollapsed}
+								isCollapsed={isCollapsed}
 								collapseDirection={collapseDirection}
 								onToggleCollapse={onToggleCollapse}
 							/>;
@@ -105,7 +106,7 @@ export default function Panel(props) {
 	if (frame) {
 		framePropsToUse = frameProps;
 	}
-	if (localIsCollapsed) {
+	if (isCollapsed) {
 		if (collapseDirection !== VERTICAL) {
 			return <Column {...framePropsToUse} w="33px" height="100%">
 						{isDisabled && <div className="mask"></div>}
@@ -121,10 +122,12 @@ export default function Panel(props) {
 				{isDisabled && <div className="mask"></div>}
 				{headerComponent}
 				{topToolbar}
-				<Row flex={1} w="100%" {...propsToPass}>
-					{scrollable ? <ScrollView>{children}</ScrollView> : children}
-				</Row>
+				<Column flex={1} w="100%" {...propsToPass}>
+					{isScrollable ? <ScrollView>{children}</ScrollView> : children}
+				</Column>
 				{bottomToolbar}
 				{footer}
 			</Column>;
 }
+
+export default withCollapsible(Panel);

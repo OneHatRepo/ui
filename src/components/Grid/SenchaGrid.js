@@ -23,8 +23,8 @@ import {
 	TreeColumn,
 } from '@sencha/sencha-grid';
 import '@sencha/sencha-grid/dist/themes/grui.css';
-import testProps from '../../functions/testProps';
-import useForceUpdate from '../../hooks/useForceUpdate';
+import testProps from '../../Functions/testProps';
+import useForceUpdate from '../../Hooks/useForceUpdate';
 import Loading from '../Messages/Loading';
 import Toolbar from '../Toolbar/Toolbar';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';

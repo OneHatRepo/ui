@@ -5,9 +5,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import {
-	STYLE_FIELDSET_FONTSIZE,
-} from '../../constants/Style';
+import styles from '../../Constants/Styles';
 import IconButton from '../Buttons/IconButton';
 import CaretUp from '../Icons/CaretUp';
 import CaretDown from '../Icons/CaretDown';
@@ -40,7 +38,7 @@ export default function FieldSet(props) {
 						mb={2}
 					>
 						<Text
-							fontSize={STYLE_FIELDSET_FONTSIZE}
+							fontSize={styles.FIELDSET_FONTSIZE}
 							fontWeight="bold"
 							py={1}
 							px={3}

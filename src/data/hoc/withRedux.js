@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 // Usage:
 // At top of file: 
-// import withRedux from '../../OneHat/data/hoc/WithData';
+// import withRedux from '../../OneHat/Data/hoc/WithData';
 // 
 // At the bottom of your component that needs a CrudStore, do this:
 // export default withRedux(MyComponent, ['Users', 'Equipment']);

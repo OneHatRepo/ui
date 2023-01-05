@@ -4,7 +4,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import AppGlobals from '../../AppGlobals';
 import { Alert } from 'react-native';
-import { BACKGROUND_NOTIFICATION_TASK } from '../../constants/Tasks';
+import { BACKGROUND_NOTIFICATION_TASK } from '../../Constants/Tasks';
 import moment from 'moment';
 
 

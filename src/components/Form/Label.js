@@ -2,19 +2,16 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import {
-	STYLE_LABEL_WIDTH,
-	STYLE_LABEL_FONTSIZE,
-} from '../../constants/Style';
+import styles from '../../Constants/Styles';
 
 export default function Label(props) {
 	return <Row
-				w={STYLE_LABEL_WIDTH}
+				w={styles.LABEL_WIDTH}
 				maxWidth="30%"
 				alignItems="center"
 				pl={2}
 				{...props}
 			>
-				<Text fontSize={STYLE_LABEL_FONTSIZE}>{props.children}</Text>
+				<Text fontSize={styles.LABEL_FONTSIZE}>{props.children}</Text>
 			</Row>;
 }

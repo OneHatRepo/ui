@@ -4,9 +4,9 @@ import {
 	SELECTION_MODE_MULTI,
 	SELECT_UP,
 	SELECT_DOWN,
-} from '../../constants/Selection';
+} from '../../Constants/Selection';
 import oneHatData from '@onehat/data';
-import inArray from '../../functions/inArray';
+import inArray from '../../Functions/inArray';
 import _ from 'lodash';
 
 export default function withSelection(WrappedComponent) {

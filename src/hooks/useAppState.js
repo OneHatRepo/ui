@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AppState } from 'react-native';
 
-// DEPRECATED: Use @react-native-community/hooks instead.
+// DEPRECATED: Use @react-native-community/Hooks instead.
 
 // Copied from react-native-appstate-hook found here: https://github.com/amrlabib/react-native-appstate-hook
 export default function useAppState(settings) {

@@ -5,7 +5,7 @@ import {
 	Tooltip,
 } from 'native-base';
 import CaretDown from '../Icons/CaretDown';
-import testProps from '../../functions/testProps';
+import testProps from '../../Functions/testProps';
 import _ from 'lodash';
 
 export default function Picker(props) {

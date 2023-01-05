@@ -7,8 +7,8 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../constants/Directions';
-import styles from '../../styles/styles.js';
+} from '../../Constants/Directions';
+import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable';
 import GripLinesVertical from '../Icons/GripLinesVertical';
 

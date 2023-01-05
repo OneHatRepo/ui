@@ -6,13 +6,11 @@ import {
 	Text,
 	Tooltip,
 } from 'native-base';
-import {
-	STYLE_FILE_READOUT_FONTSIZE,
-} from '../../../constants/Style';
+import styles from '../../../Constants/Styles';
 import {
 	FILE_MODE_IMAGE,
 	FILE_MODE_FILE,
-} from '../../../constants/File';
+} from '../../../Constants/File';
 import IconButton from '../../Buttons/IconButton';
 import withValue from '../../Hoc/withValue';
 import File from '../../Icons/File';
@@ -184,7 +182,7 @@ function FileElement(props) {
 						{mode === FILE_MODE_FILE && <Text
 														flex={1}
 														ml={3}
-														fontSize={STYLE_FILE_READOUT_FONTSIZE}
+														fontSize={styles.FILE_READOUT_FONTSIZE}
 														fontStyle="italic"
 													>{value.filename || 'No file'}</Text>}
 						{mode === FILE_MODE_IMAGE && <Box

@@ -2,9 +2,7 @@ import React from 'react';
 import {
 	Input,
 } from 'native-base';
-import {
-	STYLE_INPUT_FONTSIZE,
-} from '../../../constants/Style';
+import styles from '../../../Constants/Styles';
 import withTooltip from '../../Hoc/withTooltip';
 import withValue from '../../Hoc/withValue';
 
@@ -14,7 +12,7 @@ const
 					ref={props.tooltipRef}
 					onChangeText={props.setValue}
 					flex={1}
-					fontSize={STYLE_INPUT_FONTSIZE}
+					fontSize={styles.INPUT_FONTSIZE}
 					{...props}
 				/>;
 	},
