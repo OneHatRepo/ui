@@ -18,16 +18,12 @@ export default function withSelection(WrappedComponent) {
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				autoSelectFirstItem = false,
 
-				Repository, // @onehat/data Repository
-				model, // @onehat/data bound schema name
-				data, // raw data array
-
-				// For raw data array
+				Repository,
+				data,
 				fields,
 				idField,
 				displayField,
 			} = props,
-			[LocalRepository, setLocalRepository] = useState(),
 			[selection, setSelectionRaw] = useState(defaultSelection ? [defaultSelection] : []),
 			[isReady, setIsReady] = useState(false),
 			setSelection = (selection) => {
@@ -62,7 +58,7 @@ export default function withSelection(WrappedComponent) {
 			},
 			removeFromSelection = (item) => {
 				let newSelection = [];
-				if (LocalRepository) {
+				if (Repository) {
 					newSelection = _.remove(selection, (sel) => sel !== item);
 				} else {
 					const ix = fields.indexOf(idField);
@@ -73,8 +69,8 @@ export default function withSelection(WrappedComponent) {
 			getMaxMinSelectionIndices = () => {
 				let items,
 					currentlySelectedRowIndices = [];
-				if (LocalRepository) {
-					items = LocalRepository.getEntitiesOnPage();
+				if (Repository) {
+					items = Repository.getEntitiesOnPage();
 				} else {
 					items = data;
 				}
@@ -120,7 +116,7 @@ export default function withSelection(WrappedComponent) {
 				setSelection(newSelection);
 			},
 			isInSelection = (item) => {
-				if (LocalRepository) {
+				if (Repository) {
 					return inArray(item, selection);
 				}
 
@@ -133,8 +129,8 @@ export default function withSelection(WrappedComponent) {
 			},
 			getIndexOfSelectedItem = (item) => {
 				// Gets ix of entity on page, or element in data array
-				if (LocalRepository) {
-					const entities = LocalRepository.getEntitiesOnPage();
+				if (Repository) {
+					const entities = Repository.getEntitiesOnPage();
 					return entities.indexOf(item);
 				}
 				
@@ -153,7 +149,7 @@ export default function withSelection(WrappedComponent) {
 					return null;
 				}
 				const values = _.map(selection, (item) => {
-					if (LocalRepository) {
+					if (Repository) {
 						return item.id;
 					}
 					const ix = fields.indexOf(idField);
@@ -170,7 +166,7 @@ export default function withSelection(WrappedComponent) {
 				}
 
 				return _.map(selection, (item) => {
-							if (LocalRepository) {
+							if (Repository) {
 								return item.displayValue;
 							}
 							const ix = fields.indexOf(displayField);
@@ -180,12 +176,8 @@ export default function withSelection(WrappedComponent) {
 			};
 
 		useEffect(() => {
-			let LocalRepository = Repository,
-				newSelection = [];
-			if (model) {
-				LocalRepository = oneHatData.getRepository(model);
-			}
-			if (!LocalRepository) {
+			let newSelection = [];
+			if (!Repository) {
 				// set up plain data
 				if (_.isEmpty(selection) && autoSelectFirstItem) {
 					newSelection = data[0] ? [data[0]] : [];
@@ -193,10 +185,9 @@ export default function withSelection(WrappedComponent) {
 			} else {
 				// set up @onehat/data repository
 				if (_.isEmpty(selection) && autoSelectFirstItem) {
-					const entitiesOnPage = LocalRepository.getEntitiesOnPage();
+					const entitiesOnPage = Repository.getEntitiesOnPage();
 					newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
 				}
-				setLocalRepository(LocalRepository);
 			}
 			if (autoSelectFirstItem) {
 				setSelection(newSelection);

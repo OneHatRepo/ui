@@ -1,20 +1,19 @@
 import { useEffect, useState, } from 'react';
-import Panel from '../Panel/Panel';
+import Panel from './Panel';
 import Grid from '../Grid/Grid';
+import withData from '../Hoc/withData';
 import _ from 'lodash';
 
-export default function GridPanel(props) {
+export function GridPanel(props) {
 	const {
-			_grid = {},
 			disableTitleChange = false,
 			selectorSelected,
-			...propsToPass
 		} = props,
-		originalTitle = props.title || _grid.model,
+		originalTitle = props.title,
 		[title, setTitle] = useState(originalTitle);
 
 	useEffect(() => {
-		if (!disableTitleChange) {
+		if (!disableTitleChange && originalTitle) {
 			if (selectorSelected) {
 				setTitle(originalTitle + ' for ' + selectorSelected.displayValue);
 			} else {
@@ -23,7 +22,9 @@ export default function GridPanel(props) {
 		}
 	}, [selectorSelected, disableTitleChange, originalTitle]);
 
-	return <Panel title={title} {...propsToPass}>
-				<Grid {..._grid} />
+	return <Panel {...props} title={title}>
+				<Grid {...props} />
 			</Panel>;
 }
+
+export default withData(GridPanel);

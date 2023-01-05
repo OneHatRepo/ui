@@ -13,7 +13,6 @@ export default function withEditor(WrappedComponent) {
 	return (props) => {
 		const {
 				Repository,
-				model,
 				defaultData = {},
 				ignoreFields = [],
 				userCanEdit = true,

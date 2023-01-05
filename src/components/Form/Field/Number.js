@@ -1,4 +1,4 @@
-import React, { useState, useEffect, } from 'react';
+import React from 'react';
 import {
 	Icon,
 	Input,
@@ -32,6 +32,7 @@ const
 						onPress={onMinusOne}
 						h="100%"
 						w={10}
+						maxWidth="25%"
 						mr={1}
 						bg="primary.200"
 						_hover={{
@@ -51,6 +52,7 @@ const
 						onPress={onPlusOne}
 						h="100%"
 						w={10}
+						maxWidth="25%"
 						ml={1}
 						bg="primary.200"
 						_hover={{

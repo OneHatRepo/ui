@@ -10,6 +10,7 @@ import {
 export default function Label(props) {
 	return <Row
 				w={STYLE_LABEL_WIDTH}
+				maxWidth="30%"
 				alignItems="center"
 				pl={2}
 				{...props}

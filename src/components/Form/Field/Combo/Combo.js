@@ -14,9 +14,8 @@ import {
 	STYLE_COMBO_TRIGGER_BG,
 	STYLE_COMBO_TRIGGER_HOVER_BG,
 } from '../../../../constants/Style';
-import oneHatData from '@onehat/data';
-import withTooltip from '../../../Hoc/withTooltip';
 import withSelection from '../../../Hoc/withSelection';
+import withData from '../../../Hoc/withData';
 import withValue from '../../../Hoc/withValue';
 import emptyFn from '../../../../functions/emptyFn';
 import { Grid } from '../../../Grid/Grid';
@@ -41,7 +40,6 @@ export function Combo(props) {
 
 			// data source
 			Repository,
-			model,
 			data,
 			fields,
 			idField,
@@ -180,11 +178,7 @@ export function Combo(props) {
 			// If filter is cleared, show original results.
 
 			let found;
-			if (Repository || model) {
-				let Repo = Repository;
-				if (!Repository) {
-					Repo = oneHatData.getRepository(model);
-				}
+			if (Repository) {
 				
 				debugger;
 				
@@ -195,7 +189,7 @@ export function Combo(props) {
 					// LEFT OFF HERE
 					// Want to build a search functionality that shows results in combo grid
 
-					if (Repo.isRemote) {
+					if (Repository.isRemote) {
 						// 'q' fuzzy search from server 
 						
 	
@@ -209,7 +203,7 @@ export function Combo(props) {
 						};
 					}
 				}
-				Repo.filter(filter);
+				Repository.filter(filter);
 
 				// TODO: Auto-select if filter produces only one result
 
@@ -244,18 +238,13 @@ export function Combo(props) {
 	useEffect(() => {
 		// adjust the selection to match the value
 		let newSelection = [];
-		if (Repository || model) {
-			let Repo = Repository;
-			if (!Repository) {
-				Repo = oneHatData.getRepository(model);
-			}
-			
+		if (Repository) {
 			// Get entity or entities that match value
 			if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
 				if (_.isArray(value)) {
-					newSelection = Repo.getBy((entity) => inArray(entity.id, value));
+					newSelection = Repository.getBy((entity) => inArray(entity.id, value));
 				} else {
-					newSelection.push(Repo.getById(value));
+					newSelection.push(Repository.getById(value));
 				}
 			}
 		} else {
@@ -439,4 +428,4 @@ export function Combo(props) {
 	return comboComponent;
 }
 
-export default withValue(withSelection(Combo));
+export default withValue(withData(withSelection(Combo)));

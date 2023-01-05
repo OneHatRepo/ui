@@ -4,6 +4,7 @@ import {
 	Icon,
 	Row,
 	Text,
+	Tooltip,
 } from 'native-base';
 import {
 	STYLE_FILE_READOUT_FONTSIZE,
@@ -13,10 +14,8 @@ import {
 	FILE_MODE_FILE,
 } from '../../../constants/File';
 import IconButton from '../../Buttons/IconButton';
-import withTooltip from '../../Hoc/withTooltip';
 import withValue from '../../Hoc/withValue';
 import File from '../../Icons/File';
-import Plus from '../../Icons/Plus';
 import Trash from '../../Icons/Trash';
 import _ from 'lodash';
 
@@ -25,190 +24,183 @@ import _ from 'lodash';
 // value is a JSON object, with the separate values encoded within.
 
 // TODO:
-// Combine values into single JSON value
+// √ Combine values into single JSON value
 // Build interpreter so the field can work with existing value
 // Build back-end to receive this
 // Build thumbnail viewer for existing image
 // Build editor, with large viewer for existing image / video / pdf
 // 
 
-const
-	FileElement = (props) => {
-		const {
-				name,
-				value = {
-					dataUri: null,
-					control: null,
-					filename: null,
-				},
-				setValue,
-
-				mode = FILE_MODE_IMAGE, // FILE_MODE_IMAGE, FILE_MODE_FILE
-				imagePath = '',
-			} = props,
-			fileEl = useRef(),
-			[localDataUri, setLocalDataUri] = useState(null),
-			[localControl, setLocalControl] = useState(null),
-			[localFilename, setLocalFilename] = useState(null),
-			onClear = () => {
-				setLocalDataUri(null);
-				setLocalControl(null);
-				setLocalFilename(null);
-
-				setValue({
-					dataUri: null,
-					control: null,
-					filename: null,
-				});
+function FileElement(props) {
+	const {
+			name,
+			value = {
+				dataUri: null,
+				control: null,
+				filename: null,
 			},
-			onSelect = () => {
-				fileEl.current.click();
-				
-				setValue({
-					dataUri: null,
-					control: null,
-					filename: null,
-				});
-			},
-			onChangeFile = (e) => {
-				const
-					files = fileEl.current.files,
-					file = files[0],
-					reader = new FileReader();
+			setValue,
 
-				reader.readAsBinaryString(file);
-				reader.onload = (e) => {
-					const
-						dataUri = `data:${file.type};base64,${btoa(e.target.result)}`, // 'btoa' is deprecated in Node.js, but not browsers, so use it!
-						control = '',
-						filename = file.name;
-					
-					setLocalDataUri(dataUri);
-					setLocalControl(control);
-					setLocalFilename(filename);
+			mode = FILE_MODE_IMAGE, // FILE_MODE_IMAGE, FILE_MODE_FILE
+			imagePath = '',
+			version = 2,
+			tooltip = 'Choose or drag a file on top of this control.',
+		} = props,
+		dragRef = useRef(),
+		fileInputRef = useRef(),
+		[isDropping, setIsDropping] = useState(false),
+		[localDataUri, setLocalDataUri] = useState(null),
+		[localControl, setLocalControl] = useState(null),
+		[localFilename, setLocalFilename] = useState(null),
+		onClear = () => {
+			setLocalDataUri(null);
+			setLocalControl(null);
+			setLocalFilename(null);
 
-					setValue({
-						dataUri,
-						control,
-						filename,
-					});
-				};
+			setValue({
+				dataUri: null,
+				control: null,
+				filename: null,
+				version,
+			});
+
+			fileInputRef.current.value = null;
+		},
+		onSelect = () => {
+			fileInputRef.current.click();
+			
+			setValue({
+				dataUri: null,
+				control: null,
+				filename: null,
+				version,
+			});
+		},
+		onChangeFile = (e) => {
+			const
+				files = fileInputRef.current.files,
+				file = files[0],
+				reader = new FileReader();
+
+			reader.readAsBinaryString(file);
+			reader.onload = (e) => {
+				setBase64(file, e.target.result);
 			};
-			// handleDragenter = (e) => {
-			// 	const
-			// 		fileTypes = e.dataTransfer && e.dataTransfer.types,
-			// 		items = e.dataTransfer && e.dataTransfer.items;
+		},
+		setBase64 = (file, readerResult) => {
+			const
+				base64 = btoa(readerResult), // 'btoa' is deprecated in Node.js, but not browsers, so use it!
+				dataUri = `data:${file.type};base64,${base64}`,
+				control = '',
+				filename = file.name;
 
-			// 	if (fileTypes.indexOf('Files') === -1) {
-			// 		return;
-			// 	}
-			// 	if (items && items.length > 1) {
-			// 		throw new Error('You can only drop a single file!');
-			// 		return;
-			// 	}
+			setLocalDataUri(dataUri);
+			setLocalControl(control);
+			setLocalFilename(filename);
 
-			// 	this.addCls('drag-over');
-			// },
-			// handleDragleave = (e) => {
-			// 	this.removeCls('drag-over');
-			// },
-			// handleDrop = (e) => {
-			// 	var items = e.dataTransfer && e.dataTransfer.items,
-			// 		files = e.dataTransfer && e.dataTransfer.files;
+			setValue({
+				dataUri,
+				control,
+				filename,
+				version,
+			});
+		},
+		onDragEnter = (e) => {
+			const
+				fileTypes = e.dataTransfer && e.dataTransfer.types,
+				items = e.dataTransfer && e.dataTransfer.items;
 
-			// 	this.removeCls('drag-over');
+			if (fileTypes.indexOf('Files') === -1) {
+				return;
+			}
+			if (items && items.length > 1) {
+				throw new Error('You can only drop a single file!');
+			}
 
-			// 	this.controlEl.setValue('');
-			// 	this.droppedNameEl.setValue(files[0].name);
-			// 	fileReader.readAsDataURL(files[0]); // calls the onload event, below
-			// },
-			// handleDropRead = (e) => {
-			// 	const base64 = e.target.result;
-			// 	this.droppedEl.setValue(base64);
-			// },
-			// handleSetValue = (value) => {
-			// 	this.controlEl.setValue(value);
-			// 	this.droppedEl.setValue('');
-			// 	this.droppedNameEl.setValue('');
-			// },
-			// handleClearButton = () => {
-			// 	this.fileEl.setValue('');
-			// },
-			// handleSelect = () => {
-			// 	this.controlEl.setValue('');
-			// 	this.droppedEl.setValue('');
-			// 	this.droppedNameEl.setValue('');
-			// },
-			// handleShow = () => {
-			// 	this.show();
-			// },
-			// handleHide = () => {
-			// 	this.hide();
-			// };
+			setIsDropping(true);
+		},
+		onDragLeave = (e) => {
+			if (dragRef.current.contains(e.relatedTarget)) {
+				return; // ignore events that bubble from within
+			}
+			setIsDropping(false);
+		},
+		onDragOver = (e) => {
+			e.preventDefault();
+		},
+		onDrop = (e) => {
+			e.preventDefault();
+			const
+				files = e.dataTransfer && e.dataTransfer.files,
+				file = files[0],
+				reader = new FileReader();
 
-		// useEffect(() => {
-		// 	const fileReader = new FileReader();
-		// 	// fileReader.onload = (e) => {
-		// 	// 	handleDropRead(e);
-		// 	// };
-		// 	setFileReader(fileReader);
-		// }, []);
-		
-		return <Row flex={1} alignItems="center">
-					<IconButton
-						icon={<Icon as={File} />}
-						onPress={onSelect}
-						h={10}
-						w={10}
-						bg="primary.200"
-						_hover={{
-							bg: 'primary.400',
-						}}
-					/>
-					<IconButton
-						icon={<Icon as={Trash} />}
-						onPress={onClear}
-						h={10}
-						w={10}
-						ml={1}
-						isDisabled={!value.dataUri}
-						bg={value.dataUri ? 'primary.200' : 'disabled'}
-						_hover={{
-							bg: 'primary.400',
-						}}
-					/>
-					{mode === FILE_MODE_FILE && <Text
-													flex={1}
-													ml={3}
-													fontSize={STYLE_FILE_READOUT_FONTSIZE}
-													fontStyle="italic"
-												>{value.filename || 'No file'}</Text>}
-					{mode === FILE_MODE_IMAGE && <Box
-													flex={1}
-													h="100%"
-													ml={1}
-													bg="trueGray.100"
-													backgroundImage={value.dataUri ? 'url(' + imagePath + encodeURIComponent(value.dataUri) + ')' : 'none'}
-													backgroundSize="contain"
-													backgroundRepeat="no-repeat"
-													borderRadius={4}
-												/>}
-					
-					{/* <Input
-						type="file"
-						ref={props.tooltipRef}
-						onChangeText={props.setValue}
-						flex={1}
-						fontSize={STYLE_FILE_INPUT_FONTSIZE}
-						{...props}
-					/> */}
-					<input type="file" ref={fileEl} name={name} onChange={onChangeFile} style={{ position: 'absolute', opacity: 0, height: 0, width: 0, }} />
-				</Row>;
-		
-	},
-	FileField = withValue(FileElement);
+			reader.readAsDataURL(file);
+			reader.onload = (e) => {
+				setBase64(file, e.target.result);
+			};
+			setIsDropping(false);
+		};
 
-// Tooltip needs us to forwardRef
-export default withTooltip(React.forwardRef((props, ref) => {
-	return <FileField {...props} tooltipRef={ref} />;
-}));
+	useEffect(() => {
+		const {
+				dataUri,
+				control,
+				filename,
+			} = value;
+		setLocalDataUri(localDataUri);
+		setLocalControl(localControl);
+		setLocalFilename(localFilename);
+	}, []);
+	
+	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
+				<Tooltip label={tooltip} placement="bottom">
+					<Row flex={1} alignItems="center">
+						{isDropping && <Box position="absolute" borderWidth={isDropping ? 2 : 0} borderColor="primary.800" top={0} left={0} w="100%" h="100%" bg="trueGray.200" zIndex={10000} justifyContent="center" alignItems="center">
+											<Text>Set File</Text>
+										</Box>}
+						<IconButton
+							icon={<Icon as={File} />}
+							onPress={onSelect}
+							h={10}
+							w={10}
+							bg="primary.200"
+							_hover={{
+								bg: 'primary.400',
+							}}
+						/>
+						<IconButton
+							icon={<Icon as={Trash} />}
+							onPress={onClear}
+							h={10}
+							w={10}
+							ml={1}
+							isDisabled={!value.dataUri}
+							bg={value.dataUri ? 'primary.200' : 'disabled'}
+							_hover={{
+								bg: value.dataUri ? 'primary.400' : 'disabled',
+							}}
+						/>
+						{mode === FILE_MODE_FILE && <Text
+														flex={1}
+														ml={3}
+														fontSize={STYLE_FILE_READOUT_FONTSIZE}
+														fontStyle="italic"
+													>{value.filename || 'No file'}</Text>}
+						{mode === FILE_MODE_IMAGE && <Box
+														flex={1}
+														h="100%"
+														ml={1}
+														bg="trueGray.100"
+														backgroundImage={value.dataUri ? 'url(' + imagePath + encodeURIComponent(value.dataUri) + ')' : 'none'}
+														backgroundSize="contain"
+														backgroundRepeat="no-repeat"
+														borderRadius={4}
+													/>}
+						<input type="file" ref={fileInputRef} name={name} onChange={onChangeFile} style={{ position: 'absolute', opacity: 0, height: 0, width: 0, }} />
+					</Row>
+				</Tooltip>
+			</div>;
+}
+
+export default withValue(FileElement);

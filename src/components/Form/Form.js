@@ -4,6 +4,7 @@ import {
 	Column,
 	Icon,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
@@ -29,6 +30,7 @@ function Form(props) {
 			columnDefaults = {},
 			onCancel,
 			onSave,
+			useColumns = true,
 		} = props,
 		forceUpdate = useForceUpdate(),
 		[isReady, setIsReady] = useState(false),
@@ -183,9 +185,9 @@ function Form(props) {
 	// console.log('values', getValues());
 
 	return <Column w="100%" flex={1}>
-				<Row flex={1}>
-					{formComponents}
-				</Row>
+				<ScrollView flex={1} pb={3}>
+					{useColumns ? <Row flex={1}>{formComponents}</Row> : <Column flex={1}>{formComponents}</Column>}
+				</ScrollView>
 				<Footer justifyContent="flex-end" >
 					<Button.Group space={2}>
 						<IconButton

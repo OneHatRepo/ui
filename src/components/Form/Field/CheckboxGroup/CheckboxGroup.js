@@ -4,10 +4,9 @@ import {
 	Checkbox,
 	Row,
 } from 'native-base';
-import oneHatData from '@onehat/data';
-import inArray from '../../../../functions/inArray';
-import withTooltip from '../../../Hoc/withTooltip';
+import withData from '../../../Hoc/withData';
 import withValue from '../../../Hoc/withValue';
+import withTooltip from '../../../Hoc/withTooltip';
 import _ from 'lodash';
 
 const
@@ -17,27 +16,21 @@ const
 
 				// data source
 				Repository,
-				model,
 				data,
 				fields,
 				idField,
 				displayField,
 			} = props,
-			[isReady, setIsReady] = useState(false),
-			[LocalRepository, setLocalRepository] = useState(),
 			[checkboxes, setCheckboxes] = useState([]);
 
 		useEffect(() => {
-			if (!isReady) {
-				return () => {};
-			}
 			
 			// adjust the checkboxes to match the value
 			let checkboxes = [];
 			const checkboxProps = {
 			};
-			if (LocalRepository) {
-				const entities = LocalRepository.getEntitiesOnPage();
+			if (Repository) {
+				const entities = Repository.getEntitiesOnPage();
 				checkboxes = _.map(entities, (entity, ix) => {
 					return <Checkbox
 								key={ix}
@@ -57,22 +50,7 @@ const
 				});
 			}
 			setCheckboxes(checkboxes);
-		}, [isReady, value]);
-
-		useEffect(() => {
-			let LocalRepository = Repository;
-			if (model) {
-				LocalRepository = oneHatData.getRepository(model);
-			}
-			if (LocalRepository) {
-				setLocalRepository(LocalRepository);
-			}
-			setIsReady(true);
-		}, []);
-
-		if (!isReady) {
-			return null;
-		}
+		}, [value]);
 
 		return <Checkbox.Group onChange={props.setValue} accessibilityLabel={props.name} {...props}>
 					{checkboxes}
@@ -86,7 +64,7 @@ const
 		// 			{...props}
 		// 		/>;
 	},
-	CheckboxGroupField = withValue(CheckboxGroupElement);
+	CheckboxGroupField = withValue(withData(CheckboxGroupElement));
 
 // Tooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {

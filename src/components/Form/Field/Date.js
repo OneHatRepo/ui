@@ -7,6 +7,7 @@ import {
 	Pressable,
 	Row,
 	Text,
+	Tooltip,
 } from 'native-base';
 import {
 	STYLE_DATE_READOUT_FONTSIZE,
@@ -16,7 +17,6 @@ import "react-datetime/css/react-datetime.css";
 // import DateTimePickerModal from 'react-native-modal-datetime-picker'; // https://github.com/mmazzarolo/react-native-modal-datetime-picker
 // import DateTimePicker from '@react-native-community/datetimepicker'; // https://github.com/react-native-datetimepicker/datetimepicker
 import IconButton from '../../Buttons/IconButton';
-import withTooltip from '../../Hoc/withTooltip';
 import withValue from '../../Hoc/withValue';
 import emptyFn from '../../../functions/emptyFn';
 import Formatters from '@onehat/data/src/Util/Formatters';
@@ -31,6 +31,7 @@ export function DateElement(props) {
 			setValue,
 			format,
 			mode = 'date',
+			tooltip = 'Choose a date.',
 		} = props,
 		[isPickerShown, setIsPickerShown] = useState(false),
 		[top, setTop] = useState(0),
@@ -64,81 +65,83 @@ export function DateElement(props) {
 	}
 	
 	// Web version
-	return <Row flex={1} h="100%" alignItems="center">
-				<IconButton
-					icon={<Icon as={Calendar} />}
-					onPress={showPicker}
-					h={10}
-					w={10}
-					bg="primary.200"
-					_hover={{
-						bg: 'primary.400',
-					}}
-					onLayout={(e) => {
-						const {
-								height,
-								width,
-								top,
-								left,
-							} = e.nativeEvent.layout;
+	return <Tooltip label={tooltip} placement="bottom">
+				<Row flex={1} h="100%" alignItems="center">
+					<IconButton
+						icon={<Icon as={Calendar} />}
+						onPress={showPicker}
+						h={10}
+						w={10}
+						bg="primary.200"
+						_hover={{
+							bg: 'primary.400',
+						}}
+						onLayout={(e) => {
+							const {
+									height,
+									width,
+									top,
+									left,
+								} = e.nativeEvent.layout;
 
-						// TODO: Set the popover to display with lots of room to spare.
-						// To do this, figure out where the IconButton is on the screen.
-						// If it's on the right side of screen, show the popover on the left.
-						// If it's on the bottom part of screen, show the popover on the top.
-						// Otherwise, use code below.
+							// TODO: Set the popover to display with lots of room to spare.
+							// To do this, figure out where the IconButton is on the screen.
+							// If it's on the right side of screen, show the popover on the left.
+							// If it's on the bottom part of screen, show the popover on the top.
+							// Otherwise, use code below.
 
-						setTop(top + height);
-						setLeft(left + width);
-					}}
-				/>
-				<Pressable
-					flex={1}
-					h="100%"
-					onPress={showPicker}
-				>
-					<Text
+							setTop(top + height);
+							setLeft(left + width);
+						}}
+					/>
+					<Pressable
 						flex={1}
 						h="100%"
-						ml={1}
-						p={2}
-						fontSize={STYLE_DATE_READOUT_FONTSIZE}
-						borderWidth={1}
-						borderColor="trueGray.300"
-						borderRadius={4}
-					>{title}</Text>
-				</Pressable>
-				<Popover
-					isOpen={isPickerShown}
-					onClose={() => {
-						hidePicker();
-					}}
-					trigger={emptyFn}
-					trapFocus={false}
-					placement={'auto'}
-					{...props}
-				>
-					<Popover.Content
-						position="absolute"
-						top={top + 'px'}
-						left={left + 'px'}
-						w={300}
-						h={300}
+						onPress={showPicker}
 					>
-						<Popover.Body
-							p={0}
+						<Text
+							flex={1}
+							h="100%"
+							ml={1}
+							p={2}
+							fontSize={STYLE_DATE_READOUT_FONTSIZE}
+							borderWidth={1}
+							borderColor="trueGray.300"
+							borderRadius={4}
+						>{title}</Text>
+					</Pressable>
+					<Popover
+						isOpen={isPickerShown}
+						onClose={() => {
+							hidePicker();
+						}}
+						trigger={emptyFn}
+						trapFocus={false}
+						placement={'auto'}
+						{...props}
+					>
+						<Popover.Content
+							position="absolute"
+							top={top + 'px'}
+							left={left + 'px'}
+							w={300}
+							h={300}
 						>
-							<Datetime
-								open={true}
-								input={false}
-								onChange={(value) => setValue(value)}
-								closeOnClickOutside={false}
-								{...propsToPass}
-							/>
-						</Popover.Body>
-					</Popover.Content>
-				</Popover>
-			</Row>;
+							<Popover.Body
+								p={0}
+							>
+								<Datetime
+									open={true}
+									input={false}
+									onChange={(value) => setValue(value)}
+									closeOnClickOutside={false}
+									{...propsToPass}
+								/>
+							</Popover.Body>
+						</Popover.Content>
+					</Popover>
+				</Row>
+			</Tooltip>;
 
 	// React Native v1
 	// return <Row>
@@ -171,9 +174,4 @@ export function DateElement(props) {
 	// 		</Box>;
 };
 
-const DateField = withValue(DateElement);
-
-// Tooltip needs us to forwardRef
-export default withTooltip(React.forwardRef((props, ref) => {
-	return <DateField {...props} tooltipRef={ref} />;
-}));
+export default withValue(DateElement);

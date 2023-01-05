@@ -34,9 +34,9 @@ import {
 import {
 	v4 as uuid,
 } from 'uuid';
-import oneHatData from '@onehat/data';
 import useBlocking from '../../hooks/useBlocking';
 import useForceUpdate from '../../hooks/useForceUpdate';
+import withData from '../Hoc/withData';
 import withSelection from '../Hoc/withSelection';
 import withMultiSelection from '../Hoc/withMultiSelection';
 import emptyFn from '../../functions/emptyFn';
@@ -159,7 +159,6 @@ export function Grid(props) {
 
 			// data source
 			Repository,
-			model,
 			data,
 			fields,
 			idField,
@@ -188,12 +187,13 @@ export function Grid(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[dragColumnSlot, setDragColumnSlot] = useState(null),
 		[headerWidth, setHeaderWidth] = useState('100%'),
-		[LocalRepository, setLocalRepository] = useState(),
 		[localColumnsConfig, setLocalColumnsConfig] = useState([]),
 	
 		onRowClick = (item, index, e) => {
 			const
-				shiftKey = e.shiftKey;
+				shiftKey = e.shiftKey,
+				metaKey = e.metaKey;
+				
 			if (selectionMode === SELECTION_MODE_MULTI) {
 				if (shiftKey) {
 					if (isInSelection(item)) {
@@ -201,7 +201,7 @@ export function Grid(props) {
 					} else {
 						selectRangeTo(item);
 					}
-				} else {
+				} else if (metaKey) {
 					if (isInSelection(item)) {
 						// Already selected
 						if (allowToggleSelection) {
@@ -212,10 +212,22 @@ export function Grid(props) {
 					} else {
 						addToSelection(item);
 					}
+				} else {
+					if (isInSelection(item)) {
+						// Already selected
+						if (allowToggleSelection) {
+							removeFromSelection(item);
+						} else {
+							// Do nothing.
+						}
+					} else {
+						// select just this one
+						setSelection([item]);
+					}
 				}
 			} else {
 				// selectionMode is SELECTION_MODE_SINGLE
-				let newSelection;
+				let newSelection = selection;
 				if (isInSelection(item)) {
 					// Already selected
 					if (allowToggleSelection) {
@@ -424,10 +436,10 @@ export function Grid(props) {
 			// These header components should match the columns exactly
 			// so we can drag/drop them to control the columns.
 			const headerColumns = _.map(localColumnsConfig, (config, ix) => {
-				const {
+				let {
 						columnId,
-						header,
 						fieldName,
+						header = _.upperFirst(fieldName),
 						reorderable,
 						resizable,
 						sortable,
@@ -447,6 +459,11 @@ export function Grid(props) {
 				} else if (flex) {
 					propsToPass.flex = flex;
 					propsToPass.minWidth = 100;
+				} else if (localColumnsConfig.length === 1) {
+					// Only one column and flex is not set
+					propsToPass.flex = 1;
+					if (!header) {
+					}
 				}
 
 				return <Pressable
@@ -670,18 +687,13 @@ export function Grid(props) {
 		
 	useEffect(() => {
 
-		let LocalRepository = Repository;
-		if (model) {
-			LocalRepository = oneHatData.getRepository(model);
-		}
-
 		const calculateLocalColumnsConfig = () => {
 			// convert json config into actual elements
 			const localColumnsConfig = [];
-			if (_.isEmpty(columnsConfig) && LocalRepository?.schema?.model?.displayProperty) {
+			if (_.isEmpty(columnsConfig) && Repository?.schema?.model?.displayProperty) {
 				// create a column for the displayProperty
 				localColumnsConfig.push({
-					fieldName: LocalRepository.schema.model.displayProperty,
+					fieldName: Repository.schema.model.displayProperty,
 				});
 			} else {
 				_.each(columnsConfig, (columnConfig) => {
@@ -736,7 +748,7 @@ export function Grid(props) {
 			return localColumnsConfig;
 		};
 
-		if (!LocalRepository) {
+		if (!Repository) {
 			setLocalColumnsConfig(calculateLocalColumnsConfig());
 			setIsReady(true);
 			return () => {};
@@ -750,27 +762,26 @@ export function Grid(props) {
 				setSelection([]);
 			},
 			onChangeFilters = () => {
-				if (!LocalRepository.autoLoad && LocalRepository.isLoaded && !disableReloadOnChangeFilters) {
-					LocalRepository.reload();
+				if (!Repository.autoLoad && Repository.isLoaded && !disableReloadOnChangeFilters) {
+					Repository.reload();
 				}
 			};
 
-		LocalRepository.on('beforeLoad', setTrue);
-		LocalRepository.on('load', setFalse);
-		LocalRepository.ons(['changePage', 'changePageSize',], resetSelection);
-		LocalRepository.ons(['changeData', 'change'], forceUpdate);
-		LocalRepository.on('changeFilters', onChangeFilters);
+		Repository.on('beforeLoad', setTrue);
+		Repository.on('load', setFalse);
+		Repository.ons(['changePage', 'changePageSize',], resetSelection);
+		Repository.ons(['changeData', 'change'], forceUpdate);
+		Repository.on('changeFilters', onChangeFilters);
 
-		setLocalRepository(LocalRepository);
 		setLocalColumnsConfig(calculateLocalColumnsConfig());
 		setIsReady(true);
 
 		return () => {
-			LocalRepository.off('beforeLoad', setTrue);
-			LocalRepository.off('load', setFalse);
-			LocalRepository.offs(['changePage', 'changePageSize',], resetSelection);
-			LocalRepository.offs(['changeData', 'change'], forceUpdate);
-			LocalRepository.off('changeFilters', onChangeFilters);
+			Repository.off('beforeLoad', setTrue);
+			Repository.off('load', setFalse);
+			Repository.offs(['changePage', 'changePageSize',], resetSelection);
+			Repository.offs(['changeData', 'change'], forceUpdate);
+			Repository.off('changeFilters', onChangeFilters);
 		};
 	}, []);
 
@@ -816,13 +827,13 @@ export function Grid(props) {
 	}
 
 	const toolbarItemComponents = getToolbarItems();
-	if (Repository && bottomToolbar === 'pagination' && !disablePaging) {
+	if (Repository && bottomToolbar === 'pagination' && !disablePaging && Repository.isPaginated) {
 		listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={toolbarItemComponents} />;
 	} else if (toolbarItemComponents.length) {
 		listFooterComponent = <Toolbar>{toolbarItemComponents}</Toolbar>;
 	}
 
-	const entities = LocalRepository ? LocalRepository.getEntitiesOnPage() : data;
+	const entities = Repository ? Repository.getEntitiesOnPage() : data;
 	let initialNumToRender = 10;
 	if (entities && entities.length) {
 		initialNumToRender = entities.length;
@@ -889,4 +900,4 @@ export function Grid(props) {
 
 }
 
-export default withMultiSelection(withSelection(Grid));
+export default withData(withMultiSelection(withSelection(Grid)));

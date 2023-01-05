@@ -3,7 +3,7 @@ import {
 	Tooltip,
 } from 'native-base';
 
-// NOTE: Can't seem to get this working for Combos
+// NOTE: Can't seem to get this working for some elements like Combo or File
 
 export default function withTooltip(WrappedComponent) {
 	return (props) => {

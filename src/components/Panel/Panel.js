@@ -2,6 +2,7 @@ import { useState, } from 'react';
 import {
 	Column,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import {
@@ -19,18 +20,20 @@ import _ from 'lodash';
 export default function Panel(props) {
 	const {
 			isDisabled = false,
-			isCollapsed = false,
 			frame = false,
+			scrollable = false,
 			h,
 			w,
 			flex,
-
+			
 			// Header
-			title,
+			title = props.model,
+			showHeader = true,
 			header = null,
 			isClosable = false,
 			onClose = emptyFn,
 			isCollapsible = true,
+			isCollapsed = false,
 			collapseDirection = VERTICAL, // HORIZONTAL, VERTICAL
 
 			// Content
@@ -47,7 +50,7 @@ export default function Panel(props) {
 		};
 
 	let headerComponent = header;
-	if (title) {
+	if (showHeader && title) {
 		headerComponent = <Header
 								title={title}
 								isClosable={isClosable}
@@ -108,7 +111,6 @@ export default function Panel(props) {
 						{isDisabled && <div className="mask"></div>}
 						{headerComponent}
 					</Column>;
-
 		}
 		return <Column {...framePropsToUse}>
 					{isDisabled && <div className="mask"></div>}
@@ -120,7 +122,7 @@ export default function Panel(props) {
 				{headerComponent}
 				{topToolbar}
 				<Row flex={1} w="100%" {...propsToPass}>
-					{children}
+					{scrollable ? <ScrollView>{children}</ScrollView> : children}
 				</Row>
 				{bottomToolbar}
 				{footer}
