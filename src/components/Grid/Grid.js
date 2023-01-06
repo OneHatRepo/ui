@@ -3,6 +3,7 @@ import {
 	Column,
 	FlatList,
 	Icon,
+	Modal,
 	Pressable,
 	Row,
 	Text,
@@ -23,11 +24,12 @@ import styles from '../../Constants/Styles';
 import {
 	v4 as uuid,
 } from 'uuid';
+import getComponentFromType from '../../Functions/getComponentFromType';
 import useBlocking from '../../Hooks/useBlocking';
 import useForceUpdate from '../../Hooks/useForceUpdate';
-import withData from '../Hoc/withData';
-import withSelection from '../Hoc/withSelection';
-import withMultiSelection from '../Hoc/withMultiSelection';
+import withData from '../../Hoc/withData';
+import withSelection from '../../Hoc/withSelection';
+import withMultiSelection from '../../Hoc/withMultiSelection';
 import emptyFn from '../../Functions/emptyFn';
 import testProps from '../../Functions/testProps';
 import HeaderDragHandle from './HeaderDragHandle';
@@ -38,6 +40,7 @@ import PaginationToolbar from '../Toolbar/PaginationToolbar';
 import NoRecordsFound from './NoRecordsFound';
 import Toolbar from '../Toolbar/Toolbar';
 import AngleRight from '../Icons/AngleRight';
+import Gear from '../Icons/Gear';
 import SortDown from '../Icons/SortDown';
 import SortUp from '../Icons/SortUp';
 import _ from 'lodash';
@@ -80,6 +83,11 @@ import _ from 'lodash';
 			// √ state to keep track of current column sizes
 			// √ handler for resizing
 			// √ column configurable for resizable or not
+	// Filters
+		// Set them
+		// Button to select others
+		// Some way to show all possibilities in modal (equivalent of ModelFilters in old system)
+		// way to swap filters and have it affect Repository
 	// custom cell types
 		// Most would use text, and depend on @onehat/data for formatting
 	// editor
@@ -117,11 +125,12 @@ export function Grid(props) {
 			showRowExpander = false,
 			rowExpanderTpl = '',
 			
-			topToolbar,
+			// topToolbar,
 			bottomToolbar = 'pagination',
 			additionalToolbarButtons = [],
 			showHeaders = true,
 			showHovers = true,
+			showFilters = false,
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
@@ -133,8 +142,8 @@ export function Grid(props) {
 			// onRowsReordered,
 			// onColumnsReordered,
 
-			// editor
 
+			// editor
 			onSelect = emptyFn,
 			onAdd,
 			onEdit,
@@ -143,8 +152,6 @@ export function Grid(props) {
 			onDuplicate,
 			onReset,
 			onContextMenu,
-
-
 
 			// data source
 			Repository,
@@ -174,6 +181,7 @@ export function Grid(props) {
 		[isReady, setIsReady] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
+		[isFilterSelectorShown, setIsFilterSelectorShown] = useState(false),
 		[dragColumnSlot, setDragColumnSlot] = useState(null),
 		[headerWidth, setHeaderWidth] = useState('100%'),
 		[localColumnsConfig, setLocalColumnsConfig] = useState([]),
@@ -379,7 +387,60 @@ export function Grid(props) {
 				});
 			}
 		},
-		getToolbarItems = () => {
+		renderFilters = () => {
+			if (!Repository) {
+				return null;
+			}
+
+			const
+				{
+					titles,
+					defaultFilters,
+					filterTypes,
+				} = Repository.getSchema().model,
+				filterProps = {
+					mx: 1,
+				},
+				filterElements = [];
+			_.each(defaultFilters, (fieldName, ix) => {
+				const
+					filterType = filterTypes[fieldName];
+				let Element,
+					modelProps = {};
+				if (_.isString(filterType)) {
+					Element = getComponentFromType(filterType);
+				} else if (_.isPlainObject(filterType)) {
+					const {
+							type,
+							...p
+						} = filterType;
+					modelProps = p;
+					Element = getComponentFromType(type);
+				}
+				filterElements.push(<Element
+										key={ix}
+										tooltip={titles[fieldName]}
+										placeholder={titles[fieldName]}
+										onChangeValue={(value) => onFilterChange(fieldName, value)}
+										{...filterProps}
+										{...modelProps}
+									/>);
+			});
+			filterElements.push(<IconButton
+									key="gear"
+									_icon={{
+										as: Gear,
+									}}
+									ml={1}
+									onPress={() => setIsFilterSelectorShown(true)}
+								/>)
+
+			return filterElements;
+		},
+		onFilterChange = (fieldName, value) => {
+			debugger;
+		},
+		getFooterToolbarItems = () => {
 			const
 				iconButtonProps = {
 					_hover: {
@@ -499,6 +560,8 @@ export function Grid(props) {
 							<Text
 								key="Text"
 								fontSize={styles.GRID_HEADER_FONTSIZE}
+								borderBottomWidth={1}
+								borderBottomColor="trueGray.300"
 								overflow="hidden"
 								textOverflow="ellipsis"
 								flex={1}
@@ -793,6 +856,12 @@ export function Grid(props) {
 	if (!isReady) {
 		return null;
 	}
+
+	let topToolbar = null;
+	if (showFilters) {
+		topToolbar = <Toolbar>{renderFilters()}</Toolbar>
+	}
+
 	
 	let listHeaderComponent = null,
 		listFooterComponent = null;
@@ -815,11 +884,11 @@ export function Grid(props) {
 							</Row>;
 	}
 
-	const toolbarItemComponents = getToolbarItems();
+	const footerToolbarItemComponents = getFooterToolbarItems();
 	if (Repository && bottomToolbar === 'pagination' && !disablePaging && Repository.isPaginated) {
-		listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={toolbarItemComponents} />;
-	} else if (toolbarItemComponents.length) {
-		listFooterComponent = <Toolbar>{toolbarItemComponents}</Toolbar>;
+		listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
+	} else if (footerToolbarItemComponents.length) {
+		listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 	}
 
 	const entities = Repository ? Repository.getEntitiesOnPage() : data;
@@ -836,7 +905,7 @@ export function Grid(props) {
 				w="100%"
 				onLayout = {() => setIsRendered(true)}
 			>
-				{topToolbar && <Toolbar>{topToolbar}</Toolbar>}
+				{topToolbar}
 
 				{listHeaderComponent}
 
@@ -883,8 +952,17 @@ export function Grid(props) {
 					
 				}
 
-			{listFooterComponent}
+				{listFooterComponent}
 
+				<Modal
+					animationType="fade"
+					isOpen={isFilterSelectorShown}
+					onClose={() => setIsFilterSelectorShown(false)}
+				>
+					<Column bg="#fff" w={500} h={400}>
+						<Text>Filter selector here!</Text>
+					</Column>
+				</Modal>
 			</Column>;
 
 }

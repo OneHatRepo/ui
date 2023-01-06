@@ -4,9 +4,9 @@ import {
 	Checkbox,
 	Row,
 } from 'native-base';
-import withData from '../../../Hoc/withData';
-import withValue from '../../../Hoc/withValue';
-import withTooltip from '../../../Hoc/withTooltip';
+import withData from '../../../../Hoc/withData';
+import withValue from '../../../../Hoc/withValue';
+import withTooltip from '../../../../Hoc/withTooltip';
 import _ from 'lodash';
 
 const

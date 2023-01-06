@@ -1,7 +1,7 @@
 import { useEffect, useState, } from 'react';
 import Panel from './Panel';
 import Grid from '../Grid/Grid';
-import withData from '../Hoc/withData';
+import withData from '../../Hoc/withData';
 import _ from 'lodash';
 
 export function GridPanel(props) {

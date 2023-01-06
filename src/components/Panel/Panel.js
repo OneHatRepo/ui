@@ -10,7 +10,7 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions';
 import Header from './Header';
-import withCollapsible from '../Hoc/withCollapsible';
+import withCollapsible from '../../Hoc/withCollapsible';
 import emptyFn from '../../Functions/emptyFn';
 import _ from 'lodash';
 

@@ -7,9 +7,9 @@ import {
 	Tooltip,
 } from 'native-base';
 import styles from '../../../../Constants/Styles';
-import withSelection from '../../../Hoc/withSelection';
-import withData from '../../../Hoc/withData';
-import withValue from '../../../Hoc/withValue';
+import withSelection from '../../../../Hoc/withSelection';
+import withData from '../../../../Hoc/withData';
+import withValue from '../../../../Hoc/withValue';
 import emptyFn from '../../../../Functions/emptyFn';
 import { Grid } from '../../../Grid/Grid';
 import IconButton from '../../../Buttons/IconButton';

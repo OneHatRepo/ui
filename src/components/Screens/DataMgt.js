@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useEffect, useState, useRef, } from 'react';
 import {
 	Button,
 	Column,
@@ -47,11 +47,17 @@ export default function DataMgt(props) {
 			associatedPanels = [], // array of panel config objects.
 			associatedPanelsPerTab = 3,
 		} = props,
+		// westCoastRef = useRef(),
+		// columnsRef = useRef(),
+		// filtersRef = useRef(),
 		[isWestCoastCollapsed, setIsWestCoastCollapsed] = useState(westCoastStartsCollapsed),
 		[isEastCoastCollapsed, setIsEastCoastCollapsed] = useState(eastCoastStartsCollapsed),
 		[isIowaCollapsed, setIsIowaCollapsed] = useState(iowaStartsCollapsed),
 		[isIndianaCollapsed, setIsIndianaCollapsed] = useState(indianaStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
+		// [eventsMapping, setEventsMapping] = useState({}),
+		[illinoisSelectorSelected, setIllinoisSelectorSelected] = useState(),
+		[filtersFilters, setFiltersFilters] = useState(),
 		onToggleFullscreen = () => {
 			const newIsFullScreen = !isFullscreen;
 			setIsFullscreen(!newIsFullScreen);
@@ -66,9 +72,98 @@ export default function DataMgt(props) {
 				setIsIowaCollapsed(false);
 				setIsIndianaCollapsed(false);
 			}
+		},
+		fireEvent = (fromRef, eventName, args) => {
+			if (!eventsMapping[fromRef]) {
+				debugger;
+			}
+			if (!eventsMapping[fromRef][eventName]) {
+				debugger;
+			}
 
+			// Fire event
+			_.each(eventsMapping[fromRef][eventName], (roRef) => {
+				debugger;
+				switch(eventName) {
+					case 'setInitialFilter':
+						onSetInitialFilter(args);
+						break;
+					case 'swapFilter':
+						onSwapFilter(args);
+						break;
+					case 'changeSelection':
+						onChangeSelection(args);
+						break;
+					default:
+				}
+			});
+		},
+		onIllinoisSetInitialFilterToFilters = (filters) => {
+			setFiltersFilters(filters);
+		},
+		onChangeSelectorSelected = (selectorSelected) => {
+			setIllinoisSelectorSelected(selectorSelected);
 		};
 		
+
+		
+	// useEffect(() => {
+	// 	const
+	// 		eventsMapping = {},
+	// 		relayEvents = (fromRef, toRef, eventNames = [], prefix, handler) => {
+	// 			_.each(eventNames, (eventName) => relayEvent(fromRef, toRef, eventName, prefix, handler))
+	// 		},
+	// 		relayEvent = (fromRef, toRef, eventName, prefix = '', handler) => {
+	// 			if (!eventsMapping[fromRef]) {
+	// 				eventsMapping[fromRef] = {};
+	// 			}
+	// 			if (!eventsMapping[fromRef][prefix + eventName]) {
+	// 				eventsMapping[fromRef][prefix + eventName] = [];
+	// 			}
+	// 			// if (!eventsMapping[fromRef][prefix + eventName][toRef]) {
+	// 			// 	eventsMapping[fromRef][prefix + eventName][toRef] = {};
+	// 			// }
+	// 			eventsMapping[fromRef][prefix + eventName].push(toRef);
+	// 		};
+
+	// 	// Wire up the events
+	// 	if (FiltersElementType) {
+	// 		relayEvents('illinois', 'filters', ['setInitialFilter']);
+	// 		relayEvents('filters', 'illinois', ['swapFilter']);
+	// 	}
+	// 	if (ColumnsElementType) {
+	// 		relayEvents('columns', 'illinois', ['changeColumns']);
+	// 	}
+	// 	if (WestCoastElementType) {
+	// 		relayEvents('westCoast', 'illinois', ['changeSelection'], 'selector_');
+	// 		// relayEvents(this, 'westCoast', ['externalChangeSelection']);
+	// 	}
+	// 	if (IndianaElementType) {
+	// 		if (WestCoastElementType) {
+	// 			relayEvents('westCoast', 'indiana', ['changeSelection'], 'selector_');
+	// 		}
+	// 		relayEvents('indiana', 'illinois', ['saveRecord', 'cancelEdit']);
+	// 		relayEvents('illinois', 'indiana', ['changeSelection'], 'fromInlineGridEditor_');
+	// 	}
+		
+	// 	// Assign events to associated panels
+	// 	_.each(associatedPanels, (associatedPanel, ix) => {
+	// 		if (associatedPanel.props.hasSelector) {
+	// 			relayEvents('illinois', 'associatedPanel' + ix, ['changeSelection'], 'selector_');
+	// 		}
+	// 		// if (config.xtype === 'uploadDownload') {
+	// 		// 	illinois.relayEvents(associatedPanel, ['batchUpload']);
+	// 		// 	associatedPanel.relayEvents(illinois, ['changeFilterSettings', 'changeSortOrder']);
+	// 		// 	associatedPanel.relayEvents(oThis, ['changeNode', 'changeColumns', 'changeLockout']);
+	// 		// 	if (westCoast && oThis.illinoisSelector_id) {
+	// 		// 		associatedPanel.setSelectorId(oThis.illinoisSelector_id);
+	// 		// 		associatedPanel.relayEvents(westCoast, ['changeSelection'], 'selector_');
+	// 		// 	}
+	// 		// }
+	// 	});
+		
+	// 	setEventsMapping(eventsMapping);
+	// }, []);
 
 	
 	//   REGIONS ------------------------------------------------------------------------
@@ -108,6 +203,9 @@ export default function DataMgt(props) {
 						disablePaging={true}
 						uniqueRepository={true}
 						selectionMode={SELECTION_MODE_SINGLE}
+						fireEvent={fireEvent}
+						reference={'westCoast'}
+						// ref={westCoastRef}
 						{...westCoastProps}
 					/>;
 	}
@@ -116,6 +214,14 @@ export default function DataMgt(props) {
 	if ((show_filters && FiltersElementType) || (show_columns && ColumnsElementType)) {
 		let iowaTitle = 'Filters',
 			iowaChildren = null;
+			columnsProps.fireEvent = fireEvent;
+			columnsProps.reference = 'columns';
+			// columnsProps.ref = columnsRef;
+			filtersProps.fireEvent = fireEvent;
+			filtersProps.reference = 'filters';
+			// filtersProps.ref = filtersRef;
+			filtersProps.filters = filtersFilters;
+			filtersProps.selectionMode = SELECTION_MODE_SINGLE;
 		if ((show_filters && FiltersElementType) && (show_columns && ColumnsElementType)) {
 			// Both filters and columns panels
 			iowaChildren = <Container
@@ -152,9 +258,12 @@ export default function DataMgt(props) {
 						frame={false}
 						split={false}
 						selector_id={show_selector ? illinoisSelector_id : null}
+						selectorSelected={illinoisSelectorSelected}
 						noSelectorMeansNoResults={illinoisNoSelectorMeansNoResults}
 						onToggleFullscreen={onToggleFullscreen}
 						isFullscreen={isFullscreen}
+						fireEvent={fireEvent}
+						reference={'illinois'}
 						{...illinoisProps}
 					/>;
 	}
@@ -169,6 +278,8 @@ export default function DataMgt(props) {
 						w={330}
 						selector_id={indianaSelector_id}
 						noSelectorMeansNoResults={true}
+						fireEvent={fireEvent}
+						reference={'indiana'}
 						{...indianaProps}
 					/>;
 	}
@@ -178,13 +289,14 @@ export default function DataMgt(props) {
 		const
 			tabs = [],
 			associatedPanelProps = {
+				fireEvent: fireEvent,
 				// isCollapsible: false,
 				// selectorMode: OneHat.Globals.SINGLE,
 			};
 		if (associatedPanels.length > associatedPanelsPerTab) {
 			let tabIx = 0,
 				panelIx = 0;
-			_.each(associatedPanels, (associatedPanel) => {
+			_.each(associatedPanels, (associatedPanel, ix) => {
 				if (panelIx === associatedPanelsPerTab) {
 					// New tab
 					panelIx = 0;
@@ -197,7 +309,7 @@ export default function DataMgt(props) {
 					};
 				}
 				if (!_.isEmpty(associatedPanelProps)) {
-					associatedPanel = React.cloneElement(associatedPanel, {...associatedPanelProps});
+					associatedPanel = React.cloneElement(associatedPanel, { reference: 'associatedPanel' + ix, ...associatedPanelProps});
 				}
 				tabs[tabIx].items.push(associatedPanel);
 				panelIx++;
@@ -229,52 +341,6 @@ export default function DataMgt(props) {
 	}
 	
 	
-	// // Relay events
-	// if (this.passActivationEvents) {
-	// 	illinois.relayEvents(this, ['activate', 'deactivate']);
-	// }
-	// if (filters) {
-	// 	filters.relayEvents(illinois, ['setInitialFilter']);
-	// 	illinois.relayEvents(this, ['swapFilter']);
-	// }
-	// if (columns) {
-	// 	illinois.relayEvents(columns, ['changeColumns']);
-	// }
-	// if (westCoast) {
-	// 	illinois.relayEvents(westCoast, ['changeSelection'], 'selector_');
-	// 	if (this.passActivationEvents) {
-	// 		westCoast.relayEvents(this, ['activate', 'deactivate']);
-	// 	}
-	// 	westCoast.relayEvents(this, ['externalChangeSelection']);
-	// }
-	// if (indiana) {
-	// 	if (westCoast) {
-	// 		indiana.relayEvents(westCoast, ['changeSelection'], 'selector_');
-	// 	}
-	// 	illinois.relayEvents(indiana, ['saveRecord', 'cancelEdit']);
-	// 	indiana.relayEvents(illinois, ['changeSelection'], 'fromInlineGridEditor_');
-	// }
-	
-	// // Assign events to associated panels
-	// Ext.each(this.associatedPanels, function(config, ix) {
-	// 	var ap = oThis.associatedPanels;
-	// 	if (!config) {
-	// 		return;
-	// 	}
-	// 	var associatedPanel = oThis.lookupReference('associated' + ix);
-	// 	if (config.has_selector) {
-	// 		associatedPanel.relayEvents((config.controlled_by_illinois ? illinois : westCoast), ['changeSelection'], 'selector_');
-	// 	}
-	// 	if (config.xtype === 'uploadDownload') {
-	// 		illinois.relayEvents(associatedPanel, ['batchUpload']);
-	// 		associatedPanel.relayEvents(illinois, ['changeFilterSettings', 'changeSortOrder']);
-	// 		associatedPanel.relayEvents(oThis, ['changeNode', 'changeColumns', 'changeLockout']);
-	// 		if (westCoast && oThis.illinoisSelector_id) {
-	// 			associatedPanel.setSelectorId(oThis.illinoisSelector_id);
-	// 			associatedPanel.relayEvents(westCoast, ['changeSelection'], 'selector_');
-	// 		}
-	// 	}
-	// });
 	
 	// this.on('toggleFullScreen', function(enable) {
 	// 	if (enable) {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import emptyFn from '../../Functions/emptyFn';
+import emptyFn from '../Functions/emptyFn';
 
 export default function withValue(WrappedComponent) {
 	return (props) => {

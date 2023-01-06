@@ -8,7 +8,7 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions';
 import styles from '../../Styles/StyleSheets';
-import withDraggable from '../Hoc/withDraggable';
+import withDraggable from '../../Hoc/withDraggable';
 
 // Note on modes:
 // HORIZONTAL means the Splitter moves along the X axis.

@@ -15,7 +15,7 @@ import "react-datetime/css/react-datetime.css";
 // import DateTimePickerModal from 'react-native-modal-datetime-picker'; // https://github.com/mmazzarolo/react-native-modal-datetime-picker
 // import DateTimePicker from '@react-native-community/datetimepicker'; // https://github.com/react-native-datetimepicker/datetimepicker
 import IconButton from '../../Buttons/IconButton';
-import withValue from '../../Hoc/withValue';
+import withValue from '../../../Hoc/withValue';
 import emptyFn from '../../../Functions/emptyFn';
 import Formatters from '@onehat/data/src/Util/Formatters';
 import Calendar from '../../Icons/Calendar';

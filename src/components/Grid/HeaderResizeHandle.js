@@ -9,7 +9,7 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions';
 import styles from '../../Styles/StyleSheets.js';
-import withDraggable from '../Hoc/withDraggable';
+import withDraggable from '../../Hoc/withDraggable';
 import GripLinesVertical from '../Icons/GripLinesVertical';
 
 function HeaderResizeHandle(props) {

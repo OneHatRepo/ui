@@ -2,7 +2,7 @@ import * as appStyles from '../../Constants/Styles';
 import _ from 'lodash';
 
 const
-	DEFAULT_FONTSIZE = 16,
+	DEFAULT_FONTSIZE = 15,
 	WHITE = '#fff';
 
 const defaults = {
@@ -16,6 +16,7 @@ const defaults = {
 	LABEL_WIDTH: '170px',
 	LABEL_FONTSIZE: DEFAULT_FONTSIZE,
 	FILE_INPUT_FONTSIZE: DEFAULT_FONTSIZE,
+	INPUT_BG: WHITE,
 	INPUT_FONTSIZE: DEFAULT_FONTSIZE,
 	TEXTAREA_FONTSIZE: DEFAULT_FONTSIZE,
 	TEXTAREA_HEIGHT: 130,

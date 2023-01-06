@@ -6,8 +6,8 @@ import {
 } from 'native-base';
 import styles from '../../../Constants/Styles';
 import IconButton from '../../Buttons/IconButton';
-import withTooltip from '../../Hoc/withTooltip';
-import withValue from '../../Hoc/withValue';
+import withTooltip from '../../../Hoc/withTooltip';
+import withValue from '../../../Hoc/withValue';
 import Plus from '../../Icons/Plus';
 import Minus from '../../Icons/Minus';
 

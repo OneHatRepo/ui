@@ -11,7 +11,7 @@ import { useForm, Controller } from 'react-hook-form'; // https://react-hook-for
 import { yupResolver } from '@hookform/resolvers/yup';
 import useForceUpdate from '../../Hooks/useForceUpdate';
 import inArray from '../../Functions/inArray';
-import getFormElementFromType from './getFormElementFromType';
+import getComponentFromType from '../../Functions/getComponentFromType';
 import IconButton from '../Buttons/IconButton';
 import Rotate from '../Icons/Rotate';
 import Pencil from '../Icons/Pencil';
@@ -75,7 +75,7 @@ function Form(props) {
 					items,
 					...propsToPass
 				} = item,
-				Element = getFormElementFromType(type),
+				Element = getComponentFromType(type),
 				rules = {}
 
 			let children;

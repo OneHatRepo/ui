@@ -7,6 +7,8 @@ import _ from 'lodash';
 // without changing anything. In that way, a component can have multiple
 // levels of withData() applied, to no ill effect.
 
+// This is the primary link between @onehat/data and the UI components
+
 export default function withData(WrappedComponent) {
 	return (props) => {
 		const
@@ -14,10 +16,8 @@ export default function withData(WrappedComponent) {
 				Repository,
 				uniqueRepository = false,
 				model,
-				// data,
-				// fields,
-				// idField,
-				// displayField,
+				filters,
+
 			} = props,
 			usePassThrough = !!Repository,
 			[LocalRepository, setLocalRepository] = useState(),
@@ -37,6 +37,16 @@ export default function withData(WrappedComponent) {
 			}
 			setIsReady(true);
 		}, []);
+
+
+		// useEffect(() => {
+		// 	if (!LocalRepository) {
+		// 		return () => {};
+		// 	}
+
+		// 	LocalRepository.setFilters(filters);
+
+		// }, [LocalRepository, filters]);
 
 		if (!usePassThrough && !isReady) {
 			return null;
