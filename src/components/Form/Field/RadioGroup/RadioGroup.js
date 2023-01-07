@@ -4,9 +4,9 @@ import {
 	Radio,
 	Row,
 } from 'native-base';
-import withData from '../../../../Hoc/withData';
-import withValue from '../../../../Hoc/withValue';
-import withTooltip from '../../../../Hoc/withTooltip';
+import withData from '../../../Hoc/withData';
+import withValue from '../../../Hoc/withValue';
+import withTooltip from '../../../Hoc/withTooltip';
 import _ from 'lodash';
 
 const
@@ -17,9 +17,8 @@ const
 				// data source
 				Repository,
 				data,
-				fields,
-				idField,
-				displayField,
+				idIx,
+				displayIx,
 			} = props,
 			[radios, setRadioes] = useState([]);
 
@@ -40,8 +39,6 @@ const
 							>{entity.displayValue}</Radio>;
 				});
 			} else {
-				const idIx = fields.indexOf(idField),
-					displayIx = fields.indexOf(idField);
 				radios = _.map(data, (datum, ix) => {
 					return <Radio
 								key={ix}

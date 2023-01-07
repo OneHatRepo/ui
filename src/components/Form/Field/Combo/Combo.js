@@ -7,9 +7,9 @@ import {
 	Tooltip,
 } from 'native-base';
 import styles from '../../../../Constants/Styles';
-import withSelection from '../../../../Hoc/withSelection';
-import withData from '../../../../Hoc/withData';
-import withValue from '../../../../Hoc/withValue';
+import withSelection from '../../../Hoc/withSelection';
+import withData from '../../../Hoc/withData';
+import withValue from '../../../Hoc/withValue';
 import emptyFn from '../../../../Functions/emptyFn';
 import { Grid } from '../../../Grid/Grid';
 import IconButton from '../../../Buttons/IconButton';
@@ -34,9 +34,8 @@ export function Combo(props) {
 			// data source
 			Repository,
 			data,
-			fields,
-			idField,
-			displayField,
+			idIx,
+			displayIx,
 
 			// withSelection() HOC
 			selection,
@@ -202,12 +201,11 @@ export function Combo(props) {
 
 			} else {
 				// Search through data
-				const ix = fields.indexOf(displayField);
 				found = _.find(data, (item) => {
-					if (_.isString(item[ix]) && _.isString(value)) {
-						return item[ix].toLowerCase() === value.toLowerCase();
+					if (_.isString(item[displayIx]) && _.isString(value)) {
+						return item[displayIx].toLowerCase() === value.toLowerCase();
 					}
-					return item[ix] === value;
+					return item[displayIx] === value;
 				});
 				if (found) {
 					const
@@ -243,7 +241,6 @@ export function Combo(props) {
 		} else {
 			// Get data item or items that match value
 			if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
-				const ix = fields.indexOf(idField);
 				let currentValue = value;
 				if (!_.isArray(currentValue)) {
 					currentValue = [currentValue];
@@ -251,10 +248,10 @@ export function Combo(props) {
 				_.each(currentValue, (val) => {
 					// Search through data
 					const found = _.find(data, (item) => {
-						if (_.isString(item[ix]) && _.isString(val)) {
-							return item[ix].toLowerCase() === val.toLowerCase();
+						if (_.isString(item[idIx]) && _.isString(val)) {
+							return item[idIx].toLowerCase() === val.toLowerCase();
 						}
-						return item[ix] === val;
+						return item[idIx] === val;
 					});
 					if (found) {
 						newSelection.push(found);
@@ -300,7 +297,7 @@ export function Combo(props) {
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
-
+	
 	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 								<Input
 									ref={inputRef}
@@ -421,4 +418,4 @@ export function Combo(props) {
 	return comboComponent;
 }
 
-export default withValue(withData(withSelection(Combo)));
+export default withData(withValue(withSelection(Combo)));

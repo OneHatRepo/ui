@@ -29,18 +29,13 @@ export default function DataMgt(props) {
 			westCoastWidth = 300,
 			westCoastProps = {},
 			// westCoastPermission,
-			iowaStartsCollapsed = false,
-			FiltersElementType,
-			filtersProps = {},
-			ColumnsElementType,
-			columnsProps = {},
 			IllinoisElementType,
 			illinoisNoSelectorMeansNoResults = true,
-			illinoisSelector_id, // what selector_id illinois listens to (and a few other things)
+			illinoisSelector_id, // what selectorId illinois listens to (and a few other things)
 			illinoisProps = {},
 			IndianaElementType,
 			indianaStartsCollapsed = false,
-			indianaSelector_id, // What selector_id to use for the Indiana formPanel
+			indianaSelector_id, // What selectorId to use for the Indiana formPanel
 			indianaProps = {},
 			eastCoastStartsCollapsed = false,
 			eastCoastWidth = 340,
@@ -48,83 +43,32 @@ export default function DataMgt(props) {
 			associatedPanelsPerTab = 3,
 		} = props,
 		// westCoastRef = useRef(),
-		// columnsRef = useRef(),
-		// filtersRef = useRef(),
 		[isWestCoastCollapsed, setIsWestCoastCollapsed] = useState(westCoastStartsCollapsed),
 		[isEastCoastCollapsed, setIsEastCoastCollapsed] = useState(eastCoastStartsCollapsed),
-		[isIowaCollapsed, setIsIowaCollapsed] = useState(iowaStartsCollapsed),
 		[isIndianaCollapsed, setIsIndianaCollapsed] = useState(indianaStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
-		// [eventsMapping, setEventsMapping] = useState({}),
+		[westCoastSelectorSelected, setWestCoastSelectorSelected] = useState(),
 		[illinoisSelectorSelected, setIllinoisSelectorSelected] = useState(),
-		[filtersFilters, setFiltersFilters] = useState(),
 		onToggleFullscreen = () => {
 			const newIsFullScreen = !isFullscreen;
 			setIsFullscreen(!newIsFullScreen);
 			if (newIsFullScreen) {
 				setIsWestCoastCollapsed(true);
 				setIsEastCoastCollapsed(true);
-				setIsIowaCollapsed(true);
 				setIsIndianaCollapsed(true);
 			} else {
 				setIsWestCoastCollapsed(false);
 				setIsEastCoastCollapsed(false);
-				setIsIowaCollapsed(false);
 				setIsIndianaCollapsed(false);
 			}
 		},
-		fireEvent = (fromRef, eventName, args) => {
-			if (!eventsMapping[fromRef]) {
-				debugger;
-			}
-			if (!eventsMapping[fromRef][eventName]) {
-				debugger;
-			}
+		onNavigateTo = (path) => {
 
-			// Fire event
-			_.each(eventsMapping[fromRef][eventName], (roRef) => {
-				debugger;
-				switch(eventName) {
-					case 'setInitialFilter':
-						onSetInitialFilter(args);
-						break;
-					case 'swapFilter':
-						onSwapFilter(args);
-						break;
-					case 'changeSelection':
-						onChangeSelection(args);
-						break;
-					default:
-				}
-			});
-		},
-		onIllinoisSetInitialFilterToFilters = (filters) => {
-			setFiltersFilters(filters);
-		},
-		onChangeSelectorSelected = (selectorSelected) => {
-			setIllinoisSelectorSelected(selectorSelected);
 		};
 		
 
 		
 	// useEffect(() => {
-	// 	const
-	// 		eventsMapping = {},
-	// 		relayEvents = (fromRef, toRef, eventNames = [], prefix, handler) => {
-	// 			_.each(eventNames, (eventName) => relayEvent(fromRef, toRef, eventName, prefix, handler))
-	// 		},
-	// 		relayEvent = (fromRef, toRef, eventName, prefix = '', handler) => {
-	// 			if (!eventsMapping[fromRef]) {
-	// 				eventsMapping[fromRef] = {};
-	// 			}
-	// 			if (!eventsMapping[fromRef][prefix + eventName]) {
-	// 				eventsMapping[fromRef][prefix + eventName] = [];
-	// 			}
-	// 			// if (!eventsMapping[fromRef][prefix + eventName][toRef]) {
-	// 			// 	eventsMapping[fromRef][prefix + eventName][toRef] = {};
-	// 			// }
-	// 			eventsMapping[fromRef][prefix + eventName].push(toRef);
-	// 		};
 
 	// 	// Wire up the events
 	// 	if (FiltersElementType) {
@@ -162,27 +106,22 @@ export default function DataMgt(props) {
 	// 		// }
 	// 	});
 		
-	// 	setEventsMapping(eventsMapping);
 	// }, []);
 
-	
-	//   REGIONS ------------------------------------------------------------------------
-	// 	[				] [											] [					]
-	// 	[	westCoast	] [					midwest					] [	  eastCoast		]
-	// 	[				] [											] [					]
-	//   SUB-REGIONS --------------------------------------------------------------------
-	// 	[				] [			] [					] [			] [					]
-	//	[				] [	  iowa	] [	   illinois		] [	indiana	] [		tabpanel?	]
-	// 	[				] [			] [					] [			] [					]
-	//   PANELS -------------------------------------------------------------------------
-	// 	[				] [	filters	] [					] [			] [	associated1		]
-	// 	[				] [			] [					] [			] [	associated2		]
-	// 	[				] [	columns	] [					] [			] [	associated3...	]
-	// 	[				] [			] [					] [			] [	uploadDownload	]
-	//   --------------------------------------------------------------------------------
+
+	//   REGIONS -------------------------------------------------------
+	// 	[				] [							] [					]
+	// 	[	westCoast	] [		   illinois			] [	  eastCoast		]
+	// 	[				] [							] [					]
+	//   PANELS ---------------------------------------------------------
+	// 	[				] [							] [	associated1		]
+	// 	[				] [							] [	associated2		]
+	// 	[				] [							] [	associated3...	]
+	// 	[				] [							] [	uploadDownload	]
+	//   ---------------------------------------------------------------
+
 
 	let westCoast,
-		iowa,
 		illinois,
 		indiana,
 		eastCoast;
@@ -203,47 +142,11 @@ export default function DataMgt(props) {
 						disablePaging={true}
 						uniqueRepository={true}
 						selectionMode={SELECTION_MODE_SINGLE}
-						fireEvent={fireEvent}
-						reference={'westCoast'}
-						// ref={westCoastRef}
+						onChangeSelection={setWestCoastSelectorSelected}
+						onNavigateTo={onNavigateTo}
+						reference="westCoast"
 						{...westCoastProps}
 					/>;
-	}
-
-	// 'iowa' section
-	if ((show_filters && FiltersElementType) || (show_columns && ColumnsElementType)) {
-		let iowaTitle = 'Filters',
-			iowaChildren = null;
-			columnsProps.fireEvent = fireEvent;
-			columnsProps.reference = 'columns';
-			// columnsProps.ref = columnsRef;
-			filtersProps.fireEvent = fireEvent;
-			filtersProps.reference = 'filters';
-			// filtersProps.ref = filtersRef;
-			filtersProps.filters = filtersFilters;
-			filtersProps.selectionMode = SELECTION_MODE_SINGLE;
-		if ((show_filters && FiltersElementType) && (show_columns && ColumnsElementType)) {
-			// Both filters and columns panels
-			iowaChildren = <Container
-								north={<FiltersElementType showHeader={false} h={200} {...filtersProps} />}
-								center={<ColumnsElementType title="Columns" isCollapsible={false} {...columnsProps}/>}
-							/>;
-		} else if (show_filters && FiltersElementType) {
-			// Only filters panel
-			iowaChildren = <FiltersElementType showHeader={false} {...filtersProps} />;
-		} else if (show_columns && ColumnsElementType) {
-			// Only columns panel
-			iowaTitle = 'Columns';
-			iowaChildren = <ColumnsElementType showHeader={false} {...columnsProps} />;
-		}
-		iowa = <Panel
-					title={iowaTitle}
-					startsCollapsed={iowaStartsCollapsed}
-					collapseDirection={HORIZONTAL}
-					frame={false}
-					split={false}
-					w={185}
-				>{iowaChildren}</Panel>;
 	}
 
 	// 'illinois' section
@@ -257,13 +160,14 @@ export default function DataMgt(props) {
 						isCollapsible={false}
 						frame={false}
 						split={false}
-						selector_id={show_selector ? illinoisSelector_id : null}
-						selectorSelected={illinoisSelectorSelected}
+						selectorId={show_selector ? illinoisSelector_id : null}
+						selectorSelected={westCoastSelectorSelected}
 						noSelectorMeansNoResults={illinoisNoSelectorMeansNoResults}
 						onToggleFullscreen={onToggleFullscreen}
 						isFullscreen={isFullscreen}
-						fireEvent={fireEvent}
-						reference={'illinois'}
+						onChangeSelection={setIllinoisSelectorSelected}
+						onNavigateTo={onNavigateTo}
+						reference="illinois"
 						{...illinoisProps}
 					/>;
 	}
@@ -276,10 +180,10 @@ export default function DataMgt(props) {
 						frame={false}
 						split={false}
 						w={330}
-						selector_id={indianaSelector_id}
+						selectorId={indianaSelector_id}
+						selectorSelected={illinoisSelectorSelected}
 						noSelectorMeansNoResults={true}
-						fireEvent={fireEvent}
-						reference={'indiana'}
+						reference="indiana"
 						{...indianaProps}
 					/>;
 	}
@@ -289,9 +193,9 @@ export default function DataMgt(props) {
 		const
 			tabs = [],
 			associatedPanelProps = {
-				fireEvent: fireEvent,
 				// isCollapsible: false,
-				// selectorMode: OneHat.Globals.SINGLE,
+
+				onNavigateTo,
 			};
 		if (associatedPanels.length > associatedPanelsPerTab) {
 			let tabIx = 0,
@@ -334,7 +238,7 @@ export default function DataMgt(props) {
 							w={eastCoastWidth}
 						>
 								{_.map(associatedPanels, (associatedPanel, ix) => {
-									return React.cloneElement(associatedPanel, { key: ix, ...associatedPanelProps});
+									return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...associatedPanelProps});
 								})}
 						</Panel>;
 		}
@@ -342,35 +246,6 @@ export default function DataMgt(props) {
 	
 	
 	
-	// this.on('toggleFullScreen', function(enable) {
-	// 	if (enable) {
-	// 		if (eastCoast) {
-	// 			eastCoast.collapse();
-	// 		}
-	// 		if (indiana) {
-	// 			indiana.collapse();
-	// 		}
-	// 		if (iowa) {
-	// 			iowa.collapse();
-	// 		}
-	// 		if (westCoast) {
-	// 			westCoast.collapse();
-	// 		}
-	// 	} else {
-	// 		if (eastCoast) {
-	// 			eastCoast.expand(null, false);
-	// 		}
-	// 		if (indiana) {
-	// 			indiana.expand(null, false);
-	// 		}
-	// 		if (iowa) {
-	// 			iowa.expand(null, false);
-	// 		}
-	// 		if (westCoast) {
-	// 			westCoast.expand(null, false);
-	// 		}
-	// 	}
-	// });
 
 	// // Actions for event 'navigateTo'
 	// this.selectWestCoast = function(id, callback) {
@@ -420,9 +295,6 @@ export default function DataMgt(props) {
 				isWestCollapsed={isWestCoastCollapsed}
 				setIsWestCollapsed={setIsWestCoastCollapsed}
 				center={<Container
-							west={iowa}
-							isWestCollapsed={isIowaCollapsed}
-							setIsWestCollapsed={setIsIowaCollapsed}
 							center={illinois}
 							east={indiana}
 							isEastCollapsed={isIndianaCollapsed}

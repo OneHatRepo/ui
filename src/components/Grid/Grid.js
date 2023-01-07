@@ -27,11 +27,12 @@ import {
 import getComponentFromType from '../../Functions/getComponentFromType';
 import useBlocking from '../../Hooks/useBlocking';
 import useForceUpdate from '../../Hooks/useForceUpdate';
-import withData from '../../Hoc/withData';
-import withSelection from '../../Hoc/withSelection';
-import withMultiSelection from '../../Hoc/withMultiSelection';
-import emptyFn from '../../Functions/emptyFn';
+import withData from '../Hoc/withData';
+import withSelection from '../Hoc/withSelection';
+import withMultiSelection from '../Hoc/withMultiSelection';
+import inArray from '../../Functions/inArray';
 import testProps from '../../Functions/testProps';
+import FormPanel from '../Panel/FormPanel';
 import HeaderDragHandle from './HeaderDragHandle';
 import HeaderResizeHandle from './HeaderResizeHandle';
 import IconButton from '../Buttons/IconButton';
@@ -100,7 +101,7 @@ import _ from 'lodash';
 export function Grid(props) {
 	const {
 
-			columnsConfig = [], // json configurations for each column in format:
+			columnsConfig = [], // json configurations for each column
 
 			columnProps = {},
 			getRowProps = () => {
@@ -113,21 +114,14 @@ export function Grid(props) {
 				};
 			},
 			flatListProps = {},
-
-			noSelectorMeansNoResults = false,
 			// enableEditors = false,
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
 			disableLoadingIndicator = false,
 			disableReloadOnChangeFilters = false,
-
 			showRowExpander = false,
 			rowExpanderTpl = '',
-			
-			// topToolbar,
-			bottomToolbar = 'pagination',
-			additionalToolbarButtons = [],
 			showHeaders = true,
 			showHovers = true,
 			showFilters = false,
@@ -136,15 +130,10 @@ export function Grid(props) {
 			canColumnsResize = true,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disablePaging = false,
-			initialScrollIndex = 0,
-
-			// onColumnResized,
-			// onRowsReordered,
-			// onColumnsReordered,
-
+			bottomToolbar = 'pagination',
+			additionalToolbarButtons = [],
 
 			// editor
-			onSelect = emptyFn,
 			onAdd,
 			onEdit,
 			onRemove,
@@ -159,17 +148,30 @@ export function Grid(props) {
 			fields,
 			idField,
 			displayField,
+			idIx,
+			displayIx,
 
-			// withSelection() HOC
+			// selection
 			selection,
 			setSelection,
 			selectionMode,
-			selectNext,
-			selectPrev,
 			removeFromSelection,
 			addToSelection,
 			selectRangeTo,
 			isInSelection,
+			noSelectorMeansNoResults = false,
+
+			// selectorSelected
+			selectorId,
+			selectorSelected,
+			disableSelectorSelected = false,
+
+			// filters
+			filter1StartingField = '',
+			filter2StartingField = '',
+			filter3StartingField = '',
+			filter4StartingField = '',
+			filter5StartingField = '',
 		} = props,
 		forceUpdate = useForceUpdate(),
 		{ isBlocked } = useBlocking(),
@@ -185,7 +187,17 @@ export function Grid(props) {
 		[dragColumnSlot, setDragColumnSlot] = useState(null),
 		[headerWidth, setHeaderWidth] = useState('100%'),
 		[localColumnsConfig, setLocalColumnsConfig] = useState([]),
-	
+		[filter1Field, setFilter1Field] = useState(filter1StartingField || Repository?.getSchema().model.defaultFilters?.[0]),
+		[filter2Field, setFilter2Field] = useState(filter2StartingField || Repository?.getSchema().model.defaultFilters?.[1]),
+		[filter3Field, setFilter3Field] = useState(filter3StartingField || Repository?.getSchema().model.defaultFilters?.[2]),
+		[filter4Field, setFilter4Field] = useState(filter4StartingField || Repository?.getSchema().model.defaultFilters?.[3]),
+		[filter5Field, setFilter5Field] = useState(filter5StartingField || Repository?.getSchema().model.defaultFilters?.[4]),
+		[filter1FieldForSelector, setFilter1FieldForSelector] = useState(filter1Field),
+		[filter2FieldForSelector, setFilter2FieldForSelector] = useState(filter2Field),
+		[filter3FieldForSelector, setFilter3FieldForSelector] = useState(filter3Field),
+		[filter4FieldForSelector, setFilter4FieldForSelector] = useState(filter4Field),
+		[filter5FieldForSelector, setFilter5FieldForSelector] = useState(filter5Field),
+		
 		onRowClick = (item, index, e) => {
 			const
 				shiftKey = e.shiftKey,
@@ -387,6 +399,28 @@ export function Grid(props) {
 				});
 			}
 		},
+		getFilterField = (ix) => {
+			let value;
+			switch(ix) {
+				case 0:
+					value = filter1Field;
+					break;
+				case 1:
+					value = filter2Field;
+					break;
+				case 2:
+					value = filter3Field;
+					break;
+				case 3:
+					value = filter4Field;
+					break;
+				case 4:
+					value = filter5Field;
+					break;
+				default:
+			}
+			return value;
+		},
 		renderFilters = () => {
 			if (!Repository) {
 				return null;
@@ -397,12 +431,17 @@ export function Grid(props) {
 					titles,
 					defaultFilters,
 					filterTypes,
+					virtualFields,
+					excludeFields,
 				} = Repository.getSchema().model,
 				filterProps = {
 					mx: 1,
 				},
 				filterElements = [];
 			_.each(defaultFilters, (fieldName, ix) => {
+				if (inArray(fieldName, virtualFields) || inArray(fieldName, excludeFields)) {
+					return; // skip
+				}
 				const
 					filterType = filterTypes[fieldName];
 				let Element,
@@ -421,6 +460,7 @@ export function Grid(props) {
 										key={ix}
 										tooltip={titles[fieldName]}
 										placeholder={titles[fieldName]}
+										value={getFilterField(ix)}
 										onChangeValue={(value) => onFilterChange(fieldName, value)}
 										{...filterProps}
 										{...modelProps}
@@ -438,7 +478,7 @@ export function Grid(props) {
 			return filterElements;
 		},
 		onFilterChange = (fieldName, value) => {
-			debugger;
+			// debugger;
 		},
 		getFooterToolbarItems = () => {
 			const
@@ -742,11 +782,17 @@ export function Grid(props) {
 		const calculateLocalColumnsConfig = () => {
 			// convert json config into actual elements
 			const localColumnsConfig = [];
-			if (_.isEmpty(columnsConfig) && Repository?.schema?.model?.displayProperty) {
-				// create a column for the displayProperty
-				localColumnsConfig.push({
-					fieldName: Repository.schema.model.displayProperty,
-				});
+			if (_.isEmpty(columnsConfig)) {
+				if (Repository) {
+					// create a column for the displayProperty
+					localColumnsConfig.push({
+						fieldName: Repository.schema.model.displayProperty,
+					});
+				} else {
+					localColumnsConfig.push({
+						fieldName: displayField,
+					});
+				}
 			} else {
 				_.each(columnsConfig, (columnConfig) => {
 					if (!_.isPlainObject(columnConfig)) {
@@ -838,6 +884,19 @@ export function Grid(props) {
 	}, []);
 
 	useEffect(() => {
+		if (!Repository || disableSelectorSelected) {
+			return () => {};
+		}
+
+		let matches = selectorSelected;
+		if (_.isEmpty(selectorSelected)) {
+			matches = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
+		}
+		Repository.filter(selectorId, matches, false); // so it doesn't clear existing filters
+
+	}, [selectorId, selectorSelected]);
+
+	useEffect(() => {
 		if (!showHeaders) {
 			return () => {};
 		}
@@ -857,12 +916,24 @@ export function Grid(props) {
 		return null;
 	}
 
-	let topToolbar = null;
-	if (showFilters) {
+	// Filters
+	let topToolbar = null,
+		filterComboProps = {};
+	if (showFilters && Repository?.getSchema().model.titles) {
+		filterComboProps.idField = 'id';
+		filterComboProps.displayField = 'value';
+		filterComboProps.fields = ['id', 'value'];
+		filterComboProps.data = [];
+		const schemaModel = Repository.getSchema().model;
+		_.each(schemaModel.titles, (title, fieldName) => {
+			if (!inArray(fieldName, schemaModel.virtualFields) && !inArray(fieldName, schemaModel.excludeFields)) {
+				filterComboProps.data.push([fieldName, title]);
+			}
+		});
 		topToolbar = <Toolbar>{renderFilters()}</Toolbar>
 	}
 
-	
+	// headers & footers
 	let listHeaderComponent = null,
 		listFooterComponent = null;
 	if (showHeaders) {
@@ -883,7 +954,6 @@ export function Grid(props) {
 									{renderHeaders()}
 							</Row>;
 	}
-
 	const footerToolbarItemComponents = getFooterToolbarItems();
 	if (Repository && bottomToolbar === 'pagination' && !disablePaging && Repository.isPaginated) {
 		listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
@@ -891,6 +961,7 @@ export function Grid(props) {
 		listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 	}
 
+	// Actual data to show in the grid
 	const entities = Repository ? Repository.getEntitiesOnPage() : data;
 	let initialNumToRender = 10;
 	if (entities && entities.length) {
@@ -933,8 +1004,7 @@ export function Grid(props) {
 								if (item.id) {
 									id = item.id;
 								} else if (fields) {
-									const ix = fields.indexOf('id');
-									id = item[ix];
+									id = item[idIx];
 								}
 								return String(id);
 							}}
@@ -943,7 +1013,7 @@ export function Grid(props) {
 							// )}
 							// numColumns={1}
 							initialNumToRender={initialNumToRender}
-							initialScrollIndex={initialScrollIndex}
+							initialScrollIndex={0}
 							renderItem={renderRow}
 							bg="trueGray.100"
 							{...flatListProps}
@@ -959,8 +1029,89 @@ export function Grid(props) {
 					isOpen={isFilterSelectorShown}
 					onClose={() => setIsFilterSelectorShown(false)}
 				>
-					<Column bg="#fff" w={500} h={400}>
-						<Text>Filter selector here!</Text>
+
+					<Column bg="#fff" w={500}>
+						<FormPanel
+							title="Filter Selector"
+							instructions="Please select which fields to filter by. You may select up to five filters. Leave blank for no filter."
+							flex={1}
+							startingValues={{
+								filter1: filter1Field,
+								filter2: filter2Field,
+								filter3: filter3Field,
+								filter4: filter4Field,
+								filter5: filter5Field,
+							}}
+							items={[
+								{
+									type: 'Column',
+									flex: 1,
+									items: [
+										{
+											type: 'Combo',
+											label: 'Filter 1',
+											name: 'filter1',
+											onChangeValue: (value) => {
+												setFilter1FieldForSelector(value);
+											},
+											...filterComboProps,
+										},
+										{
+											type: 'Combo',
+											label: 'Filter 2',
+											name: 'filter2',
+											onChangeValue: (value) => {
+												setFilter2FieldForSelector(value);
+											},
+											...filterComboProps,
+										},
+										{
+											type: 'Combo',
+											label: 'Filter 3',
+											name: 'filter3',
+											onChangeValue: (value) => {
+												setFilter3FieldForSelector(value);
+											},
+											...filterComboProps,
+										},
+										{
+											type: 'Combo',
+											label: 'Filter 4',
+											name: 'filter4',
+											onChangeValue: (value) => {
+												setFilter4FieldForSelector(value);
+											},
+											...filterComboProps,
+										},
+										{
+											type: 'Combo',
+											label: 'Filter 5',
+											name: 'filter5',
+											onChangeValue: (value) => {
+												setFilter5FieldForSelector(value);
+											},
+											...filterComboProps,
+										},
+									],
+								}, // END Column
+							]}
+							onCancel={(e) => {
+								setFilter1FieldForSelector(filter1Field);
+								setFilter2FieldForSelector(filter2Field);
+								setFilter3FieldForSelector(filter3Field);
+								setFilter4FieldForSelector(filter4Field);
+								setFilter5FieldForSelector(filter5Field);
+								setIsFilterSelectorShown(false);
+							}}
+							onSave={(data, e) => {
+								setFilter1Field(filter1FieldForSelector);
+								setFilter2Field(filter2FieldForSelector);
+								setFilter3Field(filter3FieldForSelector);
+								setFilter4Field(filter4FieldForSelector);
+								setFilter5Field(filter5FieldForSelector);
+								setIsFilterSelectorShown(false);
+							}}
+						/>
 					</Column>
 				</Modal>
 			</Column>;

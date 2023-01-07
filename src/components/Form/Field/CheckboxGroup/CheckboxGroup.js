@@ -4,9 +4,9 @@ import {
 	Checkbox,
 	Row,
 } from 'native-base';
-import withData from '../../../../Hoc/withData';
-import withValue from '../../../../Hoc/withValue';
-import withTooltip from '../../../../Hoc/withTooltip';
+import withData from '../../../Hoc/withData';
+import withValue from '../../../Hoc/withValue';
+import withTooltip from '../../../Hoc/withTooltip';
 import _ from 'lodash';
 
 const
@@ -17,9 +17,8 @@ const
 				// data source
 				Repository,
 				data,
-				fields,
-				idField,
-				displayField,
+				idIx,
+				displayIx,
 			} = props,
 			[checkboxes, setCheckboxes] = useState([]);
 
@@ -39,8 +38,6 @@ const
 							>{entity.displayValue}</Checkbox>;
 				});
 			} else {
-				const idIx = fields.indexOf(idField),
-					displayIx = fields.indexOf(idField);
 				checkboxes = _.map(data, (datum, ix) => {
 					return <Checkbox
 								key={ix}

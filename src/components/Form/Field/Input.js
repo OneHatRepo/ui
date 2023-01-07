@@ -3,8 +3,8 @@ import {
 	Input,
 } from 'native-base';
 import styles from '../../../Constants/Styles';
-import withTooltip from '../../../Hoc/withTooltip';
-import withValue from '../../../Hoc/withValue';
+import withTooltip from '../../Hoc/withTooltip';
+import withValue from '../../Hoc/withValue';
 
 const
 	InputElement = (props) => {

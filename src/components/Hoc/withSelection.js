@@ -4,9 +4,9 @@ import {
 	SELECTION_MODE_MULTI,
 	SELECT_UP,
 	SELECT_DOWN,
-} from '../Constants/Selection';
+} from '../../Constants/Selection';
 import oneHatData from '@onehat/data';
-import inArray from '../Functions/inArray';
+import inArray from '../../Functions/inArray';
 import _ from 'lodash';
 
 export default function withSelection(WrappedComponent) {
@@ -14,21 +14,20 @@ export default function withSelection(WrappedComponent) {
 		const
 			{
 				defaultSelection,
-				onSelect,
+				onChangeSelection,
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				autoSelectFirstItem = false,
 
 				Repository,
 				data,
-				fields,
-				idField,
-				displayField,
+				idIx,
+				displayIx,
 			} = props,
 			[selection, setSelectionRaw] = useState(defaultSelection ? [defaultSelection] : []),
 			[isReady, setIsReady] = useState(false),
 			setSelection = (selection) => {
-				if (onSelect) {
-					onSelect(selection);
+				if (onChangeSelection) {
+					onChangeSelection(selection);
 				}
 				setSelectionRaw(selection);
 			},
@@ -61,8 +60,7 @@ export default function withSelection(WrappedComponent) {
 				if (Repository) {
 					newSelection = _.remove(selection, (sel) => sel !== item);
 				} else {
-					const ix = fields.indexOf(idField);
-					newSelection = _.remove(selection, (sel) => sel[ix] !== item[ix]);
+					newSelection = _.remove(selection, (sel) => sel[idIx] !== item[idIx]);
 				}
 				setSelection(newSelection);
 			},
@@ -120,9 +118,7 @@ export default function withSelection(WrappedComponent) {
 					return inArray(item, selection);
 				}
 
-				const
-					idIx = fields.indexOf(idField),
-					found = _.find(selection, (selectedItem) => {
+				const found = _.find(selection, (selectedItem) => {
 						return selectedItem[idIx] === item[idIx];
 					});
 				return !!found;
@@ -134,7 +130,6 @@ export default function withSelection(WrappedComponent) {
 					return entities.indexOf(item);
 				}
 				
-				const idIx = fields.indexOf(idField);
 				let found;
 				_.each(data, (datum, ix) => {
 					if (datum[idIx] === item[idIx]) {
@@ -152,8 +147,7 @@ export default function withSelection(WrappedComponent) {
 					if (Repository) {
 						return item.id;
 					}
-					const ix = fields.indexOf(idField);
-					return item[ix];
+					return item[idIx];
 				});
 				if (values.length === 1) {
 					return values[0];
@@ -169,8 +163,7 @@ export default function withSelection(WrappedComponent) {
 							if (Repository) {
 								return item.displayValue;
 							}
-							const ix = fields.indexOf(displayField);
-							return item[ix];
+							return item[displayIx];
 						})
 						.join(', ');
 			};

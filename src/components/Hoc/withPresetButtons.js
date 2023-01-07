@@ -1,11 +1,11 @@
 import React, { useState, useEffect, } from 'react';
-import Clipboard from '../Components/Icons/Clipboard';
-import Duplicate from '../Components/Icons/Duplicate';
-import Edit from '../Components/Icons/Edit';
-import Eye from '../Components/Icons/Eye';
-import Trash from '../Components/Icons/Trash';
-import Plus from '../Components/Icons/Plus';
-import Print from '../Components/Icons/Print';
+import Clipboard from '../Icons/Clipboard';
+import Duplicate from '../Icons/Duplicate';
+import Edit from '../Icons/Edit';
+import Eye from '../Icons/Eye';
+import Trash from '../Icons/Trash';
+import Plus from '../Icons/Plus';
+import Print from '../Icons/Print';
 import _ from 'lodash';
 
 // Note: A 'present button' will create both a context menu item 

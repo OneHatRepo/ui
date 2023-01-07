@@ -16,9 +16,12 @@ export default function withData(WrappedComponent) {
 				Repository,
 				uniqueRepository = false,
 				model,
-				filters,
-
+				fields,
+				idField,
+				displayField,
 			} = props,
+			idIx = fields && idField ? fields.indexOf(idField) : null,
+			displayIx = fields && displayField ? fields?.indexOf(displayField) : null,
 			usePassThrough = !!Repository,
 			[LocalRepository, setLocalRepository] = useState(),
 			[isReady, setIsReady] = useState(false);
@@ -55,6 +58,8 @@ export default function withData(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					Repository={usePassThrough ? Repository : LocalRepository}
+					idIx={idIx}
+					displayIx={displayIx}
 				/>;
 	};
 }

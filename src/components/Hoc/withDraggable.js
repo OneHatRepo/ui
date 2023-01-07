@@ -2,9 +2,9 @@ import { useState, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../Constants/Directions';
+} from '../../Constants/Directions';
 import Draggable from 'react-draggable';
-import useBlocking from '../Hooks/useBlocking';
+import useBlocking from '../../Hooks/useBlocking';
 import {
 	v4 as uuid,
 } from 'uuid';

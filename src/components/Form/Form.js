@@ -8,6 +8,7 @@ import {
 	Text,
 } from 'native-base';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
+import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
 import useForceUpdate from '../../Hooks/useForceUpdate';
 import inArray from '../../Functions/inArray';
@@ -24,14 +25,17 @@ import _ from 'lodash';
 function Form(props) {
 	const {
 			entity,
-			values = {},
+			startingValues = {},
 			
 			items = [],
 			columnDefaults = {},
 			onCancel,
 			onSave,
 			useColumns = true,
+			selectorId,
+			selectorSelected,
 		} = props,
+		emptyValidator = yup.object(),
 		forceUpdate = useForceUpdate(),
 		[isReady, setIsReady] = useState(false),
 		{
@@ -53,7 +57,7 @@ function Form(props) {
 		} = useForm({
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
-			defaultValues: _.merge(values, (entity ? entity.submitValues : {})),
+			defaultValues: _.merge(startingValues, (entity ? entity.submitValues : {})),
 			// values,
 			// resetOptions: {
 			// 	keepDirtyValues: false, // user-interacted input will be retained
@@ -64,7 +68,7 @@ function Form(props) {
 			// delayError: 0,
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
-			resolver: yupResolver(entity?.repository?.schema?.model?.validator),
+			resolver: yupResolver(entity?.repository?.schema?.model?.validator || emptyValidator),
 		}),
 		buildNextLayer = (item, ix, defaults) => {
 			const {
@@ -141,6 +145,8 @@ function Form(props) {
 													onChange(value);
 												}}
 												onBlur={onBlur}
+												selectorId={selectorId}
+												selectorSelected={selectorSelected}
 												flex={1}
 												{...defaults}
 												{...propsToPass}
@@ -170,22 +176,16 @@ function Form(props) {
 		const LocalRepository = entity.repository;
 		LocalRepository.ons(['changeData', 'change'], forceUpdate);
 
-		setIsReady(true);
-
 		return () => {
 			LocalRepository.offs(['changeData', 'change'], forceUpdate);
 		};
 	}, [entity]);
 
-	if (!isReady) {
-		return null;
-	}
-
 	// console.log('formState', formState);
 	// console.log('values', getValues());
 
 	return <Column w="100%" flex={1}>
-				<ScrollView flex={1} pb={3}>
+				<ScrollView flex={1} pb={3} {...props}>
 					{useColumns ? <Row flex={1}>{formComponents}</Row> : <Column flex={1}>{formComponents}</Column>}
 				</ScrollView>
 				<Footer justifyContent="flex-end" >

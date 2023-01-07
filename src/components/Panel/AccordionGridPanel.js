@@ -27,7 +27,7 @@ export default function AccordionGridPanel(props) {
 	// 			};
 	// 		},
 	// 		renderSectionHeader = (section, ix, isActive) => {},
-	// 		onSelect = () => {},
+	// 		onChangeSelection = () => {},
 	// 		noneFoundText,
 	// 		containerStyle = {},
 	// 		hideRightColumn = false,
@@ -72,7 +72,7 @@ export default function AccordionGridPanel(props) {
 	// 									getRowProps={getRowProps}
 	// 									pullToRefresh={false}
 	// 									columns={columns}
-	// 									onSelect={onSelect}
+	// 									onChangeSelection={onChangeSelection}
 	// 									bottomToolbar={false}
 	// 									hideRightColumn={hideRightColumn}
 	// 								/>;

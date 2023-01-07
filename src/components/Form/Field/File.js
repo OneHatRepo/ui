@@ -12,7 +12,7 @@ import {
 	FILE_MODE_FILE,
 } from '../../../Constants/File';
 import IconButton from '../../Buttons/IconButton';
-import withValue from '../../../Hoc/withValue';
+import withValue from '../../Hoc/withValue';
 import File from '../../Icons/File';
 import Trash from '../../Icons/Trash';
 import _ from 'lodash';

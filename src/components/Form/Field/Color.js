@@ -8,7 +8,7 @@ import {
 } from 'native-base';
 import styles from '../../../Constants/Styles';
 import { SketchPicker } from 'react-color'
-import withValue from '../../../Hoc/withValue';
+import withValue from '../../Hoc/withValue';
 import emptyFn from '../../../Functions/emptyFn';
 import _ from 'lodash';
 
