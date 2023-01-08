@@ -389,11 +389,26 @@ export default function withFilters(WrappedComponent) {
 										setIsFilterSelectorShown(false);
 									}}
 									onSave={(data, e) => {
-										setFilter1Field(filter1FieldForModal);
-										setFilter2Field(filter2FieldForModal);
-										setFilter3Field(filter3FieldForModal);
-										setFilter4Field(filter4FieldForModal);
-										setFilter5Field(filter5FieldForModal);
+										if (filter1FieldForModal !== filter1Field) {
+											setFilter1Field(filter1FieldForModal);
+											setFilter1Value(null);
+										}
+										if (filter2FieldForModal !== filter2Field) {
+											setFilter2Field(filter2FieldForModal);
+											setFilter2Value(null);
+										}
+										if (filter3FieldForModal !== filter3Field) {
+											setFilter3Field(filter3FieldForModal);
+											setFilter3Value(null);
+										}
+										if (filter4FieldForModal !== filter4Field) {
+											setFilter4Field(filter4FieldForModal);
+											setFilter4Value(null);
+										}
+										if (filter5FieldForModal !== filter5Field) {
+											setFilter5Field(filter5FieldForModal);
+											setFilter5Value(null);
+										}
 										setIsFilterSelectorShown(false);
 									}}
 								/>

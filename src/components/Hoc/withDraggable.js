@@ -54,19 +54,19 @@ export default function withDraggable(WrappedComponent) {
 				} else {
 					const nodeRect = node.getBoundingClientRect();
 					proxy = node.cloneNode(true);
-					proxy.styles.top = nodeRect.top + 'px';
-					proxy.styles.left = nodeRect.left + 'px';
-					proxy.styles.height = nodeRect.height + 'px';
-					proxy.styles.width = nodeRect.width + 'px';
+					proxy.style.top = nodeRect.top + 'px';
+					proxy.style.left = nodeRect.left + 'px';
+					proxy.style.height = nodeRect.height + 'px';
+					proxy.style.width = nodeRect.width + 'px';
 				}
 				proxy = document.body.appendChild(proxy);
-				proxy.styles.zIndex = 10000;
-				proxy.styles.position = 'absolute';
-				proxy.styles.visibility = 'visible';
+				proxy.style.zIndex = 10000;
+				proxy.style.position = 'absolute';
+				proxy.style.visibility = 'visible';
 				proxy.id = 'dragproxy';
 				proxy.className = '';
 				
-				node.styles.visibility = 'hidden';
+				node.style.visibility = 'hidden';
 
 				setIsDragging(true);
 			},
@@ -95,9 +95,9 @@ export default function withDraggable(WrappedComponent) {
 
 				const proxy = document.getElementById('dragproxy');
 				if (mode === HORIZONTAL) {
-					proxy.styles.left = e.pageX + 'px';
+					proxy.style.left = e.pageX + 'px';
 				} else {
-					proxy.styles.top = e.pageY + 'px';
+					proxy.style.top = e.pageY + 'px';
 				}
 				if (onDrag) {
 					onDrag(info, e, proxy, node);
@@ -133,19 +133,19 @@ export default function withDraggable(WrappedComponent) {
 						} else if (pageX > right) {
 							newX = right;
 						}
-						node.styles.left = newX + 'px';
+						node.style.left = newX + 'px';
 					} else {
 						if (top > pageY) {
 							newX = top;
 						} else if (pageY > bottom) {
 							newX = bottom;
 						}
-						node.styles.top = newY + 'px';
+						node.style.top = newY + 'px';
 					}
 				}
 
 				// show original node
-				node.styles.visibility = 'visible';
+				node.style.visibility = 'visible';
 
 				block();
 				if (onDragStop) {
