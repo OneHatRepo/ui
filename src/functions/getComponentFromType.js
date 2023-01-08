@@ -29,6 +29,7 @@ import Input from '../Components/Form/Field/Input';
 import Label from '../Components/Form/Label';
 import MonthsCombo from '../Components/Form/Field/Combo/MonthsCombo';
 import Number from '../Components/Form/Field/Number';
+import NumberRange from '../Components/Filter/NumberRange';
 import Panel from '../Components/Panel/Panel';
 // import Picker from '../Components/Panel/Picker';
 import RadioGroup from '../Components/Form/Field/RadioGroup/RadioGroup';
@@ -71,6 +72,7 @@ const
 		Label,
 		MonthsCombo,
 		Number,
+		NumberRange,
 		Panel,
 		// Picker,
 		RadioGroup,

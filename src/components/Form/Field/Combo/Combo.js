@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
-	Input,
+	// Input,
 	Popover,
 	Row,
 	Tooltip,
 } from 'native-base';
+import Input from '../Input';
 import styles from '../../../../Constants/Styles';
 import withSelection from '../../../Hoc/withSelection';
 import withData from '../../../Hoc/withData';
+import withEvents from '../../../Hoc/withEvents';
 import withValue from '../../../Hoc/withValue';
 import emptyFn from '../../../../Functions/emptyFn';
 import { Grid } from '../../../Grid/Grid';
@@ -53,8 +55,8 @@ export function Combo(props) {
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
-		isTyping = useRef(false),
-		typingTimeout = useRef(),
+		// isTyping = useRef(false),
+		// typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
 		[isManuallyEnteringText, setIsManuallyEnteringText] = useState(false), // when typing a value, not using trigger/grid
@@ -99,16 +101,16 @@ export function Combo(props) {
 		},
 		onInputChangeText = (value) => {
 			setTextValue(value);
-			setIsManuallyEnteringText(true);
+			searchForMatches(value);
+			// setIsManuallyEnteringText(true);
 
-			isTyping.current = true;
-			if (typingTimeout.current) {
-				clearTimeout(typingTimeout.current);
-			}
-			typingTimeout.current = setTimeout(() => {
-				isTyping.current = false;
-				searchForMatches(value);
-			}, 300);
+			// isTyping.current = true;
+			// if (typingTimeout.current) {
+			// 	clearTimeout(typingTimeout.current);
+			// }
+			// typingTimeout.current = setTimeout(() => {
+			// 	isTyping.current = false;
+			// }, 300);
 		},
 		onInputBlur = (e) => {
 			const {
@@ -302,7 +304,7 @@ export function Combo(props) {
 								<Input
 									ref={inputRef}
 									value={textValue}
-									onChangeText={onInputChangeText}
+									onChangeValue={onInputChangeText}
 									onKeyPress={onInputKeyPress}
 									onLayout={(e) => {
 										const {
@@ -326,17 +328,17 @@ export function Combo(props) {
 									// }}
 									onBlur={onInputBlur}
 									onClick={onInputClick}
-									flex={1}
 									fontSize={styles.COMBO_INPUT_FONTSIZE}
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
+									flex={1}
 									m={0}
 									h="100%"
 									bg={styles.COMBO_INPUT_BG}
 									_focus={{
 										bg: styles.COMBO_INPUT_FOCUS_BG,
 									}}
-									{...props._text}
+									{...props._input}
 								/>
 								<IconButton
 									ref={triggerRef}
@@ -418,4 +420,4 @@ export function Combo(props) {
 	return comboComponent;
 }
 
-export default withData(withValue(withSelection(Combo)));
+export default withEvents(withData(withValue(withSelection(Combo))));

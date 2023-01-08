@@ -9,7 +9,7 @@ import withValue from '../../Hoc/withValue';
 const
 	TextAreaElement = (props) => {
 		return <TextArea
-					ref={props.tooltipRef}
+					ref={props.outerRef}
 					onChangeText={props.setValue}
 					flex={1}
 					fontSize={styles.TEXTAREA_FONTSIZE}
@@ -21,5 +21,5 @@ const
 
 // Tooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {
-	return <TextAreaField {...props} tooltipRef={ref} />;
+	return <TextAreaField {...props} outerRef={ref} />;
 }));

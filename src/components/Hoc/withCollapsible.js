@@ -8,12 +8,12 @@ export default function withCollapsible(WrappedComponent) {
 				startsCollapsed = false,
 				setIsCollapsed,
 			} = props,
-			usePassThrough = !!setIsCollapsed,
+			bypass = !!setIsCollapsed,
 			[localIsCollapsed, setLocalIsCollapsed] = useState(startsCollapsed);
 
 		return <WrappedComponent
-					isCollapsed={usePassThrough ? isCollapsed : localIsCollapsed}
-					setIsCollapsed={usePassThrough ? setIsCollapsed : setLocalIsCollapsed}
+					isCollapsed={bypass ? isCollapsed : localIsCollapsed}
+					setIsCollapsed={bypass ? setIsCollapsed : setLocalIsCollapsed}
 					{...props}
 				/>;
 	};

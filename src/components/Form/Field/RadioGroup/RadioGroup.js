@@ -58,5 +58,5 @@ const
 
 // Tooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {
-	return <RadioGroupField {...props} tooltipRef={ref} />;
+	return <RadioGroupField {...props} outerRef={ref} />;
 }));

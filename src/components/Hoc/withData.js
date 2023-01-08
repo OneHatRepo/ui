@@ -16,48 +16,20 @@ export default function withData(WrappedComponent) {
 				Repository,
 				uniqueRepository = false,
 				model,
-				fields,
-				idField,
-				displayField,
+				fields = ['id', 'value'],
+				idField = 'id',
+				displayField = 'value',
 			} = props,
 			idIx = fields && idField ? fields.indexOf(idField) : null,
 			displayIx = fields && displayField ? fields?.indexOf(displayField) : null,
-			usePassThrough = !!Repository,
-			[LocalRepository, setLocalRepository] = useState(),
-			[isReady, setIsReady] = useState(false);
-
-		useEffect(() => {
-			if (usePassThrough) {
-				return () => {};
-			}
-			let LocalRepository = Repository;
-			if (model) {
-				LocalRepository = oneHatData.getRepository(model, uniqueRepository);
-			}
-			if (LocalRepository) {
-				// set up @onehat/data repository
-				setLocalRepository(LocalRepository);
-			}
-			setIsReady(true);
-		}, []);
-
-
-		// useEffect(() => {
-		// 	if (!LocalRepository) {
-		// 		return () => {};
-		// 	}
-
-		// 	LocalRepository.setFilters(filters);
-
-		// }, [LocalRepository, filters]);
-
-		if (!usePassThrough && !isReady) {
-			return null;
-		}
+			[LocalRepository, unused] = useState(model ? oneHatData.getRepository(model, uniqueRepository) : Repository);
 
 		return <WrappedComponent
 					{...props}
-					Repository={usePassThrough ? Repository : LocalRepository}
+					Repository={LocalRepository}
+					fields={fields}
+					idField={idField}
+					displayField={displayField}
 					idIx={idIx}
 					displayIx={displayIx}
 				/>;

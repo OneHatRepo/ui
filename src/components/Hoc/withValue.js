@@ -6,10 +6,30 @@ export default function withValue(WrappedComponent) {
 		const
 			{
 				onChangeValue,
+				value = null,
+				setValue,
+				startingValue = null,
 				Repository,
 				idIx,
 			} = props,
-			[value, setValue] = useState(null),
+			bypass = !!setValue,
+			[localValue, setLocalValue] = useState(startingValue),
+			setValueDecorator = (newValue) => {
+				if (bypass) {
+					if (newValue === value) {
+						return;
+					}
+					setValue(newValue);
+				} else {
+					if (newValue === localValue) {
+						return;
+					}
+					setLocalValue(newValue);
+				}
+				if (onChangeValue) {
+					onChangeValue(newValue);
+				}
+			},
 			onChangeSelection = (selection) => {
 				let value = null;
 				if (selection.length) {
@@ -28,18 +48,10 @@ export default function withValue(WrappedComponent) {
 					}
 				}
 				setValueDecorator(value);
-			},
-			setValueDecorator = (newValue) => {
-				if (newValue === value) {
-					return;
-				}
-				setValue(newValue);
-				if (onChangeValue) {
-					onChangeValue(newValue);
-				}
 			};
+			
 		return <WrappedComponent
-					value={value}
+					value={bypass ? value : localValue}
 					setValue={setValueDecorator}
 					onChangeSelection={onChangeSelection}
 					{...props}

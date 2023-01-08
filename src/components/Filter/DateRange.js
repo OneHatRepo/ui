@@ -17,19 +17,6 @@ export default function DateRangeFilter(props) {
 		[startDate, setStartDate] = useState(defaultStartDate),
 		[endDate, setEndDate] = useState(defaultEndDate);
 
-	useEffect(() => {
-		Repository.filter([
-			{
-				name: propertyName + ' >=',
-				value: moment(startDate).format('YYYY-MM-DD') + ' 00:00:00',
-			},
-			{
-				name: propertyName + ' <=',
-				value: moment(endDate).format('YYYY-MM-DD') + ' 23:59:59',
-			},
-		], false); // false so it doesn't clear existing filters
-	}, [startDate, endDate]);
-
 	const dateSettings = _.assign({}, {
 			mode: 'date',
 			// display: 'default', // Android only

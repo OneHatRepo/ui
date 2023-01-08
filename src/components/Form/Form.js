@@ -181,9 +181,6 @@ function Form(props) {
 		};
 	}, [entity]);
 
-	// console.log('formState', formState);
-	// console.log('values', getValues());
-
 	return <Column w="100%" flex={1}>
 				<ScrollView flex={1} pb={3} {...props}>
 					{useColumns ? <Row flex={1}>{formComponents}</Row> : <Column flex={1}>{formComponents}</Column>}

@@ -57,5 +57,5 @@ const
 
 // Tooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {
-	return <CheckboxGroupField {...props} tooltipRef={ref} />;
+	return <CheckboxGroupField {...props} outerRef={ref} />;
 }));
