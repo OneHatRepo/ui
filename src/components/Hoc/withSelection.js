@@ -5,7 +5,6 @@ import {
 	SELECT_UP,
 	SELECT_DOWN,
 } from '../../Constants/Selection';
-import oneHatData from '@onehat/data';
 import inArray from '../../Functions/inArray';
 import _ from 'lodash';
 
@@ -17,7 +16,7 @@ export default function withSelection(WrappedComponent) {
 				onChangeSelection,
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				autoSelectFirstItem = false,
-
+				fireEvent,
 				Repository,
 				data,
 				idIx,
@@ -28,6 +27,9 @@ export default function withSelection(WrappedComponent) {
 			setSelection = (selection) => {
 				if (onChangeSelection) {
 					onChangeSelection(selection);
+				}
+				if (fireEvent) {
+					fireEvent('changeSelection', selection);
 				}
 				setSelectionRaw(selection);
 			},

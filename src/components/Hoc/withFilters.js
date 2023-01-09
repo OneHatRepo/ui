@@ -419,7 +419,7 @@ export default function withFilters(WrappedComponent) {
 		} // END if (showFilters)
 
 		return <>
-					<WrappedComponent topToolbar={topToolbar} {...props} />;
+					<WrappedComponent topToolbar={topToolbar} {...props} />
 					{modal}
 				</>;
 	};

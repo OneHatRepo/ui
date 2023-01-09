@@ -36,6 +36,7 @@ export default function FieldSet(props) {
 						borderBottomWidth={1}
 						borderBottomColor="trueGray.200"
 						mb={2}
+						style={{ userSelect: 'none', }}
 					>
 						<Text
 							fontSize={styles.FIELDSET_FONTSIZE}

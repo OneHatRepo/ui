@@ -1,5 +1,6 @@
-import { useState, useEffect, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
+	AlertDialog,
 	Button,
 	Column,
 	Icon,
@@ -36,8 +37,9 @@ function Form(props) {
 			selectorSelected,
 		} = props,
 		emptyValidator = yup.object(),
+		cancelRef = useRef(null),
 		forceUpdate = useForceUpdate(),
-		[isReady, setIsReady] = useState(false),
+		[isConfirmationOpen, setIsConfirmationOpen] = useState(false),
 		{
 			control,
 			formState,
@@ -72,18 +74,18 @@ function Form(props) {
 		}),
 		buildNextLayer = (item, ix, defaults) => {
 			const {
-					type,
+					fieldType,
 					title,
 					name,
 					label,
 					items,
 					...propsToPass
 				} = item,
-				Element = getComponentFromType(type),
+				Element = getComponentFromType(fieldType),
 				rules = {}
 
 			let children;
-			if (inArray(type, ['Column', 'FieldSet'])) {
+			if (inArray(fieldType, ['Column', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
@@ -93,6 +95,11 @@ function Form(props) {
 
 			if (!name) {
 				throw new Error('name is required');
+			}
+
+
+			if (fieldType === 'Text') {
+				return <Text key={ix} {...defaults} {...propsToPass}>{entity[name]}</Text>;
 			}
 		
 			// // These rules are for fields *outside* the model
@@ -166,7 +173,10 @@ function Form(props) {
 						}}
 					/>;
 		},
-		formComponents = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+		formComponents = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults)),
+		onCloseConfirmation = () => {
+			setIsConfirmationOpen(false);
+		};
 	
 	useEffect(() => {
 		if (!entity) {
@@ -180,7 +190,7 @@ function Form(props) {
 			LocalRepository.offs(['changeData', 'change'], forceUpdate);
 		};
 	}, [entity]);
-
+	
 	return <Column w="100%" flex={1}>
 				<ScrollView flex={1} pb={3} {...props}>
 					{useColumns ? <Row flex={1}>{formComponents}</Row> : <Column flex={1}>{formComponents}</Column>}
@@ -190,22 +200,52 @@ function Form(props) {
 						<IconButton
 							key="resetBtn"
 							onPress={reset}
-							icon={<Rotate />}
+							icon={<Rotate color="#fff" />}
 						/>
 						{onCancel && <Button
 										key="cancelBtn"
 										variant="ghost"
-										onPress={onCancel}
+										onPress={() => {
+											if (formState.isDirty) {
+												// verify canceling edit if dirty
+// LEFT OFF HERE
+// Need to figure out a way to show confirmation dialogue and take action
+// based on button clicked.
+
+											} else {
+												onCancel();
+											}
+										}}
 										color="#fff"
 									>Cancel</Button>}
 						{onSave && <Button
 										key="saveBtn"
 										onPress={handleSubmit(onSave)}
-										isDisabled={!_.isEmpty(formState.errors)}
+										isDisabled={!_.isEmpty(formState.errors) || (!entity.isPhantom && !formState.isDirty)}
 										color="#fff"
 									>Save</Button>}
 					</Button.Group>
 				</Footer>
+				<AlertDialog leastDestructiveRef={cancelRef} isOpen={isConfirmationOpen} onClose={onCloseConfirmation}>
+					<AlertDialog.Content>
+						<AlertDialog.CloseButton />
+						<AlertDialog.Header>Delete Record</AlertDialog.Header>
+						<AlertDialog.Body>
+							You are about to cancel the editing of this record. Are you sure you want to continue?
+							All changes will be lost.
+						</AlertDialog.Body>
+						<AlertDialog.Footer>
+							<Button.Group space={2}>
+								<Button variant="unstyled" colorScheme="coolGray" onPress={onCloseConfirmation} ref={cancelRef}>
+									Cancel
+								</Button>
+								<Button colorScheme="danger" onPress={onCancel}>
+									Delete
+								</Button>
+							</Button.Group>
+						</AlertDialog.Footer>
+					</AlertDialog.Content>
+				</AlertDialog>
 			</Column>;
 
 }

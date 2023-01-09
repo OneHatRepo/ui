@@ -68,7 +68,7 @@ export default function Header(props) {
 							}
 						}}
 					>
-						 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg="primary.100" testID={testID}>
+						 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
 							{collapseBtn}
 							<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
 								<Text flex={1} fontSize={styles.HEADER_TEXT_FONTSIZE} color={styles.HEADER_TEXT_COLOR} testID="text">{title}</Text>
@@ -86,7 +86,7 @@ export default function Header(props) {
 					}
 				}}
 			>
-				<Row alignItems="center" justifyContent="flex-start" px={styles.HEADER_PX} py={styles.HEADER_PY} bg="primary.100" testID={testID}>
+				<Row alignItems="center" justifyContent="flex-start" px={styles.HEADER_PX} py={styles.HEADER_PY} bg={styles.HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
 					{closeBtn}
 					<Text flex={1} fontSize={styles.HEADER_TEXT_FONTSIZE} color={styles.HEADER_TEXT_COLOR} testID="text">{title}</Text>
 					{collapseBtn}

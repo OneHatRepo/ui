@@ -26,16 +26,18 @@ import {
 } from 'uuid';
 import useBlocking from '../../Hooks/useBlocking';
 import useForceUpdate from '../../Hooks/useForceUpdate';
+import withContextMenu from '../Hoc/withContextMenu';
 import withData from '../Hoc/withData';
 import withEvents from '../Hoc/withEvents';
 import withFilters from '../Hoc/withFilters';
-import withSelection from '../Hoc/withSelection';
+import withPresetButtons from '../Hoc/withPresetButtons';
 import withMultiSelection from '../Hoc/withMultiSelection';
+import withSelection from '../Hoc/withSelection';
+import withWindowedEditor from '../Hoc/withWindowedEditor';
 import testProps from '../../Functions/testProps';
 import HeaderDragHandle from './HeaderDragHandle';
 import HeaderResizeHandle from './HeaderResizeHandle';
 import IconButton from '../Buttons/IconButton';
-import Loading from '../Messages/Loading';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';
 import NoRecordsFound from './NoRecordsFound';
 import Toolbar from '../Toolbar/Toolbar';
@@ -49,7 +51,8 @@ import _ from 'lodash';
 // exported which can be combined with many HOCs for various functionality.
 
 	// Desired features: ---------
-	// Header cells
+	// √ Loading indicator
+	// √ Header cells
 		// √ sticky at top
 		// √ formatted differently
 		// √ click header to sort by column
@@ -60,17 +63,10 @@ import _ from 'lodash';
 		// √ Range selection 
 		// √ Copy current selection
 		// Draggable selection (not super important)
-	// context menu
+	// √ context menu
 		// √ onRightClick handler
 		// √ menu options
-	// Rows
-		// Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
-			// state to keep track of current ordering
-			// √ handler for drag/drop
-			// target column configurable for reorder or not
-		// ARIA navigation (activeRow state, which can switch with key nav)
-		// ARIA enter/esc to select/deselect
-	// Columns
+	// √ Columns
 		// √ Allow for column content to fill beyond the size of panel, and scroll to see more
 		// √ Drag/drop reordering
 			// √ Drag on middle of header to new location
@@ -82,18 +78,23 @@ import _ from 'lodash';
 			// √ state to keep track of current column sizes
 			// √ handler for resizing
 			// √ column configurable for resizable or not
-	// Filters
-		// Set them
-		// Button to select others
-		// Some way to show all possibilities in modal (equivalent of ModelFilters in old system)
-		// way to swap filters and have it affect Repository
-	// custom cell types
-		// Most would use text, and depend on @onehat/data for formatting
+	// √ Filters
+		// √ Set them
+		// √ Button to select others
+		// √ Some way to show all possibilities in modal (equivalent of ModelFilters in old system)
+		// √ way to swap filters and have it affect Repository
+	// Rows
+		// Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
+			// state to keep track of current ordering
+			// √ handler for drag/drop
+			// If it's reorderable, add reorder drag handle column
 	// editor
 		// √ double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
 		// Show inline editor for selected row
 		// windowed editor for selected row
 			// form panel for multiple editing of selected rows
+	// custom cell types
+		// Most would use text, and depend on @onehat/data for formatting
 	// Display tree data
 
 export function Grid(props) {
@@ -131,16 +132,16 @@ export function Grid(props) {
 			topToolbar = null,
 			additionalToolbarButtons = [],
 
-			// editor
+			// withEditor
 			onAdd,
 			onEdit,
-			onRemove,
+			onDelete,
 			onView,
 			onDuplicate,
 			onReset,
 			onContextMenu,
 
-			// data source
+			// withData
 			Repository,
 			data,
 			fields,
@@ -149,7 +150,10 @@ export function Grid(props) {
 			idIx,
 			displayIx,
 
-			// selection
+			// withPresetButtons
+			onChangeColumnsConfig,
+
+			// withSelection
 			selection,
 			setSelection,
 			selectionMode,
@@ -174,11 +178,16 @@ export function Grid(props) {
 		[isSortDirectionAsc, setIsSortDirectionAsc] = useState(Repository && Repository.getSortDirection() === SORT_ASCENDING),
 		[isReady, setIsReady] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
-		[isLoading, setIsLoading] = useState(false),
+		[isLoading2, setIsLoading] = useState(false),
 		[dragColumnSlot, setDragColumnSlot] = useState(null),
 		[headerWidth, setHeaderWidth] = useState('100%'),
-		[localColumnsConfig, setLocalColumnsConfig] = useState([]),
-		
+		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
+		setLocalColumnsConfig = (config) => {
+			setLocalColumnsConfigRaw(config);
+			if (onChangeColumnsConfig) {
+				onChangeColumnsConfig(config);
+			}
+		},
 		onRowClick = (item, index, e) => {
 			const
 				shiftKey = e.shiftKey,
@@ -324,16 +333,16 @@ export function Grid(props) {
 					gridRowsContainerRect = gridRowsContainer.getBoundingClientRect();
 
 				marker = document.createElement('div');
-				marker.styles.position = 'absolute';
-				marker.styles.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
-				marker.styles.width = '4px';
-				marker.styles.top = columnHeaderRect.top + 'px';
-				// marker.styles.right = 0;
-				marker.styles.backgroundColor = '#ccc';
+				marker.style.position = 'absolute';
+				marker.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
+				marker.style.width = '4px';
+				marker.style.top = columnHeaderRect.top + 'px';
+				// marker.style.right = 0;
+				marker.style.backgroundColor = '#ccc';
 
 				document.body.appendChild(marker);
 			}
-			marker.styles.left = left + 'px';
+			marker.style.left = left + 'px';
 
 			setDragColumnSlot({ ix: newIx, marker, });
 		},
@@ -477,37 +486,35 @@ export function Grid(props) {
 							{...propsToPass}
 						>
 							{isReorderable && <HeaderDragHandle
-												key="HeaderDragHandle"
-												mode={HORIZONTAL}
-												onDragStop={(delta, e) => onColumnReorder(delta, e, config)}
-												onDrag={onColumnDrag}
-												getProxy={(node) => {
-													const
-														columnHeader = node.parentElement,
-														columnHeaderRect = columnHeader.getBoundingClientRect(),
-														proxy = columnHeader.cloneNode(true);
-													
-													proxy.styles.top = columnHeaderRect.top + 10 + 'px';
-													proxy.styles.left = columnHeaderRect.left + 'px';
-													proxy.styles.height = columnHeaderRect.height + 'px';
-													proxy.styles.width = columnHeaderRect.width + 'px';
-													proxy.styles.display = 'flex';
-													proxy.styles.backgroundColor = '#ddd';
-													return proxy;
-												}}
-											/>}
+													key="HeaderDragHandle"
+													mode={HORIZONTAL}
+													onDragStop={(delta, e) => onColumnReorder(delta, e, config)}
+													onDrag={onColumnDrag}
+													getProxy={(node) => {
+														const
+															columnHeader = node.parentElement,
+															columnHeaderRect = columnHeader.getBoundingClientRect(),
+															proxy = columnHeader.cloneNode(true);
+														
+														proxy.style.top = columnHeaderRect.top + 10 + 'px';
+														proxy.style.left = columnHeaderRect.left + 'px';
+														proxy.style.height = columnHeaderRect.height + 'px';
+														proxy.style.width = columnHeaderRect.width + 'px';
+														proxy.style.display = 'flex';
+														proxy.style.backgroundColor = '#ddd';
+														return proxy;
+													}}
+												/>}
 							
 							<Text
 								key="Text"
 								fontSize={styles.GRID_HEADER_FONTSIZE}
-								borderBottomWidth={1}
-								borderBottomColor="trueGray.300"
 								overflow="hidden"
 								textOverflow="ellipsis"
 								flex={1}
 								h="100%"
 								px={2}
-								pt={2}
+								py={2}
 								alignItems="center"
 								justifyContent="center"
 							>{header}</Text>
@@ -528,19 +535,19 @@ export function Grid(props) {
 														proxy = node.cloneNode(true),
 														verticalLine = document.createElement('div');
 													
-													verticalLine.styles.position = 'absolute';
-													verticalLine.styles.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
-													verticalLine.styles.width = '1px';
-													verticalLine.styles.top = 0;
-													verticalLine.styles.right = 0;
-													verticalLine.styles.backgroundColor = '#ddd';
+													verticalLine.style.position = 'absolute';
+													verticalLine.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
+													verticalLine.style.width = '1px';
+													verticalLine.style.top = 0;
+													verticalLine.style.right = 0;
+													verticalLine.style.backgroundColor = '#ddd';
 													proxy.appendChild(verticalLine);
 
-													proxy.styles.top = nodeRect.top + 'px';
-													proxy.styles.left = nodeRect.left + 'px';
-													proxy.styles.height = nodeRect.height + 'px';
-													proxy.styles.width = nodeRect.width + 'px';
-													proxy.styles.display = 'flex';
+													proxy.style.top = nodeRect.top + 'px';
+													proxy.style.left = nodeRect.left + 'px';
+													proxy.style.height = nodeRect.height + 'px';
+													proxy.style.width = nodeRect.width + 'px';
+													proxy.style.display = 'flex';
 
 													return proxy;
 												}}
@@ -629,7 +636,7 @@ export function Grid(props) {
 				isSelected = isInSelection(item),
 				hoverProps = {};
 			if (showHovers) {
-				hoverProps._hover = { bg: isSelected ? 'selectedHover' : 'hover', };
+				hoverProps._hover = { bg: isSelected ? styles.GRID_ROW_SELECTED_HOVER_BG : styles.GRID_ROW_HOVER_BG, };
 			}
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
@@ -643,7 +650,9 @@ export function Grid(props) {
 							onClick={(e) => {
 								if (onEdit && e.detail === 2) {
 									// double-click
-									onEdit(item, index, e);
+									setSelection([item]);
+									onEdit(); // ERROR: has closure of OLD selection, not this new one. Doesn't matter if you delay it with setTimeout. How can we capture new selection?
+
 								}
 							}}
 							onContextMenu={(e) => {
@@ -821,21 +830,21 @@ export function Grid(props) {
 		listFooterComponent = null;
 	if (showHeaders) {
 		listHeaderComponent = <Row
-								w="100%"
-								h="36px"
-								bg="trueGray.200"
-								overflow="scroll"
-								ref={headerRef} onScroll={(e) => gridRef.current._listRef._scrollRef.childNodes[0].scrollLeft = e.target.scrollLeft}
-								style={{
-									scrollbarWidth: 'none',
-								}}
-								onLayout={(e) => {
-									const width = e.nativeEvent.layout.width;
-									setHeaderWidth(width + 'px');
-								}}
-							> 
-									{renderHeaders()}
-							</Row>;
+									w="100%"
+									// h="36px"
+									bg="trueGray.200"
+									overflow="scroll"
+									ref={headerRef} onScroll={(e) => gridRef.current._listRef._scrollRef.childNodes[0].scrollLeft = e.target.scrollLeft}
+									style={{
+										scrollbarWidth: 'none',
+									}}
+									onLayout={(e) => {
+										const width = e.nativeEvent.layout.width;
+										setHeaderWidth(width + 'px');
+									}}
+								> 
+										{renderHeaders()}
+								</Row>;
 	}
 	const footerToolbarItemComponents = getFooterToolbarItems();
 	if (Repository && bottomToolbar === 'pagination' && !disablePaging && Repository.isPaginated) {
@@ -852,6 +861,8 @@ export function Grid(props) {
 	} else if (data && data.length) {
 		initialNumToRender = data.length;
 	}
+
+	const isLoading = false;
 	
 	return <Column
 				{...testProps('Grid')}
@@ -863,47 +874,42 @@ export function Grid(props) {
 
 				{listHeaderComponent}
 
-				{isLoading && <Column flex={1}><Loading /></Column>}
-				{!isLoading && 
-					
-					<Column w="100%" flex={1}>
-						<FlatList
-							ref={gridRef}
-							width={headerWidth}
-							// ListHeaderComponent={listHeaderComponent}
-							// ListFooterComponent={listFooterComponent}
-							ListEmptyComponent={<NoRecordsFound text={noneFoundText} onRefresh={onRefresh} />}
-							scrollEnabled={true}
-							nestedScrollEnabled={true}
-							contentContainerStyle={{
-								overflow: 'scroll',
-							}}
-							refreshing={isLoading}
-							onRefresh={pullToRefresh ? onRefresh : null}
-							progressViewOffset={100}
-							data={entities}
-							keyExtractor={(item) => {
-								let id;
-								if (item.id) {
-									id = item.id;
-								} else if (fields) {
-									id = item[idIx];
-								}
-								return String(id);
-							}}
-							// getItemLayout={(data, index) => ( // an optional optimization that allows skipping the measurement of dynamic content if you know the size (height or width) of items ahead of time. getItemLayout is efficient if you have fixed size items
-							// 	{length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
-							// )}
-							// numColumns={1}
-							initialNumToRender={initialNumToRender}
-							initialScrollIndex={0}
-							renderItem={renderRow}
-							bg="trueGray.100"
-							{...flatListProps}
-						/>
-					</Column>
-					
-				}
+				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'}>
+					<FlatList
+						ref={gridRef}
+						width={headerWidth}
+						// ListHeaderComponent={listHeaderComponent}
+						// ListFooterComponent={listFooterComponent}
+						ListEmptyComponent={<NoRecordsFound text={noneFoundText} onRefresh={onRefresh} />}
+						scrollEnabled={true}
+						nestedScrollEnabled={true}
+						contentContainerStyle={{
+							overflow: 'scroll',
+						}}
+						refreshing={isLoading}
+						onRefresh={pullToRefresh ? onRefresh : null}
+						progressViewOffset={100}
+						data={entities}
+						keyExtractor={(item) => {
+							let id;
+							if (item.id) {
+								id = item.id;
+							} else if (fields) {
+								id = item[idIx];
+							}
+							return String(id);
+						}}
+						// getItemLayout={(data, index) => ( // an optional optimization that allows skipping the measurement of dynamic content if you know the size (height or width) of items ahead of time. getItemLayout is efficient if you have fixed size items
+						// 	{length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+						// )}
+						// numColumns={1}
+						initialNumToRender={initialNumToRender}
+						initialScrollIndex={0}
+						renderItem={renderRow}
+						bg="trueGray.100"
+						{...flatListProps}
+					/>
+				</Column>
 
 				{listFooterComponent}
 
@@ -911,4 +917,21 @@ export function Grid(props) {
 
 }
 
-export default withEvents(withData(withMultiSelection(withSelection(withFilters(Grid)))));
+export default
+				withEvents(
+					withData(
+						withMultiSelection(
+							withSelection(
+								withWindowedEditor(
+									withPresetButtons(
+										withContextMenu(
+											withFilters(
+												Grid
+											)
+										)
+									)
+								)
+							)
+						)
+					)
+				);

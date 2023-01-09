@@ -7,19 +7,23 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import {
+	EDITOR_TYPE_INLINE,
+	EDITOR_TYPE_WINDOWED,
+} from '../../Constants/EditorTypes';
 import _ from 'lodash';
 
 export default function withEditor(WrappedComponent) {
 	return (props) => {
 		const {
 				Repository,
-				defaultData = {},
-				ignoreFields = [],
+				// defaultData = {},
+				useEditor = false,
 				userCanEdit = true,
 				userCanView = true,
 				disableAdd = false,
 				disableEdit = false,
-				disableRemove = false,
+				disableDelete = false,
 				disableDuplicate = false,
 				disableView = false,
 				getRecordIdentifier = (record) => {
@@ -28,60 +32,103 @@ export default function withEditor(WrappedComponent) {
 					}
 					return 'record?';
 				},
+
+				selection,
+				setSelection,
 			} = props,
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isRecordChanged, setIsRecordChanged] = useState(null),
 			[isEditable, setIsEditable] = useState(true),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			// [isEditable, setIsEditable] = useState(true),
-			addRecord = () => {
+			getEntityFromSelection = () => {
+				let entity;
+				if (selection.length === 1) {
+					// just one entity
+					entity = selection[0];
+				} else if (selection.length > 1) {
+					// multiple entities
+					entity = selection
+				} else {
+					// nothing selected
+					debugger;
+				}
+				return entity;
+			},
+			addRecord = async () => {
+				const
+					defaults = Repository.getSchema().model.defaultValues,
+					entity = await Repository.add(defaults);
+				setSelection([entity]);
 				setIsEditorShown(true);
-
-
-				const entity = Repository.add({
-					// defaults are where??
-				});
 			},
 			editRecord = () => {
 				setIsEditorShown(true);
 			},
-			removeRecord = () => {},
-			viewRecord = () => {},
-			duplicateRecord = () => {},
-			resetRecord = () => {},
-			saveRecord = () => {},
-			onEditorSave = () => {},
-			onEditorCancel = () => {
+			deleteRecord = (e) => {
+				const entity = getEntityFromSelection();
+				if (_.isArray(entity)) {
+				} else {
+					// TODO: Verify before delete!
+
+					Repository.delete(entity);
+				}
+			},
+			viewRecord = () => {
+
+			},
+			duplicateRecord = () => {
+
+			},
+			onEditorSave = (data, e) => {
+				const entity = getEntityFromSelection();
+				if (_.isArray(entity)) {
+					// Edit multiple entities
+					debugger;
+				} else {
+					// just update this one entity
+					entity.setValues(data);
+				}
 				setIsEditorShown(false);
 			},
-			checkIsRecordChanged = (compareData) => {
-				// Compare the currently selected record with the values in the form
-				const currentRecordSubmitData = currentRecord.submitData;
-				let isRecordChanged = false;
-
-				// Should we just use @onehat/data's entity.isDirty?
-				// No-- doesn't take ignoreFields into account.
-
-
-
-				setIsRecordChanged(isRecordChanged);
-			},
-			makeRecordChanges = () => {},
-			isJson = (str) => { // modified from https://stackoverflow.com/a/20392392
-				let o;
-				try {
-					o = JSON.parse(str);
-					if (o && typeof o === 'object') {
-						return o;
+			onEditorCancel = () => {
+				const entity = getEntityFromSelection();
+				if (_.isArray(entity)) {
+					// cancel multiple entities
+					debugger;
+				} else {
+					// Remove the phantom entity
+					if (entity.isPhantom) {
+						Repository.delete(entity);
 					}
-				} catch (e) {}
-				return false;
+				}
+				setIsEditorShown(false);
 			};
+			// checkIsRecordChanged = (compareData) => {
+			// 	// Compare the currently selected record with the values in the form
+			// 	const currentRecordSubmitData = currentRecord.submitData;
+			// 	let isRecordChanged = false;
+
+			// 	// Should we just use @onehat/data's entity.isDirty?
+			// 	// No-- doesn't take ignoreFields into account.
+
+			// 	setIsRecordChanged(isRecordChanged);
+			// },
+			// makeRecordChanges = () => {},
+			// isJson = (str) => { // modified from https://stackoverflow.com/a/20392392
+			// 	let o;
+			// 	try {
+			// 		o = JSON.parse(str);
+			// 		if (_.idPlainObject(o)) {
+			// 			return true;
+			// 		}
+			// 	} catch (e) {}
+			// 	return false;
+			// };
 
 		return <WrappedComponent
 					{...props}
-					editorType={editorType}
-					defaultData={defaultData}
+					// defaultData={defaultData}
 					currentRecord={currentRecord}
 					setCurrentRecord={setCurrentRecord}
 					isEditable={isEditable}
@@ -90,15 +137,14 @@ export default function withEditor(WrappedComponent) {
 					isRecordChanged={isRecordChanged}
 					onAdd={addRecord}
 					onEdit={editRecord}
-					onRemove={removeRecord}
+					onDelete={deleteRecord}
 					onView={viewRecord}
 					onDuplicate={duplicateRecord}
-					onReset={resetRecord}
 					onEditorSave={onEditorSave}
 					onEditorCancel={onEditorCancel}
 					disableAdd={disableAdd}
 					disableEdit={disableEdit}
-					disableRemove={disableRemove}
+					disableDelete={disableDelete}
 					disableDuplicate={disableDuplicate}
 					disableView ={disableView}
 				/>;

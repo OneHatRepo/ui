@@ -39,7 +39,10 @@ export function Combo(props) {
 			idIx,
 			displayIx,
 
-			// withSelection() HOC
+			// withEvents
+			onEvent,
+
+			// withSelection
 			selection,
 			setSelection,
 			selectionMode,
@@ -399,6 +402,7 @@ export function Combo(props) {
 													};
 												}}
 												{...props}
+												fireEvent={onEvent}
 												setSelection={(selection) => {
 													// Decorator fn to add local functionality
 													// Close the menu when row is selected on grid

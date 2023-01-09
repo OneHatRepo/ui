@@ -11,39 +11,85 @@ import _ from 'lodash';
 // Note: A 'present button' will create both a context menu item 
 // and a toolbar button that match in text label, icon, and handler.
 
+const presetButtons = [
+	'add',
+	'edit',
+	'delete',
+	'copy',
+	'view',
+	'duplicate',
+	// 'print',
+];
+
 export default function withPresetButtons(WrappedComponent) {
 	return (props) => {
 		const {
 				// extract and pass
-				presetButtons = [
-					'add',
-					'edit',
-					'delete',
-					'copy',
-					// 'view',
-					'duplicate',
-					'print',
-				],
-				contextMenuItems = [],
-				additionalToolbarButtons = [],
+				contextMenuItems,
+				additionalToolbarButtons,
 				...propsToPass
 			} = props,
 			{
 				// for local use
-				setIsContextMenuShown,
 				selection,
-				setSelection, // in case it's ever needed!
 				onAdd,
 				onEdit,
-				onRemove,
+				onDelete,
 				onView,
 				onDuplicate,
-
-				
-				rowsData,
+				disableAdd = false,
+				disableEdit = false,
+				disableDelete = false,
+				disableView = false,
+				disableCopy = false,
+				disableDuplicate = false,
+				disablePrint = false,
 			} = props,
 			[localContextMenuItems, setLocalContextMenuItems] = useState([]),
 			[localAdditionalToolbarButtons, setLocalAdditionalToolbarButtons] = useState([]),
+			[localColumnsConfig, setLocalColumnsConfig] = useState([]),
+			isTypeDisabledCompletely = (type) => {
+				let isDisabled = false;
+				switch(type) {
+					case 'add':
+						if (disableAdd) {
+							isDisabled = true;
+						}
+						break;
+					case 'edit':
+						if (disableEdit) {
+							isDisabled = true;
+						}
+						break;
+					case 'delete':
+						if (disableDelete) {
+							isDisabled = true;
+						}
+						break;
+					case 'view':
+						if (disableView) {
+							isDisabled = true;
+						}
+						break;
+					case 'copy':
+						if (disableCopy) {
+							isDisabled = true;
+						}
+						break;
+					case 'duplicate':
+						if (disableDuplicate) {
+							isDisabled = true;
+						}
+						break;
+					case 'print':
+						if (disablePrint) {
+							isDisabled = true;
+						}
+						break;
+					default:
+				}
+				return isDisabled;
+			},
 			getPresetButtonProps = (type) => {
 				let text,
 					handler,
@@ -63,7 +109,7 @@ export default function withPresetButtons(WrappedComponent) {
 						break;
 					case 'delete':
 						text = 'Delete';
-						handler = onRemove;
+						handler = onDelete;
 						icon = <Trash />;
 						isDisabled = !selection.length || selection.length !== 1;
 						break;
@@ -101,29 +147,16 @@ export default function withPresetButtons(WrappedComponent) {
 			},
 			onCopyToClipboard = () => {
 				// Get text of all selected rows
-				const selectedRows = _.filter(rowsData, (rowData) => {
-					if (!rowData.entity || !rowData.isSelected) {
-						return false;
-					}
-					return rowData;
-				});
 				let text;
-				if (selectedRows.length) {
+				if (selection.length) {
 					const
-						headerText = _.map(rowsData[0].cellsData, (cellData) => cellData.header).join("\t"),
-						rowTexts = _.map(selectedRows, (rowData) => {
-							const {
-									entity,
-									cellsData,
-								} = rowData,
-								rowValues = _.map(cellsData, (cellData) => {
-											if (!cellData.columnConfig) {
-												return null;
-											}
-											const fieldName = cellData.columnConfig.fieldName;
-											return entity[fieldName];
-										});
-								return rowValues.join("\t");
+						headerText = _.map(localColumnsConfig, (config) => config.header).join("\t"),
+						rowTexts = _.map(selection, (entity) => {
+							const values = [];
+							_.each(localColumnsConfig, (config) => {
+								values.push(entity[config.fieldName]);
+							});
+							return values.join("\t");
 						});
 					text = [headerText, ...rowTexts].join("\n");
 				} else {
@@ -132,10 +165,10 @@ export default function withPresetButtons(WrappedComponent) {
 	
 				// Send it to clipboard
 				navigator.clipboard.writeText(text);
-			},
-			onPrint = () => {
-				debugger;
 			};
+			// onPrint = () => {
+			// 	debugger;
+			// };
 
 		useEffect(() => {
 			const
@@ -143,6 +176,10 @@ export default function withPresetButtons(WrappedComponent) {
 				localAdditionalToolbarButtons = [];
 			
 			_.each(presetButtons, (type) => {
+				if (isTypeDisabledCompletely(type)) { // i.e. not just temporarily disabled because of selection
+					return;
+				}
+
 				const config = getPresetButtonProps(type);
 
 				localContextMenuItems.push(config);
@@ -151,13 +188,27 @@ export default function withPresetButtons(WrappedComponent) {
 
 			setLocalContextMenuItems(localContextMenuItems);
 			setLocalAdditionalToolbarButtons(localAdditionalToolbarButtons);
-		}, [presetButtons]);
+		}, [selection]);
 	
-
+		const
+			contextMenuItemsToPass = [
+				...localContextMenuItems,
+			],
+			additionalToolbarButtonsToPass = [
+				...localAdditionalToolbarButtons,
+			];
+		if (contextMenuItems) {
+			contextMenuItemsToPass.concat(contextMenuItems);
+		}
+		if (additionalToolbarButtons) {
+			additionalToolbarButtonsToPass.concat(additionalToolbarButtons);
+		}
+		
 		return <WrappedComponent
 					{...propsToPass}
-					contextMenuItems={[...localContextMenuItems, ...contextMenuItems]}
-					additionalToolbarButtons={[...localAdditionalToolbarButtons, ...additionalToolbarButtons]}
+					contextMenuItems={contextMenuItems}
+					additionalToolbarButtons={additionalToolbarButtonsToPass}
+					onChangeColumnsConfig={setLocalColumnsConfig}
 				/>;
 	};
 }
