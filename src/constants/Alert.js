@@ -1,0 +1,3 @@
+export const ALERT_MODE_OK = 'ALERT_MODE_OK';
+export const ALERT_MODE_YES_NO = 'ALERT_MODE_YES_NO';
+export const ALERT_MODE_CUSTOM = 'ALERT_MODE_CUSTOM';

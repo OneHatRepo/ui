@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
-	AlertDialog,
 	Button,
 	Column,
 	Icon,
@@ -12,6 +11,7 @@ import { useForm, Controller } from 'react-hook-form'; // https://react-hook-for
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
 import useForceUpdate from '../../Hooks/useForceUpdate';
+import withAlert from '../Hoc/withAlert';
 import inArray from '../../Functions/inArray';
 import getComponentFromType from '../../Functions/getComponentFromType';
 import IconButton from '../Buttons/IconButton';
@@ -35,6 +35,9 @@ function Form(props) {
 			useColumns = true,
 			selectorId,
 			selectorSelected,
+
+			// withAlert
+			confirm,
 		} = props,
 		emptyValidator = yup.object(),
 		cancelRef = useRef(null),
@@ -207,11 +210,7 @@ function Form(props) {
 										variant="ghost"
 										onPress={() => {
 											if (formState.isDirty) {
-												// verify canceling edit if dirty
-// LEFT OFF HERE
-// Need to figure out a way to show confirmation dialogue and take action
-// based on button clicked.
-
+												confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', onCancel);
 											} else {
 												onCancel();
 											}
@@ -226,28 +225,8 @@ function Form(props) {
 									>Save</Button>}
 					</Button.Group>
 				</Footer>
-				<AlertDialog leastDestructiveRef={cancelRef} isOpen={isConfirmationOpen} onClose={onCloseConfirmation}>
-					<AlertDialog.Content>
-						<AlertDialog.CloseButton />
-						<AlertDialog.Header>Delete Record</AlertDialog.Header>
-						<AlertDialog.Body>
-							You are about to cancel the editing of this record. Are you sure you want to continue?
-							All changes will be lost.
-						</AlertDialog.Body>
-						<AlertDialog.Footer>
-							<Button.Group space={2}>
-								<Button variant="unstyled" colorScheme="coolGray" onPress={onCloseConfirmation} ref={cancelRef}>
-									Cancel
-								</Button>
-								<Button colorScheme="danger" onPress={onCancel}>
-									Delete
-								</Button>
-							</Button.Group>
-						</AlertDialog.Footer>
-					</AlertDialog.Content>
-				</AlertDialog>
 			</Column>;
 
 }
 
-export default Form;
+export default withAlert(Form);
