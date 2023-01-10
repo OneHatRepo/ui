@@ -5,9 +5,9 @@ import {
 	Text,
 } from 'native-base';
 import {
-	EDITOR_TYPE_INLINE,
 	EDITOR_TYPE_WINDOWED,
 } from '../../Constants/EditorTypes';
+import Panel from '../Panel/Panel';
 import withEditor from './withEditor';
 import withDraggable from './withDraggable';
 import _ from 'lodash';
@@ -54,7 +54,7 @@ export default function withWindowedEditor(WrappedComponent) {
 		}
 
 		return <>
-					<WrappedComponent editorType={EDITOR_TYPE_WINDOWED} {...props} />
+					<WrappedComponent {...props} />
 					{useEditor && Repository &&
 					isEditorShown && <Modal
 										animationType="fade"
@@ -62,19 +62,18 @@ export default function withWindowedEditor(WrappedComponent) {
 										onClose={() => setIsEditorShown(false)}
 									>
 										<Column bg="#fff" w={editorWidth} h={editorHeight}>
-											<EditorFormType
-												entity={entity}
-												Repository={Repository}
-												isMultiple={selection.length > 1}
-												isViewOnly={isEditorViewOnly}
-												onCancel={onEditorCancel}
-												onSave={onEditorSave}
-												onClose={onEditorClose}
-												// _panel={{
-												// 	headerOnDragDown={}
-												// 	headerOnDragUp={}
-												// }}
-											/>
+											<Panel isCollapsible={false} model={props.model} titleSuffix=" Editor">
+												<EditorFormType
+													editorType={EDITOR_TYPE_WINDOWED}
+													entity={entity}
+													Repository={Repository}
+													isMultiple={selection.length > 1}
+													isViewOnly={isEditorViewOnly}
+													onCancel={onEditorCancel}
+													onSave={onEditorSave}
+													onClose={onEditorClose}
+												/>
+											</Panel>
 										</Column>
 
 										{/* <DraggableColumn bg="#fff" position={position} left={left} top={top} w={editorWidth} h={editorHeight}>

@@ -29,6 +29,7 @@ function Panel(props) {
 			
 			// Header
 			title = props.model,
+			titleSuffix = '',
 			showHeader = true,
 			header = null,
 			isClosable = false,
@@ -53,7 +54,7 @@ function Panel(props) {
 	let headerComponent = header;
 	if (showHeader && title) {
 		headerComponent = <Header
-								title={title}
+								title={title + titleSuffix}
 								isClosable={isClosable}
 								onClose={onClose}
 								isCollapsible={isCollapsible}

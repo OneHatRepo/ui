@@ -7,6 +7,10 @@ import {
 	ScrollView,
 	Text,
 } from 'native-base';
+import {
+	EDITOR_TYPE_INLINE,
+	EDITOR_TYPE_WINDOWED,
+} from '../../Constants/EditorTypes';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -25,6 +29,7 @@ import _ from 'lodash';
 
 function Form(props) {
 	const {
+			editorType,
 			entity,
 			startingValues = {},
 			items = [],
@@ -93,14 +98,28 @@ function Form(props) {
 					...propsToPass
 				} = item,
 				Element = getComponentFromType(fieldType),
-				rules = {}
+				rules = {};
+
 
 			let children;
+			if (editorType === EDITOR_TYPE_INLINE && fieldType === 'Column') {
+				// Get rid of the Columns for inline editors
+				children = _.map(items, (item, ix) => buildNextLayer(item, ix, item.defaults));
+				return <Row key={ix}>{children}</Row>;
+			}
+
 			if (inArray(fieldType, ['Column', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
+
 				children = _.map(items, (item, ix) => buildNextLayer(item, ix, item.defaults));
+				
+				if (editorType === EDITOR_TYPE_INLINE) {
+					// Get rid of the Columns and FieldSets for inline editors
+					return <Row key={ix}>{children}</Row>;
+				}
+
 				return <Element key={ix} title={title} {...defaults} {...propsToPass}>{children}</Element>;
 			}
 
@@ -178,12 +197,18 @@ function Form(props) {
 												{...propsToPass}
 											/>;
 							if (error) {
-								element = <Column pt={1} flex={1}>
+								if (editorType !== EDITOR_TYPE_INLINE) {
+									element = <Column pt={1} flex={1}>
 												{element}
 												<Text color="#f00">{error.message}</Text>
 											</Column>;
+								} else {
+									debugger;
+
+
+								}
 							}
-							if (label) {
+							if (label && editorType !== EDITOR_TYPE_INLINE) {
 								element = <><Label>{label}</Label>{element}</>;
 							}
 

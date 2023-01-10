@@ -36,6 +36,7 @@ import withPresetButtons from '../Hoc/withPresetButtons';
 import withMultiSelection from '../Hoc/withMultiSelection';
 import withSelection from '../Hoc/withSelection';
 import withWindowedEditor from '../Hoc/withWindowedEditor';
+import withInlineEditor from '../Hoc/withInlineEditor';
 import testProps from '../../Functions/testProps';
 import HeaderReorderHandle from './HeaderReorderHandle';
 import HeaderResizeHandle from './HeaderResizeHandle';
@@ -984,23 +985,44 @@ export function Grid(props) {
 
 }
 
-export default
-				withAlert(
-					withEvents(
-						withData(
-							withMultiSelection(
-								withSelection(
-									withWindowedEditor(
-										withPresetButtons(
-											withContextMenu(
-												withFilters(
-													Grid
+export const WindowedGridEditor = withAlert(
+									withEvents(
+										withData(
+											withMultiSelection(
+												withSelection(
+													withWindowedEditor(
+														withPresetButtons(
+															withContextMenu(
+																withFilters(
+																	Grid
+																)
+															)
+														)
+													)
 												)
 											)
 										)
 									)
-								)
-							)
-						)
-					)
-				);
+								);
+
+export const InlineGridEditor = withAlert(
+									withEvents(
+										withData(
+											withMultiSelection(
+												withSelection(
+													withInlineEditor(
+														withPresetButtons(
+															withContextMenu(
+																withFilters(
+																	Grid
+																)
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								);
+
+export default WindowedGridEditor;

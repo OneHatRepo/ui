@@ -1,100 +1,93 @@
 import React, { useState, useEffect, } from 'react';
 import {
 	Column,
-	Icon,
 	Modal,
-	Pressable,
 	Row,
 	Text,
 } from 'native-base';
+import {
+	EDITOR_TYPE_INLINE,
+} from '../../Constants/EditorTypes';
 import withEditor from './withEditor';
 import _ from 'lodash';
 
 export default function withInlineEditor(WrappedComponent) {
 	return withEditor((props) => {
 		const {
-				// extract and pass
+				useEditor = false,
 				isEditorShown,
 				setIsEditorShown,
-				editorItems,
-				onEditorSave,
+				isEditorViewOnly,
+				EditorFormType,
 				onEditorCancel,
-				...propsToPass
-			} = props,
-			{
-				// for local use
+				onEditorSave,
+				onEditorClose,
+				editorWidth = 500,
+				editorHeight = null,
+
+				// withSelection
 				selection,
-				setSelection, // in case it's ever needed!
+
+				// withData
+				Repository,
 			} = props,
-			[editorX, setEditorX] = useState(0),
+			// [editorX, setEditorX] = useState(0),
 			[editorY, setEditorY] = useState(0),
-			[editorComponents, setEditorComponents] = useState([]);
+			[editorScrollX, setEditorScrollX] = useState(0);
 
-			// onShowEditor = (entity, rowIx, e, selection, setSelection) => {
-			// 	if (!selection.length && entity) {
-			// 		// No current selections, so select this row so operations apply to it
-			// 		setSelection([rowIx]);
-			// 	}
+		useEffect(() => {
+
 				
-			// 	setIsEditorShown(true);
-			// 	setEditorX(e.pageX);
-			// 	setEditorY(e.pageY);
-			// };
+			const y = e.pageY;
 
-			useEffect(() => {
-				const editorComponents = _.map(editorItems, (config, ix) => {
-					// let {
-					// 	text,
-					// 	handler,
-					// 	icon = null,
-					// 	isDisabled = false,
-					// } = config;
-					
-					// if (icon) {
-					// 	const iconProps = {
-					// 		alignSelf: 'center',
-					// 		size: 'sm',
-					// 		color: isDisabled ? 'disabled' : 'trueGray.800',
-					// 		h: 20,
-					// 		w: 20,
-					// 		mr: 2,
-					// 	};
-					// 	icon = React.cloneElement(icon, {...iconProps});
-					// }
-					// return <Pressable
-					// 			key={ix}
-					// 			onPress={() => {
-					// 				setIsEditorShown(false);
-					// 				handler();
-					// 			}}
-					// 			flexDirection="row"
-					// 			borderBottomWidth={1}
-					// 			borderBottomColor="trueGray.200"
-					// 			py={2}
-					// 			px={4}
-					// 			_hover={{
-					// 				bg: '#ffc',
-					// 			}}
-					// 			isDisabled={isDisabled}
-					// 		>
-					// 			{icon}
-					// 			<Text flex={1} color={isDisabled ? 'disabled' : 'trueGray.800'}>{text}</Text>
-					// 		</Pressable>;
-				});
-				setEditorComponents(editorComponents);
-			}, [editorItems]);
+
+
+			setEditorY(y);
+		}, [isEditorShown]);
+
+		let entity;
+		if (isEditorShown && selection.length) {
+			entity = selection.length === 1 ? selection[0] : selection;
+		}
 	
 		return <>
-			<WrappedComponent {...propsToPass} />
-			<Modal
-				animationType="fade"
-				isOpen={isEditorShown}
-				onClose={onEditorCancel}
-			>
-				<Column bg="#fff" w={500} h={400}>
-					<Text>Editor here!</Text>
-				</Column>
-			</Modal>
-		</>;
+					<WrappedComponent {...props} />
+					{useEditor && Repository &&
+					isEditorShown && <Modal
+										animationType="fade"
+										isOpen={true}
+										onClose={() => setIsEditorShown(false)}
+									>
+										<Column bg="#fff" w={editorWidth} h={editorHeight}>
+											<EditorFormType
+												editorType={EDITOR_TYPE_INLINE} 
+												entity={entity}
+												Repository={Repository}
+												isMultiple={selection.length > 1}
+												isViewOnly={isEditorViewOnly}
+												onCancel={onEditorCancel}
+												onSave={onEditorSave}
+												onClose={onEditorClose}
+												// _panel={{
+												// 	headerOnDragDown={}
+												// 	headerOnDragUp={}
+												// }}
+											/>
+										</Column>
+
+										{/* <DraggableColumn bg="#fff" position={position} left={left} top={top} w={editorWidth} h={editorHeight}>
+											<EditorFormType
+												entity={entity}
+												onCancel={onEditorCancel}
+												onSave={onEditorSave}
+												_panel={{
+													useClassName: true,
+													// headerOnDragDown={}
+													// headerOnDragUp={}
+												}}
+											/>
+										</DraggableColumn> */}
+									</Modal>}
+				</>;
 	});
 }

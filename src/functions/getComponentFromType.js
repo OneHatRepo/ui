@@ -23,7 +23,6 @@ import FiltersForm from '../Components/Form/FiltersForm';
 import Form from '../Components/Form/Form';
 import Grid from '../Components/Grid/Grid';
 import GridPanel from '../Components/Panel/GridPanel';
-import InlineGridEditor from '../Components/Grid/InlineGridEditor';
 import IconButton from '../Components/Buttons/IconButton';
 import Input from '../Components/Form/Field/Input';
 import Label from '../Components/Form/Label';
@@ -36,8 +35,6 @@ import RadioGroup from '../Components/Form/Field/RadioGroup/RadioGroup';
 import TabPanel from '../Components/Panel/TabPanel';
 import TextArea from '../Components/Form/Field/TextArea';
 import Toolbar from '../Components/Toolbar/Toolbar';
-import WindowedGridEditor from '../Components/Grid/WindowedGridEditor';
-import WindowedGridEditorPanel from '../Components/Panel/WindowedGridEditorPanel';
 import YearsCombo from '../Components/Form/Field/Combo/YearsCombo';
 import _ from 'lodash';
 
@@ -66,7 +63,6 @@ const
 		Form,
 		Grid,
 		GridPanel,
-		InlineGridEditor,
 		IconButton,
 		Input,
 		Label,
@@ -79,8 +75,6 @@ const
 		TabPanel,
 		TextArea,
 		Toolbar,
-		WindowedGridEditor,
-		WindowedGridEditorPanel,
 		YearsCombo,
 	};
 
