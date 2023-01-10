@@ -61,6 +61,7 @@ export default function Header(props) {
 		if (collapseDirection === HORIZONTAL) {
 			collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
 			return <div
+						className="header"
 						style={{ flex: 1, width: '100%', userSelect: 'none', ...doubleClickStyle, }}
 						onClick={(e) => {
 							if (isCollapsible && e.detail === 2) { // double-click
@@ -79,6 +80,7 @@ export default function Header(props) {
 	}
 
 	return <div
+				className="header"
 				style={{ width: '100%', userSelect: 'none', ...doubleClickStyle, }}
 				onClick={(e) => {
 					if (isCollapsible && e.detail === 2) { // double-click

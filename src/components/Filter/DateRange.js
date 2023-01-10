@@ -9,7 +9,6 @@ import _ from 'lodash';
 
 export default function DateRangeFilter(props) {
 	const {
-			Repository,
 			propertyName,
 			defaultStartDate,
 			defaultEndDate,

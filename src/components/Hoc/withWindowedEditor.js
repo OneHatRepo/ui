@@ -1,4 +1,4 @@
-import { useState, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
 	Column,
 	Modal,
@@ -9,21 +9,43 @@ import {
 	EDITOR_TYPE_WINDOWED,
 } from '../../Constants/EditorTypes';
 import withEditor from './withEditor';
+import withDraggable from './withDraggable';
 import _ from 'lodash';
+
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					mode="BOTH_AXES"
+					handle=".header"
+					{...props}
+				/>;
+	};
+}
+const DraggableColumn = withAdditionalProps(withDraggable(Column));
+
+// In order to implement a draggable window, I'd need to switch the Column with DraggableColumn,
+// then switch position to absolute, draggable area would be header of panel
 
 export default function withWindowedEditor(WrappedComponent) {
 	return withEditor((props) => {
 		const {
-				Repository,
-				selection,
 				useEditor = false,
-				isEditorShown = false,
+				isEditorShown,
 				setIsEditorShown,
+				isEditorViewOnly,
 				EditorFormType,
 				onEditorCancel,
 				onEditorSave,
+				onEditorClose,
 				editorWidth = 500,
-				editorHeight = 500,
+				editorHeight = null,
+
+				// withSelection
+				selection,
+
+				// withData
+				Repository,
 			} = props;
 
 		let entity;
@@ -32,21 +54,42 @@ export default function withWindowedEditor(WrappedComponent) {
 		}
 
 		return <>
-			<WrappedComponent editorType={EDITOR_TYPE_WINDOWED} {...props} />
-			{useEditor && Repository &&
-			entity && isEditorShown && <Modal
-											animationType="fade"
-											isOpen={true}
-											onClose={() => setIsEditorShown(false)}
-										>
-											<Column bg="#fff" w={editorWidth} h={editorHeight}>
-												<EditorFormType
-													entity={entity}
-													onCancel={onEditorCancel}
-													onSave={onEditorSave}
-												/>
-											</Column>
-										</Modal>}
-		</>;
+					<WrappedComponent editorType={EDITOR_TYPE_WINDOWED} {...props} />
+					{useEditor && Repository &&
+					isEditorShown && <Modal
+										animationType="fade"
+										isOpen={true}
+										onClose={() => setIsEditorShown(false)}
+									>
+										<Column bg="#fff" w={editorWidth} h={editorHeight}>
+											<EditorFormType
+												entity={entity}
+												Repository={Repository}
+												isMultiple={selection.length > 1}
+												isViewOnly={isEditorViewOnly}
+												onCancel={onEditorCancel}
+												onSave={onEditorSave}
+												onClose={onEditorClose}
+												// _panel={{
+												// 	headerOnDragDown={}
+												// 	headerOnDragUp={}
+												// }}
+											/>
+										</Column>
+
+										{/* <DraggableColumn bg="#fff" position={position} left={left} top={top} w={editorWidth} h={editorHeight}>
+											<EditorFormType
+												entity={entity}
+												onCancel={onEditorCancel}
+												onSave={onEditorSave}
+												_panel={{
+													useClassName: true,
+													// headerOnDragDown={}
+													// headerOnDragUp={}
+												}}
+											/>
+										</DraggableColumn> */}
+									</Modal>}
+				</>;
 	});
 }

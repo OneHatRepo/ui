@@ -36,7 +36,7 @@ export default function withContextMenu(WrappedComponent) {
 				}
 				if (!selection.length && entity) {
 					// No current selections, so select this row so operations apply to it
-					setSelection([rowIx]);
+					setSelection([entity]);
 				}
 				
 				setIsContextMenuShown(true);

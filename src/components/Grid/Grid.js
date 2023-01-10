@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
+	Box,
 	Column,
 	FlatList,
 	Icon,
@@ -27,6 +28,7 @@ import {
 import useBlocking from '../../Hooks/useBlocking';
 import useForceUpdate from '../../Hooks/useForceUpdate';
 import withContextMenu from '../Hoc/withContextMenu';
+import withAlert from '../Hoc/withAlert';
 import withData from '../Hoc/withData';
 import withEvents from '../Hoc/withEvents';
 import withFilters from '../Hoc/withFilters';
@@ -35,7 +37,7 @@ import withMultiSelection from '../Hoc/withMultiSelection';
 import withSelection from '../Hoc/withSelection';
 import withWindowedEditor from '../Hoc/withWindowedEditor';
 import testProps from '../../Functions/testProps';
-import HeaderDragHandle from './HeaderDragHandle';
+import HeaderReorderHandle from './HeaderReorderHandle';
 import HeaderResizeHandle from './HeaderResizeHandle';
 import IconButton from '../Buttons/IconButton';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';
@@ -83,16 +85,17 @@ import _ from 'lodash';
 		// √ Button to select others
 		// √ Some way to show all possibilities in modal (equivalent of ModelFilters in old system)
 		// √ way to swap filters and have it affect Repository
+	// editor
+		// √ double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
+		// √ windowed editor for selected row
+		// √ form panel for editing of multiple selected rows
+		// Show inline editor for selected row
+		// Dragging of window (see withWindowedEditor)
 	// Rows
 		// Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
 			// state to keep track of current ordering
 			// √ handler for drag/drop
 			// If it's reorderable, add reorder drag handle column
-	// editor
-		// √ double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
-		// Show inline editor for selected row
-		// windowed editor for selected row
-			// form panel for multiple editing of selected rows
 	// custom cell types
 		// Most would use text, and depend on @onehat/data for formatting
 	// Display tree data
@@ -178,7 +181,7 @@ export function Grid(props) {
 		[isSortDirectionAsc, setIsSortDirectionAsc] = useState(Repository && Repository.getSortDirection() === SORT_ASCENDING),
 		[isReady, setIsReady] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
-		[isLoading2, setIsLoading] = useState(false),
+		[isLoading, setIsLoading] = useState(false),
 		[dragColumnSlot, setDragColumnSlot] = useState(null),
 		[headerWidth, setHeaderWidth] = useState('100%'),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -267,7 +270,83 @@ export function Grid(props) {
 			// clear the selection
 			setSelection([]);
 		},
-		onColumnDrag = (info, e, proxy, node) => {
+		onColumnReorderDragStart = (info, e, proxy, node) => {
+			const
+				proxyRect = proxy.getBoundingClientRect(),
+				columnHeader = node.parentElement,
+				columnHeaders = _.filter(columnHeader.parentElement.children, (childNode) => {
+					return childNode.getBoundingClientRect().width !== 0; // Skip zero-width children
+				}),
+				currentX = proxyRect.left; // left position of pointer
+		
+			// Figure out which index the user wants
+			let newIx = 0;
+			_.each(columnHeaders, (child, ix, all) => {
+				const
+					rect = child.getBoundingClientRect(), // rect of the columnHeader of this iteration
+					{
+						left,
+						right,
+						width,
+					} = rect,
+					halfWidth = width /2;
+
+				if (ix === 0) {
+					// first column
+					if (currentX < left + halfWidth) {
+						newIx = 0;
+						return false;
+					} else if (currentX < right) {
+						newIx = 1;
+						return false;
+					}
+				} else if (ix === all.length -1) {
+					// last column
+					if (currentX < left + halfWidth) {
+						newIx = ix;
+						return false;
+					}
+					newIx = ix +1;
+					return false;
+				}
+				
+				// all other columns
+				if (left <= currentX && currentX < left + halfWidth) {
+					newIx = ix;
+					return false;
+				} else if (currentX < right) {
+					newIx = ix +1;
+					return false;
+				}
+			});
+
+			// Verify index can actually be used
+			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].reorderable) {
+				return;
+			}
+
+			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
+			const
+				columnHeaderRect = columnHeaders[newIx].getBoundingClientRect(),
+				left = columnHeaderRect.left,
+				gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
+				gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
+				marker = document.createElement('div');
+
+			marker.style.position = 'absolute';
+			marker.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
+			marker.style.width = '4px';
+			marker.style.top = columnHeaderRect.top + 'px';
+			// marker.style.right = 0;
+			marker.style.backgroundColor = '#ccc';
+
+			document.body.appendChild(marker);
+			marker.style.left = left + 'px';
+
+			setDragColumnSlot({ ix: newIx, marker, });
+
+		},
+		onColumnReorderDrag = (info, e, proxy, node) => {
 			const
 				proxyRect = proxy.getBoundingClientRect(),
 				columnHeader = node.parentElement,
@@ -327,26 +406,13 @@ export function Grid(props) {
 				columnHeaderRect = columnHeaders[newIx].getBoundingClientRect(),
 				left = columnHeaderRect.left;
 			let marker = dragColumnSlot && dragColumnSlot.marker;
-			if (!marker) {
-				const
-					gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
-					gridRowsContainerRect = gridRowsContainer.getBoundingClientRect();
-
-				marker = document.createElement('div');
-				marker.style.position = 'absolute';
-				marker.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
-				marker.style.width = '4px';
-				marker.style.top = columnHeaderRect.top + 'px';
-				// marker.style.right = 0;
-				marker.style.backgroundColor = '#ccc';
-
-				document.body.appendChild(marker);
+			if (marker) {
+				marker.style.left = left + 'px';
 			}
-			marker.style.left = left + 'px';
 
 			setDragColumnSlot({ ix: newIx, marker, });
 		},
-		onColumnReorder = (delta, e, config) => {
+		onColumnReorderDragStop = (delta, e, config) => {
 			const columnsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
 
 			 _.pull(columnsConfig, config);
@@ -485,11 +551,12 @@ export function Grid(props) {
 							style={{ userSelect: 'none', }}
 							{...propsToPass}
 						>
-							{isReorderable && <HeaderDragHandle
-													key="HeaderDragHandle"
+							{isReorderable && <HeaderReorderHandle
+													key="HeaderReorderHandle"
 													mode={HORIZONTAL}
-													onDragStop={(delta, e) => onColumnReorder(delta, e, config)}
-													onDrag={onColumnDrag}
+													onDragStart={onColumnReorderDragStart}
+													onDrag={onColumnReorderDrag}
+													onDragStop={(delta, e) => onColumnReorderDragStop(delta, e, config)}
 													getProxy={(node) => {
 														const
 															columnHeader = node.parentElement,
@@ -634,6 +701,7 @@ export function Grid(props) {
 				 } = row,
 				rowProps = getRowProps ? getRowProps(item) : {},
 				isSelected = isInSelection(item),
+				isPhantom = item.isPhantom,
 				hoverProps = {};
 			if (showHovers) {
 				hoverProps._hover = { bg: isSelected ? styles.GRID_ROW_SELECTED_HOVER_BG : styles.GRID_ROW_HOVER_BG, };
@@ -646,6 +714,7 @@ export function Grid(props) {
 						w="100%"
 						{...hoverProps}
 					>
+						{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 						<div
 							onClick={(e) => {
 								if (onEdit && e.detail === 2) {
@@ -861,8 +930,6 @@ export function Grid(props) {
 	} else if (data && data.length) {
 		initialNumToRender = data.length;
 	}
-
-	const isLoading = false;
 	
 	return <Column
 				{...testProps('Grid')}
@@ -874,7 +941,7 @@ export function Grid(props) {
 
 				{listHeaderComponent}
 
-				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'}>
+				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => setSelection([])}>
 					<FlatList
 						ref={gridRef}
 						width={headerWidth}
@@ -918,15 +985,17 @@ export function Grid(props) {
 }
 
 export default
-				withEvents(
-					withData(
-						withMultiSelection(
-							withSelection(
-								withWindowedEditor(
-									withPresetButtons(
-										withContextMenu(
-											withFilters(
-												Grid
+				withAlert(
+					withEvents(
+						withData(
+							withMultiSelection(
+								withSelection(
+									withWindowedEditor(
+										withPresetButtons(
+											withContextMenu(
+												withFilters(
+													Grid
+												)
 											)
 										)
 									)

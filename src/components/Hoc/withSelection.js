@@ -17,6 +17,8 @@ export default function withSelection(WrappedComponent) {
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				autoSelectFirstItem = false,
 				fireEvent,
+
+				// withData
 				Repository,
 				data,
 				idIx,

@@ -7,6 +7,7 @@ import Trash from '../Icons/Trash';
 import Plus from '../Icons/Plus';
 import Print from '../Icons/Print';
 import _ from 'lodash';
+import inArray from '../../Functions/inArray';
 
 // Note: A 'present button' will create both a context menu item 
 // and a toolbar button that match in text label, icon, and handler.
@@ -44,6 +45,10 @@ export default function withPresetButtons(WrappedComponent) {
 				disableCopy = false,
 				disableDuplicate = false,
 				disablePrint = false,
+
+				// withEditor
+				userCanEdit = true,
+				userCanView = true,
 			} = props,
 			[localContextMenuItems, setLocalContextMenuItems] = useState([]),
 			[localAdditionalToolbarButtons, setLocalAdditionalToolbarButtons] = useState([]),
@@ -105,13 +110,11 @@ export default function withPresetButtons(WrappedComponent) {
 						text = 'Edit';
 						handler = onEdit;
 						icon = <Edit />;
-						isDisabled = !selection.length || selection.length !== 1;
 						break;
 					case 'delete':
 						text = 'Delete';
 						handler = onDelete;
 						icon = <Trash />;
-						isDisabled = !selection.length || selection.length !== 1;
 						break;
 					case 'view':
 						text = 'View';
@@ -145,6 +148,29 @@ export default function withPresetButtons(WrappedComponent) {
 					isDisabled,
 				};
 			},
+			generatePresetButtons = () => {
+				const
+					localContextMenuItems = [],
+					localAdditionalToolbarButtons = [];
+				
+				_.each(presetButtons, (type) => {
+					if (isTypeDisabledCompletely(type)) { // i.e. not just temporarily disabled because of selection
+						return;
+					}
+					if ((!userCanEdit && inArray(type, ['add', 'edit', 'delete', 'duplicate',])) ||
+						(!userCanView && type === 'view')) {
+						return;
+					}
+	
+					const config = getPresetButtonProps(type);
+	
+					localContextMenuItems.push(config);
+					localAdditionalToolbarButtons.push(config);
+				});
+	
+				setLocalContextMenuItems(localContextMenuItems);
+				setLocalAdditionalToolbarButtons(localAdditionalToolbarButtons);
+			},
 			onCopyToClipboard = () => {
 				// Get text of all selected rows
 				let text;
@@ -171,24 +197,8 @@ export default function withPresetButtons(WrappedComponent) {
 			// };
 
 		useEffect(() => {
-			const
-				localContextMenuItems = [],
-				localAdditionalToolbarButtons = [];
-			
-			_.each(presetButtons, (type) => {
-				if (isTypeDisabledCompletely(type)) { // i.e. not just temporarily disabled because of selection
-					return;
-				}
-
-				const config = getPresetButtonProps(type);
-
-				localContextMenuItems.push(config);
-				localAdditionalToolbarButtons.push(config);
-			});
-
-			setLocalContextMenuItems(localContextMenuItems);
-			setLocalAdditionalToolbarButtons(localAdditionalToolbarButtons);
-		}, [selection]);
+			generatePresetButtons();
+		}, [selection, localColumnsConfig]);
 	
 		const
 			contextMenuItemsToPass = [
@@ -203,10 +213,9 @@ export default function withPresetButtons(WrappedComponent) {
 		if (additionalToolbarButtons) {
 			additionalToolbarButtonsToPass.concat(additionalToolbarButtons);
 		}
-		
 		return <WrappedComponent
 					{...propsToPass}
-					contextMenuItems={contextMenuItems}
+					contextMenuItems={contextMenuItemsToPass}
 					additionalToolbarButtons={additionalToolbarButtonsToPass}
 					onChangeColumnsConfig={setLocalColumnsConfig}
 				/>;

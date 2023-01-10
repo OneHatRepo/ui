@@ -12,13 +12,13 @@ import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable';
 import GripVertical from '../Icons/GripVertical';
 
-function HeaderDragHandle(props) {
+function HeaderReorderHandle(props) {
 	const {
 			isDragging,
 		} = props;
 
 	return <Column
-				testID="HeaderDragHandle"
+				testID="HeaderReorderHandle"
 				bg={isDragging ? 'trueGray.300' : 'trueGray.100'}
 				h="100%"
 				w={3}
@@ -32,16 +32,11 @@ function HeaderDragHandle(props) {
 
 function withAdditionalProps(WrappedComponent) {
 	return (props) => {
-		const {
-				getParentNode = (node) => node.parentElement.parentElement,
-				
-			} = props;
 		return <WrappedComponent
-			getParentNode={getParentNode}
 			mode={HORIZONTAL}
 			{...props}
 		/>;
 	};
 }
 
-export default withAdditionalProps(withDraggable(HeaderDragHandle));
+export default withAdditionalProps(withDraggable(HeaderReorderHandle));

@@ -27,12 +27,21 @@ function Form(props) {
 	const {
 			entity,
 			startingValues = {},
-			
 			items = [],
 			columnDefaults = {},
+			useColumns = true,
+
+			// withData
+			Repository,
+
+			// withEditor
+			isMultiple = false,
+			isViewOnly = false,
 			onCancel,
 			onSave,
-			useColumns = true,
+			onClose,
+
+			// withSelection
 			selectorId,
 			selectorSelected,
 
@@ -40,9 +49,8 @@ function Form(props) {
 			confirm,
 		} = props,
 		emptyValidator = yup.object(),
-		cancelRef = useRef(null),
 		forceUpdate = useForceUpdate(),
-		[isConfirmationOpen, setIsConfirmationOpen] = useState(false),
+		initialValues =  _.merge(startingValues, (entity ? entity.submitValues : {})), // for defaultvalues in a bit!
 		{
 			control,
 			formState,
@@ -62,7 +70,7 @@ function Form(props) {
 		} = useForm({
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
-			defaultValues: _.merge(startingValues, (entity ? entity.submitValues : {})),
+			defaultValues: isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues,
 			// values,
 			// resetOptions: {
 			// 	keepDirtyValues: false, // user-interacted input will be retained
@@ -73,7 +81,7 @@ function Form(props) {
 			// delayError: 0,
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
-			resolver: yupResolver(entity?.repository?.schema?.model?.validator || emptyValidator),
+			resolver: yupResolver((isMultiple ? disableRequiredYupFields(entity?.repository?.schema?.model?.validator) : entity?.repository?.schema?.model?.validator) || emptyValidator),
 		}),
 		buildNextLayer = (item, ix, defaults) => {
 			const {
@@ -100,9 +108,17 @@ function Form(props) {
 				throw new Error('name is required');
 			}
 
-
 			if (fieldType === 'Text') {
 				return <Text key={ix} {...defaults} {...propsToPass}>{entity[name]}</Text>;
+			}
+
+			if (isViewOnly) {
+				const value = (entity && entity[name]) || (startingValues && startingValues[name]) || null;
+				let element = <Text {...propsToPass}>{value}</Text>;
+				if (label) {
+					element = <><Label>{label}</Label>{element}</>;
+				}
+				return <Row key={ix} px={2} pb={1} bg="#fff">{element}</Row>;
 			}
 		
 			// // These rules are for fields *outside* the model
@@ -151,8 +167,8 @@ function Form(props) {
 							let element = <Element
 												name={name}
 												value={value}
-												setValue={(value) => {
-													onChange(value);
+												setValue={(newValue) => {
+													onChange(newValue);
 												}}
 												onBlur={onBlur}
 												selectorId={selectorId}
@@ -176,23 +192,19 @@ function Form(props) {
 						}}
 					/>;
 		},
-		formComponents = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults)),
-		onCloseConfirmation = () => {
-			setIsConfirmationOpen(false);
-		};
+		formComponents = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
 	
 	useEffect(() => {
-		if (!entity) {
+		if (!Repository) {
 			return () => {};
 		}
 
-		const LocalRepository = entity.repository;
-		LocalRepository.ons(['changeData', 'change'], forceUpdate);
+		Repository.ons(['changeData', 'change'], forceUpdate);
 
 		return () => {
-			LocalRepository.offs(['changeData', 'change'], forceUpdate);
+			Repository.offs(['changeData', 'change'], forceUpdate);
 		};
-	}, [entity]);
+	}, [Repository]);
 	
 	return <Column w="100%" flex={1}>
 				<ScrollView flex={1} pb={3} {...props}>
@@ -200,33 +212,83 @@ function Form(props) {
 				</ScrollView>
 				<Footer justifyContent="flex-end" >
 					<Button.Group space={2}>
-						<IconButton
-							key="resetBtn"
-							onPress={reset}
-							icon={<Rotate color="#fff" />}
-						/>
-						{onCancel && <Button
-										key="cancelBtn"
-										variant="ghost"
-										onPress={() => {
-											if (formState.isDirty) {
-												confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', onCancel);
-											} else {
-												onCancel();
-											}
-										}}
-										color="#fff"
-									>Cancel</Button>}
-						{onSave && <Button
-										key="saveBtn"
-										onPress={handleSubmit(onSave)}
-										isDisabled={!_.isEmpty(formState.errors) || (!entity.isPhantom && !formState.isDirty)}
-										color="#fff"
-									>Save</Button>}
+						{!isViewOnly && <IconButton
+											key="resetBtn"
+											onPress={reset}
+											icon={<Rotate color="#fff" />}
+										/>}
+						{!isViewOnly && onCancel && <Button
+														key="cancelBtn"
+														variant="ghost"
+														onPress={() => {
+															if (formState.isDirty) {
+																confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', onCancel);
+															} else {
+																onCancel();
+															}
+														}}
+														color="#fff"
+													>Cancel</Button>}
+						{!isViewOnly && onSave && <Button
+														key="saveBtn"
+														onPress={handleSubmit(onSave)}
+														isDisabled={!_.isEmpty(formState.errors) || (!entity.isPhantom && !formState.isDirty)}
+														color="#fff"
+													>Save</Button>}
+						{isViewOnly && onClose && <Button
+														key="closeBtn"
+														onPress={onClose}
+														color="#fff"
+													>Close</Button>}
 					</Button.Group>
 				</Footer>
 			</Column>;
 
 }
+
+// helper fns
+function disableRequiredYupFields(validator) {
+	// based on https://github.com/jquense/yup/issues/1466#issuecomment-944386480
+	if (!validator) {
+		return null;
+	}
+
+	const nextSchema = validator.clone();
+	return nextSchema.withMutation((next) => {
+		if (typeof next.fields === 'object' && next.fields != null) {
+			for (const key in next.fields) {
+				const nestedField = next.fields[key];
+		
+				let nestedFieldNext = nestedField.notRequired();
+		
+				if (Array.isArray(nestedField.conditions) && nestedField.conditions.length > 0) {
+					// Next is done to disable required() inside a condition
+					// https://github.com/jquense/yup/issues/1002
+					nestedFieldNext = nestedFieldNext.when('whatever', (_: unknown, schema: yup.AnySchema) =>
+						schema.notRequired(),
+					);
+				}
+		
+				next.fields[key] = nestedFieldNext;
+			}
+		}
+	});
+}
+function getNullFieldValues(initialValues, Repository) {
+	const ret = {};
+	if (Repository) {
+		const properties = Repository.getSchema().model.properties;
+		_.each(properties, (propertyDef) => {
+			ret[propertyDef.name] = null;
+		});
+	} else {
+		// takes a JSON object of fieldValues and sets them all to null
+		_.each(initialValues, (value, field) => {
+			ret[field] = null;
+		});
+	}
+	return ret;
+}
+
 
 export default withAlert(Form);

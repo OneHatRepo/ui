@@ -30,7 +30,7 @@ export default function withFilters(WrappedComponent) {
 				filter4StartingValue = null,
 				filter5StartingValue = null,
 
-				// data source
+				// withData
 				Repository,
 			} = props;
 

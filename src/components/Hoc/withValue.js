@@ -9,6 +9,8 @@ export default function withValue(WrappedComponent) {
 				value = null,
 				setValue,
 				startingValue = null,
+
+				// withData
 				Repository,
 				idIx,
 			} = props,

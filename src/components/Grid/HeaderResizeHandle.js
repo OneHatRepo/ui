@@ -32,12 +32,7 @@ function HeaderResizeHandle(props) {
 
 function withAdditionalProps(WrappedComponent) {
 	return (props) => {
-		const {
-				getParentNode = (node) => node.parentElement.parentElement,
-				
-			} = props;
 		return <WrappedComponent
-			getParentNode={getParentNode}
 			mode={HORIZONTAL}
 			{...props}
 		/>;

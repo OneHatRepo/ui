@@ -3,7 +3,7 @@ import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions';
-import Draggable from 'react-draggable';
+import Draggable from 'react-draggable'; // https://github.com/react-grid-layout/react-draggable
 import useBlocking from '../../Hooks/useBlocking';
 import {
 	v4 as uuid,
@@ -17,10 +17,12 @@ export default function withDraggable(WrappedComponent) {
 	return (props) => {
 		const {
 				// extract and pass
+				onDragStart,
 				onDrag,
 				onDragStop,
-				getParentNode,
+				getParentNode = (node) => node.parentElement.parentElement,
 				getProxy,
+				handle,
 				...propsToPass
 			} = props,
 			{
@@ -38,13 +40,13 @@ export default function withDraggable(WrappedComponent) {
 				
 				const
 					node = info.node,
-					headerContainer = getParentNode && getParentNode(node);
+					parentContainer = getParentNode && getParentNode(node);
 
 				setNode(node);
 
-				if (!headerContainer.id) {
-					headerContainer.id = 'a' + uuid().replace(/-/g, '');
-					setBounds(headerContainer.getBoundingClientRect());
+				if (parentContainer && !parentContainer.id) {
+					parentContainer.id = 'a' + uuid().replace(/-/g, '');
+					setBounds(parentContainer.getBoundingClientRect());
 				}
 
 				// clone node for proxy, append to DOM
@@ -52,8 +54,8 @@ export default function withDraggable(WrappedComponent) {
 				if (getProxy) {
 					proxy = getProxy(node);
 				} else {
-					const nodeRect = node.getBoundingClientRect();
 					proxy = node.cloneNode(true);
+					const nodeRect = node.getBoundingClientRect();
 					proxy.style.top = nodeRect.top + 'px';
 					proxy.style.left = nodeRect.left + 'px';
 					proxy.style.height = nodeRect.height + 'px';
@@ -63,12 +65,17 @@ export default function withDraggable(WrappedComponent) {
 				proxy.style.zIndex = 10000;
 				proxy.style.position = 'absolute';
 				proxy.style.visibility = 'visible';
+				proxy.style.backgroundColor = '#fff';
 				proxy.id = 'dragproxy';
 				proxy.className = '';
 				
 				node.style.visibility = 'hidden';
 
 				setIsDragging(true);
+
+				if (onDragStart) {
+					onDragStart(info, e, proxy, node)
+				}
 			},
 			isWithinBounds = ({ pageX, pageY }) => {
 				if (!bounds) {
@@ -83,8 +90,10 @@ export default function withDraggable(WrappedComponent) {
 				
 				if (mode === HORIZONTAL) {
 					return pageX >= left && pageX <= right;
-				} else {
+				} else if (mode === VERTICAL) {
 					return pageY <= bottom && pageX >= top;
+				} else {
+					return pageX >= left && pageX <= right && pageY <= bottom && pageX >= top;
 				}
 			},
 			handleDrag = (e, info) => {
@@ -93,11 +102,23 @@ export default function withDraggable(WrappedComponent) {
 					return;
 				}
 
-				const proxy = document.getElementById('dragproxy');
+				const {
+					deltaX,
+					deltaY,
+				} = info;
+
+				// Move the proxy to where it should be
+				const
+					proxy = document.getElementById('dragproxy'),
+					currentLeft = parseInt(proxy.style.left),
+					currentTop = parseInt(proxy.style.top);
 				if (mode === HORIZONTAL) {
 					proxy.style.left = e.pageX + 'px';
-				} else {
+				} else if (mode === VERTICAL) {
 					proxy.style.top = e.pageY + 'px';
+				} else {
+					proxy.style.left = currentLeft + deltaX + 'px';
+					proxy.style.top = currentTop + deltaY + 'px';
 				}
 				if (onDrag) {
 					onDrag(info, e, proxy, node);
@@ -134,7 +155,21 @@ export default function withDraggable(WrappedComponent) {
 							newX = right;
 						}
 						node.style.left = newX + 'px';
+					} else if (mode === VERTICAL) {
+						if (top > pageY) {
+							newX = top;
+						} else if (pageY > bottom) {
+							newX = bottom;
+						}
+						node.style.top = newY + 'px';
 					} else {
+						if (left > pageX) {
+							newX = left;
+						} else if (pageX > right) {
+							newX = right;
+						}
+						node.style.left = newX + 'px';
+
 						if (top > pageY) {
 							newX = top;
 						} else if (pageY > bottom) {
@@ -151,15 +186,17 @@ export default function withDraggable(WrappedComponent) {
 				if (onDragStop) {
 					if (mode === HORIZONTAL) {
 						onDragStop(info.x, e, node);
-					} else {
+					} else if (mode === VERTICAL) {
 						onDragStop(info.y, e, node);
+					} else {
+						onDragStop(info, e, node);
 					}
 				}
 				setIsDragging(false);
 			};
 
 		propsToPass.isDragging = isDragging;
-	
+
 		if (mode === VERTICAL) {
 			return <Draggable
 						axis="x"
@@ -173,18 +210,31 @@ export default function withDraggable(WrappedComponent) {
 							<WrappedComponent {...propsToPass} />
 						</div>
 					</Draggable>;
+		} else if (mode === HORIZONTAL) {
+			return <Draggable
+						axis="y"
+						onStart={handleStart}
+						onDrag={handleDrag}
+						onStop={handleStop}
+						position={{ x: 0, y: 0, /* reset to dropped position */ }}
+						// bounds={bounds}
+					>
+						<div className="ewResize">
+							<WrappedComponent {...propsToPass} />
+						</div>
+					</Draggable>;
 		}
+
+		// can drag in all directions
 		return <Draggable
-					axis="y"
+					axis="both"
 					onStart={handleStart}
 					onDrag={handleDrag}
 					onStop={handleStop}
-					position={{ x: 0, y: 0, /* reset to dropped position */ }}
-					// bounds={bounds}
+					// position={{ x: 0, y: 0, /* reset to dropped position */ }}
+					handle={handle}
 				>
-					<div className="ewResize">
-						<WrappedComponent {...propsToPass} />
-					</div>
+					<WrappedComponent {...propsToPass} />
 				</Draggable>;
-	};
+};
 }

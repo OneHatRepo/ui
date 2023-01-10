@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState, useRef, useEffect, } from 'react';
 import {
 	Button,
 	Column,
@@ -29,13 +29,14 @@ export default function withAlert(WrappedComponent) {
 			[noCallback, setNoCallback] = useState(),
 			[customButtons, setCustomButtons] = useState(),
 			[mode, setMode] = useState(ALERT_MODE_OK),
+			autoFocusRef = useRef(null),
 			onAlert = (arg1, callback, includeCancel = false) => {
+				clearAll();
 				if (_.isString(arg1)) {
 					setMode(ALERT_MODE_OK);
 					setTitle('Alert');
 					setMessage(arg1);
 					setOkCallback(() => callback);
-					setIncludeCancel(includeCancel);
 				} else if (_.isPlainObject(arg1)) {
 					// custom
 					const {
@@ -48,9 +49,11 @@ export default function withAlert(WrappedComponent) {
 					setMessage(message);
 					setCustomButtons(buttons);
 				}
+				setIncludeCancel(includeCancel);
 				showAlert();
 			},
 			onConfirm = (message, callback, includeCancel = false) => {
+				clearAll();
 				setMode(ALERT_MODE_YES_NO);
 				setTitle('Confirm');
 				setMessage(message);
@@ -59,7 +62,6 @@ export default function withAlert(WrappedComponent) {
 				showAlert();
 			},
 			onCancel = () => {
-				clearAll();
 				setIsAlertShown(false);
 			},
 			onOk = () => {
@@ -68,7 +70,6 @@ export default function withAlert(WrappedComponent) {
 				if (callback) {
 					callback();
 				}
-				clearAll();
 			},
 			onYes = () => {
 				const callback = yesCallback;
@@ -76,7 +77,6 @@ export default function withAlert(WrappedComponent) {
 				if (callback) {
 					callback();
 				}
-				clearAll();
 			},
 			onNo = () => {
 				const callback = noCallback;
@@ -84,7 +84,6 @@ export default function withAlert(WrappedComponent) {
 				if (callback) {
 					callback();
 				}
-				clearAll();
 			},
 			showAlert = () => {
 				setIsAlertShown(true);
@@ -112,6 +111,7 @@ export default function withAlert(WrappedComponent) {
 			case ALERT_MODE_OK:
 				buttons.push(<Button
 								key="okBtn"
+								ref={autoFocusRef}
 								onPress={onOk}
 								color="#fff"
 							>OK</Button>);
@@ -125,6 +125,7 @@ export default function withAlert(WrappedComponent) {
 							>No</Button>);
 				buttons.push(<Button
 								key="yesBtn"
+								ref={autoFocusRef}
 								onPress={onYes}
 								color="#fff"
 							>Yes</Button>);
@@ -144,9 +145,14 @@ export default function withAlert(WrappedComponent) {
 					<Modal
 						animationType="fade"
 						isOpen={isAlertShown}
+						onOpen={() => {debugger;}}
 						onClose={() => setIsAlertShown(false)}
 					>
-						<Column bg="#fff" w={400}>
+						<Column bg="#fff" w={400} onLayout={() => {
+							if (autoFocusRef.current) {
+								autoFocusRef.current.focus();
+							}
+						}}>
 							<Panel
 								title={title}
 								isCollapsible={false}

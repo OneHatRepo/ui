@@ -33,7 +33,7 @@ export function Combo(props) {
 			tooltipRef = null,
 			tooltip = null,
 
-			// data source
+			// withData
 			Repository,
 			data,
 			idIx,
@@ -424,4 +424,12 @@ export function Combo(props) {
 	return comboComponent;
 }
 
-export default withEvents(withData(withValue(withSelection(Combo))));
+export default withEvents(
+					withData(
+						withValue(
+							withSelection(
+								Combo
+							)
+						)
+					)
+				);

@@ -15,9 +15,9 @@ import Picker from '../Picker/Picker';
 
 export default function Pagination(props) {
 	const {
-			Repository
+			// withData
+			Repository,
 		} = props,
-		forceUpdate = useForceUpdate(),
 		{
 			page,
 			pageSize,
@@ -26,6 +26,7 @@ export default function Pagination(props) {
 			pageStart,
 			pageEnd,
 		} = Repository,
+		forceUpdate = useForceUpdate(),
 		iconButtonProps = {
 			_hover: {
 				bg: 'trueGray.400',
@@ -46,7 +47,7 @@ export default function Pagination(props) {
 		return () => {
 			Repository.offs(['changePage', 'changePageSize', 'changeData', ], forceUpdate);
 		};
-	}, [Repository, forceUpdate]);
+	}, [Repository]);
 
 	let items = [],
 		isDisabled = page === 1;
