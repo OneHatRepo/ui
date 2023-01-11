@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
+	Box,
 	Button,
 	Column,
 	Icon,
 	Row,
 	ScrollView,
 	Text,
+	Tooltip,
 } from 'native-base';
 import {
 	EDITOR_TYPE_INLINE,
@@ -34,7 +36,10 @@ function Form(props) {
 			startingValues = {},
 			items = [],
 			columnDefaults = {},
-			useColumns = true,
+			useColumns = true, // these are layout columns for the form
+			columnsConfig, // this is the columnsConfig from the grid
+			footerProps = {},
+			buttonGroupProps = {},
 
 			// withData
 			Repository,
@@ -55,7 +60,8 @@ function Form(props) {
 		} = props,
 		emptyValidator = yup.object(),
 		forceUpdate = useForceUpdate(),
-		initialValues =  _.merge(startingValues, (entity ? entity.submitValues : {})), // for defaultvalues in a bit!
+		initialValues =  _.merge(startingValues, (entity ? entity.submitValues : {})),
+		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		{
 			control,
 			formState,
@@ -75,7 +81,7 @@ function Form(props) {
 		} = useForm({
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
-			defaultValues: isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues,
+			defaultValues,
 			// values,
 			// resetOptions: {
 			// 	keepDirtyValues: false, // user-interacted input will be retained
@@ -88,6 +94,107 @@ function Form(props) {
 			// shouldUseNativeValidation: false,
 			resolver: yupResolver((isMultiple ? disableRequiredYupFields(entity?.repository?.schema?.model?.validator) : entity?.repository?.schema?.model?.validator) || emptyValidator),
 		}),
+		buildFromColumnsConfig = () => {
+			// For InlineEditor
+			// Build the fields that match the current columnsConfig in the grid
+			const
+				model = Repository.getSchema().model,
+				elements = [],
+				columnProps = {
+					justifyContent: 'center',
+					alignItems: 'center',
+					borderRightWidth: 1,
+					borderRightColor: 'trueGray.200',
+					px: 1,
+				};
+			_.each(columnsConfig, (config, ix) => {
+				let {
+						editable,
+						editor,
+						fieldName,
+						renderer,
+						w,
+						flex,
+					} = config;
+
+				if (!editable) {
+					const renderedValue = renderer ? renderer(entity) : entity[fieldName];
+					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>
+										<Text>{renderedValue}</Text>
+									</Box>);
+				} else {
+					elements.push(<Controller
+										key={'controller-' + ix}
+										name={fieldName}
+										// rules={rules}
+										control={control}
+										render={(args) => {
+											const {
+													field,
+													fieldState,
+													// formState,
+												} = args,
+												{
+													onChange,
+													onBlur,
+													name,
+													value,
+													// ref,
+												} = field,
+												{
+													isTouched,
+													isDirty,
+													error,
+												} = fieldState;
+											let editorProps = {};
+											if (!editor) {
+												editor = model.editorTypes[fieldName];
+												if (_.isPlainObject(editor)) {
+													const {
+															type,
+															...p
+														} = editor;
+													editorProps = p;
+													editor = type;
+												}
+											}
+											const Element = getComponentFromType(editor);
+											let element = <Element
+																name={name}
+																value={value}
+																setValue={(newValue) => {
+																	onChange(newValue);
+																}}
+																onBlur={onBlur}
+																selectorId={selectorId}
+																selectorSelected={selectorSelected}
+																flex={1}
+																{...editorProps}
+																// {...defaults}
+																// {...propsToPass}
+															/>;
+
+											// element = <Tooltip key={ix} label={header} placement="bottom">
+											// 				{element}
+											// 			</Tooltip>;
+											// if (error) {
+											// 	element = <Column pt={1} flex={1}>
+											// 				{element}
+											// 				<Text color="#f00">{error.message}</Text>
+											// 			</Column>;
+											// }
+
+											const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
+											return <Row key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</Row>;
+										}}
+									/>);
+				}
+			});
+			return <Row>{elements}</Row>;
+		},
+		buildFromItems = () => {
+			return  _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+		},
 		buildNextLayer = (item, ix, defaults) => {
 			const {
 					fieldType,
@@ -102,11 +209,6 @@ function Form(props) {
 
 
 			let children;
-			if (editorType === EDITOR_TYPE_INLINE && fieldType === 'Column') {
-				// Get rid of the Columns for inline editors
-				children = _.map(items, (item, ix) => buildNextLayer(item, ix, item.defaults));
-				return <Row key={ix}>{children}</Row>;
-			}
 
 			if (inArray(fieldType, ['Column', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
@@ -114,12 +216,6 @@ function Form(props) {
 				}
 
 				children = _.map(items, (item, ix) => buildNextLayer(item, ix, item.defaults));
-				
-				if (editorType === EDITOR_TYPE_INLINE) {
-					// Get rid of the Columns and FieldSets for inline editors
-					return <Row key={ix}>{children}</Row>;
-				}
-
 				return <Element key={ix} title={title} {...defaults} {...propsToPass}>{children}</Element>;
 			}
 
@@ -216,9 +312,8 @@ function Form(props) {
 							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : '#fff'}>{dirtyIcon}{element}</Row>;
 						}}
 					/>;
-		},
-		formComponents = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
-	
+		};
+
 	useEffect(() => {
 		if (!Repository) {
 			return () => {};
@@ -230,13 +325,19 @@ function Form(props) {
 			Repository.offs(['changeData', 'change'], forceUpdate);
 		};
 	}, [Repository]);
+
+	if (props.Repository && !props.entity) {
+		return null;
+	}
+
+	const formComponents = columnsConfig && !_.isEmpty(columnsConfig) && Repository ? buildFromColumnsConfig() : buildFromItems();
 	
 	return <Column w="100%" flex={1}>
-				<ScrollView flex={1} pb={3} {...props}>
+				<ScrollView flex={1} pb={1} {...props}>
 					{useColumns ? <Row flex={1}>{formComponents}</Row> : <Column flex={1}>{formComponents}</Column>}
 				</ScrollView>
-				<Footer justifyContent="flex-end" >
-					<Button.Group space={2}>
+				<Footer justifyContent="flex-end" {...footerProps}>
+					<Button.Group space={2} {...buttonGroupProps}>
 						{!isViewOnly && <IconButton
 											key="resetBtn"
 											onPress={reset}

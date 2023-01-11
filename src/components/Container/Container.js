@@ -51,10 +51,6 @@ export default function Container(props) {
 			setWestWidth(newWidth);
 		};
 		
-	if (!center) {
-		throw new Error('center must be defined!');
-	}
-		
 	let componentProps = {},
 		centerComponent = null,
 		northComponent = null,

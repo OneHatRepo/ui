@@ -121,7 +121,7 @@ export default function TabPanel(props) {
 						</Row>
 					</Panel>;
 		}
-		return <Panel {...propsToPass}>
+		return <Panel {...propsToPass} {...props._panel}>
 					<Column flex={1} w="100%">
 						<Row
 							alignItems="center"

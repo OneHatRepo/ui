@@ -14,6 +14,7 @@ import Color from '../Components/Form/Field/Color';
 import Combo from '../Components/Form/Field/Combo/Combo';
 // import ComboEditor from '../Components/Form/Field/Combo/ComboEditor';
 import Container from '../Components/Container/Container';
+import DataMgt from '../Components/Screens/DataMgt';
 import Date from '../Components/Form/Field/Date';
 // import DateRange from '../Components/Filter/DateRange';
 import FieldSet from '../Components/Form/FieldSet';
@@ -54,6 +55,7 @@ const
 		Combo,
 		// ComboEditor,
 		Container,
+		DataMgt,
 		Date,
 		// DateRange,
 		FieldSet,

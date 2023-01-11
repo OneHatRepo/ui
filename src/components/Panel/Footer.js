@@ -1,18 +1,17 @@
 import {
 	Row,
 } from 'native-base';
+import styles from '../../Constants/Styles';
 
 export default function Footer(props) {
 	return <Row
 				alignItems="center"
 				justifyContent="center"
 				alignSelf="flex-end"
-				bg="primary.100"
+				bg={styles.FOOTER_BG}
 				testID="footer"
 				w="100%"
-				pt={3}
-				pb={2}
-				px={3}
+				p={2}
 				safeAreaBottom
 				{...props}
 			>

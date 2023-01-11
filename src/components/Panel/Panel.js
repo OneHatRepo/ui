@@ -24,7 +24,9 @@ function Panel(props) {
 			frame = false,
 			isScrollable = false,
 			h,
+			maxHeight,
 			w,
+			maxWidth,
 			flex,
 			
 			// Header
@@ -77,6 +79,12 @@ function Panel(props) {
 		if (flex) {
 			sizeProps.flex = flex;
 		}
+	}
+	if (maxWidth) {
+		sizeProps.maxWidth = maxWidth;
+	}
+	if (maxHeight) {
+		sizeProps.maxHeight = maxHeight;
 	}
 	// if (propsToPass.h && isCollapsed) {
 	// 	delete propsToPass.h;

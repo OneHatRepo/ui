@@ -245,7 +245,7 @@ export function Combo(props) {
 			}
 		} else {
 			// Get data item or items that match value
-			if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
+			if (!_.isNil(value) && (_.isBoolean(value) || !_.isEmpty(value))) {
 				let currentValue = value;
 				if (!_.isArray(currentValue)) {
 					currentValue = [currentValue];

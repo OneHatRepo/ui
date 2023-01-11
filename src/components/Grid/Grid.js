@@ -90,7 +90,7 @@ import _ from 'lodash';
 		// √ double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
 		// √ windowed editor for selected row
 		// √ form panel for editing of multiple selected rows
-		// Show inline editor for selected row
+		// [ ] Show inline editor for selected row
 		// Dragging of window (see withWindowedEditor)
 	// Rows
 		// Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
@@ -111,7 +111,7 @@ export function Grid(props) {
 				return {
 					borderBottomWidth: 1,
 					borderBottomColor: 'trueGray.500',
-					py: 1,
+					py: 2,
 					pl: 4,
 					pr: 2,
 				};
@@ -172,6 +172,11 @@ export function Grid(props) {
 			selectorSelected,
 			disableSelectorSelected = false,
 
+			// withInlineEditor
+			inlineEditorRef,
+			onScrollRow,
+			onEditorRowClick,
+
 		} = props,
 		forceUpdate = useForceUpdate(),
 		{ isBlocked } = useBlocking(),
@@ -192,10 +197,13 @@ export function Grid(props) {
 				onChangeColumnsConfig(config);
 			}
 		},
-		onRowClick = (item, index, e) => {
+		onRowClick = (item, rowIndex, e) => {
+
 			const
-				shiftKey = e.shiftKey,
-				metaKey = e.metaKey;
+				{
+					shiftKey,
+					metaKey,
+				 } = e;
 				
 			if (selectionMode === SELECTION_MODE_MULTI) {
 				if (shiftKey) {
@@ -709,8 +717,8 @@ export function Grid(props) {
 			}
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
-						onPress={(e) => onRowClick(item, index, e)}
-						onLongPress={(e) => onRowClick(item, index, e)}
+						// onPress={(e) => onRowClick(item, index, e)}
+						// onLongPress={(e) => onRowClick(item, index, e)}
 						bg={isSelected ? styles.GRID_ROW_SELECTED_BG : styles.GRID_ROW_BG}
 						w="100%"
 						{...hoverProps}
@@ -718,15 +726,23 @@ export function Grid(props) {
 						{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 						<div
 							onClick={(e) => {
-								if (onEdit && e.detail === 2) {
+								e.preventDefault();
+								if (onEditorRowClick) {
+									onEditorRowClick(item, index, e);
+								}
+								if (e.detail === 1) {
+									onRowClick(item, index, e);
+								} else if (onEdit && e.detail === 2) {
 									// double-click
 									setSelection([item]);
 									onEdit(); // ERROR: has closure of OLD selection, not this new one. Doesn't matter if you delay it with setTimeout. How can we capture new selection?
-
 								}
 							}}
 							onContextMenu={(e) => {
 								e.preventDefault();
+								if (onEditorRowClick) {
+									onEditorRowClick(item, index, e);
+								}
 								if (onContextMenu) {
 									onContextMenu(item, index, e, selection, setSelection);
 								}
@@ -740,7 +756,6 @@ export function Grid(props) {
 							<Row
 								alignItems="center"
 								flexGrow={1}
-								// bg={isSelected ? 'selected' : '#fff'}
 								{...rowProps}
 							>
 								{renderColumns(item)}
@@ -885,8 +900,24 @@ export function Grid(props) {
 		if (gridRef && gridRef.current && headerRef && headerRef.current) {
 			const scroller = gridRef.current._listRef._scrollRef.childNodes[0];
 			scroller.addEventListener('scroll', (e) => {
-				headerRef.current.scrollLeft = e.target.scrollLeft;
+				const scrollLeft = e.target.scrollLeft;
+				headerRef.current.scrollLeft = scrollLeft;
+				if (inlineEditorRef && inlineEditorRef.current) {
+					// Any time the rows scroll, the inline editor scrolls too
+					// Don't know precise path to node to scroll
+					debugger;
+					inlineEditorRef.current.scrollLeft = scrollLeft;
+				}
 			});
+			if (inlineEditorRef && inlineEditorRef.current) {
+				inlineEditorRef.current.addEventListener('scroll', (e) => {
+					// This is where we assign a scroll event handler
+					// so that every time the inline editor scrolls, the row and header also scroll
+					// I just don't know if the ref will work at this time in the render cycle.
+
+					debugger;
+				});
+			}
 		}
 	}, [isRendered]);
 
@@ -904,7 +935,19 @@ export function Grid(props) {
 									// h="36px"
 									bg="trueGray.200"
 									overflow="scroll"
-									ref={headerRef} onScroll={(e) => gridRef.current._listRef._scrollRef.childNodes[0].scrollLeft = e.target.scrollLeft}
+									ref={headerRef}
+									onScroll={(e) => {
+										const scrollLeft = e.target.scrollLeft;
+										gridRef.current._listRef._scrollRef.childNodes[0].scrollLeft = scrollLeft;
+										if (inlineEditorRef && inlineEditorRef.current) {
+											// Any time the header scrolls, the inline editor scrolls too
+											// don't know the precise path to node to scroll
+											debugger;
+
+
+											// inlineEditorRef.current._listRef._scrollRef.childNodes[0].scrollLeft = scrollLeft;
+										}
+									}}
 									style={{
 										scrollbarWidth: 'none',
 									}}

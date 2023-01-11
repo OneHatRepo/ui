@@ -1,15 +1,21 @@
 import { useEffect, useState, } from 'react';
 import Panel from './Panel';
-import Grid from '../Grid/Grid';
+import Grid, { InlineGridEditor, } from '../Grid/Grid';
+import {
+	EDITOR_TYPE_INLINE,
+	EDITOR_TYPE_WINDOWED,
+} from '../../Constants/EditorTypes';
 import withData from '../Hoc/withData';
 import _ from 'lodash';
 
 export function GridPanel(props) {
 	const {
+			editorType,
 			disableTitleChange = false,
 			selectorSelected,
 		} = props,
 		originalTitle = props.title,
+		WhichGrid = (editorType === EDITOR_TYPE_INLINE) ? InlineGridEditor : Grid,
 		[title, setTitle] = useState(originalTitle);
 
 	useEffect(() => {
@@ -23,7 +29,7 @@ export function GridPanel(props) {
 	}, [selectorSelected, disableTitleChange, originalTitle]);
 
 	return <Panel {...props} title={title}>
-				<Grid {...props} />
+				<WhichGrid {...props} />
 			</Panel>;
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, } from 'react';
+import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Column,
 	Modal,
@@ -9,12 +9,14 @@ import {
 	EDITOR_TYPE_INLINE,
 } from '../../Constants/EditorTypes';
 import withEditor from './withEditor';
+import styles from '../../Constants/Styles';
 import _ from 'lodash';
 
 export default function withInlineEditor(WrappedComponent) {
 	return withEditor((props) => {
 		const {
 				useEditor = false,
+				editorType,
 				isEditorShown,
 				setIsEditorShown,
 				isEditorViewOnly,
@@ -22,8 +24,6 @@ export default function withInlineEditor(WrappedComponent) {
 				onEditorCancel,
 				onEditorSave,
 				onEditorClose,
-				editorWidth = 500,
-				editorHeight = null,
 
 				// withSelection
 				selection,
@@ -31,63 +31,82 @@ export default function withInlineEditor(WrappedComponent) {
 				// withData
 				Repository,
 			} = props,
-			// [editorX, setEditorX] = useState(0),
-			[editorY, setEditorY] = useState(0),
-			[editorScrollX, setEditorScrollX] = useState(0);
+			inlineEditorRef = useRef(),
+			[localColumnsConfig, setLocalColumnsConfig] = useState([]),
+			[currentRow, setCurrentRow] = useState(),
+			onChangeColumnsConfig = (columnsConfig) => {
+				setLocalColumnsConfig(columnsConfig);
+			},
+			onRowClick = (item, rowIndex, e) => {
+				// move the editor up to the appropriate row
+				const currentRow = e.currentTarget;
+				moveEditor(currentRow);
 
-		useEffect(() => {
+				setCurrentRow(currentRow);
+			},
+			onScreenResize = () => {
+				// TODO: Attach a div with zIndex 0 to body to monitor resize events. THis is handler
 
-				
-			const y = e.pageY;
+				moveEditor(currentRow);
+			},
+			moveEditor = (currentRow) => {
+				const 
+					bounds = currentRow.getBoundingClientRect(),
+					r = inlineEditorRef.current.style;
+				r.top = bounds.top -8 + 'px';
+				r.left = bounds.left + 'px';
+				r.width = bounds.width + 'px';
+			};
 
-
-
-			setEditorY(y);
-		}, [isEditorShown]);
-
-		let entity;
-		if (isEditorShown && selection.length) {
-			entity = selection.length === 1 ? selection[0] : selection;
+		if (isEditorShown && selection.length !== 1) {
+			throw new Error('Can only edit one at a time with inline editor!');
 		}
 	
 		return <>
-					<WrappedComponent {...props} />
-					{useEditor && Repository &&
-					isEditorShown && <Modal
-										animationType="fade"
-										isOpen={true}
-										onClose={() => setIsEditorShown(false)}
-									>
-										<Column bg="#fff" w={editorWidth} h={editorHeight}>
-											<EditorFormType
-												editorType={EDITOR_TYPE_INLINE} 
-												entity={entity}
-												Repository={Repository}
-												isMultiple={selection.length > 1}
-												isViewOnly={isEditorViewOnly}
-												onCancel={onEditorCancel}
-												onSave={onEditorSave}
-												onClose={onEditorClose}
-												// _panel={{
-												// 	headerOnDragDown={}
-												// 	headerOnDragUp={}
-												// }}
-											/>
-										</Column>
-
-										{/* <DraggableColumn bg="#fff" position={position} left={left} top={top} w={editorWidth} h={editorHeight}>
-											<EditorFormType
-												entity={entity}
-												onCancel={onEditorCancel}
-												onSave={onEditorSave}
-												_panel={{
-													useClassName: true,
-													// headerOnDragDown={}
-													// headerOnDragUp={}
-												}}
-											/>
-										</DraggableColumn> */}
-									</Modal>}
+					<WrappedComponent
+						{...props}
+						inlineEditorRef={inlineEditorRef}
+						onChangeColumnsConfig={onChangeColumnsConfig}
+						onEditorRowClick={onRowClick}
+					/>
+					{useEditor && editorType === EDITOR_TYPE_INLINE && Repository && 
+							<Modal
+								animationType="fade"
+								isOpen={isEditorShown}
+								onClose={() => setIsEditorShown(false)}
+							>
+								<Column position="absolute" ref={inlineEditorRef}>
+									{isEditorShown && <EditorFormType
+															editorType={EDITOR_TYPE_INLINE} 
+															entity={selection[0]}
+															Repository={Repository}
+															isMultiple={selection.length > 1}
+															isViewOnly={isEditorViewOnly}
+															columnsConfig={localColumnsConfig}
+															onCancel={onEditorCancel}
+															onSave={onEditorSave}
+															onClose={onEditorClose}
+															footerProps={{
+																justifyContent: 'center',
+																bg: null, // make bg transparent
+																p: 0,
+															}}
+															buttonGroupProps={{
+																bg: 'primary.100',
+																borderBottomRadius: 5,
+																px: 4,
+																py: 2,
+															}}
+															bg="#fff"
+															borderTopWidth={4}
+															borderTopColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
+															borderBottomWidth={4}
+															borderBottomColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
+															py={1}
+															px={0}
+														/>}
+								</Column>
+							</Modal>}
 				</>;
 	});
 }

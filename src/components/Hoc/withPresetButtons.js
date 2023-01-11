@@ -28,6 +28,7 @@ export default function withPresetButtons(WrappedComponent) {
 				// extract and pass
 				contextMenuItems,
 				additionalToolbarButtons,
+				onChangeColumnsConfig,
 				...propsToPass
 			} = props,
 			{
@@ -53,6 +54,12 @@ export default function withPresetButtons(WrappedComponent) {
 			[localContextMenuItems, setLocalContextMenuItems] = useState([]),
 			[localAdditionalToolbarButtons, setLocalAdditionalToolbarButtons] = useState([]),
 			[localColumnsConfig, setLocalColumnsConfig] = useState([]),
+			onChangeColumnsConfigDecorator = (columnsConfig) => {
+				setLocalColumnsConfig(columnsConfig);
+				if (onChangeColumnsConfig) {
+					onChangeColumnsConfig(columnsConfig);
+				}
+			},
 			isTypeDisabledCompletely = (type) => {
 				let isDisabled = false;
 				switch(type) {
@@ -217,7 +224,7 @@ export default function withPresetButtons(WrappedComponent) {
 					{...propsToPass}
 					contextMenuItems={contextMenuItemsToPass}
 					additionalToolbarButtons={additionalToolbarButtonsToPass}
-					onChangeColumnsConfig={setLocalColumnsConfig}
+					onChangeColumnsConfig={onChangeColumnsConfigDecorator}
 				/>;
 	};
 }

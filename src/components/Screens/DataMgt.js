@@ -18,11 +18,8 @@ import TabPanel from '../Panel/TabPanel';
 import _ from 'lodash';
 
 export default function DataMgt(props) {
-	const {
+	let {
 			show_selector = false,
-			show_filters = false,
-			show_columns = false,
-			show_editor = false,
 			WestCoastElementType,
 			westCoastTitle,
 			westCoastStartsCollapsed = false,
@@ -33,19 +30,16 @@ export default function DataMgt(props) {
 			illinoisNoSelectorMeansNoResults = true,
 			illinoisSelector_id, // what selectorId illinois listens to (and a few other things)
 			illinoisProps = {},
-			IndianaElementType,
-			indianaStartsCollapsed = false,
-			indianaSelector_id, // What selectorId to use for the Indiana formPanel
-			indianaProps = {},
 			eastCoastStartsCollapsed = false,
 			eastCoastWidth = 340,
 			associatedPanels = [], // array of panel config objects.
 			associatedPanelsPerTab = 3,
-		} = props,
+		} = props;
+
+	const
 		// westCoastRef = useRef(),
 		[isWestCoastCollapsed, setIsWestCoastCollapsed] = useState(westCoastStartsCollapsed),
 		[isEastCoastCollapsed, setIsEastCoastCollapsed] = useState(eastCoastStartsCollapsed),
-		[isIndianaCollapsed, setIsIndianaCollapsed] = useState(indianaStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
 		[westCoastSelectorSelected, setWestCoastSelectorSelected] = useState(),
 		[illinoisSelectorSelected, setIllinoisSelectorSelected] = useState(),
@@ -55,11 +49,9 @@ export default function DataMgt(props) {
 			if (newIsFullScreen) {
 				setIsWestCoastCollapsed(true);
 				setIsEastCoastCollapsed(true);
-				setIsIndianaCollapsed(true);
 			} else {
 				setIsWestCoastCollapsed(false);
 				setIsEastCoastCollapsed(false);
-				setIsIndianaCollapsed(false);
 			}
 		},
 		onNavigateTo = (path) => {
@@ -123,21 +115,23 @@ export default function DataMgt(props) {
 
 	let westCoast,
 		illinois,
-		indiana,
 		eastCoast;
 
 	// 'westCoast' section, AKA 'selector', the far-left column
 	if (show_selector && WestCoastElementType) {
 
 		// TODO: Add in event handlers that tie this panel to others
-
 		westCoast = <WestCoastElementType
+						// _panel={{
+						// 	w: westCoastWidth,
+						// }}
+						w={westCoastWidth}
+						// maxWidth="230px" // this breaks drag resize!
 						title={westCoastTitle}
 						startsCollapsed={westCoastStartsCollapsed}
 						collapseDirection={HORIZONTAL}
 						split={true}
 						frame={false}
-						w={westCoastWidth}
 						loadAfterRender={true}
 						disablePaging={true}
 						uniqueRepository={true}
@@ -169,22 +163,6 @@ export default function DataMgt(props) {
 						onNavigateTo={onNavigateTo}
 						reference="illinois"
 						{...illinoisProps}
-					/>;
-	}
-
-	// 'indiana' section
-	if (show_editor && IndianaElementType) {
-		indiana = <IndianaElementType
-						title="Editor"
-						startsCollapsed={indianaStartsCollapsed}
-						frame={false}
-						split={false}
-						w={330}
-						selectorId={indianaSelector_id}
-						selectorSelected={illinoisSelectorSelected}
-						noSelectorMeansNoResults={true}
-						reference="indiana"
-						{...indianaProps}
 					/>;
 	}
 
@@ -220,10 +198,13 @@ export default function DataMgt(props) {
 			});
 			eastCoast = <TabPanel
 							title="Associated Information"
+							// _panel={{
+							// 	w: eastCoastWidth,
+							// }}
+							w={eastCoastWidth}
 							startsCollapsed={eastCoastStartsCollapsed}
 							frame={true}
 							split={true}
-							w={eastCoastWidth}
 							tabs={tabs}
 							additionalButtons ={[
 								<Button onPress={() => { debugger; }}>Test</Button>
@@ -294,12 +275,7 @@ export default function DataMgt(props) {
 				west={westCoast}
 				isWestCollapsed={isWestCoastCollapsed}
 				setIsWestCollapsed={setIsWestCoastCollapsed}
-				center={<Container
-							center={illinois}
-							east={indiana}
-							isEastCollapsed={isIndianaCollapsed}
-							setIsEastCollapsed={setIsIndianaCollapsed}
-						/>}
+				center={illinois}
 				east={eastCoast}
 				isEastCollapsed={isEastCoastCollapsed}
 				setIsEastCollapsed={setIsEastCoastCollapsed}

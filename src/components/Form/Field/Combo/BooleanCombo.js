@@ -2,8 +2,8 @@ import ArrayCombo from './ArrayCombo';
 
 const
 	trueFalseData = [
-		['true', 'Yes'],
-		['false', 'No'],
+		[true, 'Yes'],
+		[false, 'No'],
 	],
 	oneZeroData = [
 		[1, 'Yes'],
