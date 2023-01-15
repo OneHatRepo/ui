@@ -32,6 +32,7 @@ export function Combo(props) {
 			forceSelection = true,
 			tooltipRef = null,
 			tooltip = null,
+			menuMinWidth = 150,
 
 			// withData
 			Repository,
@@ -54,6 +55,8 @@ export function Combo(props) {
 			isInSelection,
 			getIdFromSelection,
 			getDisplayFromSelection,
+
+			tooltipPlacement = 'bottom',
 		} = props,
 		inputRef = useRef(),
 		triggerRef = useRef(),
@@ -65,6 +68,7 @@ export function Combo(props) {
 		[isManuallyEnteringText, setIsManuallyEnteringText] = useState(false), // when typing a value, not using trigger/grid
 		[textValue, setTextValue] = useState(''),
 		[width, setWidth] = useState(0),
+		[height, setHeight] = useState(null),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
 		showMenu = () => {
@@ -73,11 +77,37 @@ export function Combo(props) {
 			}
 			if (inputRef.current.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
-				const rect = inputRef.current.getBoundingClientRect(),
-					offSet = rect.top + rect.height;
-				if (offSet !== top) {
-					setTop(offSet);
+				const
+					rect = inputRef.current.getBoundingClientRect(),
+					bodyRect = document.body.getBoundingClientRect(),
+					isUpper = rect.top < bodyRect.height / 2;
+					
+				if (isUpper) {
+					// Menu is below the combo
+					const rectTop = rect.top + rect.height;
+					if (rectTop !== top) {
+						setTop(rectTop);
+					}
+					setHeight(null);
+				} else {
+					// Menu is above the combo
+
+					const rectTop = rect.top -200;
+					if (rectTop !== top) {
+						setTop(rectTop);
+					}
+
+					setHeight(200);
 				}
+				if (rect.left !== left) {
+					setLeft(rect.left);
+				}
+				if (rect.width !== width) {
+					setWidth(rect.width);
+				}
+			}
+			if (Repository && !Repository.isLoaded) {
+				Repository.reload();
 			}
 			setIsMenuShown(true);
 		},
@@ -240,12 +270,15 @@ export function Combo(props) {
 				if (_.isArray(value)) {
 					newSelection = Repository.getBy((entity) => inArray(entity.id, value));
 				} else {
-					newSelection.push(Repository.getById(value));
+					const found = Repository.getById(value);
+					if (found) {
+						newSelection.push(found);
+					}
 				}
 			}
 		} else {
 			// Get data item or items that match value
-			if (!_.isNil(value) && (_.isBoolean(value) || !_.isEmpty(value))) {
+			if (!_.isNil(value) && (_.isBoolean(value) || _.isNumber(value) || !_.isEmpty(value))) {
 				let currentValue = value;
 				if (!_.isArray(currentValue)) {
 					currentValue = [currentValue];
@@ -310,6 +343,7 @@ export function Combo(props) {
 									onChangeValue={onInputChangeText}
 									onKeyPress={onInputKeyPress}
 									onLayout={(e) => {
+										// On web, this is not needed, but on RN it might be, so leave it in for now
 										const {
 												height,
 												width,
@@ -379,6 +413,9 @@ export function Combo(props) {
 										top={top + 'px'}
 										left={left + 'px'}
 										w={width + 'px'}
+										h={height ? height + 'px' : null}
+										minWidth={menuMinWidth}
+										overflow="scroll"
 									>
 										<Popover.Body
 											ref={menuRef}
@@ -416,7 +453,7 @@ export function Combo(props) {
 								</Popover>
 							</Row>;
 	if (tooltip) {
-		comboComponent = <Tooltip label={tooltip} placement="bottom">
+		comboComponent = <Tooltip label={tooltip} placement={tooltipPlacement}>
 							{comboComponent}
 						</Tooltip>;
 	}

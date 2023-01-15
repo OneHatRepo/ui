@@ -13,6 +13,7 @@ const IconButton = React.forwardRef((props, ref) => {
 			_spinner,
 			isLoading = false,
 			tooltip,
+			tooltipPlacement = 'bottom',
 		} = props;
 	const propsIcon = props._icon || {};
 	let icon = props.icon || <Icon {...propsIcon} />;
@@ -33,7 +34,7 @@ const IconButton = React.forwardRef((props, ref) => {
 						</Pressable>;
 	let ret = pressable;
 	if (tooltip) {
-		ret = <Tooltip label={tooltip} placement="top">{pressable}</Tooltip>;
+		ret = <Tooltip label={tooltip} placement={tooltipPlacement}>{pressable}</Tooltip>;
 	}
 	return ret;
 });

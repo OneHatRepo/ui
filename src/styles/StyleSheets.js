@@ -7,5 +7,8 @@ export const styles = {
 	ewResize: {
 		cursor: 'ew-resize',
 	},
+	shiftUpAbove: {
+		transform: 'translateY(-100%)',
+	},
 };
 export default StyleSheet.create(styles);

@@ -11,7 +11,8 @@ import AnglesLeft from '../Icons/AnglesLeft';
 import AngleRight from '../Icons/AngleRight';
 import AnglesRight from '../Icons/AnglesRight';
 import Rotate from '../Icons/Rotate';
-import Picker from '../Picker/Picker';
+import Input from '../Form/Field/Input';
+import ArrayCombo from '../Form/Field/Combo/ArrayCombo';
 
 export default function Pagination(props) {
 	const {
@@ -67,8 +68,25 @@ export default function Pagination(props) {
 					onPress={() => Repository.prevPage()}
 					tooltip="Previous Page"
 				/>);
+	items.push(<Row
+					key="pageSelector"
+					mx={3}
+					justifyContent="center"
+					alignItems="center"
+				>
+					<Text mr={2}>Page</Text>
+					<Input
+						value={page}
+						onChangeValue={(value) => Repository.setPage(value)}
+						maxValue={totalPages}
+						isDisabled={totalPages === 1}
+						w={10}
+						tooltip="Set Page"
+					/>
+					<Text ml={2}>of {totalPages}</Text>
+				</Row>);
 
-	isDisabled = page === totalPages || !totalPages;
+	isDisabled = page === totalPages || totalPages <= 1;
 	items.push(<IconButton
 					key="next"
 					{...iconButtonProps}
@@ -95,30 +113,26 @@ export default function Pagination(props) {
 					/>);
 	}
 
-	// Pagesize Picker
-	items.push(<Picker
-					_select={{
-						key: 'pageSize',
-						selectedValue: pageSize,
-						onValueChange: (value) => Repository.setPageSize(value),
-						fontSize: 14,
-						bg: 'trueGray.100',
-						ml: 1,
-						h: 7,
-					}}
-					tooltip="Page Size"
-					w={120}
-					allowNull={false}
+	items.push(<Row
 					key="pageSize"
-					entities={[
-						// { id: 1, displayValue: '1/pg'},
-						{ id: 5, displayValue: '5/pg'},
-						{ id: 10, displayValue: '10/pg'},
-						{ id: 20, displayValue: '20/pg'},
-						{ id: 50, displayValue: '50/pg'},
-						{ id: 100, displayValue: '100/pg'},
-					]}
-				/>);
+					w="100px"
+					ml={2}
+				>
+					<ArrayCombo
+						data={[
+							// [ 1, '1/pg', ],
+							[ 5, '5/pg', ],
+							[ 10, '10/pg', ],
+							[ 20, '20pg', ],
+							[ 50, '50/pg', ],
+							[ 100, '100/pg', ],
+						]}
+						value={pageSize}
+						onChangeValue={(value) => Repository.setPageSize(value)}
+						tooltip="Page Size"
+						allowNull={false}
+					/>
+				</Row>);
 
 	let pageSpan = `${pageStart} – ${pageEnd}`;
 	if (pageStart === pageEnd) {
@@ -132,13 +146,7 @@ export default function Pagination(props) {
 				style={{ userSelect: 'none', }}
 				{...props}
 			>
-				<Text>{pageSpan} of {total}</Text>
-				<Row
-					justifyContent="center"
-					alignItems="center"
-					px={3}
-				>
-					{items}
-				</Row>
+				{items}
+				<Text ml={3}>Displaying {pageSpan} of {total}</Text>
 			</Row>;
 };

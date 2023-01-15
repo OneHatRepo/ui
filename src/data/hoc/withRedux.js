@@ -1,6 +1,6 @@
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import actionCreators from '../../../models/actions/ActionCreators';
+import actionCreators from '../../../Models/actions/ActionCreators';
 import _ from 'lodash';
 
 // Usage:

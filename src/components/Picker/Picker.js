@@ -15,8 +15,9 @@ export default function Picker(props) {
 			cutoff = 25,
 			nullLabel = 'None',
 			_select = {},
-			tooltip,
 			placeholder = 'Select',
+			tooltip,
+			tooltipPlacement = 'bottom',
 		} = props;
 
 	let items = [];
@@ -54,7 +55,7 @@ export default function Picker(props) {
 					>{items}</Select>;
 	if (tooltip) {
 		//TODO: This doesn't yet work, but doesn't do anything harmful either!
-		select = <Tooltip label={tooltip} placement="top">{select}</Tooltip>;
+		select = <Tooltip label={tooltip} placement={tooltipPlacement}>{select}</Tooltip>;
 	}
 	return <Row {...props}>
 				{select}

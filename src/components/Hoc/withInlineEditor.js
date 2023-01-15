@@ -8,6 +8,7 @@ import {
 import {
 	EDITOR_TYPE_INLINE,
 } from '../../Constants/EditorTypes';
+import Form from '../Form/Form';
 import withEditor from './withEditor';
 import styles from '../../Constants/Styles';
 import _ from 'lodash';
@@ -20,7 +21,6 @@ export default function withInlineEditor(WrappedComponent) {
 				isEditorShown,
 				setIsEditorShown,
 				isEditorViewOnly,
-				EditorFormType,
 				onEditorCancel,
 				onEditorSave,
 				onEditorClose,
@@ -76,7 +76,7 @@ export default function withInlineEditor(WrappedComponent) {
 								onClose={() => setIsEditorShown(false)}
 							>
 								<Column position="absolute" ref={inlineEditorRef}>
-									{isEditorShown && <EditorFormType
+									{isEditorShown && <Form
 															editorType={EDITOR_TYPE_INLINE} 
 															entity={selection[0]}
 															Repository={Repository}

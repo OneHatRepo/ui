@@ -4,7 +4,6 @@ import {
 	Column,
 	FlatList,
 	Icon,
-	Modal,
 	Pressable,
 	Row,
 	Text,
@@ -122,8 +121,8 @@ export function Grid(props) {
 			hideNavColumn = true,
 			noneFoundText,
 			disableLoadingIndicator = false,
-			disableReloadOnChangeFilters = false,
 			showRowExpander = false,
+			loadAfterRender = true,
 			rowExpanderTpl = '',
 			showHeaders = true,
 			showHovers = true,
@@ -188,6 +187,7 @@ export function Grid(props) {
 		[isReady, setIsReady] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
+		[isDragging, setIsDragging] = useState(false),
 		[dragColumnSlot, setDragColumnSlot] = useState(null),
 		[headerWidth, setHeaderWidth] = useState('100%'),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -198,7 +198,6 @@ export function Grid(props) {
 			}
 		},
 		onRowClick = (item, rowIndex, e) => {
-
 			const
 				{
 					shiftKey,
@@ -278,6 +277,22 @@ export function Grid(props) {
 
 			// clear the selection
 			setSelection([]);
+		},
+		onHeaderMouseEnter = (e, ix) => {
+			if (isDragging) {
+				return;
+			}
+			localColumnsConfig[ix].showDragHandles = true;
+			setLocalColumnsConfig(localColumnsConfig);
+			forceUpdate();
+		},
+		onHeaderMouseLeave = (e, ix) => {
+			if (isDragging) {
+				return;
+			}
+			localColumnsConfig[ix].showDragHandles = false;
+			setLocalColumnsConfig(localColumnsConfig);
+			forceUpdate();
 		},
 		onColumnReorderDragStart = (info, e, proxy, node) => {
 			const
@@ -519,6 +534,7 @@ export function Grid(props) {
 						sortable,
 						w,
 						flex,
+						showDragHandles,
 					} = config,
 					isSorter = sortable && canColumnsSort && sortField === fieldName,
 					isReorderable = canColumnsReorder && reorderable,
@@ -558,14 +574,17 @@ export function Grid(props) {
 							}}
 							p={0}
 							style={{ userSelect: 'none', }}
+							onMouseEnter={(e) => onHeaderMouseEnter(e, ix)}
+							onMouseLeave={(e) => onHeaderMouseLeave(e, ix)}
 							{...propsToPass}
 						>
-							{isReorderable && <HeaderReorderHandle
+							{isReorderable && showDragHandles && <HeaderReorderHandle
 													key="HeaderReorderHandle"
 													mode={HORIZONTAL}
 													onDragStart={onColumnReorderDragStart}
 													onDrag={onColumnReorderDrag}
 													onDragStop={(delta, e) => onColumnReorderDragStop(delta, e, config)}
+													onChangeIsDragging={setIsDragging}
 													getProxy={(node) => {
 														const
 															columnHeader = node.parentElement,
@@ -593,14 +612,17 @@ export function Grid(props) {
 								py={2}
 								alignItems="center"
 								justifyContent="center"
+								numberOfLines={1}
+								ellipsizeMode="head"
 							>{header}</Text>
 							
 							{isSorter && <Icon key="Icon" as={isSortDirectionAsc ? SortDown : SortUp} textAlign="center" size="sm" mt={3} mr={2} color="trueGray.500" />}
 							
-							{isResizable && <HeaderResizeHandle
+							{isResizable && showDragHandles && <HeaderResizeHandle
 												key="HeaderResizeHandle"
 												mode={HORIZONTAL}
 												onDragStop={(delta, e, node) => onColumnResize(delta, e, node, config)}
+												onChangeIsDragging={setIsDragging}
 												getProxy={(node) => {
 													const
 														columnHeader = node.parentElement,
@@ -694,6 +716,8 @@ export function Grid(props) {
 								alignSelf="center"
 								style={{ userSelect: 'none', }}
 								fontSize={styles.GRID_CELL_FONTSIZE}
+								numberOfLines={1}
+								ellipsizeMode="head"
 								{...propsToPass}
 							>{value}</Text>;
 				});
@@ -710,64 +734,111 @@ export function Grid(props) {
 				 } = row,
 				rowProps = getRowProps ? getRowProps(item) : {},
 				isSelected = isInSelection(item),
-				isPhantom = item.isPhantom,
-				hoverProps = {};
-			if (showHovers) {
-				hoverProps._hover = { bg: isSelected ? styles.GRID_ROW_SELECTED_HOVER_BG : styles.GRID_ROW_HOVER_BG, };
-			}
+				isPhantom = item.isPhantom;
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
-						// onPress={(e) => onRowClick(item, index, e)}
-						// onLongPress={(e) => onRowClick(item, index, e)}
-						bg={isSelected ? styles.GRID_ROW_SELECTED_BG : styles.GRID_ROW_BG}
-						w="100%"
-						{...hoverProps}
+						onPress={(e) => {
+							switch (e.detail) {
+								case 1: // single click
+									onRowClick(item, index, e); // sets selection
+									if (onEditorRowClick) {
+										onEditorRowClick(item, index, e);
+									}
+									break;
+								case 2: // double click
+									if (onEdit) {
+										onEdit();
+									}
+									break;
+								case 3: // triple click
+									break;
+								default:
+							}
+						}}
+						onLongPress={(e) => {
+							// context menu
+							const selection = [item];
+							setSelection(selection);
+							if (onEditorRowClick) { // e.g. inline editor
+								onEditorRowClick(item, index, e);
+							}
+							if (onContextMenu) {
+								onContextMenu(item, index, e, selection, setSelection);
+							}
+						}}
+						flexDirection="row"
+						flexGrow={1}
 					>
-						{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
-						<div
-							onClick={(e) => {
-								e.preventDefault();
-								if (onEditorRowClick) {
-									onEditorRowClick(item, index, e);
+						{({
+							isHovered,
+							isFocused,
+							isPressed,
+						}) => {
+							
+							/* <div
+								onClick={(e) => {
+									// debugger;
+									e.preventDefault();
+									if (onEditorRowClick) {
+										onEditorRowClick(item, index, e);
+									}
+									if (e.detail === 1) {
+										// onRowClick(item, index, e);
+									} else if (onEdit && e.detail === 2) {
+										// double-click
+										setSelection([item]);
+										onEdit(); // TODO: ERROR: has closure of OLD selection, not this new one. Doesn't matter if you delay it with setTimeout. How can we capture new selection?
+									}
+								}}
+								onContextMenu={(e) => {
+									e.preventDefault();
+									if (onEditorRowClick) {
+										onEditorRowClick(item, index, e);
+									}
+									if (onContextMenu) {
+										onContextMenu(item, index, e, selection, setSelection);
+									}
+								}}
+								style={{
+									display: 'flex',
+									flex: 1,
+									width: '100%',
+								}}
+							></div> */
+
+							let bg = styles.GRID_ROW_BG;
+							if (isSelected) {
+								if (showHovers && isHovered) {
+									bg = styles.GRID_ROW_SELECTED_HOVER_BG;
+								} else {
+									bg = styles.GRID_ROW_SELECTED_BG;
 								}
-								if (e.detail === 1) {
-									onRowClick(item, index, e);
-								} else if (onEdit && e.detail === 2) {
-									// double-click
-									setSelection([item]);
-									onEdit(); // ERROR: has closure of OLD selection, not this new one. Doesn't matter if you delay it with setTimeout. How can we capture new selection?
+							} else {
+								if (showHovers && isHovered) {
+									bg = styles.GRID_ROW_HOVER_BG;
+								} else {
+									bg = styles.GRID_ROW_BG;
 								}
-							}}
-							onContextMenu={(e) => {
-								e.preventDefault();
-								if (onEditorRowClick) {
-									onEditorRowClick(item, index, e);
-								}
-								if (onContextMenu) {
-									onContextMenu(item, index, e, selection, setSelection);
-								}
-							}}
-							style={{
-								display: 'flex',
-								flex: 1,
-								width: '100%',
-							}}
-						>
-							<Row
-								alignItems="center"
-								flexGrow={1}
-								{...rowProps}
-							>
-								{renderColumns(item)}
-								{!hideNavColumn && <AngleRight
-									color={styles.GRID_NAV_COLUMN_COLOR}
-									variant="ghost"
-									w={30}
-									alignSelf="center"
-									ml={3}
-								/>}
-							</Row>
-						</div>
+							}
+							return <Row
+										alignItems="center"
+										flexGrow={1}
+										{...rowProps}
+										bg={bg}
+									>
+										{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
+										
+										{renderColumns(item)}
+
+										{!hideNavColumn && <AngleRight
+																color={styles.GRID_NAV_COLUMN_COLOR}
+																variant="ghost"
+																w={30}
+																alignSelf="center"
+																ml={3}
+															/>}
+									</Row>;
+						}}
 					</Pressable>;
 		};
 		
@@ -824,6 +895,7 @@ export function Grid(props) {
 							sortable,
 							w,
 							flex,
+							showDragHandles: false,
 						};
 
 					if (!config.w && !config.flex) {
@@ -854,7 +926,12 @@ export function Grid(props) {
 				setSelection([]);
 			},
 			onChangeFilters = () => {
-				if (!Repository.autoLoad && Repository.isLoaded && !disableReloadOnChangeFilters) {
+				if (!Repository.isAutoLoad && Repository.isLoaded) {
+					Repository.reload();
+				}
+			},
+			onChangeSorters = () => {
+				if (!Repository.isAutoLoad && Repository.isLoaded) {
 					Repository.reload();
 				}
 			};
@@ -864,6 +941,11 @@ export function Grid(props) {
 		Repository.ons(['changePage', 'changePageSize',], resetSelection);
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
+		Repository.on('changeSorters', onChangeSorters);
+
+		if (Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading && loadAfterRender) {
+			Repository.load();
+		}
 
 		setLocalColumnsConfig(calculateLocalColumnsConfig());
 		setIsReady(true);
@@ -874,6 +956,7 @@ export function Grid(props) {
 			Repository.offs(['changePage', 'changePageSize',], resetSelection);
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
+			Repository.off('changeSorters', onChangeSorters);
 		};
 	}, []);
 
@@ -881,8 +964,8 @@ export function Grid(props) {
 		if (!Repository || disableSelectorSelected) {
 			return () => {};
 		}
-
-		let matches = selectorSelected;
+		
+		let matches = selectorSelected?.[0]?.id;
 		if (_.isEmpty(selectorSelected)) {
 			matches = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
 		}
@@ -967,7 +1050,7 @@ export function Grid(props) {
 	}
 
 	// Actual data to show in the grid
-	const entities = Repository ? Repository.getEntitiesOnPage() : data;
+	const entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data;
 	let initialNumToRender = 10;
 	if (entities && entities.length) {
 		initialNumToRender = entities.length;

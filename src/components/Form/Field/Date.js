@@ -30,6 +30,7 @@ export function DateElement(props) {
 			format,
 			mode = 'date',
 			tooltip = 'Choose a date.',
+			tooltipPlacement = 'bottom',
 		} = props,
 		[isPickerShown, setIsPickerShown] = useState(false),
 		[top, setTop] = useState(0),
@@ -63,7 +64,7 @@ export function DateElement(props) {
 	}
 	
 	// Web version
-	return <Tooltip label={tooltip} placement="bottom">
+	return <Tooltip label={tooltip} placement={tooltipPlacement}>
 				<Row flex={1} h="100%" alignItems="center">
 					<IconButton
 						icon={<Icon as={Calendar} />}
@@ -106,6 +107,8 @@ export function DateElement(props) {
 							borderWidth={1}
 							borderColor="trueGray.300"
 							borderRadius={4}
+							numberOfLines={1}
+							ellipsizeMode="head"
 						>{title}</Text>
 					</Pressable>
 					<Popover

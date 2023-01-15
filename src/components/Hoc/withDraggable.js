@@ -20,6 +20,7 @@ export default function withDraggable(WrappedComponent) {
 				onDragStart,
 				onDrag,
 				onDragStop,
+				onChangeIsDragging,
 				getParentNode = (node) => node.parentElement.parentElement,
 				getProxy,
 				handle,
@@ -29,10 +30,16 @@ export default function withDraggable(WrappedComponent) {
 				// for local use
 				mode = HORIZONTAL, // HORIZONTAL, VERTICAL
 			} = props,
-			[isDragging, setIsDragging] = useState(false),
+			[isDragging, setIsDraggingRaw] = useState(false),
 			[node, setNode] = useState(false),
 			[bounds, setBounds] = useState(null),
 			{ block } = useBlocking(),
+			setIsDragging = (value) => {
+				setIsDraggingRaw(value);
+				if (onChangeIsDragging) {
+					onChangeIsDragging(value);
+				}
+			},
 			handleStart = (e, info) => {
 				if (isDragging) {
 					return;
@@ -194,7 +201,6 @@ export default function withDraggable(WrappedComponent) {
 				}
 				setIsDragging(false);
 			};
-
 		propsToPass.isDragging = isDragging;
 
 		if (mode === VERTICAL) {

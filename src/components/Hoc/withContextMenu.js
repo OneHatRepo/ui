@@ -81,7 +81,7 @@ export default function withContextMenu(WrappedComponent) {
 							isDisabled={isDisabled}
 						>
 							{icon}
-							<Text flex={1} color={isDisabled ? 'disabled' : 'trueGray.800'}>{text}</Text>
+							<Text flex={1} color={isDisabled ? 'disabled' : 'trueGray.800'} numberOfLines={1} ellipsizeMode="head">{text}</Text>
 						</Pressable>;
 			});
 			setContextMenuItemComponents(contextMenuItemComponents);

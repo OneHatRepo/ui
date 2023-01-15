@@ -17,6 +17,7 @@ import Container from '../Components/Container/Container';
 import DataMgt from '../Components/Screens/DataMgt';
 import Date from '../Components/Form/Field/Date';
 // import DateRange from '../Components/Filter/DateRange';
+import DisplayField from '../Components/Form/Field/DisplayField';
 import FieldSet from '../Components/Form/FieldSet';
 import File from '../Components/Form/Field/File';
 import FiltersForm from '../Components/Form/FiltersForm';
@@ -35,6 +36,7 @@ import Panel from '../Components/Panel/Panel';
 import RadioGroup from '../Components/Form/Field/RadioGroup/RadioGroup';
 import TabPanel from '../Components/Panel/TabPanel';
 import TextArea from '../Components/Form/Field/TextArea';
+import Text from '../Components/Form/Field/Text';
 import Toolbar from '../Components/Toolbar/Toolbar';
 import YearsCombo from '../Components/Form/Field/Combo/YearsCombo';
 import _ from 'lodash';
@@ -58,6 +60,7 @@ const
 		DataMgt,
 		Date,
 		// DateRange,
+		DisplayField,
 		FieldSet,
 		File,
 		FiltersForm,
@@ -75,6 +78,7 @@ const
 		// Picker,
 		RadioGroup,
 		TabPanel,
+		Text,
 		TextArea,
 		Toolbar,
 		YearsCombo,

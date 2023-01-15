@@ -353,7 +353,7 @@ export default function Grid(props) {
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false),
 			onChangeFilters = () => {
-				if (!Repository.autoLoad && Repository.isLoaded && !disableReloadOnChangeFilters) {
+				if (!Repository.isAutoLoad && Repository.isLoaded && !disableReloadOnChangeFilters) {
 					Repository.reload();
 				}
 			};

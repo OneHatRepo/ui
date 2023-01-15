@@ -117,21 +117,21 @@ function Panel(props) {
 	}
 	if (isCollapsed) {
 		if (collapseDirection !== VERTICAL) {
-			return <Column {...framePropsToUse} w="33px" height="100%">
+			return <Column overflow="hidden" {...framePropsToUse} w="33px" height="100%">
 						{isDisabled && <div className="mask"></div>}
 						{headerComponent}
 					</Column>;
 		}
-		return <Column {...framePropsToUse}>
+		return <Column overflow="hidden" {...framePropsToUse}>
 					{isDisabled && <div className="mask"></div>}
 					{headerComponent}
 				</Column>;
 	}
-	return <Column {...framePropsToUse} {...sizeProps}>
+	return <Column overflow="hidden" {...framePropsToUse} {...sizeProps}>
 				{isDisabled && <div className="mask"></div>}
 				{headerComponent}
 				{topToolbar}
-				<Column flex={1} w="100%" {...propsToPass}>
+				<Column flex={1} w="100%" overflow="hidden" {...propsToPass}>
 					{isScrollable ? <ScrollView>{children}</ScrollView> : children}
 				</Column>
 				{bottomToolbar}

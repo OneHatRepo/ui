@@ -15,6 +15,7 @@ function InputElement(props) {
 			value,
 			setValue,
 			tooltip = null,
+			tooltipPlacement = 'bottom',
 		} = props,
 		debouncedSetValueRef = useRef(),
 		[localValue, setLocalValue] = useState(value),
@@ -58,7 +59,7 @@ function InputElement(props) {
 	if (!tooltip) {
 		return theInput;
 	}
-	return <Tooltip label={tooltip} placement="bottom">
+	return <Tooltip label={tooltip} placement={tooltipPlacement}>
 				{theInput}
 			</Tooltip>;
 }

@@ -1,6 +1,8 @@
 import React, { useState, } from 'react';
 import {
+	Button,
 	Column,
+	Icon,
 	Pressable,
 	Row,
 	Text,
@@ -26,7 +28,6 @@ export default function TabPanel(props) {
 		renderTabs = () => {
 			const
 				buttons = [],
-				pressableProps = {},
 				textProps = {},
 				buttonProps = {
 					bg: styles.TAB_BG,
@@ -36,10 +37,10 @@ export default function TabPanel(props) {
 				};
 			switch(direction) {
 				case VERTICAL:
-					pressableProps.w = '100%';
 					buttonProps.borderLeftRadius = 4;
 					buttonProps.borderRightRadius = 0;
 					buttonProps.w = '100%';
+					buttonProps.mb = 1;
 					textProps.borderLeftRadius = 4;
 					textProps.w = '100%';
 					textProps.py = 2;
@@ -50,9 +51,10 @@ export default function TabPanel(props) {
 					buttonProps.borderTopRadius = 4;
 					buttonProps.borderBottomRadius = 0;
 					textProps.borderTopRadius = 4;
+					buttonProps.mr = 1;
 					buttonProps.py = 1;
 					textProps.mr = 1;
-					textProps.px = 3;
+					textProps.px = 1;
 					textProps.py = 1;
 					break;
 				default:
@@ -60,24 +62,33 @@ export default function TabPanel(props) {
 			_.each(tabs, (tab, ix) => {
 				const
 					isCurrentTab = ix === currentTab,
-					button = <Pressable
-									key={ix}
-									onPress={() => setCurrentTab(ix)}
-									{...pressableProps}
-								>
-									<Text
-										bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
-										color={isCurrentTab ? styles.TAB_ACTIVE_COLOR : styles.TAB_COLOR}
-										fontSize={styles.TAB_FONTSIZE}
-										{...textProps}
-									>{tab.title}</Text>
-								</Pressable>;
-				buttons.push(button);
+					thisButtonProps = {};
+				if (tab._icon) {
+					thisButtonProps.leftIcon = <Icon
+													color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
+													{...tab._icon}
+												/>
+				}
+				buttons.push(<Button
+								key={ix}
+								onPress={() => setCurrentTab(ix)}
+								{...buttonProps}
+								{...thisButtonProps}
+								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
+								color={isCurrentTab ? styles.TAB_ACTIVE_COLOR : styles.TAB_COLOR}
+							>
+								<Text
+									fontSize={styles.TAB_FONTSIZE}
+									numberOfLines={1}
+									ellipsizeMode="head"
+									{...textProps}
+								>{tab.title}</Text>
+							</Button>);
 			});
 			if (additionalButtons) {
 				_.each(additionalButtons, (additionalButton, ix) => {
 					const thisButtonProps = {};
-					if (ix === 0) {
+					if (!ix) {
 						switch(direction) {
 							case VERTICAL:
 								thisButtonProps.mt = 6;

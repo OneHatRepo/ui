@@ -2,7 +2,7 @@
 import {
 	SET_PROGRESS_MESSAGE,
 	SET_PROGRESS_PERCENTAGE,
-} from '../../models/actions/AppActions';
+} from '../../Models/actions/AppActions';
 import AppGlobals from '../../AppGlobals';
 
 let totalSegments = 1,

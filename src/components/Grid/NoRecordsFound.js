@@ -13,9 +13,11 @@ export default function NoRecordsFound(props) {
 			text = 'No Records found.',
 		} = props,
 		textComponent = <Text
-			{...testProps('NoRecordsFound')}
-			py={20}
-		>{text}</Text>;
+							{...testProps('NoRecordsFound')}
+							py={20}
+							numberOfLines={1}
+							ellipsizeMode="head"
+						>{text}</Text>;
 	let component = textComponent;
 	if (onRefresh) {
 		component = <Row justifyContent="center" alignItems="center" flex={1}>

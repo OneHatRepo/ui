@@ -43,6 +43,7 @@ function FileElement(props) {
 			imagePath = '',
 			version = 2,
 			tooltip = 'Choose or drag a file on top of this control.',
+			tooltipPlacement = 'bottom',
 		} = props,
 		dragRef = useRef(),
 		fileInputRef = useRef(),
@@ -152,7 +153,7 @@ function FileElement(props) {
 	}, []);
 	
 	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
-				<Tooltip label={tooltip} placement="bottom">
+				<Tooltip label={tooltip} placement={tooltipPlacement}>
 					<Row flex={1} alignItems="center">
 						{isDropping && <Box position="absolute" borderWidth={isDropping ? 2 : 0} borderColor="primary.800" top={0} left={0} w="100%" h="100%" bg="trueGray.200" zIndex={10000} justifyContent="center" alignItems="center">
 											<Text>Set File</Text>
@@ -184,6 +185,8 @@ function FileElement(props) {
 														ml={3}
 														fontSize={styles.FILE_READOUT_FONTSIZE}
 														fontStyle="italic"
+														numberOfLines={1}
+														ellipsizeMode="head"
 													>{value.filename || 'No file'}</Text>}
 						{mode === FILE_MODE_IMAGE && <Box
 														flex={1}

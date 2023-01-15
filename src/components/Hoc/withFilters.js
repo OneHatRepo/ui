@@ -17,7 +17,7 @@ import _ from 'lodash';
 export default function withFilters(WrappedComponent) {
 	return (props) => {
 		const {
-				showFilters = false,
+				useFilters = false,
 				searchAllText = true,
 				filter1StartingField = '',
 				filter2StartingField = '',
@@ -37,7 +37,7 @@ export default function withFilters(WrappedComponent) {
 		let modal,
 			topToolbar = null;
 		
-		if (showFilters && Repository) {
+		if (useFilters && Repository) {
 			const
 				[isFilterSelectorShown, setIsFilterSelectorShown] = useState(false),
 				[filter1Field, setFilter1Field] = useState(filter1StartingField || Repository?.getSchema().model.defaultFilters?.[0] || null),
@@ -416,7 +416,7 @@ export default function withFilters(WrappedComponent) {
 						</Modal>;
 			}
 
-		} // END if (showFilters)
+		} // END if (useFilters)
 
 		return <>
 					<WrappedComponent topToolbar={topToolbar} {...props} />

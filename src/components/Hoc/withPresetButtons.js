@@ -130,7 +130,7 @@ export default function withPresetButtons(WrappedComponent) {
 						isDisabled = !selection.length || selection.length !== 1;
 						break;
 					case 'copy':
-						text = 'Copy';
+						text = 'Copy to Clipboard';
 						handler = onCopyToClipboard;
 						icon = <Clipboard />;
 						isDisabled = !selection.length;
@@ -141,11 +141,11 @@ export default function withPresetButtons(WrappedComponent) {
 						icon = <Duplicate />;
 						isDisabled = !selection.length || selection.length !== 1;
 						break;
-					case 'print':
-						text = 'Print';
-						handler = onPrint;
-						icon = <Print />;
-						break;
+					// case 'print':
+					// 	text = 'Print';
+					// 	handler = onPrint;
+					// 	icon = <Print />;
+					// 	break;
 					default:
 				}
 				return {

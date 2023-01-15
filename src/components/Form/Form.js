@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, } from 'react';
+import { useEffect, } from 'react';
 import {
 	Box,
 	Button,
@@ -7,11 +7,9 @@ import {
 	Row,
 	ScrollView,
 	Text,
-	Tooltip,
 } from 'native-base';
 import {
 	EDITOR_TYPE_INLINE,
-	EDITOR_TYPE_WINDOWED,
 } from '../../Constants/EditorTypes';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
@@ -109,9 +107,9 @@ function Form(props) {
 				};
 			_.each(columnsConfig, (config, ix) => {
 				let {
+						fieldName,
 						editable,
 						editor,
-						fieldName,
 						renderer,
 						w,
 						flex,
@@ -120,7 +118,7 @@ function Form(props) {
 				if (!editable) {
 					const renderedValue = renderer ? renderer(entity) : entity[fieldName];
 					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>
-										<Text>{renderedValue}</Text>
+										<Text numberOfLines={1} ellipsizeMode="head">{renderedValue}</Text>
 									</Box>);
 				} else {
 					elements.push(<Controller
@@ -196,50 +194,60 @@ function Form(props) {
 			return  _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
 		},
 		buildNextLayer = (item, ix, defaults) => {
-			const {
-					fieldType,
+			let {
+					type,
 					title,
 					name,
 					label,
 					items,
 					...propsToPass
-				} = item,
-				Element = getComponentFromType(fieldType),
-				rules = {};
+				} = item;
+			let editorTypeProps = {};
 
-
+			const model = Repository.getSchema().model;
+			if (!type && Repository) {
+				const 
+					editorTypes = model.editorTypes,
+					{
+						type: t,
+						...p
+					} =  editorTypes[name];
+				type = t;
+				editorTypeProps = p;
+			}
+			const Element = getComponentFromType(type);
 			let children;
-
-			if (inArray(fieldType, ['Column', 'FieldSet'])) {
+			if (inArray(type, ['Column', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
-
 				children = _.map(items, (item, ix) => buildNextLayer(item, ix, item.defaults));
-				return <Element key={ix} title={title} {...defaults} {...propsToPass}>{children}</Element>;
+				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
 			if (!name) {
 				throw new Error('name is required');
 			}
 
-			if (fieldType === 'Text') {
-				return <Text key={ix} {...defaults} {...propsToPass}>{entity[name]}</Text>;
-			}
-
 			if (isViewOnly) {
 				const value = (entity && entity[name]) || (startingValues && startingValues[name]) || null;
-				let element = <Text {...propsToPass}>{value}</Text>;
+				let element = <Text numberOfLines={1} ellipsizeMode="head" {...propsToPass}>{value}</Text>;
 				if (label) {
 					element = <><Label>{label}</Label>{element}</>;
 				}
 				return <Row key={ix} px={2} pb={1} bg="#fff">{element}</Row>;
 			}
+
+			if (!label && Repository) {
+				label = model.titles[name];
+			}
+
 		
 			// // These rules are for fields *outside* the model
 			// // but which want validation on the form anyway.
 			// // The useForm() resolver disables this
 			// const
+			// 	rules = {},
 			// 	rulesToCheck = [
 			// 		'required',
 			// 		'min',
@@ -278,7 +286,6 @@ function Form(props) {
 									isDirty,
 									error,
 								} = fieldState;
-								
 							let element = <Element
 												name={name}
 												value={value}
@@ -291,6 +298,7 @@ function Form(props) {
 												flex={1}
 												{...defaults}
 												{...propsToPass}
+												{...editorTypeProps}
 											/>;
 							if (error) {
 								if (editorType !== EDITOR_TYPE_INLINE) {
@@ -309,7 +317,7 @@ function Form(props) {
 							}
 
 							const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
-							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : '#fff'}>{dirtyIcon}{element}</Row>;
+							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : null}>{dirtyIcon}{element}</Row>;
 						}}
 					/>;
 		};

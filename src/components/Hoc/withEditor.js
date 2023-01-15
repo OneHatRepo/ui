@@ -4,7 +4,7 @@ import _ from 'lodash';
 export default function withEditor(WrappedComponent) {
 	return (props) => {
 		const {
-				useEditor = true,
+				useEditor = false,
 				userCanEdit = true,
 				userCanView = true,
 				disableAdd = false,
@@ -67,7 +67,7 @@ export default function withEditor(WrappedComponent) {
 			},
 			onDelete = () => {
 				Repository.delete(selection);
-				if (!Repository.autoSave) {
+				if (!Repository.isAutoSave) {
 					Repository.save();
 				}
 			},
@@ -112,7 +112,7 @@ export default function withEditor(WrappedComponent) {
 
 
 				}
-				if (!Repository.autoSave) {
+				if (!Repository.isAutoSave) {
 					Repository.save();
 				}
 				setIsEditorShown(false);

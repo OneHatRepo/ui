@@ -17,6 +17,7 @@ export function ColorElement(props) {
 			value = '#000',
 			setValue,
 			tooltip = 'Choose a color.',
+			tooltipPlacement = 'bottom',
 		} = props,
 		[isPickerShown, setIsPickerShown] = useState(false),
 		[top, setTop] = useState(0),
@@ -29,7 +30,7 @@ export function ColorElement(props) {
 		};
 	
 	// Web version
-	return <Tooltip label={tooltip} placement="bottom">
+	return <Tooltip label={tooltip} placement={tooltipPlacement}>
 				<Row flex={1} h="100%" alignItems="center">
 					<Pressable
 						onPress={showPicker}

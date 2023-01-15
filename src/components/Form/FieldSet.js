@@ -13,6 +13,7 @@ import CaretDown from '../Icons/CaretDown';
 export default function FieldSet(props) {
 	const {
 			title,
+			helpText,
 			children,
 			isCollapsed,
 			hasErrors,
@@ -26,6 +27,7 @@ export default function FieldSet(props) {
 	return <Box
 				borderWidth={1}
 				borderColor="trueGray.400"
+				bg={styles.FIELDSET_BG}
 				m={2}
 				pb={1}
 				{...propsToPass}
@@ -44,6 +46,8 @@ export default function FieldSet(props) {
 							py={1}
 							px={3}
 							flex={1}
+							numberOfLines={1}
+							ellipsizeMode="head"
 						>{title}</Text>
 						<IconButton
 							_icon={{
@@ -54,6 +58,7 @@ export default function FieldSet(props) {
 							onPress={onToggleCollapse}
 						/>
 					</Row>}
+				{helpText && <Text>{helpText}</Text>}
 				{!localIsCollapsed && children}
 			</Box>;
 }

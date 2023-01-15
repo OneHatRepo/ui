@@ -12,6 +12,10 @@ export default function Label(props) {
 				pl={2}
 				{...props}
 			>
-				<Text fontSize={styles.LABEL_FONTSIZE}>{props.children}</Text>
+				<Text
+					fontSize={styles.LABEL_FONTSIZE}
+					numberOfLines={1}
+					ellipsizeMode="head"
+				>{props.children}</Text>
 			</Row>;
 }
