@@ -28,6 +28,7 @@ function Panel(props) {
 			w,
 			maxWidth,
 			flex,
+			onLayout = null,
 			
 			// Header
 			title = props.model,
@@ -127,7 +128,7 @@ function Panel(props) {
 					{headerComponent}
 				</Column>;
 	}
-	return <Column overflow="hidden" {...framePropsToUse} {...sizeProps}>
+	return <Column overflow="hidden" onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
 				{isDisabled && <div className="mask"></div>}
 				{headerComponent}
 				{topToolbar}

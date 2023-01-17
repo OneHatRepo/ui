@@ -870,7 +870,7 @@ export function Grid(props) {
 							header,
 							fieldName, // from @onehat/data model
 							type, // specify which column type to use (custom or built-in)
-							editable = false,
+							isEditable = false,
 							editor,
 							format,
 							renderer, // React component will render the output
@@ -886,7 +886,7 @@ export function Grid(props) {
 							header,
 							fieldName,
 							type,
-							editable,
+							isEditable,
 							editor,
 							format,
 							renderer,

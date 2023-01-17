@@ -112,7 +112,7 @@ export default function DataMgt(props) {
 						// maxWidth="230px" // this breaks drag resize!
 						startsCollapsed={westCoastStartsCollapsed}
 						collapseDirection={HORIZONTAL}
-						split={true}
+						isResizable={true}
 						frame={false}
 						loadAfterRender={true}
 						disablePaging={true}
@@ -135,7 +135,7 @@ export default function DataMgt(props) {
 						title={illinoisTitle}
 						isCollapsible={false}
 						frame={false}
-						split={false}
+						isResizable={false}
 						loadAfterRender={!showSelector}
 						selectorId={showSelector ? westCoastSelector_id : null}
 						selectorSelected={westCoastSelectorSelected}
@@ -196,7 +196,7 @@ export default function DataMgt(props) {
 							w={eastCoastWidth}
 							startsCollapsed={eastCoastStartsCollapsed}
 							frame={true}
-							split={true}
+							isResizable={true}
 							tabs={tabs}
 							additionalButtons={additionalTabButtons}
 						/>;
@@ -207,7 +207,7 @@ export default function DataMgt(props) {
 							w={eastCoastWidth}
 							startsCollapsed={eastCoastStartsCollapsed}
 							frame={true}
-							split={true}
+							isResizable={true}
 						>{panels}</Panel>;
 		}
 	}

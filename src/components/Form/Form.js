@@ -28,9 +28,9 @@ import _ from 'lodash';
 // TODO: memoize field Components
 
 function Form(props) {
-	const {
+	const
+		{
 			editorType,
-			entity,
 			startingValues = {},
 			items = [],
 			columnDefaults = {},
@@ -38,12 +38,18 @@ function Form(props) {
 			columnsConfig, // this is the columnsConfig from the grid
 			footerProps = {},
 			buttonGroupProps = {},
+			onLayout,
+
+			h,
+			maxHeight,
+			w,
+			maxWidth,
+			flex,
 
 			// withData
 			Repository,
 
 			// withEditor
-			isMultiple = false,
 			isViewOnly = false,
 			onCancel,
 			onSave,
@@ -56,6 +62,8 @@ function Form(props) {
 			// withAlert
 			confirm,
 		} = props,
+		entity = props.entity.length === 1 ? props.entity[0] : props.entity,
+		isMultiple = _.isArray(entity),
 		emptyValidator = yup.object(),
 		forceUpdate = useForceUpdate(),
 		initialValues =  _.merge(startingValues, (entity ? entity.submitValues : {})),
@@ -108,14 +116,14 @@ function Form(props) {
 			_.each(columnsConfig, (config, ix) => {
 				let {
 						fieldName,
-						editable,
+						isEditable,
 						editor,
 						renderer,
 						w,
 						flex,
 					} = config;
 
-				if (!editable) {
+				if (!isEditable) {
 					const renderedValue = renderer ? renderer(entity) : entity[fieldName];
 					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>
 										<Text numberOfLines={1} ellipsizeMode="head">{renderedValue}</Text>
@@ -198,6 +206,7 @@ function Form(props) {
 					type,
 					title,
 					name,
+					isEditable,
 					label,
 					items,
 					...propsToPass
@@ -224,12 +233,15 @@ function Form(props) {
 				children = _.map(items, (item, ix) => buildNextLayer(item, ix, item.defaults));
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
-
+			
 			if (!name) {
 				throw new Error('name is required');
 			}
 
-			if (isViewOnly) {
+			if (isViewOnly || !isEditable) {
+				if (!label && Repository) {
+					label = model.titles[name];
+				}
 				const value = (entity && entity[name]) || (startingValues && startingValues[name]) || null;
 				let element = <Text numberOfLines={1} ellipsizeMode="head" {...propsToPass}>{value}</Text>;
 				if (label) {
@@ -338,10 +350,32 @@ function Form(props) {
 		return null;
 	}
 
+
+	const sizeProps = {};
+	if (!flex && !h && !w) {
+		sizeProps.flex = 1;
+	} else {
+		if (h) {
+			sizeProps.h = h;
+		}
+		if (w) {
+			sizeProps.w = w;
+		}
+		if (flex) {
+			sizeProps.flex = flex;
+		}
+	}
+	if (maxWidth) {
+		sizeProps.maxWidth = maxWidth;
+	}
+	if (maxHeight) {
+		sizeProps.maxHeight = maxHeight;
+	}
+
 	const formComponents = columnsConfig && !_.isEmpty(columnsConfig) && Repository ? buildFromColumnsConfig() : buildFromItems();
 	
-	return <Column w="100%" flex={1}>
-				<ScrollView flex={1} pb={1} {...props}>
+	return <Column {...sizeProps} onLayout={onLayout}>
+				<ScrollView flex={1} width="100%" pb={1}>
 					{useColumns ? <Row flex={1}>{formComponents}</Row> : <Column flex={1}>{formComponents}</Column>}
 				</ScrollView>
 				<Footer justifyContent="flex-end" {...footerProps}>

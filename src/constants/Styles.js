@@ -14,7 +14,7 @@ const defaults = {
 	HEADER_TEXT_COLOR: WHITE,
 	HEADER_BG: 'primary.100',
 	HEADER_BG_VERTICAL: 'primary.100',
-	FOOTER_BG: 'primary.100',
+	FOOTER_BG: 'primary.100', // :alpha.50
 	FIELDSET_FONTSIZE: DEFAULT_FONTSIZE,
 	FIELDSET_BG: '#f6f6f6',
 	LABEL_WIDTH: '170px',

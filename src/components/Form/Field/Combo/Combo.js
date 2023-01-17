@@ -213,8 +213,7 @@ export function Combo(props) {
 				let filter = {};
 				if (value !== '') {
 
-					// LEFT OFF HERE
-					// Want to build a search functionality that shows results in combo grid
+					// TODO: Want to build a search functionality that shows results in combo grid
 
 					if (Repository.isRemote) {
 						// 'q' fuzzy search from server 
