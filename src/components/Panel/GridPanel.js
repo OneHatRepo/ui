@@ -20,8 +20,8 @@ export function GridPanel(props) {
 
 	useEffect(() => {
 		if (!disableTitleChange && originalTitle) {
-			if (selectorSelected) {
-				setTitle(originalTitle + ' for ' + selectorSelected.displayValue);
+			if (selectorSelected?.[0]) {
+				setTitle(originalTitle + ' for ' + selectorSelected[0].displayValue);
 			} else {
 				setTitle(originalTitle);
 			}

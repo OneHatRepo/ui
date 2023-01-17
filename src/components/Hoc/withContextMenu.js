@@ -40,8 +40,8 @@ export default function withContextMenu(WrappedComponent) {
 				}
 				
 				setIsContextMenuShown(true);
-				setContextMenuX(e.pageX);
-				setContextMenuY(e.pageY);
+				setContextMenuX(e.nativeEvent.pageX);
+				setContextMenuY(e.nativeEvent.pageY);
 			};
 
 		useEffect(() => {

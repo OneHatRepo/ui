@@ -39,6 +39,7 @@ export default function withPresetButtons(WrappedComponent) {
 				onDelete,
 				onView,
 				onDuplicate,
+				useEditor = true,
 				disableAdd = false,
 				disableEdit = false,
 				disableDelete = false,
@@ -64,17 +65,17 @@ export default function withPresetButtons(WrappedComponent) {
 				let isDisabled = false;
 				switch(type) {
 					case 'add':
-						if (disableAdd) {
+						if (disableAdd || !useEditor) {
 							isDisabled = true;
 						}
 						break;
 					case 'edit':
-						if (disableEdit) {
+						if (disableEdit || !useEditor) {
 							isDisabled = true;
 						}
 						break;
 					case 'delete':
-						if (disableDelete) {
+						if (disableDelete || !useEditor) {
 							isDisabled = true;
 						}
 						break;
@@ -89,7 +90,7 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case 'duplicate':
-						if (disableDuplicate) {
+						if (disableDuplicate || !useEditor) {
 							isDisabled = true;
 						}
 						break;

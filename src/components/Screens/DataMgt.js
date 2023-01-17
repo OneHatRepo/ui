@@ -23,43 +23,43 @@ export default function DataMgt(props) {
 	let {
 			showSelector = false,
 			showDownload = false,
-			westCoastElementType,
-			westCoastTitle,
-			westCoastStartsCollapsed = false,
-			westCoastWidth = 300,
-			westCoastProps = {},
-			westCoastSelector_id, // the foreign id of westCoast records that illinois and some associated panels listen to
-			// westCoastPermission,
-			illinoisElementType,
-			illinoisTitle,
-			illinoisNoSelectorMeansNoResults = true,
-			illinoisProps = {},
-			illinoisSelector_id, // the foreign id of illinois records that some associated panels listen to
-			onAddIllinoisRecord,
-			onSearchIllinoisText,
-			eastCoastStartsCollapsed = false,
-			eastCoastWidth = 340,
+			westElementType,
+			westTitle,
+			westStartsCollapsed = false,
+			westWidth = 300,
+			westProps = {},
+			westSelector_id, // the foreign id of west records that center and some associated panels listen to
+			// westPermission,
+			centerElementType,
+			centerTitle,
+			centerNoSelectorMeansNoResults = true,
+			centerProps = {},
+			centerSelector_id, // the foreign id of center records that some associated panels listen to
+			onAddCenterRecord,
+			onSearchCenterText,
+			eastStartsCollapsed = false,
+			eastWidth = 340,
 			associatedPanels = [], // array of React components
 			associatedPanelsPerTab = 3,
 			additionalTabButtons = [],
 		} = props;
 
 	const
-		// westCoastRef = useRef(),
-		[isWestCoastCollapsed, setIsWestCoastCollapsed] = useState(westCoastStartsCollapsed),
-		[isEastCoastCollapsed, setIsEastCoastCollapsed] = useState(eastCoastStartsCollapsed),
+		// westRef = useRef(),
+		[isWestCollapsed, setIsWestCollapsed] = useState(westStartsCollapsed),
+		[isEastCollapsed, setIsEastCollapsed] = useState(eastStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
-		[westCoastSelectorSelected, setWestCoastSelectorSelected] = useState(),
-		[illinoisSelectorSelected, setIllinoisSelectorSelected] = useState(),
+		[westSelectorSelected, setWestSelectorSelected] = useState(),
+		[centerSelectorSelected, setCenterSelectorSelected] = useState(),
 		onToggleFullscreen = () => {
 			const newIsFullScreen = !isFullscreen;
 			setIsFullscreen(!newIsFullScreen);
 			if (newIsFullScreen) {
-				setIsWestCoastCollapsed(true);
-				setIsEastCoastCollapsed(true);
+				setIsWestCollapsed(true);
+				setIsEastCollapsed(true);
 			} else {
-				setIsWestCoastCollapsed(false);
-				setIsEastCoastCollapsed(false);
+				setIsWestCollapsed(false);
+				setIsEastCollapsed(false);
 			}
 		},
 		onNavigateTo = (path) => {
@@ -67,13 +67,13 @@ export default function DataMgt(props) {
 		},
 		onBatchUpload = (path) => {
 			debugger;
-			// How do I route this back to illinois?
-			// Maybe don't, but look at the props on IllinoisElementType??
+			// How do I route this back to center?
+			// Maybe don't, but look at the props on CenterElementType??
 
 		},
 		onEvent = (e, arg1) => {
 			switch(e) {
-				case 'toggleFullscreen': // from illinois
+				case 'toggleFullscreen': // from center
 					onToggleFullscreen();
 					break;
 				case 'navigateTo':
@@ -89,7 +89,7 @@ export default function DataMgt(props) {
 
 	//   REGIONS -------------------------------------------------------
 	// 	[				] [							] [					]
-	// 	[	westCoast	] [		   illinois			] [	  eastCoast		]
+	// 	[	  west  	] [		   center			] [	  east		]
 	// 	[				] [							] [					]
 	//   PANELS ---------------------------------------------------------
 	// 	[				] [							] [	associated1		]
@@ -99,56 +99,56 @@ export default function DataMgt(props) {
 	//   ---------------------------------------------------------------
 
 
-	let westCoast,
-		illinois,
-		eastCoast;
+	let west,
+		center,
+		east;
 
-	// 'westCoast' section, AKA 'selector', the far-left column
-	if (showSelector && westCoastElementType) {
-		const WestCoastElementType = getComponentFromType(westCoastElementType);
-		westCoast = <WestCoastElementType
-						title={westCoastTitle}
-						w={westCoastWidth}
+	// 'west' section, AKA 'selector', the far-left column
+	if (showSelector && westElementType) {
+		const WestElementType = getComponentFromType(westElementType);
+		west = <WestElementType
+						title={westTitle}
+						w={westWidth}
 						// maxWidth="230px" // this breaks drag resize!
-						startsCollapsed={westCoastStartsCollapsed}
+						startsCollapsed={westStartsCollapsed}
 						collapseDirection={HORIZONTAL}
 						isResizable={true}
 						frame={false}
 						loadAfterRender={true}
-						disablePaging={true}
+						disablePagination={true}
 						uniqueRepository={true}
 						selectionMode={SELECTION_MODE_SINGLE}
-						onChangeSelection={setWestCoastSelectorSelected}
+						onChangeSelection={setWestSelectorSelected}
 						onEvent={onEvent}
-						reference="westCoast"
-						{...westCoastProps}
+						reference="west"
+						{...westProps}
 					/>;
 	}
 
-	// 'illinois' section, the main Grid
-	if (illinoisElementType) {
-		if (!showSelector && illinoisNoSelectorMeansNoResults) {
-			illinoisNoSelectorMeansNoResults = false;
+	// 'center' section, the main Grid
+	if (centerElementType) {
+		if (!showSelector && centerNoSelectorMeansNoResults) {
+			centerNoSelectorMeansNoResults = false;
 		}
-		const IllinoisElementType = getComponentFromType(illinoisElementType);
-		illinois = <IllinoisElementType
-						title={illinoisTitle}
+		const CenterElementType = getComponentFromType(centerElementType);
+		center = <CenterElementType
+						title={centerTitle}
 						isCollapsible={false}
 						frame={false}
 						isResizable={false}
 						loadAfterRender={!showSelector}
-						selectorId={showSelector ? westCoastSelector_id : null}
-						selectorSelected={westCoastSelectorSelected}
-						noSelectorMeansNoResults={illinoisNoSelectorMeansNoResults}
+						selectorId={showSelector ? westSelector_id : null}
+						selectorSelected={westSelectorSelected}
+						noSelectorMeansNoResults={centerNoSelectorMeansNoResults}
 						isFullscreen={isFullscreen}
-						onChangeSelection={setIllinoisSelectorSelected}
+						onChangeSelection={setCenterSelectorSelected}
 						onEvent={onEvent}
-						reference="illinois"
-						{...illinoisProps}
+						reference="center"
+						{...centerProps}
 					/>;
 	}
 
-	// 'eastCoast' section, contains associated panels
+	// 'east' section, contains associated panels
 	if (showDownload) {
 		associatedPanels.push(<UploadDownload key="ud" reference="uploadDownload" onEvent={onEvent} />);
 	}
@@ -159,13 +159,13 @@ export default function DataMgt(props) {
 				// isCollapsible: false,
 				onEvent,
 				noSelectorMeansNoResults: true,
-				disablePaging: true,
+				disablePagination: true,
 			},
 			panels = _.map(associatedPanels, (associatedPanel, ix) => {
 				const
 					thisAssociatedPanelProps = {
-						selectorId: associatedPanel.controlledByIllinois ? illinoisSelector_id : westCoastSelector_id,
-						selectorSelected: associatedPanel.controlledByIllinois ? illinoisSelectorSelected : westCoastSelectorSelected,
+						selectorId: associatedPanel.controlledByCenter ? centerSelector_id : westSelector_id,
+						selectorSelected: associatedPanel.controlledByCenter ? centerSelectorSelected : westSelectorSelected,
 						...associatedPanel.props,
 					};
 				return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...allAssociatedPanelProps, ...thisAssociatedPanelProps, });
@@ -191,10 +191,10 @@ export default function DataMgt(props) {
 				tabs[tabIx].items.push(associatedPanel);
 				panelIx++;
 			});
-			eastCoast = <TabPanel
+			east = <TabPanel
 							title="Associated Information"
-							w={eastCoastWidth}
-							startsCollapsed={eastCoastStartsCollapsed}
+							w={eastWidth}
+							startsCollapsed={eastStartsCollapsed}
 							frame={true}
 							isResizable={true}
 							tabs={tabs}
@@ -202,10 +202,10 @@ export default function DataMgt(props) {
 						/>;
 		} else {
 			// Single container holds them
-			eastCoast = <Panel
+			east = <Panel
 							title="Associated Information"
-							w={eastCoastWidth}
-							startsCollapsed={eastCoastStartsCollapsed}
+							w={eastWidth}
+							startsCollapsed={eastStartsCollapsed}
 							frame={true}
 							isResizable={true}
 						>{panels}</Panel>;
@@ -213,12 +213,12 @@ export default function DataMgt(props) {
 	}
 
 	return <Container
-				west={westCoast}
-				isWestCollapsed={isWestCoastCollapsed}
-				setIsWestCollapsed={setIsWestCoastCollapsed}
-				center={illinois}
-				east={eastCoast}
-				isEastCollapsed={isEastCoastCollapsed}
-				setIsEastCollapsed={setIsEastCoastCollapsed}
+				west={west}
+				isWestCollapsed={isWestCollapsed}
+				setIsWestCollapsed={setIsWestCollapsed}
+				center={center}
+				east={east}
+				isEastCollapsed={isEastCollapsed}
+				setIsEastCollapsed={setIsEastCollapsed}
 			/>;
 }

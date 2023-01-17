@@ -130,7 +130,7 @@ export function Grid(props) {
 			canColumnsReorder = true,
 			canColumnsResize = true,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
-			disablePaging = false,
+			disablePagination = false,
 			bottomToolbar = 'pagination',
 			topToolbar = null,
 			additionalToolbarButtons = [],
@@ -943,10 +943,6 @@ export function Grid(props) {
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
 
-		if (Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading && loadAfterRender) {
-			Repository.load();
-		}
-
 		setLocalColumnsConfig(calculateLocalColumnsConfig());
 		setIsReady(true);
 
@@ -961,15 +957,22 @@ export function Grid(props) {
 	}, []);
 
 	useEffect(() => {
-		if (!Repository || disableSelectorSelected) {
+		if (!Repository) {
 			return () => {};
 		}
 		
-		let matches = selectorSelected?.[0]?.id;
-		if (_.isEmpty(selectorSelected)) {
-			matches = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
+		if (!disableSelectorSelected) {
+			let matches = selectorSelected?.[0]?.id;
+			if (_.isEmpty(selectorSelected)) {
+				matches = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
+			}
+			Repository.filter(selectorId, matches, false); // so it doesn't clear existing filters
 		}
-		Repository.filter(selectorId, matches, false); // so it doesn't clear existing filters
+
+		if ((Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) ||
+			(!Repository.isLoaded && loadAfterRender)) {
+			Repository.load();
+		}
 
 	}, [selectorId, selectorSelected]);
 
@@ -1043,7 +1046,7 @@ export function Grid(props) {
 								</Row>;
 	}
 	const footerToolbarItemComponents = getFooterToolbarItems();
-	if (Repository && bottomToolbar === 'pagination' && !disablePaging && Repository.isPaginated) {
+	if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
 		listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
 	} else if (footerToolbarItemComponents.length) {
 		listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
