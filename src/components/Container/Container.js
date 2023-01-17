@@ -65,7 +65,7 @@ export default function Container(props) {
 	centerComponent = React.cloneElement(center, { isCollapsible: false, });
 	if (north) {
 		componentProps.collapseDirection = VERTICAL;
-		if (!componentProps.h && !componentProps.flex) {
+		if (!north.props.h && !north.props.flex) {
 			componentProps.flex = 50;
 		}
 		if (north.props.isResizable) {
@@ -73,7 +73,6 @@ export default function Container(props) {
 				componentProps.h = northHeight;
 				componentProps.flex = null;
 			}
-			componentProps.bg = '#f00';
 			componentProps.w = '100%';
 			componentProps.isCollapsed = setIsNorthCollapsed ? isNorthCollapsed : localIsNorthCollapsed;
 			componentProps.setIsCollapsed = setIsNorthCollapsed || setLocalIsNorthCollapsed;
@@ -90,7 +89,7 @@ export default function Container(props) {
 	}
 	if (south) {
 		componentProps.collapseDirection = VERTICAL;
-		if (!componentProps.h && !componentProps.flex) {
+		if (!south.props.h && !south.props.flex) {
 			componentProps.flex = 50;
 		}
 		if (south.props.isResizable) {
@@ -114,7 +113,7 @@ export default function Container(props) {
 	}
 	if (east) {
 		componentProps.collapseDirection = HORIZONTAL;
-		if (!componentProps.w && !componentProps.flex) {
+		if (!east.props.h && !east.props.flex) {
 			componentProps.flex = 50;
 		}
 		if (east.props.isResizable) {
@@ -138,7 +137,7 @@ export default function Container(props) {
 	}
 	if (west) {
 		componentProps.collapseDirection = HORIZONTAL;
-		if (!componentProps.w && !componentProps.flex) {
+		if (!west.props.h && !west.props.flex) {
 			componentProps.flex = 50;
 		}
 		if (west.props.isResizable) {
@@ -160,7 +159,7 @@ export default function Container(props) {
 		westComponent = React.cloneElement(west, { ...componentProps, h: '100%', });
 		componentProps = {};
 	}
-
+	
 	return <Column w="100%" flex={1}>
 				{northComponent}
 				{(!isNorthCollapsed && !localIsNorthCollapsed) && northSplitter}
