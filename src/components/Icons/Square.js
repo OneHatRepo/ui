@@ -5,8 +5,8 @@ import { Icon } from 'native-base';
 
 function SvgComponent(props) {
 	return (
-		<Icon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 512" {...props}>
-		<Path d="M96 64c0-17.7-14.3-32-32-32S32 46.3 32 64v256c0 17.7 14.3 32 32 32s32-14.3 32-32V64zM64 480c22.1 0 40-17.9 40-40s-17.9-40-40-40-40 17.9-40 40 17.9 40 40 40z" />
+		<Icon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" {...props}>
+		<Path d="M0 96c0-35.3 28.7-64 64-64h320c35.3 0 64 28.7 64 64v320c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96z" />
 		</Icon>
 	)
 }
