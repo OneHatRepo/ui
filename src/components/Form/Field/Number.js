@@ -6,7 +6,7 @@ import {
 	Row,
 } from 'native-base';
 import {
-	DEBOUNCE_MS,
+	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input';
 import styles from '../../../Constants/Styles';
 import IconButton from '../../Buttons/IconButton';
@@ -31,18 +31,21 @@ function NumberElement(props) {
 	onInputKeyPress = (e) => {
 		switch(e.key) {
 			case 'ArrowDown':
+			case 'ArrowLeft':
 				onDecrement();
 				break;
 			case 'ArrowUp':
+			case 'ArrowRight':
 				onIncrement();
 				break;
-			case 'ArrowLeft':
-			case 'ArrowRight':
 			case 'Tab':
 			case 'Backspace':
-			case 'Enter':
 				return;
-			default:
+				break;
+			case 'Enter':
+				setValue(value);
+				break;
+				default:
 		}
 		if (!e.key.match(/^[\-\d\.]*$/)) {
 			e.preventDefault(); // kill anything that's not a number
@@ -81,7 +84,7 @@ function NumberElement(props) {
 	useEffect(() => {
 		// Set up debounce fn
 		// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
-		debouncedSetValueRef.current = _.debounce(setValue, DEBOUNCE_MS);
+		debouncedSetValueRef.current = _.debounce(setValue, AUTO_SUBMIT_DELAY);
 	}, [setValue]);
 	
 	useEffect(() => {
@@ -119,10 +122,10 @@ function NumberElement(props) {
 					onKeyPress={onInputKeyPress}
 					flex={5}
 					h="100%"
-					fontSize={styles.INPUT_FONTSIZE}
-					bg={styles.INPUT_BG}
+					fontSize={styles.FORM_INPUT_FONTSIZE}
+					bg={styles.FORM_INPUT_BG}
 					_focus={{
-						bg: styles.INPUT_FOCUS_BG,
+						bg: styles.FORM_INPUT_FOCUS_BG,
 					}}
 					textAlign="center"
 					borderRadius={0}

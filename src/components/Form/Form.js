@@ -1,4 +1,4 @@
-import { useEffect, } from 'react';
+import { useEffect, useState, } from 'react';
 import {
 	Box,
 	Button,
@@ -10,6 +10,8 @@ import {
 } from 'native-base';
 import {
 	EDITOR_TYPE_INLINE,
+	EDITOR_TYPE_WINDOWED,
+	EDITOR_TYPE_PLAIN,
 } from '../../Constants/EditorTypes';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
@@ -27,28 +29,39 @@ import _ from 'lodash';
 
 // TODO: memoize field Components
 
+// Modes:
+// EDITOR_TYPE_INLINE
+// Form is a single scrollable row, based on columnsConfig and Repository
+//
+// EDITOR_TYPE_WINDOWED
+// Form is a popup window, used for editing items in a grid. Integrated with Repository
+//
+// EDITOR_TYPE_PLAIN
+// Form is embedded on screen in some other way. Mainly use startingValues, items, validator
+
 function Form(props) {
 	const
 		{
-			editorType,
+			editorType = EDITOR_TYPE_WINDOWED, // EDITOR_TYPE_INLINE | EDITOR_TYPE_WINDOWED | EDITOR_TYPE_PLAIN
 			startingValues = {},
-			items = [],
-			columnDefaults = {},
-			useColumns = true, // these are layout columns for the form
-			columnsConfig, // this is the columnsConfig from the grid
+			items = [], // Columns, FieldSets, Fields, etc to define the form
+			columnDefaults = {}, // defaults for each Column defined in items (above)
+			columnsConfig, // Which columns are shown in Grid, so the inline editor can match. Used only for EDITOR_TYPE_INLINE
+			validator, // custom validator, mainly for EDITOR_TYPE_PLAIN
 			footerProps = {},
-			buttonGroupProps = {},
-			onLayout,
-
+			buttonGroupProps = {}, // buttons in footer
+			
+			// sizing of outer container
 			h,
 			maxHeight,
 			w,
 			maxWidth,
 			flex,
+			onLayout, // onLayout handler for main view
 
 			// withData
 			Repository,
-
+			
 			// withEditor
 			isViewOnly = false,
 			onCancel,
@@ -60,11 +73,11 @@ function Form(props) {
 			selectorSelected,
 
 			// withAlert
+			alert,
 			confirm,
 		} = props,
-		entity = props.entity.length === 1 ? props.entity[0] : props.entity,
+		entity = props.entity?.length === 1 ? props.entity[0] : props.entity,
 		isMultiple = _.isArray(entity),
-		emptyValidator = yup.object(),
 		forceUpdate = useForceUpdate(),
 		initialValues =  _.merge(startingValues, (entity ? entity.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
@@ -98,7 +111,7 @@ function Form(props) {
 			// delayError: 0,
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
-			resolver: yupResolver((isMultiple ? disableRequiredYupFields(entity?.repository?.schema?.model?.validator) : entity?.repository?.schema?.model?.validator) || emptyValidator),
+			resolver: yupResolver(validator || (isMultiple ? disableRequiredYupFields(entity?.repository?.schema?.model?.validator) : entity?.repository?.schema?.model?.validator) || yup.object()),
 		}),
 		buildFromColumnsConfig = () => {
 			// For InlineEditor
@@ -165,6 +178,13 @@ function Form(props) {
 												}
 											}
 											const Element = getComponentFromType(editor);
+											if (!Element) {
+												debugger;
+												// LEFT OFF HERE
+												// Trying inline editor, based on columnsConfig
+												// Getting an error that the OrdersEditor is missing users__email.
+												// Why is this even on the OrdersEditor? Runner?
+											}
 											let element = <Element
 																name={name}
 																value={value}
@@ -206,14 +226,14 @@ function Form(props) {
 					type,
 					title,
 					name,
-					isEditable,
+					isEditable = true,
 					label,
 					items,
 					...propsToPass
 				} = item;
 			let editorTypeProps = {};
 
-			const model = Repository.getSchema().model;
+			const model = Repository?.getSchema().model;
 			if (!type && Repository) {
 				const 
 					editorTypes = model.editorTypes,
@@ -235,6 +255,7 @@ function Form(props) {
 			}
 			
 			if (!name) {
+				debugger;
 				throw new Error('name is required');
 			}
 
@@ -332,6 +353,12 @@ function Form(props) {
 							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : null}>{dirtyIcon}{element}</Row>;
 						}}
 					/>;
+		},
+		onSubmitError = (errors, e) => {
+			debugger;
+			if (editorType === EDITOR_TYPE_INLINE) {
+				alert(errors.message);
+			}
 		};
 
 	useEffect(() => {
@@ -372,12 +399,41 @@ function Form(props) {
 		sizeProps.maxHeight = maxHeight;
 	}
 
-	const formComponents = columnsConfig && !_.isEmpty(columnsConfig) && Repository ? buildFromColumnsConfig() : buildFromItems();
+	let formComponents,
+		editor;
+	if (editorType === EDITOR_TYPE_INLINE) {
+		// for inline editor
+		formComponents = buildFromColumnsConfig();
+		editor = <ScrollView
+					horizontal={true}
+					flex={1}
+					bg="#fff"
+					py={1}
+					borderTopWidth={3}
+					borderBottomWidth={5}
+					borderTopColor="primary.100"
+					borderBottomColor="primary.100"
+				>{formComponents}</ScrollView>;
+	} else {
+		// for Windowed editor
+		formComponents = buildFromItems();
+		editor = <ScrollView flex={1} width="100%" pb={1}>
+					<Row flex={1}>{formComponents}</Row>
+				</ScrollView>;
+	}
+	
+	// const isDisabled1 = !_.isEmpty(formState.errors);
+	// const isDisabled2 = !entity.isPhantom && !formState.isDirty;
+	// const isDisabled = (!_.isEmpty(formState.errors) || (!entity.isPhantom && !formState.isDirty));
+	// console.log('isDisabled1', isDisabled1);
+	// console.log('isDisabled2', isDisabled2);
+	// console.log('formState.errors', formState.errors);
+	// console.log('getValues', getValues());
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
-				<ScrollView flex={1} width="100%" pb={1}>
-					{useColumns ? <Row flex={1}>{formComponents}</Row> : <Column flex={1}>{formComponents}</Column>}
-				</ScrollView>
+				
+				{editor}
+
 				<Footer justifyContent="flex-end" {...footerProps}>
 					<Button.Group space={2} {...buttonGroupProps}>
 						{!isViewOnly && <IconButton
@@ -399,8 +455,8 @@ function Form(props) {
 													>Cancel</Button>}
 						{!isViewOnly && onSave && <Button
 														key="saveBtn"
-														onPress={handleSubmit(onSave)}
-														isDisabled={!_.isEmpty(formState.errors) || (!entity.isPhantom && !formState.isDirty)}
+														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
+														isDisabled={!_.isEmpty(formState.errors) || (!entity?.isPhantom && !formState.isDirty)}
 														color="#fff"
 													>Save</Button>}
 						{isViewOnly && onClose && <Button

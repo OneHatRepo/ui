@@ -568,7 +568,7 @@ export function Grid(props) {
 							}}
 							flexDirection="row"
 							h="100%"
-							bg={styles.GRID_HEADER_BG}
+							bg={styles.GRID_PANEL_HEADER_BG}
 							_hover={{
 								bg: styles.GRID_HEADER_HOVER_BG,
 							}}
@@ -746,6 +746,9 @@ export function Grid(props) {
 									}
 									break;
 								case 2: // double click
+									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
+										onRowClick(item, index, e); // so reselect it
+									}
 									if (onEdit) {
 										onEdit();
 									}

@@ -33,7 +33,7 @@ export default function Header(props) {
 		collapseBtn = null;
 	if (isClosable) {
 		closeBtn = <IconButton
-						icon={<FaTimes size={styles.HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} />}
+						icon={<FaTimes size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} />}
 						onPress={onClose}
 						testID="closeBtn"
 						alignSelf="center"
@@ -42,7 +42,7 @@ export default function Header(props) {
 	}
 	if (isCollapsible) {
 		collapseBtn = <IconButton
-						icon={isCollapsed ? <FaPlus size={styles.HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} /> : <FaMinus size={styles.HEADER_ICON_SIZE}  color={styles.HEADER_ICON_COLOR} />}
+						icon={isCollapsed ? <FaPlus size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} /> : <FaMinus size={styles.PANEL_HEADER_ICON_SIZE}  color={styles.HEADER_ICON_COLOR} />}
 						onPress={onToggleCollapse}
 						testID="collapseBtn"
 						alignSelf="center"
@@ -69,10 +69,10 @@ export default function Header(props) {
 							}
 						}}
 					>
-						 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
+						 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.PANEL_HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
 							{collapseBtn}
 							<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
-								<Text flex={1} fontSize={styles.HEADER_TEXT_FONTSIZE} color={styles.HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
+								<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
 							</div>
 						</Column>
 					</div>;
@@ -88,9 +88,9 @@ export default function Header(props) {
 					}
 				}}
 			>
-				<Row alignItems="center" justifyContent="flex-start" px={styles.HEADER_PX} py={styles.HEADER_PY} bg={styles.HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
+				<Row alignItems="center" justifyContent="flex-start" px={styles.PANEL_HEADER_PX} py={styles.PANEL_HEADER_PY} bg={styles.PANEL_HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
 					{closeBtn}
-					<Text flex={1} fontSize={styles.HEADER_TEXT_FONTSIZE} color={styles.HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
+					<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
 					{collapseBtn}
 				</Row>
 			</div>;

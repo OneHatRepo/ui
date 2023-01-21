@@ -1,1 +1,1 @@
-export const DEBOUNCE_MS = 500;
+export const AUTO_SUBMIT_DELAY = 500;

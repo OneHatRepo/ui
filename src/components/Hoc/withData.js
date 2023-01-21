@@ -13,9 +13,13 @@ export default function withData(WrappedComponent) {
 	return (props) => {
 		const
 			{
+				// For @onehat/data repositories
 				Repository,
 				uniqueRepository = false,
 				model,
+
+				// For plain JS data
+				data,
 				fields = ['id', 'value'],
 				idField = 'id',
 				displayField = 'value',
@@ -27,6 +31,7 @@ export default function withData(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					Repository={LocalRepository}
+					data={data}
 					fields={fields}
 					idField={idField}
 					displayField={displayField}

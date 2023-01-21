@@ -8,7 +8,7 @@ export default function Footer(props) {
 				alignItems="center"
 				justifyContent="center"
 				alignSelf="flex-end"
-				bg={styles.FOOTER_BG}
+				bg={styles.PANEL_FOOTER_BG}
 				testID="footer"
 				w="100%"
 				p={2}

@@ -27,7 +27,7 @@ export default function FieldSet(props) {
 	return <Box
 				borderWidth={1}
 				borderColor="trueGray.400"
-				bg={styles.FIELDSET_BG}
+				bg={styles.FORM_FIELDSET_BG}
 				m={2}
 				pb={1}
 				{...propsToPass}
@@ -41,7 +41,7 @@ export default function FieldSet(props) {
 						style={{ userSelect: 'none', }}
 					>
 						<Text
-							fontSize={styles.FIELDSET_FONTSIZE}
+							fontSize={styles.FORM_FIELDSET_FONTSIZE}
 							fontWeight="bold"
 							py={1}
 							px={3}

@@ -1,7 +1,5 @@
-import React, { useState, } from 'react';
+import React, { useState, useEffect, useRef, } from 'react';
 import {
-	Box,
-	Button,
 	Icon,
 	Popover,
 	Pressable,
@@ -9,91 +7,277 @@ import {
 	Text,
 	Tooltip,
 } from 'native-base';
-import styles from '../../../Constants/Styles';
-import Datetime from 'react-datetime'; // https://www.npmjs.com/package/react-datetime
-import "react-datetime/css/react-datetime.css";
+import {
+	DATE,
+	TIME,
+	DATETIME,
+} from '../../../Constants/Date';
 // import DateTimePickerModal from 'react-native-modal-datetime-picker'; // https://github.com/mmazzarolo/react-native-modal-datetime-picker
 // import DateTimePicker from '@react-native-community/datetimepicker'; // https://github.com/react-native-datetimepicker/datetimepicker
+import Datetime from 'react-datetime'; // https://www.npmjs.com/package/react-datetime
+import 'react-datetime/css/react-datetime.css';
+import './datetime.css';
+import Formatters from '@onehat/data/src/Util/Formatters';
+import Parsers from '@onehat/data/src/Util/Parsers';
+import Input from '../Field/Input';
 import IconButton from '../../Buttons/IconButton';
 import withValue from '../../Hoc/withValue';
 import emptyFn from '../../../Functions/emptyFn';
-import Formatters from '@onehat/data/src/Util/Formatters';
 import Calendar from '../../Icons/Calendar';
-import moment from 'moment';
+import styles from '../../../Constants/Styles';
 import _ from 'lodash';
 
 export function DateElement(props) {
 	const {
 			placeholderText,
-			value = new Date(),
+			value,
 			setValue,
 			format,
-			mode = 'date',
+			mode = TIME,
 			tooltip = 'Choose a date.',
 			tooltipPlacement = 'bottom',
 		} = props,
+		inputRef = useRef(),
+		triggerRef = useRef(),
+		pickerRef = useRef(),
 		[isPickerShown, setIsPickerShown] = useState(false),
+		[isRendered, setIsRendered] = useState(false),
+		[isTranslateX, setIsTranslateX] = useState(false),
+		[isTranslateY, setIsTranslateY] = useState(false),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
 		showPicker = () => {
+			if (isPickerShown) {
+				return;
+			}
+			if (triggerRef.current?.getBoundingClientRect) {
+				// For web, ensure it's in the proper place
+				const 
+					triggerRect = triggerRef.current.getBoundingClientRect(),
+					inputRect = inputRef.current.getBoundingClientRect(),
+					bodyRect = document.body.getBoundingClientRect(),
+					isLower = triggerRect.top > (bodyRect.height / 2),
+					isRight = triggerRect.left > (bodyRect.width / 2);
+	
+				setLeft(inputRect.left);
+				if (isLower) {
+					setTop(inputRect.top);
+					setIsTranslateY(true);
+				} else {
+					setTop(inputRect.top + inputRect.height);
+				}
+				if (isRight) {
+					// setIsTranslateX(true);
+				}
+			}
+
 			setIsPickerShown(true);
 		},
 		hidePicker = () => {
+			if (!isPickerShown) {
+				return;
+			}
 			setIsPickerShown(false);
+		},
+		onInputKeyPress = (e) => {
+			switch(e.key) {
+				case 'Escape':
+				case 'Enter':
+					hidePicker();
+					break;
+				default:
+			}
+		},
+		onInputBlur = (e) => {
+			const {
+					relatedTarget
+				} = e;
+			if (!relatedTarget ||
+					(!inputRef.current.contains(relatedTarget) && triggerRef.current !== relatedTarget && (!pickerRef.current || !pickerRef.current.contains(relatedTarget)))) {
+				// hidePicker();
+			}
+		},
+		onInputClick = (e) => {
+			if (!isRendered) {
+				return;
+			}
+			showPicker();
+		},
+		onInputSetValue = (value) => {
+			switch(mode) {
+				case DATE:
+					if (!_.isNil(value)) {
+						value = Parsers.ParseDate(value);
+					}
+					break;
+				case TIME:
+					if (!_.isNil(value)) {
+						value = Parsers.ParseTime(value);
+					}
+					break;
+				case DATETIME:
+					if (!_.isNil(value)) {
+						value = Parsers.ParseDate(value);
+					}
+					break;
+				default:
+			}
+			setValue(value);
+		},
+		onTriggerPress = (e) => {
+			if (!isRendered) {
+				return;
+			}
+			if (isPickerShown) {
+				hidePicker();
+			} else {
+				showPicker();
+			}
+			inputRef.current.focus();
+		},
+		onTriggerBlur = (e) => {
+			if (!isPickerShown) {
+				return;
+			}
+			const {
+					relatedTarget
+				} = e;
+			if (!relatedTarget || 
+					(!inputRef.current.contains(relatedTarget) && triggerRef.current !== relatedTarget && !pickerRef.current.contains(relatedTarget))) {
+				hidePicker();
+			}
+		},
+		onPickerChange = (moment) => {
+			let value = null;
+			switch(mode) {
+				case DATE:
+					value = Formatters.FormatDate(moment, 'YYYY-MM-DD');
+					break;
+				case TIME:
+					value = Formatters.FormatTime(moment);
+					break;
+				case DATETIME:
+					value = Formatters.FormatDateTime(moment, 'YYYY-MM-DD HH:mm:ss');
+					break;
+				default:
+			}
+			setValue(value);
+		},
+		clearDate = () => {
+			setValue(null);
 		},
 		handleConfirm = (date) => {
 			hidePicker();
 			setValue(date);
-		},
-		propsToPass = _.omit(props, ['setValue', 'textStyle', 'placeholderText']);
+		};
 
-	let title = placeholderText;
-	if (!_.isNil(value)) {
-		switch(mode) {
-			case 'date':
-				title = format ? Formatters.FormatDate(value, format) : Formatters.FormatDate(value);;
-				break;
-			case 'time':
-				title = format ? Formatters.FormatTime(value, format) : Formatters.FormatTime(value);
-				break;
-			case 'datetime':
-				title = format ? Formatters.FormatDateTime(value, format) : Formatters.FormatDateTime(value);
-				break;
-			default:
-		}
+
+	// place the picker in a convenient spot
+	const
+		translateParts = [],
+		translateProps = {};
+	if (isTranslateX) {
+		translateParts.push('translateX(-100%)');
 	}
-	
+	if (isTranslateY) {
+		translateParts.push('translateY(-100%)');
+	}
+	if (!_.isEmpty(translateParts)) {
+		translateProps.style = {
+			transform: translateParts.join(' '),
+		};
+	}
+
+	// Format the display date/time/datetime
+	let title = placeholderText,
+		pickerValue = null,
+		height = 300,
+		width = 300;
+	switch(mode) {
+		case DATE:
+			height = 272;
+			if (!_.isNil(value)) {
+				title = format ? Formatters.FormatDate(value, format) : Formatters.FormatDate(value);
+				pickerValue = Parsers.ParseDate(value, 'YYYY-MM-DD');
+			}
+			break;
+		case TIME:
+			height = 120;
+			width = 150;
+			if (!_.isNil(value)) {
+				title = format ? Formatters.FormatTime(value, format) : Formatters.FormatTime(value);
+				pickerValue = Parsers.ParseDate(value, 'HH:mm:ss');
+			}
+			break;
+		case DATETIME:
+			if (!_.isNil(value)) {
+				title = format ? Formatters.FormatDateTime(value, format) : Formatters.FormatDateTime(value);
+				pickerValue = Parsers.ParseDate(value, 'YYYY-MM-DD HH:mm:ss');
+			}
+			break;
+		default:
+	}
+
+	if (pickerValue?.toDate) {
+		pickerValue = pickerValue.toDate();
+	}
+
+
 	// Web version
 	return <Tooltip label={tooltip} placement={tooltipPlacement}>
-				<Row flex={1} h="100%" alignItems="center">
+				<Row flex={1} h="100%" alignItems="center" onLayout={() => setIsRendered(true)}>
 					<IconButton
-						icon={<Icon as={Calendar} />}
-						onPress={showPicker}
+						ref={triggerRef}
+						icon={<Icon as={Calendar} color={styles.FORM_DATE_ICON_COLOR} />}
+						onPress={onTriggerPress}
+						onBlur={onTriggerBlur}
 						h={10}
 						w={10}
-						bg="primary.200"
+						borderTopLeftRadius={6}
+						borderBottomLeftRadius={6}
+						borderTopRightRadius={0}
+						borderBottomRightRadius={0}
+						bg={styles.FORM_DATE_ICON_BG}
 						_hover={{
-							bg: 'primary.400',
+							bg: styles.FORM_DATE_ICON_BG_HOVER,
 						}}
+					/>
+					<Input
+						ref={inputRef}
+						value={title}
+						setValue={onInputSetValue}
+						onKeyPress={onInputKeyPress}
+						onBlur={onInputBlur}
+						onClick={onInputClick}
+						flex={1}
+						h="100%"
+						p={2}
+						borderWidth={1}
+						borderColor="trueGray.300"
+						borderLeftWidth={0}
+						borderTopLeftRadius={0}
+						borderBottomLeftRadius={0}
+						borderTopRightRadius={6}
+						borderBottomRightRadius={6}
+						fontSize={styles.FORM_DATE_READOUT_FONTSIZE}
+						bg={styles.FORM_DATE_INPUT_BG}
+						_focus={{
+							bg: styles.FORM_DATE_INPUT_FOCUS_BG,
+						}}
+						numberOfLines={1}
+						ellipsizeMode="head"
 						onLayout={(e) => {
+							// On web, this is not needed, but on RN it might be, so leave it in for now
 							const {
 									height,
-									width,
 									top,
 									left,
 								} = e.nativeEvent.layout;
-
-							// TODO: Set the popover to display with lots of room to spare.
-							// To do this, figure out where the IconButton is on the screen.
-							// If it's on the right side of screen, show the popover on the left.
-							// If it's on the bottom part of screen, show the popover on the top.
-							// Otherwise, use code below.
-
 							setTop(top + height);
-							setLeft(left + width);
+							setLeft(left);
 						}}
 					/>
-					<Pressable
+					{/* <Pressable
 						flex={1}
 						h="100%"
 						onPress={showPicker}
@@ -103,14 +287,14 @@ export function DateElement(props) {
 							h="100%"
 							ml={1}
 							p={2}
-							fontSize={styles.DATE_READOUT_FONTSIZE}
+							fontSize={styles.FORM_DATE_READOUT_FONTSIZE}
 							borderWidth={1}
 							borderColor="trueGray.300"
 							borderRadius={4}
 							numberOfLines={1}
 							ellipsizeMode="head"
 						>{title}</Text>
-					</Pressable>
+					</Pressable> */}
 					<Popover
 						isOpen={isPickerShown}
 						onClose={() => {
@@ -125,18 +309,22 @@ export function DateElement(props) {
 							position="absolute"
 							top={top + 'px'}
 							left={left + 'px'}
-							w={300}
-							h={300}
+							w={width}
+							h={height}
+							{...translateProps}
 						>
 							<Popover.Body
+								ref={pickerRef}
 								p={0}
 							>
 								<Datetime
 									open={true}
 									input={false}
-									onChange={(value) => setValue(value)}
 									closeOnClickOutside={false}
-									{...propsToPass}
+									value={pickerValue}
+									dateFormat={mode === DATE || mode === DATETIME ? 'YYYY-MM-DD' : false}
+									timeFormat={mode === TIME || mode === DATETIME ? 'HH:mm:ss' : false}
+									onChange={onPickerChange}
 								/>
 							</Popover.Body>
 						</Popover.Content>

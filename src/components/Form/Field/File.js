@@ -183,7 +183,7 @@ function FileElement(props) {
 						{mode === FILE_MODE_FILE && <Text
 														flex={1}
 														ml={3}
-														fontSize={styles.FILE_READOUT_FONTSIZE}
+														fontSize={styles.FORM_FILE_READOUT_FONTSIZE}
 														fontStyle="italic"
 														numberOfLines={1}
 														ellipsizeMode="head"

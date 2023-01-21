@@ -4,7 +4,7 @@ import {
 	Tooltip,
 } from 'native-base';
 import {
-	DEBOUNCE_MS,
+	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input';
 import styles from '../../../Constants/Styles';
 import withValue from '../../Hoc/withValue';
@@ -14,23 +14,43 @@ function InputElement(props) {
 	let {
 			value,
 			setValue,
+			autoSubmit = false, // automatically setValue after user stops typing for autoSubmitDelay
+			autoSubmitDelay = AUTO_SUBMIT_DELAY,
+			maxLength,
+			onKeyPress,
+			onChangeText,
 			tooltip = null,
 			tooltipPlacement = 'bottom',
 		} = props,
 		debouncedSetValueRef = useRef(),
 		[localValue, setLocalValue] = useState(value),
-		onChangeText = (value) => {
+		onKeyPressLocal = (e) => {
+			if (e.key === 'Enter') {
+				setValue(localValue);
+			}
+			if (onKeyPress) {
+				onKeyPress(e);
+			}
+		},
+		onChangeTextLocal = (value) => {
 			if (value === '') {
 				value = null; // empty string makes value null
 			}
-			setLocalValue(value);
-			debouncedSetValueRef.current(value);
+			if (!maxLength || maxLength >= value.length ) {
+				setLocalValue(value);
+			}
+			if (autoSubmit) {
+				debouncedSetValueRef.current(value);
+			}
+			if (onChangeText) {
+				onChangeText(value);
+			}
 		};
 		
 	useEffect(() => {
 		// Set up debounce fn
 		// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
-		debouncedSetValueRef.current = _.debounce(setValue, DEBOUNCE_MS);
+		debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
 	}, [setValue]);
 		
 	useEffect(() => {
@@ -46,12 +66,15 @@ function InputElement(props) {
 
 	const theInput = <Input
 						ref={props.outerRef}
-						onChangeText={onChangeText}
+						onChangeText={onChangeTextLocal}
+						_input={{
+							onKeyPress: onKeyPressLocal,
+						}}
 						flex={1}
-						fontSize={styles.INPUT_FONTSIZE}
-						bg={styles.INPUT_BG}
+						fontSize={styles.FORM_INPUT_FONTSIZE}
+						bg={styles.FORM_INPUT_BG}
 						_focus={{
-							bg: styles.INPUT_FOCUS_BG,
+							bg: styles.FORM_INPUT_FOCUS_BG,
 						}}
 						{...props}
 						value={localValue}

@@ -335,12 +335,15 @@ export function Combo(props) {
 		refProps.ref = tooltipRef;
 	}
 	
-	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
+	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 								<Input
 									ref={inputRef}
 									value={textValue}
+									autoSubmit={true}
 									onChangeValue={onInputChangeText}
 									onKeyPress={onInputKeyPress}
+									onBlur={onInputBlur}
+									onClick={onInputClick}
 									onLayout={(e) => {
 										// On web, this is not needed, but on RN it might be, so leave it in for now
 										const {
@@ -362,17 +365,15 @@ export function Combo(props) {
 									// 	}
 									// 	showMenu();
 									// }}
-									onBlur={onInputBlur}
-									onClick={onInputClick}
-									fontSize={styles.COMBO_INPUT_FONTSIZE}
+									flex={1}
+									h="100%"
+									m={0}
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
-									flex={1}
-									m={0}
-									h="100%"
-									bg={styles.COMBO_INPUT_BG}
+									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
+									bg={styles.FORM_COMBO_INPUT_BG}
 									_focus={{
-										bg: styles.COMBO_INPUT_FOCUS_BG,
+										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
 									}}
 									{...props._input}
 								/>
@@ -391,9 +392,9 @@ export function Combo(props) {
 									borderLeftWidth={0}
 									borderLeftRadius={0}
 									borderRightRadius="md"
-									bg={styles.COMBO_TRIGGER_BG}
+									bg={styles.FORM_COMBO_TRIGGER_BG}
 									_hover={{
-										bg: styles.COMBO_TRIGGER_HOVER_BG,
+										bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
 									}}
 								/>
 								{additionalButtons}
