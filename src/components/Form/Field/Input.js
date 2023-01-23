@@ -35,8 +35,8 @@ function InputElement(props) {
 		onChangeTextLocal = (value) => {
 			if (value === '') {
 				value = null; // empty string makes value null
-			}
-			if (!maxLength || maxLength >= value.length ) {
+				setLocalValue(value);
+			} else if (!maxLength || maxLength >= value?.length ) {
 				setLocalValue(value);
 			}
 			if (autoSubmit) {

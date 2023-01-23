@@ -15,6 +15,7 @@ export default function withData(WrappedComponent) {
 			{
 				// For @onehat/data repositories
 				Repository,
+				setRepository,
 				uniqueRepository = false,
 				model,
 
@@ -23,20 +24,60 @@ export default function withData(WrappedComponent) {
 				fields = ['id', 'value'],
 				idField = 'id',
 				displayField = 'value',
+				idIx,
+				displayIx,
 			} = props,
-			idIx = fields && idField ? fields.indexOf(idField) : null,
-			displayIx = fields && displayField ? fields?.indexOf(displayField) : null,
-			[LocalRepository, unused] = useState(model ? oneHatData.getRepository(model, uniqueRepository) : Repository);
+			propsToPass = _.omit(props, ['model']), // passing 'model' would mess things up if withData gets called twice (e.g. withData(...withData(...)) )
+			localIdIx = idIx || (fields && idField ? fields.indexOf(idField) : null),
+			localDisplayIx = displayIx || (fields && displayField ? fields?.indexOf(displayField) : null),
+			[LocalRepository, setLocalRepository] = useState(Repository || null), // simply pass on Repository if it's already supplied
+			[isReady, setIsReady] = useState(!!LocalRepository || !!data); // It's already ready if a LocalRepository or data array is already set. Otherwise, we need to create the repository
+
+		// Create LocalRepository
+		// If Repository was submitted to this withData(), the useEffect has no effect.
+		// If it's empty, it tries to create a LocalRepository
+		useEffect(() => {
+			if (LocalRepository || !!data) {
+				return () => {};
+			}
+
+			if (!model) {
+				throw new Error('model must be set');
+			}
+
+			(async () => {
+				let Repository;
+				if (uniqueRepository) {
+					const schema = oneHatData.getSchema(model);
+					Repository = await oneHatData.createRepository({ schema });
+				} else {
+					Repository = oneHatData.getRepository(model);
+				}
+	
+				setLocalRepository(Repository);
+				if (setRepository) { // pass it on up to higher components
+					setRepository(Repository);
+				}
+				setIsReady(true);
+			})();
+
+		}, [LocalRepository]);
+
+		if (!isReady) {
+			return null;
+		}
+
+		console.log('withData', Repository?.name || data);
 
 		return <WrappedComponent
-					{...props}
+					{...propsToPass}
 					Repository={LocalRepository}
 					data={data}
 					fields={fields}
 					idField={idField}
 					displayField={displayField}
-					idIx={idIx}
-					displayIx={displayIx}
+					idIx={localIdIx}
+					displayIx={localDisplayIx}
 				/>;
 	};
 }

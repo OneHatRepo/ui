@@ -1,10 +1,10 @@
 import {
+	Column,
 	IconButton,
 	Row,
 	Text,
 } from 'native-base';
 import Rotate from '../Icons/Rotate';
-import testProps from '../../Functions/testProps';
 
 export default function NoRecordsFound(props) {
 	const 
@@ -13,27 +13,31 @@ export default function NoRecordsFound(props) {
 			text = 'No Records found.',
 		} = props,
 		textComponent = <Text
-							{...testProps('NoRecordsFound')}
-							py={20}
-							numberOfLines={1}
-							ellipsizeMode="head"
+							textAlign="center"
 						>{text}</Text>;
+
 	let component = textComponent;
 	if (onRefresh) {
-		component = <Row justifyContent="center" alignItems="center" flex={1}>
+		component = <Row justifyContent="center" alignItems="center" w="100%" flex={1}>
 						<IconButton
-							{...testProps('refreshBtn')}
 							_icon={{
 								as: Rotate,
-								size: 'sm',
+								name: 'redo-alt',
+								style: {
+									fontSize: 16,
+								},
 							}}
 							onPress={onRefresh}
 							variant="ghost"
 							p={1}
-							mr={1}
+							ml={-4}
 						/>
 						{textComponent}
 					</Row>;
+	} else {
+		component = <Column justifyContent="center" alignItems="center" w="100%" flex={1}>
+						{textComponent}
+					</Column>;
 	}
 	return component;
 }

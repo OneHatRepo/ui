@@ -12,6 +12,7 @@ export default function withSelection(WrappedComponent) {
 	return (props) => {
 		const
 			{
+				selection,
 				defaultSelection,
 				onChangeSelection,
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
@@ -24,8 +25,8 @@ export default function withSelection(WrappedComponent) {
 				idIx,
 				displayIx,
 			} = props,
-			[selection, setSelectionRaw] = useState(defaultSelection ? [defaultSelection] : []),
-			[isReady, setIsReady] = useState(false),
+			[localSelection, setLocalSelection] = useState(selection || defaultSelection || []),
+			[isReady, setIsReady] = useState(selection || false),
 			setSelection = (selection) => {
 				if (onChangeSelection) {
 					onChangeSelection(selection);
@@ -33,7 +34,7 @@ export default function withSelection(WrappedComponent) {
 				if (fireEvent) {
 					fireEvent('changeSelection', selection);
 				}
-				setSelectionRaw(selection);
+				setLocalSelection(selection);
 			},
 			selectNext = () => {
 				selectDirection(SELECT_DOWN);
@@ -55,16 +56,16 @@ export default function withSelection(WrappedComponent) {
 			},
 			addToSelection = (item) => {
 				let newSelection = [];
-				newSelection = _.clone(selection); // so we get a new object, so descendants rerender
+				newSelection = _.clone(localSelection); // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				setSelection(newSelection);
 			},
 			removeFromSelection = (item) => {
 				let newSelection = [];
 				if (Repository) {
-					newSelection = _.remove(selection, (sel) => sel !== item);
+					newSelection = _.remove(localSelection, (sel) => sel !== item);
 				} else {
-					newSelection = _.remove(selection, (sel) => sel[idIx] !== item[idIx]);
+					newSelection = _.remove(localSelection, (sel) => sel[idIx] !== item[idIx]);
 				}
 				setSelection(newSelection);
 			},
@@ -90,9 +91,9 @@ export default function withSelection(WrappedComponent) {
 			selectRangeTo = (item) => {
 				// Select above max or below min to this one
 				const
-					currentSelectionLength = selection.length,
+					currentSelectionLength = localSelection.length,
 					index = getIndexOfSelectedItem(item);
-				let newSelection = _.clone(selection); // so we get a new object, so descendants rerender
+				let newSelection = _.clone(localSelection); // so we get a new object, so descendants rerender
 
 				if (currentSelectionLength) {
 					const { items, max, min, } = getMaxMinSelectionIndices();
@@ -119,10 +120,10 @@ export default function withSelection(WrappedComponent) {
 			},
 			isInSelection = (item) => {
 				if (Repository) {
-					return inArray(item, selection);
+					return inArray(item, localSelection);
 				}
 
-				const found = _.find(selection, (selectedItem) => {
+				const found = _.find(localSelection, (selectedItem) => {
 						return selectedItem[idIx] === item[idIx];
 					});
 				return !!found;
@@ -144,10 +145,10 @@ export default function withSelection(WrappedComponent) {
 				return found;
 			},
 			getIdFromSelection = () => {
-				if (!selection[0]) {
+				if (!localSelection[0]) {
 					return null;
 				}
-				const values = _.map(selection, (item) => {
+				const values = _.map(localSelection, (item) => {
 					if (Repository) {
 						return item.id;
 					}
@@ -173,32 +174,34 @@ export default function withSelection(WrappedComponent) {
 			};
 
 		useEffect(() => {
+			if (isReady) { // If it's already got a selection, don't do all this!
+				return () => {};
+			}
+
 			let newSelection = [];
 			if (!Repository) {
 				// set up plain data
-				if (_.isEmpty(selection) && autoSelectFirstItem) {
+				if (_.isEmpty(localSelection) && autoSelectFirstItem) {
 					newSelection = data[0] ? [data[0]] : [];
 				}
 			} else {
 				// set up @onehat/data repository
-				if (_.isEmpty(selection) && autoSelectFirstItem) {
+				if (_.isEmpty(localSelection) && autoSelectFirstItem) {
 					const entitiesOnPage = Repository.getEntitiesOnPage();
 					newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
 				}
 			}
-			if (autoSelectFirstItem) {
-				setSelection(newSelection);
-			}
+			setSelection(newSelection);
 			setIsReady(true);
 		}, []);
 
 		if (!isReady) {
 			return null;
 		}
-
+		
 		return <WrappedComponent
 					{...props}
-					selection={selection}
+					selection={localSelection}
 					setSelection={setSelection}
 					selectionMode={selectionMode}
 					selectNext={selectNext}

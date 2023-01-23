@@ -33,7 +33,7 @@ export function DateElement(props) {
 			value,
 			setValue,
 			format,
-			mode = TIME,
+			mode = DATE,
 			tooltip = 'Choose a date.',
 			tooltipPlacement = 'bottom',
 		} = props,
@@ -104,20 +104,27 @@ export function DateElement(props) {
 			showPicker();
 		},
 		onInputSetValue = (value) => {
+			if (value === '') {
+				setValue(null);
+				return;
+			}
 			switch(mode) {
 				case DATE:
 					if (!_.isNil(value)) {
 						value = Parsers.ParseDate(value);
+						value = Formatters.FormatDate(value, 'YYYY-MM-DD');
 					}
 					break;
 				case TIME:
 					if (!_.isNil(value)) {
 						value = Parsers.ParseTime(value);
+						value = Formatters.FormatTime(value);
 					}
 					break;
 				case DATETIME:
 					if (!_.isNil(value)) {
 						value = Parsers.ParseDate(value);
+						value = Formatters.FormatDate(value, 'YYYY-MM-DD HH:mm:ss');
 					}
 					break;
 				default:
@@ -162,13 +169,6 @@ export function DateElement(props) {
 				default:
 			}
 			setValue(value);
-		},
-		clearDate = () => {
-			setValue(null);
-		},
-		handleConfirm = (date) => {
-			hidePicker();
-			setValue(date);
 		};
 
 

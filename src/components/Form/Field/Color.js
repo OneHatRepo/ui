@@ -63,6 +63,15 @@ export function ColorElement(props) {
 			}
 			setIsPickerShown(false);
 		},
+		onInputKeyPress = (e) => {
+			switch(e.key) {
+				case 'Escape':
+				case 'Enter':
+					hidePicker();
+					break;
+				default:
+			}
+		},
 		onInputBlur = (e) => {
 			const {
 					relatedTarget
@@ -133,8 +142,10 @@ export function ColorElement(props) {
 						borderBottomLeftRadius={6}
 						borderTopRightRadius={0}
 						borderBottomRightRadius={0}
+						borderWidth={1}
+						borderColor="trueGray.300"
 					/>
-					<Text
+					<Input
 						ref={inputRef}
 						value={value}
 						setValue={setValue}
@@ -166,40 +177,7 @@ export function ColorElement(props) {
 							setTop(top + height);
 							setLeft(left);
 						}}
-					>{value}</Text>
-					{/* <Input
-						ref={inputRef}
-						value={value}
-						setValue={setValue}
-						maxLength={7}
-						onBlur={onInputBlur}
-						onClick={onInputClick}
-						flex={1}
-						h="100%"
-						p={2}
-						borderWidth={1}
-						borderColor="trueGray.300"
-						borderLeftWidth={0}
-						borderTopLeftRadius={0}
-						borderBottomLeftRadius={0}
-						borderTopRightRadius={6}
-						borderBottomRightRadius={6}
-						fontSize={styles.FORM_COLOR_READOUT_FONTSIZE}
-						bg={styles.FORM_COLOR_INPUT_BG}
-						_focus={{
-							bg: styles.FORM_COLOR_INPUT_FOCUS_BG,
-						}}
-						onLayout={(e) => {
-							// On web, this is not needed, but on RN it might be, so leave it in for now
-							const {
-									height,
-									top,
-									left,
-								} = e.nativeEvent.layout;
-							setTop(top + height);
-							setLeft(left);
-						}}
-					/> */}
+					/>
 					<Popover
 						isOpen={isPickerShown}
 						onClose={() => {

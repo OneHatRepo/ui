@@ -1,9 +1,4 @@
-import React, { useEffect, useState, useRef, } from 'react';
-import {
-	Button,
-	Column,
-	Row,
-} from 'native-base';
+import React, { useState, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -49,8 +44,9 @@ export default function DataMgt(props) {
 		[isWestCollapsed, setIsWestCollapsed] = useState(westStartsCollapsed),
 		[isEastCollapsed, setIsEastCollapsed] = useState(eastStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
-		[westSelectorSelected, setWestSelectorSelected] = useState(),
-		[centerSelectorSelected, setCenterSelectorSelected] = useState(),
+		[westRepository, setWestRepository] = useState(),
+		[westSelected, setWestSelected] = useState(),
+		[centerSelected, setCenterSelected] = useState(),
 		onToggleFullscreen = () => {
 			const newIsFullScreen = !isFullscreen;
 			setIsFullscreen(!newIsFullScreen);
@@ -98,7 +94,6 @@ export default function DataMgt(props) {
 	// 	[				] [							] [	uploadDownload	]
 	//   ---------------------------------------------------------------
 
-
 	let west,
 		center,
 		east;
@@ -107,22 +102,27 @@ export default function DataMgt(props) {
 	if (showSelector && westElementType) {
 		const WestElementType = getComponentFromType(westElementType);
 		west = <WestElementType
-						title={westTitle}
-						w={westWidth}
-						// maxWidth="230px" // this breaks drag resize!
-						startsCollapsed={westStartsCollapsed}
-						collapseDirection={HORIZONTAL}
-						isResizable={true}
-						frame={false}
-						loadAfterRender={true}
-						disablePagination={true}
-						uniqueRepository={true}
-						selectionMode={SELECTION_MODE_SINGLE}
-						onChangeSelection={setWestSelectorSelected}
-						onEvent={onEvent}
-						reference="west"
-						{...westProps}
-					/>;
+					reference="west"
+					title={westTitle}
+					w={westWidth}
+					// maxWidth="230px" // this breaks drag resize!
+					startsCollapsed={westStartsCollapsed}
+					collapseDirection={HORIZONTAL}
+					isResizable={true}
+					frame={false}
+					disablePagination={true}
+					loadAfterRender={true}
+					canColumnsReorder={false}
+					canColumnsResize={false}
+					setRepository={setWestRepository}
+					Repository={westRepository}
+					uniqueRepository={true}
+					selectionMode={SELECTION_MODE_SINGLE}
+					selection={westSelected}
+					onChangeSelection={setWestSelected}
+					onEvent={onEvent}
+					{...westProps}
+				/>;
 	}
 
 	// 'center' section, the main Grid
@@ -132,20 +132,22 @@ export default function DataMgt(props) {
 		}
 		const CenterElementType = getComponentFromType(centerElementType);
 		center = <CenterElementType
-						title={centerTitle}
-						isCollapsible={false}
-						frame={false}
-						isResizable={false}
-						loadAfterRender={!showSelector}
-						selectorId={showSelector ? westSelector_id : null}
-						selectorSelected={westSelectorSelected}
-						noSelectorMeansNoResults={centerNoSelectorMeansNoResults}
-						isFullscreen={isFullscreen}
-						onChangeSelection={setCenterSelectorSelected}
-						onEvent={onEvent}
-						reference="center"
-						{...centerProps}
-					/>;
+					reference="center"
+					title={centerTitle}
+					isCollapsible={false}
+					isFullscreen={isFullscreen}
+					frame={false}
+					isResizable={false}
+					// disablePagination={true}
+					loadAfterRender={!showSelector}
+					uniqueRepository={true}
+					selectorId={showSelector ? westSelector_id : null}
+					selectorSelected={westSelected}
+					noSelectorMeansNoResults={centerNoSelectorMeansNoResults}
+					onChangeSelection={setCenterSelected}
+					onEvent={onEvent}
+					{...centerProps}
+				/>;
 	}
 
 	// 'east' section, contains associated panels
@@ -165,7 +167,7 @@ export default function DataMgt(props) {
 				const
 					thisAssociatedPanelProps = {
 						selectorId: associatedPanel.controlledByCenter ? centerSelector_id : westSelector_id,
-						selectorSelected: associatedPanel.controlledByCenter ? centerSelectorSelected : westSelectorSelected,
+						selectorSelected: associatedPanel.controlledByCenter ? centerSelected : westSelected,
 						...associatedPanel.props,
 					};
 				return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...allAssociatedPanelProps, ...thisAssociatedPanelProps, });
