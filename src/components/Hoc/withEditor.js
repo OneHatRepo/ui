@@ -18,6 +18,7 @@ export default function withEditor(WrappedComponent) {
 					}
 					return 'record?';
 				},
+				record,
 
 				// withData
 				Repository,
@@ -98,10 +99,11 @@ export default function withEditor(WrappedComponent) {
 			},
 			onEditorSave = (data, e) => {
 				const
-					isSingle = selection.length === 1;
+					what = record || selection,
+					isSingle = what.length === 1;
 				if (isSingle) {
 					// just update this one entity
-					selection[0].setValues(data);
+					what[0].setValues(data);
 
 				} else if (selection.length > 1) {
 					// Edit multiple entities

@@ -78,7 +78,7 @@ export default function withInlineEditor(WrappedComponent) {
 								<Column position="absolute" ref={inlineEditorRef}>
 									{isEditorShown && <Form
 															editorType={EDITOR_TYPE_INLINE} 
-															entity={selection[0]}
+															record={selection[0]}
 															Repository={Repository}
 															isMultiple={selection.length > 1}
 															isViewOnly={isEditorViewOnly}

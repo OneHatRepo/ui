@@ -11,6 +11,7 @@ import {
 import {
 	EDITOR_TYPE_INLINE,
 	EDITOR_TYPE_WINDOWED,
+	EDITOR_TYPE_SMART,
 	EDITOR_TYPE_PLAIN,
 } from '../../Constants/EditorTypes';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
@@ -18,6 +19,7 @@ import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
 import useForceUpdate from '../../Hooks/useForceUpdate';
 import withAlert from '../Hoc/withAlert';
+import withEditor from '../Hoc/withEditor';
 import inArray from '../../Functions/inArray';
 import getComponentFromType from '../../Functions/getComponentFromType';
 import IconButton from '../Buttons/IconButton';
@@ -35,6 +37,9 @@ import _ from 'lodash';
 //
 // EDITOR_TYPE_WINDOWED
 // Form is a popup window, used for editing items in a grid. Integrated with Repository
+//
+// EDITOR_TYPE_SMART
+// Form is a standalone editor
 //
 // EDITOR_TYPE_PLAIN
 // Form is embedded on screen in some other way. Mainly use startingValues, items, validator
@@ -65,7 +70,8 @@ function Form(props) {
 			// withEditor
 			isViewOnly = false,
 			onCancel,
-			onSave,
+			onEditorSave,
+			onSave = onEditorSave,
 			onClose,
 
 			// withSelection
@@ -76,10 +82,11 @@ function Form(props) {
 			alert,
 			confirm,
 		} = props,
-		entity = props.entity?.length === 1 ? props.entity[0] : props.entity,
-		isMultiple = _.isArray(entity),
+		record = props.record?.length === 1 ? props.record[0] : props.record,
+		isMultiple = _.isArray(record),
+		isSingle = !isMultiple, // for convenience
 		forceUpdate = useForceUpdate(),
-		initialValues =  _.merge(startingValues, (entity ? entity.submitValues : {})),
+		initialValues =  _.merge(startingValues, (record ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		{
 			control,
@@ -101,7 +108,7 @@ function Form(props) {
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
 			defaultValues,
-			// values,
+			values: defaultValues,
 			// resetOptions: {
 			// 	keepDirtyValues: false, // user-interacted input will be retained
 			// 	keepErrors: false, // input errors will be retained with value update
@@ -111,7 +118,7 @@ function Form(props) {
 			// delayError: 0,
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
-			resolver: yupResolver(validator || (isMultiple ? disableRequiredYupFields(entity?.repository?.schema?.model?.validator) : entity?.repository?.schema?.model?.validator) || yup.object()),
+			resolver: yupResolver(validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object()),
 		}),
 		buildFromColumnsConfig = () => {
 			// For InlineEditor
@@ -137,7 +144,7 @@ function Form(props) {
 					} = config;
 
 				if (!isEditable) {
-					const renderedValue = renderer ? renderer(entity) : entity[fieldName];
+					const renderedValue = renderer ? renderer(record) : record[fieldName];
 					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>
 										<Text numberOfLines={1} ellipsizeMode="head">{renderedValue}</Text>
 									</Box>);
@@ -255,7 +262,6 @@ function Form(props) {
 			}
 			
 			if (!name) {
-				debugger;
 				throw new Error('name is required');
 			}
 
@@ -263,7 +269,7 @@ function Form(props) {
 				if (!label && Repository) {
 					label = model.titles[name];
 				}
-				const value = (entity && entity[name]) || (startingValues && startingValues[name]) || null;
+				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
 				let element = <Text numberOfLines={1} ellipsizeMode="head" {...propsToPass}>{value}</Text>;
 				if (label) {
 					element = <><Label>{label}</Label>{element}</>;
@@ -373,10 +379,9 @@ function Form(props) {
 		};
 	}, [Repository]);
 
-	if (props.Repository && !props.entity) {
-		return null;
-	}
-
+	// if (Repository && (!record || _.isEmpty(record))) {
+	// 	return null;
+	// }
 
 	const sizeProps = {};
 	if (!flex && !h && !w) {
@@ -422,14 +427,6 @@ function Form(props) {
 				</ScrollView>;
 	}
 	
-	// const isDisabled1 = !_.isEmpty(formState.errors);
-	// const isDisabled2 = !entity.isPhantom && !formState.isDirty;
-	// const isDisabled = (!_.isEmpty(formState.errors) || (!entity.isPhantom && !formState.isDirty));
-	// console.log('isDisabled1', isDisabled1);
-	// console.log('isDisabled2', isDisabled2);
-	// console.log('formState.errors', formState.errors);
-	// console.log('getValues', getValues());
-	
 	return <Column {...sizeProps} onLayout={onLayout}>
 				
 				{editor}
@@ -456,7 +453,7 @@ function Form(props) {
 						{!isViewOnly && onSave && <Button
 														key="saveBtn"
 														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
-														isDisabled={!_.isEmpty(formState.errors) || (!entity?.isPhantom && !formState.isDirty)}
+														isDisabled={!_.isEmpty(formState.errors) || (!isSingle && !record?.isPhantom && !formState.isDirty)}
 														color="#fff"
 													>Save</Button>}
 						{isViewOnly && onClose && <Button
@@ -467,7 +464,6 @@ function Form(props) {
 					</Button.Group>
 				</Footer>
 			</Column>;
-
 }
 
 // helper fns
@@ -514,5 +510,6 @@ function getNullFieldValues(initialValues, Repository) {
 	return ret;
 }
 
+export const FormEditor = withAlert(withEditor(Form));
 
 export default withAlert(Form);

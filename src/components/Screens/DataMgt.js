@@ -166,8 +166,8 @@ export default function DataMgt(props) {
 			panels = _.map(associatedPanels, (associatedPanel, ix) => {
 				const
 					thisAssociatedPanelProps = {
-						selectorId: associatedPanel.controlledByCenter ? centerSelector_id : westSelector_id,
-						selectorSelected: associatedPanel.controlledByCenter ? centerSelected : westSelected,
+						selectorId: !associatedPanel.props.controlledByCenter ? westSelector_id : centerSelector_id,
+						selectorSelected: !associatedPanel.props.controlledByCenter ? westSelected : centerSelected,
 						...associatedPanel.props,
 					};
 				return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...allAssociatedPanelProps, ...thisAssociatedPanelProps, });

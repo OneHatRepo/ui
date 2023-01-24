@@ -603,7 +603,7 @@ export function Grid(props) {
 
 export const WindowedGridEditor = withAlert(
 									withEvents(
-										withData(
+										// withData(
 											withMultiSelection(
 												withSelection(
 													withWindowedEditor(
@@ -617,13 +617,13 @@ export const WindowedGridEditor = withAlert(
 													)
 												)
 											)
-										)
+										// )
 									)
 								);
 
 export const InlineGridEditor = withAlert(
 									withEvents(
-										withData(
+										// withData(
 											withMultiSelection(
 												withSelection(
 													withInlineEditor(
@@ -637,7 +637,7 @@ export const InlineGridEditor = withAlert(
 													)
 												)
 											)
-										)
+										// )
 									)
 								);
 
