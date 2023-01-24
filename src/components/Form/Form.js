@@ -86,7 +86,7 @@ function Form(props) {
 		isMultiple = _.isArray(record),
 		isSingle = !isMultiple, // for convenience
 		forceUpdate = useForceUpdate(),
-		initialValues =  _.merge(startingValues, (record ? record.submitValues : {})),
+		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		{
 			control,

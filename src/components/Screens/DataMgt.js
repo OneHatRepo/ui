@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState, useMemo, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -45,8 +45,12 @@ export default function DataMgt(props) {
 		[isEastCollapsed, setIsEastCollapsed] = useState(eastStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
 		[westRepository, setWestRepository] = useState(),
-		[westSelected, setWestSelected] = useState(),
+		[westSelected, setWestSelectedRaw] = useState(),
 		[centerSelected, setCenterSelected] = useState(),
+		setWestSelected = (selected) => {
+			setWestSelectedRaw(selected);
+			setCenterSelected(); // clear selection in center
+		},
 		onToggleFullscreen = () => {
 			const newIsFullScreen = !isFullscreen;
 			setIsFullscreen(!newIsFullScreen);
@@ -94,14 +98,14 @@ export default function DataMgt(props) {
 	// 	[				] [							] [	uploadDownload	]
 	//   ---------------------------------------------------------------
 
-	let west,
-		center,
-		east;
 
 	// 'west' section, AKA 'selector', the far-left column
-	if (showSelector && westElementType) {
+	const west = useMemo(() => {
+		if (!showSelector || !westElementType) {
+			return null;
+		}
 		const WestElementType = getComponentFromType(westElementType);
-		west = <WestElementType
+		return <WestElementType
 					reference="west"
 					title={westTitle}
 					w={westWidth}
@@ -123,15 +127,29 @@ export default function DataMgt(props) {
 					onEvent={onEvent}
 					{...westProps}
 				/>;
-	}
+	}, [
+		showSelector,
+		westElementType,
+		westTitle,
+		westWidth,
+		westStartsCollapsed,
+		westRepository,
+		westSelected,
+		westSelected?.hash,
+		westProps,
+	]);
 
 	// 'center' section, the main Grid
-	if (centerElementType) {
+	const center = useMemo(() => {
+		if (!centerElementType) {
+			return null;
+		}
+
 		if (!showSelector && centerNoSelectorMeansNoResults) {
 			centerNoSelectorMeansNoResults = false;
 		}
 		const CenterElementType = getComponentFromType(centerElementType);
-		center = <CenterElementType
+		return <CenterElementType
 					reference="center"
 					title={centerTitle}
 					isCollapsible={false}
@@ -148,9 +166,18 @@ export default function DataMgt(props) {
 					onEvent={onEvent}
 					{...centerProps}
 				/>;
-	}
+	}, [
+		centerTitle,
+		isFullscreen,
+		showSelector,
+		westSelected,
+		westSelected?.hash,
+		centerNoSelectorMeansNoResults,
+		// {...centerProps}
+	])
 
 	// 'east' section, contains associated panels
+	let east;
 	if (showDownload) {
 		associatedPanels.push(<UploadDownload key="ud" reference="uploadDownload" onEvent={onEvent} />);
 	}
@@ -165,9 +192,10 @@ export default function DataMgt(props) {
 			},
 			panels = _.map(associatedPanels, (associatedPanel, ix) => {
 				const
+					controlledByCenter = typeof associatedPanel.props.controlledByCenter === 'undefined' ? true : associatedPanel.props.controlledByCenter,
 					thisAssociatedPanelProps = {
-						selectorId: !associatedPanel.props.controlledByCenter ? westSelector_id : centerSelector_id,
-						selectorSelected: !associatedPanel.props.controlledByCenter ? westSelected : centerSelected,
+						selectorId: controlledByCenter ? centerSelector_id : westSelector_id,
+						selectorSelected: controlledByCenter ? centerSelected : westSelected,
 						...associatedPanel.props,
 					};
 				return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...allAssociatedPanelProps, ...thisAssociatedPanelProps, });
