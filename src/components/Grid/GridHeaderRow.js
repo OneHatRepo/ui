@@ -317,7 +317,7 @@ export default function GridHeaderRow(props) {
 								}}
 								flexDirection="row"
 								h="100%"
-								bg={styles.GRID_PANEL_HEADER_BG}
+								bg={styles.GRID_HEADER_BG}
 								_hover={{
 									bg: styles.GRID_HEADER_HOVER_BG,
 								}}

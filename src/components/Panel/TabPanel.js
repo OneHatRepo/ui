@@ -24,6 +24,7 @@ export default function TabPanel(props) {
 			tabs = [],
 			direction = HORIZONTAL,
 			tabWidth = 150, // used on VERTICAL mode only
+			tabHeight = '44px', // used on HORIZONTAL mode only
 			additionalButtons,
 			initialTab = 0,
 			startsCollapsed = true,
@@ -206,7 +207,7 @@ export default function TabPanel(props) {
 
 			return buttons;
 		},
-		renderContent = () => {
+		renderCurrentTabContent = () => {
 			if (tabs[currentTab].content) {
 				return tabs[currentTab].content;
 			}
@@ -235,7 +236,7 @@ export default function TabPanel(props) {
 								bg: styles.TAB_HOVER_BG,
 							}}
 							bg={styles.TAB_BG}
-							tooltip="Expand"
+							tooltip={isCollapsed ? 'Expand' : 'Collapse'}
 						/>;
 			} else {
 				button = <Button
@@ -287,12 +288,14 @@ export default function TabPanel(props) {
 								justifyContent="flex-start"
 								flex={1}
 							>
-								{renderContent()}
+								{renderCurrentTabContent()}
 							</Column>
 						</Row>
 					</Panel>;
 		}
-		return <Panel {...propsToPass} {...props._panel}>
+
+		// HORIZONTAL
+		return <Panel flex={1} w="100%" {...propsToPass} {...props._panel}>
 					<Column flex={1} w="100%">
 						<Row
 							alignItems="center"
@@ -300,15 +303,17 @@ export default function TabPanel(props) {
 							p={2}
 							pb={0}
 							bg={styles.TAB_BAR_BG}
+							h={isCollapsed ? '30px' : tabHeight}
 						>
 							{renderTabs()}
+							<Row flex={1} h="100%" justifyContent="flex-end">
+								<Row h="100%">
+									{renderToggleButton()}
+								</Row>
+							</Row>
 						</Row>
-						<Row
-							alignItems="center"
-							justifyContent="flex-start"
-							flex={1}
-						>
-							{renderContent()}
+						<Row flex={1}>
+							{renderCurrentTabContent()}
 						</Row>
 					</Column>
 				</Panel>;

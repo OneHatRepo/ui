@@ -13,7 +13,10 @@ const
 					numberOfLines={1}
 					ellipsizeMode="head" 
 					flex={1}
-					fontSize={styles.TEXT_FONTSIZE}
+					fontSize={styles.FORM_TEXT_FONTSIZE}
+					bg={styles.FORM_TEXT_BG}
+					px={3}
+					py={1}
 					{...props}
 				>{props.value}</Text>;
 	},

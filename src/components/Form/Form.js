@@ -266,15 +266,19 @@ function Form(props) {
 			}
 
 			if (isViewOnly || !isEditable) {
+				const Text = getComponentFromType('Text');
 				if (!label && Repository) {
 					label = model.titles[name];
 				}
 				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
-				let element = <Text numberOfLines={1} ellipsizeMode="head" {...propsToPass}>{value}</Text>;
+				let element = <Text
+									value={value}
+									{...propsToPass}
+								/>;
 				if (label) {
 					element = <><Label>{label}</Label>{element}</>;
 				}
-				return <Row key={ix} px={2} pb={1} bg="#fff">{element}</Row>;
+				return <Row key={ix} px={2} pb={1}>{element}</Row>;
 			}
 
 			if (!label && Repository) {

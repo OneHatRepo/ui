@@ -12,6 +12,7 @@ const
 					ref={props.outerRef}
 					onChangeText={props.setValue}
 					flex={1}
+					bg={styles.FORM_TEXTAREA_BG}
 					fontSize={styles.FORM_TEXTAREA_FONTSIZE}
 					h={styles.FORM_TEXTAREA_HEIGHT}
 					{...props}
