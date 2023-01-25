@@ -93,7 +93,6 @@ export default function withContextMenu(WrappedComponent) {
 						onContextMenu={onContextMenu}
 					/>
 					<Modal
-						animationType="fade"
 						isOpen={isContextMenuShown && !disableContextMenu}
 						onClose={() => setIsContextMenuShown(false)}
 					>

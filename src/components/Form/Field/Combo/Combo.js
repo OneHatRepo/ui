@@ -406,6 +406,9 @@ export function Combo(props) {
 									trigger={emptyFn}
 									trapFocus={false}
 									placement={'auto'}
+									// _fade={{
+									// 	entryDuration: 0, // Doesn't work, as Popover doesn't have animation controls like Modal does. See node_modules/native-base/src/components/composites/Popover/Popover.tsx line 99 (vs .../composites/Modal/Modal.tsx line 113 which has ..._fade)
+									// }}
 									{...props}
 								>
 									<Popover.Content

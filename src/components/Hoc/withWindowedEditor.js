@@ -38,7 +38,6 @@ export default function withWindowedEditor(WrappedComponent) {
 					<WrappedComponent {...props} />
 					{useEditor && isEditorShown && 
 						<Modal
-							animationType="fade"
 							isOpen={true}
 							onClose={() => setIsEditorShown(false)}
 						>

@@ -71,7 +71,6 @@ export default function withInlineEditor(WrappedComponent) {
 					/>
 					{useEditor && editorType === EDITOR_TYPE_INLINE && Repository && 
 							<Modal
-								animationType="fade"
 								isOpen={isEditorShown}
 								onClose={() => setIsEditorShown(false)}
 							>

@@ -311,7 +311,6 @@ export default function withFilters(WrappedComponent) {
 
 			if (isFilterSelectorShown) {
 				modal = <Modal
-							animationType="fade"
 							isOpen={true}
 							onClose={() => setIsFilterSelectorShown(false)}
 						>

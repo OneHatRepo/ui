@@ -143,7 +143,6 @@ export default function withAlert(WrappedComponent) {
 						confirm={onConfirm}
 					/>
 					<Modal
-						animationType="fade"
 						isOpen={isAlertShown}
 						onOpen={() => {debugger;}}
 						onClose={() => setIsAlertShown(false)}

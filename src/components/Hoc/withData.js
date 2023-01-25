@@ -41,10 +41,6 @@ export default function withData(WrappedComponent) {
 				return () => {};
 			}
 
-			if (!model) {
-				throw new Error('model must be set');
-			}
-
 			(async () => {
 				let Repository;
 				if (uniqueRepository) {
