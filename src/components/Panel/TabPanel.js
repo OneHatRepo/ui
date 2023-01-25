@@ -25,16 +25,24 @@ export default function TabPanel(props) {
 			direction = HORIZONTAL,
 			tabWidth = 150, // used on VERTICAL mode only
 			additionalButtons,
-			startsCollapsed = true,
+			initialTab = 0,
+			initialIsCollapsed = true,
+			onChangeCurrentTab,
 			onChangeIsCollapsed,
 			...propsToPass
 		} = props,
-		[currentTab, setCurrentTab] = useState(0),
-		[isCollapsed, setIsCollapsedRaw] = useState(startsCollapsed),
+		[currentTab, setCurrentTabRaw] = useState(initialTab),
+		[isCollapsed, setIsCollapsedRaw] = useState(initialIsCollapsed),
 		setIsCollapsed = (isCollapsed) => {
 			setIsCollapsedRaw(isCollapsed);
 			if (onChangeIsCollapsed) {
 				onChangeIsCollapsed(isCollapsed);
+			}
+		},
+		setCurrentTab = (ix) => {
+			setCurrentTabRaw(ix);
+			if (onChangeCurrentTab) {
+				onChangeCurrentTab(ix);
 			}
 		},
 		getButtonProps = () => {
@@ -255,7 +263,6 @@ export default function TabPanel(props) {
 		onToggleCollapse = () => {
 			setIsCollapsed(!isCollapsed);
 		};
-		
 		if (direction === VERTICAL) {
 			return <Panel {...propsToPass}>
 						<Row flex={1} w="100%">
