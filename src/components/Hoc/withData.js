@@ -72,6 +72,7 @@ export default function withData(WrappedComponent) {
 		return <WrappedComponent
 					{...propsToPass}
 					Repository={LocalRepository}
+					model={model}
 					data={data}
 					fields={fields}
 					idField={idField}
