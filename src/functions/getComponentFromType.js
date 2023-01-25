@@ -16,7 +16,7 @@ import Combo from '../Components/Form/Field/Combo/Combo';
 import Container from '../Components/Container/Container';
 import DataMgt from '../Components/Screens/DataMgt';
 import Date from '../Components/Form/Field/Date';
-// import DateRange from '../Components/Filter/DateRange';
+import DateRange from '../Components/Filter/DateRange';
 import DisplayField from '../Components/Form/Field/DisplayField';
 import FieldSet from '../Components/Form/FieldSet';
 import File from '../Components/Form/Field/File';
@@ -59,7 +59,7 @@ const
 		Container,
 		DataMgt,
 		Date,
-		// DateRange,
+		DateRange,
 		DisplayField,
 		FieldSet,
 		File,

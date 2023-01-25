@@ -112,6 +112,7 @@ export default function TabPanel(props) {
 									bg: styles.TAB_HOVER_BG,
 								}}
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
+								tooltip={tab.title}
 							/>;
 				} else {
 					button = <Button
@@ -173,6 +174,7 @@ export default function TabPanel(props) {
 										bg: styles.TAB_HOVER_BG,
 									}}
 									bg={styles.TAB_BG}
+									tooltip={additionalButton.text}
 								/>;
 					} else {
 						button = <Button
@@ -233,6 +235,7 @@ export default function TabPanel(props) {
 								bg: styles.TAB_HOVER_BG,
 							}}
 							bg={styles.TAB_BG}
+							tooltip="Expand"
 						/>;
 			} else {
 				button = <Button

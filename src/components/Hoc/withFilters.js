@@ -8,6 +8,7 @@ import inArray from '../../Functions/inArray';
 import getComponentFromType from '../../Functions/getComponentFromType';
 import IconButton from '../Buttons/IconButton';
 import FormPanel from '../Panel/FormPanel';
+import Ban from '../Icons/Ban';
 import Gear from '../Icons/Gear';
 import Toolbar from '../Toolbar/Toolbar';
 import _ from 'lodash';
@@ -159,7 +160,7 @@ export default function withFilters(WrappedComponent) {
 							mx: 1,
 						},
 						filterElements = [],
-						addFilter =(fieldName, ix) => {
+						addFilter = (fieldName, ix) => {
 							if (ix === 'q') {
 								// special case
 								const Element = getComponentFromType('Input');
@@ -168,6 +169,7 @@ export default function withFilters(WrappedComponent) {
 														tooltip="Search all text fields"
 														placeholder="All text fields"
 														value={getFilterValue(ix)}
+														autoSubmit={true}
 														onChangeValue={(value) => onFilterChange(ix, value)}
 														{...filterProps}
 													/>);
@@ -188,6 +190,9 @@ export default function withFilters(WrappedComponent) {
 									} = filterType;
 								modelProps = p;
 								Element = getComponentFromType(type);
+							}
+							if (!Element) {
+								debugger;
 							}
 							filterElements.push(<Element
 													key={ix}
@@ -219,12 +224,22 @@ export default function withFilters(WrappedComponent) {
 					}
 					
 					filterElements.push(<IconButton
+											key="clear"
+											_icon={{
+												as: Ban,
+											}}
+											ml={1}
+											onPress={onClearFilters}
+											tooltip="Clear all filters"
+										/>);
+					filterElements.push(<IconButton
 											key="gear"
 											_icon={{
 												as: Gear,
 											}}
 											ml={1}
 											onPress={() => setIsFilterSelectorShown(true)}
+											tooltip="Swap filters"
 										/>);
 		
 					return filterElements;
@@ -252,6 +267,14 @@ export default function withFilters(WrappedComponent) {
 						newFilterFields.push(filterIxField);
 						filters.push({ name: filterIxField, value: filterIxValue, });
 					}
+				},
+				onClearFilters = () => {
+					setFilterQValue(null);
+					setFilter1Value(null);
+					setFilter2Value(null);
+					setFilter3Value(null);
+					setFilter4Value(null);
+					setFilter5Value(null);
 				};
 
 			useEffect(() => {
@@ -276,7 +299,7 @@ export default function withFilters(WrappedComponent) {
 				if (filter5Field) {
 					setFiltersOn(4, filters, newFilterFields);
 				}
-				if (searchAllText) {
+				if (searchAllText && !_.isEmpty(filterQValue)) {
 					const q = 'q';
 					newFilterFields.push(q);
 					filters.push({ name: q, value: filterQValue, });
@@ -289,7 +312,7 @@ export default function withFilters(WrappedComponent) {
 						filters[filterField] = null;
 					}
 				});
-
+				
 				Repository.filter(filters, false); // false so other filters remain
 
 			}, [filter1Field, filter2Field, filter3Field, filter4Field, filter5Field,
@@ -302,7 +325,7 @@ export default function withFilters(WrappedComponent) {
 				filterComboProps.data = [];
 				const schemaModel = Repository.getSchema().model;
 				_.each(schemaModel.titles, (title, fieldName) => {
-					if (!inArray(fieldName, schemaModel.virtualFields) && !inArray(fieldName, schemaModel.excludeFields)) {
+					if (!inArray(fieldName, schemaModel.virtualFields) && !inArray(fieldName, schemaModel.excludeFields) && !inArray(fieldName, schemaModel.filteringDisabled)) {
 						filterComboProps.data.push([fieldName, title]);
 					}
 				});

@@ -39,48 +39,16 @@ import _ from 'lodash';
 // exported which can be combined with many HOCs for various functionality.
 
 	// Desired features: ---------
-	// √ Loading indicator
-	// √ Header cells
-		// √ sticky at top
-		// √ formatted differently
-		// √ click header to sort by column
+	// Rows
+		// Rows with ability to use multiple lines (I was thinking custom render fns on rows, could possibly already do this!)
 	// selection
-		// √ single or multi selection mode
-		// √ state to keep track of selection
-		// √ Shift-click to add/subtract selection
-		// √ Range selection 
-		// √ Copy current selection
 		// Draggable selection (not super important)
-	// √ context menu
-		// √ onRightClick handler
-		// √ menu options
-	// √ Columns
-		// √ Allow for column content to fill beyond the size of panel, and scroll to see more
-		// √ Drag/drop reordering
-			// √ Drag on middle of header to new location
-			// √ state to keep track of current ordering
-			// √ handler for drag/drop
-			// √ column configurable for reorder or not
-		// √ Resizing
-			// √ Drag handles on column sides
-			// √ state to keep track of current column sizes
-			// √ handler for resizing
-			// √ column configurable for resizable or not
-	// √ Filters
-		// √ Set them
-		// √ Button to select others
-		// √ Some way to show all possibilities in modal (equivalent of ModelFilters in old system)
-		// √ way to swap filters and have it affect Repository
 	// editor
-		// √ double-click to enter edit mode (NativeBase doesn't have a double-click hander--can it be added manually to DOM?). Currently using longPress
-		// √ windowed editor for selected row
-		// √ form panel for editing of multiple selected rows
 		// [ ] Show inline editor for selected row
 		// Dragging of window (see withWindowedEditor)
 	// Rows
 		// Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
 			// state to keep track of current ordering
-			// √ handler for drag/drop
 			// If it's reorderable, add reorder drag handle column
 	// custom cell types
 		// Most would use text, and depend on @onehat/data for formatting
