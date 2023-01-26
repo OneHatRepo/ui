@@ -152,32 +152,34 @@ function FileElement(props) {
 		setLocalFilename(localFilename);
 	}, []);
 	
+	console.log('value', value);
+	
 	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
 				<Tooltip label={tooltip} placement={tooltipPlacement}>
-					<Row flex={1} alignItems="center">
+					<Row flex={1} h={10} alignItems="center">
 						{isDropping && <Box position="absolute" borderWidth={isDropping ? 2 : 0} borderColor="primary.800" top={0} left={0} w="100%" h="100%" bg="trueGray.200" zIndex={10000} justifyContent="center" alignItems="center">
 											<Text>Set File</Text>
 										</Box>}
 						<IconButton
-							icon={<Icon as={File} />}
+							icon={<Icon as={File} color={styles.FORM_FILE_ICON_COLOR} />}
 							onPress={onSelect}
 							h={10}
 							w={10}
-							bg="primary.200"
+							bg={styles.FORM_FILE_ICON_BG}
 							_hover={{
-								bg: 'primary.400',
+								bg: styles.FORM_FILE_ICON_BG_HOVER,
 							}}
 						/>
 						<IconButton
-							icon={<Icon as={Trash} />}
+							icon={<Icon as={Trash} color={styles.FORM_FILE_ICON_COLOR} />}
 							onPress={onClear}
 							h={10}
 							w={10}
 							ml={1}
-							isDisabled={!value.dataUri}
-							bg={value.dataUri ? 'primary.200' : 'disabled'}
+							isDisabled={!value?.dataUri}
+							bg={value?.dataUri ? styles.FORM_FILE_ICON_BG : 'disabled'}
 							_hover={{
-								bg: value.dataUri ? 'primary.400' : 'disabled',
+								bg: value?.dataUri ? styles.FORM_FILE_ICON_BG_HOVER : 'disabled',
 							}}
 						/>
 						{mode === FILE_MODE_FILE && <Text
@@ -187,16 +189,18 @@ function FileElement(props) {
 														fontStyle="italic"
 														numberOfLines={1}
 														ellipsizeMode="head"
+														bg={styles.FORM_FILE_READOUT_BG}
 													>{value.filename || 'No file'}</Text>}
 						{mode === FILE_MODE_IMAGE && <Box
 														flex={1}
 														h="100%"
 														ml={1}
-														bg="trueGray.100"
-														backgroundImage={value.dataUri ? 'url(' + imagePath + encodeURIComponent(value.dataUri) + ')' : 'none'}
+														bg={styles.FORM_FILE_READOUT_BG}
+														backgroundImage={value?.dataUri ? 'url(' + imagePath + encodeURIComponent(value.dataUri) + ')' : 'none'}
 														backgroundSize="contain"
 														backgroundRepeat="no-repeat"
 														borderRadius={4}
+														borderWidth={1}
 													/>}
 						<input type="file" ref={fileInputRef} name={name} onChange={onChangeFile} style={{ position: 'absolute', opacity: 0, height: 0, width: 0, }} />
 					</Row>

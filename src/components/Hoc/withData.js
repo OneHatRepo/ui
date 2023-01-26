@@ -63,8 +63,6 @@ export default function withData(WrappedComponent) {
 			return null;
 		}
 
-		console.log('withData', Repository?.name || data);
-
 		return <WrappedComponent
 					{...propsToPass}
 					Repository={LocalRepository}

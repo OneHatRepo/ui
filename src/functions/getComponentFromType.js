@@ -10,6 +10,7 @@ import Blank from '../Components/Blank';
 import BooleanCombo from '../Components/Form/Field/Combo/BooleanCombo';
 // import CartButtonWithBadge from '../Components/Buttons/CartButtonWithBadge';
 import CheckboxGroup from '../Components/Form/Field/CheckboxGroup/CheckboxGroup';
+import CKEditor from '../Components/Form/Field/CKEditor';
 import Color from '../Components/Form/Field/Color';
 import Combo from '../Components/Form/Field/Combo/Combo';
 // import ComboEditor from '../Components/Form/Field/Combo/ComboEditor';
@@ -27,6 +28,7 @@ import Grid from '../Components/Grid/Grid';
 import GridPanel from '../Components/Panel/GridPanel';
 import IconButton from '../Components/Buttons/IconButton';
 import Input from '../Components/Form/Field/Input';
+import IntervalsCombo from '../Components/Form/Field/Combo/IntervalsCombo';
 import Label from '../Components/Form/Label';
 import MonthsCombo from '../Components/Form/Field/Combo/MonthsCombo';
 import Number from '../Components/Form/Field/Number';
@@ -37,6 +39,7 @@ import RadioGroup from '../Components/Form/Field/RadioGroup/RadioGroup';
 import TabPanel from '../Components/Panel/TabPanel';
 import TextArea from '../Components/Form/Field/TextArea';
 import Text from '../Components/Form/Field/Text';
+import TimezonesCombo from '../Components/Form/Field/Combo/TimezonesCombo';
 import Toolbar from '../Components/Toolbar/Toolbar';
 import YearsCombo from '../Components/Form/Field/Combo/YearsCombo';
 import _ from 'lodash';
@@ -52,6 +55,7 @@ const
 		BooleanCombo,
 		// CartButtonWithBadge,
 		CheckboxGroup,
+		CKEditor,
 		Color,
 		Column,
 		Combo,
@@ -70,6 +74,7 @@ const
 		GridPanel,
 		IconButton,
 		Input,
+		IntervalsCombo,
 		Label,
 		MonthsCombo,
 		Number,
@@ -80,6 +85,7 @@ const
 		TabPanel,
 		Text,
 		TextArea,
+		TimezonesCombo,
 		Toolbar,
 		YearsCombo,
 	};

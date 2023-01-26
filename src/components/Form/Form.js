@@ -251,6 +251,9 @@ function Form(props) {
 				type = t;
 				editorTypeProps = p;
 			}
+			if (type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
+				editorTypeProps.loadAfterRender = true;
+			}
 			const Element = getComponentFromType(type);
 			let children;
 			if (inArray(type, ['Column', 'FieldSet'])) {
@@ -386,7 +389,7 @@ function Form(props) {
 	// if (Repository && (!record || _.isEmpty(record))) {
 	// 	return null;
 	// }
-
+	
 	const sizeProps = {};
 	if (!flex && !h && !w) {
 		sizeProps.flex = 1;

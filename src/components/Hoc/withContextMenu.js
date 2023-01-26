@@ -81,9 +81,23 @@ export default function withContextMenu(WrappedComponent) {
 							isDisabled={isDisabled}
 						>
 							{icon}
-							<Text flex={1} color={isDisabled ? 'disabled' : 'trueGray.800'} numberOfLines={1} ellipsizeMode="head">{text}</Text>
+							<Text
+								flex={1}
+								color={isDisabled ? 'disabled' : 'trueGray.800'}
+								numberOfLines={1}
+								ellipsizeMode="head"
+							>{text}</Text>
 						</Pressable>;
 			});
+			const showId = true; // TODO: This should only be for local dev
+			if (showId) {
+				contextMenuItemComponents.push(<Text
+													key="idViewer"
+													flex={1}
+													py={2}
+													px={4}
+												>id: {selection?.[0]?.id}</Text>);
+			}
 			setContextMenuItemComponents(contextMenuItemComponents);
 		}, [contextMenuItems, setIsContextMenuShown]);
 
