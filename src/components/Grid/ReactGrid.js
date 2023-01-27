@@ -24,7 +24,7 @@ import {
 // 	stateDeriver,
 // 	updateStateProps,
 // } from '@silevis/reactgrid';
-import '@silevis/reactgrid/Styles.css';
+import '@silevis/reactgrid/Styles.css'; // https://www.npmjs.com/package/@silevis/reactgrid
 import './reactgrid.css';
 // import * as Silevis from '@silevis/reactgrid';
 // debugger;

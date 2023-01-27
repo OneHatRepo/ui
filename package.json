@@ -20,13 +20,18 @@
 	},
 	"license": "UNLICENSED",
 	"dependencies": {
+		"@ckeditor/ckeditor5-react": "^5.0.6",
 		"@onehat/data": "^1.9.1",
+		"ckeditor5-custom-build": "file:ckeditor5",
 		"js-cookie": "^3.0.1",
 		"native-base": "^3.4.25",
 		"react-hook-form": "^7.40.0"
 	},
 	"peerDependencies": {
 	  "react": "*",
+	  "react-color": "^2.19.3",
+	  "react-datetime": "^3.2.0",
+	  "react-draggable": "^4.4.5",
 	  "react-dom": "*",
 	  "react-native": "*"
 	},

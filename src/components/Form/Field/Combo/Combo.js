@@ -33,6 +33,7 @@ export function Combo(props) {
 			tooltipRef = null,
 			tooltip = null,
 			menuMinWidth = 150,
+			loadAfterRender = true,
 
 			// withData
 			Repository,
@@ -64,6 +65,7 @@ export function Combo(props) {
 		// isTyping = useRef(false),
 		// typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
+		[isInited, setIsInited] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
 		[isManuallyEnteringText, setIsManuallyEnteringText] = useState(false), // when typing a value, not using trigger/grid
 		[textValue, setTextValue] = useState(''),
@@ -254,6 +256,61 @@ export function Combo(props) {
 					}
 				}
 			}
+		},
+		conformToSelection = (selection) => {
+			// Adjust the value to match the selection
+			const localValue = getIdFromSelection();
+			if (!_.isEqual(localValue, value)) {
+				setValue(localValue);
+			}
+			
+			// Adjust text input to match selection
+			const localTextValue = getDisplayFromSelection(selection);
+			if (!_.isEqual(localTextValue, textValue)) {
+				setTextValue(localTextValue);
+			}
+			setIsManuallyEnteringText(false);
+		},
+		conformToValue = (value) => {
+			// adjust the selection to match the value
+			let newSelection = [];
+			if (Repository) {
+				// Get entity or entities that match value
+				if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
+					if (_.isArray(value)) {
+						newSelection = Repository.getBy((entity) => inArray(entity.id, value));
+					} else {
+						const found = Repository.getById(value);
+						if (found) {
+							newSelection.push(found);
+						}
+					}
+				}
+			} else {
+				// Get data item or items that match value
+				if (!_.isNil(value) && (_.isBoolean(value) || _.isNumber(value) || !_.isEmpty(value))) {
+					let currentValue = value;
+					if (!_.isArray(currentValue)) {
+						currentValue = [currentValue];
+					}
+					_.each(currentValue, (val) => {
+						// Search through data
+						const found = _.find(data, (item) => {
+							if (_.isString(item[idIx]) && _.isString(val)) {
+								return item[idIx].toLowerCase() === val.toLowerCase();
+							}
+							return item[idIx] === val;
+						});
+						if (found) {
+							newSelection.push(found);
+						}
+					});
+				}
+			}
+
+			if (!_.isEqual(newSelection, selection)) {
+				setSelection(newSelection);
+			}
 		};
 
 	if (_.isUndefined(selection)) {
@@ -261,74 +318,49 @@ export function Combo(props) {
 	}
 
 	useEffect(() => {
-		// adjust the selection to match the value
-		let newSelection = [];
-		if (Repository) {
-			// Get entity or entities that match value
-			if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
-				if (_.isArray(value)) {
-					newSelection = Repository.getBy((entity) => inArray(entity.id, value));
-				} else {
-					const found = Repository.getById(value);
-					if (found) {
-						newSelection.push(found);
-					}
-				}
-			}
-		} else {
-			// Get data item or items that match value
-			if (!_.isNil(value) && (_.isBoolean(value) || _.isNumber(value) || !_.isEmpty(value))) {
-				let currentValue = value;
-				if (!_.isArray(currentValue)) {
-					currentValue = [currentValue];
-				}
-				_.each(currentValue, (val) => {
-					// Search through data
-					const found = _.find(data, (item) => {
-						if (_.isString(item[idIx]) && _.isString(val)) {
-							return item[idIx].toLowerCase() === val.toLowerCase();
-						}
-						return item[idIx] === val;
-					});
-					if (found) {
-						newSelection.push(found);
-					}
-				});
-			}
-		}
-
-		if (!_.isEqual(newSelection, selection)) {
-			setSelection(newSelection);
-		}
-	}, [value]);
-
-	useEffect(() => {
-		if (!isRendered) {
-			return () => {};
-		}
-
-		// Adjust the value to match the selection
-		const localValue = getIdFromSelection();
-		if (!_.isEqual(localValue, value)) {
-			setValue(localValue);
-		}
-		
-		// Adjust text input to match selection
-		const localTextValue = getDisplayFromSelection(selection);
-		if (!_.isEqual(localTextValue, textValue)) {
-			setTextValue(localTextValue);
-		}
-		setIsManuallyEnteringText(false);
-	}, [selection, isRendered]);
-
-	useEffect(() => {
+		// on render, focus the input
 		if (!isRendered) {
 			return () => {};
 		}
 		if (autoFocus && !inputRef.current.isFocused()) {
 			inputRef.current.focus();
 		}
-	}, [autoFocus, isRendered]);
+
+		// Then set the selection to match the value
+		if (Repository) {
+			// on initialization, we can't conformToValue if the repository is not yet loaded, 
+			// so do async process to load repo, then conform to value
+			if (!Repository.isLoaded) {
+				if (loadAfterRender || (Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading)) {
+					(async () => {
+						await Repository.load();
+						conformToValue(value);
+					})();
+				}
+			}
+		} else {
+			conformToValue(value);
+		}
+
+		setIsInited(true);
+	}, [isRendered]);
+
+	useEffect(() => {
+		if (!isInited) {
+			return () => {};
+		}
+
+		conformToValue(value);
+
+	}, [value, isInited]);
+
+	useEffect(() => {
+		if (!isInited) {
+			return () => {};
+		}
+
+		conformToSelection(selection);
+	}, [selection, isInited]);
 
 	const refProps = {};
 	if (tooltipRef) {
@@ -464,12 +496,13 @@ export function Combo(props) {
 	return comboComponent;
 }
 
-export default withEvents(
+export default 
+				// withEvents(
 					withData(
 						withValue(
 							withSelection(
 								Combo
 							)
 						)
-					)
-				);
+					);
+				// );

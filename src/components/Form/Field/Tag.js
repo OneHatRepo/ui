@@ -1,15 +1,11 @@
 import {
-	Box,
-} from 'native-base';
-import _ from 'lodash';
+	SELECTION_MODE_MULTI,
+} from '../../../Constants/Selection';
+import Combo from './Combo/Combo';
 
 export default function Tag(props) {
-	const {
-			children,
-			...propsToPass
-		} = props;
-	throw new Error('Not yet implemented');
-	return <Box {...propsToPass}>
-				{children}
-			</Box>;
+	return <Combo
+				selectionMode={SELECTION_MODE_MULTI}
+				{...props}
+			/>;
 }

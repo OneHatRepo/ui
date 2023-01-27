@@ -33,21 +33,25 @@ export default function withValue(WrappedComponent) {
 				}
 			},
 			onChangeSelection = (selection) => {
-				let value = null;
+				let value = null,
+					values;
 				if (selection.length) {
 					if (Repository) {
 						if (selection.length === 1) {
 							value = selection[0].submitValue;
 						} else {
-							value = _.map(selection, (entity) => entity.submitValue);
+							values = _.map(selection, (entity) => entity.submitValue);
 						}
 					} else {
 						if (selection.length === 1) {
 							value = selection[0][idIx];
 						} else {
-							value = _.map(selection, (item) => item[idIx]);
+							values = _.map(selection, (item) => item[idIx]);
 						}
 					}
+				}
+				if (values) {
+					value = values.join(',');
 				}
 				setValueDecorator(value);
 			};

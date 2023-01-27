@@ -10,7 +10,7 @@ import Blank from '../Components/Blank';
 import BooleanCombo from '../Components/Form/Field/Combo/BooleanCombo';
 // import CartButtonWithBadge from '../Components/Buttons/CartButtonWithBadge';
 import CheckboxGroup from '../Components/Form/Field/CheckboxGroup/CheckboxGroup';
-import CKEditor from '../Components/Form/Field/CKEditor';
+import CKEditor from '../Components/Form/Field/CKEditor/CKEditor';
 import Color from '../Components/Form/Field/Color';
 import Combo from '../Components/Form/Field/Combo/Combo';
 // import ComboEditor from '../Components/Form/Field/Combo/ComboEditor';

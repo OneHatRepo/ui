@@ -21,7 +21,7 @@ import {
 	PercentageColumn,
 	PhoneColumn,
 	TreeColumn,
-} from '@sencha/sencha-grid';
+} from '@sencha/sencha-grid'; // https://www.npmjs.com/package/@sencha/sencha-grid
 import '@sencha/sencha-grid/dist/themes/grui.css';
 import testProps from '../../Functions/testProps';
 import useForceUpdate from '../../Hooks/useForceUpdate';
