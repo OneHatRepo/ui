@@ -10,6 +10,14 @@ import _ from 'lodash';
 
 export default function withSelection(WrappedComponent) {
 	return (props) => {
+
+		if (props.setSelection) {
+			// bypass everything, since we're already using withSelection() in hierarchy.
+			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
+			// but we only need it defined once for the whole thing.
+			return <WrappedComponent {...props} />;
+		}
+
 		const
 			{
 				selection,
@@ -28,13 +36,13 @@ export default function withSelection(WrappedComponent) {
 			[localSelection, setLocalSelection] = useState(selection || defaultSelection || []),
 			[isReady, setIsReady] = useState(selection || false),
 			setSelection = (selection) => {
+				setLocalSelection(selection);
 				if (onChangeSelection) {
 					onChangeSelection(selection);
 				}
 				if (fireEvent) {
 					fireEvent('changeSelection', selection);
 				}
-				setLocalSelection(selection);
 			},
 			selectNext = () => {
 				selectDirection(SELECT_DOWN);
@@ -43,12 +51,22 @@ export default function withSelection(WrappedComponent) {
 				selectDirection(SELECT_UP);
 			},
 			selectDirection = (which) => {
-				const { items, max, min, } = getMaxMinSelectionIndices();
+				const { items, max, min, noSelection, } = getMaxMinSelectionIndices();
 				let newIx;
 				if (which === SELECT_DOWN) {
-					newIx = max +1;
+					if (noSelection || max === items.length -1) {
+						// select first
+						newIx = 0;
+					} else {
+						newIx = max +1;
+					}
 				} else if (which === SELECT_UP) {
-					newIx = min -1;
+					if (noSelection || min === 0) {
+						// select last
+						newIx = items.length -1;
+					} else {
+						newIx = min -1;
+					}
 				}
 				if (items[newIx]) {
 					setSelection([items[newIx]]);
@@ -82,11 +100,14 @@ export default function withSelection(WrappedComponent) {
 						currentlySelectedRowIndices.push(ix);
 					}
 				});
+				if (currentlySelectedRowIndices.length === 0) {
+					return { items, noSelection: true, };
+				}
 				const
 					max = Math.max(...currentlySelectedRowIndices),
 					min = Math.min(...currentlySelectedRowIndices);
 				
-				return { items, max, min, };
+				return { items, max, min, noSelection: false, };
 			},
 			selectRangeTo = (item) => {
 				// Select above max or below min to this one

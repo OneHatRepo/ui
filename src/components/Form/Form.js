@@ -335,9 +335,7 @@ function Form(props) {
 							let element = <Element
 												name={name}
 												value={value}
-												setValue={(newValue) => {
-													onChange(newValue);
-												}}
+												onChangeValue={onChange}
 												onBlur={onBlur}
 												selectorId={selectorId}
 												selectorSelected={selectorSelected}

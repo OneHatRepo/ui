@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
-	// Input,
 	Popover,
+	Pressable,
 	Row,
+	Text,
 	Tooltip,
 } from 'native-base';
 import Input from '../Input';
@@ -16,8 +17,8 @@ import emptyFn from '../../../../Functions/emptyFn';
 import { Grid } from '../../../Grid/Grid';
 import IconButton from '../../../Buttons/IconButton';
 import CaretDown from '../../../Icons/CaretDown';
-import _ from 'lodash';
 import inArray from '../../../../Functions/inArray';
+import _ from 'lodash';
 
 // Combo requires the use of HOC withSelection() whenever it's used.
 // The default export is *with* the HOC. A separate *raw* component is
@@ -25,8 +26,6 @@ import inArray from '../../../../Functions/inArray';
 
 export function Combo(props) {
 	const {
-			value,
-			setValue = emptyFn,
 			additionalButtons,
 			autoFocus = false,
 			forceSelection = true,
@@ -34,7 +33,14 @@ export function Combo(props) {
 			tooltip = null,
 			menuMinWidth = 150,
 			loadAfterRender = true,
+			disableDirectEntry = false,
+			disablePagination = true,
+			_input = {},
 
+			// withValue
+			value,
+			setValue,
+			
 			// withData
 			Repository,
 			data,
@@ -50,10 +56,6 @@ export function Combo(props) {
 			selectionMode,
 			selectNext,
 			selectPrev,
-			removeFromSelection,
-			addToSelection,
-			selectRangeTo,
-			isInSelection,
 			getIdFromSelection,
 			getDisplayFromSelection,
 
@@ -119,24 +121,49 @@ export function Combo(props) {
 			}
 			setIsMenuShown(false);
 		},
-		onInputKeyPress = (e) => {
+		toggleMenu = () => {
+			setIsMenuShown(!isMenuShown);
+		},
+		onInputKeyPress = (e, inputValue) => {
+			if (disableDirectEntry) {
+				return;
+			}
 			switch(e.key) {
 				case 'Escape':
-				case 'Enter':
 					hideMenu();
 					break;
+				case 'Enter':
+					e.preventDefault();
+					if (_.isEmpty(inputValue) && !_.isNull(value)) {
+						// User pressed Enter on an empty text field, but value is set to something
+						// This means the user cleared the input and pressed enter, meaning he wants to clear the value
+
+						// clear the value
+						setValue(null);
+						if (isMenuShown) {
+							hideMenu();
+						}
+					} else {
+						toggleMenu();
+					}
+					break;
 				case 'ArrowDown':
+					e.preventDefault();
 					selectNext();
 					break;
 				case 'ArrowUp':
+					e.preventDefault();
 					selectPrev();
 					break;
 				default:
 			}
 		},
 		onInputChangeText = (value) => {
+			if (disableDirectEntry) {
+				return;
+			}
 			setTextValue(value);
-			searchForMatches(value);
+			// searchForMatches(value);
 			// setIsManuallyEnteringText(true);
 
 			// isTyping.current = true;
@@ -151,12 +178,19 @@ export function Combo(props) {
 			const {
 					relatedTarget
 				} = e;
+			
+			// If user clicked on the menu or trigger, ignore this blur
+			if (menuRef.current?.contains(relatedTarget) || triggerRef.current.contains(relatedTarget)) {
+				return;
+			}
+
 			if (!relatedTarget ||
 					(!inputRef.current.contains(relatedTarget) && triggerRef.current !== relatedTarget && (!menuRef.current || !menuRef.current.contains(relatedTarget)))) {
 				hideMenu();
 			}
 			if (textValue === '') {
 				setSelection([]); // delete current selection
+
 			} else if (isManuallyEnteringText) {
 				if (forceSelection) {
 					setSelection([]); // delete current selection
@@ -257,7 +291,7 @@ export function Combo(props) {
 				}
 			}
 		},
-		conformToSelection = (selection) => {
+		conformValueToSelection = (selection) => {
 			// Adjust the value to match the selection
 			const localValue = getIdFromSelection();
 			if (!_.isEqual(localValue, value)) {
@@ -265,13 +299,13 @@ export function Combo(props) {
 			}
 			
 			// Adjust text input to match selection
-			const localTextValue = getDisplayFromSelection(selection);
+			let localTextValue = getDisplayFromSelection(selection);
 			if (!_.isEqual(localTextValue, textValue)) {
 				setTextValue(localTextValue);
 			}
 			setIsManuallyEnteringText(false);
 		},
-		conformToValue = (value) => {
+		conformSelectionToValue = (value) => {
 			// adjust the selection to match the value
 			let newSelection = [];
 			if (Repository) {
@@ -328,18 +362,18 @@ export function Combo(props) {
 
 		// Then set the selection to match the value
 		if (Repository) {
-			// on initialization, we can't conformToValue if the repository is not yet loaded, 
+			// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
 			// so do async process to load repo, then conform to value
 			if (!Repository.isLoaded) {
 				if (loadAfterRender || (Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading)) {
 					(async () => {
 						await Repository.load();
-						conformToValue(value);
+						conformSelectionToValue(value);
 					})();
 				}
 			}
 		} else {
-			conformToValue(value);
+			conformSelectionToValue(value);
 		}
 
 		setIsInited(true);
@@ -350,7 +384,7 @@ export function Combo(props) {
 			return () => {};
 		}
 
-		conformToValue(value);
+		conformSelectionToValue(value);
 
 	}, [value, isInited]);
 
@@ -359,7 +393,7 @@ export function Combo(props) {
 			return () => {};
 		}
 
-		conformToSelection(selection);
+		conformValueToSelection(selection);
 	}, [selection, isInited]);
 
 	const refProps = {};
@@ -368,47 +402,82 @@ export function Combo(props) {
 	}
 	
 	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
-								<Input
-									ref={inputRef}
-									value={textValue}
-									autoSubmit={true}
-									onChangeValue={onInputChangeText}
-									onKeyPress={onInputKeyPress}
-									onBlur={onInputBlur}
-									onClick={onInputClick}
-									onLayout={(e) => {
-										// On web, this is not needed, but on RN it might be, so leave it in for now
-										const {
-												height,
-												width,
-												top,
-												left,
-											} = e.nativeEvent.layout;
-										setWidth(width);
-										setTop(top + height);
-										setLeft(left);
-									}}
-									// onFocus={(e) => {
-									// 	if (isBlocked.current) {
-									// 		return;
-									// 	}
-									// 	if (!isRendered) {
-									// 		return;
-									// 	}
-									// 	showMenu();
-									// }}
-									flex={1}
-									h="100%"
-									m={0}
-									borderTopRightRadius={0}
-									borderBottomRightRadius={0}
-									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-									bg={styles.FORM_COMBO_INPUT_BG}
-									_focus={{
-										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-									}}
-									{...props._input}
-								/>
+								{disableDirectEntry ?
+									<Pressable
+										onPress={toggleMenu}
+										flex={1}
+										h="100%"
+									>
+										<Text
+											ref={inputRef}
+											onLayout={(e) => {
+												// On web, this is not needed, but on RN it might be, so leave it in for now
+												const {
+														height,
+														width,
+														top,
+														left,
+													} = e.nativeEvent.layout;
+												setWidth(width);
+												setTop(top + height);
+												setLeft(left);
+											}}
+											flex={1}
+											h="100%"
+											m={0}
+											p={2}
+											borderWidth={1}
+											borderColor="trueGray.400"
+											borderTopRightRadius={0}
+											borderBottomRightRadius={0}
+											fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
+											bg={styles.FORM_COMBO_INPUT_BG}
+											_focus={{
+												bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
+											}}
+										>{textValue}</Text>
+									</Pressable> :
+									<Input
+										ref={inputRef}
+										value={textValue}
+										autoSubmit={true}
+										onChangeValue={onInputChangeText}
+										onKeyPress={onInputKeyPress}
+										onBlur={onInputBlur}
+										onClick={onInputClick}
+										onLayout={(e) => {
+											// On web, this is not needed, but on RN it might be, so leave it in for now
+											const {
+													height,
+													width,
+													top,
+													left,
+												} = e.nativeEvent.layout;
+											setWidth(width);
+											setTop(top + height);
+											setLeft(left);
+										}}
+										// onFocus={(e) => {
+										// 	if (isBlocked.current) {
+										// 		return;
+										// 	}
+										// 	if (!isRendered) {
+										// 		return;
+										// 	}
+										// 	showMenu();
+										// }}
+										flex={1}
+										h="100%"
+										m={0}
+										borderTopRightRadius={0}
+										borderBottomRightRadius={0}
+										fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
+										bg={styles.FORM_COMBO_INPUT_BG}
+										_focus={{
+											bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
+										}}
+										{..._input}
+									/>}
 								<IconButton
 									ref={triggerRef}
 									_icon={{
@@ -474,6 +543,7 @@ export function Combo(props) {
 													};
 												}}
 												{...props}
+												disablePagination={disablePagination}
 												fireEvent={onEvent}
 												setSelection={(selection) => {
 													// Decorator fn to add local functionality
@@ -482,6 +552,9 @@ export function Combo(props) {
 													hideMenu();
 												}}
 												selectionMode={selectionMode}
+												setValue={(value) => {
+													setValue(value);
+												}}
 											/>
 										</Popover.Body>
 									</Popover.Content>

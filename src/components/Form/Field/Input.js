@@ -29,7 +29,7 @@ function InputElement(props) {
 				setValue(localValue);
 			}
 			if (onKeyPress) {
-				onKeyPress(e);
+				onKeyPress(e, localValue);
 			}
 		},
 		onChangeTextLocal = (value) => {
@@ -63,8 +63,8 @@ function InputElement(props) {
 	if (localValue === null || typeof localValue === 'undefined') {
 		localValue = ''; // If the value is null or undefined, don't let this be an uncontrolled input
 	}
-
-	const theInput = <Input
+	
+	let component = <Input
 						ref={props.outerRef}
 						onChangeText={onChangeTextLocal}
 						_input={{
@@ -79,18 +79,18 @@ function InputElement(props) {
 						{...props}
 						value={localValue}
 					/>;
-	if (!tooltip) {
-		return theInput;
+	if (tooltip) {
+		component = <Tooltip label={tooltip} placement={tooltipPlacement}>
+						{component}
+					</Tooltip>;
 	}
-	return <Tooltip label={tooltip} placement={tooltipPlacement}>
-				{theInput}
-			</Tooltip>;
+	return component;
 }
 
 const
 	InputField = withValue(InputElement),
 	InputForwardRef = React.forwardRef((props, ref) => {
-		return <InputField {...props} outerRef={ref} />;
+		return <InputField {...props} outerRef={ref} component="Input" />;
 	});
 
 export default InputForwardRef;

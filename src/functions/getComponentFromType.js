@@ -37,6 +37,7 @@ import Panel from '../Components/Panel/Panel';
 // import Picker from '../Components/Panel/Picker';
 import RadioGroup from '../Components/Form/Field/RadioGroup/RadioGroup';
 import TabPanel from '../Components/Panel/TabPanel';
+import Tag from '../Components/Form/Field/Combo/Tag';
 import TextArea from '../Components/Form/Field/TextArea';
 import Text from '../Components/Form/Field/Text';
 import TimezonesCombo from '../Components/Form/Field/Combo/TimezonesCombo';
@@ -83,6 +84,7 @@ const
 		// Picker,
 		RadioGroup,
 		TabPanel,
+		Tag,
 		Text,
 		TextArea,
 		TimezonesCombo,

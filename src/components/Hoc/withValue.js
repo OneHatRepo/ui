@@ -1,34 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect, } from 'react';
+import isJson from '../../Functions/isJson';
 import _ from 'lodash';
+
+// This HOC gives the component value props, primarily for a Form Field.
 
 export default function withValue(WrappedComponent) {
 	return (props) => {
+
+		if (props.setValue) {
+			// bypass everything, since we're already using withValue() in hierarchy.
+			// For example, Combo has withValue(), and intenally it uses Input which also has withValue(),
+			// but we only need it defined once for the whole thing.
+			return <WrappedComponent {...props} />;
+		}
+
 		const
 			{
 				onChangeValue,
-				value = null,
-				setValue,
+				value,
 				startingValue = null,
 
 				// withData
 				Repository,
 				idIx,
 			} = props,
-			bypass = !!setValue,
 			[localValue, setLocalValue] = useState(startingValue),
-			setValueDecorator = (newValue) => {
-				if (bypass) {
-					if (newValue === value) {
-						return;
-					}
-					setValue(newValue);
-				} else {
-					if (newValue === localValue) {
-						return;
-					}
-					setLocalValue(newValue);
+			setValue = (newValue) => {
+				if (newValue === localValue) {
+					return;
 				}
+
+				setLocalValue(newValue);
+				
 				if (onChangeValue) {
+					if (_.isArray(newValue)) {
+						// convert from inner value to outer value
+						newValue = JSON.stringify(newValue);
+					}
 					onChangeValue(newValue);
 				}
 			},
@@ -38,9 +46,9 @@ export default function withValue(WrappedComponent) {
 				if (selection.length) {
 					if (Repository) {
 						if (selection.length === 1) {
-							value = selection[0].submitValue;
+							value = selection[0].id;
 						} else {
-							values = _.map(selection, (entity) => entity.submitValue);
+							values = _.map(selection, (entity) => entity.id);
 						}
 					} else {
 						if (selection.length === 1) {
@@ -51,16 +59,29 @@ export default function withValue(WrappedComponent) {
 					}
 				}
 				if (values) {
-					value = values.join(',');
+					value = values;
 				}
-				setValueDecorator(value);
+				setValue(value);
 			};
-			
+
+		useEffect(() => {
+			if (!_.isEqual(value, localValue)) {
+				setLocalValue(value);
+			}
+		}, [value]);
+
+
+		let convertedValue = localValue;
+		if (_.isString(localValue) && isJson(localValue) && !_.isNull(localValue)) {
+			// convert from outer value to inner value
+			convertedValue = JSON.parse(localValue);
+		}
+
 		return <WrappedComponent
-					value={bypass ? value : localValue}
-					setValue={setValueDecorator}
-					onChangeSelection={onChangeSelection}
 					{...props}
+					value={convertedValue}
+					setValue={setValue}
+					onChangeSelection={onChangeSelection}
 				/>;
 	};
 }
