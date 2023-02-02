@@ -18,6 +18,7 @@ export default function withData(WrappedComponent) {
 				setRepository,
 				uniqueRepository = false,
 				model,
+				autoLoad = false,
 
 				// For plain JS data
 				data,
@@ -48,6 +49,12 @@ export default function withData(WrappedComponent) {
 					Repository = await oneHatData.createRepository({ schema });
 				} else {
 					Repository = oneHatData.getRepository(model);
+				}
+
+
+				if (autoLoad && Repository && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
+					await Repository.load();
+					// TODO: Implement some method by which I can detect if Repository is still loading and wait until it's done!
 				}
 	
 				setLocalRepository(Repository);

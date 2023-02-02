@@ -27,14 +27,19 @@ export default function withSelection(WrappedComponent) {
 				autoSelectFirstItem = false,
 				fireEvent,
 
+				// withValue
+				value,
+				setValue,
+
 				// withData
 				Repository,
 				data,
 				idIx,
 				displayIx,
 			} = props,
+			usesWithValue = !!setValue,
 			[localSelection, setLocalSelection] = useState(selection || defaultSelection || []),
-			[isReady, setIsReady] = useState(selection || false),
+			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
 			setSelection = (selection) => {
 				setLocalSelection(selection);
 				if (onChangeSelection) {
@@ -192,29 +197,112 @@ export default function withSelection(WrappedComponent) {
 							return item[displayIx];
 						})
 						.join(', ');
+			},
+			conformValueToSelection = (selection) => {
+				if (!setValue) {
+					return;
+				}
+				// Adjust the value to match the selection
+				const localValue = getIdFromSelection();
+				if (!_.isEqual(localValue, value)) {
+					setValue(localValue);
+				}
+			},
+			conformSelectionToValue = (value) => {
+				// adjust the selection to match the value
+				let newSelection = [];
+				if (Repository) {
+					// Get entity or entities that match value
+					if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
+						if (_.isArray(value)) {
+							newSelection = Repository.getBy((entity) => inArray(entity.id, value));
+						} else {
+							const found = Repository.getById(value);
+							if (found) {
+								newSelection.push(found);
+							}
+						}
+					}
+				} else {
+					// Get data item or items that match value
+					if (!_.isNil(value) && (_.isBoolean(value) || _.isNumber(value) || !_.isEmpty(value))) {
+						let currentValue = value;
+						if (!_.isArray(currentValue)) {
+							currentValue = [currentValue];
+						}
+						_.each(currentValue, (val) => {
+							// Search through data
+							const found = _.find(data, (item) => {
+								if (_.isString(item[idIx]) && _.isString(val)) {
+									return item[idIx].toLowerCase() === val.toLowerCase();
+								}
+								return item[idIx] === val;
+							});
+							if (found) {
+								newSelection.push(found);
+							}
+						});
+					}
+				}
+
+				if (!_.isEqual(newSelection, selection)) {
+					setSelection(newSelection);
+				}
 			};
 
 		useEffect(() => {
-			if (isReady) { // If it's already got a selection, don't do all this!
+			if (isReady) {
 				return () => {};
 			}
 
-			let newSelection = [];
-			if (!Repository) {
-				// set up plain data
-				if (_.isEmpty(localSelection) && autoSelectFirstItem) {
-					newSelection = data[0] ? [data[0]] : [];
+			(async () => {
+
+				if (Repository && usesWithValue && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
+					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
+					// so first load repo, then conform to value
+					await Repository.load();
 				}
-			} else {
-				// set up @onehat/data repository
-				if (_.isEmpty(localSelection) && autoSelectFirstItem) {
-					const entitiesOnPage = Repository.getEntitiesOnPage();
-					newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
+
+				if (usesWithValue && !_.isNil(value)) {
+
+					conformSelectionToValue(value);
+
+				} else if (autoSelectFirstItem) {
+					let newSelection = [];
+					if (Repository) {
+						const entitiesOnPage = Repository.getEntitiesOnPage();
+						newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
+					} else {
+						newSelection = data[0] ? [data[0]] : [];
+					}
+					setSelection(newSelection);
 				}
-			}
-			setSelection(newSelection);
-			setIsReady(true);
+
+				setIsReady(true);
+
+			})();
+
 		}, []);
+
+
+		if (usesWithValue) {
+			useEffect(() => {
+				if (!isReady) {
+					return () => {};
+				}
+	
+				conformSelectionToValue(value);
+	
+			}, [value, isReady]);
+	
+			useEffect(() => {
+				if (!isReady) {
+					return () => {};
+				}
+	
+				conformValueToSelection(selection);
+			}, [selection, isReady]);
+		}
 
 		if (!isReady) {
 			return null;

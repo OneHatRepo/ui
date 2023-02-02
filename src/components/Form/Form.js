@@ -252,7 +252,7 @@ function Form(props) {
 				editorTypeProps = p;
 			}
 			if (type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
-				editorTypeProps.loadAfterRender = true;
+				editorTypeProps.autoLoad = true;
 			}
 			const Element = getComponentFromType(type);
 			let children;

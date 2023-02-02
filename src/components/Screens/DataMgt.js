@@ -115,7 +115,7 @@ export default function DataMgt(props) {
 					isResizable={true}
 					frame={false}
 					disablePagination={true}
-					loadAfterRender={true}
+					autoLoad={true}
 					canColumnsReorder={false}
 					canColumnsResize={false}
 					setRepository={setWestRepository}
@@ -157,7 +157,7 @@ export default function DataMgt(props) {
 					frame={false}
 					isResizable={false}
 					// disablePagination={true}
-					loadAfterRender={!showSelector}
+					autoLoad={!showSelector}
 					uniqueRepository={true}
 					selectorId={showSelector ? westSelector_id : null}
 					selectorSelected={westSelected}

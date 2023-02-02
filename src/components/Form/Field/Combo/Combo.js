@@ -9,15 +9,14 @@ import {
 } from 'native-base';
 import Input from '../Input';
 import styles from '../../../../Constants/Styles';
-import withSelection from '../../../Hoc/withSelection';
 import withData from '../../../Hoc/withData';
 import withEvents from '../../../Hoc/withEvents';
+import withSelection from '../../../Hoc/withSelection';
 import withValue from '../../../Hoc/withValue';
 import emptyFn from '../../../../Functions/emptyFn';
 import { Grid } from '../../../Grid/Grid';
 import IconButton from '../../../Buttons/IconButton';
 import CaretDown from '../../../Icons/CaretDown';
-import inArray from '../../../../Functions/inArray';
 import _ from 'lodash';
 
 // Combo requires the use of HOC withSelection() whenever it's used.
@@ -32,7 +31,6 @@ export function Combo(props) {
 			tooltipRef = null,
 			tooltip = null,
 			menuMinWidth = 150,
-			loadAfterRender = true,
 			disableDirectEntry = false,
 			disablePagination = true,
 			_input = {},
@@ -56,7 +54,6 @@ export function Combo(props) {
 			selectionMode,
 			selectNext,
 			selectPrev,
-			getIdFromSelection,
 			getDisplayFromSelection,
 
 			tooltipPlacement = 'bottom',
@@ -67,7 +64,6 @@ export function Combo(props) {
 		// isTyping = useRef(false),
 		// typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
-		[isInited, setIsInited] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
 		[isManuallyEnteringText, setIsManuallyEnteringText] = useState(false), // when typing a value, not using trigger/grid
 		[textValue, setTextValue] = useState(''),
@@ -290,61 +286,6 @@ export function Combo(props) {
 					}
 				}
 			}
-		},
-		conformValueToSelection = (selection) => {
-			// Adjust the value to match the selection
-			const localValue = getIdFromSelection();
-			if (!_.isEqual(localValue, value)) {
-				setValue(localValue);
-			}
-			
-			// Adjust text input to match selection
-			let localTextValue = getDisplayFromSelection(selection);
-			if (!_.isEqual(localTextValue, textValue)) {
-				setTextValue(localTextValue);
-			}
-			setIsManuallyEnteringText(false);
-		},
-		conformSelectionToValue = (value) => {
-			// adjust the selection to match the value
-			let newSelection = [];
-			if (Repository) {
-				// Get entity or entities that match value
-				if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
-					if (_.isArray(value)) {
-						newSelection = Repository.getBy((entity) => inArray(entity.id, value));
-					} else {
-						const found = Repository.getById(value);
-						if (found) {
-							newSelection.push(found);
-						}
-					}
-				}
-			} else {
-				// Get data item or items that match value
-				if (!_.isNil(value) && (_.isBoolean(value) || _.isNumber(value) || !_.isEmpty(value))) {
-					let currentValue = value;
-					if (!_.isArray(currentValue)) {
-						currentValue = [currentValue];
-					}
-					_.each(currentValue, (val) => {
-						// Search through data
-						const found = _.find(data, (item) => {
-							if (_.isString(item[idIx]) && _.isString(val)) {
-								return item[idIx].toLowerCase() === val.toLowerCase();
-							}
-							return item[idIx] === val;
-						});
-						if (found) {
-							newSelection.push(found);
-						}
-					});
-				}
-			}
-
-			if (!_.isEqual(newSelection, selection)) {
-				setSelection(newSelection);
-			}
 		};
 
 	if (_.isUndefined(selection)) {
@@ -360,41 +301,17 @@ export function Combo(props) {
 			inputRef.current.focus();
 		}
 
-		// Then set the selection to match the value
-		if (Repository) {
-			// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
-			// so do async process to load repo, then conform to value
-			if (!Repository.isLoaded) {
-				if (loadAfterRender || (Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading)) {
-					(async () => {
-						await Repository.load();
-						conformSelectionToValue(value);
-					})();
-				}
-			}
-		} else {
-			conformSelectionToValue(value);
-		}
-
-		setIsInited(true);
 	}, [isRendered]);
 
 	useEffect(() => {
-		if (!isInited) {
-			return () => {};
+		// Adjust text input to match selection
+		let localTextValue = getDisplayFromSelection(selection);
+		if (!_.isEqual(localTextValue, textValue)) {
+			setTextValue(localTextValue);
 		}
+		setIsManuallyEnteringText(false);
+	}, [selection]);
 
-		conformSelectionToValue(value);
-
-	}, [value, isInited]);
-
-	useEffect(() => {
-		if (!isInited) {
-			return () => {};
-		}
-
-		conformValueToSelection(selection);
-	}, [selection, isInited]);
 
 	const refProps = {};
 	if (tooltipRef) {
@@ -424,6 +341,8 @@ export function Combo(props) {
 											}}
 											flex={1}
 											h="100%"
+											numberOfLines={1}
+											ellipsizeMode="head"
 											m={0}
 											p={2}
 											borderWidth={1}

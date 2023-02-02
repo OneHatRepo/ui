@@ -24,7 +24,7 @@ export default function withValue(WrappedComponent) {
 				Repository,
 				idIx,
 			} = props,
-			[localValue, setLocalValue] = useState(startingValue),
+			[localValue, setLocalValue] = useState(startingValue || value),
 			setValue = (newValue) => {
 				if (newValue === localValue) {
 					return;
@@ -70,9 +70,9 @@ export default function withValue(WrappedComponent) {
 			}
 		}, [value]);
 
-
+		
 		let convertedValue = localValue;
-		if (_.isString(localValue) && isJson(localValue) && !_.isNull(localValue)) {
+		if (_.isString(localValue) && isJson(localValue) && !_.isNil(localValue)) {
 			// convert from outer value to inner value
 			convertedValue = JSON.parse(localValue);
 		}

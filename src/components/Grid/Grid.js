@@ -76,7 +76,6 @@ export function Grid(props) {
 			noneFoundText,
 			disableLoadingIndicator = false,
 			showRowExpander = false,
-			loadAfterRender = true,
 			rowExpanderTpl = '',
 			showHeaders = true,
 			showHovers = true,
@@ -438,12 +437,12 @@ export function Grid(props) {
 				setSelection([]);
 			},
 			onChangeFilters = () => {
-				if (!Repository.isAutoLoad && Repository.isLoaded) {
+				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
 			},
 			onChangeSorters = () => {
-				if (!Repository.isAutoLoad && Repository.isLoaded) {
+				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
 			};
@@ -472,7 +471,6 @@ export function Grid(props) {
 		if (!Repository) {
 			return () => {};
 		}
-		
 		if (!disableSelectorSelected) {
 			let matches = selectorSelected?.[0]?.id;
 			if (_.isEmpty(selectorSelected)) {
@@ -480,14 +478,6 @@ export function Grid(props) {
 			}
 			Repository.filter(selectorId, matches, false); // so it doesn't clear existing filters
 		}
-
-		(async () => {
-			if (!Repository.isLoaded) {
-				if (loadAfterRender || (Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading)) {	
-					await Repository.load();
-				}
-			}
-		})();
 
 	}, [selectorId, selectorSelected]);
 

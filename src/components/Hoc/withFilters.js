@@ -313,7 +313,7 @@ export default function withFilters(WrappedComponent) {
 					}
 				});
 				
-				Repository.filter(filters, false); // false so other filters remain
+				Repository.filter(filters, null, false); // false so other filters remain
 
 			}, [filter1Field, filter2Field, filter3Field, filter4Field, filter5Field,
 				filter1Value, filter2Value, filter3Value, filter4Value, filter5Value,

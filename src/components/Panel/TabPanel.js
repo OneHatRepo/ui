@@ -48,12 +48,19 @@ export default function TabPanel(props) {
 		},
 		getButtonProps = () => {
 			const
-				textProps = {},
+				iconProps = {
+					size: 'md',
+				},
+				textProps = {
+					ml: '-8px',
+					mr: '8px',
+				},
 				buttonProps = {
 					bg: styles.TAB_BG,
 					color: styles.TAB_COLOR,
 					fontSize: styles.TAB_FONTSIZE,
 					textAlign: 'left',
+					justifyContent: isCollapsed ? 'center' : 'flex-start',
 				};
 			switch(direction) {
 				case VERTICAL:
@@ -81,6 +88,7 @@ export default function TabPanel(props) {
 			return {
 				buttonProps,
 				textProps,
+				iconProps,
 			};
 		},
 		renderTabs = () => {
@@ -88,6 +96,7 @@ export default function TabPanel(props) {
 				{
 					buttonProps,
 					textProps,
+					iconProps,
 				} = getButtonProps(),
 				buttons = [];
 			
@@ -107,6 +116,7 @@ export default function TabPanel(props) {
 								// {...thisButtonProps}
 								_icon={{
 									color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
+									...iconProps,
 									...tab._icon,
 								}}
 								_hover={{
@@ -121,6 +131,7 @@ export default function TabPanel(props) {
 								onPress={() => setCurrentTab(ix)}
 								leftIcon={<Icon
 											color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
+											{...iconProps}
 											{...tab._icon}
 										/>}
 								{...buttonProps}
