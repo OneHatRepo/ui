@@ -37,7 +37,6 @@ export default function Pagination(props) {
 	}, [Repository]);
 
 	return useMemo(() => {
-
 		const
 			iconButtonProps = {
 				_hover: {
@@ -134,14 +133,13 @@ export default function Pagination(props) {
 					<Text ml={3}>Displaying {pageSpan} of {total}</Text>
 				</Row>;
 	}, [
-		Repository,
+		// Repository,
 		page,
 		pageSize,
 		total,
 		totalPages,
 		pageStart,
 		pageEnd,
-		props,
 	])
 
 

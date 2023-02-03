@@ -29,6 +29,7 @@ export default function YearsCombo(props) {
 
 	return <ArrayCombo
 				data={data}
+				disableDirectEntry={true}
 				{...props}
 			/>;
 }

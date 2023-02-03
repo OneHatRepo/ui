@@ -28,7 +28,7 @@ export default function withData(WrappedComponent) {
 				idIx,
 				displayIx,
 			} = props,
-			propsToPass = _.omit(props, ['model']), // passing 'model' would mess things up if withData gets called twice (e.g. withData(...withData(...)) )
+			propsToPass = _.omit(props, ['model']), // passing 'model' would mess things up if withData gets called twice (e.g. withData(...withData(...)) ), as we'd be trying to recreate Repository twice
 			localIdIx = idIx || (fields && idField ? fields.indexOf(idField) : null),
 			localDisplayIx = displayIx || (fields && displayField ? fields?.indexOf(displayField) : null),
 			[LocalRepository, setLocalRepository] = useState(Repository || null), // simply pass on Repository if it's already supplied
@@ -38,7 +38,7 @@ export default function withData(WrappedComponent) {
 		// If Repository was submitted to this withData(), the useEffect has no effect.
 		// If it's empty, it tries to create a LocalRepository
 		useEffect(() => {
-			if (LocalRepository || !!data) {
+			if (!!LocalRepository || !!data) {
 				return () => {};
 			}
 

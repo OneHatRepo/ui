@@ -28,6 +28,7 @@ export default function PageSizeCombo(props) {
 						onChangeValue={(value) => Repository.setPageSize(value)}
 						tooltip="Page Size"
 						allowNull={false}
+						disableDirectEntry={true}
 					/>
 				</Row>;
 	}, [

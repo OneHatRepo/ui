@@ -12,6 +12,7 @@ const data = [
 export default function IntervalsCombo(props) {
 	return <ArrayCombo
 				data={data}
+				disableDirectEntry={true}
 				{...props}
 			/>;
 }

@@ -25,11 +25,11 @@ export default function withContextMenu(WrappedComponent) {
 				selection,
 				setSelection, // in case it's ever needed!
 			} = props,
+			[isReady, setIsReady] = useState(false),
 			[isContextMenuShown, setIsContextMenuShown] = useState(false),
 			[contextMenuX, setContextMenuX] = useState(0),
 			[contextMenuY, setContextMenuY] = useState(0),
 			[contextMenuItemComponents, setContextMenuItemComponents] = useState([]),
-
 			onContextMenu = (entity, rowIx, e, selection, setSelection) => {
 				if (disableContextMenu) {
 					return;
@@ -99,7 +99,15 @@ export default function withContextMenu(WrappedComponent) {
 												>id: {selection?.[0]?.id}</Text>);
 			}
 			setContextMenuItemComponents(contextMenuItemComponents);
+			
+			if (!isReady) {
+				setIsReady(true);
+			}
 		}, [contextMenuItems, setIsContextMenuShown]);
+
+		if (!isReady) {
+			return null;
+		}
 
 		return <>
 					<WrappedComponent
@@ -110,7 +118,7 @@ export default function withContextMenu(WrappedComponent) {
 						isOpen={isContextMenuShown && !disableContextMenu}
 						onClose={() => setIsContextMenuShown(false)}
 					>
-						<Column bg="#fff" w={160} position="absolute" top={contextMenuY} left={contextMenuX}>
+						<Column bg="#fff" w={180} position="absolute" top={contextMenuY} left={contextMenuX}>
 							{contextMenuItemComponents}
 						</Column>
 					</Modal>

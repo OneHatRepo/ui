@@ -1,9 +1,9 @@
 import {
 	Column,
-	IconButton,
 	Row,
 	Text,
 } from 'native-base';
+import IconButton from '../Buttons/IconButton';
 import Rotate from '../Icons/Rotate';
 
 export default function NoRecordsFound(props) {

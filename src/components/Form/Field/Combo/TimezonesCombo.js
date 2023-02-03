@@ -426,6 +426,7 @@ const data = [
 export default function TimezonesCombo(props) {
 	return <ArrayCombo
 				data={data}
+				disableDirectEntry={true}
 				{...props}
 			/>;
 }

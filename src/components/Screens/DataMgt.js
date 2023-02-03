@@ -44,9 +44,8 @@ export default function DataMgt(props) {
 		[isWestCollapsed, setIsWestCollapsed] = useState(westStartsCollapsed),
 		[isEastCollapsed, setIsEastCollapsed] = useState(eastStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
-		[westRepository, setWestRepository] = useState(),
-		[westSelected, setWestSelectedRaw] = useState(),
-		[centerSelected, setCenterSelected] = useState(),
+		[westSelected, setWestSelectedRaw] = useState([]),
+		[centerSelected, setCenterSelected] = useState([]),
 		setWestSelected = (selected) => {
 			setWestSelectedRaw(selected);
 			setCenterSelected(); // clear selection in center
@@ -118,8 +117,6 @@ export default function DataMgt(props) {
 					autoLoad={true}
 					canColumnsReorder={false}
 					canColumnsResize={false}
-					setRepository={setWestRepository}
-					Repository={westRepository}
 					uniqueRepository={true}
 					selectionMode={SELECTION_MODE_SINGLE}
 					selection={westSelected}
@@ -133,7 +130,6 @@ export default function DataMgt(props) {
 		westTitle,
 		westWidth,
 		westStartsCollapsed,
-		westRepository,
 		westSelected,
 		westSelected?.hash,
 		westProps,

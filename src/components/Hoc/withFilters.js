@@ -40,6 +40,7 @@ export default function withFilters(WrappedComponent) {
 		
 		if (useFilters && Repository) {
 			const
+				[isReady, setIsReady] = useState(false),
 				[isFilterSelectorShown, setIsFilterSelectorShown] = useState(false),
 				[filter1Field, setFilter1Field] = useState(filter1StartingField || Repository?.getSchema().model.defaultFilters?.[0] || null),
 				[filter2Field, setFilter2Field] = useState(filter2StartingField || Repository?.getSchema().model.defaultFilters?.[1] || null),
@@ -282,7 +283,6 @@ export default function withFilters(WrappedComponent) {
 					filters = [],
 					newFilterFields = [];
 
-
 				// For each filter field that is set, add a real filter for it
 				if (filter1Field) {
 					setFiltersOn(0, filters, newFilterFields);
@@ -309,15 +309,23 @@ export default function withFilters(WrappedComponent) {
 				// Go through previous filterFields see if any are no longer used. If no longer used, set it to null so it'll be deleted
 				_.each(filterFields, (filterField) => {
 					if (!inArray(filterField, newFilterFields)) {
-						filters[filterField] = null;
+						filters.push({ name: filterField, value: null, });
 					}
 				});
 				
 				Repository.filter(filters, null, false); // false so other filters remain
 
+				if (!isReady) {
+					setIsReady(true);
+				}
+
 			}, [filter1Field, filter2Field, filter3Field, filter4Field, filter5Field,
 				filter1Value, filter2Value, filter3Value, filter4Value, filter5Value,
 				filterQValue,]);
+
+			if (!isReady) {
+				return null;
+			}
 
 
 			let filterComboProps = {};

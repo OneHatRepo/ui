@@ -52,6 +52,7 @@ export default function withPresetButtons(WrappedComponent) {
 				userCanEdit = true,
 				userCanView = true,
 			} = props,
+			[isReady, setIsReady] = useState(false),
 			[localContextMenuItems, setLocalContextMenuItems] = useState([]),
 			[localAdditionalToolbarButtons, setLocalAdditionalToolbarButtons] = useState([]),
 			[localColumnsConfig, setLocalColumnsConfig] = useState([]),
@@ -206,7 +207,14 @@ export default function withPresetButtons(WrappedComponent) {
 
 		useEffect(() => {
 			generatePresetButtons();
+			if (!isReady) {
+				setIsReady(true);
+			}
 		}, [selection, localColumnsConfig]);
+
+		if (!isReady) {
+			return null;
+		}
 	
 		const
 			contextMenuItemsToPass = [

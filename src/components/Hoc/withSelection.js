@@ -92,6 +92,11 @@ export default function withSelection(WrappedComponent) {
 				}
 				setSelection(newSelection);
 			},
+			deselectAll = () => {
+				if (!_.isEmpty(localSelection)) {
+					setSelection([]);
+				}
+			},
 			getMaxMinSelectionIndices = () => {
 				let items,
 					currentlySelectedRowIndices = [];
@@ -198,7 +203,7 @@ export default function withSelection(WrappedComponent) {
 						})
 						.join(', ');
 			},
-			conformValueToSelection = (selection) => {
+			conformValueToSelection = () => {
 				if (!setValue) {
 					return;
 				}
@@ -208,7 +213,7 @@ export default function withSelection(WrappedComponent) {
 					setValue(localValue);
 				}
 			},
-			conformSelectionToValue = (value) => {
+			conformSelectionToValue = () => {
 				// adjust the selection to match the value
 				let newSelection = [];
 				if (Repository) {
@@ -245,7 +250,7 @@ export default function withSelection(WrappedComponent) {
 					}
 				}
 
-				if (!_.isEqual(newSelection, selection)) {
+				if (!_.isEqual(newSelection, localSelection)) {
 					setSelection(newSelection);
 				}
 			};
@@ -265,7 +270,7 @@ export default function withSelection(WrappedComponent) {
 
 				if (usesWithValue && !_.isNil(value)) {
 
-					conformSelectionToValue(value);
+					conformSelectionToValue();
 
 				} else if (autoSelectFirstItem) {
 					let newSelection = [];
@@ -291,7 +296,7 @@ export default function withSelection(WrappedComponent) {
 					return () => {};
 				}
 	
-				conformSelectionToValue(value);
+				conformSelectionToValue();
 	
 			}, [value, isReady]);
 	
@@ -300,7 +305,7 @@ export default function withSelection(WrappedComponent) {
 					return () => {};
 				}
 	
-				conformValueToSelection(selection);
+				conformValueToSelection();
 			}, [selection, isReady]);
 		}
 
@@ -317,6 +322,7 @@ export default function withSelection(WrappedComponent) {
 					selectPrev={selectPrev}
 					removeFromSelection={removeFromSelection}
 					addToSelection={addToSelection}
+					deselectAll={deselectAll}
 					selectRangeTo={selectRangeTo}
 					isInSelection={isInSelection}
 					getIdFromSelection={getIdFromSelection}

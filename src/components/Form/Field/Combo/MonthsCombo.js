@@ -18,6 +18,7 @@ const data = [
 export default function MonthsCombo(props) {
 	return <ArrayCombo
 				data={data}
+				disableDirectEntry={true}
 				{...props}
 			/>;
 }

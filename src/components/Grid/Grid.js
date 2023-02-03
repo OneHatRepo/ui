@@ -115,6 +115,7 @@ export function Grid(props) {
 			selectionMode,
 			removeFromSelection,
 			addToSelection,
+			deselectAll,
 			selectRangeTo,
 			isInSelection,
 			noSelectorMeansNoResults = false,
@@ -131,12 +132,9 @@ export function Grid(props) {
 
 		} = props,
 		forceUpdate = useForceUpdate(),
-		headerRef = useRef(),
 		gridRef = useRef(),
 		[isReady, setIsReady] = useState(false),
-		[isRendered, setIsRendered] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[headerWidth, setHeaderWidth] = useState('100%'),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		setLocalColumnsConfig = (config) => {
 			setLocalColumnsConfigRaw(config);
@@ -423,9 +421,11 @@ export function Grid(props) {
 			return localColumnsConfig;
 		};
 
-		if (!Repository) {
+		if (!isReady) {
 			setLocalColumnsConfig(calculateLocalColumnsConfig());
 			setIsReady(true);
+		}
+		if (!Repository) {
 			return () => {};
 		}
 
@@ -433,9 +433,6 @@ export function Grid(props) {
 		const
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false),
-			resetSelection = () => {
-				setSelection([]);
-			},
 			onChangeFilters = () => {
 				if (!Repository.isAutoLoad) {
 					Repository.reload();
@@ -449,23 +446,21 @@ export function Grid(props) {
 
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
-		Repository.ons(['changePage', 'changePageSize',], resetSelection);
+		Repository.ons(['changePage', 'changePageSize',], deselectAll);
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
 
-		setLocalColumnsConfig(calculateLocalColumnsConfig());
-		setIsReady(true);
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
-			Repository.offs(['changePage', 'changePageSize',], resetSelection);
+			Repository.offs(['changePage', 'changePageSize',], deselectAll);
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
 		};
-	}, []);
+	}, [deselectAll]);
 
 	useEffect(() => {
 		if (!Repository) {
@@ -489,12 +484,7 @@ export function Grid(props) {
 
 	// Actual data to show in the grid
 	const entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data;
-	let rowData = [];
-	if (entities) {
-		rowData = [...entities];
-	} else if (data) {
-		rowData = [...data];
-	}
+	let rowData = _.clone(entities); // don't use the original array, make a new one so alterations to it are temporary
 	if (showHeaders) {
 		rowData.unshift({ id: 'headerRow' });
 	}
@@ -512,15 +502,13 @@ export function Grid(props) {
 				{...testProps('Grid')}
 				flex={1}
 				w="100%"
-				onLayout = {() => setIsRendered(true)}
 			>
 				{topToolbar}
 
-				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => setSelection([])}>
+				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={deselectAll}>
 					{!entities.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
 						<FlatList
 							ref={gridRef}
-							width={headerWidth}
 							// ListHeaderComponent={listHeaderComponent}
 							// ListFooterComponent={listFooterComponent}
 							scrollEnabled={true}
@@ -561,13 +549,13 @@ export function Grid(props) {
 
 export const WindowedGridEditor = withAlert(
 									withEvents(
-										// withData(
+										withData(
 											withMultiSelection(
 												withSelection(
 													withWindowedEditor(
-														withPresetButtons(
-															withContextMenu(
-																withFilters(
+														withFilters(
+															withPresetButtons(
+																withContextMenu(
 																	Grid
 																)
 															)
@@ -575,13 +563,13 @@ export const WindowedGridEditor = withAlert(
 													)
 												)
 											)
-										// )
+										)
 									)
 								);
 
 export const InlineGridEditor = withAlert(
 									withEvents(
-										// withData(
+										withData(
 											withMultiSelection(
 												withSelection(
 													withInlineEditor(
@@ -595,7 +583,7 @@ export const InlineGridEditor = withAlert(
 													)
 												)
 											)
-										// )
+										)
 									)
 								);
 

@@ -5,7 +5,6 @@ import {
 	EDITOR_TYPE_INLINE,
 	EDITOR_TYPE_WINDOWED,
 } from '../../Constants/EditorTypes';
-import withData from '../Hoc/withData';
 import _ from 'lodash';
 
 export function GridPanel(props) {
@@ -16,21 +15,31 @@ export function GridPanel(props) {
 		} = props,
 		originalTitle = props.title,
 		WhichGrid = (editorType === EDITOR_TYPE_INLINE) ? InlineGridEditor : Grid,
+		[isReady, setIsReady] = useState(disableTitleChange),
 		[title, setTitle] = useState(originalTitle);
 
 	useEffect(() => {
 		if (!disableTitleChange && originalTitle) {
-			if (selectorSelected?.[0]) {
-				setTitle(originalTitle + ' for ' + selectorSelected[0].displayValue);
-			} else {
-				setTitle(originalTitle);
+			let newTitle = originalTitle;
+			if (selectorSelected?.[0]?.displayValue) {
+				newTitle = originalTitle + ' for ' + selectorSelected[0].displayValue;
+			}
+			if (newTitle !== title) {
+				setTitle(newTitle);
 			}
 		}
+		if (!isReady) {
+			setIsReady(true);
+		}
 	}, [selectorSelected, disableTitleChange, originalTitle]);
+
+	if (!isReady) {
+		return null;
+	}
 
 	return <Panel {...props} title={title}>
 				<WhichGrid {...props} />
 			</Panel>;
 }
 
-export default withData(GridPanel);
+export default GridPanel;
