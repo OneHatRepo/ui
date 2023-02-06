@@ -6,7 +6,11 @@ import {
 	Text,
 	Tooltip,
 } from 'native-base';
-import { SketchPicker } from 'react-color'
+import { SketchPicker } from 'react-color';
+import {
+	UI_MODE_WEB,
+} from '../../../Constants/UiModes';
+import UiConfig from '../../../UiConfig';
 import Input from '../Field/Input';
 import styles from '../../../Constants/Styles';
 import withValue from '../../Hoc/withValue';
@@ -34,7 +38,7 @@ export function ColorElement(props) {
 				return;
 			}
 
-			if (triggerRef.current?.getBoundingClientRect) {
+			if (UiConfig.mode === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const 
 					triggerRect = triggerRef.current.getBoundingClientRect(),

@@ -256,11 +256,15 @@ function Form(props) {
 			}
 			const Element = getComponentFromType(type);
 			let children;
+
 			if (inArray(type, ['Column', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
-				children = _.map(items, (item, ix) => buildNextLayer(item, ix, item.defaults));
+				const defaults = item.defaults;
+				children = _.map(items, (item, ix) => {
+					return buildNextLayer(item, ix, defaults);
+				});
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 			
@@ -279,7 +283,11 @@ function Form(props) {
 									{...propsToPass}
 								/>;
 				if (label) {
-					element = <><Label>{label}</Label>{element}</>;
+					const labelProps = {};
+					if (defaults?.labelWidth) {
+						labelProps.w = defaults.labelWidth;
+					}
+					element = <><Label {...labelProps}>{label}</Label>{element}</>;
 				}
 				return <Row key={ix} px={2} pb={1}>{element}</Row>;
 			}
@@ -357,7 +365,14 @@ function Form(props) {
 								}
 							}
 							if (label && editorType !== EDITOR_TYPE_INLINE) {
-								element = <><Label>{label}</Label>{element}</>;
+								const labelProps = {};
+								if (defaults?.labelWidth) {
+									labelProps.w = defaults.labelWidth;
+								}
+								element = <Row w="100%">
+												<Label {...labelProps}>{label}</Label>
+												{element}
+											</Row>;
 							}
 
 							const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;

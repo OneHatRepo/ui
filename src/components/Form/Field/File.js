@@ -6,6 +6,11 @@ import {
 	Text,
 	Tooltip,
 } from 'native-base';
+import {
+	UI_MODE_WEB,
+	UI_MODE_REACT_NATIVE,
+} from '../../../Constants/UiModes';
+import UiConfig from '../../../UiConfig';
 import styles from '../../../Constants/Styles';
 import {
 	FILE_MODE_IMAGE,
@@ -151,9 +156,11 @@ function FileElement(props) {
 		setLocalControl(localControl);
 		setLocalFilename(localFilename);
 	}, []);
-	
-	console.log('value', value);
-	
+
+	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+		throw new Error('Not yet implemented for RN.');
+	}
+		
 	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
 				<Tooltip label={tooltip} placement={tooltipPlacement}>
 					<Row flex={1} h={10} alignItems="center">

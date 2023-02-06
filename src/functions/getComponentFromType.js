@@ -41,6 +41,7 @@ import Tag from '../Components/Form/Field/Combo/Tag';
 import TextArea from '../Components/Form/Field/TextArea';
 import Text from '../Components/Form/Field/Text';
 import TimezonesCombo from '../Components/Form/Field/Combo/TimezonesCombo';
+import Toggle from '../Components/Form/Field/Toggle';
 import Toolbar from '../Components/Toolbar/Toolbar';
 import YearsCombo from '../Components/Form/Field/Combo/YearsCombo';
 import _ from 'lodash';
@@ -88,6 +89,7 @@ const
 		Text,
 		TextArea,
 		TimezonesCombo,
+		Toggle,
 		Toolbar,
 		YearsCombo,
 	};

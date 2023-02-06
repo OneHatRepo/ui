@@ -17,6 +17,10 @@ import {
 import Datetime from 'react-datetime'; // https://www.npmjs.com/package/react-datetime
 import 'react-datetime/css/react-datetime.css';
 import './datetime.css';
+import {
+	UI_MODE_WEB,
+} from '../../../Constants/UiModes';
+import UiConfig from '../../../UiConfig';
 import Formatters from '@onehat/data/src/Util/Formatters';
 import Parsers from '@onehat/data/src/Util/Parsers';
 import Input from '../Field/Input';
@@ -50,7 +54,7 @@ export function DateElement(props) {
 			if (isPickerShown) {
 				return;
 			}
-			if (triggerRef.current?.getBoundingClientRect) {
+			if (UiConfig.mode === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const 
 					triggerRect = triggerRef.current.getBoundingClientRect(),

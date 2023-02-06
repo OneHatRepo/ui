@@ -9,6 +9,11 @@ import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions';
+import {
+	UI_MODE_WEB,
+	UI_MODE_REACT_NATIVE,
+} from '../../Constants/UiModes';
+import UiConfig from '../../UiConfig';
 import Header from './Header';
 import withCollapsible from '../Hoc/withCollapsible';
 import emptyFn from '../../Functions/emptyFn';
@@ -19,6 +24,10 @@ import _ from 'lodash';
 // VERTICAL means the Panel collapses along the Y axis.
 
 function Panel(props) {
+
+	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+		throw new Error('Not yet implemented for RN.');
+	}
 	const {
 			isDisabled = false,
 			frame = false,

@@ -5,9 +5,12 @@ import {
 import styles from '../../Constants/Styles';
 
 export default function Label(props) {
+	const {
+			w = styles.FORM_LABEL_WIDTH,
+		} = props;
 	return <Row
-				w={styles.FORM_LABEL_WIDTH}
-				maxWidth="30%"
+				w={w}
+				// maxWidth="30%"
 				alignItems="center"
 				pl={2}
 				{...props}

@@ -8,12 +8,20 @@ import {
 import {
 	EDITOR_TYPE_INLINE,
 } from '../../Constants/EditorTypes';
+import {
+	UI_MODE_WEB,
+	UI_MODE_REACT_NATIVE,
+} from '../../Constants/UiModes';
+import UiConfig from '../../UiConfig';
 import Form from '../Form/Form';
 import withEditor from './withEditor';
 import styles from '../../Constants/Styles';
 import _ from 'lodash';
 
 export default function withInlineEditor(WrappedComponent) {
+	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+		throw new Error('Not yet implemented for RN.');
+	}
 	return withEditor((props) => {
 		const {
 				useEditor = false,

@@ -120,7 +120,7 @@ export default function TabPanel(props) {
 									...tab._icon,
 								}}
 								_hover={{
-									bg: styles.TAB_HOVER_BG,
+									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
 								}}
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
 								tooltip={tab.title}
@@ -137,7 +137,7 @@ export default function TabPanel(props) {
 								{...buttonProps}
 								{...thisButtonProps}
 								_hover={{
-									bg: styles.TAB_HOVER_BG,
+									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
 								}}
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
 							>

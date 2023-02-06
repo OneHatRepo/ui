@@ -1,0 +1,2 @@
+export const UI_MODE_WEB = 'UI_MODE_WEB';
+export const UI_MODE_REACT_NATIVE = 'UI_MODE_REACT_NATIVE';

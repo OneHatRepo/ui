@@ -3,6 +3,11 @@ import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions';
+import {
+	UI_MODE_WEB,
+	UI_MODE_REACT_NATIVE,
+} from '../../Constants/UiModes';
+import UiConfig from '../../UiConfig';
 import Draggable from 'react-draggable'; // https://github.com/react-grid-layout/react-draggable
 import useBlocking from '../../Hooks/useBlocking';
 import {
@@ -15,6 +20,10 @@ import {
 
 export default function withDraggable(WrappedComponent) {
 	return (props) => {
+
+		if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+			throw new Error('Not yet implemented for RN.');
+		}
 		const {
 				// extract and pass
 				onDragStart,

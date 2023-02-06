@@ -13,11 +13,21 @@ import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions';
+import {
+	UI_MODE_WEB,
+	UI_MODE_REACT_NATIVE,
+} from '../../Constants/UiModes';
+import UiConfig from '../../UiConfig';
 import styles from '../../Constants/Styles';
 import emptyFn from '../../Functions/emptyFn';
 import IconButton from '../Buttons/IconButton';
 
 export default function Header(props) {
+	
+	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+		throw new Error('Not yet implemented for RN.');
+	}
+
 	const {
 			testID = 'Header',
 			title = '',

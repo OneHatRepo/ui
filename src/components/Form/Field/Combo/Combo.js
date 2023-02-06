@@ -7,6 +7,10 @@ import {
 	Text,
 	Tooltip,
 } from 'native-base';
+import {
+	UI_MODE_WEB,
+} from '../../../../Constants/UiModes';
+import UiConfig from '../../../../UiConfig';
 import Input from '../Input';
 import styles from '../../../../Constants/Styles';
 import withData from '../../../Hoc/withData';
@@ -75,7 +79,7 @@ export function Combo(props) {
 			if (isMenuShown) {
 				return;
 			}
-			if (inputRef.current.getBoundingClientRect) {
+			if (UiConfig.mode === UI_MODE_WEB && inputRef.current.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const
 					rect = inputRef.current.getBoundingClientRect(),

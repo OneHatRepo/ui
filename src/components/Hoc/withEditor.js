@@ -39,7 +39,7 @@ export default function withEditor(WrappedComponent) {
 				}
 				const
 					defaultValues = Repository.getSchema().model.defaultValues,
-					entity = await Repository.add(defaultValues);
+					entity = await Repository.add(defaultValues, false, true, true);
 				setSelection([entity]);
 				setIsEditorViewOnly(false);
 				setIsEditorShown(true);

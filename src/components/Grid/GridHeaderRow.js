@@ -12,6 +12,10 @@ import {
 import {
 	HORIZONTAL,
 } from '../../Constants/Directions';
+import {
+	UI_MODE_WEB,
+} from '../../Constants/UiModes';
+import UiConfig from '../../UiConfig';
 import styles from '../../Constants/Styles';
 import useBlocking from '../../Hooks/useBlocking';
 import AngleRight from '../Icons/AngleRight';
@@ -24,14 +28,16 @@ import _ from 'lodash';
 // This was broken out from Grid simply so we can memoize it
 
 export default function GridHeaderRow(props) {
+	let {
+			canColumnsReorder,
+			canColumnsResize,
+		} = props;
 	const {
 			Repository,
 			columnsConfig,
 			setColumnsConfig,
 			hideNavColumn,
 			canColumnsSort,
-			canColumnsReorder,
-			canColumnsResize,
 			setSelection,
 			gridRef,
 			isHovered,
@@ -263,6 +269,11 @@ export default function GridHeaderRow(props) {
 		}
 	}, [columnsConfig]);
 	
+	if (UiConfig.mode !== UI_MODE_WEB) {
+		canColumnsReorder = false;
+		canColumnsResize = false;
+	}
+
 	return useMemo(() => {
 		const renderHeaders = () => {
 				const

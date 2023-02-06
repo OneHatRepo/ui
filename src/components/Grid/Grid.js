@@ -47,7 +47,7 @@ import _ from 'lodash';
 		// [ ] Show inline editor for selected row
 		// Dragging of window (see withWindowedEditor)
 	// Rows
-		// Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
+		// [ ] Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
 			// state to keep track of current ordering
 			// If it's reorderable, add reorder drag handle column
 	// custom cell types
@@ -82,6 +82,7 @@ export function Grid(props) {
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
+			canRowsReorder = false,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disablePagination = false,
 			bottomToolbar = 'pagination',
@@ -346,6 +347,7 @@ export function Grid(props) {
 										hideNavColumn={hideNavColumn}
 										bg={bg}
 										item={item}
+										canReorder={canRowsReorder}
 									/>;
 						}}
 					</Pressable>;
