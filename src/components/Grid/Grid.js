@@ -3,6 +3,7 @@ import {
 	Column,
 	FlatList,
 	Pressable,
+	Icon,
 	Row,
 	Text,
 } from 'native-base';
@@ -14,6 +15,9 @@ import styles from '../../Constants/Styles';
 import {
 	v4 as uuid,
 } from 'uuid';
+import {
+	VERTICAL,
+} from '../../Constants/Directions';
 import useForceUpdate from '../../Hooks/useForceUpdate';
 import withContextMenu from '../Hoc/withContextMenu';
 import withAlert from '../Hoc/withAlert';
@@ -27,11 +31,13 @@ import withWindowedEditor from '../Hoc/withWindowedEditor';
 import withInlineEditor from '../Hoc/withInlineEditor';
 import testProps from '../../Functions/testProps';
 import GridHeaderRow from './GridHeaderRow';
-import GridRow from './GridRow';
+import GridRow, { ReorderableGridRow } from './GridRow';
 import IconButton from '../Buttons/IconButton';
 import PaginationToolbar from '../Toolbar/PaginationToolbar';
 import NoRecordsFound from './NoRecordsFound';
 import Toolbar from '../Toolbar/Toolbar';
+import NoReorderRows from '../Icons/NoReorderRows';
+import ReorderRows from '../Icons/ReorderRows';
 import _ from 'lodash';
 
 // Grid requires the use of HOC withSelection() whenever it's used.
@@ -136,7 +142,9 @@ export function Grid(props) {
 		gridRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
+		[isReorderMode, setIsReorderMode] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
+		[dragRowSlot, setDragRowSlot] = useState(null),
 		setLocalColumnsConfig = (config) => {
 			setLocalColumnsConfigRaw(config);
 			if (onChangeColumnsConfig) {
@@ -221,33 +229,44 @@ export function Grid(props) {
 					},
 					mx: 1,
 					px: 3,
-				};
-			return _.map(additionalToolbarButtons, (config, ix) => {
-				let {
-						text,
-						handler,
-						icon = null,
-						isDisabled = false,
-					} = config;
-				if (icon) {
-					const iconProps = {
-						alignSelf: 'center',
-						size: styles.GRID_TOOLBAR_ITEMS_ICON_SIZE,
-						color: isDisabled ? styles.GRID_TOOLBAR_ITEMS_DISABLED_COLOR : styles.GRID_TOOLBAR_ITEMS_COLOR,
-						h: 20,
-						w: 20,
-					};
-					icon = React.cloneElement(icon, {...iconProps});
-				}
-				return <IconButton
-							key={ix}
-							{...iconButtonProps}
-							onPress={handler}
-							icon={icon}
-							isDisabled={isDisabled}
-							tooltip={text}
-						/>;
-			});
+				},
+				iconProps = {
+					alignSelf: 'center',
+					size: styles.GRID_TOOLBAR_ITEMS_ICON_SIZE,
+					h: 20,
+					w: 20,
+				},
+				items = _.map(additionalToolbarButtons, (config, ix) => {
+					let {
+							text,
+							handler,
+							icon = null,
+							isDisabled = false,
+						} = config;
+					if (icon) {
+						const thisIconProps = {
+							color: isDisabled ? styles.GRID_TOOLBAR_ITEMS_DISABLED_COLOR : styles.GRID_TOOLBAR_ITEMS_COLOR,
+						};
+						icon = React.cloneElement(icon, {...iconProps, ...thisIconProps});
+					}
+					return <IconButton
+								key={ix}
+								{...iconButtonProps}
+								onPress={handler}
+								icon={icon}
+								isDisabled={isDisabled}
+								tooltip={text}
+							/>;
+				});
+			if (canRowsReorder) {
+				items.unshift(<IconButton
+					key="reorderBtn"
+					{...iconButtonProps}
+					onPress={() => setIsReorderMode(!isReorderMode)}
+					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
+				/>);
+			}
+			return items;
 		},
 		renderRow = (row) => {
 			if (row.item.isDestroyed) {
@@ -320,7 +339,7 @@ export function Grid(props) {
 											canColumnsReorder={canColumnsReorder}
 											canColumnsResize={canColumnsResize}
 											setSelection={setSelection}
-											gridRef={gridRef}
+											gridRef={gridRef.current}
 											isHovered={isHovered}
 										/>;
 							}
@@ -339,7 +358,11 @@ export function Grid(props) {
 									bg = styles.GRID_ROW_BG;
 								}
 							}
-							return <GridRow
+							let WhichGridRow = GridRow;
+							if (canRowsReorder && isReorderMode) {
+								WhichGridRow = ReorderableGridRow;
+							}
+							return <WhichGridRow
 										columnsConfig={localColumnsConfig}
 										columnProps={columnProps}
 										fields={fields}
@@ -347,10 +370,198 @@ export function Grid(props) {
 										hideNavColumn={hideNavColumn}
 										bg={bg}
 										item={item}
-										canReorder={canRowsReorder}
+
+										mode={VERTICAL}
+										onDragStart={onRowReorderDragStart}
+										onDrag={onRowReorderDrag}
+										onDragStop={onRowReorderDragStop}
+										proxyParent={gridRef.current?.getScrollableNode().children[0]}
+										getProxy={(node) => {
+											const
+												columnHeader = node.parentElement,
+												columnHeaderRect = columnHeader.getBoundingClientRect(),
+												proxy = columnHeader.cloneNode(true);
+											
+											proxy.style.top = columnHeaderRect.top + 'px';
+											proxy.style.left = columnHeaderRect.left + 'px';
+											proxy.style.height = columnHeaderRect.height + 'px';
+											proxy.style.width = columnHeaderRect.width + 'px';
+											proxy.style.display = 'flex';
+											proxy.style.backgroundColor = '#ddd';
+											return proxy;
+										}}
 									/>;
 						}}
 					</Pressable>;
+		},
+		onRowReorderDragStart = (info, e, proxy, node) => {
+			// debugger;
+			// console.log('onRowReorderDragStart', info, e, proxy, node);
+			const
+				proxyRect = proxy.getBoundingClientRect(),
+				rowContainer = node.parentElement.parentElement,
+				rowContainers = _.filter(rowContainer.parentElement.children, (childNode) => {
+					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
+				}),
+				currentY = proxyRect.top, // top position of pointer
+				headerRowIx = showHeaders ? 0 : null,
+				firstActualRowIx = showHeaders ? 1 : 0;
+		
+			// Figure out which index the user wants
+			let newIx = 0;
+			_.each(rowContainers, (child, ix, all) => {
+				const
+					rect = child.getBoundingClientRect(), // rect of the rowContainer of this iteration
+					{
+						top,
+						bottom,
+						height,
+					} = rect,
+					halfHeight = height / 2;
+
+				if (ix === headerRowIx || child === proxy) {
+					return;
+				}
+				if (ix === firstActualRowIx) {
+					// first row
+					if (currentY < top + halfHeight) {
+						newIx = firstActualRowIx;
+						return false;
+					} else if (currentY < bottom) {
+						newIx = firstActualRowIx + 1;
+						return false;
+					}
+					return;
+				} else if (ix === all.length -1) {
+					// last row
+					if (currentY < top + halfHeight) {
+						newIx = ix;
+						return false;
+					}
+					newIx = ix +1;
+					return false;
+				}
+				
+				// all other rows
+				if (top <= currentY && currentY < top + halfHeight) {
+					newIx = ix;
+					return false;
+				} else if (currentY < bottom) {
+					newIx = ix +1;
+					return false;
+				}
+			});
+
+			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
+			const
+				rowContainerRect = rowContainers[newIx].getBoundingClientRect(),
+				top = rowContainerRect.top,
+				gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
+				gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
+				marker = document.createElement('div');
+
+			marker.style.position = 'absolute';
+			marker.style.height = '4px';
+			marker.style.top = rowContainerRect.top + 'px';
+			marker.style.width = gridRowsContainerRect.width + 'px';
+			// marker.style.bottom = 0;
+			marker.style.backgroundColor = '#ccc';
+
+			gridRowsContainer.appendChild(marker);
+			marker.style.top = top + 'px';
+
+			setDragRowSlot({ ix: newIx, marker, });
+		},
+		onRowReorderDrag = (info, e, proxy, node) => {
+			console.log('onRowReorderDrag', info, e, proxy, node);
+			const
+				proxyRect = proxy.getBoundingClientRect(),
+				rowContainer = node.parentElement.parentElement,
+				rowContainers = _.filter(rowContainer.parentElement.children, (childNode) => {
+					return childNode.getBoundingClientRect().width !== 0; // Skip zero-width children
+				}),
+				currentY = proxyRect.top, // top position of pointer
+				headerRowIx = showHeaders ? 0 : null,
+				firstActualRowIx = showHeaders ? 1 : 0;
+		
+			// Figure out which index the user wants
+			let newIx = 0;
+			_.each(rowContainers, (child, ix, all) => {
+				const
+					rect = child.getBoundingClientRect(), // rect of the rowContainer of this iteration
+					{
+						top,
+						bottom,
+						height,
+					} = rect,
+					halfHeight = height / 2;
+
+				if (ix === headerRowIx) {
+					return;
+				}
+				if (ix === firstActualRowIx) {
+					// first row
+					if (currentY < top + halfHeight) {
+						newIx = 0;
+						return false;
+					} else if (currentY < bottom) {
+						newIx = 1;
+						return false;
+					}
+				} else if (ix === all.length -1) {
+					// last row
+					if (currentY < top + halfHeight) {
+						newIx = ix;
+						return false;
+					}
+					newIx = ix +1;
+					return false;
+				}
+				
+				// all other rows
+				if (top <= currentY && currentY < top + halfHeight) {
+					newIx = ix;
+					return false;
+				} else if (currentY < bottom) {
+					newIx = ix +1;
+					return false;
+				}
+			});
+
+			// // Verify index can actually be used
+			// if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].reorderable) {
+			// 	return;
+			// }
+
+			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
+			const
+				rowContainerRect = rowContainers[newIx].getBoundingClientRect(),
+				top = rowContainerRect.top;
+			let marker = dragRowSlot && dragRowSlot.marker;
+			if (marker) {
+				marker.style.top = top + 'px';
+			}
+
+			setDragRowSlot({ ix: newIx, marker, });
+			console.log('onRowReorderDrag', newIx);
+		},
+		onRowReorderDragStop = (delta, e, config) => {
+			console.log('onRowReorderDragStop', delta, e, config);
+
+			// const rowsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
+
+			//  _.pull(rowsConfig, config);
+
+			// // Stick the row at the new ix  (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
+			// rowsConfig.splice(dragRowSlot.ix, 0, config);
+
+			// setLocalColumnsConfig(rowsConfig);
+			// setColumnsConfig(rowsConfig);
+
+			if (dragRowSlot) {
+				dragRowSlot.marker.remove();
+			}
+			setDragRowSlot(null);
 		};
 		
 	useEffect(() => {
@@ -478,7 +689,7 @@ export function Grid(props) {
 
 	}, [selectorId, selectorSelected]);
 
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons]);
+	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode]);
 
 	if (!isReady) {
 		return null;
@@ -517,6 +728,8 @@ export function Grid(props) {
 							nestedScrollEnabled={true}
 							contentContainerStyle={{
 								overflow: 'scroll',
+								borderWidth: isReorderMode ? 4 : 0,
+								borderColor: isReorderMode ? '#f00' : null,
 							}}
 							refreshing={isLoading}
 							onRefresh={pullToRefresh ? onRefresh : null}

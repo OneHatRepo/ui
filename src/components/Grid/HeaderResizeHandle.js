@@ -4,10 +4,6 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import {
-	HORIZONTAL,
-	VERTICAL,
-} from '../../Constants/Directions';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable';
 import GripLinesVertical from '../Icons/GripLinesVertical';
@@ -30,13 +26,4 @@ function HeaderResizeHandle(props) {
 			</Column>;
 }
 
-function withAdditionalProps(WrappedComponent) {
-	return (props) => {
-		return <WrappedComponent
-			mode={HORIZONTAL}
-			{...props}
-		/>;
-	};
-}
-
-export default withAdditionalProps(withDraggable(HeaderResizeHandle));
+export default withDraggable(HeaderResizeHandle);

@@ -32,6 +32,7 @@ export default function withDraggable(WrappedComponent) {
 				onChangeIsDragging,
 				getParentNode = (node) => node.parentElement.parentElement,
 				getProxy,
+				proxyParent,
 				handle,
 				...propsToPass
 			} = props,
@@ -77,7 +78,7 @@ export default function withDraggable(WrappedComponent) {
 					proxy.style.height = nodeRect.height + 'px';
 					proxy.style.width = nodeRect.width + 'px';
 				}
-				proxy = document.body.appendChild(proxy);
+				proxy = proxyParent ? proxyParent.appendChild(proxy) : document.body.appendChild(proxy);
 				proxy.style.zIndex = 10000;
 				proxy.style.position = 'absolute';
 				proxy.style.visibility = 'visible';
@@ -251,5 +252,5 @@ export default function withDraggable(WrappedComponent) {
 				>
 					<WrappedComponent {...propsToPass} />
 				</Draggable>;
-};
+	};
 }

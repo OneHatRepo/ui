@@ -10,6 +10,7 @@ export default function Toolbar(props) {
 				borderBottomWidth={1}
 				borderBottomColor="trueGray.400"
 				p={2}
+				overflow="scroll"
 				{...props}
 			>
 				{props.children}
