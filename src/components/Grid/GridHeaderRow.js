@@ -234,7 +234,7 @@ export default function GridHeaderRow(props) {
 
 			 _.pull(columnsConfig, config);
 
-			// Stick the column at the new ix  (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
+			// Stick the column at the new ix (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
 			columnsConfig.splice(dragColumnSlot.ix, 0, config);
 
 			setLocalColumnsConfig(columnsConfig);

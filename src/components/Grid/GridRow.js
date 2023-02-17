@@ -7,11 +7,6 @@ import {
 import {
 	VERTICAL,
 } from '../../Constants/Directions';
-import {
-	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes';
-import UiConfig from '../../UiConfig';
 import withDraggable from '../Hoc/withDraggable';
 import styles from '../../Constants/Styles';
 import AngleRight from '../Icons/AngleRight';

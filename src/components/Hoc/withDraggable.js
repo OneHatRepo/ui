@@ -33,6 +33,7 @@ export default function withDraggable(WrappedComponent) {
 				getParentNode = (node) => node.parentElement.parentElement,
 				getProxy,
 				proxyParent,
+				proxyPositionRelativeToParent = false,
 				handle,
 				...propsToPass
 			} = props,
@@ -130,9 +131,11 @@ export default function withDraggable(WrappedComponent) {
 					currentLeft = parseInt(proxy.style.left),
 					currentTop = parseInt(proxy.style.top);
 				if (mode === HORIZONTAL) {
-					proxy.style.left = e.pageX + 'px';
+					const left = proxyPositionRelativeToParent ? e.pageX - proxyParent.getBoundingClientRect().left : e.pageX;
+					proxy.style.left = left + 'px';
 				} else if (mode === VERTICAL) {
-					proxy.style.top = e.pageY + 'px';
+					const top = proxyPositionRelativeToParent ? e.pageY - proxyParent.getBoundingClientRect().top : e.pageY;
+					proxy.style.top = top + 'px';
 				} else {
 					proxy.style.left = currentLeft + deltaX + 'px';
 					proxy.style.top = currentTop + deltaY + 'px';

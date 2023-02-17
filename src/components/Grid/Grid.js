@@ -18,6 +18,10 @@ import {
 import {
 	VERTICAL,
 } from '../../Constants/Directions';
+import {
+	DROP_POSITION_BEFORE,
+	DROP_POSITION_AFTER,
+} from '../../Constants/Grid';
 import useForceUpdate from '../../Hooks/useForceUpdate';
 import withContextMenu from '../Hoc/withContextMenu';
 import withAlert from '../Hoc/withAlert';
@@ -90,6 +94,7 @@ export function Grid(props) {
 			canColumnsResize = true,
 			canRowsReorder = false,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
+			disableBottomToolbar = false,
 			disablePagination = false,
 			bottomToolbar = 'pagination',
 			topToolbar = null,
@@ -145,6 +150,7 @@ export function Grid(props) {
 		[isReorderMode, setIsReorderMode] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[dragRowSlot, setDragRowSlot] = useState(null),
+		[dragRowIx, setDragRowIx] = useState(),
 		setLocalColumnsConfig = (config) => {
 			setLocalColumnsConfigRaw(config);
 			if (onChangeColumnsConfig) {
@@ -284,7 +290,7 @@ export function Grid(props) {
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => {
-							if (isHeaderRow) {
+							if (isHeaderRow || isReorderMode) {
 								return
 							}
 							switch (e.detail) {
@@ -308,7 +314,7 @@ export function Grid(props) {
 							}
 						}}
 						onLongPress={(e) => {
-							if (isHeaderRow) {
+							if (isHeaderRow || isReorderMode) {
 								return
 							}
 							// context menu
@@ -339,7 +345,7 @@ export function Grid(props) {
 											canColumnsReorder={canColumnsReorder}
 											canColumnsResize={canColumnsResize}
 											setSelection={setSelection}
-											gridRef={gridRef.current}
+											gridRef={gridRef}
 											isHovered={isHovered}
 										/>;
 							}
@@ -376,18 +382,27 @@ export function Grid(props) {
 										onDrag={onRowReorderDrag}
 										onDragStop={onRowReorderDragStop}
 										proxyParent={gridRef.current?.getScrollableNode().children[0]}
+										proxyPositionRelativeToParent={true}
+										getParentNode={(node) => node.parentElement.parentElement.parentElement}
 										getProxy={(node) => {
 											const
-												columnHeader = node.parentElement,
-												columnHeaderRect = columnHeader.getBoundingClientRect(),
-												proxy = columnHeader.cloneNode(true);
+												row = node.parentElement.parentElement,
+												rowRect = row.getBoundingClientRect(),
+												parent = row.parentElement,
+												parentRect = parent.getBoundingClientRect(),
+												proxy = row.cloneNode(true),
+												top = rowRect.top - parentRect.top,
+												dragRowIx = Array.from(parent.children).indexOf(row)
 											
-											proxy.style.top = columnHeaderRect.top + 'px';
-											proxy.style.left = columnHeaderRect.left + 'px';
-											proxy.style.height = columnHeaderRect.height + 'px';
-											proxy.style.width = columnHeaderRect.width + 'px';
+											setDragRowIx(dragRowIx); // the ix of which record is being dragged
+
+											proxy.style.top = top + 'px';
+											proxy.style.left = 0;
+											proxy.style.height = rowRect.height + 'px';
+											proxy.style.width = rowRect.width + 'px';
 											proxy.style.display = 'flex';
 											proxy.style.backgroundColor = '#ddd';
+											proxy.style.position = 'absolute';
 											return proxy;
 										}}
 									/>;
@@ -395,28 +410,40 @@ export function Grid(props) {
 					</Pressable>;
 		},
 		onRowReorderDragStart = (info, e, proxy, node) => {
-			// debugger;
 			// console.log('onRowReorderDragStart', info, e, proxy, node);
 			const
 				proxyRect = proxy.getBoundingClientRect(),
-				rowContainer = node.parentElement.parentElement,
-				rowContainers = _.filter(rowContainer.parentElement.children, (childNode) => {
+				row = node.parentElement.parentElement,
+				parent = row.parentElement,
+				parentRect = parent.getBoundingClientRect(),
+				rows = _.filter(row.parentElement.children, (childNode) => {
 					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
 				}),
-				currentY = proxyRect.top, // top position of pointer
+				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
 				headerRowIx = showHeaders ? 0 : null,
 				firstActualRowIx = showHeaders ? 1 : 0;
 		
+			// LEFT OFF HERE
+			// The drag destination needs to take into account where the origin was.
+			// 1. If you're moving to a destination *prior* to the origin, use 'before'
+			// 2. If you're moving to a destination that is at immediate top or bottom of origin, don't move anything
+			// 3. If you're moving to a destination after the origin, use 'after'
+			
+
+
+
 			// Figure out which index the user wants
 			let newIx = 0;
-			_.each(rowContainers, (child, ix, all) => {
+			_.each(rows, (child, ix, all) => {
 				const
-					rect = child.getBoundingClientRect(), // rect of the rowContainer of this iteration
+					rect = child.getBoundingClientRect(), // rect of the row of this iteration
 					{
 						top,
 						bottom,
 						height,
 					} = rect,
+					compensatedTop = top - parentRect.top,
+					compensatedBottom = bottom - parentRect.top,
 					halfHeight = height / 2;
 
 				if (ix === headerRowIx || child === proxy) {
@@ -424,17 +451,17 @@ export function Grid(props) {
 				}
 				if (ix === firstActualRowIx) {
 					// first row
-					if (currentY < top + halfHeight) {
+					if (currentY < compensatedTop + halfHeight) {
 						newIx = firstActualRowIx;
 						return false;
-					} else if (currentY < bottom) {
+					} else if (currentY < compensatedBottom) {
 						newIx = firstActualRowIx + 1;
 						return false;
 					}
 					return;
 				} else if (ix === all.length -1) {
 					// last row
-					if (currentY < top + halfHeight) {
+					if (currentY < compensatedTop + halfHeight) {
 						newIx = ix;
 						return false;
 					}
@@ -443,74 +470,84 @@ export function Grid(props) {
 				}
 				
 				// all other rows
-				if (top <= currentY && currentY < top + halfHeight) {
+				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
 					newIx = ix;
 					return false;
-				} else if (currentY < bottom) {
+				} else if (currentY < compensatedBottom) {
 					newIx = ix +1;
 					return false;
 				}
 			});
 
-			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
+			let useBottom = false;
+			if (!rows[newIx]) {
+				newIx--;
+				useBottom = true;
+			}
+
+			// Render marker showing destination location
 			const
-				rowContainerRect = rowContainers[newIx].getBoundingClientRect(),
-				top = rowContainerRect.top,
+				rowContainerRect = rows[newIx].getBoundingClientRect(),
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth), // get relative Y position
 				gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
 				gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
 				marker = document.createElement('div');
 
 			marker.style.position = 'absolute';
+			// marker.style.zIndex = 100000;
+			marker.style.top = top + 'px';
 			marker.style.height = '4px';
-			marker.style.top = rowContainerRect.top + 'px';
 			marker.style.width = gridRowsContainerRect.width + 'px';
-			// marker.style.bottom = 0;
 			marker.style.backgroundColor = '#ccc';
 
 			gridRowsContainer.appendChild(marker);
-			marker.style.top = top + 'px';
 
-			setDragRowSlot({ ix: newIx, marker, });
+			setDragRowSlot({ ix: newIx, marker, useBottom, });
 		},
 		onRowReorderDrag = (info, e, proxy, node) => {
-			console.log('onRowReorderDrag', info, e, proxy, node);
+			// console.log('onRowReorderDrag', info, e, proxy, node);
 			const
 				proxyRect = proxy.getBoundingClientRect(),
-				rowContainer = node.parentElement.parentElement,
-				rowContainers = _.filter(rowContainer.parentElement.children, (childNode) => {
-					return childNode.getBoundingClientRect().width !== 0; // Skip zero-width children
+				row = node.parentElement.parentElement,
+				parent = row.parentElement,
+				parentRect = parent.getBoundingClientRect(),
+				rows = _.filter(row.parentElement.children, (childNode) => {
+					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
 				}),
-				currentY = proxyRect.top, // top position of pointer
+				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
 				headerRowIx = showHeaders ? 0 : null,
 				firstActualRowIx = showHeaders ? 1 : 0;
-		
+
 			// Figure out which index the user wants
 			let newIx = 0;
-			_.each(rowContainers, (child, ix, all) => {
+			_.each(rows, (child, ix, all) => {
 				const
-					rect = child.getBoundingClientRect(), // rect of the rowContainer of this iteration
+					rect = child.getBoundingClientRect(), // rect of the row of this iteration
 					{
 						top,
 						bottom,
 						height,
 					} = rect,
+					compensatedTop = top - parentRect.top,
+					compensatedBottom = bottom - parentRect.top,
 					halfHeight = height / 2;
 
-				if (ix === headerRowIx) {
+				if (ix === headerRowIx || child === proxy) {
 					return;
 				}
 				if (ix === firstActualRowIx) {
 					// first row
-					if (currentY < top + halfHeight) {
-						newIx = 0;
+					if (currentY < compensatedTop + halfHeight) {
+						newIx = firstActualRowIx;
 						return false;
-					} else if (currentY < bottom) {
-						newIx = 1;
+					} else if (currentY < compensatedBottom) {
+						newIx = firstActualRowIx + 1;
 						return false;
 					}
+					return;
 				} else if (ix === all.length -1) {
 					// last row
-					if (currentY < top + halfHeight) {
+					if (currentY < compensatedTop + halfHeight) {
 						newIx = ix;
 						return false;
 					}
@@ -519,44 +556,67 @@ export function Grid(props) {
 				}
 				
 				// all other rows
-				if (top <= currentY && currentY < top + halfHeight) {
+				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
 					newIx = ix;
 					return false;
-				} else if (currentY < bottom) {
+				} else if (currentY < compensatedBottom) {
 					newIx = ix +1;
 					return false;
 				}
 			});
 
-			// // Verify index can actually be used
-			// if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].reorderable) {
-			// 	return;
-			// }
+			let useBottom = false;
+			if (!rows[newIx]) {
+				newIx--;
+				useBottom = true;
+			}
 
 			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
 			const
-				rowContainerRect = rowContainers[newIx].getBoundingClientRect(),
-				top = rowContainerRect.top;
+				rowContainerRect = rows[newIx].getBoundingClientRect(),
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth); // get relative Y position
 			let marker = dragRowSlot && dragRowSlot.marker;
 			if (marker) {
 				marker.style.top = top + 'px';
 			}
 
-			setDragRowSlot({ ix: newIx, marker, });
-			console.log('onRowReorderDrag', newIx);
+			setDragRowSlot({ ix: newIx, marker, useBottom, });
+			// console.log('onRowReorderDrag', newIx);
+
 		},
 		onRowReorderDragStop = (delta, e, config) => {
-			console.log('onRowReorderDragStop', delta, e, config);
+			// console.log('onRowReorderDragStop', delta, e, config);
+			const
+				dropIx = dragRowSlot.ix,
+				compensatedDragIx = showHeaders ? dragRowIx -1 : dragRowIx,
+				compensatedDropIx = showHeaders ? dropIx -1 : dropIx,
+				dropPosition = dragRowSlot.useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE,
+				finalDropIx = dropPosition === DROP_POSITION_BEFORE ? compensatedDropIx : compensatedDropIx +1;
 
-			// const rowsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
+			if (dragRowIx !== finalDropIx) {
+				// Update the row with the new ix
+				let dragRecord,
+					dropRecord;
+				if (Repository) {
+					dragRecord = Repository.getByIx(compensatedDragIx);
+					dropRecord = Repository.getByIx(compensatedDropIx);
 
-			//  _.pull(rowsConfig, config);
+					debugger;
+					// Send move command to server
 
-			// // Stick the row at the new ix  (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
-			// rowsConfig.splice(dragRowSlot.ix, 0, config);
+					// Then refresh grid
 
-			// setLocalColumnsConfig(rowsConfig);
-			// setColumnsConfig(rowsConfig);
+					// Show waiter during refresh?
+
+				} else {
+					function arrayMove(arr, fromIndex, toIndex) {
+						var element = arr[fromIndex];
+						arr.splice(fromIndex, 1);
+						arr.splice(toIndex, 0, element);
+					}
+					arrayMove(data, compensatedDragIx, compensatedDropIx);
+				}
+			}
 
 			if (dragRowSlot) {
 				dragRowSlot.marker.remove();
@@ -705,10 +765,12 @@ export function Grid(props) {
 
 	// headers & footers
 	let listFooterComponent = null;
-	if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-		listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
-	} else if (footerToolbarItemComponents.length) {
-		listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
+	if (!disableBottomToolbar) {
+		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
+			listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
+		} else if (footerToolbarItemComponents.length) {
+			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
+		}
 	}
 	
 	return <Column
@@ -718,7 +780,11 @@ export function Grid(props) {
 			>
 				{topToolbar}
 
-				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={deselectAll}>
+				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+					if (!isReorderMode) {
+						deselectAll();
+					}
+				}}>
 					{!entities.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
 						<FlatList
 							ref={gridRef}
@@ -729,7 +795,8 @@ export function Grid(props) {
 							contentContainerStyle={{
 								overflow: 'scroll',
 								borderWidth: isReorderMode ? 4 : 0,
-								borderColor: isReorderMode ? '#f00' : null,
+								borderColor: isReorderMode ? '#23d9ea' : null,
+								borderStyle: 'dashed',
 							}}
 							refreshing={isLoading}
 							onRefresh={pullToRefresh ? onRefresh : null}
