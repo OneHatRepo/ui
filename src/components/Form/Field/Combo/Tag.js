@@ -1,7 +1,7 @@
 import {
 	SELECTION_MODE_MULTI,
 } from '../../../../Constants/Selection.js';
-import Combo from './Comb.js';
+import Combo from './Combo.js';
 
 export default function Tag(props) {
 	return <Combo
