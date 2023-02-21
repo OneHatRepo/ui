@@ -3,7 +3,6 @@
 	"version": "0.2.0",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
-	"private": true,
 	"type": "module",
 	"scripts": {
 		"test": "npx cypress open --config-file ../cypress.json"
