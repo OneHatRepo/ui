@@ -56,10 +56,6 @@ import _ from 'lodash';
 	// editor
 		// [ ] Show inline editor for selected row
 		// Dragging of window (see withWindowedEditor)
-	// Rows
-		// [ ] Drag/drop reordering (Used primarily to change sort order in OneBuild apps)
-			// state to keep track of current ordering
-			// If it's reorderable, add reorder drag handle column
 	// custom cell types
 		// Most would use text, and depend on @onehat/data for formatting
 	// Display tree data
@@ -384,30 +380,32 @@ export function Grid(props) {
 										proxyParent={gridRef.current?.getScrollableNode().children[0]}
 										proxyPositionRelativeToParent={true}
 										getParentNode={(node) => node.parentElement.parentElement.parentElement}
-										getProxy={(node) => {
-											const
-												row = node.parentElement.parentElement,
-												rowRect = row.getBoundingClientRect(),
-												parent = row.parentElement,
-												parentRect = parent.getBoundingClientRect(),
-												proxy = row.cloneNode(true),
-												top = rowRect.top - parentRect.top,
-												dragRowIx = Array.from(parent.children).indexOf(row)
-											
-											setDragRowIx(dragRowIx); // the ix of which record is being dragged
-
-											proxy.style.top = top + 'px';
-											proxy.style.left = 0;
-											proxy.style.height = rowRect.height + 'px';
-											proxy.style.width = rowRect.width + 'px';
-											proxy.style.display = 'flex';
-											proxy.style.backgroundColor = '#ddd';
-											proxy.style.position = 'absolute';
-											return proxy;
-										}}
+										getProxy={getReorderProxy}
 									/>;
 						}}
 					</Pressable>;
+		},
+		getReorderProxy = (node) => {
+			const
+				row = node.parentElement.parentElement,
+				rowRect = row.getBoundingClientRect(),
+				parent = row.parentElement,
+				parentRect = parent.getBoundingClientRect(),
+				proxy = row.cloneNode(true),
+				top = rowRect.top - parentRect.top,
+				dragRowIx = Array.from(parent.children).indexOf(row)
+			
+			setDragRowIx(dragRowIx); // the ix of which record is being dragged
+
+			proxy.style.top = top + 'px';
+			proxy.style.left = '20px';
+			proxy.style.height = rowRect.height + 'px';
+			proxy.style.width = rowRect.width + 'px';
+			proxy.style.display = 'flex';
+			// proxy.style.backgroundColor = '#ccc';
+			proxy.style.position = 'absolute';
+			proxy.style.border = '1px solid #000';
+			return proxy;
 		},
 		onRowReorderDragStart = (info, e, proxy, node) => {
 			// console.log('onRowReorderDragStart', info, e, proxy, node);
@@ -422,15 +420,6 @@ export function Grid(props) {
 				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
 				headerRowIx = showHeaders ? 0 : null,
 				firstActualRowIx = showHeaders ? 1 : 0;
-		
-			// LEFT OFF HERE
-			// The drag destination needs to take into account where the origin was.
-			// 1. If you're moving to a destination *prior* to the origin, use 'before'
-			// 2. If you're moving to a destination that is at immediate top or bottom of origin, don't move anything
-			// 3. If you're moving to a destination after the origin, use 'after'
-			
-
-
 
 			// Figure out which index the user wants
 			let newIx = 0;
@@ -480,7 +469,7 @@ export function Grid(props) {
 			});
 
 			let useBottom = false;
-			if (!rows[newIx]) {
+			if (!rows[newIx] || rows[newIx] === proxy) {
 				newIx--;
 				useBottom = true;
 			}
@@ -494,11 +483,10 @@ export function Grid(props) {
 				marker = document.createElement('div');
 
 			marker.style.position = 'absolute';
-			// marker.style.zIndex = 100000;
-			marker.style.top = top + 'px';
+			marker.style.top = top -4 + 'px'; // -4 so it's always visible
 			marker.style.height = '4px';
 			marker.style.width = gridRowsContainerRect.width + 'px';
-			marker.style.backgroundColor = '#ccc';
+			marker.style.backgroundColor = '#f00';
 
 			gridRowsContainer.appendChild(marker);
 
@@ -566,7 +554,7 @@ export function Grid(props) {
 			});
 
 			let useBottom = false;
-			if (!rows[newIx]) {
+			if (!rows[newIx] || rows[newIx] === proxy) {
 				newIx--;
 				useBottom = true;
 			}
@@ -577,7 +565,7 @@ export function Grid(props) {
 				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth); // get relative Y position
 			let marker = dragRowSlot && dragRowSlot.marker;
 			if (marker) {
-				marker.style.top = top + 'px';
+				marker.style.top = top -4 + 'px'; // -4 so it's always visible
 			}
 
 			setDragRowSlot({ ix: newIx, marker, useBottom, });
@@ -588,25 +576,42 @@ export function Grid(props) {
 			// console.log('onRowReorderDragStop', delta, e, config);
 			const
 				dropIx = dragRowSlot.ix,
-				compensatedDragIx = showHeaders ? dragRowIx -1 : dragRowIx,
-				compensatedDropIx = showHeaders ? dropIx -1 : dropIx,
-				dropPosition = dragRowSlot.useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE,
-				finalDropIx = dropPosition === DROP_POSITION_BEFORE ? compensatedDropIx : compensatedDropIx +1;
+				compensatedDragIx = showHeaders ? dragRowIx -1 : dragRowIx, // ix, without taking header row into account
+				compensatedDropIx = showHeaders ? dropIx -1 : dropIx, // // ix, without taking header row into account
+				dropPosition = dragRowSlot.useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE;
 
-			if (dragRowIx !== finalDropIx) {
+			let shouldMove = true,
+				finalDropIx = compensatedDropIx;
+			
+			if (dropPosition === DROP_POSITION_BEFORE) {
+				if (dragRowIx === dropIx || dragRowIx === dropIx -1) { // basically before or after the drag row's origin
+					// Same as origin; don't do anything
+					shouldMove = false;
+				} else {
+					// Actually move it
+					if (!Repository) { // If we're just going to be switching rows, rather than telling server to reorder rows, so maybe adjust finalDropIx...
+						if (finalDropIx > compensatedDragIx) { // if we're dropping *before* the origin ix
+							finalDropIx = finalDropIx -1; // Because we're using BEFORE, we want to switch with the row *prior to* the ix we're dropping before
+						}
+					}
+				}
+			} else if (dropPosition === DROP_POSITION_AFTER) {
+				// Only happens on the very last row. Everything else is BEFORE...
+				if (dragRowIx === dropIx) {
+					// Same as origin; don't do anything
+					shouldMove = false;
+				}
+			}
+
+			if (shouldMove) {
 				// Update the row with the new ix
 				let dragRecord,
 					dropRecord;
 				if (Repository) {
 					dragRecord = Repository.getByIx(compensatedDragIx);
-					dropRecord = Repository.getByIx(compensatedDropIx);
-
-					debugger;
-					// Send move command to server
-
-					// Then refresh grid
-
-					// Show waiter during refresh?
+					dropRecord = Repository.getByIx(finalDropIx);
+					
+					Repository.reorder(dragRecord, dropRecord, dropPosition);
 
 				} else {
 					function arrayMove(arr, fromIndex, toIndex) {
@@ -614,7 +619,7 @@ export function Grid(props) {
 						arr.splice(fromIndex, 1);
 						arr.splice(toIndex, 0, element);
 					}
-					arrayMove(data, compensatedDragIx, compensatedDropIx);
+					arrayMove(data, compensatedDragIx, finalDropIx);
 				}
 			}
 
