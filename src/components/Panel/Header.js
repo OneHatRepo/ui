@@ -8,7 +8,7 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions';
+} from '../../Constants/Directions.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
