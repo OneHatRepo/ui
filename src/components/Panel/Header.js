@@ -16,11 +16,11 @@ import {
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes';
-import UiConfig from '../../UiConfig';
-import styles from '../../Constants/Styles';
-import emptyFn from '../../Functions/emptyFn';
-import IconButton from '../Buttons/IconButton';
+} from '../../Constants/UiModes.js';
+import UiConfig from '../../UiConfig.js';
+import styles from '../../Constants/Styles.js';
+import emptyFn from '../../Functions/emptyFn.js';
+import IconButton from '../Buttons/IconButton.js';
 
 export default function Header(props) {
 	

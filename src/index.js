@@ -5,7 +5,7 @@
 import {
 	default as oneHatUi,
 	OneHatUi,
-} from './OneHatUi';
+} from './OneHatUi.js';
 
 export default oneHatUi;
 export {

@@ -7,15 +7,15 @@ import {
 } from 'native-base';
 import {
 	EDITOR_TYPE_INLINE,
-} from '../../Constants/EditorTypes';
+} from '../../Constants/EditorTypes.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes';
-import UiConfig from '../../UiConfig';
-import Form from '../Form/Form';
-import withEditor from './withEditor';
-import styles from '../../Constants/Styles';
+} from '../../Constants/UiModes.js';
+import UiConfig from '../../UiConfig.js';
+import Form from '../Form/Form.js';
+import withEditor from './withEditor.js';
+import styles from '../../Constants/Styles.js';
 import _ from 'lodash';
 
 export default function withInlineEditor(WrappedComponent) {

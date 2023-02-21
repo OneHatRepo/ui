@@ -11,7 +11,7 @@ import {
 	DATE,
 	TIME,
 	DATETIME,
-} from '../../../Constants/Date';
+} from '../../../Constants/Date.js';
 // import DateTimePickerModal from 'react-native-modal-datetime-picker'; // https://github.com/mmazzarolo/react-native-modal-datetime-picker
 // import DateTimePicker from '@react-native-community/datetimepicker'; // https://github.com/react-native-datetimepicker/datetimepicker
 import Datetime from 'react-datetime'; // https://www.npmjs.com/package/react-datetime
@@ -19,16 +19,16 @@ import 'react-datetime/css/react-datetime.css';
 import './datetime.css';
 import {
 	UI_MODE_WEB,
-} from '../../../Constants/UiModes';
-import UiConfig from '../../../UiConfig';
-import Formatters from '@onehat/data/src/Util/Formatters';
-import Parsers from '@onehat/data/src/Util/Parsers';
-import Input from '../Field/Input';
-import IconButton from '../../Buttons/IconButton';
-import withValue from '../../Hoc/withValue';
-import emptyFn from '../../../Functions/emptyFn';
-import Calendar from '../../Icons/Calendar';
-import styles from '../../../Constants/Styles';
+} from '../../../Constants/UiModes.js';
+import UiConfig from '../../../UiConfig.js';
+import Formatters from '@onehat/data/src/Util/Formatters.js';
+import Parsers from '@onehat/data/src/Util/Parsers.js';
+import Input from '../Field/Input.js';
+import IconButton from '../../Buttons/IconButton.js';
+import withValue from '../../Hoc/withValue.js';
+import emptyFn from '../../../Functions/emptyFn.js';
+import Calendar from '../../Icons/Calendar.js';
+import styles from '../../../Constants/Styles.js';
 import _ from 'lodash';
 
 export function DateElement(props) {

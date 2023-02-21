@@ -3,7 +3,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import TriangleExclamation from '../Icons/TriangleExclamation';
+import TriangleExclamation from '../Icons/TriangleExclamation.js';
 
 export default function ErrorMsg(props) {
 	return <Row justifyContent="center" alignItems="center" my={2} w="100%">

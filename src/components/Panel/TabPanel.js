@@ -10,12 +10,12 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions';
-import IconButton from '../Buttons/IconButton';
-import Minimize from '../Icons/Minimize';
-import Maximize from '../Icons/Maximize';
-import styles from '../../Constants/Styles';
-import Panel from './Panel';
+} from '../../Constants/Directions.js';
+import IconButton from '../Buttons/IconButton.js';
+import Minimize from '../Icons/Minimize.js';
+import Maximize from '../Icons/Maximize.js';
+import styles from '../../Constants/Styles.js';
+import Panel from './Panel.js';
 import _ from 'lodash';
 
 

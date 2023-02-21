@@ -1,5 +1,5 @@
 import { useState, useEffect, } from 'react';
-import isJson from '../../Functions/isJson';
+import isJson from '../../Functions/isJson.js';
 import _ from 'lodash';
 
 // This HOC gives the component value props, primarily for a Form Field.

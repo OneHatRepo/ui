@@ -5,8 +5,8 @@ import {
 	Text,
 } from 'native-base';
 import styles from '../../Styles/StyleSheets.js';
-import withDraggable from '../Hoc/withDraggable';
-import GripVertical from '../Icons/GripVertical';
+import withDraggable from '../Hoc/withDraggable.js';
+import GripVertical from '../Icons/GripVertical.js';
 
 function HeaderReorderHandle(props) {
 	const {

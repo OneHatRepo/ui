@@ -1,13 +1,13 @@
 import React, { useState, useEffect, } from 'react';
-import Clipboard from '../Icons/Clipboard';
-import Duplicate from '../Icons/Duplicate';
-import Edit from '../Icons/Edit';
-import Eye from '../Icons/Eye';
-import Trash from '../Icons/Trash';
-import Plus from '../Icons/Plus';
-import Print from '../Icons/Print';
+import Clipboard from '../Icons/Clipboard.js';
+import Duplicate from '../Icons/Duplicate.js';
+import Edit from '../Icons/Edit.js';
+import Eye from '../Icons/Eye.js';
+import Trash from '../Icons/Trash.js';
+import Plus from '../Icons/Plus.js';
+import Print from '../Icons/Print.js';
+import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
-import inArray from '../../Functions/inArray';
 
 // Note: A 'present button' will create both a context menu item 
 // and a toolbar button that match in text label, icon, and handler.

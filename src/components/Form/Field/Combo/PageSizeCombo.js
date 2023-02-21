@@ -2,7 +2,7 @@ import { useMemo, } from 'react';
 import {
 	Row,
 } from 'native-base';
-import ArrayCombo from './ArrayCombo';
+import ArrayCombo from './ArrayCombo.js';
 
 export default function PageSizeCombo(props) {
 	const {

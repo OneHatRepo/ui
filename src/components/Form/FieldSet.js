@@ -5,10 +5,10 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import styles from '../../Constants/Styles';
-import IconButton from '../Buttons/IconButton';
-import CaretUp from '../Icons/CaretUp';
-import CaretDown from '../Icons/CaretDown';
+import styles from '../../Constants/Styles.js';
+import IconButton from '../Buttons/IconButton.js';
+import CaretUp from '../Icons/CaretUp.js';
+import CaretDown from '../Icons/CaretDown.js';
 
 export default function FieldSet(props) {
 	const {

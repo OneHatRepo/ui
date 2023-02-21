@@ -3,8 +3,8 @@ import {
 	Column,
 	Row,
 } from 'native-base';
-import Container from '../Container/Container';
-import emptyFn from '../../Functions/emptyFn';
+import Container from '../Container/Container.js';
+import emptyFn from '../../Functions/emptyFn.js';
 import _ from 'lodash';
 
 export default function EditorWindow(props) {

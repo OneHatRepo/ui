@@ -1,7 +1,7 @@
 import {
 	Row,
 } from 'native-base';
-import styles from '../../Constants/Styles';
+import styles from '../../Constants/Styles.js';
 
 export default function Footer(props) {
 	return <Row

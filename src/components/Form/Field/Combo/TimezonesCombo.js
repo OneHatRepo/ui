@@ -1,4 +1,4 @@
-import ArrayCombo from './ArrayCombo';
+import ArrayCombo from './ArrayCombo.js';
 
 const data = [
 	['null', 'N/A'],

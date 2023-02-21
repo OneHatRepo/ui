@@ -2,7 +2,7 @@
 	Row,
 	Text,
 } from 'native-base';
-import Loading from './Loading';
+import Loading from './Loading.js';
 
 export default function WaitMessage(props) {
 	const {

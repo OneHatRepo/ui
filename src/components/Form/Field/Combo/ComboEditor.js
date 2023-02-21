@@ -1,10 +1,10 @@
-import withAlert from '../../../Hoc/withAlert';
-import withData from '../../../Hoc/withData';
-import withPresetButtons from '../../../Hoc/withPresetButtons';
-import withSelection from '../../../Hoc/withSelection';
-import withValue from '../../../Hoc/withValue';
-import withWindowedEditor from '../../../Hoc/withWindowedEditor';
-import { Combo } from './Combo';
+import withAlert from '../../../Hoc/withAlert.js';
+import withData from '../../../Hoc/withData.js';
+import withPresetButtons from '../../../Hoc/withPresetButtons.js';
+import withSelection from '../../../Hoc/withSelection.js';
+import withValue from '../../../Hoc/withValue.js';
+import withWindowedEditor from '../../../Hoc/withWindowedEditor.js';
+import { Combo } from './Combo.js';
 
 export default
 				// withAlert(

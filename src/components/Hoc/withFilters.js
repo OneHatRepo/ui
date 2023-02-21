@@ -4,13 +4,13 @@ import {
 	Modal,
 	Text,
 } from 'native-base';
-import inArray from '../../Functions/inArray';
-import getComponentFromType from '../../Functions/getComponentFromType';
-import IconButton from '../Buttons/IconButton';
-import FormPanel from '../Panel/FormPanel';
-import Ban from '../Icons/Ban';
-import Gear from '../Icons/Gear';
-import Toolbar from '../Toolbar/Toolbar';
+import inArray from '../../Functions/inArray.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
+import IconButton from '../Buttons/IconButton.js';
+import FormPanel from '../Panel/FormPanel.js';
+import Ban from '../Icons/Ban.js';
+import Gear from '../Icons/Gear.js';
+import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
 // Filters only work with Repository; not data array

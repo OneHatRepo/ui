@@ -1,4 +1,4 @@
-import AppGlobals from '../../AppGlobals';
+import AppGlobals from '../../AppGlobals.js';
 
 export default function(clearAll = false) {
 	const reduxState = AppGlobals.redux.getState();

@@ -3,12 +3,10 @@ import {
 	Pressable,
 	Text,
 } from 'native-base';
-import AngleLeft from '../Icons/AngleLeft';
-import { goBack } from '../../RootNavigation'; 
-import testProps from '../../Functions/testProps';
+import AngleLeft from '../Icons/AngleLeft.js';
 
 export default function BackButton(props) {
-	return <Pressable onPress={props.goBack || goBack} flexDirection="row" justifyContent="flex-start" alignItems="center" pr={5} {...testProps('backBtn')}>
+	return <Pressable flexDirection="row" justifyContent="flex-start" alignItems="center" pr={5} {...props}>
 				<Icon as={AngleLeft} color="#2563eb" size="sm" />
 				<Text fontSize={20} color="#2563eb" left={-1}>Back</Text>
 			</Pressable>;

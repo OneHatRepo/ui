@@ -4,15 +4,15 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import useForceUpdate from '../../Hooks/useForceUpdate';
-import IconButton from '../Buttons/IconButton';
-import AngleLeft from '../Icons/AngleLeft';
-import AnglesLeft from '../Icons/AnglesLeft';
-import AngleRight from '../Icons/AngleRight';
-import AnglesRight from '../Icons/AnglesRight';
-import Rotate from '../Icons/Rotate';
-import Input from '../Form/Field/Input';
-import PageSizeCombo from '../Form/Field/Combo/PageSizeCombo';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import IconButton from '../Buttons/IconButton.js';
+import AngleLeft from '../Icons/AngleLeft.js';
+import AnglesLeft from '../Icons/AnglesLeft.js';
+import AngleRight from '../Icons/AngleRight.js';
+import AnglesRight from '../Icons/AnglesRight.js';
+import Rotate from '../Icons/Rotate.js';
+import Input from '../Form/Field/Input.js';
+import PageSizeCombo from '../Form/Field/Combo/PageSizeCombo.js';
 
 export default function Pagination(props) {
 	const {

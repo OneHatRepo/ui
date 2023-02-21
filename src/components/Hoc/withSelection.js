@@ -4,8 +4,8 @@ import {
 	SELECTION_MODE_MULTI,
 	SELECT_UP,
 	SELECT_DOWN,
-} from '../../Constants/Selection';
-import inArray from '../../Functions/inArray';
+} from '../../Constants/Selection.js';
+import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
 export default function withSelection(WrappedComponent) {

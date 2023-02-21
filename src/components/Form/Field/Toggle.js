@@ -2,9 +2,9 @@ import React from 'react';
 import {
 	Switch,
 } from 'native-base';
-import styles from '../../../Constants/Styles';
-import withTooltip from '../../Hoc/withTooltip';
-import withValue from '../../Hoc/withValue';
+import styles from '../../../Constants/Styles.js';
+import withTooltip from '../../Hoc/withTooltip.js';
+import withValue from '../../Hoc/withValue.js';
 
 const
 	ToggleElement = (props) => {

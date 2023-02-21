@@ -3,7 +3,7 @@
 	Modal,
 	Text,
 } from 'native-base';
-import emptyFn from '../../Functions/emptyFn';
+import emptyFn from '../../Functions/emptyFn.js';
 
 export default function ConfirmationMessage(props) {
 	const {

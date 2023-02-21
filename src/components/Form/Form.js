@@ -13,20 +13,20 @@ import {
 	EDITOR_TYPE_WINDOWED,
 	EDITOR_TYPE_SMART,
 	EDITOR_TYPE_PLAIN,
-} from '../../Constants/EditorTypes';
+} from '../../Constants/EditorTypes.js';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
-import useForceUpdate from '../../Hooks/useForceUpdate';
-import withAlert from '../Hoc/withAlert';
-import withEditor from '../Hoc/withEditor';
-import inArray from '../../Functions/inArray';
-import getComponentFromType from '../../Functions/getComponentFromType';
-import IconButton from '../Buttons/IconButton';
-import Rotate from '../Icons/Rotate';
-import Pencil from '../Icons/Pencil';
-import Footer from '../Panel/Footer';
-import Label from '../Form/Label';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import withAlert from '../Hoc/withAlert.js';
+import withEditor from '../Hoc/withEditor.js';
+import inArray from '../../Functions/inArray.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
+import IconButton from '../Buttons/IconButton.js';
+import Rotate from '../Icons/Rotate.js';
+import Pencil from '../Icons/Pencil.js';
+import Footer from '../Panel/Footer.js';
+import Label from '../Form/Label.js';
 import _ from 'lodash';
 
 // TODO: memoize field Components

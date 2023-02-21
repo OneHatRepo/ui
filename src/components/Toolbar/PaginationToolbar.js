@@ -1,8 +1,8 @@
 import {
 	Row,
 } from 'native-base';
-import Pagination from './Pagination'
-import Toolbar from './Toolbar'
+import Pagination from './Pagination.js'
+import Toolbar from './Toolbar.js'
 import _ from 'lodash';
 
 export default function PaginationToolbar(props) {

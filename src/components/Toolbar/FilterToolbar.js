@@ -1,7 +1,7 @@
 import {
 	Row,
 } from 'native-base';
-import Toolbar from './Toolbar'
+import Toolbar from './Toolbar.js'
 import _ from 'lodash';
 
 export default function FilterToolbar(props) {

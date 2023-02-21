@@ -8,21 +8,21 @@ import {
 import {
 	SORT_ASCENDING,
 	SORT_DESCENDING,
-} from '../../Constants/Grid';
+} from '../../Constants/Grid.js';
 import {
 	HORIZONTAL,
-} from '../../Constants/Directions';
+} from '../../Constants/Directions.js';
 import {
 	UI_MODE_WEB,
-} from '../../Constants/UiModes';
-import UiConfig from '../../UiConfig';
-import styles from '../../Constants/Styles';
-import useBlocking from '../../Hooks/useBlocking';
-import AngleRight from '../Icons/AngleRight';
-import HeaderReorderHandle from './HeaderReorderHandle';
-import HeaderResizeHandle from './HeaderResizeHandle';
-import SortDown from '../Icons/SortDown';
-import SortUp from '../Icons/SortUp';
+} from '../../Constants/UiModes.js';
+import UiConfig from '../../UiConfig.js';
+import styles from '../../Constants/Styles.js';
+import useBlocking from '../../Hooks/useBlocking.js';
+import AngleRight from '../Icons/AngleRight.js';
+import HeaderReorderHandle from './HeaderReorderHandle.js';
+import HeaderResizeHandle from './HeaderResizeHandle.js';
+import SortDown from '../Icons/SortDown.js';
+import SortUp from '../Icons/SortUp.js';
 import _ from 'lodash';
 
 // This was broken out from Grid simply so we can memoize it

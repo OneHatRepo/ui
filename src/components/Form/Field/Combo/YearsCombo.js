@@ -1,5 +1,5 @@
 import { useState, useEffect, } from 'react';
-import ArrayCombo from './ArrayCombo';
+import ArrayCombo from './ArrayCombo.js';
 import moment from 'moment';
 
 

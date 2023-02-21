@@ -9,18 +9,18 @@ import {
 } from 'native-base';
 import {
 	UI_MODE_WEB,
-} from '../../../../Constants/UiModes';
-import UiConfig from '../../../../UiConfig';
-import Input from '../Input';
-import styles from '../../../../Constants/Styles';
-import withData from '../../../Hoc/withData';
-import withEvents from '../../../Hoc/withEvents';
-import withSelection from '../../../Hoc/withSelection';
-import withValue from '../../../Hoc/withValue';
-import emptyFn from '../../../../Functions/emptyFn';
-import { Grid } from '../../../Grid/Grid';
-import IconButton from '../../../Buttons/IconButton';
-import CaretDown from '../../../Icons/CaretDown';
+} from '../../../../Constants/UiModes.js';
+import UiConfig from '../../../../UiConfig.js';
+import Input from '../Input.js';
+import styles from '../../../../Constants/Styles.js';
+import withData from '../../../Hoc/withData.js';
+import withEvents from '../../../Hoc/withEvents.js';
+import withSelection from '../../../Hoc/withSelection.js';
+import withValue from '../../../Hoc/withValue.js';
+import emptyFn from '../../../../Functions/emptyFn.js';
+import { Grid } from '../../../Grid/Grid.js';
+import IconButton from '../../../Buttons/IconButton.js';
+import CaretDown from '../../../Icons/CaretDown.js';
 import _ from 'lodash';
 
 // Combo requires the use of HOC withSelection() whenever it's used.

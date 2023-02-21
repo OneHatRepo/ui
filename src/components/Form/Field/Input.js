@@ -5,9 +5,9 @@ import {
 } from 'native-base';
 import {
 	AUTO_SUBMIT_DELAY,
-} from '../../../Constants/Input';
-import styles from '../../../Constants/Styles';
-import withValue from '../../Hoc/withValue';
+} from '../../../Constants/Input.js';
+import styles from '../../../Constants/Styles.js';
+import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
 function InputElement(props) {

@@ -2,7 +2,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import styles from '../../Constants/Styles';
+import styles from '../../Constants/Styles.js';
 
 export default function Label(props) {
 	const {

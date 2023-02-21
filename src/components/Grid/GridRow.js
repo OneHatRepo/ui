@@ -6,10 +6,10 @@ import {
 } from 'native-base';
 import {
 	VERTICAL,
-} from '../../Constants/Directions';
-import withDraggable from '../Hoc/withDraggable';
-import styles from '../../Constants/Styles';
-import AngleRight from '../Icons/AngleRight';
+} from '../../Constants/Directions.js';
+import withDraggable from '../Hoc/withDraggable.js';
+import styles from '../../Constants/Styles.js';
+import AngleRight from '../Icons/AngleRight.js';
 import _ from 'lodash';
 
 // This was broken out from Grid simply so we can memoize it

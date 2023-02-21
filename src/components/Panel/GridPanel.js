@@ -1,10 +1,10 @@
 import { useEffect, useState, } from 'react';
-import Panel from './Panel';
-import Grid, { InlineGridEditor, } from '../Grid/Grid';
+import Panel from './Panel.js';
+import Grid, { InlineGridEditor, } from '../Grid/Grid.js';
 import {
 	EDITOR_TYPE_INLINE,
 	EDITOR_TYPE_WINDOWED,
-} from '../../Constants/EditorTypes';
+} from '../../Constants/EditorTypes.js';
 import _ from 'lodash';
 
 export function GridPanel(props) {

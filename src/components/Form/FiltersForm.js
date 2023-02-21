@@ -7,7 +7,7 @@ import {
 	ScrollView,
 	Text,
 } from 'native-base';
-import Form from './Form';
+import Form from './Form.js';
 import _ from 'lodash';
 
 

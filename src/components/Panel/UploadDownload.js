@@ -1,4 +1,4 @@
-import Panel from './Panel';
+import Panel from './Panel.js';
 
 // TODO: Flesh this out!
 

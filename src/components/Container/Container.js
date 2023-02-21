@@ -6,8 +6,8 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions';
-import Splitter from './Splitter';
+} from '../../Constants/Directions.js';
+import Splitter from './Splitter.js';
 
 export default function Container(props) {
 	const {

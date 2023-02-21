@@ -2,14 +2,14 @@ import { useState, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions';
+} from '../../Constants/Directions.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes';
-import UiConfig from '../../UiConfig';
+} from '../../Constants/UiModes.js';
+import UiConfig from '../../UiConfig.js';
 import Draggable from 'react-draggable'; // https://github.com/react-grid-layout/react-draggable
-import useBlocking from '../../Hooks/useBlocking';
+import useBlocking from '../../Hooks/useBlocking.js';
 import {
 	v4 as uuid,
 } from 'uuid';

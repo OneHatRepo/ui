@@ -3,9 +3,9 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import Date from '../Form/Field/Date';
-import withTooltip from '../Hoc/withTooltip';
-import withValue from '../Hoc/withValue';
+import Date from '../Form/Field/Date.js';
+import withTooltip from '../Hoc/withTooltip.js';
+import withValue from '../Hoc/withValue.js';
 import _ from 'lodash';
 
 const

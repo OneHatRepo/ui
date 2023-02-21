@@ -6,9 +6,9 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions';
-import styles from '../../Styles/StyleSheets';
-import withDraggable from '../Hoc/withDraggable';
+} from '../../Constants/Directions.js';
+import styles from '../../Styles/StyleSheets.js';
+import withDraggable from '../Hoc/withDraggable.js';
 
 // Note on modes:
 // HORIZONTAL means the Splitter moves along the X axis.

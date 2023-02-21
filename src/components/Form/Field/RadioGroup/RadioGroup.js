@@ -4,9 +4,9 @@ import {
 	Radio,
 	Row,
 } from 'native-base';
-import withData from '../../../Hoc/withData';
-import withValue from '../../../Hoc/withValue';
-import withTooltip from '../../../Hoc/withTooltip';
+import withData from '../../../Hoc/withData.js';
+import withValue from '../../../Hoc/withValue.js';
+import withTooltip from '../../../Hoc/withTooltip.js';
 import _ from 'lodash';
 
 const

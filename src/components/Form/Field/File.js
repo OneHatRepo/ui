@@ -9,17 +9,17 @@ import {
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../../Constants/UiModes';
-import UiConfig from '../../../UiConfig';
-import styles from '../../../Constants/Styles';
+} from '../../../Constants/UiModes.js';
+import UiConfig from '../../../UiConfig.js';
+import styles from '../../../Constants/Styles.js';
 import {
 	FILE_MODE_IMAGE,
 	FILE_MODE_FILE,
-} from '../../../Constants/File';
-import IconButton from '../../Buttons/IconButton';
-import withValue from '../../Hoc/withValue';
-import File from '../../Icons/File';
-import Trash from '../../Icons/Trash';
+} from '../../../Constants/File.js';
+import IconButton from '../../Buttons/IconButton.js';
+import withValue from '../../Hoc/withValue.js';
+import File from '../../Icons/File.js';
+import Trash from '../../Icons/Trash.js';
 import _ from 'lodash';
 
 // NOTES: Since this arrangement of form and fields has only a single value per field, 

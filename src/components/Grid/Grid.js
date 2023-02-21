@@ -10,38 +10,38 @@ import {
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
-} from '../../Constants/Selection';
-import styles from '../../Constants/Styles';
+} from '../../Constants/Selection.js';
+import styles from '../../Constants/Styles.js';
 import {
 	v4 as uuid,
 } from 'uuid';
 import {
 	VERTICAL,
-} from '../../Constants/Directions';
+} from '../../Constants/Directions.js';
 import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
-} from '../../Constants/Grid';
-import useForceUpdate from '../../Hooks/useForceUpdate';
-import withContextMenu from '../Hoc/withContextMenu';
-import withAlert from '../Hoc/withAlert';
-import withData from '../Hoc/withData';
-import withEvents from '../Hoc/withEvents';
-import withFilters from '../Hoc/withFilters';
-import withPresetButtons from '../Hoc/withPresetButtons';
-import withMultiSelection from '../Hoc/withMultiSelection';
-import withSelection from '../Hoc/withSelection';
-import withWindowedEditor from '../Hoc/withWindowedEditor';
-import withInlineEditor from '../Hoc/withInlineEditor';
-import testProps from '../../Functions/testProps';
-import GridHeaderRow from './GridHeaderRow';
-import GridRow, { ReorderableGridRow } from './GridRow';
-import IconButton from '../Buttons/IconButton';
-import PaginationToolbar from '../Toolbar/PaginationToolbar';
-import NoRecordsFound from './NoRecordsFound';
-import Toolbar from '../Toolbar/Toolbar';
-import NoReorderRows from '../Icons/NoReorderRows';
-import ReorderRows from '../Icons/ReorderRows';
+} from '../../Constants/Grid.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import withContextMenu from '../Hoc/withContextMenu.js';
+import withAlert from '../Hoc/withAlert.js';
+import withData from '../Hoc/withData.js';
+import withEvents from '../Hoc/withEvents.js';
+import withFilters from '../Hoc/withFilters.js';
+import withPresetButtons from '../Hoc/withPresetButtons.js';
+import withMultiSelection from '../Hoc/withMultiSelection.js';
+import withSelection from '../Hoc/withSelection.js';
+import withWindowedEditor from '../Hoc/withWindowedEditor.js';
+import withInlineEditor from '../Hoc/withInlineEditor.js';
+import testProps from '../../Functions/testProps.js';
+import GridHeaderRow from './GridHeaderRow.js';
+import GridRow, { ReorderableGridRow } from './GridRow.js';
+import IconButton from '../Buttons/IconButton.js';
+import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
+import NoRecordsFound from './NoRecordsFound.js';
+import Toolbar from '../Toolbar/Toolbar.js';
+import NoReorderRows from '../Icons/NoReorderRows.js';
+import ReorderRows from '../Icons/ReorderRows.js';
 import _ from 'lodash';
 
 // Grid requires the use of HOC withSelection() whenever it's used.

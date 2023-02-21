@@ -2,7 +2,7 @@ import {
 	Row,
 	Spinner,
 } from 'native-base';
-// import ScreenContainer from '../ScreenContainer';
+// import ScreenContainer from '../ScreenContainer.js';
 
 export default function Loading(props) {
 	// if (props.isScreen) {

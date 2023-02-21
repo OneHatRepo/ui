@@ -8,15 +8,15 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions';
+} from '../../Constants/Directions.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes';
-import UiConfig from '../../UiConfig';
-import Header from './Header';
-import withCollapsible from '../Hoc/withCollapsible';
-import emptyFn from '../../Functions/emptyFn';
+} from '../../Constants/UiModes.js';
+import UiConfig from '../../UiConfig.js';
+import Header from './Header.js';
+import withCollapsible from '../Hoc/withCollapsible.js';
+import emptyFn from '../../Functions/emptyFn.js';
 import _ from 'lodash';
 
 // Note on collapseDirections:

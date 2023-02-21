@@ -5,8 +5,8 @@ import {
 	Text,
 } from 'native-base';
 import styles from '../../Styles/StyleSheets.js';
-import withDraggable from '../Hoc/withDraggable';
-import GripLinesVertical from '../Icons/GripLinesVertical';
+import withDraggable from '../Hoc/withDraggable.js';
+import GripLinesVertical from '../Icons/GripLinesVertical.js';
 
 function HeaderResizeHandle(props) {
 	const {

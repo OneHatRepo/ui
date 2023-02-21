@@ -11,10 +11,10 @@ import {
 	ALERT_MODE_OK,
 	ALERT_MODE_YES_NO,
 	ALERT_MODE_CUSTOM,
-} from '../../Constants/Alert';
-import Panel from '../Panel/Panel';
-import Footer from '../Panel/Footer';
-import TriangleExclamation from '../Icons/TriangleExclamation';
+} from '../../Constants/Alert.js';
+import Panel from '../Panel/Panel.js';
+import Footer from '../Panel/Footer.js';
+import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import _ from 'lodash';
 
 export default function withAlert(WrappedComponent) {

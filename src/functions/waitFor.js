@@ -1,4 +1,4 @@
-import sleep from './sleep';
+import sleep from './sleep.js';
 
 export default async function waitFor(fn, pollingFrequencyMs = 1000, timeoutMs = null) {
 	let timeElapsed = 0;

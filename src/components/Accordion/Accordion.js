@@ -7,8 +7,8 @@ import {
 	ScrollView,
 	Text,
 } from 'native-base';
-import inArray from '../../Functions/inArray';
-import emptyFn from '../../Functions/emptyFn';
+import inArray from '../../Functions/inArray.js';
+import emptyFn from '../../Functions/emptyFn.js';
 import _ from 'lodash';
 
 // The Accordion has two modes.

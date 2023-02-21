@@ -1,4 +1,4 @@
-import Combo from './Combo';
+import Combo from './Combo.js';
 
 // This is a building block for other combos,
 // which store their data as a JSON array, not a data repository.

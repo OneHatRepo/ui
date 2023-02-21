@@ -1,9 +1,9 @@
 import {
 	Text,
 } from 'native-base';
-import Panel from './Panel';
-import Form, { FormEditor } from '../Form/Form';
-import withData from '../Hoc/withData';
+import Panel from './Panel.js';
+import Form, { FormEditor } from '../Form/Form.js';
+import withData from '../Hoc/withData.js';
 import _ from 'lodash';
 
 export function FormPanel(props) {

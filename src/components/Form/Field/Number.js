@@ -7,13 +7,13 @@ import {
 } from 'native-base';
 import {
 	AUTO_SUBMIT_DELAY,
-} from '../../../Constants/Input';
-import styles from '../../../Constants/Styles';
-import IconButton from '../../Buttons/IconButton';
-import withTooltip from '../../Hoc/withTooltip';
-import withValue from '../../Hoc/withValue';
-import Plus from '../../Icons/Plus';
-import Minus from '../../Icons/Minus';
+} from '../../../Constants/Input.js';
+import styles from '../../../Constants/Styles.js';
+import IconButton from '../../Buttons/IconButton.js';
+import withTooltip from '../../Hoc/withTooltip.js';
+import withValue from '../../Hoc/withValue.js';
+import Plus from '../../Icons/Plus.js';
+import Minus from '../../Icons/Minus.js';
 import _ from 'lodash';
 
 const InputWithTooltip = withTooltip(Input);

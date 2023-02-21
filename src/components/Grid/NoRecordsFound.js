@@ -3,8 +3,8 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import IconButton from '../Buttons/IconButton';
-import Rotate from '../Icons/Rotate';
+import IconButton from '../Buttons/IconButton.js';
+import Rotate from '../Icons/Rotate.js';
 
 export default function NoRecordsFound(props) {
 	const 

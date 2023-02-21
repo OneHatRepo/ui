@@ -1,4 +1,4 @@
-import RadioGroup from './RadioGroup';
+import RadioGroup from './RadioGroup.js';
 
 // This is a building block for other RadioGroups,
 // which store their data as a JSON array, not a data repository.
