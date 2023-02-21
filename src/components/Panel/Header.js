@@ -1,14 +1,10 @@
 import React from 'react';
 import {
 	Column,
+	Icon,
 	Row,
 	Text,
 } from 'native-base';
-import {
-	FaTimes,
-	FaMinus,
-	FaPlus,
-} from 'react-icons/fa';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -18,6 +14,9 @@ import {
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiConfig from '../../UiConfig.js';
+import Minus from '../Icons/Minus.js';
+import Plus from '../Icons/Plus.js';
+import Xmark from '../Icons/Xmark.js';
 import styles from '../../Constants/Styles.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -43,7 +42,7 @@ export default function Header(props) {
 		collapseBtn = null;
 	if (isClosable) {
 		closeBtn = <IconButton
-						icon={<FaTimes size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} />}
+						icon={<Icon as={Xmark} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} />}
 						onPress={onClose}
 						testID="closeBtn"
 						alignSelf="center"
@@ -52,7 +51,7 @@ export default function Header(props) {
 	}
 	if (isCollapsible) {
 		collapseBtn = <IconButton
-						icon={isCollapsed ? <FaPlus size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} /> : <FaMinus size={styles.PANEL_HEADER_ICON_SIZE}  color={styles.HEADER_ICON_COLOR} />}
+						icon={isCollapsed ? <Icon as={Plus} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} /> : <Icon as={Minus} size={styles.PANEL_HEADER_ICON_SIZE}  color={styles.HEADER_ICON_COLOR} />}
 						onPress={onToggleCollapse}
 						testID="collapseBtn"
 						alignSelf="center"

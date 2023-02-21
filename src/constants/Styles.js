@@ -1,4 +1,4 @@
-import * as appStyles from '../../Constants/Styles';
+// import * as appStyles from '../../Constants/Styles.js';
 import _ from 'lodash';
 
 const
@@ -82,5 +82,5 @@ const defaults = {
 	TEXT_FONTSIZE: DEFAULT_FONTSIZE,
 };
 
-export default _.merge(defaults, appStyles);
+export default defaults; //_.merge(defaults, appStyles);
 
