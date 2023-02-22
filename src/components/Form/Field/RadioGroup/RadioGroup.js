@@ -50,7 +50,7 @@ const
 			setRadioes(radios);
 		}, [value]);
 
-		return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} {...props}>
+		return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}>
 					{radios}
 				</Radio.Group>;
 	},

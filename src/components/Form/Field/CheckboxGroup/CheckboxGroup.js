@@ -49,7 +49,7 @@ const
 			setCheckboxes(checkboxes);
 		}, [value]);
 
-		return <Checkbox.Group onChange={props.setValue} accessibilityLabel={props.name} {...props}>
+		return <Checkbox.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}>
 					{checkboxes}
 				</Checkbox.Group>;
 	},
