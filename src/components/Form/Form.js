@@ -251,7 +251,7 @@ function Form(props) {
 				type = t;
 				editorTypeProps = p;
 			}
-			if (type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
+			if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
 				editorTypeProps.autoLoad = true;
 			}
 			const Element = getComponentFromType(type);
