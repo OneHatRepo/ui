@@ -42,7 +42,7 @@ export default function Header(props) {
 		collapseBtn = null;
 	if (isClosable) {
 		closeBtn = <IconButton
-						icon={<Icon as={Xmark} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} />}
+						icon={<Icon as={Xmark} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.PANEL_HEADER_ICON_COLOR} />}
 						onPress={onClose}
 						testID="closeBtn"
 						alignSelf="center"
@@ -51,7 +51,7 @@ export default function Header(props) {
 	}
 	if (isCollapsible) {
 		collapseBtn = <IconButton
-						icon={isCollapsed ? <Icon as={Plus} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.HEADER_ICON_COLOR} /> : <Icon as={Minus} size={styles.PANEL_HEADER_ICON_SIZE}  color={styles.HEADER_ICON_COLOR} />}
+						icon={isCollapsed ? <Icon as={Plus} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.PANEL_HEADER_ICON_COLOR} /> : <Icon as={Minus} size={styles.PANEL_HEADER_ICON_SIZE}  color={styles.PANEL_HEADER_ICON_COLOR} />}
 						onPress={onToggleCollapse}
 						testID="collapseBtn"
 						alignSelf="center"
