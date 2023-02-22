@@ -1,18 +1,8 @@
-import { isBrowser, isNode, isWebWorker, isJsDom, isDeno } from "browser-or-node";
-import {
-	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
-} from './Constants/UiModes.js';
+import { CURRENT_MODE } from './Constants/UiModes';
 
 
 const Globals = {
-	mode: null,
+	mode: CURRENT_MODE,
 };
-
-if (isBrowser || isWebWorker) {
-	Globals.mode = UI_MODE_WEB;
-} else if (isNode) {
-	Globals.mode = UI_MODE_REACT_NATIVE;
-}
 
 export default Globals;
