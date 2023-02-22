@@ -504,9 +504,9 @@ function disableRequiredYupFields(validator) {
 				if (Array.isArray(nestedField.conditions) && nestedField.conditions.length > 0) {
 					// Next is done to disable required() inside a condition
 					// https://github.com/jquense/yup/issues/1002
-					nestedFieldNext = nestedFieldNext.when('whatever', (_: unknown, schema: yup.AnySchema) =>
-						schema.notRequired(),
-					);
+					nestedFieldNext = nestedFieldNext.when('whatever', (unused, schema) => {
+						return schema.notRequired();
+					});
 				}
 		
 				next.fields[key] = nestedFieldNext;
