@@ -13,12 +13,15 @@ import {
 	v4 as uuid,
 } from 'uuid';
 
-let Draggable;
+let DraggableToImport;
 if (CURRENT_MODE === UI_MODE_WEB) {
-	Draggable = await import('react-draggable'); // https://github.com/react-grid-layout/react-draggable
+	DraggableToImport = 'react-draggable'; // https://github.com/react-grid-layout/react-draggable
 } else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
-	Draggable = await import('react-native-draggable'); // https://github.com/tongyy/react-native-draggable
+	DraggableToImport = 'react-native-draggable'; // https://github.com/tongyy/react-native-draggable
 }
+const Draggable = await import(DraggableToImport);
+
+
 
 // Note on modes:
 // HORIZONTAL means the component moves along the X axis.
