@@ -1,6 +1,5 @@
-// import * as appStyles from '../../Constants/Styles.js';
-import _ from 'lodash';
-
+// These are the default styles of the @onehat/ui components.
+// App can override these with Functions/registerStyles()
 const
 	DEFAULT_FONTSIZE = 15,
 	WHITE = '#fff',
@@ -82,5 +81,4 @@ const defaults = {
 	TEXT_FONTSIZE: DEFAULT_FONTSIZE,
 };
 
-export default defaults; //_.merge(defaults, appStyles);
-
+export default defaults;

@@ -2,6 +2,7 @@
 
 import EventEmitter from '@onehat/events';
 import Components from './Components/index.js';
+import Styles from './Constants/Styles.js';
 import UiGlobals from './UiGlobals.js';
 import _ from 'lodash';
 
@@ -14,6 +15,7 @@ export class OneHatUi extends EventEmitter {
 		super(...arguments);
 
 		UiGlobals.components = Components;
+		UiGlobals.styles = Styles;
 
 		this.registerEvents([
 			'error',

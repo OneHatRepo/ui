@@ -11,7 +11,6 @@ import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
-import styles from '../../Constants/Styles.js';
 import {
 	v4 as uuid,
 } from 'uuid';
@@ -22,6 +21,7 @@ import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
 } from '../../Constants/Grid.js';
+import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
@@ -139,6 +139,7 @@ export function Grid(props) {
 			onEditorRowClick,
 
 		} = props,
+		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
 		gridRef = useRef(),
 		[isReady, setIsReady] = useState(false),

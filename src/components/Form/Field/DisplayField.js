@@ -2,7 +2,7 @@ import React from 'react';
 import {
 	Text,
 } from 'native-base';
-import styles from '../../../Constants/Styles.js';
+import UiGlobals from '../../../UiGlobals.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 
@@ -11,7 +11,8 @@ const
 		const {
 				value,
 				text = value,
-			} = props;
+			} = props,
+			styles = UiGlobals.styles;
 		return <Text
 					ref={props.outerRef}
 					onChangeText={props.setValue}

@@ -10,8 +10,7 @@ import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../../Constants/UiModes.js';
-import UiConfig from '../../../UiConfig.js';
-import styles from '../../../Constants/Styles.js';
+import UiGlobals from '../../../UiGlobals.js';
 import {
 	FILE_MODE_IMAGE,
 	FILE_MODE_FILE,
@@ -50,6 +49,7 @@ function FileElement(props) {
 			tooltip = 'Choose or drag a file on top of this control.',
 			tooltipPlacement = 'bottom',
 		} = props,
+		styles = UiGlobals.styles,
 		dragRef = useRef(),
 		fileInputRef = useRef(),
 		[isDropping, setIsDropping] = useState(false),
@@ -157,7 +157,7 @@ function FileElement(props) {
 		setLocalFilename(localFilename);
 	}, []);
 
-	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 		

@@ -7,7 +7,7 @@ import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
-import UiConfig from '../../UiConfig.js';
+import UiGlobals from '../../UiGlobals.js';
 import Draggable from 'react-draggable'; // https://github.com/react-grid-layout/react-draggable
 import useBlocking from '../../Hooks/useBlocking.js';
 import {
@@ -21,7 +21,7 @@ import {
 export default function withDraggable(WrappedComponent) {
 	return (props) => {
 
-		if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 			throw new Error('Not yet implemented for RN.');
 		}
 		const {

@@ -10,9 +10,8 @@ import {
 import {
 	UI_MODE_WEB,
 } from '../../../../Constants/UiModes.js';
-import UiConfig from '../../../../UiConfig.js';
+import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
-import styles from '../../../../Constants/Styles.js';
 import withData from '../../../Hoc/withData.js';
 import withEvents from '../../../Hoc/withEvents.js';
 import withSelection from '../../../Hoc/withSelection.js';
@@ -62,6 +61,7 @@ export function Combo(props) {
 
 			tooltipPlacement = 'bottom',
 		} = props,
+		styles = UiGlobals.styles,
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
@@ -79,7 +79,7 @@ export function Combo(props) {
 			if (isMenuShown) {
 				return;
 			}
-			if (UiConfig.mode === UI_MODE_WEB && inputRef.current.getBoundingClientRect) {
+			if (UiGlobals.mode === UI_MODE_WEB && inputRef.current.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const
 					rect = inputRef.current.getBoundingClientRect(),

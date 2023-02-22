@@ -15,8 +15,7 @@ import {
 import {
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
-import UiConfig from '../../UiConfig.js';
-import styles from '../../Constants/Styles.js';
+import UiGlobals from '../../UiGlobals.js';
 import useBlocking from '../../Hooks/useBlocking.js';
 import AngleRight from '../Icons/AngleRight.js';
 import HeaderReorderHandle from './HeaderReorderHandle.js';
@@ -42,6 +41,7 @@ export default function GridHeaderRow(props) {
 			gridRef,
 			isHovered,
 		} = props,
+		styles = UiGlobals.styles,
 		sortFn = Repository && Repository.getSortFn(),
 		sortField = Repository && Repository.getSortField(),
 		{ isBlocked } = useBlocking(),
@@ -269,7 +269,7 @@ export default function GridHeaderRow(props) {
 		}
 	}, [columnsConfig]);
 	
-	if (UiConfig.mode !== UI_MODE_WEB) {
+	if (UiGlobals.mode !== UI_MODE_WEB) {
 		canColumnsReorder = false;
 		canColumnsResize = false;
 	}

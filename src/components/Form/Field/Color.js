@@ -10,9 +10,8 @@ import { SketchPicker } from 'react-color';
 import {
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
-import UiConfig from '../../../UiConfig.js';
+import UiGlobals from '../../../UiGlobals.js';
 import Input from '../Field/Input.js';
-import styles from '../../../Constants/Styles.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
 import _ from 'lodash';
@@ -24,6 +23,7 @@ export function ColorElement(props) {
 			tooltip = 'Choose a color.',
 			tooltipPlacement = 'bottom',
 		} = props,
+		styles = UiGlobals.styles,
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		pickerRef = useRef(),
@@ -38,7 +38,7 @@ export function ColorElement(props) {
 				return;
 			}
 
-			if (UiConfig.mode === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
+			if (UiGlobals.mode === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const 
 					triggerRect = triggerRef.current.getBoundingClientRect(),

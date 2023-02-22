@@ -12,14 +12,13 @@ import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
-import UiConfig from '../../UiConfig.js';
+import UiGlobals from '../../UiGlobals.js';
 import Form from '../Form/Form.js';
 import withEditor from './withEditor.js';
-import styles from '../../Constants/Styles.js';
 import _ from 'lodash';
 
 export default function withInlineEditor(WrappedComponent) {
-	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 	return withEditor((props) => {
@@ -39,6 +38,7 @@ export default function withInlineEditor(WrappedComponent) {
 				// withData
 				Repository,
 			} = props,
+			styles = UiGlobals.styles,
 			inlineEditorRef = useRef(),
 			[localColumnsConfig, setLocalColumnsConfig] = useState([]),
 			[currentRow, setCurrentRow] = useState(),

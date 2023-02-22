@@ -8,7 +8,7 @@ import {
 import {
 	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input.js';
-import styles from '../../../Constants/Styles.js';
+import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
@@ -26,6 +26,7 @@ function NumberElement(props) {
 		maxValue,
 		tooltip = null,
 	} = props,
+	styles = UiGlobals.styles,
 	debouncedSetValueRef = useRef(),
 	[localValue, setLocalValue] = useState(value),
 	onInputKeyPress = (e) => {

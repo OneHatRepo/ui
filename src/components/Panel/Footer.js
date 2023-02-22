@@ -1,9 +1,10 @@
 import {
 	Row,
 } from 'native-base';
-import styles from '../../Constants/Styles.js';
+import UiGlobals from '../../UiGlobals.js';
 
 export default function Footer(props) {
+	const styles = UiGlobals.styles;
 	return <Row
 				alignItems="center"
 				justifyContent="center"

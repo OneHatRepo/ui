@@ -2,7 +2,7 @@ import React from 'react';
 import {
 	Switch,
 } from 'native-base';
-import styles from '../../../Constants/Styles.js';
+import UiGlobals from '../../../UiGlobals.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 
@@ -12,6 +12,7 @@ const
 				value,
 				setValue,
 			} = props,
+			styles = UiGlobals.styles,
 			onToggle = () => {
 				setValue(!value);
 			};

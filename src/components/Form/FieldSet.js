@@ -5,7 +5,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import styles from '../../Constants/Styles.js';
+import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton.js';
 import CaretUp from '../Icons/CaretUp.js';
 import CaretDown from '../Icons/CaretDown.js';
@@ -19,6 +19,7 @@ export default function FieldSet(props) {
 			hasErrors,
 			...propsToPass
 		} = props,
+		styles = UiGlobals.styles,
 		[localIsCollapsed, setLocalIsCollapsed] = useState(isCollapsed),
 		onToggleCollapse = () => {
 			setLocalIsCollapsed(!localIsCollapsed);

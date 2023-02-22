@@ -6,7 +6,7 @@ import {
 import {
 	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input.js';
-import styles from '../../../Constants/Styles.js';
+import UiGlobals from '../../../UiGlobals.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
@@ -22,6 +22,7 @@ function InputElement(props) {
 			tooltip = null,
 			tooltipPlacement = 'bottom',
 		} = props,
+		styles = UiGlobals.styles,
 		debouncedSetValueRef = useRef(),
 		[localValue, setLocalValue] = useState(value),
 		onKeyPressLocal = (e) => {

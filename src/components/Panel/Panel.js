@@ -13,7 +13,7 @@ import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
-import UiConfig from '../../UiConfig.js';
+import UiGlobals from '../../UiGlobals.js';
 import Header from './Header.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
 import emptyFn from '../../Functions/emptyFn.js';
@@ -25,7 +25,7 @@ import _ from 'lodash';
 
 function Panel(props) {
 
-	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 	const {

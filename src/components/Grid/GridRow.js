@@ -7,8 +7,8 @@ import {
 import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
-import styles from '../../Constants/Styles.js';
 import AngleRight from '../Icons/AngleRight.js';
 import _ from 'lodash';
 
@@ -24,6 +24,7 @@ export default function GridRow(props) {
 			bg,
 			item,
 		} = props,
+		styles = UiGlobals.styles,
 		isPhantom = item.isPhantom,
 		hash = item.hash || item;
 

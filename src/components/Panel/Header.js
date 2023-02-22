@@ -13,17 +13,16 @@ import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
-import UiConfig from '../../UiConfig.js';
+import UiGlobals from '../../UiGlobals.js';
 import Minus from '../Icons/Minus.js';
 import Plus from '../Icons/Plus.js';
 import Xmark from '../Icons/Xmark.js';
-import styles from '../../Constants/Styles.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import IconButton from '../Buttons/IconButton.js';
 
 export default function Header(props) {
 	
-	if (UiConfig.mode === UI_MODE_REACT_NATIVE) {
+	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 
@@ -36,7 +35,8 @@ export default function Header(props) {
 			collapseDirection = VERTICAL,
 			isCollapsed = false,
 			onToggleCollapse = emptyFn,
-		} = props;
+		} = props,
+		styles = UiGlobals.styles;
 
 	let closeBtn = null,
 		collapseBtn = null;
