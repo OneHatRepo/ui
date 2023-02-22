@@ -50,7 +50,8 @@ const
 			setRadioes(radios);
 		}, [value]);
 
-		return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}>
+		// return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}> // RadioGroup from NativeBase doesn't yet allow refs
+		return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} {...props}>
 					{radios}
 				</Radio.Group>;
 	},
