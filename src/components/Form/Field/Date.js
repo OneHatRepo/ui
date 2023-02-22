@@ -226,6 +226,7 @@ export function DateElement(props) {
 		pickerValue = pickerValue.toDate();
 	}
 
+	const DT = Datetime.default || Datetime; // this shouldn't be necessary, but I couldn't get it to work unless doing this! Something is screwey with the ES6 import of Datetime.
 
 	// Web version
 	return <Tooltip label={tooltip} placement={tooltipPlacement}>
@@ -321,7 +322,7 @@ export function DateElement(props) {
 								ref={pickerRef}
 								p={0}
 							>
-								<Datetime
+								<DT
 									open={true}
 									input={false}
 									closeOnClickOutside={false}
