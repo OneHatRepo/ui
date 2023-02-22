@@ -192,12 +192,7 @@ function Form(props) {
 												// Getting an error that the OrdersEditor is missing users__email.
 												// Why is this even on the OrdersEditor? Runner?
 											}
-											let element;
-											if (isValidElement(Element)) {
-												element = Element;
-												debugger;
-											} else {
-												element = <Element
+											let element = <Element
 																name={name}
 																value={value}
 																setValue={(newValue) => {
@@ -211,7 +206,6 @@ function Form(props) {
 																// {...defaults}
 																// {...propsToPass}
 															/>;
-											}
 
 											// element = <Tooltip key={ix} label={header} placement="bottom">
 											// 				{element}
@@ -346,6 +340,9 @@ function Form(props) {
 									isDirty,
 									error,
 								} = fieldState;
+							if (isValidElement(Element)) {
+								throw new Error('Should not yet be valid React element. Did you use <Element> instead of () => <Element> when defining it?')
+							}
 							let element = <Element
 												name={name}
 												value={value}
