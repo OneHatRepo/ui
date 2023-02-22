@@ -6,13 +6,19 @@ import {
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
+	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
-import UiGlobals from '../../UiGlobals.js';
-import Draggable from 'react-draggable'; // https://github.com/react-grid-layout/react-draggable
 import useBlocking from '../../Hooks/useBlocking.js';
 import {
 	v4 as uuid,
 } from 'uuid';
+
+let Draggable;
+if (CURRENT_MODE === UI_MODE_WEB) {
+	Draggable = await import('react-draggable'); // https://github.com/react-grid-layout/react-draggable
+} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+	Draggable = await import('react-native-draggable'); // https://github.com/tongyy/react-native-draggable
+}
 
 // Note on modes:
 // HORIZONTAL means the component moves along the X axis.
@@ -21,9 +27,6 @@ import {
 export default function withDraggable(WrappedComponent) {
 	return (props) => {
 
-		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
-			throw new Error('Not yet implemented for RN.');
-		}
 		const {
 				// extract and pass
 				onDragStart,
@@ -216,44 +219,54 @@ export default function withDraggable(WrappedComponent) {
 			};
 		propsToPass.isDragging = isDragging;
 
-		if (mode === VERTICAL) {
-			return <Draggable
-						axis="x"
-						onStart={handleStart}
-						onDrag={handleDrag}
-						onStop={handleStop}
-						position={{ x: 0, y: 0, /* reset to dropped position */ }}
-						// bounds={bounds}
-					>
-						<div className="nsResize" style={{ width: '100%', }}>
-							<WrappedComponent {...propsToPass} />
-						</div>
-					</Draggable>;
-		} else if (mode === HORIZONTAL) {
-			return <Draggable
-						axis="y"
-						onStart={handleStart}
-						onDrag={handleDrag}
-						onStop={handleStop}
-						position={{ x: 0, y: 0, /* reset to dropped position */ }}
-						// bounds={bounds}
-					>
-						<div className="ewResize" style={{ height: '100%', }}>
-							<WrappedComponent {...propsToPass} />
-						</div>
-					</Draggable>;
-		}
+		
+		if (CURRENT_MODE === UI_MODE_WEB) {
+			if (mode === VERTICAL) {
+				return <Draggable
+							axis="x"
+							onStart={handleStart}
+							onDrag={handleDrag}
+							onStop={handleStop}
+							position={{ x: 0, y: 0, /* reset to dropped position */ }}
+							// bounds={bounds}
+						>
+							<div className="nsResize" style={{ width: '100%', }}>
+								<WrappedComponent {...propsToPass} />
+							</div>
+						</Draggable>;
+			} else if (mode === HORIZONTAL) {
+				return <Draggable
+							axis="y"
+							onStart={handleStart}
+							onDrag={handleDrag}
+							onStop={handleStop}
+							position={{ x: 0, y: 0, /* reset to dropped position */ }}
+							// bounds={bounds}
+						>
+							<div className="ewResize" style={{ height: '100%', }}>
+								<WrappedComponent {...propsToPass} />
+							</div>
+						</Draggable>;
+			}
 
-		// can drag in all directions
-		return <Draggable
-					axis="both"
-					onStart={handleStart}
-					onDrag={handleDrag}
-					onStop={handleStop}
-					// position={{ x: 0, y: 0, /* reset to dropped position */ }}
-					handle={handle}
-				>
-					<WrappedComponent {...propsToPass} />
-				</Draggable>;
+			// can drag in all directions
+			return <Draggable
+						axis="both"
+						onStart={handleStart}
+						onDrag={handleDrag}
+						onStop={handleStop}
+						// position={{ x: 0, y: 0, /* reset to dropped position */ }}
+						handle={handle}
+					>
+						<WrappedComponent {...propsToPass} />
+					</Draggable>;
+		} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+
+			// NOT YET IMPLEMENTED
+			// Really need to replace most of this, as much of it is web-centric.
+
+			return <WrappedComponent {...propsToPass} />; // TEMP
+
+		}
 	};
 }
