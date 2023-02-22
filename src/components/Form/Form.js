@@ -1,4 +1,4 @@
-import { useEffect, useState, } from 'react';
+import { useEffect, useState, isValidElement, } from 'react';
 import {
 	Box,
 	Button,
@@ -192,7 +192,12 @@ function Form(props) {
 												// Getting an error that the OrdersEditor is missing users__email.
 												// Why is this even on the OrdersEditor? Runner?
 											}
-											let element = <Element
+											let element;
+											if (isValidElement(Element)) {
+												element = Element;
+												debugger;
+											} else {
+												element = <Element
 																name={name}
 																value={value}
 																setValue={(newValue) => {
@@ -206,6 +211,7 @@ function Form(props) {
 																// {...defaults}
 																// {...propsToPass}
 															/>;
+											}
 
 											// element = <Tooltip key={ix} label={header} placement="bottom">
 											// 				{element}
