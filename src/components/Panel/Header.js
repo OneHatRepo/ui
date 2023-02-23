@@ -10,6 +10,7 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import {
+	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
@@ -21,10 +22,6 @@ import emptyFn from '../../Functions/emptyFn.js';
 import IconButton from '../Buttons/IconButton.js';
 
 export default function Header(props) {
-	
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
-		throw new Error('Not yet implemented for RN.');
-	}
 
 	const {
 			testID = 'Header',
@@ -66,41 +63,52 @@ export default function Header(props) {
 		doubleClickStyle.cursor = 'pointer';
 	}
 
-	if (isCollapsed) {
-		if (collapseDirection === HORIZONTAL) {
-			collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
-			return <div
-						className="header"
-						style={{ flex: 1, width: '100%', userSelect: 'none', ...doubleClickStyle, }}
-						onClick={(e) => {
-							if (isCollapsible && e.detail === 2) { // double-click
-								onToggleCollapse(e);
-							}
-						}}
-					>
-						 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.PANEL_HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
-							{collapseBtn}
-							<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
-								<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
-							</div>
-						</Column>
-					</div>;
+
+	if (CURRENT_MODE === UI_MODE_WEB) {
+
+		if (isCollapsed) {
+			if (collapseDirection === HORIZONTAL) {
+				collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
+				return <div
+							className="header"
+							style={{ flex: 1, width: '100%', userSelect: 'none', ...doubleClickStyle, }}
+							onClick={(e) => {
+								if (isCollapsible && e.detail === 2) { // double-click
+									onToggleCollapse(e);
+								}
+							}}
+						>
+							 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.PANEL_HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
+								{collapseBtn}
+								<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
+									<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
+								</div>
+							</Column>
+						</div>;
+			}
 		}
+	
+		return <div
+					className="header"
+					style={{ width: '100%', userSelect: 'none', ...doubleClickStyle, }}
+					onClick={(e) => {
+						if (isCollapsible && e.detail === 2) { // double-click
+							onToggleCollapse(e);
+						}
+					}}
+				>
+					<Row alignItems="center" justifyContent="flex-start" px={styles.PANEL_HEADER_PX} py={styles.PANEL_HEADER_PY} bg={styles.PANEL_HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
+						{closeBtn}
+						<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
+						{collapseBtn}
+					</Row>
+				</div>;
+
+	} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+
+		return null;
+
 	}
 
-	return <div
-				className="header"
-				style={{ width: '100%', userSelect: 'none', ...doubleClickStyle, }}
-				onClick={(e) => {
-					if (isCollapsible && e.detail === 2) { // double-click
-						onToggleCollapse(e);
-					}
-				}}
-			>
-				<Row alignItems="center" justifyContent="flex-start" px={styles.PANEL_HEADER_PX} py={styles.PANEL_HEADER_PY} bg={styles.PANEL_HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
-					{closeBtn}
-					<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
-					{collapseBtn}
-				</Row>
-			</div>;
+
 }

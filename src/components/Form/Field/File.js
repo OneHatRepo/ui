@@ -7,6 +7,7 @@ import {
 	Tooltip,
 } from 'native-base';
 import {
+	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../../Constants/UiModes.js';
@@ -157,7 +158,7 @@ function FileElement(props) {
 		setLocalFilename(localFilename);
 	}, []);
 
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 		

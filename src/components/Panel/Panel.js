@@ -10,10 +10,10 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import {
+	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
-import UiGlobals from '../../UiGlobals.js';
 import Header from './Header.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
 import emptyFn from '../../Functions/emptyFn.js';
@@ -25,9 +25,6 @@ import _ from 'lodash';
 
 function Panel(props) {
 
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
-		throw new Error('Not yet implemented for RN.');
-	}
 	const {
 			isDisabled = false,
 			frame = false,
@@ -125,28 +122,37 @@ function Panel(props) {
 	if (frame) {
 		framePropsToUse = frameProps;
 	}
-	if (isCollapsed) {
-		if (collapseDirection !== VERTICAL) {
-			return <Column overflow="hidden" {...framePropsToUse} w="33px" height="100%">
+
+	if (CURRENT_MODE === UI_MODE_WEB) {
+
+		if (isCollapsed) {
+			if (collapseDirection !== VERTICAL) {
+				return <Column overflow="hidden" {...framePropsToUse} w="33px" height="100%">
+							{isDisabled && <div className="mask"></div>}
+							{headerComponent}
+						</Column>;
+			}
+			return <Column overflow="hidden" {...framePropsToUse}>
 						{isDisabled && <div className="mask"></div>}
 						{headerComponent}
 					</Column>;
 		}
-		return <Column overflow="hidden" {...framePropsToUse}>
+		return <Column overflow="hidden" onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
 					{isDisabled && <div className="mask"></div>}
 					{headerComponent}
+					{topToolbar}
+					<Column flex={1} w="100%" overflow="hidden" {...propsToPass}>
+						{isScrollable ? <ScrollView>{children}</ScrollView> : children}
+					</Column>
+					{bottomToolbar}
+					{footer}
 				</Column>;
+
+	} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+
+		return null;
+
 	}
-	return <Column overflow="hidden" onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
-				{isDisabled && <div className="mask"></div>}
-				{headerComponent}
-				{topToolbar}
-				<Column flex={1} w="100%" overflow="hidden" {...propsToPass}>
-					{isScrollable ? <ScrollView>{children}</ScrollView> : children}
-				</Column>
-				{bottomToolbar}
-				{footer}
-			</Column>;
 }
 
 export default withCollapsible(Panel);
