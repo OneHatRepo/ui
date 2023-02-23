@@ -23,7 +23,7 @@ import IconButton from '../../Buttons/IconButton.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
 import Calendar from '../../Icons/Calendar.js';
-import getComponentFromType from '../../../Functions/getComponentFromType';
+import getComponentFromType from '../../../Functions/getComponentFromType.js';
 import _ from 'lodash';
 
 

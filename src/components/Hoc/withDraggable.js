@@ -12,7 +12,7 @@ import useBlocking from '../../Hooks/useBlocking.js';
 import {
 	v4 as uuid,
 } from 'uuid';
-import getComponentFromType from '../../Functions/getComponentFromType';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 
 
 
