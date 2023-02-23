@@ -1,4 +1,7 @@
-// Taken from https://github.com/flexdinesh/browser-or-node/blob/master/src/index.js
+// Based on https://github.com/flexdinesh/browser-or-node/blob/master/src/index.js
+
+const isReactNative = 
+  typeof process !== 'undefined' && !!process.env;
 
 const isBrowser =
   typeof window !== "undefined" && typeof window.document !== "undefined";
@@ -24,6 +27,8 @@ const isJsDom =
       navigator.userAgent?.includes("jsdom")));
 
 const isDeno =
-	typeof Deno !== "undefined" && Deno.version?.deno;
+  typeof Deno !== "undefined" &&
+  typeof Deno.version !== "undefined" &&
+  typeof Deno.version.deno !== "undefined";
 
-export { isBrowser, isWebWorker, isNode, isJsDom, isDeno };
+export { isReactNative, isBrowser, isWebWorker, isNode, isJsDom, isDeno };

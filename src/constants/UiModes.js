@@ -1,12 +1,12 @@
-import { isBrowser, isNode, isWebWorker, } from '../Functions/PlatformDetector.js';
+import { isReactNative, isBrowser, isWebWorker, } from '../Functions/PlatformDetector.js';
 
 
 export const UI_MODE_WEB = 'Web';
 export const UI_MODE_REACT_NATIVE = 'ReactNative';
 
 export let CURRENT_MODE;
-if (isBrowser || isWebWorker) {
-	CURRENT_MODE = UI_MODE_WEB;
-} else if (isNode) {
+if (isReactNative) {
 	CURRENT_MODE = UI_MODE_REACT_NATIVE;
+} else if (isBrowser || isWebWorker) {
+	CURRENT_MODE = UI_MODE_WEB;
 }
