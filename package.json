@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.2.28",
+	"version": "0.2.29",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -33,7 +33,6 @@
 	  "react-datetime": "^3.2.0",
 	  "react-draggable": "^4.4.5",
 	  "react-native-draggable": "^3.3.0",
-	  "react-native-ckeditor5": "^1.0.9",
 	  "react-dom": "*",
 	  "react-native": "*"
 	},

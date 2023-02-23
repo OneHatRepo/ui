@@ -5,11 +5,13 @@ import {
 import {
 	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input.js';
+import { CKEditor } from '@ckeditor/ckeditor5-react'; // https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/react.html
+import './ckeditor.css';
 import Editor from 'ckeditor5-custom-build/build/ckeditor.js'; // built using https://ckeditor.com/ckeditor-5/online-builder/
-import getComponentFromType from '../../../Functions/getComponentFromType.js';
 import withValue from '../../Hoc/withValue.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import _ from 'lodash';
+
 
 const
 	HtmlEditorElement = (props) => {
@@ -18,7 +20,6 @@ const
 				setValue,
 				h = 150,
 			} = props,
-			CKEditor = getComponentFromType('CKEditor'),
 			debouncedSetValueRef = useRef(),
 			[editor, setEditor] = useState(null), // in case you need to adjust things procedurally
 			config = {
