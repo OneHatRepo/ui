@@ -10,7 +10,7 @@ import Blank from './Blank.js';
 import BooleanCombo from './Form/Field/Combo/BooleanCombo.js';
 // import CartButtonWithBadge from '../Components/Buttons/CartButtonWithBadge.js';
 import CheckboxGroup from './Form/Field/CheckboxGroup/CheckboxGroup.js';
-import CKEditor from './Form/Field/CKEditor/CKEditor.js';
+// import CKEditor from './Form/Field/CKEditor/CKEditor.js'; // web only
 import Color from './Form/Field/Color.js';
 import Combo from './Form/Field/Combo/Combo.js';
 // import ComboEditor from '../Components/Form/Field/Combo/ComboEditor.js';
@@ -56,7 +56,7 @@ const components = {
 	BooleanCombo,
 	// CartButtonWithBadge,
 	CheckboxGroup,
-	CKEditor,
+	// CKEditor,
 	Color,
 	Column,
 	Combo,

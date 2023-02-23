@@ -12,11 +12,6 @@ import {
 	TIME,
 	DATETIME,
 } from '../../../Constants/Date.js';
-// import DateTimePickerModal from 'react-native-modal-datetime-picker'; // https://github.com/mmazzarolo/react-native-modal-datetime-picker
-// import DateTimePicker from '@react-native-community/datetimepicker'; // https://github.com/react-native-datetimepicker/datetimepicker
-import Datetime from 'react-datetime'; // https://www.npmjs.com/package/react-datetime
-import 'react-datetime/css/react-datetime.css';
-import './datetime.css';
 import {
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
@@ -29,6 +24,15 @@ import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
 import Calendar from '../../Icons/Calendar.js';
 import _ from 'lodash';
+
+// eslint-disable-next-line
+let Datetime;
+if (CURRENT_MODE === UI_MODE_WEB) {
+	Datetime = await import('../../../PlatformImports/Web/Datetime.js');
+} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+	Datetime = await import('../../../PlatformImports/ReactNative/Datetime.js');
+}
+
 
 export function DateElement(props) {
 	const {
@@ -226,8 +230,6 @@ export function DateElement(props) {
 		pickerValue = pickerValue.toDate();
 	}
 
-	const DT = Datetime.default || Datetime; // this shouldn't be necessary, but I couldn't get it to work unless doing this! Something is screwey with the ES6 import of Datetime.
-
 	// Web version
 	return <Tooltip label={tooltip} placement={tooltipPlacement}>
 				<Row flex={1} h="100%" alignItems="center" onLayout={() => setIsRendered(true)}>
@@ -322,7 +324,7 @@ export function DateElement(props) {
 								ref={pickerRef}
 								p={0}
 							>
-								<DT
+								<Datetime
 									open={true}
 									input={false}
 									closeOnClickOutside={false}

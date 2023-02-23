@@ -13,8 +13,14 @@ import {
 	v4 as uuid,
 } from 'uuid';
 
+
 // eslint-disable-next-line
-const Draggable = await import('../../PlatformImports/' + CURRENT_MODE + '/Draggable.js');
+let Draggable;
+if (CURRENT_MODE === UI_MODE_WEB) {
+	Draggable = await import('../../PlatformImports/Web/Draggable.js');
+} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+	Draggable = await import('../../PlatformImports/ReactNative/Draggable.js');
+}
 
 
 
