@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.2.16",
+	"version": "0.2.18",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -21,6 +21,7 @@
 	"dependencies": {
 		"@ckeditor/ckeditor5-react": "^5.0.6",
 		"@onehat/data": "^1.13.6",
+		"@hookform/resolvers": "^2.9.11",
 		"browser-or-node": "^2.1.1",
 		"ckeditor5-custom-build": "file:ckeditor5",
 		"js-cookie": "^3.0.1",
