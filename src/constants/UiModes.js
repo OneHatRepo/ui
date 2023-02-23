@@ -1,4 +1,4 @@
-import { isBrowser, isNode, isWebWorker, isJsDom, isDeno } from "browser-or-node";
+import { isBrowser, isNode, isWebWorker, } from '../Functions/PlatformDetector.js';
 
 
 export const UI_MODE_WEB = 'Web';
