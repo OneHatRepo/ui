@@ -1,4 +1,3 @@
-import { useState, } from 'react';
 import {
 	Column,
 	Row,
@@ -120,22 +119,22 @@ function Panel(props) {
 	}
 
 	if (isCollapsed) {
-		if (collapseDirection !== VERTICAL) {
-			return <Column overflow="hidden" {...framePropsToUse} w="33px" height="100%">
+		if (collapseDirection === HORIZONTAL) {
+			return <Column overflow="hidden" {...propsToPass} {...framePropsToUse} w="33px" h="100%">
 						{isDisabled && <Mask />}
 						{headerComponent}
 					</Column>;
 		}
-		return <Column overflow="hidden" {...framePropsToUse}>
+		return <Column overflow="hidden" {...propsToPass} {...framePropsToUse} h="33px" w="100%">
 					{isDisabled && <Mask />}
 					{headerComponent}
 				</Column>;
 	}
-	return <Column overflow="hidden" onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
+	return <Column overflow="hidden" {...propsToPass} onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
 				{isDisabled && <Mask />}
 				{headerComponent}
 				{topToolbar}
-				<Column flex={1} w="100%" overflow="hidden" {...propsToPass}>
+				<Column flex={1} w="100%" overflow="hidden">
 					{isScrollable ? <ScrollView>{children}</ScrollView> : children}
 				</Column>
 				{bottomToolbar}

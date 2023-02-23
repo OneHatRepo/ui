@@ -38,7 +38,7 @@ export function DateElement(props) {
 			tooltipPlacement = 'bottom',
 		} = props,
 		styles = UiGlobals.styles,
-		Datetime = getComponentFromType('Draggable'),
+		Datetime = getComponentFromType('Datetime'),
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		pickerRef = useRef(),

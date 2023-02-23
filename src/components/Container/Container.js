@@ -7,6 +7,11 @@ import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import {
+	UI_MODE_WEB,
+	UI_MODE_REACT_NATIVE,
+	CURRENT_MODE,
+} from '../../Constants/UiModes.js';
 import Splitter from './Splitter.js';
 
 export default function Container(props) {
@@ -26,6 +31,7 @@ export default function Container(props) {
 			isWestCollapsed,
 			setIsWestCollapsed,
 		} = props,
+		canResize = CURRENT_MODE === UI_MODE_WEB,
 		[localIsNorthCollapsed, setLocalIsNorthCollapsed] = useState(north ? north.props.startsCollapsed : false),
 		[localIsSouthCollapsed, setLocalIsSouthCollapsed] = useState(south ? south.props.startsCollapsed : false),
 		[localIsEastCollapsed, setLocalIsEastCollapsed] = useState(east ? east.props.startsCollapsed : false),
@@ -68,7 +74,7 @@ export default function Container(props) {
 		if (!north.props.h && !north.props.flex) {
 			componentProps.flex = 50;
 		}
-		if (north.props.isResizable) {
+		if (canResize && north.props.isResizable) {
 			if (northHeight) {
 				componentProps.h = northHeight;
 				componentProps.flex = null;
@@ -92,7 +98,7 @@ export default function Container(props) {
 		if (!south.props.h && !south.props.flex) {
 			componentProps.flex = 50;
 		}
-		if (south.props.isResizable) {
+		if (canResize && south.props.isResizable) {
 			if (southHeight) {
 				componentProps.h = southHeight;
 				componentProps.flex = null;
@@ -116,7 +122,7 @@ export default function Container(props) {
 		if (!east.props.h && !east.props.flex) {
 			componentProps.flex = 50;
 		}
-		if (east.props.isResizable) {
+		if (canResize && east.props.isResizable) {
 			if (eastWidth) {
 				componentProps.w = eastWidth;
 				componentProps.flex = null;
@@ -140,7 +146,7 @@ export default function Container(props) {
 		if (!west.props.h && !west.props.flex) {
 			componentProps.flex = 50;
 		}
-		if (west.props.isResizable) {
+		if (canResize && west.props.isResizable) {
 			if (westWidth) {
 				componentProps.w = westWidth;
 				componentProps.flex = null;

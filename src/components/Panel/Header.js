@@ -116,17 +116,8 @@ export default function Header(props) {
 							w="100%"
 							style={{ userSelect: 'none', ...doubleClickStyle, }}
 							onPress={(e) => {
-								switch (e.detail) {
-									case 1: // single click
-										break;
-									case 2: // double click
-										if (isCollapsible) {
-											onToggleCollapse(e);
-										}
-										break;
-									case 3: // triple click
-										break;
-									default:
+								if (isCollapsible) {
+									onToggleCollapse(e);
 								}
 							}}
 						>
@@ -136,17 +127,24 @@ export default function Header(props) {
 								h="100%" 
 								w="100%"
 								bg={styles.PANEL_HEADER_BG_VERTICAL}
-								style={{ userSelect: 'none', }}
 							>
 								{collapseBtn}
-								<Text
-									flex={1}
-									fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE}
-									color={styles.PANEL_HEADER_TEXT_COLOR}
-									numberOfLines={1}
-									ellipsizeMode="head"
-									style={{transform: [{ rotate: '-90deg'}]}}
-								>{title}</Text>
+								<Column
+									alignItems="center"
+									justifyContent="center"
+									flex={1} 
+									w="100%"
+								>
+									<Text
+										textAlign="right"
+										fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE}
+										color={styles.PANEL_HEADER_TEXT_COLOR}
+										numberOfLines={1}
+										ellipsizeMode="head"
+										w={200}
+										style={{ transform: [{ rotate: '-90deg'}] }}
+									>{title}</Text>
+								</Column>
 							</Column>
 						</Pressable>;
 			}
@@ -154,21 +152,11 @@ export default function Header(props) {
 	
 		return <Pressable
 					testID={testID}
-					flex={1}
 					w="100%"
 					style={{ userSelect: 'none', ...doubleClickStyle, }}
 					onPress={(e) => {
-						switch (e.detail) {
-							case 1: // single click
-								break;
-							case 2: // double click
-								if (isCollapsible) {
-									onToggleCollapse(e);
-								}
-								break;
-							case 3: // triple click
-								break;
-							default:
+						if (isCollapsible) {
+							onToggleCollapse(e);
 						}
 					}}
 				>
@@ -178,7 +166,6 @@ export default function Header(props) {
 						px={styles.PANEL_HEADER_PX}
 						py={styles.PANEL_HEADER_PY}
 						bg={styles.PANEL_HEADER_BG}
-						style={{ userSelect: 'none', }}
 					>
 						{closeBtn}
 						<Text
@@ -193,6 +180,5 @@ export default function Header(props) {
 				</Pressable>;
 
 	}
-
 
 }

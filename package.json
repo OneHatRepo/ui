@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.2.26",
+	"version": "0.2.27",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -19,7 +19,6 @@
 	},
 	"license": "UNLICENSED",
 	"dependencies": {
-		"@ckeditor/ckeditor5-react": "^5.0.6",
 		"@onehat/data": "^1.13.6",
 		"@hookform/resolvers": "^2.9.11",
 		"ckeditor5-custom-build": "file:ckeditor5",
@@ -28,11 +27,13 @@
 		"react-hook-form": "^7.43.1"
 	},
 	"peerDependencies": {
+	  "@ckeditor/ckeditor5-react": "^5.0.6",
 	  "react": "*",
 	  "react-color": "^2.19.3",
 	  "react-datetime": "^3.2.0",
 	  "react-draggable": "^4.4.5",
 	  "react-native-draggable": "^3.3.0",
+	  "react-native-ckeditor5": "^1.0.9",
 	  "react-dom": "*",
 	  "react-native": "*"
 	},
