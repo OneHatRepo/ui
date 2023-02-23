@@ -2,6 +2,7 @@ import React from 'react';
 import {
 	Column,
 	Icon,
+	Pressable,
 	Row,
 	Text,
 } from 'native-base';
@@ -106,7 +107,90 @@ export default function Header(props) {
 
 	} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 
-		return null;
+		if (isCollapsed) {
+			if (collapseDirection === HORIZONTAL) {
+				collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
+				return <Pressable
+							testID={testID}
+							flex={1}
+							w="100%"
+							style={{ userSelect: 'none', ...doubleClickStyle, }}
+							onPress={(e) => {
+								switch (e.detail) {
+									case 1: // single click
+										break;
+									case 2: // double click
+										if (isCollapsible) {
+											onToggleCollapse(e);
+										}
+										break;
+									case 3: // triple click
+										break;
+									default:
+								}
+							}}
+						>
+							 <Column
+							 	alignItems="center"
+								justifyContent="flex-start"
+								h="100%" 
+								w="100%"
+								bg={styles.PANEL_HEADER_BG_VERTICAL}
+								style={{ userSelect: 'none', }}
+							>
+								{collapseBtn}
+								<Text
+									flex={1}
+									fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE}
+									color={styles.PANEL_HEADER_TEXT_COLOR}
+									numberOfLines={1}
+									ellipsizeMode="head"
+									style={{transform: [{ rotate: '-90deg'}]}}
+								>{title}</Text>
+							</Column>
+						</Pressable>;
+			}
+		}
+	
+		return <Pressable
+					testID={testID}
+					flex={1}
+					w="100%"
+					style={{ userSelect: 'none', ...doubleClickStyle, }}
+					onPress={(e) => {
+						switch (e.detail) {
+							case 1: // single click
+								break;
+							case 2: // double click
+								if (isCollapsible) {
+									onToggleCollapse(e);
+								}
+								break;
+							case 3: // triple click
+								break;
+							default:
+						}
+					}}
+				>
+					<Row
+						alignItems="center"
+						justifyContent="flex-start"
+						px={styles.PANEL_HEADER_PX}
+						py={styles.PANEL_HEADER_PY}
+						bg={styles.PANEL_HEADER_BG}
+						style={{ userSelect: 'none', }}
+					>
+						{closeBtn}
+						<Text
+							flex={1}
+							fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE}
+							color={styles.PANEL_HEADER_TEXT_COLOR}
+							numberOfLines={1}
+							ellipsizeMode="head"
+						>{title}</Text>
+						{collapseBtn}
+					</Row>
+				</Pressable>;
 
 	}
 

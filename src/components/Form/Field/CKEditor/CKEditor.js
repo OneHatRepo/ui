@@ -9,6 +9,7 @@ import Editor from 'ckeditor5-custom-build/build/ckeditor.js'; // built using ht
 import { CKEditor } from '@ckeditor/ckeditor5-react'; // https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/react.html
 import withValue from '../../../Hoc/withValue.js';
 import withTooltip from '../../../Hoc/withTooltip.js';
+import _ from 'lodash';
 import './styles.css';
 
 const

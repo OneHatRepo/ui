@@ -3,7 +3,7 @@ import Datetime from '../PlatformImports/ReactNative/Datetime';
 import Draggable from '../PlatformImports/ReactNative/Draggable';
 import _ from 'lodash';
 
-export function registerReactNativeComponents() {
+export default function registerReactNativeComponents() {
 	_.merge(UiGlobals.components, {
 		Datetime,
 		Draggable,

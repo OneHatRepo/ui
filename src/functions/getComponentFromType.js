@@ -1,4 +1,5 @@
 import UiGlobals from '../UiGlobals.js';
+import _ from 'lodash';
 
 export default function getComponentFromType(type) {
 	if (_.isString(type)) {

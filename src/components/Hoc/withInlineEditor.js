@@ -18,9 +18,6 @@ import withEditor from './withEditor.js';
 import _ from 'lodash';
 
 export default function withInlineEditor(WrappedComponent) {
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
-		throw new Error('Not yet implemented for RN.');
-	}
 	return withEditor((props) => {
 		const {
 				useEditor = false,
@@ -68,6 +65,9 @@ export default function withInlineEditor(WrappedComponent) {
 
 		if (isEditorShown && selection.length !== 1) {
 			throw new Error('Can only edit one at a time with inline editor!');
+		}
+		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+			throw new Error('Not yet implemented for RN.');
 		}
 	
 		return <>
