@@ -13,13 +13,8 @@ import {
 	v4 as uuid,
 } from 'uuid';
 
-let DraggableToImport;
-if (CURRENT_MODE === UI_MODE_WEB) {
-	DraggableToImport = 'react-draggable'; // https://github.com/react-grid-layout/react-draggable
-} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
-	DraggableToImport = 'react-native-draggable'; // https://github.com/tongyy/react-native-draggable
-}
-const Draggable = await import(DraggableToImport);
+// eslint-disable-next-line
+const Draggable = await import('../../PlatformImports/' + CURRENT_MODE + '/Draggable.js');
 
 
 
