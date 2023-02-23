@@ -23,15 +23,8 @@ import IconButton from '../../Buttons/IconButton.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
 import Calendar from '../../Icons/Calendar.js';
+import getComponentFromType from '../../../Functions/getComponentFromType';
 import _ from 'lodash';
-
-// eslint-disable-next-line
-let Datetime;
-if (CURRENT_MODE === UI_MODE_WEB) {
-	Datetime = await import('../../../PlatformImports/Web/Datetime.js');
-} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
-	Datetime = await import('../../../PlatformImports/ReactNative/Datetime.js');
-}
 
 
 export function DateElement(props) {
@@ -45,6 +38,7 @@ export function DateElement(props) {
 			tooltipPlacement = 'bottom',
 		} = props,
 		styles = UiGlobals.styles,
+		Datetime = getComponentFromType('Draggable'),
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		pickerRef = useRef(),

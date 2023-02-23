@@ -12,15 +12,7 @@ import useBlocking from '../../Hooks/useBlocking.js';
 import {
 	v4 as uuid,
 } from 'uuid';
-
-
-// eslint-disable-next-line
-let Draggable;
-if (CURRENT_MODE === UI_MODE_WEB) {
-	Draggable = await import('../../PlatformImports/Web/Draggable.js');
-} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
-	Draggable = await import('../../PlatformImports/ReactNative/Draggable.js');
-}
+import getComponentFromType from '../../Functions/getComponentFromType';
 
 
 
@@ -48,6 +40,7 @@ export default function withDraggable(WrappedComponent) {
 				// for local use
 				mode = HORIZONTAL, // HORIZONTAL, VERTICAL
 			} = props,
+			Draggable = getComponentFromType('Draggable'),
 			[isDragging, setIsDraggingRaw] = useState(false),
 			[node, setNode] = useState(false),
 			[bounds, setBounds] = useState(null),
