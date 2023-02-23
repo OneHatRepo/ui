@@ -9,6 +9,7 @@ import ArrayRadioGroup from './Form/Field/RadioGroup/ArrayRadioGroup.js';
 import Blank from './Blank.js';
 import BooleanCombo from './Form/Field/Combo/BooleanCombo.js';
 // import CartButtonWithBadge from '../Components/Buttons/CartButtonWithBadge.js';
+// import CKEditor from './Form/Field/CKEditor/CKEditor.js'; // web only
 import CheckboxGroup from './Form/Field/CheckboxGroup/CheckboxGroup.js';
 import Color from './Form/Field/Color.js';
 import Combo from './Form/Field/Combo/Combo.js';
@@ -25,7 +26,6 @@ import FiltersForm from './Form/FiltersForm.js';
 import Form from './Form/Form.js';
 import Grid from './Grid/Grid.js';
 import GridPanel from './Panel/GridPanel.js';
-import HtmlEditor from './Form/Field/HtmlEditor.js';
 import IconButton from './Buttons/IconButton.js';
 import Input from './Form/Field/Input.js';
 import IntervalsCombo from './Form/Field/Combo/IntervalsCombo.js';
@@ -56,6 +56,7 @@ const components = {
 	BooleanCombo,
 	// CartButtonWithBadge,
 	CheckboxGroup,
+	// CKEditor,
 	Color,
 	Column,
 	Combo,
@@ -72,7 +73,6 @@ const components = {
 	Form,
 	Grid,
 	GridPanel,
-	HtmlEditor,
 	IconButton,
 	Input,
 	IntervalsCombo,
