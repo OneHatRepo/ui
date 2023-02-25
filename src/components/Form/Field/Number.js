@@ -30,7 +30,8 @@ function NumberElement(props) {
 	debouncedSetValueRef = useRef(),
 	[localValue, setLocalValue] = useState(value),
 	onInputKeyPress = (e) => {
-		switch(e.key) {
+		const key = e.nativeEvent.key; // e.key works on web, but not mobile; so use e.nativeEvent.key which works on both
+		switch(key) {
 			case 'ArrowDown':
 			case 'ArrowLeft':
 				onDecrement();
@@ -48,7 +49,7 @@ function NumberElement(props) {
 				break;
 				default:
 		}
-		if (!e.key.match(/^[\-\d\.]*$/)) {
+		if (!key.match(/^[\-\d\.]*$/)) {
 			e.preventDefault(); // kill anything that's not a number
 		}
 	},
@@ -56,6 +57,7 @@ function NumberElement(props) {
 		if (value === '') {
 			value = null; // empty string makes value null
 		}
+		value = parseFloat(value, 10);
 		setLocalValue(value);
 		debouncedSetValueRef.current(value);
 	},
@@ -91,12 +93,20 @@ function NumberElement(props) {
 	useEffect(() => {
 
 		// Make local value conform to externally changed value
-		setLocalValue(value);
+		if (value !== localValue) {
+			setLocalValue(value);
+		}
 
 	}, [value]);
 
 	if (localValue === null || typeof localValue === 'undefined') {
 		localValue = ''; // If the value is null or undefined, don't let this be an uncontrolled input
+	}
+
+	// convert localValue to string if necessary, because numbers work on web but not mobile; while strings work in both places
+	let inputValue = localValue;
+	if (_.isNumber(inputValue)) {
+		inputValue = '' + inputValue;
 	}
 
 	const
@@ -118,7 +128,7 @@ function NumberElement(props) {
 					zIndex={10}
 				/>
 				<InputWithTooltip
-					value={localValue}
+					value={inputValue}
 					onChangeText={onChangeText}
 					onKeyPress={onInputKeyPress}
 					flex={5}
