@@ -361,10 +361,22 @@ export function Grid(props) {
 									bg = styles.GRID_ROW_BG;
 								}
 							}
-							let WhichGridRow = GridRow;
+							let WhichGridRow = GridRow,
+								rowReorderProps = {};
 							if (canRowsReorder && isReorderMode) {
 								WhichGridRow = ReorderableGridRow;
+								reorderProps = {
+									mode: VERTICAL,
+									onDragStart: onRowReorderDragStart,
+									onDrag: onRowReorderDrag,
+									onDragStop: onRowReorderDragStop,
+									proxyParent: gridRef.current?.getScrollableNode().children[0],
+									proxyPositionRelativeToParent: true,
+									getParentNode: (node) => node.parentElement.parentElement.parentElement,
+									getProxy: getReorderProxy,
+								};
 							}
+							
 							return <WhichGridRow
 										columnsConfig={localColumnsConfig}
 										columnProps={columnProps}
@@ -373,15 +385,7 @@ export function Grid(props) {
 										hideNavColumn={hideNavColumn}
 										bg={bg}
 										item={item}
-
-										mode={VERTICAL}
-										onDragStart={onRowReorderDragStart}
-										onDrag={onRowReorderDrag}
-										onDragStop={onRowReorderDragStop}
-										proxyParent={gridRef.current?.getScrollableNode().children[0]}
-										proxyPositionRelativeToParent={true}
-										getParentNode={(node) => node.parentElement.parentElement.parentElement}
-										getProxy={getReorderProxy}
+										{...rowReorderProps}
 									/>;
 						}}
 					</Pressable>;

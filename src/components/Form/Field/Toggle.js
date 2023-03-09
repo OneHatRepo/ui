@@ -11,11 +11,14 @@ const
 		const {
 				value,
 				setValue,
+				flex, // flex doesn't work right on mobile
+				...propsToPass
 			} = props,
 			styles = UiGlobals.styles,
 			onToggle = () => {
 				setValue(!value);
 			};
+
 		return <Switch
 					ref={props.outerRef}
 					onToggle={onToggle}
@@ -29,7 +32,7 @@ const
 						onTrackColor: styles.FORM_TOGGLE_ON_HOVER_COLOR,
 						offTrackColor: styles.FORM_TOGGLE_OFF_HOVER_COLOR,
 					}}
-					{...props}
+					{...propsToPass}
 				/>;
 	},
 	ToggleField = withValue(ToggleElement);
