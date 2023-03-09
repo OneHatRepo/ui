@@ -365,7 +365,7 @@ export function Grid(props) {
 								rowReorderProps = {};
 							if (canRowsReorder && isReorderMode) {
 								WhichGridRow = ReorderableGridRow;
-								reorderProps = {
+								rowReorderProps = {
 									mode: VERTICAL,
 									onDragStart: onRowReorderDragStart,
 									onDrag: onRowReorderDrag,
