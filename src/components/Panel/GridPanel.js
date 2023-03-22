@@ -2,9 +2,10 @@ import { useEffect, useState, } from 'react';
 import Panel from './Panel.js';
 import Grid, { InlineGridEditor, } from '../Grid/Grid.js';
 import {
-	EDITOR_TYPE_INLINE,
-	EDITOR_TYPE_WINDOWED,
-} from '../../Constants/EditorTypes.js';
+	EDITOR_TYPE__INLINE,
+	EDITOR_TYPE__WINDOWED,
+	EDITOR_TYPE__SIDE,
+} from '../../Constants/Editor.js';
 import _ from 'lodash';
 
 export function GridPanel(props) {
@@ -14,7 +15,7 @@ export function GridPanel(props) {
 			selectorSelected,
 		} = props,
 		originalTitle = props.title,
-		WhichGrid = (editorType === EDITOR_TYPE_INLINE) ? InlineGridEditor : Grid,
+		WhichGrid = (editorType === EDITOR_TYPE__INLINE) ? InlineGridEditor : Grid,
 		[isReady, setIsReady] = useState(disableTitleChange),
 		[title, setTitle] = useState(originalTitle);
 

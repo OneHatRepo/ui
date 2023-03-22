@@ -1,4 +1,9 @@
 import { useState, } from 'react';
+import {
+	EDITOR_VIEW_MODE__VIEW,
+	EDITOR_VIEW_MODE__ADD,
+	EDITOR_VIEW_MODE__EDIT,
+} from '../../Constants/Editor.js';
 import _ from 'lodash';
 
 export default function withEditor(WrappedComponent) {
@@ -33,6 +38,7 @@ export default function withEditor(WrappedComponent) {
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
+			[editorViewMode, setEditorViewMode] = useState(EDITOR_VIEW_MODE__VIEW),
 			addRecord = async () => {
 				if (!userCanEdit) {
 					return;
@@ -42,6 +48,7 @@ export default function withEditor(WrappedComponent) {
 					entity = await Repository.add(defaultValues, false, true, true);
 				setSelection([entity]);
 				setIsEditorViewOnly(false);
+				setEditorViewMode(EDITOR_VIEW_MODE__ADD);
 				setIsEditorShown(true);
 			},
 			editRecord = () => {
@@ -49,6 +56,7 @@ export default function withEditor(WrappedComponent) {
 					return;
 				}
 				setIsEditorViewOnly(false);
+				setEditorViewMode(EDITOR_VIEW_MODE__EDIT);
 				setIsEditorShown(true);
 			},
 			deleteRecord = (e) => {
@@ -80,6 +88,7 @@ export default function withEditor(WrappedComponent) {
 					return;
 				}
 				setIsEditorViewOnly(true);
+				setEditorViewMode(EDITOR_VIEW_MODE__VIEW);
 				setIsEditorShown(true);
 			},
 			duplicateRecord = async () => {
@@ -138,6 +147,7 @@ export default function withEditor(WrappedComponent) {
 					setCurrentRecord={setCurrentRecord}
 					isEditorShown={isEditorShown}
 					isEditorViewOnly={isEditorViewOnly}
+					editorViewMode={editorViewMode}
 					setIsEditorShown={setIsEditorShown}
 					onAdd={addRecord}
 					onEdit={editRecord}

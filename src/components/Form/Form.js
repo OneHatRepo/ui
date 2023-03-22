@@ -9,11 +9,12 @@ import {
 	Text,
 } from 'native-base';
 import {
-	EDITOR_TYPE_INLINE,
-	EDITOR_TYPE_WINDOWED,
-	EDITOR_TYPE_SMART,
-	EDITOR_TYPE_PLAIN,
-} from '../../Constants/EditorTypes.js';
+	EDITOR_TYPE__INLINE,
+	EDITOR_TYPE__WINDOWED,
+	EDITOR_TYPE__SIDE,
+	EDITOR_TYPE__SMART,
+	EDITOR_TYPE__PLAIN,
+} from '../../Constants/Editor.js';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -32,27 +33,27 @@ import _ from 'lodash';
 // TODO: memoize field Components
 
 // Modes:
-// EDITOR_TYPE_INLINE
+// EDITOR_TYPE__INLINE
 // Form is a single scrollable row, based on columnsConfig and Repository
 //
-// EDITOR_TYPE_WINDOWED
+// EDITOR_TYPE__WINDOWED
 // Form is a popup window, used for editing items in a grid. Integrated with Repository
 //
-// EDITOR_TYPE_SMART
+// EDITOR_TYPE__SMART
 // Form is a standalone editor
 //
-// EDITOR_TYPE_PLAIN
+// EDITOR_TYPE__PLAIN
 // Form is embedded on screen in some other way. Mainly use startingValues, items, validator
 
 function Form(props) {
 	const
 		{
-			editorType = EDITOR_TYPE_WINDOWED, // EDITOR_TYPE_INLINE | EDITOR_TYPE_WINDOWED | EDITOR_TYPE_PLAIN
+			editorType = EDITOR_TYPE__WINDOWED, // EDITOR_TYPE__INLINE | EDITOR_TYPE__WINDOWED | EDITOR_TYPE__SIDE | EDITOR_TYPE__SMART | EDITOR_TYPE__PLAIN
 			startingValues = {},
 			items = [], // Columns, FieldSets, Fields, etc to define the form
 			columnDefaults = {}, // defaults for each Column defined in items (above)
-			columnsConfig, // Which columns are shown in Grid, so the inline editor can match. Used only for EDITOR_TYPE_INLINE
-			validator, // custom validator, mainly for EDITOR_TYPE_PLAIN
+			columnsConfig, // Which columns are shown in Grid, so the inline editor can match. Used only for EDITOR_TYPE__INLINE
+			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
 			
@@ -356,7 +357,7 @@ function Form(props) {
 												{...editorTypeProps}
 											/>;
 							if (error) {
-								if (editorType !== EDITOR_TYPE_INLINE) {
+								if (editorType !== EDITOR_TYPE__INLINE) {
 									element = <Column pt={1} flex={1}>
 												{element}
 												<Text color="#f00">{error.message}</Text>
@@ -367,7 +368,7 @@ function Form(props) {
 
 								}
 							}
-							if (label && editorType !== EDITOR_TYPE_INLINE) {
+							if (label && editorType !== EDITOR_TYPE__INLINE) {
 								const labelProps = {};
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
@@ -385,7 +386,7 @@ function Form(props) {
 		},
 		onSubmitError = (errors, e) => {
 			debugger;
-			if (editorType === EDITOR_TYPE_INLINE) {
+			if (editorType === EDITOR_TYPE__INLINE) {
 				alert(errors.message);
 			}
 		};
@@ -429,7 +430,7 @@ function Form(props) {
 
 	let formComponents,
 		editor;
-	if (editorType === EDITOR_TYPE_INLINE) {
+	if (editorType === EDITOR_TYPE__INLINE) {
 		// for inline editor
 		formComponents = buildFromColumnsConfig();
 		editor = <ScrollView

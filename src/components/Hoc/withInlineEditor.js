@@ -6,8 +6,8 @@ import {
 	Text,
 } from 'native-base';
 import {
-	EDITOR_TYPE_INLINE,
-} from '../../Constants/EditorTypes.js';
+	EDITOR_TYPE__INLINE,
+} from '../../Constants/Editor.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
@@ -77,14 +77,14 @@ export default function withInlineEditor(WrappedComponent) {
 						onChangeColumnsConfig={onChangeColumnsConfig}
 						onEditorRowClick={onRowClick}
 					/>
-					{useEditor && editorType === EDITOR_TYPE_INLINE && Repository && 
+					{useEditor && editorType === EDITOR_TYPE__INLINE && Repository && 
 							<Modal
 								isOpen={isEditorShown}
 								onClose={() => setIsEditorShown(false)}
 							>
 								<Column position="absolute" ref={inlineEditorRef}>
 									{isEditorShown && <Form
-															editorType={EDITOR_TYPE_INLINE} 
+															editorType={EDITOR_TYPE__INLINE} 
 															record={selection[0]}
 															Repository={Repository}
 															isMultiple={selection.length > 1}

@@ -27,6 +27,7 @@ import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
 import withData from '../Hoc/withData.js';
 import withEvents from '../Hoc/withEvents.js';
+import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
 import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
@@ -838,6 +839,26 @@ export function Grid(props) {
 			</Column>;
 
 }
+
+export const SideGridEditor = withAlert(
+									withEvents(
+										withData(
+											withMultiSelection(
+												withSelection(
+													withSideEditor(
+														withFilters(
+															withPresetButtons(
+																withContextMenu(
+																	Grid
+																)
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								);
 
 export const WindowedGridEditor = withAlert(
 									withEvents(

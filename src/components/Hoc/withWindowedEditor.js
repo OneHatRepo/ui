@@ -4,8 +4,8 @@ import {
 	Text,
 } from 'native-base';
 import {
-	EDITOR_TYPE_WINDOWED,
-} from '../../Constants/EditorTypes.js';
+	EDITOR_TYPE__WINDOWED,
+} from '../../Constants/Editor.js';
 import withEditor from './withEditor.js';
 // import withDraggable from './withDraggable.js';
 import _ from 'lodash';
@@ -32,6 +32,7 @@ export default function withWindowedEditor(WrappedComponent) {
 				isEditorShown,
 				setIsEditorShown,
 				EditorWindow,
+				editorProps = {},
 			} = props;
 
 		return <>
@@ -42,8 +43,9 @@ export default function withWindowedEditor(WrappedComponent) {
 							onClose={() => setIsEditorShown(false)}
 						>
 							<EditorWindow
-								editorType={EDITOR_TYPE_WINDOWED}
+								editorType={EDITOR_TYPE__WINDOWED}
 								{...props}
+								{...editorProps}
 							/>
 						</Modal>}
 				</>;
