@@ -9,13 +9,13 @@ import _ from 'lodash';
 export default function withSideEditor(WrappedComponent) {
 	return withEditor((props) => {
 		const {
-				EditorWindow,
+				Editor,
 				editorProps = {},
 			} = props;
 
 		return <Container
 					center={<WrappedComponent {...props} />}
-					east={<EditorWindow
+					east={<Editor
 								editorType={EDITOR_TYPE__SIDE}
 								{...props}
 								{...editorProps}

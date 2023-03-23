@@ -31,7 +31,7 @@ export default function withWindowedEditor(WrappedComponent) {
 				useEditor = false,
 				isEditorShown,
 				setIsEditorShown,
-				EditorWindow,
+				Editor,
 				editorProps = {},
 			} = props;
 
@@ -42,7 +42,7 @@ export default function withWindowedEditor(WrappedComponent) {
 							isOpen={true}
 							onClose={() => setIsEditorShown(false)}
 						>
-							<EditorWindow
+							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
 								{...props}
 								{...editorProps}
