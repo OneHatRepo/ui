@@ -42,6 +42,7 @@ const
 
 		if (_.isNil(value)) {
 			return <IconButton
+						ref={props.outerRef}
 						icon={<Icon as={Na} color="trueGray.400" />}
 						onPress={onToggle}
 						borderWidth={1}
