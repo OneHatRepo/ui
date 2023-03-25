@@ -209,8 +209,8 @@ export default function withFilters(WrappedComponent) {
 													{...modelProps}
 												/>;
 							if (showLabels) {
-								filterElement = <Row key={'label-' + ix}>
-													<Text fontSize={styles.FILTER_LABEL_FONTSIZE}>{titles[fieldName]}:</Text>
+								filterElement = <Row key={'label-' + ix} alignItems="center">
+													<Text ml={2} mr={1} fontSize={styles.FILTER_LABEL_FONTSIZE}>{titles[fieldName]}</Text>
 													{filterElement}
 												</Row>;
 							}

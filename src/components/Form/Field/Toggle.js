@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useRef, } from 'react';
 import {
+	Icon,
+	Pressable,
 	Row,
 	Switch,
 	Text,
 } from 'native-base';
 import UiGlobals from '../../../UiGlobals.js';
+import IconButton from '../../Buttons/IconButton.js';
+import Na from '../../Icons/Na.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
+import _ from 'lodash';
 
 const
 	ToggleElement = (props) => {
@@ -16,28 +21,52 @@ const
 				flex, // flex doesn't work right on mobile
 				...propsToPass
 			} = props,
+			isBlocked = useRef(false),
 			styles = UiGlobals.styles,
-			onToggle = () => {
-				setValue(!value);
+			onToggle = (val, e) => {
+				if (!isBlocked.current) {
+					setValue(!value);
+				}
+			},
+			onNullify = (e) => {
+				if (e.shiftKey) {
+					// If user presses shift key while pressing...
+					// Set value to null, and tempoarily disable the onToggle method
+					setValue(null);
+					isBlocked.current = true;
+					setTimeout(() => {
+						isBlocked.current = false;
+					}, 200);
+				}
 			};
 
+		if (_.isNil(value)) {
+			return <IconButton
+						icon={<Icon as={Na} color="trueGray.400" />}
+						onPress={onToggle}
+						borderWidth={1}
+						borderColor="trueGray.700"
+					/>;
+		}
+
 		return <Row alignItems="center">
-					<Switch
-						ref={props.outerRef}
-						onToggle={onToggle}
-						isChecked={!!value}
-						// flex={1}
-						bg={styles.FORM_TOGGLE_BG}
-						size={styles.FORM_TOGGLE_SIZE}
-						onTrackColor={styles.FORM_TOGGLE_ON_COLOR}
-						offTrackColor={styles.FORM_TOGGLE_OFF_COLOR}
-						_hover={{
-							onTrackColor: styles.FORM_TOGGLE_ON_HOVER_COLOR,
-							offTrackColor: styles.FORM_TOGGLE_OFF_HOVER_COLOR,
-						}}
-						{...propsToPass}
-					/>
-					<Text fontSize={styles.FORM_TOGGLE_FONTSIZE}>{!!value ? 'Yes' : 'No'}</Text>
+					<Pressable onPress={onNullify}>
+						<Switch
+							ref={props.outerRef}
+							onToggle={onToggle}
+							isChecked={!!value}
+							bg={styles.FORM_TOGGLE_BG}
+							size={styles.FORM_TOGGLE_SIZE}
+							onTrackColor={styles.FORM_TOGGLE_ON_COLOR}
+							offTrackColor={styles.FORM_TOGGLE_OFF_COLOR}
+							_hover={{
+								onTrackColor: styles.FORM_TOGGLE_ON_HOVER_COLOR,
+								offTrackColor: styles.FORM_TOGGLE_OFF_HOVER_COLOR,
+							}}
+							{...propsToPass}
+						/>
+					</Pressable>
+					<Text ml={2} fontSize={styles.FORM_TOGGLE_FONTSIZE}>{_.isNil(value) ? 'N/A' : (!!value ? 'Yes' : 'No')}</Text>
 				</Row>;
 	},
 	ToggleField = withValue(ToggleElement);

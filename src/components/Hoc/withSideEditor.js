@@ -11,12 +11,14 @@ export default function withSideEditor(WrappedComponent) {
 		const {
 				Editor,
 				editorProps = {},
+				sideFlex = 100,
 			} = props;
 
 		return <Container
 					center={<WrappedComponent {...props} />}
 					east={<Editor
 								editorType={EDITOR_TYPE__SIDE}
+								flex={sideFlex}
 								{...props}
 								{...editorProps}
 							/>}
