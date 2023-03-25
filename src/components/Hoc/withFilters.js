@@ -2,6 +2,7 @@ import { useState, useEffect, } from 'react';
 import {
 	Column,
 	Modal,
+	Row,
 	Text,
 } from 'native-base';
 import inArray from '../../Functions/inArray.js';
@@ -11,6 +12,7 @@ import FormPanel from '../Panel/FormPanel.js';
 import Ban from '../Icons/Ban.js';
 import Gear from '../Icons/Gear.js';
 import Toolbar from '../Toolbar/Toolbar.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 // Filters only work with Repository; not data array
@@ -20,6 +22,7 @@ export default function withFilters(WrappedComponent) {
 		const {
 				useFilters = false,
 				searchAllText = true,
+				showLabels = true,
 				filter1StartingField = '',
 				filter2StartingField = '',
 				filter3StartingField = '',
@@ -33,7 +36,8 @@ export default function withFilters(WrappedComponent) {
 
 				// withData
 				Repository,
-			} = props;
+			} = props,
+			styles = UiGlobals.styles;
 
 		let modal,
 			topToolbar = null;
@@ -195,15 +199,22 @@ export default function withFilters(WrappedComponent) {
 							if (!Element) {
 								debugger;
 							}
-							filterElements.push(<Element
-													key={ix}
+							let filterElement = <Element
+													key={'element-' + ix}
 													tooltip={titles[fieldName]}
 													placeholder={titles[fieldName]}
 													value={getFilterValue(ix)}
 													onChangeValue={(value) => onFilterChange(ix, value)}
 													{...filterProps}
 													{...modelProps}
-												/>);
+												/>;
+							if (showLabels) {
+								filterElement = <Row key={'label-' + ix}>
+													<Text fontSize={styles.FILTER_LABEL_FONTSIZE}>{titles[fieldName]}:</Text>
+													{filterElement}
+												</Row>;
+							}
+							filterElements.push(filterElement);
 						};
 					if (searchAllText) {
 						addFilter(null, 'q');
