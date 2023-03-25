@@ -1,4 +1,4 @@
-import { useState, } from 'react';
+import { useEffect, useState, } from 'react';
 import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
@@ -140,6 +140,18 @@ export default function withEditor(WrappedComponent) {
 			onEditorClose = () => {
 				setIsEditorShown(false);
 			};
+
+		useEffect(() => {
+			if (selection.length === 1 && selection.isPhantom && userCanEdit) {
+				if (editorMode !== EDITOR_MODE__ADD) {
+					setEditorMode(EDITOR_MODE__ADD);
+				}
+			} else {
+				if (editorMode !== EDITOR_MODE__VIEW) {
+					setEditorMode(EDITOR_MODE__VIEW);
+				}
+			}
+		}, [selection]);
 
 		return <WrappedComponent
 					{...props}
