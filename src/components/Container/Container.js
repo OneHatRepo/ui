@@ -119,7 +119,7 @@ export default function Container(props) {
 	}
 	if (east) {
 		componentProps.collapseDirection = HORIZONTAL;
-		if (!east.props.h && !east.props.flex) {
+		if (!east.props.w && !east.props.flex) {
 			componentProps.flex = 50;
 		}
 		if (canResize && east.props.isResizable) {
@@ -143,7 +143,7 @@ export default function Container(props) {
 	}
 	if (west) {
 		componentProps.collapseDirection = HORIZONTAL;
-		if (!west.props.h && !west.props.flex) {
+		if (!west.props.w && !west.props.flex) {
 			componentProps.flex = 50;
 		}
 		if (canResize && west.props.isResizable) {
