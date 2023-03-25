@@ -24,6 +24,7 @@ import withEditor from '../Hoc/withEditor.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
+import AngleLeft from '../Icons/AngleLeft.js';
 import Rotate from '../Icons/Rotate.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Panel/Footer.js';
@@ -37,7 +38,8 @@ import _ from 'lodash';
 // Form is a single scrollable row, based on columnsConfig and Repository
 //
 // EDITOR_TYPE__WINDOWED
-// Form is a popup window, used for editing items in a grid. Integrated with Repository
+// EDITOR_TYPE__SIDE
+// Form is a popup or side window, used for editing items in a grid. Integrated with Repository
 //
 // EDITOR_TYPE__SMART
 // Form is a standalone editor
@@ -56,6 +58,8 @@ function Form(props) {
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
+			onBack,
+			ancillaryComponents = [],
 			
 			// sizing of outer container
 			h,
@@ -227,7 +231,9 @@ function Form(props) {
 			return <Row>{elements}</Row>;
 		},
 		buildFromItems = () => {
-			return  _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+			const
+				regularItems = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+				return [...regularItems, ...ancillaryComponents];
 		},
 		buildNextLayer = (item, ix, defaults) => {
 			let {
@@ -452,6 +458,16 @@ function Form(props) {
 	}
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
+
+				{onBack && <Row p={2} alignItems="center">
+								<Button
+									key="backBtn"
+									onPress={onBack}
+									leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
+									color="#fff"
+								>Back</Button>
+								<Text ml={2} fontSize={18}>Edit Mode</Text>
+							</Row>}
 				
 				{editor}
 

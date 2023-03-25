@@ -1,6 +1,6 @@
 import { useEffect, useState, } from 'react';
 import Panel from './Panel.js';
-import Grid, { InlineGridEditor, } from '../Grid/Grid.js';
+import Grid, { InlineGridEditor, SideGridEditor, } from '../Grid/Grid.js';
 import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,
@@ -10,14 +10,26 @@ import _ from 'lodash';
 
 export function GridPanel(props) {
 	const {
-			editorType,
+			editorType = EDITOR_TYPE__WINDOWED,
 			disableTitleChange = false,
 			selectorSelected,
 		} = props,
 		originalTitle = props.title,
-		WhichGrid = (editorType === EDITOR_TYPE__INLINE) ? InlineGridEditor : Grid,
 		[isReady, setIsReady] = useState(disableTitleChange),
 		[title, setTitle] = useState(originalTitle);
+
+	let WhichGrid;
+	switch(editorType) {
+		case EDITOR_TYPE__INLINE:
+			WhichGrid = InlineGridEditor;
+			break;
+		case EDITOR_TYPE__WINDOWED:
+			WhichGrid = Grid;
+			break;
+		case EDITOR_TYPE__SIDE:
+			WhichGrid = SideGridEditor;
+			break;
+	}
 
 	useEffect(() => {
 		if (!disableTitleChange && originalTitle) {
