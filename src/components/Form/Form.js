@@ -475,7 +475,7 @@ function Form(props) {
 					<Button.Group space={2} {...buttonGroupProps}>
 						{!isViewOnly && <IconButton
 											key="resetBtn"
-											onPress={reset}
+											onPress={() => reset()}
 											icon={<Rotate color="#fff" />}
 										/>}
 						{!isViewOnly && onCancel && <Button
