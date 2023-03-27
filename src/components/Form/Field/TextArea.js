@@ -5,10 +5,13 @@ import {
 import UiGlobals from '../../../UiGlobals.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
+import _ from 'lodash';
 
 const
 	TextAreaElement = (props) => {
-		const styles = UiGlobals.styles;
+		const
+			styles = UiGlobals.styles,
+			value = _.isNil(props.value) ? '' : props.value; // null value may not actually reset this TextArea, so set it explicitly to empty string
 		return <TextArea
 					ref={props.outerRef}
 					onChangeText={props.setValue}
@@ -17,6 +20,7 @@ const
 					fontSize={styles.FORM_TEXTAREA_FONTSIZE}
 					h={styles.FORM_TEXTAREA_HEIGHT}
 					{...props}
+					value={value}
 				/>;
 	},
 	TextAreaField = withValue(TextAreaElement);
