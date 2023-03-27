@@ -14,6 +14,9 @@ import {
 	EDITOR_TYPE__SIDE,
 	EDITOR_TYPE__SMART,
 	EDITOR_TYPE__PLAIN,
+	EDITOR_MODE__VIEW,
+	EDITOR_MODE__ADD,
+	EDITOR_MODE__EDIT,
 } from '../../Constants/Editor.js';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
@@ -74,6 +77,7 @@ function Form(props) {
 			
 			// withEditor
 			isViewOnly = false,
+			editorMode,
 			onCancel,
 			onEditorSave,
 			onSave = onEditorSave,
@@ -456,18 +460,32 @@ function Form(props) {
 					<Row flex={1}>{formComponents}</Row>
 				</ScrollView>;
 	}
+
+	let editorModeF;
+	switch(editorMode) {
+		case EDITOR_MODE__VIEW:
+			editorModeF = 'View';
+			break;
+		case EDITOR_MODE__ADD:
+			editorModeF = 'Add';
+			break;
+		case EDITOR_MODE__EDIT:
+			editorModeF = isMultiple ? 'Edit Multiple' : 'Edit';
+			break;
+	}
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
 
-				{onBack && <Row p={2} alignItems="center">
-								<Button
-									key="backBtn"
-									onPress={onBack}
-									leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
-									color="#fff"
-								>Back</Button>
-								<Text ml={2} fontSize={18}>Edit Mode</Text>
-							</Row>}
+				<Row p={2} alignItems="center">
+					{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
+						<Button
+							key="backBtn"
+							onPress={onBack}
+							leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
+							color="#fff"
+						>Back</Button>}
+					<Text ml={2} fontSize={18}>{editorModeF} Mode</Text>
+				</Row>
 				
 				{editor}
 
