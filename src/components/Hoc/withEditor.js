@@ -8,6 +8,8 @@ import _ from 'lodash';
 
 export default function withEditor(WrappedComponent) {
 	return (props) => {
+
+		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
 				useEditor = false,
 				userCanEdit = true,
@@ -38,9 +40,9 @@ export default function withEditor(WrappedComponent) {
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
-			[editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW),
+			[lastSelection, setLastSelection] = useState(),
 			addRecord = async () => {
-				if (!userCanEdit) {
+				if (!userCanEdit || disableAdd) {
 					return;
 				}
 				const
@@ -52,7 +54,7 @@ export default function withEditor(WrappedComponent) {
 				setIsEditorShown(true);
 			},
 			editRecord = () => {
-				if (!userCanEdit) {
+				if (!userCanEdit || disableEdit) {
 					return;
 				}
 				setIsEditorViewOnly(false);
@@ -60,7 +62,7 @@ export default function withEditor(WrappedComponent) {
 				setIsEditorShown(true);
 			},
 			deleteRecord = (e) => {
-				if (!userCanEdit) {
+				if (!userCanEdit || disableDelete) {
 					return;
 				}
 				const
@@ -92,7 +94,7 @@ export default function withEditor(WrappedComponent) {
 				setIsEditorShown(true);
 			},
 			duplicateRecord = async () => {
-				if (!userCanEdit) {
+				if (!userCanEdit || disableDuplicate) {
 					return;
 				}
 				if (selection.length !== 1) {
@@ -139,19 +141,37 @@ export default function withEditor(WrappedComponent) {
 			},
 			onEditorClose = () => {
 				setIsEditorShown(false);
+			},
+			calculateEditorMode = () => {
+				let mode = EDITOR_MODE__VIEW;
+				if (userCanEdit) {
+					if (selection.length > 1) {
+						if (!disableEdit) {
+							// For multiple entities selected, change it to edit multiple mode
+							mode = EDITOR_MODE__EDIT;
+						}
+					} else if (selection.length === 1 && selection.isPhantom) {
+						if (!disableAdd) {
+							// When a phantom entity is selected, change it to add mode.
+							mode = EDITOR_MODE__ADD;
+						}
+					}
+				}
+				return mode;
 			};
 
 		useEffect(() => {
-			if (selection.length === 1 && selection.isPhantom && userCanEdit) {
-				if (editorMode !== EDITOR_MODE__ADD) {
-					setEditorMode(EDITOR_MODE__ADD);
-				}
-			} else {
-				if (editorMode !== EDITOR_MODE__VIEW) {
-					setEditorMode(EDITOR_MODE__VIEW);
-				}
-			}
+			// When selection changes, set the mode appropriately
+			const mode = calculateEditorMode();
+			setEditorMode(mode);
+			setLastSelection(selection);
 		}, [selection]);
+
+		if (lastSelection !== selection) {
+			// NOTE: If I don't calculate this on the fly, we see a flash of the previous state
+			// whenever the selection changes, since useEffect hasn't yet run
+			editorMode = calculateEditorMode();
+		}
 
 		return <WrappedComponent
 					{...props}
