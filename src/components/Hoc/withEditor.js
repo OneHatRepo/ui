@@ -76,11 +76,9 @@ export default function withEditor(WrappedComponent) {
 					confirm('Are you sure you want to delete the ' + identifier, onDelete);
 				}
 			},
-			onDelete = () => {
+			onDelete = async () => {
 				Repository.delete(selection);
-				if (!Repository.isAutoSave) {
-					Repository.save();
-				}
+				await Repository.save();
 			},
 			viewRecord = () => {
 				if (!userCanView) {
@@ -106,9 +104,10 @@ export default function withEditor(WrappedComponent) {
 					rawValues = _.omit(entity.rawValues, idProperty),
 					duplicate = await Repository.add(rawValues, false, true);
 				setSelection([duplicate]);
+				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
-			onEditorSave = (data, e) => {
+			onEditorSave = async (data, e) => {
 				const
 					what = record || selection,
 					isSingle = what.length === 1;
@@ -125,18 +124,17 @@ export default function withEditor(WrappedComponent) {
 
 
 				}
-				if (!Repository.isAutoSave) {
-					Repository.save();
-				}
+				await Repository.save();
 				setIsEditorShown(false);
 			},
-			onEditorCancel = () => {
+			onEditorCancel = async () => {
 				const
 					isSingle = selection.length === 1,
 					isPhantom = selection[0] && selection[0].isPhantom;
 				if (isSingle && isPhantom) {
-					onDelete();
+					await onDelete();
 				}
+				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(false);
 			},
 			onEditorClose = () => {
@@ -168,8 +166,8 @@ export default function withEditor(WrappedComponent) {
 		}, [selection]);
 
 		if (lastSelection !== selection) {
-			// NOTE: If I don't calculate this on the fly, we see a flash of the previous state
-			// whenever the selection changes, since useEffect hasn't yet run
+			// NOTE: If I don't calculate this on the fly for selection changes,
+			// we see a flash of the previous state, since useEffect hasn't yet run.
 			editorMode = calculateEditorMode();
 		}
 
