@@ -118,11 +118,15 @@ export default function withEditor(WrappedComponent) {
 				} else if (selection.length > 1) {
 					// Edit multiple entities
 
-
-					debugger;
-
-
-
+					// Loop through all entities and change fields that are not null
+					const propertyNames = Object.getOwnPropertyNames(data);
+					_.each(propertyNames, (propertyName) => {
+						if (!_.isNil(data[propertyName])) {
+							_.each(what, (rec) => {
+								rec[propertyName] = data[propertyName]
+							});
+						}
+					});
 				}
 				await Repository.save();
 				setIsEditorShown(false);
