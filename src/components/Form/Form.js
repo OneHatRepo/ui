@@ -513,7 +513,7 @@ function Form(props) {
 														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
 														isDisabled={!_.isEmpty(formState.errors) || (!isSingle && !record?.isPhantom && !formState.isDirty)}
 														color="#fff"
-													>Save</Button>}
+													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
 						{isViewOnly && onClose && <Button
 														key="closeBtn"
 														onPress={onClose}
