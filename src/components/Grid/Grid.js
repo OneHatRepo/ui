@@ -82,6 +82,7 @@ export function Grid(props) {
 			hideNavColumn = true,
 			noneFoundText,
 			disableLoadingIndicator = false,
+			disableSelectorSelected = false,
 			showRowExpander = false,
 			rowExpanderTpl = '',
 			showHeaders = true,
@@ -129,10 +130,9 @@ export function Grid(props) {
 			isInSelection,
 			noSelectorMeansNoResults = false,
 
-			// selectorSelected
+			// DataMgt
 			selectorId,
 			selectorSelected,
-			disableSelectorSelected = false,
 
 			// withInlineEditor
 			inlineEditorRef,

@@ -44,8 +44,8 @@ export default function DataMgt(props) {
 		[isWestCollapsed, setIsWestCollapsed] = useState(westStartsCollapsed),
 		[isEastCollapsed, setIsEastCollapsed] = useState(eastStartsCollapsed),
 		[isFullscreen, setIsFullscreen] = useState(false),
-		[westSelected, setWestSelectedRaw] = useState([]),
-		[centerSelected, setCenterSelected] = useState([]),
+		[westSelected, setWestSelectedRaw] = useState(),
+		[centerSelected, setCenterSelected] = useState(),
 		setWestSelected = (selected) => {
 			setWestSelectedRaw(selected);
 			setCenterSelected(); // clear selection in center
@@ -156,7 +156,7 @@ export default function DataMgt(props) {
 					autoLoad={!showSelector}
 					uniqueRepository={true}
 					selectorId={showSelector ? westSelector_id : null}
-					selectorSelected={westSelected}
+					selectorSelected={westSelected?.[0]}
 					noSelectorMeansNoResults={centerNoSelectorMeansNoResults}
 					onChangeSelection={setCenterSelected}
 					onEvent={onEvent}
@@ -167,7 +167,7 @@ export default function DataMgt(props) {
 		isFullscreen,
 		showSelector,
 		westSelected,
-		westSelected?.hash,
+		westSelected?.[0].hash,
 		centerNoSelectorMeansNoResults,
 		// {...centerProps}
 	])
@@ -191,7 +191,7 @@ export default function DataMgt(props) {
 					controlledByCenter = typeof associatedPanel.props.controlledByCenter === 'undefined' ? true : associatedPanel.props.controlledByCenter,
 					thisAssociatedPanelProps = {
 						selectorId: controlledByCenter ? centerSelector_id : westSelector_id,
-						selectorSelected: controlledByCenter ? centerSelected : westSelected,
+						selectorSelected: controlledByCenter ? centerSelected?.[0] : westSelected?.[0],
 						...associatedPanel.props,
 					};
 				return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...allAssociatedPanelProps, ...thisAssociatedPanelProps, });

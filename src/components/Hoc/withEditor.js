@@ -27,6 +27,10 @@ export default function withEditor(WrappedComponent) {
 				},
 				record,
 
+				// DataMgt
+				selectorId,
+				selectorSelected,
+
 				// withData
 				Repository,
 
@@ -47,7 +51,13 @@ export default function withEditor(WrappedComponent) {
 				}
 				const
 					defaultValues = Repository.getSchema().model.defaultValues,
-					entity = await Repository.add(defaultValues, false, true, true);
+					addValues = _.clone(defaultValues);
+
+				if (selectorId && !_.isEmpty(selectorSelected)) {
+					addValues[selectorId] = selectorSelected.id;
+				}
+
+				const entity = await Repository.add(addValues, false, true, true);
 				setSelection([entity]);
 				setIsEditorViewOnly(false);
 				setEditorMode(EDITOR_MODE__ADD);

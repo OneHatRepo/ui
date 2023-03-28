@@ -33,12 +33,6 @@ export default function withPresetButtons(WrappedComponent) {
 			} = props,
 			{
 				// for local use
-				selection,
-				onAdd,
-				onEdit,
-				onDelete,
-				onView,
-				onDuplicate,
 				useEditor = true,
 				disableAdd = false,
 				disableEdit = false,
@@ -51,6 +45,19 @@ export default function withPresetButtons(WrappedComponent) {
 				// withEditor
 				userCanEdit = true,
 				userCanView = true,
+				onAdd,
+				onEdit,
+				onDelete,
+				onView,
+				onDuplicate,
+
+				// withSelection
+				selection,
+				setSelection,
+
+				// DataMgt
+				selectorId,
+				selectorSelected,
 			} = props,
 			[isReady, setIsReady] = useState(false),
 			[localContextMenuItems, setLocalContextMenuItems] = useState([]),
@@ -210,7 +217,7 @@ export default function withPresetButtons(WrappedComponent) {
 			if (!isReady) {
 				setIsReady(true);
 			}
-		}, [selection, localColumnsConfig]);
+		}, [selection, selectorSelected, localColumnsConfig]);
 
 		if (!isReady) {
 			return null;
@@ -229,6 +236,7 @@ export default function withPresetButtons(WrappedComponent) {
 		if (additionalToolbarButtons) {
 			additionalToolbarButtonsToPass.concat(additionalToolbarButtons);
 		}
+
 		return <WrappedComponent
 					{...propsToPass}
 					contextMenuItems={contextMenuItemsToPass}

@@ -83,7 +83,7 @@ function Form(props) {
 			onSave = onEditorSave,
 			onClose,
 
-			// withSelection
+			// DataMgt
 			selectorId,
 			selectorSelected,
 
