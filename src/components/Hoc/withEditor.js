@@ -162,7 +162,7 @@ export default function withEditor(WrappedComponent) {
 							// For multiple entities selected, change it to edit multiple mode
 							mode = EDITOR_MODE__EDIT;
 						}
-					} else if (selection.length === 1 && selection.isPhantom) {
+					} else if (selection.length === 1 && selection[0].isPhantom) {
 						if (!disableAdd) {
 							// When a phantom entity is selected, change it to add mode.
 							mode = EDITOR_MODE__ADD;
