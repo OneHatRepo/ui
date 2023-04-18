@@ -26,7 +26,7 @@ export default function GridRow(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		isPhantom = item.isPhantom,
-		hash = item.hash || item;
+		hash = item?.hash || item;
 
 		return useMemo(() => {
 			const renderColumns = (item) => {
