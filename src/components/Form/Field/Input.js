@@ -14,7 +14,7 @@ function InputElement(props) {
 	let {
 			value,
 			setValue,
-			autoSubmit = false, // automatically setValue after user stops typing for autoSubmitDelay
+			autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
 			autoSubmitDelay = AUTO_SUBMIT_DELAY,
 			maxLength,
 			onKeyPress,
