@@ -126,29 +126,59 @@ export default function withPresetButtons(WrappedComponent) {
 						text = 'Edit';
 						handler = onEdit;
 						icon = <Edit />;
+						if (selectorId && !selectorSelected) {
+							isDisabled = true;
+						}
+						if (_.isEmpty(selection)) {
+							isDisabled = true;
+						}
 						break;
 					case 'delete':
 						text = 'Delete';
 						handler = onDelete;
 						icon = <Trash />;
+						if (selectorId && !selectorSelected) {
+							isDisabled = true;
+						}
+						if (_.isEmpty(selection) || selection.length > 1) {
+							isDisabled = true;
+						}
 						break;
 					case 'view':
 						text = 'View';
 						handler = onView;
 						icon = <Eye />;
 						isDisabled = !selection.length || selection.length !== 1;
+						if (selectorId && !selectorSelected) {
+							isDisabled = true;
+						}
+						if (_.isEmpty(selection) || selection.length > 1) {
+							isDisabled = true;
+						}
 						break;
 					case 'copy':
 						text = 'Copy to Clipboard';
 						handler = onCopyToClipboard;
 						icon = <Clipboard />;
 						isDisabled = !selection.length;
+						if (selectorId && !selectorSelected) {
+							isDisabled = true;
+						}
+						if (_.isEmpty(selection)) {
+							isDisabled = true;
+						}
 						break;
 					case 'duplicate':
 						text = 'Duplicate';
 						handler = onDuplicate;
 						icon = <Duplicate />;
 						isDisabled = !selection.length || selection.length !== 1;
+						if (selectorId && !selectorSelected) {
+							isDisabled = true;
+						}
+						if (_.isEmpty(selection) || selection.length > 1) {
+							isDisabled = true;
+						}
 						break;
 					// case 'print':
 					// 	text = 'Print';
