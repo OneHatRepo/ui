@@ -167,7 +167,7 @@ export default function DataMgt(props) {
 		isFullscreen,
 		showSelector,
 		westSelected,
-		westSelected?.[0].hash,
+		westSelected?.[0]?.hash,
 		centerNoSelectorMeansNoResults,
 		// {...centerProps}
 	])
