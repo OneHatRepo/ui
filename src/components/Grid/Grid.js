@@ -751,11 +751,11 @@ export function Grid(props) {
 			return () => {};
 		}
 		if (!disableSelectorSelected) {
-			let matches = selectorSelected?.[0]?.id;
+			let id = selectorSelected?.id;
 			if (_.isEmpty(selectorSelected)) {
-				matches = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
+				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
 			}
-			Repository.filter(selectorId, matches, false); // so it doesn't clear existing filters
+			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
 		}
 
 	}, [selectorId, selectorSelected]);
