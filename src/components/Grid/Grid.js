@@ -808,6 +808,7 @@ export function Grid(props) {
 								borderWidth: isReorderMode ? 4 : 0,
 								borderColor: isReorderMode ? '#23d9ea' : null,
 								borderStyle: 'dashed',
+								flex: 1,
 							}}
 							refreshing={isLoading}
 							onRefresh={pullToRefresh ? onRefresh : null}
