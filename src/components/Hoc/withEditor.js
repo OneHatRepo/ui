@@ -57,6 +57,13 @@ export default function withEditor(WrappedComponent) {
 					addValues[selectorId] = selectorSelected.id;
 				}
 
+				// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
+				Repository.pauseEvents();
+				Repository.sort(Repository.schema.model.idProperty, 'DESC');
+				Repository.setPage(1);
+				Repository.resumeEvents();
+				await Repository.reload();
+
 				const entity = await Repository.add(addValues, false, true, true);
 				setSelection([entity]);
 				setIsEditorViewOnly(false);
