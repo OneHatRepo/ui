@@ -121,6 +121,9 @@ export default function withPresetButtons(WrappedComponent) {
 						text = 'Add';
 						handler = onAdd;
 						icon = <Plus />;
+						if (selectorId && !selectorSelected) {
+							isDisabled = true;
+						}
 						break;
 					case 'edit':
 						text = 'Edit';
