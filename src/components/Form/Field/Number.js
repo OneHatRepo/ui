@@ -54,6 +54,11 @@ function NumberElement(props) {
 		}
 	},
 	onChangeText = (value) => {
+		if (value.match(/\.$/)) { // if value ends with a decimal point
+			setLocalValue(value);
+			return;
+		}
+
 		if (value === '') {
 			value = null; // empty string makes value null
 		} else {
