@@ -56,8 +56,9 @@ function NumberElement(props) {
 	onChangeText = (value) => {
 		if (value === '') {
 			value = null; // empty string makes value null
+		} else {
+			value = parseFloat(value, 10);
 		}
-		value = parseFloat(value, 10);
 		setLocalValue(value);
 		debouncedSetValueRef.current(value);
 	},

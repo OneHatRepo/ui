@@ -314,6 +314,9 @@ export default function withFilters(WrappedComponent) {
 					const q = 'q';
 					newFilterFields.push(q);
 					filters.push({ name: q, value: filterQValue, });
+					if (Repository.searchAncillary && !Repository.hasBaseParam('searchAncillary')) {
+						Repository.setBaseParam('searchAncillary', true);
+					}
 				}
 				setFilterFields(newFilterFields);
 
