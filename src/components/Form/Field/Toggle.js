@@ -67,7 +67,9 @@ const
 							{...propsToPass}
 						/>
 					</Pressable>
-					<Text ml={2} fontSize={styles.FORM_TOGGLE_FONTSIZE}>{_.isNil(value) ? 'N/A' : (!!value ? 'Yes' : 'No')}</Text>
+					<Pressable onPress={onToggle}>
+						<Text ml={2} fontSize={styles.FORM_TOGGLE_FONTSIZE}>{_.isNil(value) ? 'N/A' : (!!value ? 'Yes' : 'No')}</Text>
+					</Pressable>
 				</Row>;
 	},
 	ToggleField = withValue(ToggleElement);
