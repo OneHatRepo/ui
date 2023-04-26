@@ -28,6 +28,7 @@ import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
+import Eye from '../Icons/Eye.js';
 import Rotate from '../Icons/Rotate.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Panel/Footer.js';
@@ -61,7 +62,9 @@ function Form(props) {
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
-			onBack,
+			onBack,	
+			onViewMode,
+			additionalButtons = [],
 			ancillaryComponents = [],
 			
 			// sizing of outer container
@@ -476,7 +479,8 @@ function Form(props) {
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
 
-				<Row p={2} alignItems="center">
+				<Row p={2} alignItems="center" justifyContent="flex-end">
+					{/* <Text mr={2} fontSize={18}>{editorModeF} Mode</Text> */}
 					{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
 						<Button
 							key="backBtn"
@@ -484,8 +488,18 @@ function Form(props) {
 							leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
 							color="#fff"
 						>Back</Button>}
-					<Text ml={2} fontSize={18}>{editorModeF} Mode</Text>
+					{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
+						<Button
+							key="viewBtn"
+							onPress={onViewMode}
+							leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
+							color="#fff"
+						>View</Button>}
 				</Row>
+				{!_.isEmpty(additionalButtons) && 
+					<Row p={2} alignItems="center" justifyContent="flex-end">
+						{additionalButtons}
+					</Row>}
 				
 				{editor}
 
