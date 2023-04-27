@@ -16,6 +16,8 @@ import PageSizeCombo from '../Form/Field/Combo/PageSizeCombo.js';
 
 export default function Pagination(props) {
 	const {
+			minimize = false,
+	
 			// withData
 			Repository,
 		} = props,
@@ -70,23 +72,25 @@ export default function Pagination(props) {
 						onPress={() => Repository.prevPage()}
 						tooltip="Previous Page"
 					/>);
-		items.push(<Row
-						key="pageSelector"
-						mx={3}
-						justifyContent="center"
-						alignItems="center"
-					>
-						<Text mr={2}>Page</Text>
-						<Input
-							value={page}
-							onChangeValue={(value) => Repository.setPage(value)}
-							maxValue={totalPages}
-							isDisabled={totalPages === 1}
-							w={10}
-							tooltip="Set Page"
-						/>
-						<Text ml={2}>of {totalPages}</Text>
-					</Row>);
+		if (!minimize) {
+			items.push(<Row
+							key="pageSelector"
+							mx={3}
+							justifyContent="center"
+							alignItems="center"
+						>
+							<Text mr={2}>Page</Text>
+							<Input
+								value={page}
+								onChangeValue={(value) => Repository.setPage(value)}
+								maxValue={totalPages}
+								isDisabled={totalPages === 1}
+								w={10}
+								tooltip="Set Page"
+							/>
+							<Text ml={2}>of {totalPages}</Text>
+						</Row>);
+		}
 
 		isDisabled = page === totalPages || totalPages <= 1;
 		items.push(<IconButton
@@ -115,7 +119,9 @@ export default function Pagination(props) {
 						/>);
 		}
 
-		items.push(<PageSizeCombo key="pageSize" pageSize={pageSize} Repository={Repository} />);
+		if (!minimize) {
+			items.push(<PageSizeCombo key="pageSize" pageSize={pageSize} Repository={Repository} />);
+		}
 
 		let pageSpan = `${pageStart} – ${pageEnd}`;
 		if (pageStart === pageEnd) {
@@ -130,7 +136,7 @@ export default function Pagination(props) {
 					{...props}
 				>
 					{items}
-					<Text ml={3}>Displaying {pageSpan} of {total}</Text>
+					{!minimize && <Text ml={3}>Displaying {pageSpan} of {total}</Text>}
 				</Row>;
 	}, [
 		// Repository,
@@ -140,6 +146,7 @@ export default function Pagination(props) {
 		totalPages,
 		pageStart,
 		pageEnd,
+		minimize,
 	])
 
 
