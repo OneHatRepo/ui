@@ -23,6 +23,7 @@ export default function withFilters(WrappedComponent) {
 				useFilters = false,
 				searchAllText = true,
 				showLabels = true,
+				showFilterSelector = true,
 				filter1StartingField = '',
 				filter2StartingField = '',
 				filter3StartingField = '',
@@ -33,6 +34,7 @@ export default function withFilters(WrappedComponent) {
 				filter3StartingValue = null,
 				filter4StartingValue = null,
 				filter5StartingValue = null,
+				customFilters = [], // of shape: { title, startingValue, filterType, getPrams (fn) }
 
 				// withData
 				Repository,
@@ -62,91 +64,117 @@ export default function withFilters(WrappedComponent) {
 				[filter3Value, setFilter3Value] = useState(filter3StartingValue),
 				[filter4Value, setFilter4Value] = useState(filter4StartingValue),
 				[filter5Value, setFilter5Value] = useState(filter5StartingValue),
+				[customFilterDefinitions, setCustomFilterDefinitions] = useState(customFilters),
+				[customFilterValues, setCustomFilterValues] = useState(),
 				[filterFields, setFilterFields] = useState([]),
 				onFilterChange = (ix, value) => {
-					switch(ix) {
-						case 'q':
-							setFilterQValue(value);
-							break;
-						case 0:
-							setFilter1Value(value);
-							break;
-						case 1:
-							setFilter2Value(value);
-							break;
-						case 2:
-							setFilter3Value(value);
-							break;
-						case 3:
-							setFilter4Value(value);
-							break;
-						case 4:
-							setFilter5Value(value);
-							break;
-						default:
+					if (_.isString(ix) && ix.match(/^custom/)) {
+						
+
+
+					} else {
+						switch(ix) {
+							case 'q':
+								setFilterQValue(value);
+								break;
+							case 0:
+								setFilter1Value(value);
+								break;
+							case 1:
+								setFilter2Value(value);
+								break;
+							case 2:
+								setFilter3Value(value);
+								break;
+							case 3:
+								setFilter4Value(value);
+								break;
+							case 4:
+								setFilter5Value(value);
+								break;
+							default:
+						}
 					}
 				},
 				getFilterType = (ix) => {
-					const
-						filterField = getFilterField(ix),
-						filterTypeDefinition = Repository.getSchema().model.filterTypes[filterField];
 					let filterType;
-					if (_.isString(filterTypeDefinition)) {
-						filterType = filterTypeDefinition;
+					if (_.isString(ix) && ix.match(/^custom/)) {
+						
+
+
 					} else {
-						filterType = filterTypeDefinition.type;
+						const
+							filterField = getFilterField(ix),
+							filterTypeDefinition = Repository.getSchema().model.filterTypes[filterField];
+						if (_.isString(filterTypeDefinition)) {
+							filterType = filterTypeDefinition;
+						} else {
+							filterType = filterTypeDefinition.type;
+						}
 					}
 					return filterType;
 				},
 				getFilterField = (ix) => {
 					let field;
-					switch(ix) {
-						case 0:
-							field = filter1Field;
-							break;
-						case 1:
-							field = filter2Field;
-							break;
-						case 2:
-							field = filter3Field;
-							break;
-						case 3:
-							field = filter4Field;
-							break;
-						case 4:
-							field = filter5Field;
-							break;
-						default:
+					if (_.isString(ix) && ix.match(/^custom/)) {
+						
+
+						
+					} else {
+						switch(ix) {
+							case 0:
+								field = filter1Field;
+								break;
+							case 1:
+								field = filter2Field;
+								break;
+							case 2:
+								field = filter3Field;
+								break;
+							case 3:
+								field = filter4Field;
+								break;
+							case 4:
+								field = filter5Field;
+								break;
+							default:
+						}
 					}
 					return field;
 				},
 				getFilterValue = (ix) => {
 					let value;
-					switch(ix) {
-						case 'q':
-							value = filterQValue;
-							break;
-						case 0:
-							value = filter1Value;
-							break;
-						case 1:
-							value = filter2Value;
-							break;
-						case 2:
-							value = filter3Value;
-							break;
-						case 3:
-							value = filter4Value;
-							break;
-						case 4:
-							value = filter5Value;
-							break;
-						default:
+					if (_.isString(ix) && ix.match(/^custom/)) {
+						
+
+						
+					} else {
+						switch(ix) {
+							case 'q':
+								value = filterQValue;
+								break;
+							case 0:
+								value = filter1Value;
+								break;
+							case 1:
+								value = filter2Value;
+								break;
+							case 2:
+								value = filter3Value;
+								break;
+							case 3:
+								value = filter4Value;
+								break;
+							case 4:
+								value = filter5Value;
+								break;
+							default:
+						}
 					}
 					return value;
 				},
 				getIsFilterRange = (ix) => {
-					const filterType = getFilterType(0);
+					const filterType = getFilterType(ix);
 					return inArray(filterType, ['NumberRange', 'DateRange']);
 				},
 				renderFilters = () => {
@@ -166,39 +194,44 @@ export default function withFilters(WrappedComponent) {
 						},
 						filterElements = [],
 						addFilter = (fieldName, ix) => {
-							if (ix === 'q') {
-								// special case
-								const Element = getComponentFromType('Input');
-								filterElements.push(<Element
-														key={ix}
-														tooltip="Search all text fields"
-														placeholder="All text fields"
-														value={getFilterValue(ix)}
-														autoSubmit={true}
-														onChangeValue={(value) => onFilterChange(ix, value)}
-														{...filterProps}
-													/>);
-								return;
-							}
-							if (inArray(fieldName, virtualFields) || inArray(fieldName, excludeFields)) {
-								return; // skip
-							}
-							const filterType = filterTypes[fieldName];
 							let Element,
-								modelProps = {};
-							if (_.isString(filterType)) {
-								Element = getComponentFromType(filterType);
-							} else if (_.isPlainObject(filterType)) {
-								const {
-										type,
-										...p
-									} = filterType;
-								modelProps = p;
-								Element = getComponentFromType(type);
+								modelProps = {}, 
+								filterType;
+							if (_.isString(ix) && ix.match(/^custom/)) {
+								
+
+								
+							} else {
+								if (ix === 'q') {
+									// special case
+									const Element = getComponentFromType('Input');
+									filterElements.push(<Element
+															key={ix}
+															tooltip="Search all text fields"
+															placeholder="All text fields"
+															value={getFilterValue(ix)}
+															autoSubmit={true}
+															onChangeValue={(value) => onFilterChange(ix, value)}
+															{...filterProps}
+														/>);
+									return;
+								}
+								if (inArray(fieldName, virtualFields) || inArray(fieldName, excludeFields)) {
+									return; // skip
+								}
+								filterType = filterTypes[fieldName];
+								if (_.isString(filterType)) {
+									Element = getComponentFromType(filterType);
+								} else if (_.isPlainObject(filterType)) {
+									const {
+											type,
+											...p
+										} = filterType;
+									modelProps = p;
+									Element = getComponentFromType(type);
+								}
 							}
-							if (!Element) {
-								debugger;
-							}
+							
 							let filterElement = <Element
 													key={'element-' + ix}
 													tooltip={titles[fieldName]}
@@ -234,10 +267,30 @@ export default function withFilters(WrappedComponent) {
 					if (filter5Field) {
 						addFilter(filter5Field, 4);
 					}
+					if (!_.isEmpty(customFilterDefinitions)) {
+
+
+						// addFilter(custom0Field, custom0);
+					}
 		
 					return filterElements;
 				},
-				setFiltersOn = (ix, filters, newFilterFields) => {
+				onClearFilters = () => {
+					setFilterQValue(null);
+					setFilter1Value(null);
+					setFilter2Value(null);
+					setFilter3Value(null);
+					setFilter4Value(null);
+					setFilter5Value(null);
+				};
+
+			useEffect(() => {
+				const 
+					filters = [],
+					newFilterFields = [];
+
+				// For each filter field that is set, add a real filter to the @onehat/data Repository
+				function createRepoFiltersFor(ix) {
 					const
 						filterIxField = getFilterField(ix),
 						filterIxValue = getFilterValue(ix),
@@ -260,36 +313,22 @@ export default function withFilters(WrappedComponent) {
 						newFilterFields.push(filterIxField);
 						filters.push({ name: filterIxField, value: filterIxValue, });
 					}
-				},
-				onClearFilters = () => {
-					setFilterQValue(null);
-					setFilter1Value(null);
-					setFilter2Value(null);
-					setFilter3Value(null);
-					setFilter4Value(null);
-					setFilter5Value(null);
-				};
+				}
 
-			useEffect(() => {
-				const 
-					filters = [],
-					newFilterFields = [];
-
-				// For each filter field that is set, add a real filter for it
 				if (filter1Field) {
-					setFiltersOn(0, filters, newFilterFields);
+					createRepoFiltersFor(0);
 				}
 				if (filter2Field) {
-					setFiltersOn(1, filters, newFilterFields);
+					createRepoFiltersFor(1);
 				}
 				if (filter3Field) {
-					setFiltersOn(2, filters, newFilterFields);
+					createRepoFiltersFor(2);
 				}
 				if (filter4Field) {
-					setFiltersOn(3, filters, newFilterFields);
+					createRepoFiltersFor(3);
 				}
 				if (filter5Field) {
-					setFiltersOn(4, filters, newFilterFields);
+					createRepoFiltersFor(4);
 				}
 				if (searchAllText && !_.isEmpty(filterQValue)) {
 					const q = 'q';
@@ -299,6 +338,14 @@ export default function withFilters(WrappedComponent) {
 						Repository.setBaseParam('searchAncillary', true);
 					}
 				}
+				if (!_.isEmpty(customFilters)) {
+
+
+
+
+
+
+				}
 				setFilterFields(newFilterFields);
 
 				// Go through previous filterFields see if any are no longer used. If no longer used, set it to null so it'll be deleted
@@ -307,7 +354,7 @@ export default function withFilters(WrappedComponent) {
 						filters.push({ name: filterField, value: null, });
 					}
 				});
-				
+
 				Repository.filter(filters, null, false); // false so other filters remain
 
 				if (!isReady) {
@@ -316,7 +363,7 @@ export default function withFilters(WrappedComponent) {
 
 			}, [filter1Field, filter2Field, filter3Field, filter4Field, filter5Field,
 				filter1Value, filter2Value, filter3Value, filter4Value, filter5Value,
-				filterQValue,]);
+				filterQValue, customFilterDefinitions, customFilterValues]);
 
 			if (!isReady) {
 				return null;
@@ -348,7 +395,7 @@ export default function withFilters(WrappedComponent) {
 										onPress={onClearFilters}
 										tooltip="Clear all filters"
 									/>
-									<IconButton
+									{showFilterSelector && <IconButton
 										key="gear"
 										_icon={{
 											as: Gear,
@@ -356,7 +403,7 @@ export default function withFilters(WrappedComponent) {
 										ml={1}
 										onPress={() => setIsFilterSelectorShown(true)}
 										tooltip="Swap filters"
-									/>
+									/>}
 								</Row>
 							</Toolbar>;
 			}
