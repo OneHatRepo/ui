@@ -234,25 +234,6 @@ export default function withFilters(WrappedComponent) {
 					if (filter5Field) {
 						addFilter(filter5Field, 4);
 					}
-					
-					filterElements.push(<IconButton
-											key="clear"
-											_icon={{
-												as: Ban,
-											}}
-											ml={1}
-											onPress={onClearFilters}
-											tooltip="Clear all filters"
-										/>);
-					filterElements.push(<IconButton
-											key="gear"
-											_icon={{
-												as: Gear,
-											}}
-											ml={1}
-											onPress={() => setIsFilterSelectorShown(true)}
-											tooltip="Swap filters"
-										/>);
 		
 					return filterElements;
 				},
@@ -351,7 +332,33 @@ export default function withFilters(WrappedComponent) {
 						filterComboProps.data.push([fieldName, title]);
 					}
 				});
-				topToolbar = <Toolbar justifyContent="space-between"><Text pt={2} pr={2} userSelect="none">Filters:</Text>{renderFilters()}</Toolbar>;
+				const
+					renderedFilters = renderFilters(),
+					hasFilters = !!renderedFilters.length;
+				topToolbar = <Toolbar justifyContent="space-between" alignItems="center">
+								<Text pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
+								{renderedFilters}
+								<Row flex={hasFilters ? null : 1} justifyContent="flex-end">
+									<IconButton
+										key="clear"
+										_icon={{
+											as: Ban,
+										}}
+										ml={1}
+										onPress={onClearFilters}
+										tooltip="Clear all filters"
+									/>
+									<IconButton
+										key="gear"
+										_icon={{
+											as: Gear,
+										}}
+										ml={1}
+										onPress={() => setIsFilterSelectorShown(true)}
+										tooltip="Swap filters"
+									/>
+								</Row>
+							</Toolbar>;
 			}
 
 			if (isFilterSelectorShown) {
