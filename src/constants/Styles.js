@@ -61,6 +61,7 @@ const defaults = {
 	GRID_TOOLBAR_ITEMS_COLOR: 'trueGray.800',
 	GRID_TOOLBAR_ITEMS_DISABLED_COLOR: 'disabled',
 	GRID_TOOLBAR_ITEMS_ICON_SIZE: 'sm',
+	ICON_BUTTON_BG_DISABLED: 'trueGray.200',
 	PANEL_FOOTER_BG: 'primary.100', // :alpha.50
 	PANEL_HEADER_BG: 'primary.100',
 	PANEL_HEADER_BG_VERTICAL: 'primary.100',

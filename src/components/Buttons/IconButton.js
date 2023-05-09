@@ -5,6 +5,7 @@ import {
 	Spinner,
 	Tooltip,
 } from 'native-base';
+import styles from '../../Constants/Styles.js';
 
 const IconButton = React.forwardRef((props, ref) => {
 	const {
@@ -29,7 +30,7 @@ const IconButton = React.forwardRef((props, ref) => {
 							alignItems="center"
 							p={2}
 							_disabled={{
-								bg: 'trueGray.300',
+								bg: styles.ICON_BUTTON_BG_DISABLED,
 							}}
 							{...props}
 						>
