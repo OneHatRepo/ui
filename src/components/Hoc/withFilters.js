@@ -17,398 +17,351 @@ import _ from 'lodash';
 
 // Filters only work with Repository; not data array
 
+// Yet to do:
+// - Save user choice in cookie for next time this component loads
+// 
+// Model defaultFilters should adjust to this new arrangement
+
 export default function withFilters(WrappedComponent) {
 	return (props) => {
 		const {
+				// config
 				useFilters = false,
 				searchAllText = true,
 				showLabels = true,
 				showFilterSelector = true,
-				filter1StartingField = '',
-				filter2StartingField = '',
-				filter3StartingField = '',
-				filter4StartingField = '',
-				filter5StartingField = '',
-				filter1StartingValue = null,
-				filter2StartingValue = null,
-				filter3StartingValue = null,
-				filter4StartingValue = null,
-				filter5StartingValue = null,
-				customFilters = [], // of shape: { title, startingValue, filterType, getPrams (fn) }
+				defaultFilters = [], // likely a list of field names, possibly could be of shape below
+				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
+				minFilters = 3,
+				maxFilters = 6,
 
 				// withData
 				Repository,
-			} = props,
-			styles = UiGlobals.styles;
+			} = props;
 
-		let modal,
+		let modal = null,
 			topToolbar = null;
 		
 		if (useFilters && Repository) {
+
 			const
+				// aliases
+				{
+					defaultFilters: modelDefaultFilters,
+					filterTypes: modelFilterTypes,
+					titles: modelTitles,
+					virtualFields: modelVirtualFields,
+					excludeFields: modelExcludeFields,
+					filteringDisabled: modelFilteringDisabled,
+				} = Repository.getSchema().model,
+
+				// determine the starting filters
+				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters
+								!_.isEmpty(defaultFilters) ? defaultFilters : // component filters override model filters
+								!_.isEmpty(modelDefaultFilters) ? modelDefaultFilters : [],
+				isUsingCustomFilters = startingFilters === customFilters,
 				[isReady, setIsReady] = useState(false),
 				[isFilterSelectorShown, setIsFilterSelectorShown] = useState(false),
-				[filter1Field, setFilter1Field] = useState(filter1StartingField || Repository?.getSchema().model.defaultFilters?.[0] || null),
-				[filter2Field, setFilter2Field] = useState(filter2StartingField || Repository?.getSchema().model.defaultFilters?.[1] || null),
-				[filter3Field, setFilter3Field] = useState(filter3StartingField || Repository?.getSchema().model.defaultFilters?.[2] || null),
-				[filter4Field, setFilter4Field] = useState(filter4StartingField || Repository?.getSchema().model.defaultFilters?.[3] || null),
-				[filter5Field, setFilter5Field] = useState(filter5StartingField || Repository?.getSchema().model.defaultFilters?.[4] || null),
-				[filter1FieldForModal, setFilter1FieldForModal] = useState(filter1Field),
-				[filter2FieldForModal, setFilter2FieldForModal] = useState(filter2Field),
-				[filter3FieldForModal, setFilter3FieldForModal] = useState(filter3Field),
-				[filter4FieldForModal, setFilter4FieldForModal] = useState(filter4Field),
-				[filter5FieldForModal, setFilter5FieldForModal] = useState(filter5Field),
-				[filterQValue, setFilterQValue] = useState(null),
-				[filter1Value, setFilter1Value] = useState(filter1StartingValue),
-				[filter2Value, setFilter2Value] = useState(filter2StartingValue),
-				[filter3Value, setFilter3Value] = useState(filter3StartingValue),
-				[filter4Value, setFilter4Value] = useState(filter4StartingValue),
-				[filter5Value, setFilter5Value] = useState(filter5StartingValue),
-				[customFilterDefinitions, setCustomFilterDefinitions] = useState(customFilters),
-				[customFilterValues, setCustomFilterValues] = useState(),
-				[filterFields, setFilterFields] = useState([]),
-				onFilterChange = (ix, value) => {
-					if (_.isString(ix) && ix.match(/^custom/)) {
-						
-
-
-					} else {
-						switch(ix) {
-							case 'q':
-								setFilterQValue(value);
-								break;
-							case 0:
-								setFilter1Value(value);
-								break;
-							case 1:
-								setFilter2Value(value);
-								break;
-							case 2:
-								setFilter3Value(value);
-								break;
-							case 3:
-								setFilter4Value(value);
-								break;
-							case 4:
-								setFilter5Value(value);
-								break;
-							default:
-						}
+				getFormattedFilter = (filter) => {
+					let formatted = null;
+					if (_.isString(filter)) {
+						const field = filter;
+						formatted = {
+							field,
+							title: modelTitles[field],
+							type: modelFilterTypes[field],
+							value: null, // value starts as null
+						};
+					} else if (_.isPlainObject(filter)) {
+						// already formatted
+						formatted = filter;
 					}
-				},
-				getFilterType = (ix) => {
-					let filterType;
-					if (_.isString(ix) && ix.match(/^custom/)) {
-						
+					return formatted;
+				};
 
-
-					} else {
-						const
-							filterField = getFilterField(ix),
-							filterTypeDefinition = Repository.getSchema().model.filterTypes[filterField];
-						if (_.isString(filterTypeDefinition)) {
-							filterType = filterTypeDefinition;
-						} else {
-							filterType = filterTypeDefinition.type;
-						}
+			let formattedStartingFilters = [],
+				startingSlots = [];
+			if (!isReady) {
+				// Generate initial starting state
+				if (searchAllText) {
+					formattedStartingFilters.push({ field: 'q', title: 'Search all text fields', type: 'Input', value: null, });
+				}
+				_.each(startingFilters, (filter) => {
+					const
+						formattedFilter = getFormattedFilter(filter),
+						field = formattedFilter.field;
+					formattedStartingFilters.push(formattedFilter);
+					if (!isUsingCustomFilters) {
+						startingSlots.push(field);
 					}
-					return filterType;
-				},
-				getFilterField = (ix) => {
-					let field;
-					if (_.isString(ix) && ix.match(/^custom/)) {
-						
-
-						
-					} else {
-						switch(ix) {
-							case 0:
-								field = filter1Field;
-								break;
-							case 1:
-								field = filter2Field;
-								break;
-							case 2:
-								field = filter3Field;
-								break;
-							case 3:
-								field = filter4Field;
-								break;
-							case 4:
-								field = filter5Field;
-								break;
-							default:
-						}
+				});
+				if (startingSlots.length < minFilters) {
+					for (let i = startingSlots.length; i < minFilters; i++) {
+						startingSlots.push(null);
 					}
-					return field;
-				},
-				getFilterValue = (ix) => {
-					let value;
-					if (_.isString(ix) && ix.match(/^custom/)) {
-						
+				}
+			}
 
-						
-					} else {
-						switch(ix) {
-							case 'q':
-								value = filterQValue;
-								break;
-							case 0:
-								value = filter1Value;
-								break;
-							case 1:
-								value = filter2Value;
-								break;
-							case 2:
-								value = filter3Value;
-								break;
-							case 3:
-								value = filter4Value;
-								break;
-							case 4:
-								value = filter5Value;
-								break;
-							default:
-						}
+			const
+				[filters, setFilters] = useState(formattedStartingFilters), // array of formatted filters
+				[slots, setSlots] = useState(startingSlots), // array of field names user is currently filtering on; blank slots have a null entry in array
+				[previousFilterNames, setPreviousFilterNames] = useState([]), // names of filters the repository used last query
+				canAddSlot = (() => {
+					let canAdd = true;
+					if (!!maxFilters && slots.length >= maxFilters) {
+						canAdd = false; // maxFilters has been reached
 					}
-					return value;
+					if (canAdd) {
+						_.each(slots, (field) => {
+							if (_.isNil(field)) {
+								canAdd = false; // at least one slot has no selected field to filter
+								return false;
+							}
+						});
+					}
+					return canAdd;
+				})(),
+				canDeleteSlot = slots.length > minFilters,
+				onAddSlot = () => {
+					const newSlots = _.clone(slots);
+					newSlots.push(null);
+					setSlots(newSlots);
 				},
-				getIsFilterRange = (ix) => {
-					const filterType = getFilterType(ix);
+				onDeleteSlot = () => {
+					const newSlots = _.clone(slots);
+					newSlots.pop();
+					setSlots(newSlots);
+				},
+				onFilterChangeValue = (field, value) => {
+					// handler for when a filter value changes
+					const newFilters = [];
+					_.each(filters, (filter) => {
+						if (filter.field === field) {
+							filter.value = value;
+						}
+						newFilters.push(filter);
+					});
+					setFilters(newFilters);
+				},
+				onClearFilters = () => {
+					// Clears values for all active filters
+					const newFilters = [];
+					_.each(filters, (filter) => {
+						filter.value = null;
+						newFilters.push(filter);
+					});
+					setFilters(newFilters);
+				},
+				getFilterByField = (field) => {
+					return _.find(filters, (filter) => {
+						return filter.field === field;
+					});
+				},
+				getFilterValue = (field) => {
+					const filter = getFilterByField(field);
+					return filter?.value;
+				},
+				getFilterType = (field) => {
+					// Finds filter type for the field name, from active filters
+					const filter = getFilterByField(field);
+					return filter?.type;
+				},
+				getIsFilterRange = (field) => {
+					// determines if filter is a "range" filter
+					const filterType = getFilterType(field);
 					return inArray(filterType, ['NumberRange', 'DateRange']);
 				},
 				renderFilters = () => {
-					if (!Repository) {
-						return null;
-					}
-		
 					const
-						{
-							titles = [],
-							filterTypes = [],
-							virtualFields = [],
-							excludeFields = [],
-						} = Repository.getSchema().model,
 						filterProps = {
 							mx: 1,
 						},
-						filterElements = [],
-						addFilter = (fieldName, ix) => {
-							let Element,
-								modelProps = {}, 
-								filterType;
-							if (_.isString(ix) && ix.match(/^custom/)) {
-								
+						filterElements = [];
+					_.each(filters, (filter, ix) => {
+						let Element,
+							elementProps = {};
+						const {
+								field,
+								type: filterType,
+							} = filter;
 
-								
-							} else {
-								if (ix === 'q') {
-									// special case
-									const Element = getComponentFromType('Input');
-									filterElements.push(<Element
-															key={ix}
-															tooltip="Search all text fields"
-															placeholder="All text fields"
-															value={getFilterValue(ix)}
-															autoSubmit={true}
-															onChangeValue={(value) => onFilterChange(ix, value)}
-															{...filterProps}
-														/>);
-									return;
-								}
-								if (inArray(fieldName, virtualFields) || inArray(fieldName, excludeFields)) {
-									return; // skip
-								}
-								filterType = filterTypes[fieldName];
-								if (_.isString(filterType)) {
-									Element = getComponentFromType(filterType);
-								} else if (_.isPlainObject(filterType)) {
-									const {
-											type,
-											...p
-										} = filterType;
-									modelProps = p;
-									Element = getComponentFromType(type);
-								}
+						if (_.isString(filterType)) {
+							Element = getComponentFromType(filterType);
+							if (filterType === 'Input') {
+								elementProps.autoSubmit = true;
 							}
-							
-							let filterElement = <Element
-													key={'element-' + ix}
-													tooltip={titles[fieldName]}
-													placeholder={titles[fieldName]}
-													value={getFilterValue(ix)}
-													onChangeValue={(value) => onFilterChange(ix, value)}
-													{...filterProps}
-													{...modelProps}
-												/>;
-							if (showLabels) {
-								filterElement = <Row key={'label-' + ix} alignItems="center">
-													<Text ml={2} mr={1} fontSize={styles.FILTER_LABEL_FONTSIZE}>{titles[fieldName]}</Text>
-													{filterElement}
-												</Row>;
+						} else if (_.isPlainObject(filterType)) {
+							const {
+									type,
+									...p
+								} = filterType;
+							elementProps = p;
+							Element = getComponentFromType(type);
+							if (type === 'Input') {
+								elementProps.autoSubmit = true;
 							}
-							filterElements.push(filterElement);
-						};
-					if (searchAllText) {
-						addFilter(null, 'q');
-					}
-					if (filter1Field) {
-						addFilter(filter1Field, 0);
-					}
-					if (filter2Field) {
-						addFilter(filter2Field, 1);
-					}
-					if (filter3Field) {
-						addFilter(filter3Field, 2);
-					}
-					if (filter4Field) {
-						addFilter(filter4Field, 3);
-					}
-					if (filter5Field) {
-						addFilter(filter5Field, 4);
-					}
-					if (!_.isEmpty(customFilterDefinitions)) {
+						}
+						if (field === 'q') {
+							elementProps.flex = 1;
+							elementProps.minWidth = 100;
+						}
 
-
-						// addFilter(custom0Field, custom0);
-					}
-		
+						const tooltip = filter.tooltip || filter.title || modelTitles[filter.field];
+						let filterElement = <Element
+												key={'filter-' + field}
+												tooltip={tooltip}
+												placeholder={tooltip}
+												value={getFilterValue(field)}
+												onChangeValue={(value) => onFilterChangeValue(field, value)}
+												{...filterProps}
+												{...elementProps}
+											/>;
+						if (showLabels && field !== 'q') {
+							filterElement = <Row key={'label-' + ix} alignItems="center">
+												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{modelTitles[field]}</Text>
+												{filterElement}
+											</Row>;
+						}
+						filterElements.push(filterElement);
+					});
 					return filterElements;
-				},
-				onClearFilters = () => {
-					setFilterQValue(null);
-					setFilter1Value(null);
-					setFilter2Value(null);
-					setFilter3Value(null);
-					setFilter4Value(null);
-					setFilter5Value(null);
 				};
 
 			useEffect(() => {
-				const 
-					filters = [],
-					newFilterFields = [];
+				// Whenever the filters change in some way, make repository conform to these new filters
+				const newRepoFilters = [];
 
-				// For each filter field that is set, add a real filter to the @onehat/data Repository
-				function createRepoFiltersFor(ix) {
-					const
-						filterIxField = getFilterField(ix),
-						filterIxValue = getFilterValue(ix),
-						isFilterRange = getIsFilterRange(ix);
-					let highValue,
-						lowValue,
-						highField,
-						lowField;
-					if (isFilterRange && !!filterIxValue) {
-						highValue = filterIxValue.high;
-						lowValue = filterIxValue.low;
-						highField = filterIxField + ' <=';
-						lowField = filterIxField + ' >=';
+				if (isUsingCustomFilters) {
+					_.each(filters, (filter) => {
+						const repoFiltersFromFilter = filter.getRepoFilters(value);
+						_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
+							newRepoFilters.push(repoFilter);
+						});
+					});
+				} else {
+					const newFilterNames = [];
+					_.each(filters, (filter) => {
+						const {
+								field,
+								value,
+							} = filter,
+							isFilterRange = getIsFilterRange(field);
+						if (isFilterRange) {
+							if (!!value) {
+								const
+									highField = field + ' <=',
+									lowField = field + ' >=',
+									highValue = value.high,
+									lowValue = value.low;
+								newFilterNames.push(highField);
+								newFilterNames.push(lowField);
+								newRepoFilters.push({ name: highField, value: highValue, });
+								newRepoFilters.push({ name: lowField, value: lowValue, });
+							}
+						} else {
+							newFilterNames.push(field);
+							newRepoFilters.push({ name: field, value, });
+						}
+					});
 
-						newFilterFields.push(highField);
-						newFilterFields.push(lowField);
-						filters.push({ name: highField, value: highValue, });
-						filters.push({ name: lowField, value: lowValue, });
-					} else {
-						newFilterFields.push(filterIxField);
-						filters.push({ name: filterIxField, value: filterIxValue, });
-					}
+					// Go through previousFilterNames and see if any are no longer used. 
+					_.each(previousFilterNames, (name) => {
+						if (!inArray(name, newFilterNames)) {
+							newRepoFilters.push({ name, value: null, }); // no longer used, so set it to null so it'll be deleted
+						}
+					});
+					setPreviousFilterNames(newFilterNames);
 				}
 
-				if (filter1Field) {
-					createRepoFiltersFor(0);
+				Repository.filter(newRepoFilters, null, false); // false so other filters remain
+
+				if (searchAllText && Repository.searchAncillary && !Repository.hasBaseParam('searchAncillary')) {
+					Repository.setBaseParam('searchAncillary', true);
 				}
-				if (filter2Field) {
-					createRepoFiltersFor(1);
-				}
-				if (filter3Field) {
-					createRepoFiltersFor(2);
-				}
-				if (filter4Field) {
-					createRepoFiltersFor(3);
-				}
-				if (filter5Field) {
-					createRepoFiltersFor(4);
-				}
-				if (searchAllText && !_.isEmpty(filterQValue)) {
-					const q = 'q';
-					newFilterFields.push(q);
-					filters.push({ name: q, value: filterQValue, });
-					if (Repository.searchAncillary && !Repository.hasBaseParam('searchAncillary')) {
-						Repository.setBaseParam('searchAncillary', true);
-					}
-				}
-				if (!_.isEmpty(customFilters)) {
-
-
-
-
-
-
-				}
-				setFilterFields(newFilterFields);
-
-				// Go through previous filterFields see if any are no longer used. If no longer used, set it to null so it'll be deleted
-				_.each(filterFields, (filterField) => {
-					if (!inArray(filterField, newFilterFields)) {
-						filters.push({ name: filterField, value: null, });
-					}
-				});
-
-				Repository.filter(filters, null, false); // false so other filters remain
 
 				if (!isReady) {
 					setIsReady(true);
 				}
 
-			}, [filter1Field, filter2Field, filter3Field, filter4Field, filter5Field,
-				filter1Value, filter2Value, filter3Value, filter4Value, filter5Value,
-				filterQValue, customFilterDefinitions, customFilterValues]);
+			}, [filters]);
 
 			if (!isReady) {
 				return null;
 			}
 
+			const
+				renderedFilters = renderFilters(),
+				hasFilters = !!renderedFilters.length;
+			topToolbar = <Toolbar justifyContent="space-between" alignItems="center">
+							<Text pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
+							{renderedFilters}
+							<Row flex={hasFilters ? null : 1} justifyContent="flex-end">
+								<IconButton
+									key="clear"
+									_icon={{
+										as: Ban,
+									}}
+									ml={1}
+									onPress={onClearFilters}
+									tooltip="Clear all filters"
+								/>
+								{showFilterSelector && !isUsingCustomFilters && <IconButton
+									key="gear"
+									_icon={{
+										as: Gear,
+									}}
+									ml={1}
+									onPress={() => setIsFilterSelectorShown(true)}
+									tooltip="Swap filters"
+								/>}
+							</Row>
+						</Toolbar>;
 
-			let filterComboProps = {};
-			if (Repository?.getSchema().model.titles) {
-				filterComboProps.data = [];
-				const schemaModel = Repository.getSchema().model;
-				_.each(schemaModel.titles, (title, fieldName) => {
-					if (!inArray(fieldName, schemaModel.virtualFields) && !inArray(fieldName, schemaModel.excludeFields) && !inArray(fieldName, schemaModel.filteringDisabled)) {
-						filterComboProps.data.push([fieldName, title]);
-					}
-				});
+			if (isFilterSelectorShown) { // this is always false when isUsingCustomFilters
+				// Build the modal to select the filters
 				const
-					renderedFilters = renderFilters(),
-					hasFilters = !!renderedFilters.length;
-				topToolbar = <Toolbar justifyContent="space-between" alignItems="center">
-								<Text pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
-								{renderedFilters}
-								<Row flex={hasFilters ? null : 1} justifyContent="flex-end">
-									<IconButton
-										key="clear"
-										_icon={{
-											as: Ban,
-										}}
-										ml={1}
-										onPress={onClearFilters}
-										tooltip="Clear all filters"
-									/>
-									{showFilterSelector && <IconButton
-										key="gear"
-										_icon={{
-											as: Gear,
-										}}
-										ml={1}
-										onPress={() => setIsFilterSelectorShown(true)}
-										tooltip="Swap filters"
-									/>}
-								</Row>
-							</Toolbar>;
-			}
+					modalFilterElements = [],
+					usedFields = _.map(filters, (filter) => {
+						return filter.field;
+					}),
+					formStartingValues = {};
+				
+				_.each(slots, (field, ix) => {
 
-			if (isFilterSelectorShown) {
+					// Create the data for the combobox.
+					const data = [];
+					_.each(modelFilterTypes, (filterType, filterField) => {
+						if (inArray(filterField, usedFields) && field !== filterField) { // Show all filters not yet applied, but include the current filter
+							return; // skip, since it's already been used
+						}
+						data.push([ filterField, modelTitles[filterField] ]);
+					});
+
+					const filterName = 'filter' + (ix +1);
+
+					modalFilterElements.push({
+						key: filterName,
+						name: filterName,
+						type: 'Combo',
+						label: 'Filter ' + (ix +1),
+						data,
+					});
+
+					formStartingValues[filterName] = field;
+				});
+
+				if (canAddSlot || canDeleteSlot) {
+					modalFilterElements.push({
+						type: 'PlusMinusButton',
+						name: 'plusMinusButton',
+						plusHandler: onAddSlot,
+						minusHandler: onDeleteSlot,
+						isPlusDisabled: !canAddSlot,
+						isMinusDisabled: !canDeleteSlot,
+						justifyContent: 'flex-end',
+					});
+				}
+
 				modal = <Modal
 							isOpen={true}
 							onClose={() => setIsFilterSelectorShown(false)}
@@ -416,97 +369,54 @@ export default function withFilters(WrappedComponent) {
 							<Column bg="#fff" w={500}>
 								<FormPanel
 									title="Filter Selector"
-									instructions="Please select which fields to filter by. You may select up to five filters. Leave blank for no filter."
+									instructions="Please select which fields to filter by."
 									flex={1}
-									startingValues={{
-										filter1: filter1Field,
-										filter2: filter2Field,
-										filter3: filter3Field,
-										filter4: filter4Field,
-										filter5: filter5Field,
-									}}
+									startingValues={formStartingValues}
 									items={[
 										{
 											type: 'Column',
 											flex: 1,
-											items: [
-												{
-													type: 'Combo',
-													label: 'Filter 1',
-													name: 'filter1',
-													onChangeValue: (value) => {
-														setFilter1FieldForModal(value);
-													},
-													...filterComboProps,
-												},
-												{
-													type: 'Combo',
-													label: 'Filter 2',
-													name: 'filter2',
-													onChangeValue: (value) => {
-														setFilter2FieldForModal(value);
-													},
-													...filterComboProps,
-												},
-												{
-													type: 'Combo',
-													label: 'Filter 3',
-													name: 'filter3',
-													onChangeValue: (value) => {
-														setFilter3FieldForModal(value);
-													},
-													...filterComboProps,
-												},
-												{
-													type: 'Combo',
-													label: 'Filter 4',
-													name: 'filter4',
-													onChangeValue: (value) => {
-														setFilter4FieldForModal(value);
-													},
-													...filterComboProps,
-												},
-												{
-													type: 'Combo',
-													label: 'Filter 5',
-													name: 'filter5',
-													onChangeValue: (value) => {
-														setFilter5FieldForModal(value);
-													},
-													...filterComboProps,
-												},
-											],
-										}, // END Column
+											items: modalFilterElements,
+										},
 									]}
 									onCancel={(e) => {
-										setFilter1FieldForModal(filter1Field);
-										setFilter2FieldForModal(filter2Field);
-										setFilter3FieldForModal(filter3Field);
-										setFilter4FieldForModal(filter4Field);
-										setFilter5FieldForModal(filter5Field);
+										// Just close the modal
 										setIsFilterSelectorShown(false);
 									}}
 									onSave={(data, e) => {
-										if (filter1FieldForModal !== filter1Field) {
-											setFilter1Field(filter1FieldForModal);
-											setFilter1Value(null);
+										// Conform filters to this new choice of filters
+
+										const
+											newFilters = [],
+											newSlots = [];
+
+										if (searchAllText) {
+											newFilters.push(filters[0]);
 										}
-										if (filter2FieldForModal !== filter2Field) {
-											setFilter2Field(filter2FieldForModal);
-											setFilter2Value(null);
+
+										// Conform the filters to the modal selection
+										_.each(data, (field, ix) => {
+											if (_.isEmpty(field)) {
+												return;
+											}
+
+											const newFilter = getFormattedFilter(field);
+
+											newFilters.push(newFilter);
+											newSlots.push(field);
+										});
+
+										if (newSlots.length < minFilters) {
+											// Add more slots until we get to minFilters
+											for(let i = newSlots.length; i < minFilters; i++) {
+												newSlots.push(null);
+											}
 										}
-										if (filter3FieldForModal !== filter3Field) {
-											setFilter3Field(filter3FieldForModal);
-											setFilter3Value(null);
-										}
-										if (filter4FieldForModal !== filter4Field) {
-											setFilter4Field(filter4FieldForModal);
-											setFilter4Value(null);
-										}
-										if (filter5FieldForModal !== filter5Field) {
-											setFilter5Field(filter5FieldForModal);
-											setFilter5Value(null);
-										}
+
+										setFilters(newFilters);
+										setSlots(newSlots);
+
+										// Close the modal
 										setIsFilterSelectorShown(false);
 									}}
 								/>
