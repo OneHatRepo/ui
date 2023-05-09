@@ -119,7 +119,7 @@ function NumberElement(props) {
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
 		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
 
-	return <Row flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6}>
+	return <Row flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6} {...props}>
 				<IconButton
 					icon={<Icon as={Minus} color={isDecrementDisabled ? 'disabled' : 'trueGray.500'} />}
 					onPress={onDecrement}

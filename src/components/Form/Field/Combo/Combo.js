@@ -178,17 +178,32 @@ export function Combo(props) {
 			const {
 					relatedTarget
 				} = e;
+
+			// If user focused on the trigger and text is blank, clear the selection and close the menu
+			if ((triggerRef.current === relatedTarget || triggerRef.current.contains(relatedTarget)) && (_.isEmpty(textValue) || _.isNil(textValue))) {
+				setSelection([]); // delete current selection
+				hideMenu();
+				return;
+			}
 			
-			// If user clicked on the menu or trigger, ignore this blur
-			if (menuRef.current?.contains(relatedTarget) || triggerRef.current.contains(relatedTarget)) {
+			// If user focused on the menu or trigger, ignore this blur
+			if (triggerRef.current === relatedTarget ||
+				triggerRef.current.contains(relatedTarget) || 
+				menuRef.current=== relatedTarget || 
+				menuRef.current?.contains(relatedTarget)) {
 				return;
 			}
 
 			if (!relatedTarget ||
-					(!inputRef.current.contains(relatedTarget) && triggerRef.current !== relatedTarget && (!menuRef.current || !menuRef.current.contains(relatedTarget)))) {
+					(
+						!inputRef.current.contains(relatedTarget) && 
+						triggerRef.current !== relatedTarget && 
+						(!menuRef.current || !menuRef.current.contains(relatedTarget))
+					)
+				) {
 				hideMenu();
 			}
-			if (textValue === '') {
+			if (_.isEmpty(textValue) || _.isNil(textValue)) {
 				setSelection([]); // delete current selection
 
 			} else if (isManuallyEnteringText) {
@@ -221,12 +236,17 @@ export function Combo(props) {
 			inputRef.current.focus();
 		},
 		onTriggerBlur = (e) => {
-			if (!isMenuShown) {
-				return;
-			}
 			const {
 					relatedTarget
 				} = e;
+			
+			if (_.isEmpty(textValue) || _.isNil(textValue)) {
+				setSelection([]); // delete current selection
+			}
+
+			if (!isMenuShown) {
+				return;
+			}
 			if (!relatedTarget || 
 					(!inputRef.current.contains(relatedTarget) && triggerRef.current !== relatedTarget && !menuRef.current.contains(relatedTarget))) {
 				hideMenu();

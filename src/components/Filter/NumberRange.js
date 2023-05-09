@@ -74,6 +74,7 @@ import _ from 'lodash';
 							minValue={minValue}
 							maxValue={maxValue}
 							tooltip={(tooltip ? tooltip + ' ' : '') + 'Low'}
+							maxWidth={120}
 						/>
 						<Text px={2} userSelect="none">to</Text>
 						<Number
@@ -83,6 +84,7 @@ import _ from 'lodash';
 							minValue={minValue}
 							maxValue={maxValue}
 							tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
+							maxWidth={120}
 						/>
 					</Row>;
 		},
