@@ -62,7 +62,8 @@ function Form(props) {
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
-			onBack,	
+			onBack,
+			onReset,
 			onViewMode,
 			additionalButtons = [],
 			ancillaryComponents = [],
@@ -360,7 +361,12 @@ function Form(props) {
 							let element = <Element
 												name={name}
 												value={value}
-												onChangeValue={onChange}
+												onChangeValue={(value) => {
+													onChange(value); // form onChange handler
+													if (propsToPass.onChange) {
+														propsToPass.onChange(value); // item onChange handler
+													}
+												}}
 												onBlur={onBlur}
 												selectorId={selectorId}
 												selectorSelected={selectorSelected}
@@ -507,7 +513,12 @@ function Form(props) {
 					<Button.Group space={2} {...buttonGroupProps}>
 						{!isViewOnly && <IconButton
 											key="resetBtn"
-											onPress={() => reset()}
+											onPress={() => {
+												if (onReset) {
+													onReset();
+												}
+												reset();
+											}}
 											icon={<Rotate color="#fff" />}
 										/>}
 						{!isViewOnly && onCancel && <Button

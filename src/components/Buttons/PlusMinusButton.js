@@ -22,13 +22,14 @@ const PlusMinusButton = React.forwardRef((props, ref) => {
 						<IconButton
 							icon={<Minus color="#fff" />}
 							onPress={minusHandler}
-							bg={isMinusDisabled ? 'trueGray.300' : 'primary.200'}
+							bg="primary.200"
+							isDisabled={isMinusDisabled}
 						/>
-						{/* <Text mx={1}>/</Text> */}
 						<IconButton
 							icon={<Plus color="#fff" />}
 							onPress={plusHandler}
-							bg={isPlusDisabled ? 'trueGray.300' : 'primary.200'}
+							bg="primary.200"
+							isDisabled={isPlusDisabled}
 							ml={1}
 						/>
 					</Row>

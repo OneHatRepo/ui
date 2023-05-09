@@ -28,6 +28,9 @@ const IconButton = React.forwardRef((props, ref) => {
 							justifyContent="center"
 							alignItems="center"
 							p={2}
+							_disabled={{
+								bg: 'trueGray.300',
+							}}
 							{...props}
 						>
 							{icon}

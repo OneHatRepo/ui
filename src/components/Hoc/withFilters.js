@@ -105,14 +105,16 @@ export default function withFilters(WrappedComponent) {
 			const
 				[filters, setFilters] = useState(formattedStartingFilters), // array of formatted filters
 				[slots, setSlots] = useState(startingSlots), // array of field names user is currently filtering on; blank slots have a null entry in array
+				[modalFilters, setModalFilters] = useState([]),
+				[modalSlots, setModalSlots] = useState([]),
 				[previousFilterNames, setPreviousFilterNames] = useState([]), // names of filters the repository used last query
 				canAddSlot = (() => {
 					let canAdd = true;
-					if (!!maxFilters && slots.length >= maxFilters) {
+					if (!!maxFilters && modalSlots.length >= maxFilters) {
 						canAdd = false; // maxFilters has been reached
 					}
 					if (canAdd) {
-						_.each(slots, (field) => {
+						_.each(modalSlots, (field) => {
 							if (_.isNil(field)) {
 								canAdd = false; // at least one slot has no selected field to filter
 								return false;
@@ -121,16 +123,26 @@ export default function withFilters(WrappedComponent) {
 					}
 					return canAdd;
 				})(),
-				canDeleteSlot = slots.length > minFilters,
+				canDeleteSlot = modalSlots.length > minFilters,
 				onAddSlot = () => {
-					const newSlots = _.clone(slots);
+					if (!canAddSlot) {
+						return;
+					}
+					const newSlots = _.clone(modalSlots);
 					newSlots.push(null);
-					setSlots(newSlots);
+					setModalSlots(newSlots);
 				},
 				onDeleteSlot = () => {
-					const newSlots = _.clone(slots);
+					if (!canDeleteSlot) {
+						return;
+					}
+					const
+						newFilters = _.clone(modalFilters),
+						newSlots = _.clone(modalSlots);
+					newFilters.pop();
 					newSlots.pop();
-					setSlots(newSlots);
+					setModalFilters(newFilters);
+					setModalSlots(newSlots);
 				},
 				onFilterChangeValue = (field, value) => {
 					// handler for when a filter value changes
@@ -311,7 +323,11 @@ export default function withFilters(WrappedComponent) {
 										as: Gear,
 									}}
 									ml={1}
-									onPress={() => setIsFilterSelectorShown(true)}
+									onPress={() => {
+										setModalFilters(filters);
+										setModalSlots(slots);
+										setIsFilterSelectorShown(true);
+									}}
 									tooltip="Swap filters"
 								/>}
 							</Row>
@@ -321,12 +337,12 @@ export default function withFilters(WrappedComponent) {
 				// Build the modal to select the filters
 				const
 					modalFilterElements = [],
-					usedFields = _.map(filters, (filter) => {
-						return filter.field;
-					}),
+					usedFields = _.filter(_.map(modalFilters, (filter) => {
+						return filter?.field;
+					}), el => !_.isNil(el)),
 					formStartingValues = {};
 				
-				_.each(slots, (field, ix) => {
+				_.each(modalSlots, (field, ix) => {
 
 					// Create the data for the combobox.
 					const data = [];
@@ -337,14 +353,32 @@ export default function withFilters(WrappedComponent) {
 						data.push([ filterField, modelTitles[filterField] ]);
 					});
 
-					const filterName = 'filter' + (ix +1);
+					const
+						ixPlusOne = (ix +1),
+						filterName = 'filter' + ixPlusOne;
 
 					modalFilterElements.push({
 						key: filterName,
 						name: filterName,
 						type: 'Combo',
-						label: 'Filter ' + (ix +1),
+						label: 'Filter ' + ixPlusOne,
 						data,
+						onChange: (value) => {
+							const
+								newFilters = _.clone(modalFilters),
+								newSlots = _.clone(modalSlots),
+								i = searchAllText ? ixPlusOne : ix; // compensate for 'q' filter's possible presence
+
+							if (newFilters[i]?.value) {
+								newFilters[i].value = value;
+							} else {
+								newFilters[i] = getFormattedFilter(value);
+							}
+							newSlots[ix] = value;
+							
+							setModalFilters(newFilters);
+							setModalSlots(newSlots);
+						},
 					});
 
 					formStartingValues[filterName] = field;
@@ -396,7 +430,7 @@ export default function withFilters(WrappedComponent) {
 
 										// Conform the filters to the modal selection
 										_.each(data, (field, ix) => {
-											if (_.isEmpty(field)) {
+											if (_.isEmpty(field) || !ix.match(/^filter/)) {
 												return;
 											}
 
@@ -418,6 +452,10 @@ export default function withFilters(WrappedComponent) {
 
 										// Close the modal
 										setIsFilterSelectorShown(false);
+									}}
+									onReset={() => {
+										setModalFilters(filters);
+										setModalSlots(slots);
 									}}
 								/>
 							</Column>
