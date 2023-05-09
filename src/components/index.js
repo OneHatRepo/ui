@@ -35,6 +35,7 @@ import Number from './Form/Field/Number.js';
 import NumberRange from './Filter/NumberRange.js';
 import Panel from './Panel/Panel.js';
 // import Picker from '../Components/Panel/Picker.js';
+import PlusMinusButton from './Buttons/PlusMinusButton.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
 import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Combo/Tag.js';
@@ -82,6 +83,7 @@ const components = {
 	NumberRange,
 	Panel,
 	// Picker,
+	PlusMinusButton,
 	RadioGroup,
 	TabPanel,
 	Tag,
