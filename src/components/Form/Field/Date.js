@@ -277,6 +277,7 @@ export function DateElement(props) {
 							setTop(top + height);
 							setLeft(left);
 						}}
+						w={props.w || null}
 					/>
 					{/* <Pressable
 						flex={1}

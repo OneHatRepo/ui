@@ -83,7 +83,7 @@ export default function withFilters(WrappedComponent) {
 				startingSlots = [];
 			if (!isReady) {
 				// Generate initial starting state
-				if (searchAllText) {
+				if (!isUsingCustomFilters && searchAllText) {
 					formattedStartingFilters.push({ field: 'q', title: 'Search all text fields', type: 'Input', value: null, });
 				}
 				_.each(startingFilters, (filter) => {
@@ -187,14 +187,16 @@ export default function withFilters(WrappedComponent) {
 					const
 						filterProps = {
 							mx: 1,
-						},
-						filterElements = [];
+						};
+					let filterElements = [];
 					_.each(filters, (filter, ix) => {
 						let Element,
 							elementProps = {};
 						const {
 								field,
+								title,
 								type: filterType,
+								...propsToPass
 							} = filter;
 
 						if (_.isString(filterType)) {
@@ -227,15 +229,28 @@ export default function withFilters(WrappedComponent) {
 												onChangeValue={(value) => onFilterChangeValue(field, value)}
 												{...filterProps}
 												{...elementProps}
+												{...propsToPass}
 											/>;
+						
+						// Add divider props
 						if (showLabels && field !== 'q') {
-							filterElement = <Row key={'label-' + ix} alignItems="center">
-												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{modelTitles[field]}</Text>
+							const dividerProps = {
+								// borderLeftWidth: 1,
+								// borderLeftColor: '#fff',
+								borderRightWidth: 1,
+								borderRightColor: '#fff',
+								px: 2,
+							};
+							filterElement = <Row key={'label-' + ix} alignItems="center" {...dividerProps}>
+												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{modelTitles[field] || title}</Text>
 												{filterElement}
 											</Row>;
 						}
 						filterElements.push(filterElement);
 					});
+					if (isUsingCustomFilters) {
+						filterElements = [ <Row flex={1} justifyContent="flex-start">{filterElements}</Row> ]; // This allows all the filters to sit flush-left
+					}
 					return filterElements;
 				};
 
@@ -245,7 +260,7 @@ export default function withFilters(WrappedComponent) {
 
 				if (isUsingCustomFilters) {
 					_.each(filters, (filter) => {
-						const repoFiltersFromFilter = filter.getRepoFilters(value);
+						const repoFiltersFromFilter = filter.getRepoFilters(filter.value);
 						_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
 							newRepoFilters.push(repoFilter);
 						});
@@ -367,7 +382,7 @@ export default function withFilters(WrappedComponent) {
 							const
 								newFilters = _.clone(modalFilters),
 								newSlots = _.clone(modalSlots),
-								i = searchAllText ? ixPlusOne : ix; // compensate for 'q' filter's possible presence
+								i = !isUsingCustomFilters && searchAllText ? ixPlusOne : ix; // compensate for 'q' filter's possible presence
 
 							if (newFilters[i]?.value) {
 								newFilters[i].value = value;
@@ -424,7 +439,7 @@ export default function withFilters(WrappedComponent) {
 											newFilters = [],
 											newSlots = [];
 
-										if (searchAllText) {
+										if (!isUsingCustomFilters && searchAllText) {
 											newFilters.push(filters[0]);
 										}
 
