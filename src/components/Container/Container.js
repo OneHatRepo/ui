@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState, useEffect, useId, } from 'react';
 import {
 	Column,
 	Row,
@@ -30,16 +30,69 @@ export default function Container(props) {
 			setIsEastCollapsed,
 			isWestCollapsed,
 			setIsWestCollapsed,
+
+			getSaved,
+			setSaved,
 		} = props,
+		id = useId(),
 		canResize = CURRENT_MODE === UI_MODE_WEB,
-		[localIsNorthCollapsed, setLocalIsNorthCollapsed] = useState(north ? north.props.startsCollapsed : false),
-		[localIsSouthCollapsed, setLocalIsSouthCollapsed] = useState(south ? south.props.startsCollapsed : false),
-		[localIsEastCollapsed, setLocalIsEastCollapsed] = useState(east ? east.props.startsCollapsed : false),
-		[localIsWestCollapsed, setLocalIsWestCollapsed] = useState(west ? west.props.startsCollapsed : false),
-		[northHeight, setNorthHeight] = useState(north ? north.props.h : 0),
-		[southHeight, setSouthHeight] = useState(south ? south.props.h : 0),
-		[eastWidth, setEastWidth] = useState(east ? east.props.w : 0),
-		[westWidth, setWestWidth] = useState(west ? west.props.w : 0),
+		[isReady, setIsReady] = useState(false),
+		[localIsNorthCollapsed, setLocalIsNorthCollapsedRaw] = useState(north ? north.props.startsCollapsed : false),
+		[localIsSouthCollapsed, setLocalIsSouthCollapsedRaw] = useState(south ? south.props.startsCollapsed : false),
+		[localIsEastCollapsed, setLocalIsEastCollapsedRaw] = useState(east ? east.props.startsCollapsed : false),
+		[localIsWestCollapsed, setLocalIsWestCollapsedRaw] = useState(west ? west.props.startsCollapsed : false),
+		[northHeight, setNorthHeightRaw] = useState(north ? north.props.h : 0),
+		[southHeight, setSouthHeightRaw] = useState(south ? south.props.h : 0),
+		[eastWidth, setEastWidthRaw] = useState(east ? east.props.w : 0),
+		[westWidth, setWestWidthRaw] = useState(west ? west.props.w : 0),
+		setLocalIsNorthCollapsed = (bool) => {
+			setLocalIsNorthCollapsedRaw(bool);
+			if (setSaved) {
+				setSaved(id + '-localIsNorthCollapsed', bool);
+			}
+		},
+		setLocalIsSouthCollapsed = (bool) => {
+			setLocalIsSouthCollapsedRaw(bool);
+			if (setSaved) {
+				setSaved(id + '-localIsSouthCollapsed', bool);
+			}
+		},
+		setLocalIsEastCollapsed = (bool) => {
+			setLocalIsEastCollapsedRaw(bool);
+			if (setSaved) {
+				setSaved(id + '-localIsEastCollapsed', bool);
+			}
+		},
+		setLocalIsWestCollapsed = (bool) => {
+			setLocalIsWestCollapsedRaw(bool);
+			if (setSaved) {
+				setSaved(id + '-localIsWestCollapsed', bool);
+			}
+		},
+		setNorthHeight = (height) => {
+			setNorthHeightRaw(height);
+			if (setSaved) {
+				setSaved(id + '-northHeight', height);
+			}
+		},
+		setSouthHeight = (height) => {
+			setSouthHeightRaw(height);
+			if (setSaved) {
+				setSaved(id + '-southHeight', height);
+			}
+		},
+		setEastWidth = (width) => {
+			setEastWidthRaw(width);
+			if (setSaved) {
+				setSaved(id + '-eastWidth', width);
+			}
+		},
+		setWestWidth = (width) => {
+			setWestWidthRaw(width);
+			if (setSaved) {
+				setSaved(id + '-westWidth', width);
+			}
+		},
 		onNorthResize = (delta) => {
 			const newHeight = northHeight + delta;
 			setNorthHeight(newHeight);
@@ -56,6 +109,75 @@ export default function Container(props) {
 			const newWidth = westWidth + delta;
 			setWestWidth(newWidth);
 		};
+
+	useEffect(() => {
+		if (!getSaved) {
+			setIsReady(true);
+			return () => {};
+		}
+
+		// Restore saved settings
+		(async () => {
+
+			let key, val;
+			key = id + '-localIsNorthCollapsed';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setLocalIsNorthCollapsedRaw(val);
+			}
+
+			key = id + '-localIsSouthCollapsed';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setLocalIsSouthCollapsedRaw(val);
+			}
+
+			key = id + '-localIsEastCollapsed';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setLocalIsEastCollapsedRaw(val);
+			}
+
+			key = id + '-localIsWestCollapsed';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setLocalIsWestCollapsedRaw(val);
+			}
+
+			key = id + '-northHeight';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setNorthHeightRaw(val);
+			}
+
+			key = id + '-southHeight';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setSouthHeightRaw(val);
+			}
+
+			key = id + '-eastWidth';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setEastWidthRaw(val);
+			}
+
+			key = id + '-westWidth';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setWestWidthRaw(val);
+			}
+
+			if (!isReady) {
+				setIsReady(true);
+			}
+		})();
+	}, []);
+	
+
+	if (!isReady) {
+		return null;
+	}
 		
 	let componentProps = {},
 		centerComponent = null,

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, } from 'react';
+import React, { useState, useEffect, useMemo, useId, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -37,18 +37,49 @@ export default function DataMgt(props) {
 			associatedPanels = [], // array of React components
 			associatedPanelsPerTab = 3,
 			additionalTabButtons = [],
+			getSaved,
+			setSaved,
 		} = props;
 
 	const
+		id = useId(),
 		// westRef = useRef(),
-		[isWestCollapsed, setIsWestCollapsed] = useState(westStartsCollapsed),
-		[isEastCollapsed, setIsEastCollapsed] = useState(eastStartsCollapsed),
-		[isFullscreen, setIsFullscreen] = useState(false),
+		[isReady, setIsReady] = useState(false),
+		[isWestCollapsed, setIsWestCollapsedRaw] = useState(westStartsCollapsed),
+		[isEastCollapsed, setIsEastCollapsedRaw] = useState(eastStartsCollapsed),
+		[isFullscreen, setIsFullscreenRaw] = useState(false),
 		[westSelected, setWestSelectedRaw] = useState(),
-		[centerSelected, setCenterSelected] = useState(),
+		[centerSelected, setCenterSelectedRaw] = useState(),
+		setIsWestCollapsed = (bool) => {
+			setIsWestCollapsedRaw(bool);
+			if (setSaved) {
+				setSaved(id + '-isWestCollapsed', bool);
+			}
+		},
+		setIsEastCollapsed = (bool) => {
+			setIsEastCollapsedRaw(bool);
+			if (setSaved) {
+				setSaved(id + '-isEastCollapsed', bool);
+			}
+		},
+		setIsFullscreen = (bool) => {
+			setIsFullscreenRaw(bool);
+			if (setSaved) {
+				setSaved(id + '-isFullscreen', isFullscreen);
+			}
+		},
 		setWestSelected = (selected) => {
 			setWestSelectedRaw(selected);
 			setCenterSelected(); // clear selection in center
+			if (setSaved) {
+				setSaved(id + '-westSelected', selected);
+			}
+		},
+		setCenterSelected = (selected) => {
+			setCenterSelectedRaw(selected);
+			if (setSaved) {
+				setSaved(id + '-centerSelected', selected);
+			}
 		},
 		onToggleFullscreen = () => {
 			const newIsFullScreen = !isFullscreen;
@@ -85,6 +116,51 @@ export default function DataMgt(props) {
 			}
 		};
 
+	useEffect(() => {
+		if (!getSaved) {
+			setIsReady(true);
+			return () => {};
+		}
+
+		// Restore saved settings
+		(async () => {
+
+			let key, val;
+			key = id + '-isWestCollapsed';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setIsWestCollapsedRaw(val);
+			}
+
+			key = id + '-isEastCollapsed';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setIsEastCollapsedRaw(val);
+			}
+
+			key = id + '-isFullscreen';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setIsFullscreenRaw(val);
+			}
+
+			key = id + '-westSelected';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setWestSelectedRaw(val);
+			}
+
+			key = id + '-centerSelected';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setCenterSelectedRaw(val);
+			}
+
+			if (!isReady) {
+				setIsReady(true);
+			}
+		})();
+	}, []);
 
 	//   REGIONS -------------------------------------------------------
 	// 	[				] [							] [					]
@@ -238,6 +314,10 @@ export default function DataMgt(props) {
 		}
 	}
 
+	if (!isReady) {
+		return null;
+	}
+
 	return <Container
 				west={west}
 				isWestCollapsed={isWestCollapsed}
@@ -246,5 +326,7 @@ export default function DataMgt(props) {
 				east={east}
 				isEastCollapsed={isEastCollapsed}
 				setIsEastCollapsed={setIsEastCollapsed}
+				getSaved={getSaved}
+				setSaved={setSaved}
 			/>;
 }
