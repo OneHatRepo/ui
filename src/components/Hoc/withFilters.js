@@ -1,4 +1,4 @@
-import { useState, useEffect, } from 'react';
+import { useState, useEffect, useId, } from 'react';
 import {
 	Column,
 	Modal,
@@ -34,6 +34,8 @@ export default function withFilters(WrappedComponent) {
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
 				minFilters = 3,
 				maxFilters = 6,
+				getSaved,
+				setSaved,
 
 				// withData
 				Repository,
@@ -54,6 +56,7 @@ export default function withFilters(WrappedComponent) {
 					excludeFields: modelExcludeFields,
 					filteringDisabled: modelFilteringDisabled,
 				} = Repository.getSchema().model,
+				id = useId(),
 
 				// determine the starting filters
 				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters
@@ -83,7 +86,7 @@ export default function withFilters(WrappedComponent) {
 				startingSlots = [];
 			if (!isReady) {
 				// Generate initial starting state
-				if (!isUsingCustomFilters && searchAllText) {
+				if (searchAllText) {
 					formattedStartingFilters.push({ field: 'q', title: 'Search all text fields', type: 'Input', value: null, });
 				}
 				_.each(startingFilters, (filter) => {
@@ -103,7 +106,7 @@ export default function withFilters(WrappedComponent) {
 			}
 
 			const
-				[filters, setFilters] = useState(formattedStartingFilters), // array of formatted filters
+				[filters, setFiltersRaw] = useState(formattedStartingFilters), // array of formatted filters
 				[slots, setSlots] = useState(startingSlots), // array of field names user is currently filtering on; blank slots have a null entry in array
 				[modalFilters, setModalFilters] = useState([]),
 				[modalSlots, setModalSlots] = useState([]),
@@ -144,6 +147,29 @@ export default function withFilters(WrappedComponent) {
 					setModalFilters(newFilters);
 					setModalSlots(newSlots);
 				},
+				setFilters = (filters, doSetSlots = true, save = true) => {
+					setFiltersRaw(filters);
+
+					if (doSetSlots) {
+						const newSlots = [];
+						_.each(filters, (filter, ix) => {
+							if (searchAllText && ix === 0) {
+								return; // skip
+							}
+							newSlots.push(filter.field);
+						});
+						if (newSlots.length < minFilters) {
+							// Add more slots until we get to minFilters
+							for(let i = newSlots.length; i < minFilters; i++) {
+								newSlots.push(null);
+							}
+						}
+						setSlots(newSlots);
+					}
+					if (save && setSaved) {
+						setSaved(id + '-filters', filters);
+					}
+				},
 				onFilterChangeValue = (field, value) => {
 					// handler for when a filter value changes
 					const newFilters = [];
@@ -153,7 +179,7 @@ export default function withFilters(WrappedComponent) {
 						}
 						newFilters.push(filter);
 					});
-					setFilters(newFilters);
+					setFilters(newFilters, false);
 				},
 				onClearFilters = () => {
 					// Clears values for all active filters
@@ -162,7 +188,7 @@ export default function withFilters(WrappedComponent) {
 						filter.value = null;
 						newFilters.push(filter);
 					});
-					setFilters(newFilters);
+					setFilters(newFilters, false);
 				},
 				getFilterByField = (field) => {
 					return _.find(filters, (filter) => {
@@ -187,16 +213,14 @@ export default function withFilters(WrappedComponent) {
 					const
 						filterProps = {
 							mx: 1,
-						};
-					let filterElements = [];
+						},
+						filterElements = [];
 					_.each(filters, (filter, ix) => {
 						let Element,
 							elementProps = {};
 						const {
 								field,
-								title,
 								type: filterType,
-								...propsToPass
 							} = filter;
 
 						if (_.isString(filterType)) {
@@ -229,87 +253,86 @@ export default function withFilters(WrappedComponent) {
 												onChangeValue={(value) => onFilterChangeValue(field, value)}
 												{...filterProps}
 												{...elementProps}
-												{...propsToPass}
 											/>;
-						
-						// Add divider props
 						if (showLabels && field !== 'q') {
-							const dividerProps = {
-								// borderLeftWidth: 1,
-								// borderLeftColor: '#fff',
-								borderRightWidth: 1,
-								borderRightColor: '#fff',
-								px: 2,
-							};
-							filterElement = <Row key={'label-' + ix} alignItems="center" {...dividerProps}>
-												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{modelTitles[field] || title}</Text>
+							filterElement = <Row key={'label-' + ix} alignItems="center">
+												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{modelTitles[field]}</Text>
 												{filterElement}
 											</Row>;
 						}
 						filterElements.push(filterElement);
 					});
-					if (isUsingCustomFilters) {
-						filterElements = [ <Row flex={1} justifyContent="flex-start">{filterElements}</Row> ]; // This allows all the filters to sit flush-left
-					}
 					return filterElements;
 				};
 
 			useEffect(() => {
-				// Whenever the filters change in some way, make repository conform to these new filters
-				const newRepoFilters = [];
+				(async () => {
+					
+					// Whenever the filters change in some way, make repository conform to these new filters
+					const newRepoFilters = [];
+					let filtersToUse = filters
 
-				if (isUsingCustomFilters) {
-					_.each(filters, (filter) => {
-						const repoFiltersFromFilter = filter.getRepoFilters(filter.value);
-						_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
-							newRepoFilters.push(repoFilter);
+					if (!isReady && getSaved) {
+						const savedFilters = await getSaved(id + '-filters');
+						if (!_.isEmpty(savedFilters)) {
+							// load saved filters
+							filtersToUse = savedFilters;
+							setFilters(savedFilters, true, false); // false to skip save
+						}
+					}
+
+					if (isUsingCustomFilters) {
+						_.each(filtersToUse, (filter) => {
+							const repoFiltersFromFilter = filter.getRepoFilters(value);
+							_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
+								newRepoFilters.push(repoFilter);
+							});
 						});
-					});
-				} else {
-					const newFilterNames = [];
-					_.each(filters, (filter) => {
-						const {
-								field,
-								value,
-							} = filter,
-							isFilterRange = getIsFilterRange(field);
-						if (isFilterRange) {
-							if (!!value) {
-								const
-									highField = field + ' <=',
-									lowField = field + ' >=',
-									highValue = value.high,
-									lowValue = value.low;
-								newFilterNames.push(highField);
-								newFilterNames.push(lowField);
-								newRepoFilters.push({ name: highField, value: highValue, });
-								newRepoFilters.push({ name: lowField, value: lowValue, });
+					} else {
+						const newFilterNames = [];
+						_.each(filtersToUse, (filter) => {
+							const {
+									field,
+									value,
+								} = filter,
+								isFilterRange = getIsFilterRange(field);
+							if (isFilterRange) {
+								if (!!value) {
+									const
+										highField = field + ' <=',
+										lowField = field + ' >=',
+										highValue = value.high,
+										lowValue = value.low;
+									newFilterNames.push(highField);
+									newFilterNames.push(lowField);
+									newRepoFilters.push({ name: highField, value: highValue, });
+									newRepoFilters.push({ name: lowField, value: lowValue, });
+								}
+							} else {
+								newFilterNames.push(field);
+								newRepoFilters.push({ name: field, value, });
 							}
-						} else {
-							newFilterNames.push(field);
-							newRepoFilters.push({ name: field, value, });
-						}
-					});
+						});
 
-					// Go through previousFilterNames and see if any are no longer used. 
-					_.each(previousFilterNames, (name) => {
-						if (!inArray(name, newFilterNames)) {
-							newRepoFilters.push({ name, value: null, }); // no longer used, so set it to null so it'll be deleted
-						}
-					});
-					setPreviousFilterNames(newFilterNames);
-				}
+						// Go through previousFilterNames and see if any are no longer used. 
+						_.each(previousFilterNames, (name) => {
+							if (!inArray(name, newFilterNames)) {
+								newRepoFilters.push({ name, value: null, }); // no longer used, so set it to null so it'll be deleted
+							}
+						});
+						setPreviousFilterNames(newFilterNames);
+					}
 
-				Repository.filter(newRepoFilters, null, false); // false so other filters remain
+					Repository.filter(newRepoFilters, null, false); // false so other filters remain
 
-				if (searchAllText && Repository.searchAncillary && !Repository.hasBaseParam('searchAncillary')) {
-					Repository.setBaseParam('searchAncillary', true);
-				}
+					if (searchAllText && Repository.searchAncillary && !Repository.hasBaseParam('searchAncillary')) {
+						Repository.setBaseParam('searchAncillary', true);
+					}
 
-				if (!isReady) {
-					setIsReady(true);
-				}
-
+					if (!isReady) {
+						setIsReady(true);
+					}
+				})();
 			}, [filters]);
 
 			if (!isReady) {
@@ -339,6 +362,8 @@ export default function withFilters(WrappedComponent) {
 									}}
 									ml={1}
 									onPress={() => {
+										const f = filters;
+										const s = slots;
 										setModalFilters(filters);
 										setModalSlots(slots);
 										setIsFilterSelectorShown(true);
@@ -382,7 +407,7 @@ export default function withFilters(WrappedComponent) {
 							const
 								newFilters = _.clone(modalFilters),
 								newSlots = _.clone(modalSlots),
-								i = !isUsingCustomFilters && searchAllText ? ixPlusOne : ix; // compensate for 'q' filter's possible presence
+								i = searchAllText ? ixPlusOne : ix; // compensate for 'q' filter's possible presence
 
 							if (newFilters[i]?.value) {
 								newFilters[i].value = value;
@@ -435,11 +460,9 @@ export default function withFilters(WrappedComponent) {
 									onSave={(data, e) => {
 										// Conform filters to this new choice of filters
 
-										const
-											newFilters = [],
-											newSlots = [];
+										const newFilters = [];
 
-										if (!isUsingCustomFilters && searchAllText) {
+										if (searchAllText) {
 											newFilters.push(filters[0]);
 										}
 
@@ -450,20 +473,10 @@ export default function withFilters(WrappedComponent) {
 											}
 
 											const newFilter = getFormattedFilter(field);
-
 											newFilters.push(newFilter);
-											newSlots.push(field);
 										});
 
-										if (newSlots.length < minFilters) {
-											// Add more slots until we get to minFilters
-											for(let i = newSlots.length; i < minFilters; i++) {
-												newSlots.push(null);
-											}
-										}
-
 										setFilters(newFilters);
-										setSlots(newSlots);
 
 										// Close the modal
 										setIsFilterSelectorShown(false);
