@@ -67,7 +67,7 @@ export function Grid(props) {
 			columnsConfig = [], // json configurations for each column
 
 			columnProps = {},
-			getRowProps = () => {
+			getRowProps = (item) => {
 				return {
 					borderBottomWidth: 1,
 					borderBottomColor: 'trueGray.500',

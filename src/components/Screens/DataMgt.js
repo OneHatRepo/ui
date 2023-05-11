@@ -311,7 +311,5 @@ export default function DataMgt(props) {
 				east={east}
 				isEastCollapsed={isEastCollapsed}
 				setIsEastCollapsed={setIsEastCollapsed}
-				getSaved={getSaved}
-				setSaved={setSaved}
 			/>;
 }

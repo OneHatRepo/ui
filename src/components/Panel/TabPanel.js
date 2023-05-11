@@ -45,16 +45,14 @@ export default function TabPanel(props) {
 			if (onChangeIsCollapsed) {
 				onChangeIsCollapsed(isCollapsed);
 			}
-			if (setSaved) {
-				setSaved(id + '-isCollapsed', isCollapsed);
-			}
+			setSaved(id + '-isCollapsed', isCollapsed);
 		},
 		setCurrentTab = (ix) => {
 			setCurrentTabRaw(ix);
 			if (onChangeCurrentTab) {
 				onChangeCurrentTab(ix);
 			}
-			if (setSaved && saveCurrentTab) {
+			if (saveCurrentTab) {
 				setSaved(id + '-currentTab', ix);
 			}
 		},

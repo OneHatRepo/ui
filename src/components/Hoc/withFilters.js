@@ -12,6 +12,8 @@ import FormPanel from '../Panel/FormPanel.js';
 import Ban from '../Icons/Ban.js';
 import Gear from '../Icons/Gear.js';
 import Toolbar from '../Toolbar/Toolbar.js';
+import getSaved from '../../Functions/getSaved.js';
+import setSaved from '../../Functions/setSaved.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
@@ -34,8 +36,6 @@ export default function withFilters(WrappedComponent) {
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
 				minFilters = 3,
 				maxFilters = 6,
-				getSaved,
-				setSaved,
 
 				// withData
 				Repository,
@@ -166,7 +166,7 @@ export default function withFilters(WrappedComponent) {
 						}
 						setSlots(newSlots);
 					}
-					if (save && setSaved) {
+					if (save) {
 						setSaved(id + '-filters', filters);
 					}
 				},
@@ -272,7 +272,7 @@ export default function withFilters(WrappedComponent) {
 					const newRepoFilters = [];
 					let filtersToUse = filters
 
-					if (!isReady && getSaved) {
+					if (!isReady) {
 						const savedFilters = await getSaved(id + '-filters');
 						if (!_.isEmpty(savedFilters)) {
 							// load saved filters
