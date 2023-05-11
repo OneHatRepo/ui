@@ -19,7 +19,7 @@
 	},
 	"license": "UNLICENSED",
 	"dependencies": {
-		"@onehat/data": "^1.16.9",
+		"@onehat/data": "^1.16.10",
 		"@hookform/resolvers": "^2.9.11",
 		"ckeditor5-custom-build": "file:ckeditor5",
 		"js-cookie": "^3.0.1",

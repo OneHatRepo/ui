@@ -204,9 +204,12 @@ export default function withFilters(WrappedComponent) {
 					const filter = getFilterByField(field);
 					return filter?.type;
 				},
-				getIsFilterRange = (field) => {
-					// determines if filter is a "range" filter
+				getIsFilterRange = (filter) => {
+					let field = _.isString(filter) ? filter : filter.field;
 					const filterType = getFilterType(field);
+					if (filterType?.type) {
+						return inArray(filterType.type, ['NumberRange', 'DateRange'])
+					}
 					return inArray(filterType, ['NumberRange', 'DateRange']);
 				},
 				renderFilters = () => {
@@ -295,7 +298,7 @@ export default function withFilters(WrappedComponent) {
 									field,
 									value,
 								} = filter,
-								isFilterRange = getIsFilterRange(field);
+								isFilterRange = getIsFilterRange(filter);
 							if (isFilterRange) {
 								if (!!value) {
 									const
