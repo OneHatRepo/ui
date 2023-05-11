@@ -49,7 +49,7 @@ export default function DataMgt(props) {
 		[isEastCollapsed, setIsEastCollapsedRaw] = useState(eastStartsCollapsed),
 		[isFullscreen, setIsFullscreenRaw] = useState(false),
 		[westSelected, setWestSelectedRaw] = useState(),
-		[centerSelected, setCenterSelectedRaw] = useState(),
+		[centerSelected, setCenterSelected] = useState(),
 		setIsWestCollapsed = (bool) => {
 			setIsWestCollapsedRaw(bool);
 			if (setSaved) {
@@ -71,15 +71,6 @@ export default function DataMgt(props) {
 		setWestSelected = (selected) => {
 			setWestSelectedRaw(selected);
 			setCenterSelected(); // clear selection in center
-			if (setSaved) {
-				setSaved(id + '-westSelected', selected);
-			}
-		},
-		setCenterSelected = (selected) => {
-			setCenterSelectedRaw(selected);
-			if (setSaved) {
-				setSaved(id + '-centerSelected', selected);
-			}
 		},
 		onToggleFullscreen = () => {
 			const newIsFullScreen = !isFullscreen;
