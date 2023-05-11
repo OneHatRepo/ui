@@ -12,6 +12,8 @@ import {
 	UI_MODE_REACT_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import getSaved from '../../Functions/getSaved.js';
+import setSaved from '../../Functions/setSaved.js';
 import Splitter from './Splitter.js';
 
 export default function Container(props) {
@@ -30,9 +32,6 @@ export default function Container(props) {
 			setIsEastCollapsed,
 			isWestCollapsed,
 			setIsWestCollapsed,
-
-			getSaved,
-			setSaved,
 		} = props,
 		id = useId(),
 		canResize = CURRENT_MODE === UI_MODE_WEB,
@@ -47,51 +46,35 @@ export default function Container(props) {
 		[westWidth, setWestWidthRaw] = useState(west ? west.props.w : 0),
 		setLocalIsNorthCollapsed = (bool) => {
 			setLocalIsNorthCollapsedRaw(bool);
-			if (setSaved) {
-				setSaved(id + '-localIsNorthCollapsed', bool);
-			}
+			setSaved(id + '-localIsNorthCollapsed', bool);
 		},
 		setLocalIsSouthCollapsed = (bool) => {
 			setLocalIsSouthCollapsedRaw(bool);
-			if (setSaved) {
-				setSaved(id + '-localIsSouthCollapsed', bool);
-			}
+			setSaved(id + '-localIsSouthCollapsed', bool);
 		},
 		setLocalIsEastCollapsed = (bool) => {
 			setLocalIsEastCollapsedRaw(bool);
-			if (setSaved) {
-				setSaved(id + '-localIsEastCollapsed', bool);
-			}
+			setSaved(id + '-localIsEastCollapsed', bool);
 		},
 		setLocalIsWestCollapsed = (bool) => {
 			setLocalIsWestCollapsedRaw(bool);
-			if (setSaved) {
-				setSaved(id + '-localIsWestCollapsed', bool);
-			}
+			setSaved(id + '-localIsWestCollapsed', bool);
 		},
 		setNorthHeight = (height) => {
 			setNorthHeightRaw(height);
-			if (setSaved) {
-				setSaved(id + '-northHeight', height);
-			}
+			setSaved(id + '-northHeight', height);
 		},
 		setSouthHeight = (height) => {
 			setSouthHeightRaw(height);
-			if (setSaved) {
-				setSaved(id + '-southHeight', height);
-			}
+			setSaved(id + '-southHeight', height);
 		},
 		setEastWidth = (width) => {
 			setEastWidthRaw(width);
-			if (setSaved) {
-				setSaved(id + '-eastWidth', width);
-			}
+			setSaved(id + '-eastWidth', width);
 		},
 		setWestWidth = (width) => {
 			setWestWidthRaw(width);
-			if (setSaved) {
-				setSaved(id + '-westWidth', width);
-			}
+			setSaved(id + '-westWidth', width);
 		},
 		onNorthResize = (delta) => {
 			const newHeight = northHeight + delta;
@@ -111,14 +94,8 @@ export default function Container(props) {
 		};
 
 	useEffect(() => {
-		if (!getSaved) {
-			setIsReady(true);
-			return () => {};
-		}
-
 		// Restore saved settings
 		(async () => {
-
 			let key, val;
 			key = id + '-localIsNorthCollapsed';
 			val = await getSaved(key);
@@ -173,7 +150,6 @@ export default function Container(props) {
 			}
 		})();
 	}, []);
-	
 
 	if (!isReady) {
 		return null;

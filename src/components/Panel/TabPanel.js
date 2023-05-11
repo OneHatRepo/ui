@@ -16,6 +16,8 @@ import IconButton from '../Buttons/IconButton.js';
 import Minimize from '../Icons/Minimize.js';
 import Maximize from '../Icons/Maximize.js';
 import Panel from './Panel.js';
+import getSaved from '../../Functions/getSaved.js';
+import setSaved from '../../Functions/setSaved.js';
 import _ from 'lodash';
 
 
@@ -30,8 +32,7 @@ export default function TabPanel(props) {
 			startsCollapsed = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
-			getSaved,
-			setSaved,
+			saveCurrentTab = true,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -53,7 +54,7 @@ export default function TabPanel(props) {
 			if (onChangeCurrentTab) {
 				onChangeCurrentTab(ix);
 			}
-			if (setSaved) {
+			if (setSaved && saveCurrentTab) {
 				setSaved(id + '-currentTab', ix);
 			}
 		},
@@ -288,14 +289,8 @@ export default function TabPanel(props) {
 		};
 
 	useEffect(() => {
-		if (!getSaved) {
-			setIsReady(true);
-			return () => {};
-		}
-
 		// Restore saved settings
 		(async () => {
-
 			let key, val;
 			key = id + '-isCollapsed';
 			val = await getSaved(key);

@@ -12,6 +12,8 @@ import Container from '../Container/Container.js';
 import Panel from '../Panel/Panel.js';
 import TabPanel from '../Panel/TabPanel.js';
 import UploadDownload from '../Panel/UploadDownload.js';
+import getSaved from '../../Functions/getSaved.js';
+import setSaved from '../../Functions/setSaved.js';
 import _ from 'lodash';
 
 export default function DataMgt(props) {
@@ -37,8 +39,6 @@ export default function DataMgt(props) {
 			associatedPanels = [], // array of React components
 			associatedPanelsPerTab = 3,
 			additionalTabButtons = [],
-			getSaved,
-			setSaved,
 		} = props;
 
 	const
@@ -52,21 +52,15 @@ export default function DataMgt(props) {
 		[centerSelected, setCenterSelected] = useState(),
 		setIsWestCollapsed = (bool) => {
 			setIsWestCollapsedRaw(bool);
-			if (setSaved) {
-				setSaved(id + '-isWestCollapsed', bool);
-			}
+			setSaved(id + '-isWestCollapsed', bool);
 		},
 		setIsEastCollapsed = (bool) => {
 			setIsEastCollapsedRaw(bool);
-			if (setSaved) {
-				setSaved(id + '-isEastCollapsed', bool);
-			}
+			setSaved(id + '-isEastCollapsed', bool);
 		},
 		setIsFullscreen = (bool) => {
 			setIsFullscreenRaw(bool);
-			if (setSaved) {
-				setSaved(id + '-isFullscreen', isFullscreen);
-			}
+			setSaved(id + '-isFullscreen', isFullscreen);
 		},
 		setWestSelected = (selected) => {
 			setWestSelectedRaw(selected);
