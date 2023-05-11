@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState, useEffect, useId, } from 'react';
 import {
 	Button,
 	Column,
@@ -30,9 +30,13 @@ export default function TabPanel(props) {
 			startsCollapsed = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
+			getSaved,
+			setSaved,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
+		id = useId(),
+		[isReady, setIsReady] = useState(false),
 		[currentTab, setCurrentTabRaw] = useState(initialTab),
 		[isCollapsed, setIsCollapsedRaw] = useState(startsCollapsed),
 		setIsCollapsed = (isCollapsed) => {
@@ -40,11 +44,17 @@ export default function TabPanel(props) {
 			if (onChangeIsCollapsed) {
 				onChangeIsCollapsed(isCollapsed);
 			}
+			if (setSaved) {
+				setSaved(id + '-isCollapsed', isCollapsed);
+			}
 		},
 		setCurrentTab = (ix) => {
 			setCurrentTabRaw(ix);
 			if (onChangeCurrentTab) {
 				onChangeCurrentTab(ix);
+			}
+			if (setSaved) {
+				setSaved(id + '-currentTab', ix);
 			}
 		},
 		getButtonProps = () => {
@@ -52,10 +62,7 @@ export default function TabPanel(props) {
 				iconProps = {
 					size: 'md',
 				},
-				textProps = {
-					ml: '-8px',
-					mr: '8px',
-				},
+				textProps = {},
 				buttonProps = {
 					bg: styles.TAB_BG,
 					color: styles.TAB_COLOR,
@@ -279,54 +286,87 @@ export default function TabPanel(props) {
 		onToggleCollapse = () => {
 			setIsCollapsed(!isCollapsed);
 		};
-		if (direction === VERTICAL) {
-			return <Panel {...propsToPass}>
-						<Row flex={1} w="100%">
-							<Column
-								alignItems="center"
-								justifyContent="flex-start"
-								py={2}
-								pl={isCollapsed ? 1 : 4}
-								bg={styles.TAB_BAR_BG}
-								w={isCollapsed ? '50px' : tabWidth}
-							>
-								{renderTabs()}
-								<Column flex={1} w="100%" justifyContent="flex-end">
-									{renderToggleButton()}
-								</Column>
-							</Column>
-							<Column
-								alignItems="center"
-								justifyContent="flex-start"
-								flex={1}
-							>
-								{renderCurrentTabContent()}
-							</Column>
-						</Row>
-					</Panel>;
+
+	useEffect(() => {
+		if (!getSaved) {
+			setIsReady(true);
+			return () => {};
 		}
 
-		// HORIZONTAL
-		return <Panel flex={1} w="100%" {...propsToPass} {...props._panel}>
-					<Column flex={1} w="100%">
-						<Row
+		// Restore saved settings
+		(async () => {
+
+			let key, val;
+			key = id + '-isCollapsed';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setIsCollapsed(val);
+			}
+
+			key = id + '-currentTab';
+			val = await getSaved(key);
+			if (!_.isNil(val)) {
+				setCurrentTab(val);
+			}
+
+			if (!isReady) {
+				setIsReady(true);
+			}
+		})();
+	}, []);
+
+	if (!isReady) {
+		return null;
+	}
+
+	if (direction === VERTICAL) {
+		return <Panel {...propsToPass}>
+					<Row flex={1} w="100%">
+						<Column
 							alignItems="center"
 							justifyContent="flex-start"
-							p={2}
-							pb={0}
+							py={2}
+							pl={isCollapsed ? 1 : 4}
 							bg={styles.TAB_BAR_BG}
-							h={isCollapsed ? '30px' : tabHeight}
+							w={isCollapsed ? '50px' : tabWidth}
 						>
 							{renderTabs()}
-							<Row flex={1} h="100%" justifyContent="flex-end">
-								<Row h="100%">
-									{renderToggleButton()}
-								</Row>
+							<Column flex={1} w="100%" justifyContent="flex-end">
+								{renderToggleButton()}
+							</Column>
+						</Column>
+						<Column
+							alignItems="center"
+							justifyContent="flex-start"
+							flex={1}
+						>
+							{renderCurrentTabContent()}
+						</Column>
+					</Row>
+				</Panel>;
+	}
+
+	// HORIZONTAL
+	return <Panel flex={1} w="100%" {...propsToPass} {...props._panel}>
+				<Column flex={1} w="100%">
+					<Row
+						alignItems="center"
+						justifyContent="flex-start"
+						p={2}
+						pb={0}
+						bg={styles.TAB_BAR_BG}
+						h={isCollapsed ? '30px' : tabHeight}
+					>
+						{renderTabs()}
+						<Row flex={1} h="100%" justifyContent="flex-end">
+							<Row h="100%">
+								{renderToggleButton()}
 							</Row>
 						</Row>
-						<Row flex={1}>
-							{renderCurrentTabContent()}
-						</Row>
-					</Column>
-				</Panel>;
+					</Row>
+					<Row flex={1}>
+						{renderCurrentTabContent()}
+					</Row>
+				</Column>
+			</Panel>;
 }
