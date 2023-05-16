@@ -17,9 +17,13 @@ const IconButton = React.forwardRef((props, ref) => {
 			tooltipPlacement = 'bottom',
 		} = props;
 	const propsIcon = props._icon || {};
-	let icon = props.icon || <Icon {...propsIcon} />;
+	let icon = props.icon || <Icon {...propsIcon} />,
+		ret;
 	if (isLoading) {
 		icon = <Spinner {..._spinner} />;
+	}
+	if (!React.isValidElement(icon)) {
+		icon = <Icon as={icon} {...propsIcon} />;
 	}
 	const pressable = <Pressable
 							ref={ref}
@@ -29,16 +33,23 @@ const IconButton = React.forwardRef((props, ref) => {
 							justifyContent="center"
 							alignItems="center"
 							p={2}
+							// bg={styles.ICON_BUTTON_BG}
+							_hover={{
+								bg: styles.ICON_BUTTON_BG_HOVER,
+							}}
 							_disabled={{
 								bg: styles.ICON_BUTTON_BG_DISABLED,
 							}}
+							_pressed={{
+								bg: styles.ICON_BUTTON_BG_PRESSED,
+							}}
 							{...props}
 						>
-							{icon}
+						{icon}
 						</Pressable>;
-	let ret = pressable;
+	ret = pressable;
 	if (tooltip) {
-		ret = <Tooltip label={tooltip} placement={tooltipPlacement}>{pressable}</Tooltip>;
+		ret = <Tooltip label={tooltip} placement={tooltipPlacement}>{ret}</Tooltip>;
 	}
 	return ret;
 });

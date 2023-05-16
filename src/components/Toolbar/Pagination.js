@@ -41,9 +41,6 @@ export default function Pagination(props) {
 	return useMemo(() => {
 		const
 			iconButtonProps = {
-				_hover: {
-					bg: 'trueGray.400',
-				},
 				// mx: 1,
 			},
 			iconProps = {
