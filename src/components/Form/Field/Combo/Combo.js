@@ -412,6 +412,7 @@ export function Combo(props) {
 										flex={1}
 										h="100%"
 										m={0}
+										autoSubmitDelay={0}
 										borderTopRightRadius={0}
 										borderBottomRightRadius={0}
 										fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
