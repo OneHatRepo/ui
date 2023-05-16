@@ -12,6 +12,8 @@ function isRgb(color) {
 // Try to convert this to actual RGB colors.
 export default function nbToRgb(color) {
 
+	let regex, alpha, matches;
+
 	if (isRgb(color)) {
 		// already in RGB format; simply return it
 		return {
@@ -25,13 +27,12 @@ export default function nbToRgb(color) {
 		color = themeOverrideColors[color];
 	}
 
-	let regex, alpha, matches;
-
+	// Detect 'primary.100:alpha.20' format
 	regex = /^([\w#\.]+)(:alpha\.([\d]{1,2}))?$/;
 	matches = color.match(regex);
 	if (matches[3]) {
 		// alpha part exists. parse it
-		alpha = parseInt(matches[3], 10) / 100;
+		alpha = parseInt(matches[3], 10) / 100; // convert '20' to .2
 	}
 	if (matches[1]) {
 		// color part exists. parse it

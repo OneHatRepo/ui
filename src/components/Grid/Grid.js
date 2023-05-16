@@ -363,8 +363,10 @@ export function Grid(props) {
 								mixWith = styles.GRID_ROW_HOVER_BG;
 							}
 							if (mixWith) {
-								const mixWithObj = nbToRgb(mixWith);
-								bg = colourMixer.blend(bg, 0.9, mixWithObj.color);
+								const
+									mixWithObj = nbToRgb(mixWith),
+									ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
+								bg = colourMixer.blend(bg, ratio, mixWithObj.color);
 							}
 							let WhichGridRow = GridRow,
 								rowReorderProps = {};
