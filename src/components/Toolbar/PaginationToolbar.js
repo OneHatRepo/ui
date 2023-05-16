@@ -12,6 +12,7 @@ export default function PaginationToolbar(props) {
 		} = props,
 		[minimize, setMinimize] = useState(false),
 		propsToPass = _.omit(props, 'toolbarItems'),
+		showPagination = props.Repository?.totalPages > 1,
 		onLayout = (e) => {
 			// Note to future self: this is using hard-coded values.
 			// Eventually might want to make it responsive to actual sizes
@@ -30,6 +31,16 @@ export default function PaginationToolbar(props) {
 			}
 		};
 
+	let toolbarProps = {};
+	if (showPagination) {
+		toolbarProps = {
+			borderLeftWidth: 1,
+			borderLeftColor: 'trueGray.400',
+			pl: 3,
+			ml: 3,
+		};
+	}
+
 	return <Toolbar
 				bg="trueGray.200"
 				borderTopWidth={1}
@@ -37,7 +48,7 @@ export default function PaginationToolbar(props) {
 				w="100%"
 				onLayout={(e) => onLayout(e)}
 			>
-				<Pagination {...propsToPass} w={toolbarItems.length ? null : '100%'} minimize={minimize} />
-				{toolbarItems.length ? <Row flex={1} borderLeftWidth={1} borderLeftColor="trueGray.400" pl={3} ml={3}>{toolbarItems}</Row> : null}
+				{showPagination && <Pagination {...propsToPass} w={toolbarItems.length ? null : '100%'} minimize={minimize} />}
+				{toolbarItems.length ? <Row flex={1} {...toolbarProps}>{toolbarItems}</Row> : null}
 			</Toolbar>;
 };
