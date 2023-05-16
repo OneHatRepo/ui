@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.2.53",
+	"version": "0.2.54",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -21,6 +21,7 @@
 	"dependencies": {
 		"@onehat/data": "^1.16.10",
 		"@hookform/resolvers": "^2.9.11",
+		"@k-renwick/colour-mixer": "^1.2.1",
 		"ckeditor5-custom-build": "file:ckeditor5",
 		"js-cookie": "^3.0.1",
 		"native-base": "^3.4.25",

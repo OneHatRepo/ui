@@ -21,6 +21,7 @@ import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
 } from '../../Constants/Grid.js';
+import * as colourMixer from '@k-renwick/colour-mixer'
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
@@ -35,6 +36,7 @@ import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import withInlineEditor from '../Hoc/withInlineEditor.js';
 import testProps from '../../Functions/testProps.js';
+import nbToRgb from '../../Functions/nbToRgb.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { ReorderableGridRow } from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -44,6 +46,7 @@ import Toolbar from '../Toolbar/Toolbar.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
 import _ from 'lodash';
+
 
 // Grid requires the use of HOC withSelection() whenever it's used.
 // The default export is *with* the HOC. A separate *raw* component is
@@ -348,19 +351,20 @@ export function Grid(props) {
 										/>;
 							}
 
-							let bg = styles.GRID_ROW_BG;
+							let bg = rowProps.bg || styles.GRID_ROW_BG,
+								mixWith;
 							if (isSelected) {
 								if (showHovers && isHovered) {
-									bg = styles.GRID_ROW_SELECTED_HOVER_BG;
+									mixWith = styles.GRID_ROW_SELECTED_HOVER_BG;
 								} else {
-									bg = styles.GRID_ROW_SELECTED_BG;
+									mixWith = styles.GRID_ROW_SELECTED_BG;
 								}
-							} else {
-								if (showHovers && isHovered) {
-									bg = styles.GRID_ROW_HOVER_BG;
-								} else {
-									bg = styles.GRID_ROW_BG;
-								}
+							} else if (showHovers && isHovered) {
+								mixWith = styles.GRID_ROW_HOVER_BG;
+							}
+							if (mixWith) {
+								const mixWithObj = nbToRgb(mixWith);
+								bg = colourMixer.blend(bg, 0.9, mixWithObj.color);
 							}
 							let WhichGridRow = GridRow,
 								rowReorderProps = {};
