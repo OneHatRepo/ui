@@ -32,10 +32,20 @@ export default function GridRow(props) {
 			const renderColumns = (item) => {
 				if (_.isArray(columnsConfig)) {
 					return _.map(columnsConfig, (config, key) => {
+						const propsToPass = columnProps[key] || {};
+						if (config.w) {
+							propsToPass.w = config.w;
+						} else if (config.flex) {
+							propsToPass.flex = config.flex;
+							propsToPass.minWidth = 100;
+						} else {
+							propsToPass.flex = 1;
+						}
+
 						let value;
 						if (_.isPlainObject(config)) {
 							if (config.renderer) {
-								return config.renderer(item, key);
+								return config.renderer(item, key, propsToPass);
 							}
 							if (config.fieldName) {
 								if (item.properties && item.properties[config.fieldName]) {
@@ -62,16 +72,6 @@ export default function GridRow(props) {
 						}
 						if (_.isFunction(value)) {
 							return value(key);
-						}
-
-						const propsToPass = columnProps[key] || {};
-						if (config.w) {
-							propsToPass.w = config.w;
-						} else if (config.flex) {
-							propsToPass.flex = config.flex;
-							propsToPass.minWidth = 100;
-						} else {
-							propsToPass.flex = 1;
 						}
 						
 						return <Text
