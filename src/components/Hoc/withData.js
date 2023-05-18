@@ -51,10 +51,8 @@ export default function withData(WrappedComponent) {
 					Repository = oneHatData.getRepository(model);
 				}
 
-
-				if (autoLoad && Repository && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
+				if (Repository && (autoLoad || Repository.autoLoad) && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
 					await Repository.load();
-					// TODO: Implement some method by which I can detect if Repository is still loading and wait until it's done!
 				}
 	
 				setLocalRepository(Repository);
