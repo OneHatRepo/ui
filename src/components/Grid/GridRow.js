@@ -41,11 +41,30 @@ export default function GridRow(props) {
 						} else {
 							propsToPass.flex = 1;
 						}
+						propsToPass.p = 1;
+						propsToPass.justifyContent = 'center';
 
 						let value;
 						if (_.isPlainObject(config)) {
 							if (config.renderer) {
-								return config.renderer(item, key, propsToPass);
+								const extraProps = _.omit(config, [
+									'columnId',
+									'header',
+									'fieldName',
+									'type',
+									'isEditable',
+									'editor',
+									'format',
+									'renderer',
+									'reorderable',
+									'resizable',
+									'sortable',
+									'w',
+									'flex',
+									'showDragHandles',
+								]);
+
+								return <Row key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</Row>;
 							}
 							if (config.fieldName) {
 								if (item.properties && item.properties[config.fieldName]) {

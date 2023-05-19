@@ -74,9 +74,6 @@ export function Grid(props) {
 				return {
 					borderBottomWidth: 1,
 					borderBottomColor: 'trueGray.500',
-					py: 2,
-					pl: 4,
-					pr: 2,
 				};
 			},
 			flatListProps = {},
@@ -678,6 +675,7 @@ export function Grid(props) {
 							sortable = true,
 							w,
 							flex,
+							...propsToPass
 						} = columnConfig,
 
 						config = {
@@ -695,6 +693,7 @@ export function Grid(props) {
 							w,
 							flex,
 							showDragHandles: false,
+							...propsToPass,
 						};
 
 					if (!config.w && !config.flex) {
