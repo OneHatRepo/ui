@@ -147,16 +147,16 @@ function FileElement(props) {
 			setIsDropping(false);
 		};
 
-	useEffect(() => {
-		const {
-				dataUri,
-				control,
-				filename,
-			} = value;
-		setLocalDataUri(localDataUri);
-		setLocalControl(localControl);
-		setLocalFilename(localFilename);
-	}, []);
+	// useEffect(() => {
+	// 	const {
+	// 			dataUri,
+	// 			control,
+	// 			filename,
+	// 		} = value;
+	// 	setLocalDataUri(dataUri);
+	// 	setLocalControl(control);
+	// 	setLocalFilename(filename);
+	// }, []);
 
 	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
