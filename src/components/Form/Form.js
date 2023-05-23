@@ -282,14 +282,10 @@ function Form(props) {
 				});
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
-			
-			if (!name) {
-				throw new Error('name is required');
-			}
 
 			if (isViewOnly || !isEditable) {
 				const Text = getComponentFromType('Text');
-				if (!label && Repository) {
+				if (!label && Repository && model.titles?.[name]) {
 					label = model.titles[name];
 				}
 				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
@@ -307,7 +303,7 @@ function Form(props) {
 				return <Row key={ix} px={2} pb={1}>{element}</Row>;
 			}
 
-			if (!label && Repository) {
+			if (!label && Repository && model.titles?.[name]) {
 				label = model.titles[name];
 			}
 
