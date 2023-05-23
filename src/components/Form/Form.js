@@ -496,7 +496,7 @@ function Form(props) {
 							onPress={onViewMode}
 							leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
 							color="#fff"
-						>View</Button>}
+						>To View</Button>}
 				</Row>
 				{!_.isEmpty(additionalButtons) && 
 					<Row p={2} alignItems="center" justifyContent="flex-end">

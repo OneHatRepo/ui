@@ -6,16 +6,16 @@ import _ from 'lodash';
 // For web only!
 export default function useWindowSize() {
 	const [windowSize, setWindowSize] = useState({
-		width: window.innerWidth,
-		height: window.innerHeight
+		width: window?.innerWidth || 0,
+		height: window?.innerHeight || 0,
 	});
 
 	const handleSize = () => {
 		const
 			existingSize = windowSize,
 			newSize = {
-				width: window.innerWidth,
-				height: window.innerHeight
+				width: window?.innerWidth || 0,
+				height: window?.innerHeight || 0,
 			};
 		if (!_.isEqual(existingSize, newSize)) {
 			setWindowSize(newSize);

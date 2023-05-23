@@ -40,6 +40,7 @@ export default function Editor(props) {
 					record={selection[0]}
 					Repository={Repository}
 					onEditMode={isViewOnly ? null : onEditMode}
+					onClose={onClose}
 					{...props}
 				/>;
 	}
