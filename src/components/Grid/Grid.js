@@ -797,7 +797,7 @@ export function Grid(props) {
 							scrollEnabled={true}
 							nestedScrollEnabled={true}
 							contentContainerStyle={{
-								overflow: 'scroll',
+								overflow: 'auto',
 								borderWidth: isReorderMode ? 4 : 0,
 								borderColor: isReorderMode ? '#23d9ea' : null,
 								borderStyle: 'dashed',

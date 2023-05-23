@@ -463,7 +463,7 @@ export function Combo(props) {
 										w={width + 'px'}
 										h={height ? height + 'px' : null}
 										minWidth={menuMinWidth}
-										overflow="scroll"
+										overflow="auto"
 									>
 										<Popover.Body
 											ref={menuRef}
