@@ -743,7 +743,7 @@ export function Grid(props) {
 		if (!Repository) {
 			return () => {};
 		}
-		if (!disableSelectorSelected) {
+		if (!disableSelectorSelected && selectorId) {
 			let id = selectorSelected?.id;
 			if (_.isEmpty(selectorSelected)) {
 				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
