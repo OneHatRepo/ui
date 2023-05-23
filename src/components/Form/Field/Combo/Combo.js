@@ -464,6 +464,7 @@ export function Combo(props) {
 										h={height ? height + 'px' : null}
 										minWidth={menuMinWidth}
 										overflow="auto"
+										bg="#fff"
 									>
 										<Popover.Body
 											ref={menuRef}
@@ -484,6 +485,7 @@ export function Combo(props) {
 														py: 1,
 														pl: 4,
 														pr: 2,
+														w: '100%',
 													};
 												}}
 												{...props}
