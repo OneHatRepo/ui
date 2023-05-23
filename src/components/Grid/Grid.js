@@ -52,18 +52,6 @@ import _ from 'lodash';
 // The default export is *with* the HOC. A separate *raw* component is
 // exported which can be combined with many HOCs for various functionality.
 
-	// Desired features: ---------
-	// Rows
-		// Rows with ability to use multiple lines (I was thinking custom render fns on rows, could possibly already do this!)
-	// selection
-		// Draggable selection (not super important)
-	// editor
-		// [ ] Show inline editor for selected row
-		// Dragging of window (see withWindowedEditor)
-	// custom cell types
-		// Most would use text, and depend on @onehat/data for formatting
-	// Display tree data
-
 export function Grid(props) {
 	const {
 

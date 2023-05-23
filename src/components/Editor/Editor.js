@@ -27,7 +27,7 @@ export default function Editor(props) {
 		onEditMode = () => {
 			setEditorMode(EDITOR_MODE__EDIT);
 		},
-		onBack = () => {
+		onViewMode = () => {
 			setEditorMode(EDITOR_MODE__VIEW);
 		};
 
@@ -49,7 +49,7 @@ export default function Editor(props) {
 
 	return <Form
 				record={selection}
-				onBack={onBack}
+				onViewMode={onViewMode}
 				onCancel={onCancel}
 				onSave={onSave}
 				onClose={onClose}

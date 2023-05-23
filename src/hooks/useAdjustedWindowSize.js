@@ -3,7 +3,7 @@ import useWindowSize from './useWindowSize.js';
 // This hook takes the submitted window size and adjusts it
 // to fit the actual screen size
 
-export default function(width, height, percentage = 0.9) {
+export default function(width, height, percentage = 1) {
 
 	const windowSize = useWindowSize();
 	

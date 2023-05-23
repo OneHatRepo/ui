@@ -10,7 +10,7 @@ export default function Label(props) {
 		} = props;
 	return <Row
 				w={w}
-				// maxWidth="30%"
+				minWidth="220px"
 				alignItems="center"
 				pl={2}
 				{...props}
