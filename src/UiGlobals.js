@@ -1,4 +1,5 @@
 import { CURRENT_MODE } from './Constants/UiModes.js';
+import _ from 'lodash';
 
 
 const Globals = {
@@ -6,3 +7,7 @@ const Globals = {
 };
 
 export default Globals;
+
+export function setGlobals(globals) {
+	_.merge(Globals, globals);
+}
