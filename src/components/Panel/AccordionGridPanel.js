@@ -5,7 +5,7 @@ import {
 } from 'native-base';
 import Accordion from 'react-native-collapsible/Accordion'; // https://www.npmjs.com/package/react-native-collapsible
 import testProps from '../../Functions/testProps';
-import Footer from './Footer.js';
+import Footer from '../Layout/Footer.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from './NoRecordsFound.js';

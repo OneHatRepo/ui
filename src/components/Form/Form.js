@@ -31,7 +31,7 @@ import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
 import Rotate from '../Icons/Rotate.js';
 import Pencil from '../Icons/Pencil.js';
-import Footer from '../Panel/Footer.js';
+import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
 

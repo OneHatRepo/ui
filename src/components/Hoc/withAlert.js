@@ -13,7 +13,7 @@ import {
 	ALERT_MODE_CUSTOM,
 } from '../../Constants/Alert.js';
 import Panel from '../Panel/Panel.js';
-import Footer from '../Panel/Footer.js';
+import Footer from '../Layout/Footer.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import _ from 'lodash';
 

@@ -1,7 +1,12 @@
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import actionCreators from '../../../Models/actions/ActionCreators';
 import _ from 'lodash';
+
+let actionCreators = null;
+
+export function setActionCreators(ac) {
+	actionCreators = ac;
+}
 
 // Usage:
 // At top of file: 
