@@ -1,4 +1,4 @@
-import round from 'locutus/php/math/round'; // Port of PHP functions to JS
+import round from 'locutus/php/math/round.js'; // Port of PHP functions to JS
 
 // Rounds to the nearest EVEN integer. This means it is unbiased (doesn't always round up, doesn't always round down)
 export function BankersRound($x) {
