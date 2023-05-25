@@ -319,6 +319,9 @@ export default function GridHeaderRow(props) {
 					return <Pressable
 								key={ix}
 								onPress={(e) => {
+									if (e.preventDefault) {
+										e.preventDefault();
+									}
 									if (isBlocked.current) { // withDraggable initiates block
 										return;
 									}

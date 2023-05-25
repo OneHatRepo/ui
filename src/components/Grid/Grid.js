@@ -276,6 +276,9 @@ export function Grid(props) {
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => {
+							if (e.preventDefault && e.cancelable) {
+								e.preventDefault();
+							}
 							if (isHeaderRow || isReorderMode) {
 								return
 							}
@@ -300,9 +303,13 @@ export function Grid(props) {
 							}
 						}}
 						onLongPress={(e) => {
+							if (e.preventDefault && e.cancelable) {
+								e.preventDefault();
+							}
 							if (isHeaderRow || isReorderMode) {
 								return
 							}
+							
 							// context menu
 							const selection = [item];
 							setSelection(selection);
