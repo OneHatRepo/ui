@@ -372,8 +372,8 @@ export default function GridHeaderRow(props) {
 									textOverflow="ellipsis"
 									flex={1}
 									h="100%"
-									px={2}
-									py={2}
+									px={styles.GRID_HEADER_CELL_PX}
+									py={styles.GRID_HEADER_CELL_PY}
 									alignItems="center"
 									justifyContent="center"
 									numberOfLines={1}

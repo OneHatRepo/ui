@@ -100,6 +100,8 @@ export default function GridRow(props) {
 									alignSelf="center"
 									style={{ userSelect: 'none', }}
 									fontSize={styles.GRID_CELL_FONTSIZE}
+									px={styles.GRID_CELL_PX}
+									py={styles.GRID_CELL_PY}
 									numberOfLines={1}
 									ellipsizeMode="head"
 									{...propsToPass}

@@ -388,7 +388,7 @@ function Form(props) {
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
 								}
-								element = <Row w="100%">
+								element = <Row w="100%" py={1}>
 												<Label {...labelProps}>{label}</Label>
 												{element}
 											</Row>;
