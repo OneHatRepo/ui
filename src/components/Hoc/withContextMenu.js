@@ -30,7 +30,7 @@ export default function withContextMenu(WrappedComponent) {
 			[contextMenuX, setContextMenuX] = useState(0),
 			[contextMenuY, setContextMenuY] = useState(0),
 			[contextMenuItemComponents, setContextMenuItemComponents] = useState([]),
-			onContextMenu = (entity, rowIx, e, selection, setSelection) => {
+			onContextMenu = (entity, e, selection, setSelection) => {
 				if (disableContextMenu) {
 					return;
 				}

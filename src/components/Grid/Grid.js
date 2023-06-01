@@ -143,7 +143,7 @@ export function Grid(props) {
 				onChangeColumnsConfig(config);
 			}
 		},
-		onRowClick = (item, rowIndex, e) => {
+		onRowClick = (item, e) => {
 			const
 				{
 					shiftKey,
@@ -284,14 +284,14 @@ export function Grid(props) {
 							}
 							switch (e.detail) {
 								case 1: // single click
-									onRowClick(item, index, e); // sets selection
+									onRowClick(item, e); // sets selection
 									if (onEditorRowClick) {
 										onEditorRowClick(item, index, e);
 									}
 									break;
 								case 2: // double click
 									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
-										onRowClick(item, index, e); // so reselect it
+										onRowClick(item, e); // so reselect it
 									}
 									if (onEdit) {
 										onEdit();
@@ -317,7 +317,7 @@ export function Grid(props) {
 								onEditorRowClick(item, index, e);
 							}
 							if (onContextMenu) {
-								onContextMenu(item, index, e, selection, setSelection);
+								onContextMenu(item, e, selection, setSelection);
 							}
 						}}
 						flexDirection="row"
@@ -744,7 +744,7 @@ export function Grid(props) {
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
 		};
-	}, [deselectAll]);
+	}, []);
 
 	useEffect(() => {
 		if (!Repository) {

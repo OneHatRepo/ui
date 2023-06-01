@@ -114,10 +114,10 @@ export function Tree(props) {
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[isReorderMode, setIsReorderMode] = useState(false),
-		[treeNodes, setTreeNodes] = useState({}),
+		[treeNodeData, setTreeNodeData] = useState({}),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
-		onNodeClick = (item, rowIndex, e) => {
+		onNodeClick = (item, e) => {
 			const
 				{
 					shiftKey,
@@ -234,148 +234,158 @@ export function Tree(props) {
 			}
 			return items;
 		},
-		buildTreeNode = (entity) => {
+		renderNode = (itemData) => {
+			const item = itemData.item;
+			if (item.isDestroyed) {
+				return null;
+			}
+
+
+			// TODO: Figure out these vars
+			// icon (optional)
+			// onToggle (handler for if expand/collapse icon is clicked)
+
+
+
+			let nodeProps = getNodeProps && !isHeaderNode ? getNodeProps(item) : {},
+				isSelected = !isHeaderNode && isInSelection(item);
+
+			return <Pressable
+						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
+						onPress={(e) => {
+							if (e.preventDefault && e.cancelable) {
+								e.preventDefault();
+							}
+							if (isReorderMode) {
+								return
+							}
+							switch (e.detail) {
+								case 1: // single click
+									onNodeClick(item, e); // sets selection
+									break;
+								case 2: // double click
+									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
+										onNodeClick(item, e); // so reselect it
+									}
+									if (onEdit) {
+										onEdit();
+									}
+									break;
+								case 3: // triple click
+									break;
+								default:
+							}
+						}}
+						onLongPress={(e) => {
+							if (e.preventDefault && e.cancelable) {
+								e.preventDefault();
+							}
+							if (isReorderMode) {
+								return
+							}
+							
+							// context menu
+							const selection = [item];
+							setSelection(selection);
+							if (onContextMenu) {
+								onContextMenu(item, e, selection, setSelection);
+							}
+						}}
+						flexDirection="row"
+						flexGrow={1}
+					>
+						{({
+							isHovered,
+							isFocused,
+							isPressed,
+						}) => {
+							let bg = nodeProps.bg || styles.TREE_NODE_BG,
+								mixWith;
+							if (isSelected) {
+								if (showHovers && isHovered) {
+									mixWith = styles.TREE_NODE_SELECTED_HOVER_BG;
+								} else {
+									mixWith = styles.TREE_NODE_SELECTED_BG;
+								}
+							} else if (showHovers && isHovered) {
+								mixWith = styles.TREE_NODE_HOVER_BG;
+							}
+							if (mixWith) {
+								const
+									mixWithObj = nbToRgb(mixWith),
+									ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
+								bg = colourMixer.blend(bg, ratio, mixWithObj.color);
+							}
+							let WhichTreeNode = TreeNode,
+								rowReorderProps = {};
+							if (canNodesReorder && isReorderMode) {
+								WhichTreeNode = ReorderableTreeNode;
+								rowReorderProps = {
+									mode: VERTICAL,
+									onDragStart: onNodeReorderDragStart,
+									onDrag: onNodeReorderDrag,
+									onDragStop: onNodeReorderDragStop,
+									proxyParent: treeRef.current?.getScrollableNode().children[0],
+									proxyPositionRelativeToParent: true,
+									getParentNode: (node) => node.parentElement.parentElement.parentElement,
+									getProxy: getReorderProxy,
+								};
+							}
+							
+							return <WhichTreeNode
+										nodeProps={nodeProps}
+										bg={bg}
+										itemData={itemData}
+
+										icon={icon}
+										onToggle={onToggle}
+
+										// fields={fields}
+										// hideNavColumn={hideNavColumn}
+										{...rowReorderProps}
+									/>;
+						}}
+					</Pressable>;
+		},
+		buildTreeNode = (itemData) => {
+			// this one is to be used recursively on children
+
+			// isVisible // skip if not visible, just return keyed array
+
+			// renderNode(itemData);
 
 		},
 		buildTreeNodes = () => {
-			// Take the Repository and build up the tree nodes from its entities
+
+			// const entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data;
+			// let rowData = _.clone(entities); // don't use the original array, make a new one so alterations to it are temporary
+
 			const
-				entities = Repository.entities,
-				treeNodes = {};
+				rootEntity = Repository.getRootEntity(),
+				rootNode = buildTreeNode(rootEntity);
 
 
 
-			return treeNodes;
+
+			return rootNode;
 		},
-		renderNode = (row) => {
-			// if (row.item.isDestroyed) {
-			// 	return null;
-			// }
-
-			// let {
-			// 		item,
-			// 		index,
-			// 	} = row,
-			// 	isHeaderNode = row.item.id === 'headerNode',
-			// 	rowProps = getNodeProps && !isHeaderNode ? getNodeProps(item) : {},
-			// 	isSelected = !isHeaderNode && isInSelection(item);
-
-			// return <Pressable
-			// 			// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
-			// 			onPress={(e) => {
-			// 				if (e.preventDefault && e.cancelable) {
-			// 					e.preventDefault();
-			// 				}
-			// 				if (isHeaderNode || isReorderMode) {
-			// 					return
-			// 				}
-			// 				switch (e.detail) {
-			// 					case 1: // single click
-			// 						onNodeClick(item, index, e); // sets selection
-			// 						if (onEditorNodeClick) {
-			// 							onEditorNodeClick(item, index, e);
-			// 						}
-			// 						break;
-			// 					case 2: // double click
-			// 						if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
-			// 							onNodeClick(item, index, e); // so reselect it
-			// 						}
-			// 						if (onEdit) {
-			// 							onEdit();
-			// 						}
-			// 						break;
-			// 					case 3: // triple click
-			// 						break;
-			// 					default:
-			// 				}
-			// 			}}
-			// 			onLongPress={(e) => {
-			// 				if (e.preventDefault && e.cancelable) {
-			// 					e.preventDefault();
-			// 				}
-			// 				if (isHeaderNode || isReorderMode) {
-			// 					return
-			// 				}
-							
-			// 				// context menu
-			// 				const selection = [item];
-			// 				setSelection(selection);
-			// 				if (onEditorNodeClick) { // e.g. inline editor
-			// 					onEditorNodeClick(item, index, e);
-			// 				}
-			// 				if (onContextMenu) {
-			// 					onContextMenu(item, index, e, selection, setSelection);
-			// 				}
-			// 			}}
-			// 			flexDirection="row"
-			// 			flexGrow={1}
-			// 		>
-			// 			{({
-			// 				isHovered,
-			// 				isFocused,
-			// 				isPressed,
-			// 			}) => {
-			// 				if (isHeaderNode) {
-			// 					return <TreeHeaderNode
-			// 								Repository={Repository}
-			// 								columnsConfig={localColumnsConfig}
-			// 								setColumnsConfig={setLocalColumnsConfig}
-			// 								hideNavColumn={hideNavColumn}
-			// 								canColumnsSort={canColumnsSort}
-			// 								canColumnsReorder={canColumnsReorder}
-			// 								canColumnsResize={canColumnsResize}
-			// 								setSelection={setSelection}
-			// 								treeRef={treeRef}
-			// 								isHovered={isHovered}
-			// 							/>;
-			// 				}
-
-			// 				let bg = rowProps.bg || styles.TREE_ROW_BG,
-			// 					mixWith;
-			// 				if (isSelected) {
-			// 					if (showHovers && isHovered) {
-			// 						mixWith = styles.TREE_ROW_SELECTED_HOVER_BG;
-			// 					} else {
-			// 						mixWith = styles.TREE_ROW_SELECTED_BG;
-			// 					}
-			// 				} else if (showHovers && isHovered) {
-			// 					mixWith = styles.TREE_ROW_HOVER_BG;
-			// 				}
-			// 				if (mixWith) {
-			// 					const
-			// 						mixWithObj = nbToRgb(mixWith),
-			// 						ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
-			// 					bg = colourMixer.blend(bg, ratio, mixWithObj.color);
-			// 				}
-			// 				let WhichTreeNode = TreeNode,
-			// 					rowReorderProps = {};
-			// 				if (canNodesReorder && isReorderMode) {
-			// 					WhichTreeNode = ReorderableTreeNode;
-			// 					rowReorderProps = {
-			// 						mode: VERTICAL,
-			// 						onDragStart: onNodeReorderDragStart,
-			// 						onDrag: onNodeReorderDrag,
-			// 						onDragStop: onNodeReorderDragStop,
-			// 						proxyParent: treeRef.current?.getScrollableNode().children[0],
-			// 						proxyPositionRelativeToParent: true,
-			// 						getParentNode: (node) => node.parentElement.parentElement.parentElement,
-			// 						getProxy: getReorderProxy,
-			// 					};
-			// 				}
-							
-			// 				return <WhichTreeNode
-			// 							columnsConfig={localColumnsConfig}
-			// 							columnProps={columnProps}
-			// 							fields={fields}
-			// 							rowProps={rowProps}
-			// 							hideNavColumn={hideNavColumn}
-			// 							bg={bg}
-			// 							item={item}
-			// 							{...rowReorderProps}
-			// 						/>;
-			// 			}}
-			// 		</Pressable>;
+		getChildren = (node_id, depth) => {
+			// Calls getChildParams(), then submits to server
+			// Server returns this for each node:
+			// hasChildren (so view can show/hide caret)
+			// model (e.g. "Fleet", "Equipment)
+			// data (json encoded representation of entity)
+			
 		},
+
+		// Button handlers
+		expandPath = (path) => {} // - drills down the tree based on path (usually given by server). Path would be a list of sequential IDs (3/35/263/1024)
+		collapseOne = (node_id) => {},
+		collapseAll = () => {},
+		expandOne = (node_id) => {},
+		expandAll = () => {},
+
+		// Drag/Drop
 		getReorderProxy = (node) => {
 			const
 				row = node.parentElement.parentElement,
@@ -622,11 +632,50 @@ export function Tree(props) {
 		
 	useEffect(() => {
 
-		if (!isReady) {
+
+		function buildTreeNodeData() {
+			// Take the Repository and build up the tree node data from its entities
+			const
+				entities = Repository.entities,
+				treeNodes = {};
+
 			// TODO: Get root node?
+			// I'm thinking if a repository senses that it's a tree, then at initial load
+			// it should get the root node +1 level of children.
+			//
+			// How would it then subsequently get the proper children?
+			// i.e. When a node gets its children, how will it do this
+			// while maintaining the nodes that already exist there?
+			// We don't want it to *replace* all exisitng nodes!
+			//
+			// And if the repository does a reload, should it just get root+1 again?
+			// Changing filters would potentially change the tree structure.
+			// Changing sorting would only change the ordering, not what is expanded/collapsed or visible/invisible.
+
+			// include the following on each node
+			// - item
+			// - isExpanded,
+			// - isVisible,
+			// - hasChildren,
+			// - children
+			// - depth,
+			// - text,
+
+			// Need to take into account whether using Repository or data.
+			// If using data, everything exists at once. What format will data be in?
+			// How does this interface with Repository?
+			// Maybe if Repository is not AjaxRepository, everything needs to be present at once!
 
 
-			setTreeNodes(buildTreeNodes());
+			return treeNodes;
+		}
+
+		function buildAndSetTreeNodeData() {
+			setTreeNodeData(buildTreeNodeData());
+		}
+
+		if (!isReady) {
+			buildAndSetTreeNodeData();
 			setIsReady(true);
 		}
 		if (!Repository) {
@@ -651,7 +700,7 @@ export function Tree(props) {
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
 		Repository.ons(['changePage', 'changePageSize',], deselectAll);
-		Repository.ons(['changeData', 'change'], forceUpdate);
+		Repository.ons(['changeData', 'change'], buildAndSetTreeNodeData);
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
 
@@ -660,11 +709,11 @@ export function Tree(props) {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
 			Repository.offs(['changePage', 'changePageSize',], deselectAll);
-			Repository.offs(['changeData', 'change'], forceUpdate);
+			Repository.offs(['changeData', 'change'], buildAndSetTreeNodeData);
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
 		};
-	}, [deselectAll]);
+	}, []);
 
 	useEffect(() => {
 		if (!Repository) {
@@ -686,21 +735,16 @@ export function Tree(props) {
 		return null;
 	}
 
-	// // Actual data to show in the tree
-	// const entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data;
-	// let rowData = _.clone(entities); // don't use the original array, make a new one so alterations to it are temporary
-	// if (showHeaders) {
-	// 	rowData.unshift({ id: 'headerNode' });
-	// }
-	// const initialNumToRender = rowData.length || 10;
+	// Actual TreeNodes
+	const treeNodes = buildTreeNodes();
 
 	// headers & footers
-	let listFooterComponent = null;
+	let treeFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
+			treeFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
 		} else if (footerToolbarItemComponents.length) {
-			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
+			treeFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 		}
 	}
 	
@@ -716,46 +760,11 @@ export function Tree(props) {
 						deselectAll();
 					}
 				}}>
-					{!entities.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
-						<FlatList
-							// ref={treeRef}
-							// // ListHeaderComponent={listHeaderComponent}
-							// // ListFooterComponent={listFooterComponent}
-							// scrollEnabled={true}
-							// nestedScrollEnabled={true}
-							// contentContainerStyle={{
-							// 	overflow: 'auto',
-							// 	borderWidth: isReorderMode ? 4 : 0,
-							// 	borderColor: isReorderMode ? '#23d9ea' : null,
-							// 	borderStyle: 'dashed',
-							// 	flex: 1,
-							// }}
-							// refreshing={isLoading}
-							// onRefresh={pullToRefresh ? onRefresh : null}
-							// progressViewOffset={100}
-							// data={rowData}
-							// keyExtractor={(item) => {
-							// 	let id;
-							// 	if (item.id) {
-							// 		id = item.id;
-							// 	} else if (fields) {
-							// 		id = item[idIx];
-							// 	}
-							// 	return String(id);
-							// }}
-							// // getItemLayout={(data, index) => ( // an optional optimization that allows skipping the measurement of dynamic content if you know the size (height or width) of items ahead of time. getItemLayout is efficient if you have fixed size items
-							// // 	{length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
-							// // )}
-							// // numColumns={1}
-							// initialNumToRender={initialNumToRender}
-							// initialScrollIndex={0}
-							// renderItem={renderNode}
-							// bg="trueGray.100"
-							// {...flatListProps}
-						/>}
+					{!treeNodes.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
+						treeNodes}
 				</Column>
 
-				{listFooterComponent}
+				{treeFooterComponent}
 
 			</Column>;
 

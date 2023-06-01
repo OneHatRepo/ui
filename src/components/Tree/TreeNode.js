@@ -9,6 +9,7 @@ import {
 } from '../../Constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
+import IconButton from '../Buttons/IconButton.js';
 import FolderClosed from '../Icons/FolderClosed.js';
 import FolderOpen from '../Icons/FolderOpen.js';
 import File from '../Icons/File.js';
@@ -20,22 +21,17 @@ export default function TreeNode(props) {
 	const {
 			nodeProps,
 			bg,
-			entity,
-			isExpanded,
-			isVisible,
-			hasChildren,
-			isSelected,
-			isHovered,
-			depth,
-			type,
-			text,
-			// icon,
+			itemData,
 			onToggle,
-			onSelect,
 		} = props,
 		styles = UiGlobals.styles,
-		isPhantom = entity.isPhantom,
-		hash = entity?.hash || entity;
+		item = itemData.item,
+		isPhantom = item.isPhantom,
+		isExpanded = itemData.isExpanded,
+		hasChildren = itemData.hasChildren,
+		depth = itemData.depth,
+		text = itemData.text,
+		hash = item?.hash || item;
 
 		const icon = props.icon || (hasChildren ? (isExpanded ? <FolderOpen /> : <FolderClosed />) : <File />);
 
@@ -47,10 +43,14 @@ export default function TreeNode(props) {
 						{...nodeProps}
 						bg={bg}
 						key={hash}
+						pl={(depth * 10) + 'px'}
 					>
 						{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 						
-						{icon}
+						<IconButton
+							icon={icon}
+							onPress={onToggle}
+						/>
 
 						<Text
 							key={key}
@@ -70,20 +70,16 @@ export default function TreeNode(props) {
 		}, [
 			nodeProps,
 			bg,
-			entity,
+			item,
 			isPhantom,
-			hash, // this is an easy way to determine if the data has changed and the entity needs to be rerendered
+			hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
 			isExpanded,
 			isVisible,
 			hasChildren,
-			isSelected,
-			isHovered,
 			depth,
-			type,
 			text,
 			// props.icon,
 			onToggle,
-			onSelect,
 		]);
 }
 
