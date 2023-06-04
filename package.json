@@ -1,11 +1,17 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.2.57",
+	"version": "0.2.58",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
 	"scripts": {
-		"test": "npx cypress open --config-file ../cypress.json"
+		"test": "npx cypress open",
+		"test2": "DEBUG=cypress:* npx cypress open",
+		"docs": "jsdoc -c ./jsdoc.json -t ./node_modules/ink-docstrap/template -R README.md"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/OneHatRepo/ui.git"
 	},
 	"keywords": [
 		"onehat",
@@ -19,35 +25,38 @@
 	},
 	"license": "UNLICENSED",
 	"dependencies": {
-		"@onehat/data": "^1.17.0",
-		"@hookform/resolvers": "^2.9.11",
+		"@onehat/data": "^1.17.3",
+		"@hookform/resolvers": "^3.1.0",
 		"@k-renwick/colour-mixer": "^1.2.1",
-		"ckeditor5-custom-build": "file:ckeditor5",
-		"js-cookie": "^3.0.1",
-		"native-base": "^3.4.25",
-		"react-hook-form": "^7.43.1"
+		"js-cookie": "^3.0.5",
+		"native-base": "^3.4.28",
+		"react-hook-form": "^7.44.3",
+		"yup": "^1.2.0"
 	},
 	"peerDependencies": {
-	  "@ckeditor/ckeditor5-react": "^5.0.6",
-	  "react": "*",
-	  "react-color": "^2.19.3",
-	  "react-datetime": "^3.2.0",
-	  "react-draggable": "^4.4.5",
-	  "react-native-draggable": "^3.3.0",
-	  "react-dom": "*",
-	  "react-native": "*"
+		"ckeditor5-custom-build": "file:ckeditor5",
+		"react": "*",
+		"react-color": "^2.19.3",
+		"react-datetime": "^3.2.0",
+		"react-draggable": "^4.4.5",
+		"react-native-draggable": "^3.3.0",
+		"react-dom": "*",
+		"react-native": "*"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.21.0",
-		"@babel/node": "^7.20.7",
-		"@babel/plugin-proposal-class-properties": "^7.18.6",
-		"@babel/plugin-transform-runtime": "^7.21.0",
-		"@babel/preset-env": "^7.20.2",
+		"@babel/core": "^7.22.1",
+		"@babel/node": "^7.22.1",
+		"@babel/plugin-transform-class-properties": "^7.22.3",
+		"@babel/plugin-transform-runtime": "^7.22.4",
+		"@babel/preset-env": "^7.22.4",
 		"@babel/register": "^7.21.0",
-		"@babel/runtime": "^7.21.0",
-		"@cypress/webpack-preprocessor": "^5.17.0",
+		"@babel/runtime": "^7.22.3",
+		"@ckeditor/ckeditor5-react": "^5.0.6",
+		"@cypress/webpack-preprocessor": "^5.17.1",
 		"babel-loader": "^9.1.2",
-		"cypress": "^12.6.0",
-		"webpack": "^5.75.0"
+		"cypress": "12.13.0",
+		"ink-docstrap": "^1.3.2",
+		"jsdoc": "^4.0.2",
+		"webpack": "^5.85.0"
 	}
 }
