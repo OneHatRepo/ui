@@ -339,26 +339,6 @@ export function Tree(props) {
 			});
 			return data;
 		},
-		findTreeNodeByItem = (item) => {
-			// Searches treeNodeData for matching item
-			function searchChildren(children) {
-				let found = null;
-				_.each(children, (child) => {
-					if (child.item === datum.item) {
-						found = child;
-						return false;
-					}
-					if (child.children) {
-						found = searchChildren(child.children);
-						if (found) {
-							return false;
-						}
-					}
-				});
-				return found;
-			}
-			return searchChildren(treeNodeData);
-		},
 		renderTreeNode = (datum) => {
 			const item = datum.item;
 			if (item.isDestroyed) {
@@ -544,19 +524,53 @@ export function Tree(props) {
 		},
 		onSearchTree = async (value) => {
 			// TODO: Search the text of each node.
-			// Do we want to hit the server for this and see if we get a single path?
 
-			const isMultipleHits = true;
-			
-			
+			let found = null;
+			if (Repository?.isRemote) {
+				// TODO: hit the server for search results
+
+
+
+
+			} else {
+				// Search local tree data
+				found = findTreeNodeByText(value);
+			}
+
+
+			const isMultipleHits = found.length > 1;
 			if (isMultipleHits) {
-				// Show modal, so user can pick which to show
+				// TODO: Show modal, so user can pick which to show
 				
 
 
 			} else {
 				expandPath(path);
 			}
+		},
+		findTreeNodeByText = (text) => {
+			// Helper for onSearchTree
+			// Searches treeNodeData for matching item
+
+			const regex = new RegExp(text, 'i');
+
+			function searchChildren(children) {
+				let found = null;
+				_.each(children, (child) => {
+					if (child.text.match(regex)) {
+						found = child;
+						return false;
+					}
+					if (child.children) {
+						found = searchChildren(child.children);
+						if (found) {
+							return false;
+						}
+					}
+				});
+				return found;
+			}
+			return searchChildren(treeNodeData);
 		},
 		expandPath = (path) => {
 			// Helper for onSearchTree
