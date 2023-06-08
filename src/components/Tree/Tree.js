@@ -31,12 +31,15 @@ import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
-import withInlineEditor from '../Hoc/withInlineEditor.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
-import TreeHeaderRow from './TreeHeaderRow.js';
 import TreeNode, { ReorderableTreeNode } from './TreeNode.js';
+import Input from '../Form/Field/Input.js';
 import IconButton from '../Buttons/IconButton.js';
+import FolderClosed from '../Icons/FolderClosed.js';
+import FolderOpen from '../Icons/FolderOpen.js';
+import Circle from '../Icons/Circle.js';
+import Collapse from '../Icons/Collapse.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from './NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
@@ -49,17 +52,62 @@ import _ from 'lodash';
 // The default export is *with* the HOC. A separate *raw* component is
 // exported which can be combined with many HOCs for various functionality.
 
+
+//////////////////////
+//////////////////////
+
+// I'm thinking if a repository senses that it's a tree, then at initial load
+// it should get the root node +1 level of children.
+//
+// How would it then subsequently get the proper children?
+// i.e. When a node gets its children, how will it do this
+// while maintaining the nodes that already exist there?
+// We don't want it to *replace* all exisitng nodes!
+//
+// And if the repository does a reload, should it just get root+1 again?
+// Changing filters would potentially change the tree structure.
+// Changing sorting would only change the ordering, not what is expanded/collapsed or visible/invisible.
+
+
+
+// Need to take into account whether using Repository or data.
+// If using data, everything exists at once. What format will data be in?
+// How does this interface with Repository?
+// Maybe if Repository is not AjaxRepository, everything needs to be present at once!
+
+
+// isRootVisible
+
+//////////////////////
+//////////////////////
+
+
+
+
+
+
 export function Tree(props) {
 	const {
 			isRootVisible = true,
-			getChildParams = () => { // returns params needed to get child nodes from server (getEquipment, getRentalEquipment, etc). This is primarily to limit results, as different kinds of views are only interested in certain types of nodes in the returned data.
+			getAdditionalParams = () => { // URL params needed to get nodes from server (e.g, { venue_id: 1, getEquipment: true, getRentalEquipment: false, }), in addition to filters.
 				return {};
 			},
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
 				return item.displayValue;
 			},
-			getNodeType, // extracts model/data and decides what kind of node this should be. Helper for getNodeIcon
-			getNodeIcon,
+			getNodeIcon = (item, isExpanded) => { // decides what icon to show for this node
+				let icon;
+				if (item.hasChildren) {
+					if (isExpanded) {
+						icon = FolderOpen;
+					} else {
+						icon = FolderClosed;
+					}
+				} else {
+					icon = Circle;
+				}
+				return icon;
+			},
 			nodeProps = (item) => {
 				return {};
 			},
@@ -187,7 +235,48 @@ export function Tree(props) {
 				});
 			}
 		},
+		getHeaderToolbarItems = () => {
+			const
+				buttons = [
+					{
+						text: 'Collapse whole tree',
+						handler: onCollapseAll,
+						icon: Collapse,
+						isDisabled: false,
+					},
+				],
+				items = _.map(buttons, getIconFromConfig);
+			items.unshift(<Input
+				key="searchTree"
+				{...iconButtonProps}
+				flex={1}
+				placeholder="Search all tree nodes"
+				onChangeValue={onSearchTree}
+				autoSubmit={false}
+			/>);
+			if (canNodesReorder) {
+				items.push(<IconButton
+					key="reorderBtn"
+					{...iconButtonProps}
+					onPress={() => setIsReorderMode(!isReorderMode)}
+					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.TREE_TOOLBAR_ITEMS_COLOR} />}
+				/>);
+			}
+			return items;
+		},
 		getFooterToolbarItems = () => {
+			const items = _.map(additionalToolbarButtons, getIconFromConfig);
+			if (canNodesReorder) {
+				items.unshift(<IconButton
+					key="reorderBtn"
+					{...iconButtonProps}
+					onPress={() => setIsReorderMode(!isReorderMode)}
+					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.TREE_TOOLBAR_ITEMS_COLOR} />}
+				/>);
+			}
+			return items;
+		},
+		getIconFromConfig = (config, key) => {
 			const
 				iconButtonProps = {
 					_hover: {
@@ -201,57 +290,90 @@ export function Tree(props) {
 					size: styles.TREE_TOOLBAR_ITEMS_ICON_SIZE,
 					h: 20,
 					w: 20,
-				},
-				items = _.map(additionalToolbarButtons, (config, ix) => {
-					let {
-							text,
-							handler,
-							icon = null,
-							isDisabled = false,
-						} = config;
-					if (icon) {
-						const thisIconProps = {
-							color: isDisabled ? styles.TREE_TOOLBAR_ITEMS_DISABLED_COLOR : styles.TREE_TOOLBAR_ITEMS_COLOR,
-						};
-						icon = React.cloneElement(icon, {...iconProps, ...thisIconProps});
-					}
-					return <IconButton
-								key={ix}
-								{...iconButtonProps}
-								onPress={handler}
-								icon={icon}
-								isDisabled={isDisabled}
-								tooltip={text}
-							/>;
-				});
-			if (canNodesReorder) {
-				items.unshift(<IconButton
-					key="reorderBtn"
-					{...iconButtonProps}
-					onPress={() => setIsReorderMode(!isReorderMode)}
-					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.TREE_TOOLBAR_ITEMS_COLOR} />}
-				/>);
+				};
+			let {
+					text,
+					handler,
+					icon = null,
+					isDisabled = false,
+				} = config;
+			if (icon) {
+				const thisIconProps = {
+					color: isDisabled ? styles.TREE_TOOLBAR_ITEMS_DISABLED_COLOR : styles.TREE_TOOLBAR_ITEMS_COLOR,
+				};
+				icon = React.cloneElement(icon, {...iconProps, ...thisIconProps});
 			}
-			return items;
+			return <IconButton
+						key={key}
+						onPress={handler}
+						icon={icon}
+						isDisabled={isDisabled}
+						tooltip={text}
+						{...iconButtonProps}
+					/>;
 		},
-		renderNode = (itemData) => {
-			const item = itemData.item;
+		buildTreeNodeDatum = (treeNode) => {
+			// Build the data-representation of one node and its children,
+			// caching text & icon, keeping track of the state for whole tree
+			// renderTreeNode uses this to render the nodes.
+			const
+				isRoot = treeNode.isRoot,
+				isLeaf = !treeNode.hasChildren,
+				datum = {
+					item: treeNode,
+					text: getNodeText(treeNode),
+					iconCollapsed: isLeaf ? null : getNodeIcon(treeNode, false),
+					iconExpanded: isLeaf ? null : getNodeIcon(treeNode, true),
+					iconLeaf: isLeaf ? getNodeIcon(treeNode) : null,
+					isExpanded: isRoot, // all non-root treeNodes are not expanded by default
+					isVisible: isRoot ? isRootVisible : true,
+					children: buildTreeNodeData(treeNode.children), // recursively get data for children
+				};
+
+			return datum;
+		},
+		buildTreeNodeData = (treeNodes) => {
+			const data = [];
+			_.each(treeNodes, (item) => {
+				data.push(buildTreeNodeDatum(item));
+			});
+			return data;
+		},
+		findTreeNodeByItem = (item) => {
+			// Searches treeNodeData for matching item
+			function searchChildren(children) {
+				let found = null;
+				_.each(children, (child) => {
+					if (child.item === datum.item) {
+						found = child;
+						return false;
+					}
+					if (child.children) {
+						found = searchChildren(child.children);
+						if (found) {
+							return false;
+						}
+					}
+				});
+				return found;
+			}
+			return searchChildren(treeNodeData);
+		},
+		renderTreeNode = (datum) => {
+			const item = datum.item;
 			if (item.isDestroyed) {
 				return null;
 			}
+			if (!datum.isVisible) {
+				return null;
+			}
 
-
-			// TODO: Figure out these vars
-			// icon (optional)
-			// onToggle (handler for if expand/collapse icon is clicked)
-
-
-
-			let nodeProps = getNodeProps && !isHeaderNode ? getNodeProps(item) : {},
-				isSelected = !isHeaderNode && isInSelection(item);
+			let nodeProps = getNodeProps ? getNodeProps(item) : {},
+				isSelected = isInSelection(item);
 
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
+						key={item.hash}
 						onPress={(e) => {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
@@ -335,55 +457,165 @@ export function Tree(props) {
 							return <WhichTreeNode
 										nodeProps={nodeProps}
 										bg={bg}
-										itemData={itemData}
-
-										icon={icon}
+										datum={datum}
 										onToggle={onToggle}
 
 										// fields={fields}
-										// hideNavColumn={hideNavColumn}
 										{...rowReorderProps}
 									/>;
 						}}
 					</Pressable>;
 		},
-		buildTreeNode = (itemData) => {
-			// this one is to be used recursively on children
-
-			// isVisible // skip if not visible, just return keyed array
-
-			// renderNode(itemData);
-
+		renderTreeNodes = (data) => {
+			const nodes = [];
+			_.each(data, (datum) => {
+				nodes.push(renderTreeNode(datum));
+			});
+			return nodes;
 		},
-		buildTreeNodes = () => {
+		renderAllTreeNodes = () => {
+			const nodes = [];
+			_.each(treeNodeData, (datum) => {
+				const node = renderTreeNode(datum);
+				if (_.isEmpty(node)) {
+					return;
+				}
+				
+				nodes.push(node);
 
-			// const entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data;
-			// let rowData = _.clone(entities); // don't use the original array, make a new one so alterations to it are temporary
+				if (_.isEmpty(datum.children)) {
+					return;
+				}
 
-			const
-				rootEntity = Repository.getRootEntity(),
-				rootNode = buildTreeNode(rootEntity);
+				const children = renderTreeNodes(datum.children);
+				if (_.isEmpty(children)) {
+					return;
+				}
 
-
-
-
-			return rootNode;
-		},
-		getChildren = (node_id, depth) => {
-			// Calls getChildParams(), then submits to server
-			// Server returns this for each node:
-			// hasChildren (so view can show/hide caret)
-			// model (e.g. "Fleet", "Equipment)
-			// data (json encoded representation of entity)
-			
+				nodes.concat(children);
+			});
+			return nodes;
 		},
 
 		// Button handlers
-		expandPath = (path) => {} // - drills down the tree based on path (usually given by server). Path would be a list of sequential IDs (3/35/263/1024)
-		collapseOne = (node_id) => {},
-		collapseAll = () => {},
-		expandOne = (node_id) => {},
-		expandAll = () => {},
+		onToggle = (datum) => {
+			datum.isExpanded = !datum.isExpanded;
+			forceUpdate();
+
+			if (datum.item?.repository.isRemote && datum.item.hasChildren && !datum.item.isChildrenLoaded) {
+				loadChildren(datum, 1);
+			}
+		},
+		loadChildren = async (datum, depth) => {
+			// Helper for onToggle
+
+			// TODO: Flesh this out
+			// Show loading indicator (red bar at top? Spinner underneath current node?)
+
+			
+			// Calls getAdditionalParams(), then submits to server
+			// Server returns this for each node:
+			// Build up treeNodeData for just these new nodes
+
+
+			// Hide loading indicator
+			
+		},
+		onCollapseAll = (setNewTreeNodeData = true) => {
+			// Go through whole tree and collapse all nodes
+			const newTreeNodeData = _.clone(treeNodeData);
+			
+			// Recursive method to collapse all children
+			function collapseChildren(children) {
+				_.each(children, (child) => {
+					child.isExpanded = true;
+					if (!_.isEmpty(child.children)) {
+						collapseChildren(child.children);
+					}
+				});
+			}
+
+			collapseChildren(newTreeNodeData);
+
+			if (setNewTreeNodeData) {
+				setTreeNodeData(newTreeNodeData);
+			}
+			return newTreeNodeData;
+		},
+		onSearchTree = async (value) => {
+			// TODO: Search the text of each node.
+			// Do we want to hit the server for this and see if we get a single path?
+
+			const isMultipleHits = true;
+			
+			
+			if (isMultipleHits) {
+				// Show modal, so user can pick which to show
+				
+
+
+			} else {
+				expandPath(path);
+			}
+		},
+		expandPath = (path) => {
+			// Helper for onSearchTree
+
+			// Drills down the tree based on path (usually given by server).
+			// Path would be a list of sequential IDs (3/35/263/1024)
+			// Initially, it closes thw whole tree.
+
+			let newTreeNodeData = collapseAll(false); // false = don't set new treeNodeData
+
+			// As it navigates down, it will expand the appropriate branches,
+			// and then finally highlight & select the node in question
+			let pathParts,
+				id,
+				currentLevelData = newTreeNodeData,
+				currentDatum,
+				currentNode;
+			
+			while(path.length) {
+				pathParts = path.split('/');
+				id = parseInt(pathParts[0], 10); // grab the first part of the path
+				
+				// find match in current level
+				currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
+					return treeNodeDatum.item.id === id; 
+				});
+				
+				currentNode = currentDatum.item;
+				
+				// THE MAGIC!
+				currentDatum.isExpanded = true;
+				
+				path = pathParts.slice(1).join('/'); // put the rest of it back together
+				currentLevelData = currentDatum.children;
+			}
+
+			setSelection([currentNode]);
+			scrollToNode(currentNode);
+			highlightNode(currentNode);
+
+			setTreeNodeData(newTreeNodeData);
+		},
+		scrollToNode = (node) => {
+			// Helper for expandPath
+			// Scroll the tree so the given node is in view
+
+			// TODO: This will probably need different methods in web and mobile
+
+
+		},
+		highlightNode = (node) => {
+			// Helper for expandPath
+			// Show a brief highlight animation to draw attention to the node
+
+			// TODO: This will probably need different methods in web and mobile
+			// react-highlight for web?
+
+
+		},
 
 		// Drag/Drop
 		getReorderProxy = (node) => {
@@ -632,52 +864,27 @@ export function Tree(props) {
 		
 	useEffect(() => {
 
+		async function buildAndSetTreeNodeData() {
 
-		function buildTreeNodeData() {
-			// Take the Repository and build up the tree node data from its entities
-			const
-				entities = Repository.entities,
-				treeNodes = {};
+			let rootNodes;
+			if (Repository) {
+				rootNodes = await Repository.getRootNodes(true, 1, getAdditionalParams);
+			} else {
+				// TODO: Make this work for data array
 
-			// TODO: Get root node?
-			// I'm thinking if a repository senses that it's a tree, then at initial load
-			// it should get the root node +1 level of children.
-			//
-			// How would it then subsequently get the proper children?
-			// i.e. When a node gets its children, how will it do this
-			// while maintaining the nodes that already exist there?
-			// We don't want it to *replace* all exisitng nodes!
-			//
-			// And if the repository does a reload, should it just get root+1 again?
-			// Changing filters would potentially change the tree structure.
-			// Changing sorting would only change the ordering, not what is expanded/collapsed or visible/invisible.
+			}
 
-			// include the following on each node
-			// - item
-			// - isExpanded,
-			// - isVisible,
-			// - hasChildren,
-			// - children
-			// - depth,
-			// - text,
-
-			// Need to take into account whether using Repository or data.
-			// If using data, everything exists at once. What format will data be in?
-			// How does this interface with Repository?
-			// Maybe if Repository is not AjaxRepository, everything needs to be present at once!
-
-
-			return treeNodes;
-		}
-
-		function buildAndSetTreeNodeData() {
-			setTreeNodeData(buildTreeNodeData());
+			const treeNodeData = buildTreeNodeData(rootNodes);
+			setTreeNodeData(treeNodeData);
 		}
 
 		if (!isReady) {
-			buildAndSetTreeNodeData();
-			setIsReady(true);
+			(async () => {
+				await buildAndSetTreeNodeData();
+				setIsReady(true);
+			})();
 		}
+
 		if (!Repository) {
 			return () => {};
 		}
@@ -729,14 +936,16 @@ export function Tree(props) {
 
 	}, [selectorId, selectorSelected]);
 
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode]);
+	const
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), []),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode]);
 
 	if (!isReady) {
 		return null;
 	}
 
 	// Actual TreeNodes
-	const treeNodes = buildTreeNodes();
+	const treeNodes = renderAllTreeNodes();
 
 	// headers & footers
 	let treeFooterComponent = null;
@@ -754,6 +963,7 @@ export function Tree(props) {
 				w="100%"
 			>
 				{topToolbar}
+				{headerToolbarItemComponents}
 
 				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 					if (!isReorderMode) {
