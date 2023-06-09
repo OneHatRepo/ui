@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, } from 'react';
 import {
 	Column,
 	FlatList,
+	Modal,
 	Pressable,
 	Icon,
 	Row,
@@ -34,17 +35,19 @@ import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import TreeNode, { ReorderableTreeNode } from './TreeNode.js';
+import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
 import IconButton from '../Buttons/IconButton.js';
-import FolderClosed from '../Icons/FolderClosed.js';
-import FolderOpen from '../Icons/FolderOpen.js';
 import Circle from '../Icons/Circle.js';
 import Collapse from '../Icons/Collapse.js';
+import FolderClosed from '../Icons/FolderClosed.js';
+import FolderOpen from '../Icons/FolderOpen.js';
+import MagnifyingGlass from '../Icons/MagnifyingGlass.js';
+import NoReorderRows from '../Icons/NoReorderRows.js';
+import ReorderRows from '../Icons/ReorderRows.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from './NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
-import NoReorderRows from '../Icons/NoReorderRows.js';
-import ReorderRows from '../Icons/ReorderRows.js';
 import _ from 'lodash';
 
 
@@ -162,7 +165,9 @@ export function Tree(props) {
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[isReorderMode, setIsReorderMode] = useState(false),
+		[isSearchModalShown, setIsSearchModalShown] = useState(false),
 		[treeNodeData, setTreeNodeData] = useState({}),
+		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
 		onNodeClick = (item, e) => {
@@ -238,45 +243,47 @@ export function Tree(props) {
 		getHeaderToolbarItems = () => {
 			const
 				buttons = [
+					
 					{
+						key: 'searchBtn',
+						text: 'Search tree',
+						handler: onSearchTree,
+						icon: MagnifyingGlass,
+						isDisabled: false,
+					},
+					{
+						key: 'collapseBtn',
 						text: 'Collapse whole tree',
 						handler: onCollapseAll,
 						icon: Collapse,
 						isDisabled: false,
 					},
-				],
-				items = _.map(buttons, getIconFromConfig);
-			items.unshift(<Input
+				];
+			if (canNodesReorder) {
+				buttons.push({
+					key: 'reorderBtn',
+					text: 'Reorder tree',
+					handler: () => setIsReorderMode(!isReorderMode),
+					icon: isReorderMode ? NoReorderRows : ReorderRows,
+					isDisabled: false,
+				});
+			}
+			const items = _.map(buttons, getIconFromConfig);
+
+			items.unshift(<Input // Add text input to beginning of header items
 				key="searchTree"
-				{...iconButtonProps}
 				flex={1}
 				placeholder="Search all tree nodes"
 				onChangeValue={onSearchTree}
 				autoSubmit={false}
 			/>);
-			if (canNodesReorder) {
-				items.push(<IconButton
-					key="reorderBtn"
-					{...iconButtonProps}
-					onPress={() => setIsReorderMode(!isReorderMode)}
-					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.TREE_TOOLBAR_ITEMS_COLOR} />}
-				/>);
-			}
+
 			return items;
 		},
 		getFooterToolbarItems = () => {
-			const items = _.map(additionalToolbarButtons, getIconFromConfig);
-			if (canNodesReorder) {
-				items.unshift(<IconButton
-					key="reorderBtn"
-					{...iconButtonProps}
-					onPress={() => setIsReorderMode(!isReorderMode)}
-					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.TREE_TOOLBAR_ITEMS_COLOR} />}
-				/>);
-			}
-			return items;
+			return _.map(additionalToolbarButtons, getIconFromConfig);
 		},
-		getIconFromConfig = (config, key) => {
+		getIconFromConfig = (config, ix) => {
 			const
 				iconButtonProps = {
 					_hover: {
@@ -292,6 +299,7 @@ export function Tree(props) {
 					w: 20,
 				};
 			let {
+					key,
 					text,
 					handler,
 					icon = null,
@@ -304,7 +312,7 @@ export function Tree(props) {
 				icon = React.cloneElement(icon, {...iconProps, ...thisIconProps});
 			}
 			return <IconButton
-						key={key}
+						key={key || ix}
 						onPress={handler}
 						icon={icon}
 						isDisabled={isDisabled}
@@ -523,54 +531,99 @@ export function Tree(props) {
 			return newTreeNodeData;
 		},
 		onSearchTree = async (value) => {
-			// TODO: Search the text of each node.
 
-			let found = null;
+			let found = [];
 			if (Repository?.isRemote) {
-				// TODO: hit the server for search results
-
-
-
-
+				// Search tree on server
+				found = await Repository.searchTree(value);
 			} else {
 				// Search local tree data
-				found = findTreeNodeByText(value);
+				found = findTreeNodesByText(value);
 			}
 
 
 			const isMultipleHits = found.length > 1;
-			if (isMultipleHits) {
-				// TODO: Show modal, so user can pick which to show
+			let path = '';
+			let searchFormData = [];
+			
+			if (Repository?.isRemote) {
+				if (isMultipleHits) {
+					// 'found' is the results from the server. Use these to show the modal and choose which node you want to select
+					
+					
+					
+					
+				} else {
+					// Search local tree data
+					found = findTreeNodesByText(value);
+				}
+				
+				// TODO: create searchFormData based on 'found' array
 				
 
 
+
+
+				setSearchFormData(searchFormData);
+				setIsSearchModalShown(true);
+
 			} else {
+				// Expand that one path immediately
 				expandPath(path);
 			}
 		},
-		findTreeNodeByText = (text) => {
+		findTreeNodesByText = (text) => {
 			// Helper for onSearchTree
-			// Searches treeNodeData for matching item
+			// Searches whole treeNodeData for any matching items
+			// Returns multiple nodes
 
-			const regex = new RegExp(text, 'i');
+			const regex = new RegExp(text, 'i'); // instead of matching based on full text match, search for a partial match
 
-			function searchChildren(children) {
-				let found = null;
+			function searchChildren(children, found = []) {
 				_.each(children, (child) => {
 					if (child.text.match(regex)) {
-						found = child;
+						found.push(child);
+					}
+					if (child.children) {
+						searchChildren(child.children, found);
+					}
+				});
+				return found;
+			}
+			return searchChildren(treeNodeData);
+		},
+		getTreeNodeByNodeId = (node_id) => {
+			if (Repository) {
+				return Repository.getById(node_id);
+			}
+			return data[node_id]; // TODO: This is probably not right!
+		},
+		getPathByTreeNode = (treeNode) => {
+
+			///////// THIS DOESN'T WORK YET /////////
+
+			function searchChildren(children, currentPath = []) {
+				let found = [];
+				_.each(children, (child) => {
+					const
+						item = child.item,
+						id = idField ? item[idField] : item.id;
+					if (child.text.match(regex)) {
+						found.push(child);
 						return false;
 					}
 					if (child.children) {
-						found = searchChildren(child.children);
-						if (found) {
+						const childrenFound = searchChildren(child.children, [...currentPath, id]);
+						if (!_.isEmpty(childrenFound)) {
 							return false;
 						}
 					}
 				});
 				return found;
 			}
-			return searchChildren(treeNodeData);
+			const nodes = searchChildren(treeNodeData);
+			return nodes.join('/');
+
 		},
 		expandPath = (path) => {
 			// Helper for onSearchTree
@@ -971,26 +1024,79 @@ export function Tree(props) {
 		}
 	}
 	
-	return <Column
-				{...testProps('Tree')}
-				flex={1}
-				w="100%"
-			>
-				{topToolbar}
-				{headerToolbarItemComponents}
+	return <>
+				<Column
+					{...testProps('Tree')}
+					flex={1}
+					w="100%"
+				>
+					{topToolbar}
+					{headerToolbarItemComponents}
 
-				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
-					if (!isReorderMode) {
-						deselectAll();
-					}
-				}}>
-					{!treeNodes.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
-						treeNodes}
+					<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+						if (!isReorderMode) {
+							deselectAll();
+						}
+					}}>
+						{!treeNodes.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
+							treeNodes}
+					</Column>
+
+					{treeFooterComponent}
 				</Column>
 
-				{treeFooterComponent}
+				<Modal
+					isOpen={isSearchModalShown}
+					onClose={() => setIsSearchModalShown(false)}
+				>
+					<Column bg="#fff" w={500}>
+						<FormPanel
+							title="Choose Tree Node"
+							instructions="Multiple tree nodes matched your search. Please select which one to show."
+							flex={1}
+							items={[
+								{
+									type: 'Column',
+									flex: 1,
+									items: [
+										{
+											key: 'node_id',
+											name: 'node_id',
+											type: 'Combo',
+											label: 'Tree Node',
+											data: searchFormData,
+										}
+									],
+								},
+							]}
+							onCancel={(e) => {
+								// Just close the modal
+								setIsSearchModalShown(false);
+							}}
+							onSave={(data, e) => {
 
-			</Column>;
+								const node_id = data.node_id; // NOT SURE THIS IS CORRECT!
+
+								if (isMultipleHits) {
+									// Tell the server which one you want and get it, loading all children necessary to get there
+									
+									
+									
+								} else {
+									// Show the path based on local data
+									const
+										treeNode = getTreeNodeByNodeId(node_id),
+										path = getPathByTreeNode(treeNode);
+									expandPath(path);
+								}
+
+								// Close the modal
+								setIsSearchModalShown(false);
+							}}
+						/>
+					</Column>
+				</Modal>
+			</>;
 
 }
 
