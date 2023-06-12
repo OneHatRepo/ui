@@ -46,7 +46,7 @@ import MagnifyingGlass from '../Icons/MagnifyingGlass.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
-import NoRecordsFound from './NoRecordsFound.js';
+import NoRecordsFound from '../Grid/NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
