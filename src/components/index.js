@@ -44,6 +44,8 @@ import Text from './Form/Field/Text.js';
 import TimezonesCombo from './Form/Field/Combo/TimezonesCombo.js';
 import Toggle from './Form/Field/Toggle.js';
 import Toolbar from './Toolbar/Toolbar.js';
+import Tree from './Tree/Tree.js';
+import TreeNode from './Tree/TreeNode.js';
 import YearsCombo from './Form/Field/Combo/YearsCombo.js';
 import _ from 'lodash';
 
@@ -92,6 +94,8 @@ const components = {
 	TimezonesCombo,
 	Toggle,
 	Toolbar,
+	Tree,
+	TreeNode,
 	YearsCombo,
 };
 
