@@ -155,16 +155,16 @@ export default function withAlert(WrappedComponent) {
 							<Panel
 								title={title}
 								isCollapsible={false}
-								p={5}
+								p={0}
 								footer={<Footer justifyContent="flex-end" >
 											<Button.Group space={2}>
 												{buttons}
 											</Button.Group>
 										</Footer>}
 								>
-								<Row flex={1}>
-									<Column w={50} p={0} mr={5}>
-										<Icon as={TriangleExclamation} size={10}/>
+								<Row flex={1} p={5}>
+									<Column w="40px" p={0} mr={5}>
+										<Icon as={TriangleExclamation} size={10} color="#f00" />
 									</Column>
 									<Text>{message}</Text>
 								</Row>
