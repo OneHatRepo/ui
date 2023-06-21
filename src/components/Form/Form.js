@@ -121,7 +121,7 @@ function Form(props) {
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
 			defaultValues,
-			values: defaultValues,
+			// values: defaultValues, // NOTE: This will cause a looping re-render if not used carefully!
 			// resetOptions: {
 			// 	keepDirtyValues: false, // user-interacted input will be retained
 			// 	keepErrors: false, // input errors will be retained with value update

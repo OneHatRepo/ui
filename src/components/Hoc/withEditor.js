@@ -49,9 +49,8 @@ export default function withEditor(WrappedComponent) {
 				if (!userCanEdit || disableAdd) {
 					return;
 				}
-				const
-					defaultValues = Repository.getSchema().model.defaultValues,
-					addValues = _.clone(defaultValues);
+				const defaultValues = Repository.getSchema().model.defaultValues;
+				let addValues = _.clone(defaultValues);
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
 					addValues[selectorId] = selectorSelected.id;
@@ -67,8 +66,11 @@ export default function withEditor(WrappedComponent) {
 					await Repository.reload();
 				}
 
+				// Unmap the values, so we can input true originalData
+				addValues = Repository.unmapData(addValues);
+
 				const entity = await Repository.add(addValues, false, true, true);
-				setSelection([entity]); 
+				setSelection([entity]);
 				setIsEditorViewOnly(false);
 				setEditorMode(EDITOR_MODE__ADD);
 				setIsEditorShown(true);
@@ -98,7 +100,9 @@ export default function withEditor(WrappedComponent) {
 			},
 			onDelete = async () => {
 				Repository.delete(selection);
-				await Repository.save();
+				if (!Repository.isAutoSave) {
+					await Repository.save();
+				}
 			},
 			viewRecord = () => {
 				if (!userCanView) {

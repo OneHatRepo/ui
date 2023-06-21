@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.2.63",
+	"version": "0.2.64",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -25,7 +25,7 @@
 	},
 	"license": "UNLICENSED",
 	"dependencies": {
-		"@onehat/data": "^1.18.0",
+		"@onehat/data": "^1.18.1",
 		"@hookform/resolvers": "^3.1.1",
 		"@k-renwick/colour-mixer": "^1.2.1",
 		"js-cookie": "^3.0.5",
