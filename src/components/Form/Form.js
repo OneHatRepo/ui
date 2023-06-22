@@ -493,7 +493,13 @@ function Form(props) {
 					{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
 						<Button
 							key="viewBtn"
-							onPress={onViewMode}
+							onPress={() => {
+								if (!_.isEmpty(formState.dirtyFields)) {
+									confirm('This record has unsaved changes. Are you sure you want to switch to "View" mode? Changes will be lost.', onViewMode);
+								} else {
+									onViewMode();
+								}
+							}}
 							leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
 							color="#fff"
 						>To View</Button>}
@@ -521,7 +527,7 @@ function Form(props) {
 														key="cancelBtn"
 														variant="ghost"
 														onPress={() => {
-															if (formState.isDirty) {
+															if (!_.isEmpty(formState.dirtyFields)) {
 																confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', onCancel);
 															} else {
 																onCancel();
@@ -532,7 +538,7 @@ function Form(props) {
 						{!isViewOnly && onSave && <Button
 														key="saveBtn"
 														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
-														isDisabled={!_.isEmpty(formState.errors) || (!isSingle && !record?.isPhantom && !formState.isDirty)}
+														isDisabled={!_.isEmpty(formState.errors) || (!isSingle && !record?.isPhantom && !_.isEmpty(formState.dirtyFields))}
 														color="#fff"
 													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
 						{isViewOnly && onClose && <Button
