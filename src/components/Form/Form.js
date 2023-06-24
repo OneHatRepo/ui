@@ -65,7 +65,6 @@ function Form(props) {
 			onBack,
 			onReset,
 			onViewMode,
-			additionalViewButtons = [],
 			additionalEditButtons = [],
 			ancillaryComponents = [],
 			
@@ -513,10 +512,6 @@ function Form(props) {
 							color="#fff"
 						>To View</Button>}
 				</Row>
-				{editorMode === EDITOR_MODE__VIEW && !_.isEmpty(additionalViewButtons) && 
-					<Row p={2} alignItems="center" justifyContent="flex-end">
-						{additionalViewButtons}
-					</Row>}
 				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalEditButtons) && 
 					<Row p={2} alignItems="center" justifyContent="flex-end">
 						{additionalEditButtons}
