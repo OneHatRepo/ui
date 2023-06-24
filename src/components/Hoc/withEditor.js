@@ -23,7 +23,7 @@ export default function withEditor(WrappedComponent) {
 					if (selection.length > 1) {
 						return 'records?';
 					}
-					return 'record?';
+					return 'record' + (selection[0].displayValue ? ' ' + selection[0].displayValue : '') + '?';
 				},
 				record,
 
@@ -99,7 +99,7 @@ export default function withEditor(WrappedComponent) {
 				}
 			},
 			onDelete = async () => {
-				Repository.delete(selection);
+				await Repository.delete(selection);
 				if (!Repository.isAutoSave) {
 					await Repository.save();
 				}
