@@ -23,7 +23,7 @@ export default function withEditor(WrappedComponent) {
 					if (selection.length > 1) {
 						return 'records?';
 					}
-					return 'record' + (selection[0].displayValue ? ' ' + selection[0].displayValue : '') + '?';
+					return 'record' + (selection[0].displayValue ? ' "' + selection[0].displayValue + '"' : '') + '?';
 				},
 				record,
 
@@ -45,10 +45,7 @@ export default function withEditor(WrappedComponent) {
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
-			addRecord = async () => {
-				if (!userCanEdit || disableAdd) {
-					return;
-				}
+			onAdd = async () => {
 				const defaultValues = Repository.getSchema().model.defaultValues;
 				let addValues = _.clone(defaultValues);
 
@@ -75,30 +72,24 @@ export default function withEditor(WrappedComponent) {
 				setEditorMode(EDITOR_MODE__ADD);
 				setIsEditorShown(true);
 			},
-			editRecord = () => {
-				if (!userCanEdit || disableEdit) {
-					return;
-				}
+			onEdit = () => {
 				setIsEditorViewOnly(false);
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
-			deleteRecord = (e) => {
-				if (!userCanEdit || disableDelete) {
-					return;
-				}
+			onDelete = () => {
 				const
 					isSingle = selection.length === 1,
 					isPhantom = selection[0] && selection[0].isPhantom;
 
 				if (isSingle && isPhantom) {
-					onDelete();
+					deleteRecord();
 				} else {
 					const identifier = getRecordIdentifier(selection);
-					confirm('Are you sure you want to delete the ' + identifier, onDelete);
+					confirm('Are you sure you want to delete the ' + identifier, deleteRecord);
 				}
 			},
-			onDelete = async () => {
+			deleteRecord = async () => {
 				await Repository.delete(selection);
 				if (!Repository.isAutoSave) {
 					await Repository.save();
@@ -160,12 +151,17 @@ export default function withEditor(WrappedComponent) {
 					isSingle = selection.length === 1,
 					isPhantom = selection[0] && selection[0].isPhantom;
 				if (isSingle && isPhantom) {
-					await onDelete();
+					await deleteRecord();
 				}
 				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(false);
 			},
 			onEditorClose = () => {
+				setIsEditorShown(false);
+			},
+			onEditorDelete = async () => {
+				await deleteRecord();
+				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(false);
 			},
 			calculateEditorMode = () => {
@@ -208,13 +204,14 @@ export default function withEditor(WrappedComponent) {
 					editorMode={editorMode}
 					setEditorMode={setEditorMode}
 					setIsEditorShown={setIsEditorShown}
-					onAdd={addRecord}
-					onEdit={editRecord}
-					onDelete={deleteRecord}
+					onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
+					onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
+					onDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onDelete}
 					onView={viewRecord}
 					onDuplicate={duplicateRecord}
 					onEditorSave={onEditorSave}
 					onEditorCancel={onEditorCancel}
+					onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
 					onEditorClose={onEditorClose}
 					useEditor={useEditor}
 					userCanEdit={userCanEdit}

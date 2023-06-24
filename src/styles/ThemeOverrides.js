@@ -23,6 +23,7 @@ const ThemeOverrides = {
 		vip: '#3a78bc',
 		navBlue: '#3b82f6',
 		warning: '#d92b2b',
+		warningHover: '#af1313',
 		orange: '#de9000',
 		greens: {
 			100: '#4CAF50',

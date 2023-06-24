@@ -14,6 +14,7 @@ export default function Editor(props) {
 			onEditorCancel: onCancel,
 			onEditorSave: onSave,
 			onEditorClose: onClose,
+			onEditorDelete: onDelete,
 			editorMode,
 			setEditorMode,
 
@@ -41,6 +42,7 @@ export default function Editor(props) {
 					Repository={Repository}
 					onEditMode={isViewOnly ? null : onEditMode}
 					onClose={onClose}
+					onDelete={onDelete}
 					{...props}
 				/>;
 	}
@@ -49,11 +51,12 @@ export default function Editor(props) {
 	// and only show in one column when it's not.
 
 	return <Form
+				{...props}
 				record={selection}
 				onViewMode={onViewMode}
 				onCancel={onCancel}
 				onSave={onSave}
 				onClose={onClose}
-				{...props}
+				onDelete={onDelete}
 			/>;
 }

@@ -65,7 +65,8 @@ function Form(props) {
 			onBack,
 			onReset,
 			onViewMode,
-			additionalButtons = [],
+			additionalViewButtons = [],
+			additionalEditButtons = [],
 			ancillaryComponents = [],
 			
 			// sizing of outer container
@@ -83,9 +84,9 @@ function Form(props) {
 			isViewOnly = false,
 			editorMode,
 			onCancel,
-			onEditorSave,
-			onSave = onEditorSave,
+			onSave,
 			onClose,
+			onDelete,
 
 			// DataMgt
 			selectorId,
@@ -121,7 +122,7 @@ function Form(props) {
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
 			defaultValues,
-			// values: defaultValues, // NOTE: This will cause a looping re-render if not used carefully!
+			// values: defaultValues,
 			// resetOptions: {
 			// 	keepDirtyValues: false, // user-interacted input will be retained
 			// 	keepErrors: false, // input errors will be retained with value update
@@ -478,6 +479,14 @@ function Form(props) {
 			editorModeF = isMultiple ? 'Edit Multiple' : 'Edit';
 			break;
 	}
+
+	let isSaveDisabled = false;
+	if (!_.isEmpty(formState.errors)) {
+		isSaveDisabled = true;
+	}
+	if (_.isEmpty(formState.dirtyFields) && !record?.isRemotePhantom) {
+		isSaveDisabled = true;
+	}
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
 
@@ -504,15 +513,33 @@ function Form(props) {
 							color="#fff"
 						>To View</Button>}
 				</Row>
-				{!_.isEmpty(additionalButtons) && 
+				{editorMode === EDITOR_MODE__VIEW && !_.isEmpty(additionalViewButtons) && 
 					<Row p={2} alignItems="center" justifyContent="flex-end">
-						{additionalButtons}
+						{additionalViewButtons}
+					</Row>}
+				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalEditButtons) && 
+					<Row p={2} alignItems="center" justifyContent="flex-end">
+						{additionalEditButtons}
 					</Row>}
 				
 				{editor}
 
 				<Footer justifyContent="flex-end" {...footerProps}>
+					{onDelete && <Row flex={1} justifyContent="flex-start">
+										<Button
+											key="deleteBtn"
+											onPress={() => {
+												confirm('Are you sure you want to delete this record?', onDelete);
+											}}
+											bg="warning"
+											_hover={{
+												bg: 'warningHover',
+											}}
+											color="#fff"
+										>Delete</Button>
+									</Row>}
 					<Button.Group space={2} {...buttonGroupProps}>
+				
 						{!isViewOnly && <IconButton
 											key="resetBtn"
 											onPress={() => {
@@ -538,7 +565,7 @@ function Form(props) {
 						{!isViewOnly && onSave && <Button
 														key="saveBtn"
 														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
-														isDisabled={!_.isEmpty(formState.errors) || (!isSingle && !record?.isPhantom && !_.isEmpty(formState.dirtyFields))}
+														isDisabled={isSaveDisabled}
 														color="#fff"
 													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
 						{isViewOnly && onClose && <Button
