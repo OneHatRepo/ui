@@ -85,6 +85,9 @@ export function Grid(props) {
 			bottomToolbar = 'pagination',
 			topToolbar = null,
 			additionalToolbarButtons = [],
+			h,
+			flex,
+			bg,
 
 			// withEditor
 			onAdd,
@@ -784,10 +787,17 @@ export function Grid(props) {
 		}
 	}
 	
+	const sizeProps = {};
+	if (!_.isNil(h)) {
+		sizeProps.h = h;
+	} else {
+		sizeProps.flex = flex ?? 1;
+	}
 	return <Column
 				{...testProps('Grid')}
-				flex={1}
 				w="100%"
+				bg={bg}
+				{...sizeProps}
 			>
 				{topToolbar}
 
