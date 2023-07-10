@@ -22,6 +22,7 @@ import { useForm, Controller } from 'react-hook-form'; // https://react-hook-for
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
 import withEditor from '../Hoc/withEditor.js';
 import inArray from '../../Functions/inArray.js';
@@ -57,6 +58,7 @@ function Form(props) {
 			editorType = EDITOR_TYPE__WINDOWED, // EDITOR_TYPE__INLINE | EDITOR_TYPE__WINDOWED | EDITOR_TYPE__SIDE | EDITOR_TYPE__SMART | EDITOR_TYPE__PLAIN
 			startingValues = {},
 			items = [], // Columns, FieldSets, Fields, etc to define the form
+			ancillaryItems = [], // additional items which are not controllable form elements, but should appear in the form
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			columnsConfig, // Which columns are shown in Grid, so the inline editor can match. Used only for EDITOR_TYPE__INLINE
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
@@ -66,7 +68,6 @@ function Form(props) {
 			onReset,
 			onViewMode,
 			additionalEditButtons = [],
-			ancillaryComponents = [],
 			
 			// sizing of outer container
 			h,
@@ -95,6 +96,7 @@ function Form(props) {
 			alert,
 			confirm,
 		} = props,
+		styles = UiGlobals.styles,
 		record = props.record?.length === 1 ? props.record[0] : props.record,
 		isMultiple = _.isArray(record),
 		isSingle = !isMultiple, // for convenience
@@ -239,9 +241,7 @@ function Form(props) {
 			return <Row>{elements}</Row>;
 		},
 		buildFromItems = () => {
-			const
-				regularItems = _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
-				return [...regularItems, ...ancillaryComponents];
+			return _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
 		},
 		buildNextLayer = (item, ix, defaults) => {
 			let {
@@ -399,6 +399,35 @@ function Form(props) {
 						}}
 					/>;
 		},
+		buildAncillary = () => {
+			let components = [];
+			if (ancillaryItems.length) {
+				components = _.map(ancillaryItems, (item, ix) => {
+					let {
+						type,
+						title = null,
+						selectorId,
+						...propsToPass
+					} = item;
+					const
+						Element = getComponentFromType(type),
+						element = <Element
+										selectorId={selectorId}
+										selectorSelected={selectorId ? record : selectorSelected}
+										flex={1}
+										{...propsToPass}
+									/>;
+					if (title) {
+						title = <Text
+									fontSize={styles.FORM_FIELDSET_FONTSIZE}
+									fontWeight="bold"
+								>{title}</Text>;
+					}
+					return <Column key={'ancillary-' + ix} px={2} pb={1}>{title}{element}</Column>;
+				});
+			}
+			return components;
+		},
 		onSubmitError = (errors, e) => {
 			debugger;
 			if (editorType === EDITOR_TYPE__INLINE) {
@@ -459,10 +488,12 @@ function Form(props) {
 					borderBottomColor="primary.100"
 				>{formComponents}</ScrollView>;
 	} else {
-		// for Windowed editor
+		// for all other editor types
 		formComponents = buildFromItems();
+		const formAncillaryComponents = buildAncillary();
 		editor = <ScrollView flex={1} width="100%" pb={1}>
-					<Row flex={1}>{formComponents}</Row>
+					<Row>{formComponents}</Row>
+					<Column pt={4}>{formAncillaryComponents}</Column>
 				</ScrollView>;
 	}
 
