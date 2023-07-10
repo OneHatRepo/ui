@@ -17,7 +17,6 @@ import _ from 'lodash';
 
 export default function Viewer(props) {
 	const {
-			Viewer, // Subcomponent
 			additionalViewButtons = [],
 			onEditMode,
 			onClose,
@@ -41,7 +40,7 @@ export default function Viewer(props) {
 								{additionalViewButtons}
 							</Row>}
 
-						<Viewer {...props} />
+						{props.children}
 
 					</Column>
 				</ScrollView>
