@@ -38,12 +38,11 @@ export default function Editor(props) {
 
 	if (Repository.isRemotePhantomMode && selection.length === 1 && editorMode === EDITOR_MODE__VIEW) {
 		return <Viewer
+					{...props}
 					record={selection[0]}
-					Repository={Repository}
 					onEditMode={isViewOnly ? null : onEditMode}
 					onClose={onClose}
-					onDelete={onDelete}
-					{...props}
+					// onDelete={onDelete}
 				/>;
 	}
 

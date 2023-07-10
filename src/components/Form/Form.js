@@ -419,7 +419,7 @@ function Form(props) {
 									/>;
 					if (title) {
 						title = <Text
-									fontSize={styles.FORM_FIELDSET_FONTSIZE}
+									fontSize={styles.FORM_ANCILLARY_TITLE_FONTSIZE}
 									fontWeight="bold"
 								>{title}</Text>;
 					}

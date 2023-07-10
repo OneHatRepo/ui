@@ -6,6 +6,8 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import UiGlobals from '../../UiGlobals.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
@@ -17,10 +19,42 @@ import _ from 'lodash';
 export default function Viewer(props) {
 	const {
 			additionalViewButtons = [],
+			ancillaryItems = [],
+			record,
 			onEditMode,
 			onClose,
 			onDelete,
-		} = props;
+		} = props,
+		styles = UiGlobals.styles,
+		buildAncillary = () => {
+			let components = [];
+			if (ancillaryItems.length) {
+				components = _.map(ancillaryItems, (item, ix) => {
+					let {
+						type,
+						title = null,
+						selectorId,
+						...propsToPass
+					} = item;
+					const
+						Element = getComponentFromType(type),
+						element = <Element
+										selectorId={selectorId}
+										selectorSelected={selectorId ? record : selectorSelected}
+										flex={1}
+										{...propsToPass}
+									/>;
+					if (title) {
+						title = <Text
+									fontSize={styles.VIEWER_ANCILLARY_FONTSIZE}
+									fontWeight="bold"
+								>{title}</Text>;
+					}
+					return <Column key={'ancillary-' + ix} px={2} pb={1}>{title}{element}</Column>;
+				});
+			}
+			return components;
+		};
 
 	return <Column flex={1} w="100%">
 				<ScrollView flex={1} w="100%">
@@ -40,6 +74,8 @@ export default function Viewer(props) {
 							</Row>}
 
 						{props.children}
+
+						{buildAncillary()}
 
 					</Column>
 				</ScrollView>
