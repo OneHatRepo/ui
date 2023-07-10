@@ -11,9 +11,8 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import _ from 'lodash';
 
-// This is a wrapper for the Viewer subcomponent passed to props,]
-// that adds
-
+// This is a wrapper for the Viewer subcomponent passed to props,
+// that adds buttons and a footer
 
 export default function Viewer(props) {
 	const {
