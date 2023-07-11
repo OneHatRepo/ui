@@ -15,6 +15,7 @@ import {
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import Splitter from './Splitter.js';
+import _ from 'lodash';
 
 export default function Container(props) {
 	const {
