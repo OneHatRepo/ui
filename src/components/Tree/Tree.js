@@ -163,14 +163,11 @@ export function Tree(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[isReorderMode, setIsReorderMode] = useState(false),
 		[isSearchModalShown, setIsSearchModalShown] = useState(false),
-		[treeNodeData, setTreeNodeDataRaw] = useState({}),
+		[treeNodeData, setTreeNodeData] = useState({}),
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
-		setTreeNodeData = (a) => {
-			setTreeNodeDataRaw(a);
-		},
 		onNodeClick = (item, e) => {
 			const
 				{
@@ -516,16 +513,16 @@ export function Tree(props) {
 			const newTreeNodeData = _.clone(treeNodeData);
 			
 			// Recursive method to collapse all children
-			function collapseChildren(children) {
-				_.each(children, (child) => {
-					child.isExpanded = true;
-					if (!_.isEmpty(child.children)) {
-						collapseChildren(child.children);
+			function collapseNodes(nodes) {
+				_.each(nodes, (node) => {
+					node.isExpanded = false;
+					if (!_.isEmpty(node.children)) {
+						collapseNodes(node.children);
 					}
 				});
 			}
 
-			collapseChildren(newTreeNodeData);
+			collapseNodes(newTreeNodeData);
 
 			if (setNewTreeNodeData) {
 				setTreeNodeData(newTreeNodeData);
@@ -1008,8 +1005,8 @@ export function Tree(props) {
 	}, [selectorId, selectorSelected]);
 
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue]),
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode]);
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, treeNodeData]),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode, treeNodeData]);
 
 	if (!isReady) {
 		return null;
