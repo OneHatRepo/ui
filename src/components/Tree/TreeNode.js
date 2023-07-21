@@ -20,6 +20,7 @@ export default function TreeNode(props) {
 			bg,
 			datum,
 			onToggle,
+			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
 		item = datum.item,
@@ -53,7 +54,6 @@ export default function TreeNode(props) {
 					/>
 
 					<Text
-						key={key}
 						overflow="hidden"
 						textOverflow="ellipsis"
 						alignSelf="center"
