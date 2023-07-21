@@ -78,9 +78,6 @@ import _ from 'lodash';
 // How does this interface with Repository?
 // Maybe if Repository is not AjaxRepository, everything needs to be present at once!
 
-
-// isRootVisible
-
 //////////////////////
 //////////////////////
 
@@ -91,7 +88,7 @@ import _ from 'lodash';
 
 export function Tree(props) {
 	const {
-			isRootVisible = true,
+			areRootsVisible = true,
 			getAdditionalParams = () => { // URL params needed to get nodes from server (e.g, { venue_id: 1, getEquipment: true, getRentalEquipment: false, }), in addition to filters.
 				return {};
 			},
@@ -166,11 +163,14 @@ export function Tree(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[isReorderMode, setIsReorderMode] = useState(false),
 		[isSearchModalShown, setIsSearchModalShown] = useState(false),
-		[treeNodeData, setTreeNodeData] = useState({}),
+		[treeNodeData, setTreeNodeDataRaw] = useState({}),
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
+		setTreeNodeData = (a) => {
+			setTreeNodeDataRaw(a);
+		},
 		onNodeClick = (item, e) => {
 			const
 				{
@@ -323,15 +323,14 @@ export function Tree(props) {
 			// renderTreeNode uses this to render the nodes.
 			const
 				isRoot = treeNode.isRoot,
-				isLeaf = !treeNode.hasChildren,
 				datum = {
 					item: treeNode,
 					text: getNodeText(treeNode),
-					iconCollapsed: isLeaf ? null : getNodeIcon(treeNode, false),
-					iconExpanded: isLeaf ? null : getNodeIcon(treeNode, true),
-					iconLeaf: isLeaf ? getNodeIcon(treeNode) : null,
+					iconCollapsed: getNodeIcon(treeNode, false),
+					iconExpanded: getNodeIcon(treeNode, true),
+					iconLeaf: getNodeIcon(treeNode),
 					isExpanded: isRoot, // all non-root treeNodes are not expanded by default
-					isVisible: isRoot ? isRootVisible : true,
+					isVisible: isRoot ? areRootsVisible : true,
 					children: buildTreeNodeData(treeNode.children), // recursively get data for children
 				};
 
@@ -345,7 +344,9 @@ export function Tree(props) {
 			return data;
 		},
 		renderTreeNode = (datum) => {
-			const item = datum.item;
+			const
+				item = datum.item,
+				depth = item.depth;
 			if (item.isDestroyed) {
 				return null;
 			}
@@ -399,7 +400,7 @@ export function Tree(props) {
 							}
 						}}
 						flexDirection="row"
-						flexGrow={1}
+						ml={((areRootsVisible ? depth : depth -1) * 20) + 'px'}
 					>
 						{({
 							isHovered,
@@ -459,7 +460,7 @@ export function Tree(props) {
 			return nodes;
 		},
 		renderAllTreeNodes = () => {
-			const nodes = [];
+			let nodes = [];
 			_.each(treeNodeData, (datum) => {
 				const node = renderTreeNode(datum);
 				if (_.isEmpty(node)) {
@@ -467,6 +468,10 @@ export function Tree(props) {
 				}
 				
 				nodes.push(node);
+
+				if (!datum.isExpanded) {
+					return;
+				}
 
 				if (_.isEmpty(datum.children)) {
 					return;
@@ -477,7 +482,7 @@ export function Tree(props) {
 					return;
 				}
 
-				nodes.concat(children);
+				nodes = nodes.concat(children);
 			});
 			return nodes;
 		},
@@ -487,7 +492,7 @@ export function Tree(props) {
 			datum.isExpanded = !datum.isExpanded;
 			forceUpdate();
 
-			if (datum.item?.repository.isRemote && datum.item.hasChildren && !datum.item.isChildrenLoaded) {
+			if (datum.isExpanded && datum.item?.repository.isRemote && datum.item.hasChildren && !datum.item.isChildrenLoaded) {
 				loadChildren(datum, 1);
 			}
 		},
@@ -932,8 +937,9 @@ export function Tree(props) {
 
 			let rootNodes;
 			if (Repository) {
-				 await Repository.getRootNodes(true, 1, getAdditionalParams);
-				 rootNodes = Repository.entities;
+				if (!Repository.areRootNodesLoaded) {
+					rootNodes = await Repository.getRootNodes(true, 1, getAdditionalParams);
+				}
 			} else {
 				// TODO: Make this work for data array
 
@@ -1008,8 +1014,6 @@ export function Tree(props) {
 	if (!isReady) {
 		return null;
 	}
-
-	// Actual TreeNodes
 	const treeNodes = renderAllTreeNodes();
 
 	// headers & footers
@@ -1031,7 +1035,7 @@ export function Tree(props) {
 					{topToolbar}
 					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
 
-					<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+					<Column w="100%" flex={1} p={2} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 						if (!isReorderMode) {
 							deselectAll();
 						}
@@ -1043,7 +1047,7 @@ export function Tree(props) {
 					{treeFooterComponent}
 				</Column>
 
-				<Modal
+				{/* <Modal
 					isOpen={isSearchModalShown}
 					onClose={() => setIsSearchModalShown(false)}
 				>
@@ -1093,7 +1097,7 @@ export function Tree(props) {
 							}}
 						/>
 					</Column>
-				</Modal>
+				</Modal> */}
 			</>;
 
 }

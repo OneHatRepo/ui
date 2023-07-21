@@ -1,6 +1,7 @@
 import { useState, useMemo, } from 'react';
 import {
 	Box,
+	Icon,
 	Row,
 	Text,
 } from 'native-base';
@@ -26,15 +27,15 @@ export default function TreeNode(props) {
 		item = datum.item,
 		isPhantom = item.isPhantom,
 		isExpanded = datum.isExpanded,
-		hasChildren = datum.hasChildren,
-		depth = datum.depth,
+		hasChildren = item.hasChildren,
+		depth = item.depth,
 		text = datum.text,
 		iconCollapsed = datum.iconCollapsed,
 		iconExpanded = datum.iconExpanded,
 		iconLeaf = datum.iconLeaf,
 		hash = item?.hash || item;
 
-	const icon = hasChildren ? (isExpanded ? iconCollapsed : iconExpanded) : iconLeaf;
+	const icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf;
 
 	return useMemo(() => {
 		
@@ -48,10 +49,7 @@ export default function TreeNode(props) {
 				>
 					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 					
-					<IconButton
-						icon={icon}
-						onPress={onToggle}
-					/>
+					{hasChildren ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} />}
 
 					<Text
 						overflow="hidden"
