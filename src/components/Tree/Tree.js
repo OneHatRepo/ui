@@ -60,14 +60,14 @@ import _ from 'lodash';
 //////////////////////
 
 // I'm thinking if a repository senses that it's a tree, then at initial load
-// it should get the root node +1 level of children.
+// it should get the root nodes +1 level of children.
 //
 // How would it then subsequently get the proper children?
 // i.e. When a node gets its children, how will it do this
 // while maintaining the nodes that already exist there?
 // We don't want it to *replace* all exisitng nodes!
 //
-// And if the repository does a reload, should it just get root+1 again?
+// And if the repository does a reload, should it just get roots+1 again?
 // Changing filters would potentially change the tree structure.
 // Changing sorting would only change the ordering, not what is expanded/collapsed or visible/invisible.
 
@@ -170,6 +170,7 @@ export function Tree(props) {
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
+		[treeSearchValue, setTreeSearchValue] = useState(''),
 		onNodeClick = (item, e) => {
 			const
 				{
@@ -243,13 +244,12 @@ export function Tree(props) {
 		getHeaderToolbarItems = () => {
 			const
 				buttons = [
-					
 					{
 						key: 'searchBtn',
 						text: 'Search tree',
 						handler: onSearchTree,
 						icon: MagnifyingGlass,
-						isDisabled: false,
+						isDisabled: !treeSearchValue.length,
 					},
 					{
 						key: 'collapseBtn',
@@ -262,7 +262,7 @@ export function Tree(props) {
 			if (canNodesReorder) {
 				buttons.push({
 					key: 'reorderBtn',
-					text: 'Reorder tree',
+					text: 'Enter reorder mode',
 					handler: () => setIsReorderMode(!isReorderMode),
 					icon: isReorderMode ? NoReorderRows : ReorderRows,
 					isDisabled: false,
@@ -274,7 +274,8 @@ export function Tree(props) {
 				key="searchTree"
 				flex={1}
 				placeholder="Search all tree nodes"
-				onChangeValue={onSearchTree}
+				onChangeText={(val) => setTreeSearchValue(val)}
+				value={treeSearchValue}
 				autoSubmit={false}
 			/>);
 
@@ -292,11 +293,12 @@ export function Tree(props) {
 					mx: 1,
 					px: 3,
 				},
-				iconProps = {
+				_icon = {
 					alignSelf: 'center',
 					size: styles.TREE_TOOLBAR_ITEMS_ICON_SIZE,
 					h: 20,
 					w: 20,
+					color: isDisabled ? styles.TREE_TOOLBAR_ITEMS_DISABLED_COLOR : styles.TREE_TOOLBAR_ITEMS_COLOR,
 				};
 			let {
 					key,
@@ -305,16 +307,11 @@ export function Tree(props) {
 					icon = null,
 					isDisabled = false,
 				} = config;
-			if (icon) {
-				const thisIconProps = {
-					color: isDisabled ? styles.TREE_TOOLBAR_ITEMS_DISABLED_COLOR : styles.TREE_TOOLBAR_ITEMS_COLOR,
-				};
-				icon = React.cloneElement(icon, {...iconProps, ...thisIconProps});
-			}
 			return <IconButton
 						key={key || ix}
 						onPress={handler}
 						icon={icon}
+						_icon={_icon}
 						isDisabled={isDisabled}
 						tooltip={text}
 						{...iconButtonProps}
@@ -1004,7 +1001,7 @@ export function Tree(props) {
 	}, [selectorId, selectorSelected]);
 
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), []),
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue]),
 		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode]);
 
 	if (!isReady) {
@@ -1031,14 +1028,14 @@ export function Tree(props) {
 					w="100%"
 				>
 					{topToolbar}
-					{headerToolbarItemComponents}
+					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
 
 					<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 						if (!isReorderMode) {
 							deselectAll();
 						}
 					}}>
-						{!treeNodes.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
+						{!treeNodes?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
 							treeNodes}
 					</Column>
 
