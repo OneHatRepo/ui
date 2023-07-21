@@ -881,7 +881,8 @@ export const WindowedGridEditor = withAlert(
 															withPresetButtons(
 																withContextMenu(
 																	Grid
-																)
+																),
+																true // isGrid
 															)
 														)
 													)
@@ -901,7 +902,8 @@ export const InlineGridEditor = withAlert(
 															withContextMenu(
 																withFilters(
 																	Grid
-																)
+																),
+																true // isGrid
 															)
 														)
 													)

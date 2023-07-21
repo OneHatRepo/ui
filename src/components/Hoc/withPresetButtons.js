@@ -22,7 +22,7 @@ const presetButtons = [
 	// 'print',
 ];
 
-export default function withPresetButtons(WrappedComponent) {
+export default function withPresetButtons(WrappedComponent, isGrid = false) {
 	return (props) => {
 		const {
 				// extract and pass
@@ -37,10 +37,10 @@ export default function withPresetButtons(WrappedComponent) {
 				disableAdd = false,
 				disableEdit = false,
 				disableDelete = false,
-				disableView = false,
-				disableCopy = false,
-				disableDuplicate = false,
-				disablePrint = false,
+				disableView = !isGrid,
+				disableCopy = !isGrid,
+				disableDuplicate = !isGrid,
+				disablePrint = !isGrid,
 
 				// withEditor
 				userCanEdit = true,
