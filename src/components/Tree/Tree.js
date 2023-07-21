@@ -111,7 +111,7 @@ export function Tree(props) {
 				}
 				return icon;
 			},
-			nodeProps = (item) => {
+			getNodeProps = (item) => {
 				return {};
 			},
 			noneFoundText,
@@ -932,7 +932,8 @@ export function Tree(props) {
 
 			let rootNodes;
 			if (Repository) {
-				rootNodes = await Repository.getRootNodes(true, 1, getAdditionalParams);
+				 await Repository.getRootNodes(true, 1, getAdditionalParams);
+				 rootNodes = Repository.entities;
 			} else {
 				// TODO: Make this work for data array
 
