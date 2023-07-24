@@ -3,6 +3,7 @@ import {
 	Box,
 	Icon,
 	Row,
+	Spinner,
 	Text,
 } from 'native-base';
 import {
@@ -17,10 +18,11 @@ import _ from 'lodash';
 
 export default function TreeNode(props) {
 	const {
-			nodeProps,
+			nodeProps = {},
 			bg,
 			datum,
 			onToggle,
+			isLoadingIndicator = false,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -35,6 +37,30 @@ export default function TreeNode(props) {
 		iconLeaf = datum.iconLeaf,
 		hash = item?.hash || item;
 
+	if (isLoadingIndicator) {
+		return <Row
+					alignItems="center"
+					flexGrow={1}
+					{...nodeProps}
+					bg={bg}
+				>
+					<Spinner />
+					<Text
+						overflow="hidden"
+						textOverflow="ellipsis"
+						alignSelf="center"
+						style={{ userSelect: 'none', }}
+						fontSize={styles.TREE_NODE_FONTSIZE}
+						px={styles.TREE_NODE_PX}
+						py={styles.TREE_NODE_PY}
+						color="trueGray.400"
+						numberOfLines={1}
+						ellipsizeMode="head"
+						{...propsToPass}
+					>Loading...</Text>
+				</Row>;
+	}
+
 	const icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf;
 
 	return useMemo(() => {
@@ -45,7 +71,6 @@ export default function TreeNode(props) {
 					{...nodeProps}
 					bg={bg}
 					key={hash}
-					pl={(depth * 10) + 'px'}
 				>
 					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 					

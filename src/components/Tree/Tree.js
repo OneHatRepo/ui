@@ -19,6 +19,7 @@ import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
 } from '../../Constants/Tree.js';
+import sleep from '@onehat/ui/src/Functions/sleep.js';
 import * as colourMixer from '@k-renwick/colour-mixer'
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
@@ -96,6 +97,7 @@ export function Tree(props) {
 				return item.displayValue;
 			},
 			getNodeIcon = (item, isExpanded) => { // decides what icon to show for this node
+				// TODO: Allow for dynamic props on the icon (e.g. special color for some icons)
 				let icon;
 				if (item.hasChildren) {
 					if (isExpanded) {
@@ -320,6 +322,7 @@ export function Tree(props) {
 			// renderTreeNode uses this to render the nodes.
 			const
 				isRoot = treeNode.isRoot,
+				children = buildTreeNodeData(treeNode.children), // recursively get data for children
 				datum = {
 					item: treeNode,
 					text: getNodeText(treeNode),
@@ -328,7 +331,8 @@ export function Tree(props) {
 					iconLeaf: getNodeIcon(treeNode),
 					isExpanded: isRoot, // all non-root treeNodes are not expanded by default
 					isVisible: isRoot ? areRootsVisible : true,
-					children: buildTreeNodeData(treeNode.children), // recursively get data for children
+					isLoading: false,
+					children,
 				};
 
 			return datum;
@@ -452,7 +456,24 @@ export function Tree(props) {
 		renderTreeNodes = (data) => {
 			const nodes = [];
 			_.each(data, (datum) => {
-				nodes.push(renderTreeNode(datum));
+				const node = renderTreeNode(datum);
+				nodes.push(node);
+
+				if (datum.isLoading) {
+					// stick a loading indicator under this node
+					const
+						item = datum.item,
+						depth = item.depth;
+					nodes.push(<Row
+									ml={(((areRootsVisible ? depth : depth -1) +1) * 30) + 'px'}
+									key={datum.item.hash + 'loader'}
+								>
+									<TreeNode
+										isLoadingIndicator={true}
+										datum={datum}
+									/>
+								</Row>);
+				}
 			});
 			return nodes;
 		},
@@ -486,27 +507,43 @@ export function Tree(props) {
 
 		// Button handlers
 		onToggle = (datum) => {
-			datum.isExpanded = !datum.isExpanded;
-			forceUpdate();
+			if (datum.isLoading) {
+				return;
+			}
 
-			if (datum.isExpanded && datum.item?.repository.isRemote && datum.item.hasChildren && !datum.item.isChildrenLoaded) {
+			datum.isExpanded = !datum.isExpanded;
+
+			if (datum.isExpanded && datum.item.repository?.isRemote && datum.item.hasChildren && !datum.item.areChildrenLoaded) {
 				loadChildren(datum, 1);
+			} else {
+				forceUpdate();
 			}
 		},
 		loadChildren = async (datum, depth) => {
-			// Helper for onToggle
+			// Show loading indicator (spinner underneath current node?)
+			datum.isLoading = true;
+			forceUpdate();
 
-			// TODO: Flesh this out
-			// Show loading indicator (red bar at top? Spinner underneath current node?)
-
+			// try to load the children
+			let loaded = false;
+			await sleep(2000);
 			
 			// Calls getConditions(), then submits to server
 			// Server returns this for each node:
 			// Build up treeNodeData for just these new nodes
 
+			// TODO: how do I handle errors? 
+			// 		Color parent node red
+			// 		Modal alert box?
+			// 		Inline error msg? I'm concerned about modals not stacking correctly, but if we put it inline, it'll work. 
+
+			if (!loaded) {
+				datum.isExpanded = false;
+			}
 
 			// Hide loading indicator
-			
+			datum.isLoading = false;
+			forceUpdate();
 		},
 		onCollapseAll = (setNewTreeNodeData = true) => {
 			// Go through whole tree and collapse all nodes
