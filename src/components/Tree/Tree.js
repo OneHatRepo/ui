@@ -81,6 +81,7 @@ import _ from 'lodash';
 //////////////////////
 //////////////////////
 
+// TODO: implement filters
 
 
 
@@ -89,9 +90,8 @@ import _ from 'lodash';
 export function Tree(props) {
 	const {
 			areRootsVisible = true,
-			getAdditionalParams = () => { // URL params needed to get nodes from server (e.g, { venue_id: 1, getEquipment: true, getRentalEquipment: false, }), in addition to filters.
-				return {};
-			},
+			conditions = {}, // URL params needed to get nodes from server (e.g, { venue_id: 1, getEquipment: true, getRentalEquipment: false, }), in addition to filters.
+			additionalParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
 				return item.displayValue;
 			},
@@ -500,7 +500,7 @@ export function Tree(props) {
 			// Show loading indicator (red bar at top? Spinner underneath current node?)
 
 			
-			// Calls getAdditionalParams(), then submits to server
+			// Calls getConditions(), then submits to server
 			// Server returns this for each node:
 			// Build up treeNodeData for just these new nodes
 
@@ -935,7 +935,7 @@ export function Tree(props) {
 			let rootNodes;
 			if (Repository) {
 				if (!Repository.areRootNodesLoaded) {
-					rootNodes = await Repository.getRootNodes(true, 1, getAdditionalParams);
+					rootNodes = await Repository.getRootNodes(true, 1, conditions, additionalParams);
 				}
 			} else {
 				// TODO: Make this work for data array
