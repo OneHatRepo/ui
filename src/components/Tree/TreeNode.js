@@ -49,7 +49,7 @@ export default function TreeNode(props) {
 				>
 					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 					
-					{hasChildren ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} />}
+					{hasChildren ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} px={2} />}
 
 					<Text
 						overflow="hidden"

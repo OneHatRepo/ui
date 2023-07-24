@@ -38,7 +38,7 @@ import TreeNode, { ReorderableTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
 import IconButton from '../Buttons/IconButton.js';
-import Circle from '../Icons/Circle.js';
+import Dot from '../Icons/Dot.js';
 import Collapse from '../Icons/Collapse.js';
 import FolderClosed from '../Icons/FolderClosed.js';
 import FolderOpen from '../Icons/FolderOpen.js';
@@ -104,7 +104,7 @@ export function Tree(props) {
 						icon = FolderClosed;
 					}
 				} else {
-					icon = Circle;
+					icon = Dot;
 				}
 				return icon;
 			},
