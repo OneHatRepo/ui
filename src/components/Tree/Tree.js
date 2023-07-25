@@ -482,6 +482,27 @@ export function Tree(props) {
 			});
 			return nodes;
 		},
+		getDatumChildIds = (datum) => {
+			const ids = [];
+			 _.each(datum.children, (childDatum) => {
+				ids.push(childDatum.item.id);
+				if (childDatum.children.length) {
+					ids.concat(getDatumChildIds(childDatum));
+				}
+			});
+			return ids;
+		},
+		datumContainsSelection = (datum) => {
+			if (_.isEmpty(selection)) {
+				return false;
+			}
+			const
+				selectionIds = _.map(selection, (item) => item.id),
+				datumIds = getDatumChildIds(datum),
+				intersection = selectionIds.filter(x => datumIds.includes(x));
+
+			return !_.isEmpty(intersection);
+		},
 
 		// Button handlers
 		onToggle = (datum) => {
@@ -494,6 +515,10 @@ export function Tree(props) {
 			if (datum.isExpanded && datum.item.repository?.isRemote && datum.item.hasChildren && !datum.item.areChildrenLoaded) {
 				loadChildren(datum, 1);
 				return;
+			}
+
+			if (!datum.isExpanded && datumContainsSelection(datum)) {
+				deselectAll();
 			}
 			
 			forceUpdate();
