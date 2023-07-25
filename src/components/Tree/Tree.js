@@ -67,8 +67,7 @@ import _ from 'lodash';
 export function Tree(props) {
 	const {
 			areRootsVisible = true,
-			conditions = {}, // URL params needed to get nodes from server (e.g, { venue_id: 1, getEquipment: true, getRentalEquipment: false, }), in addition to filters.
-			additionalParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
+			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
 				return item.displayValue;
 			},
@@ -252,7 +251,7 @@ export function Tree(props) {
 			items.unshift(<Input // Add text input to beginning of header items
 				key="searchTree"
 				flex={1}
-				placeholder="Search all tree nodes"
+				placeholder="Find tree node"
 				onChangeText={(val) => setTreeSearchValue(val)}
 				value={treeSearchValue}
 				autoSubmit={false}
@@ -451,11 +450,13 @@ export function Tree(props) {
 			return nodes;
 		},
 		getDatumChildIds = (datum) => {
-			const ids = [];
+			let ids = [];
 			 _.each(datum.children, (childDatum) => {
 				ids.push(childDatum.item.id);
 				if (childDatum.children.length) {
-					ids.concat(getDatumChildIds(childDatum));
+					const childIds = getDatumChildIds(childDatum);
+					ids = ids.concat(childIds);
+					const t = true;
 				}
 			});
 			return ids;
@@ -498,7 +499,7 @@ export function Tree(props) {
 			
 			try {
 
-				const children = await datum.item.loadChildren(1, conditions, additionalParams);
+				const children = await datum.item.loadChildren(1);
 				const tnd = buildTreeNodeData(children);
 				datum.children = tnd;
 
@@ -941,7 +942,7 @@ export function Tree(props) {
 			let rootNodes;
 			if (Repository) {
 				if (!Repository.areRootNodesLoaded) {
-					rootNodes = await Repository.getRootNodes(1, conditions, additionalParams);
+					rootNodes = await Repository.getRootNodes(1);
 				}
 			} else {
 				// TODO: Make this work for data array
@@ -958,6 +959,9 @@ export function Tree(props) {
 		}
 
 		if (!isReady) {
+			if (Repository) {
+				Repository.setBaseParams(extraParams);
+			}
 			(async () => {
 				await buildAndSetTreeNodeData();
 				setIsReady(true);
@@ -967,19 +971,18 @@ export function Tree(props) {
 		if (!Repository) {
 			return () => {};
 		}
-
+		
 		// set up @onehat/data repository
 		const
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false);
-
+		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
 		Repository.ons(['changePage', 'changePageSize',], deselectAll);
 		Repository.ons(['changeData', 'change'], buildAndSetTreeNodeData);
 		Repository.on('changeFilters', reloadTreeData);
 		Repository.on('changeSorters', reloadTreeData);
-
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
