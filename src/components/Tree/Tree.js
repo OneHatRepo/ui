@@ -249,10 +249,15 @@ export function Tree(props) {
 			const items = _.map(buttons, getIconFromConfig);
 
 			items.unshift(<Input // Add text input to beginning of header items
-				key="searchTree"
+				key="searchNodes"
 				flex={1}
 				placeholder="Find tree node"
 				onChangeText={(val) => setTreeSearchValue(val)}
+				onKeyPress={(e, value) => {
+					if (e.key === 'Enter') {
+						onSearchTree(value);
+					}
+				}}
 				value={treeSearchValue}
 				autoSubmit={false}
 			/>);
@@ -518,17 +523,6 @@ export function Tree(props) {
 		onCollapseAll = (setNewTreeNodeData = true) => {
 			// Go through whole tree and collapse all nodes
 			const newTreeNodeData = _.clone(treeNodeData);
-			
-			// Recursive method to collapse all children
-			function collapseNodes(nodes) {
-				_.each(nodes, (node) => {
-					node.isExpanded = false;
-					if (!_.isEmpty(node.children)) {
-						collapseNodes(node.children);
-					}
-				});
-			}
-
 			collapseNodes(newTreeNodeData);
 
 			if (setNewTreeNodeData) {
@@ -536,47 +530,37 @@ export function Tree(props) {
 			}
 			return newTreeNodeData;
 		},
+		collapseNodes = (nodes) => {
+			_.each(nodes, (node) => {
+				node.isExpanded = false;
+				if (!_.isEmpty(node.children)) {
+					collapseNodes(node.children);
+				}
+			});
+		},
 		onSearchTree = async (value) => {
 
 			let found = [];
 			if (Repository?.isRemote) {
 				// Search tree on server
-				found = await Repository.searchTree(value);
+				found = await Repository.searchNodes(value);
 			} else {
 				// Search local tree data
 				found = findTreeNodesByText(value);
 			}
 
-
 			const isMultipleHits = found.length > 1;
 			let path = '';
 			let searchFormData = [];
 			
-			if (Repository?.isRemote) {
-				if (isMultipleHits) {
-					// 'found' is the results from the server. Use these to show the modal and choose which node you want to select
-					
-					
-					
-					
-				} else {
-					// Search local tree data
-					found = findTreeNodesByText(value);
-				}
-				
-				// TODO: create searchFormData based on 'found' array
-				
-
-
-
-
-				setSearchFormData(searchFormData);
-				setIsSearchModalShown(true);
-
-			} else {
-				// Expand that one path immediately
+			if (!isMultipleHits) {
+				path = found[0].path;
 				expandPath(path);
+				return;
 			}
+
+			setSearchFormData(searchFormData);
+			setIsSearchModalShown(true);
 		},
 		findTreeNodesByText = (text) => {
 			// Helper for onSearchTree
@@ -631,14 +615,12 @@ export function Tree(props) {
 			return nodes.join('/');
 
 		},
-		expandPath = (path) => {
+		expandPath = async (path) => {
 			// Helper for onSearchTree
 
-			// Drills down the tree based on path (usually given by server).
-			// Path would be a list of sequential IDs (3/35/263/1024)
-			// Initially, it closes thw whole tree.
-
-			let newTreeNodeData = collapseAll(false); // false = don't set new treeNodeData
+			// First, close thw whole tree.
+			let newTreeNodeData = _.clone(treeNodeData);
+			collapseNodes(newTreeNodeData);
 
 			// As it navigates down, it will expand the appropriate branches,
 			// and then finally highlight & select the node in question
@@ -656,6 +638,13 @@ export function Tree(props) {
 				currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
 					return treeNodeDatum.item.id === id; 
 				});
+
+				if (!currentDatum) {
+					// datum is not currently loaded, so load it
+
+					// LEFT OFF HERE
+					debugger;
+				}
 				
 				currentNode = currentDatum.item;
 				
