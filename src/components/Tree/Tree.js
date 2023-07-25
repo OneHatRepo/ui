@@ -454,7 +454,7 @@ export function Tree(props) {
 					</Pressable>;
 		},
 		renderTreeNodes = (data) => {
-			const nodes = [];
+			let nodes = [];
 			_.each(data, (datum) => {
 				const node = renderTreeNode(datum);
 				nodes.push(node);
@@ -474,33 +474,11 @@ export function Tree(props) {
 									/>
 								</Row>);
 				}
-			});
-			return nodes;
-		},
-		renderAllTreeNodes = () => {
-			let nodes = [];
-			_.each(treeNodeData, (datum) => {
-				const node = renderTreeNode(datum);
-				if (_.isEmpty(node)) {
-					return;
-				}
-				
-				nodes.push(node);
 
-				if (!datum.isExpanded) {
-					return;
+				if (datum.children.length && datum.isExpanded) {
+					const childTreeNodes = renderTreeNodes(datum.children); // recursion
+					nodes = nodes.concat(childTreeNodes);
 				}
-
-				if (_.isEmpty(datum.children)) {
-					return;
-				}
-
-				const children = renderTreeNodes(datum.children);
-				if (_.isEmpty(children)) {
-					return;
-				}
-
-				nodes = nodes.concat(children);
 			});
 			return nodes;
 		},
@@ -515,29 +493,27 @@ export function Tree(props) {
 
 			if (datum.isExpanded && datum.item.repository?.isRemote && datum.item.hasChildren && !datum.item.areChildrenLoaded) {
 				loadChildren(datum, 1);
-			} else {
-				forceUpdate();
+				return;
 			}
+			
+			forceUpdate();
 		},
 		loadChildren = async (datum, depth) => {
 			// Show loading indicator (spinner underneath current node?)
 			datum.isLoading = true;
 			forceUpdate();
 
-			// try to load the children
-			let loaded = false;
-			await sleep(2000);
-			
-			// Calls getConditions(), then submits to server
-			// Server returns this for each node:
-			// Build up treeNodeData for just these new nodes
+			try {
 
-			// TODO: how do I handle errors? 
-			// 		Color parent node red
-			// 		Modal alert box?
-			// 		Inline error msg? I'm concerned about modals not stacking correctly, but if we put it inline, it'll work. 
+				const children = await datum.item.loadChildren(1, conditions, additionalParams);
+				const tnd = buildTreeNodeData(children);
+				datum.children = tnd;
 
-			if (!loaded) {
+			} catch (err) {
+				// TODO: how do I handle errors? 
+				// 		Color parent node red
+				// 		Modal alert box?
+				// 		Inline error msg? I'm concerned about modals not stacking correctly, but if we put it inline, it'll work. 
 				datum.isExpanded = false;
 			}
 
@@ -972,7 +948,7 @@ export function Tree(props) {
 			let rootNodes;
 			if (Repository) {
 				if (!Repository.areRootNodesLoaded) {
-					rootNodes = await Repository.getRootNodes(true, 1, conditions, additionalParams);
+					rootNodes = await Repository.getRootNodes(1, conditions, additionalParams);
 				}
 			} else {
 				// TODO: Make this work for data array
@@ -1048,7 +1024,7 @@ export function Tree(props) {
 	if (!isReady) {
 		return null;
 	}
-	const treeNodes = renderAllTreeNodes();
+	const treeNodes = renderTreeNodes(treeNodeData);;
 
 	// headers & footers
 	let treeFooterComponent = null;
