@@ -52,27 +52,8 @@ import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
 
-// Tree requires the use of HOC withSelection() whenever it's used.
-// The default export is *with* the HOC. A separate *raw* component is
-// exported which can be combined with many HOCs for various functionality.
-
-
 //////////////////////
 //////////////////////
-
-// I'm thinking if a repository senses that it's a tree, then at initial load
-// it should get the root nodes +1 level of children.
-//
-// How would it then subsequently get the proper children?
-// i.e. When a node gets its children, how will it do this
-// while maintaining the nodes that already exist there?
-// We don't want it to *replace* all exisitng nodes!
-//
-// And if the repository does a reload, should it just get roots+1 again?
-// Changing filters would potentially change the tree structure.
-// Changing sorting would only change the ordering, not what is expanded/collapsed or visible/invisible.
-
-
 
 // Need to take into account whether using Repository or data.
 // If using data, everything exists at once. What format will data be in?
@@ -81,11 +62,6 @@ import _ from 'lodash';
 
 //////////////////////
 //////////////////////
-
-// TODO: implement filters
-
-
-
 
 
 export function Tree(props) {
@@ -171,6 +147,10 @@ export function Tree(props) {
 		[dragNodeIx, setDragNodeIx] = useState(),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
 		onNodeClick = (item, e) => {
+			if (!setSelection) {
+				return;
+			}
+
 			const
 				{
 					shiftKey,
@@ -390,7 +370,11 @@ export function Tree(props) {
 								e.preventDefault();
 							}
 							if (isReorderMode) {
-								return
+								return;
+							}
+
+							if (!setSelection) {
+								return;
 							}
 							
 							// context menu
@@ -984,6 +968,11 @@ export function Tree(props) {
 			setTreeNodeData(treeNodeData);
 		}
 
+		function reloadTreeData() {
+			Repository.areRootNodesLoaded = false;
+			return buildAndSetTreeNodeData();
+		}
+
 		if (!isReady) {
 			(async () => {
 				await buildAndSetTreeNodeData();
@@ -998,24 +987,14 @@ export function Tree(props) {
 		// set up @onehat/data repository
 		const
 			setTrue = () => setIsLoading(true),
-			setFalse = () => setIsLoading(false),
-			onChangeFilters = () => {
-				if (!Repository.isAutoLoad) {
-					Repository.reload();
-				}
-			},
-			onChangeSorters = () => {
-				if (!Repository.isAutoLoad) {
-					Repository.reload();
-				}
-			};
+			setFalse = () => setIsLoading(false);
 
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
 		Repository.ons(['changePage', 'changePageSize',], deselectAll);
 		Repository.ons(['changeData', 'change'], buildAndSetTreeNodeData);
-		Repository.on('changeFilters', onChangeFilters);
-		Repository.on('changeSorters', onChangeSorters);
+		Repository.on('changeFilters', reloadTreeData);
+		Repository.on('changeSorters', reloadTreeData);
 
 
 		return () => {
@@ -1049,7 +1028,7 @@ export function Tree(props) {
 	if (!isReady) {
 		return null;
 	}
-	const treeNodes = renderTreeNodes(treeNodeData);;
+	const treeNodes = renderTreeNodes(treeNodeData);
 
 	// headers & footers
 	let treeFooterComponent = null;
