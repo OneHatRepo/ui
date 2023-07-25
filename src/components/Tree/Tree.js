@@ -443,22 +443,6 @@ export function Tree(props) {
 				const node = renderTreeNode(datum);
 				nodes.push(node);
 
-				if (datum.isLoading) {
-					// stick a loading indicator under this node
-					const
-						item = datum.item,
-						depth = item.depth;
-					nodes.push(<Row
-									ml={(((areRootsVisible ? depth : depth -1) +1) * 30) + 'px'}
-									key={datum.item.hash + 'loader'}
-								>
-									<TreeNode
-										isLoadingIndicator={true}
-										datum={datum}
-									/>
-								</Row>);
-				}
-
 				if (datum.children.length && datum.isExpanded) {
 					const childTreeNodes = renderTreeNodes(datum.children); // recursion
 					nodes = nodes.concat(childTreeNodes);
@@ -511,7 +495,7 @@ export function Tree(props) {
 			// Show loading indicator (spinner underneath current node?)
 			datum.isLoading = true;
 			forceUpdate();
-
+			
 			try {
 
 				const children = await datum.item.loadChildren(1, conditions, additionalParams);

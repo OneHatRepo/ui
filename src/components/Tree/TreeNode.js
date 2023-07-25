@@ -22,13 +22,13 @@ export default function TreeNode(props) {
 			bg,
 			datum,
 			onToggle,
-			isLoadingIndicator = false,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
 		item = datum.item,
 		isPhantom = item.isPhantom,
 		isExpanded = datum.isExpanded,
+		isLoading = datum.isLoading,
 		hasChildren = item.hasChildren,
 		depth = item.depth,
 		text = datum.text,
@@ -36,30 +36,6 @@ export default function TreeNode(props) {
 		iconExpanded = datum.iconExpanded,
 		iconLeaf = datum.iconLeaf,
 		hash = item?.hash || item;
-
-	if (isLoadingIndicator) {
-		return <Row
-					alignItems="center"
-					flexGrow={1}
-					{...nodeProps}
-					bg={bg}
-				>
-					<Spinner />
-					<Text
-						overflow="hidden"
-						textOverflow="ellipsis"
-						alignSelf="center"
-						style={{ userSelect: 'none', }}
-						fontSize={styles.TREE_NODE_FONTSIZE}
-						px={styles.TREE_NODE_PX}
-						py={styles.TREE_NODE_PY}
-						color="trueGray.400"
-						numberOfLines={1}
-						ellipsizeMode="head"
-						{...propsToPass}
-					>Loading...</Text>
-				</Row>;
-	}
 
 	const icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf;
 
@@ -74,7 +50,9 @@ export default function TreeNode(props) {
 				>
 					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 					
-					{hasChildren ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} px={2} />}
+					{isLoading ? 
+						<Spinner px={2} /> : 
+						(hasChildren ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} px={2} />)}
 
 					<Text
 						overflow="hidden"
@@ -102,6 +80,7 @@ export default function TreeNode(props) {
 		text,
 		icon,
 		onToggle,
+		isLoading,
 	]);
 }
 
