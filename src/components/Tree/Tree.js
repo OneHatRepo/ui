@@ -1068,11 +1068,11 @@ export const TreePlain = withAlert(
 												withSelection(
 													// withSideEditor(
 														withFilters(
-															withPresetButtons(
+															// withPresetButtons(
 																withContextMenu(
 																	Tree
 																)
-															)
+															// )
 														)
 													// )
 												)

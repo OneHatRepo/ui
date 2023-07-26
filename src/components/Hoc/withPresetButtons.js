@@ -33,10 +33,11 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 			} = props,
 			{
 				// for local use
+				isEditor = false,
 				useEditor = true,
-				disableAdd = false,
-				disableEdit = false,
-				disableDelete = false,
+				disableAdd = !isEditor,
+				disableEdit = !isEditor,
+				disableDelete = !isEditor,
 				disableView = !isGrid,
 				disableCopy = !isGrid,
 				disableDuplicate = !isGrid,

@@ -213,6 +213,7 @@ export default function withEditor(WrappedComponent) {
 					onEditorCancel={onEditorCancel}
 					onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
 					onEditorClose={onEditorClose}
+					isEditor={true}
 					useEditor={useEditor}
 					userCanEdit={userCanEdit}
 					userCanView={userCanView}

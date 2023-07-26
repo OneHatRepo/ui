@@ -861,7 +861,8 @@ export const GridPlain = withAlert(
 															withPresetButtons(
 																withContextMenu(
 																	Grid
-																)
+																),
+																true // isGrid
 															)
 														)
 													// )
@@ -881,7 +882,8 @@ export const SideGridEditor = withAlert(
 															withPresetButtons(
 																withContextMenu(
 																	Grid
-																)
+																),
+																true // isGrid
 															)
 														)
 													)
