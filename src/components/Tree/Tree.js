@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, } from 'react';
+import { useState, useEffect, useRef, useMemo, } from 'react';
 import {
 	Column,
 	FlatList,
@@ -19,7 +19,6 @@ import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
 } from '../../Constants/Tree.js';
-import sleep from '@onehat/ui/src/Functions/sleep.js';
 import * as colourMixer from '@k-renwick/colour-mixer'
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
@@ -98,6 +97,7 @@ export function Tree(props) {
 			bottomToolbar = null,
 			topToolbar = null,
 			additionalToolbarButtons = [],
+			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
 
 			// withEditor
 			onAdd,
@@ -478,6 +478,24 @@ export function Tree(props) {
 
 			return !_.isEmpty(intersection);
 		},
+		buildAndSetTreeNodeData = async () => {
+			let rootNodes;
+			if (Repository) {
+				if (!Repository.areRootNodesLoaded) {
+					rootNodes = await Repository.getRootNodes(1);
+				}
+			} else {
+				// TODO: Make this work for data array
+
+			}
+
+			const treeNodeData = buildTreeNodeData(rootNodes);
+			setTreeNodeData(treeNodeData);
+		},
+		reloadTree = () => {
+			Repository.areRootNodesLoaded = false;
+			return buildAndSetTreeNodeData();
+		};
 
 		// Button handlers
 		onToggle = (datum) => {
@@ -557,7 +575,7 @@ export function Tree(props) {
 
 			const searchFormData = [];
 			_.each(found, (item) => {
-				searchFormData.push([item.id, item.displayValue]);
+				searchFormData.push([item.id, getNodeText(item)]);
 			});
 			setSearchFormData(searchFormData);
 			setSearchResults(found);
@@ -901,29 +919,15 @@ export function Tree(props) {
 			}
 			setDragNodeSlot(null);
 		};
+
+	useEffect(() => {
+		if (!isReady) {
+			return () => {};
+		}
+		reloadTree();
+	}, [reload]);
 		
 	useEffect(() => {
-
-		async function buildAndSetTreeNodeData() {
-
-			let rootNodes;
-			if (Repository) {
-				if (!Repository.areRootNodesLoaded) {
-					rootNodes = await Repository.getRootNodes(1);
-				}
-			} else {
-				// TODO: Make this work for data array
-
-			}
-
-			const treeNodeData = buildTreeNodeData(rootNodes);
-			setTreeNodeData(treeNodeData);
-		}
-
-		function reloadTreeData() {
-			Repository.areRootNodesLoaded = false;
-			return buildAndSetTreeNodeData();
-		}
 
 		if (!isReady) {
 			if (Repository) {
@@ -948,16 +952,16 @@ export function Tree(props) {
 		Repository.on('load', setFalse);
 		Repository.ons(['changePage', 'changePageSize',], deselectAll);
 		Repository.ons(['changeData', 'change'], buildAndSetTreeNodeData);
-		Repository.on('changeFilters', reloadTreeData);
-		Repository.on('changeSorters', reloadTreeData);
+		Repository.on('changeFilters', reloadTree);
+		Repository.on('changeSorters', reloadTree);
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
 			Repository.offs(['changePage', 'changePageSize',], deselectAll);
 			Repository.offs(['changeData', 'change'], buildAndSetTreeNodeData);
-			Repository.off('changeFilters', onChangeFilters);
-			Repository.off('changeSorters', onChangeSorters);
+			Repository.off('changeFilters', reloadTree);
+			Repository.off('changeSorters', reloadTree);
 		};
 	}, []);
 
