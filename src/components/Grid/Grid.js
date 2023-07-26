@@ -851,6 +851,26 @@ export function Grid(props) {
 
 }
 
+export const GridPlain = withAlert(
+									withEvents(
+										withData(
+											withMultiSelection(
+												withSelection(
+													// withSideEditor(
+														withFilters(
+															withPresetButtons(
+																withContextMenu(
+																	Grid
+																)
+															)
+														)
+													// )
+												)
+											)
+										)
+									)
+								);
+
 export const SideGridEditor = withAlert(
 									withEvents(
 										withData(
@@ -913,4 +933,4 @@ export const InlineGridEditor = withAlert(
 									)
 								);
 
-export default WindowedGridEditor;
+export default GridPlain;

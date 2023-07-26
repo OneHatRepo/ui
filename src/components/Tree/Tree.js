@@ -141,6 +141,7 @@ export function Tree(props) {
 		[isReorderMode, setIsReorderMode] = useState(false),
 		[isSearchModalShown, setIsSearchModalShown] = useState(false),
 		[treeNodeData, setTreeNodeData] = useState({}),
+		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
@@ -539,7 +540,6 @@ export function Tree(props) {
 			});
 		},
 		onSearchTree = async (value) => {
-
 			let found = [];
 			if (Repository?.isRemote) {
 				// Search tree on server
@@ -550,16 +550,17 @@ export function Tree(props) {
 			}
 
 			const isMultipleHits = found.length > 1;
-			let path = '';
-			let searchFormData = [];
-			
 			if (!isMultipleHits) {
-				path = found[0].path;
-				expandPath(path);
+				expandPath(found[0].path);
 				return;
 			}
 
+			const searchFormData = [];
+			_.each(found, (item) => {
+				searchFormData.push([item.id, item.displayValue]);
+			});
 			setSearchFormData(searchFormData);
+			setSearchResults(found);
 			setIsSearchModalShown(true);
 		},
 		findTreeNodesByText = (text) => {
@@ -588,33 +589,6 @@ export function Tree(props) {
 			}
 			return data[node_id]; // TODO: This is probably not right!
 		},
-		getPathByTreeNode = (treeNode) => {
-
-			///////// THIS DOESN'T WORK YET /////////
-
-			function searchChildren(children, currentPath = []) {
-				let found = [];
-				_.each(children, (child) => {
-					const
-						item = child.item,
-						id = idField ? item[idField] : item.id;
-					if (child.text.match(regex)) {
-						found.push(child);
-						return false;
-					}
-					if (child.children) {
-						const childrenFound = searchChildren(child.children, [...currentPath, id]);
-						if (!_.isEmpty(childrenFound)) {
-							return false;
-						}
-					}
-				});
-				return found;
-			}
-			const nodes = searchChildren(treeNodeData);
-			return nodes.join('/');
-
-		},
 		expandPath = async (path) => {
 			// Helper for onSearchTree
 
@@ -628,6 +602,7 @@ export function Tree(props) {
 				id,
 				currentLevelData = newTreeNodeData,
 				currentDatum,
+				parentDatum,
 				currentNode;
 			
 			while(path.length) {
@@ -641,9 +616,11 @@ export function Tree(props) {
 
 				if (!currentDatum) {
 					// datum is not currently loaded, so load it
-
-					// LEFT OFF HERE
-					debugger;
+					await loadChildren(parentDatum, 1);
+					currentLevelData = parentDatum.children;
+					currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
+						return treeNodeDatum.item.id === id; 
+					});
 				}
 				
 				currentNode = currentDatum.item;
@@ -653,6 +630,7 @@ export function Tree(props) {
 				
 				path = pathParts.slice(1).join('/'); // put the rest of it back together
 				currentLevelData = currentDatum.children;
+				parentDatum = currentDatum;
 			}
 
 			setSelection([currentNode]);
@@ -1037,11 +1015,11 @@ export function Tree(props) {
 					{treeFooterComponent}
 				</Column>
 
-				{/* <Modal
+				<Modal
 					isOpen={isSearchModalShown}
 					onClose={() => setIsSearchModalShown(false)}
 				>
-					<Column bg="#fff" w={500}>
+					<Column bg="#fff" w={300}>
 						<FormPanel
 							title="Choose Tree Node"
 							instructions="Multiple tree nodes matched your search. Please select which one to show."
@@ -1066,31 +1044,42 @@ export function Tree(props) {
 								setIsSearchModalShown(false);
 							}}
 							onSave={(data, e) => {
-
-								const node_id = data.node_id; // NOT SURE THIS IS CORRECT!
-
-								if (isMultipleHits) {
-									// Tell the server which one you want and get it, loading all children necessary to get there
-									
-									
-									
-								} else {
-									// Show the path based on local data
-									const
-										treeNode = getTreeNodeByNodeId(node_id),
-										path = getPathByTreeNode(treeNode);
-									expandPath(path);
-								}
+								const
+									treeNode = _.find(searchResults, (item) => {
+										return item.id === data.node_id;
+									}),
+									path = treeNode.path;
+								expandPath(path);
 
 								// Close the modal
 								setIsSearchModalShown(false);
 							}}
 						/>
 					</Column>
-				</Modal> */}
+				</Modal>
 			</>;
 
 }
+
+export const TreePlain = withAlert(
+									withEvents(
+										withData(
+											// withMultiSelection(
+												withSelection(
+													// withSideEditor(
+														withFilters(
+															withPresetButtons(
+																withContextMenu(
+																	Tree
+																)
+															)
+														)
+													// )
+												)
+											// )
+										)
+									)
+								);
 
 export const SideTreeEditor = withAlert(
 									withEvents(
@@ -1132,4 +1121,4 @@ export const WindowedTreeEditor = withAlert(
 									)
 								);
 
-export default WindowedTreeEditor;
+export default TreePlain;
