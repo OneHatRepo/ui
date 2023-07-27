@@ -63,7 +63,7 @@ import _ from 'lodash';
 //////////////////////
 
 
-export function Tree(props) {
+export function TreeComponent(props) {
 	const {
 			areRootsVisible = true,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
@@ -1114,25 +1114,25 @@ export function Tree(props) {
 
 }
 
-export const Tree = withAlert(
-									withEvents(
-										withData(
-											// withMultiSelection(
-												withSelection(
-													// withSideEditor(
-														withFilters(
-															// withPresetButtons(
-																withContextMenu(
-																	Tree
-																)
-															// )
-														)
-													// )
-												)
-											// )
-										)
+const Tree = withAlert(
+				withEvents(
+					withData(
+						// withMultiSelection(
+							withSelection(
+								// withSideEditor(
+									withFilters(
+										// withPresetButtons(
+											withContextMenu(
+												TreeComponent
+											)
+										// )
 									)
-								);
+								// )
+							)
+						// )
+					)
+				)
+			);
 
 export const SideTreeEditor = withAlert(
 									withEvents(
@@ -1143,7 +1143,7 @@ export const SideTreeEditor = withAlert(
 														withFilters(
 															withPresetButtons(
 																withContextMenu(
-																	Tree
+																	TreeComponent
 																)
 															)
 														)
@@ -1163,7 +1163,7 @@ export const WindowedTreeEditor = withAlert(
 														withFilters(
 															withPresetButtons(
 																withContextMenu(
-																	Tree
+																	TreeComponent
 																)
 															)
 														)

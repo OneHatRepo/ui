@@ -52,7 +52,7 @@ import _ from 'lodash';
 // The default export is *with* the HOC. A separate *raw* component is
 // exported which can be combined with many HOCs for various functionality.
 
-export function Grid(props) {
+export function GridComponent(props) {
 	const {
 
 			columnsConfig = [], // json configurations for each column
@@ -851,26 +851,26 @@ export function Grid(props) {
 
 }
 
-export const Grid = withAlert(
-									withEvents(
-										withData(
-											withMultiSelection(
-												withSelection(
-													// withSideEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	Grid
-																),
-																true // isGrid
-															)
-														)
-													// )
-												)
-											)
+const Grid = withAlert(
+				withEvents(
+					withData(
+						withMultiSelection(
+							withSelection(
+								// withSideEditor(
+									withFilters(
+										withPresetButtons(
+											withContextMenu(
+												GridComponent
+											),
+											true // isGrid
 										)
 									)
-								);
+								// )
+							)
+						)
+					)
+				)
+			);
 
 export const SideGridEditor = withAlert(
 									withEvents(
@@ -881,7 +881,7 @@ export const SideGridEditor = withAlert(
 														withFilters(
 															withPresetButtons(
 																withContextMenu(
-																	Grid
+																	GridComponent
 																),
 																true // isGrid
 															)
@@ -902,7 +902,7 @@ export const WindowedGridEditor = withAlert(
 														withFilters(
 															withPresetButtons(
 																withContextMenu(
-																	Grid
+																	GridComponent
 																),
 																true // isGrid
 															)
@@ -923,7 +923,7 @@ export const InlineGridEditor = withAlert(
 														withPresetButtons(
 															withContextMenu(
 																withFilters(
-																	Grid
+																	GridComponent
 																),
 																true // isGrid
 															)
