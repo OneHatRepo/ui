@@ -52,7 +52,7 @@ import _ from 'lodash';
 // The default export is *with* the HOC. A separate *raw* component is
 // exported which can be combined with many HOCs for various functionality.
 
-export function GridComponent(props) {
+function GridComponent(props) {
 	const {
 
 			columnsConfig = [], // json configurations for each column
@@ -851,7 +851,7 @@ export function GridComponent(props) {
 
 }
 
-const Grid = withAlert(
+export const Grid = withAlert(
 				withEvents(
 					withData(
 						withMultiSelection(

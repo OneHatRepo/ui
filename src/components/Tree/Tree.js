@@ -63,7 +63,7 @@ import _ from 'lodash';
 //////////////////////
 
 
-export function TreeComponent(props) {
+function TreeComponent(props) {
 	const {
 			areRootsVisible = true,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
@@ -1114,7 +1114,7 @@ export function TreeComponent(props) {
 
 }
 
-const Tree = withAlert(
+export const Tree = withAlert(
 				withEvents(
 					withData(
 						// withMultiSelection(
