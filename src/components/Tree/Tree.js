@@ -68,7 +68,10 @@ export function Tree(props) {
 			areRootsVisible = true,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
-				return item.displayValue;
+				if (Repository) {
+					return item.displayValue;
+				}
+				return item[displayIx];
 			},
 			getNodeIcon = (item, isExpanded) => { // decides what icon to show for this node
 				// TODO: Allow for dynamic props on the icon (e.g. special color for some icons)
@@ -98,6 +101,7 @@ export function Tree(props) {
 			topToolbar = null,
 			additionalToolbarButtons = [],
 			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
+			parentIdIx,
 
 			// withEditor
 			onAdd,
@@ -485,12 +489,57 @@ export function Tree(props) {
 					rootNodes = await Repository.getRootNodes(1);
 				}
 			} else {
-				// TODO: Make this work for data array
-
+				rootNodes = assembleDataTreeNodes();
 			}
 
 			const treeNodeData = buildTreeNodeData(rootNodes);
 			setTreeNodeData(treeNodeData);
+		},
+		assembleDataTreeNodes = () => {
+			// Populates the TreeNodes with .parent and .children references
+			// NOTE: This is only for 'data', not for Repositories!
+			// 'data' is essentially an Adjacency List, not a ClosureTable.
+
+			const clonedData = _.clone(data);
+
+			// Reset all parent/child relationships
+			_.each(clonedData, (treeNode) => {
+				treeNode.isRoot = !treeNode[parentIdIx];
+				treeNode.parent = null;
+				treeNode.children = [];
+			});
+
+			// Rebuild all parent/child relationships
+			_.each(clonedData, (treeNode) => {
+				const parent = _.find(clonedData, (tn) => {
+					return tn[idIx] === treeNode[parentIdIx];
+				});
+				if (parent) {
+					treeNode.parent = parent;
+					parent.children.push(treeNode);
+				}
+			});
+
+			// populate calculated fields
+			const treeNodes = [];
+			_.each(clonedData, (treeNode) => {
+				treeNode.hasChildren = !_.isEmpty(treeNode.children);
+
+				let parent = treeNode.parent,
+					i = 0;
+				while(parent) {
+					i++;
+					parent = parent.parent;
+				}
+				treeNode.depth = i;
+				treeNode.hash = treeNode[idIx];
+
+				if (treeNode.isRoot) {
+					treeNodes.push(treeNode);
+				}
+			});
+
+			return treeNodes;
 		},
 		reloadTree = () => {
 			Repository.areRootNodesLoaded = false;
@@ -1065,7 +1114,7 @@ export function Tree(props) {
 
 }
 
-export const TreePlain = withAlert(
+export const Tree = withAlert(
 									withEvents(
 										withData(
 											// withMultiSelection(
@@ -1125,4 +1174,4 @@ export const WindowedTreeEditor = withAlert(
 									)
 								);
 
-export default TreePlain;
+export default Tree;

@@ -14,6 +14,10 @@ export default function withSideEditor(WrappedComponent) {
 				sideFlex = 100,
 			} = props;
 
+		if (!Editor) {
+			throw Error('Editor is not defined');
+		}
+
 		return <Container
 					center={<WrappedComponent {...props} />}
 					east={<Editor

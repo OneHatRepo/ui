@@ -851,7 +851,7 @@ export function Grid(props) {
 
 }
 
-export const GridPlain = withAlert(
+export const Grid = withAlert(
 									withEvents(
 										withData(
 											withMultiSelection(
@@ -935,4 +935,4 @@ export const InlineGridEditor = withAlert(
 									)
 								);
 
-export default GridPlain;
+export default Grid;

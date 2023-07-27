@@ -35,6 +35,10 @@ export default function withWindowedEditor(WrappedComponent) {
 				editorProps = {},
 			} = props;
 
+		if (!Editor) {
+			throw Error('Editor is not defined');
+		}
+
 		return <>
 					<WrappedComponent {...props} />
 					{useEditor && isEditorShown && 
