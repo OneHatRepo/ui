@@ -25,7 +25,7 @@ import _ from 'lodash';
 // then switch position to absolute, draggable area would be header of panel
 // const DraggableColumn = withAdditionalProps(withDraggable(Column));
 
-export default function withWindowedEditor(WrappedComponent) {
+export default function withWindowedEditor(WrappedComponent, isTree = false) {
 	return withEditor((props) => {
 		const {
 				useEditor = false,
@@ -40,7 +40,7 @@ export default function withWindowedEditor(WrappedComponent) {
 		}
 
 		return <>
-					<WrappedComponent {...props} />
+					<WrappedComponent isTree={isTree} {...props} />
 					{useEditor && isEditorShown && 
 						<Modal
 							isOpen={true}

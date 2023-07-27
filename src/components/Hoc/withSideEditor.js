@@ -6,7 +6,7 @@ import withEditor from './withEditor.js';
 import _ from 'lodash';
 
 
-export default function withSideEditor(WrappedComponent) {
+export default function withSideEditor(WrappedComponent, isTree = false) {
 	return withEditor((props) => {
 		const {
 				Editor,
@@ -19,7 +19,7 @@ export default function withSideEditor(WrappedComponent) {
 		}
 
 		return <Container
-					center={<WrappedComponent {...props} />}
+					center={<WrappedComponent isTree={isTree} {...props} />}
 					east={<Editor
 								editorType={EDITOR_TYPE__SIDE}
 								flex={sideFlex}

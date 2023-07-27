@@ -1,5 +1,10 @@
 import { useEffect, useState, } from 'react';
 import {
+	Column,
+	Modal,
+	Text,
+} from 'native-base';
+import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
@@ -19,6 +24,7 @@ export default function withEditor(WrappedComponent) {
 				disableDelete = false,
 				disableDuplicate = false,
 				disableView = false,
+				isTree = false,
 				getRecordIdentifier = (selection) => {
 					if (selection.length > 1) {
 						return 'records?';
@@ -44,6 +50,7 @@ export default function withEditor(WrappedComponent) {
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
+			[isModalShown, setIsModalShown] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
 			onAdd = async () => {
 				const defaultValues = Repository.getSchema().model.defaultValues;
@@ -51,6 +58,13 @@ export default function withEditor(WrappedComponent) {
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
 					addValues[selectorId] = selectorSelected.id;
+				}
+
+				if (isTree) {
+					if (!selection[0]) {
+						throw Error('Must select a parent node.');
+					}
+					addValues.parentId = selection[0].id;
 				}
 
 				// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
@@ -195,33 +209,42 @@ export default function withEditor(WrappedComponent) {
 			editorMode = calculateEditorMode();
 		}
 
-		return <WrappedComponent
-					{...props}
-					currentRecord={currentRecord}
-					setCurrentRecord={setCurrentRecord}
-					isEditorShown={isEditorShown}
-					isEditorViewOnly={isEditorViewOnly}
-					editorMode={editorMode}
-					setEditorMode={setEditorMode}
-					setIsEditorShown={setIsEditorShown}
-					onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
-					onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
-					onDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onDelete}
-					onView={viewRecord}
-					onDuplicate={duplicateRecord}
-					onEditorSave={onEditorSave}
-					onEditorCancel={onEditorCancel}
-					onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
-					onEditorClose={onEditorClose}
-					isEditor={true}
-					useEditor={useEditor}
-					userCanEdit={userCanEdit}
-					userCanView={userCanView}
-					disableAdd={disableAdd}
-					disableEdit={disableEdit}
-					disableDelete={disableDelete}
-					disableDuplicate={disableDuplicate}
-					disableView ={disableView}
-				/>;
+		return <>
+					<WrappedComponent
+						{...props}
+						currentRecord={currentRecord}
+						setCurrentRecord={setCurrentRecord}
+						isEditorShown={isEditorShown}
+						isEditorViewOnly={isEditorViewOnly}
+						editorMode={editorMode}
+						setEditorMode={setEditorMode}
+						setIsEditorShown={setIsEditorShown}
+						onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
+						onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
+						onDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onDelete}
+						onView={viewRecord}
+						onDuplicate={duplicateRecord}
+						onEditorSave={onEditorSave}
+						onEditorCancel={onEditorCancel}
+						onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
+						onEditorClose={onEditorClose}
+						isEditor={true}
+						useEditor={useEditor}
+						userCanEdit={userCanEdit}
+						userCanView={userCanView}
+						disableAdd={disableAdd}
+						disableEdit={disableEdit}
+						disableDelete={disableDelete}
+						disableDuplicate={disableDuplicate}
+						disableView ={disableView}
+					/>
+					{isTree && isModalShown && 
+						<Modal
+							isOpen={true}
+							onClose={() => setIsModalShown(false)}
+						>
+
+						</Modal>}
+				</>;
 	};
 }

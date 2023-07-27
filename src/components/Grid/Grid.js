@@ -35,6 +35,7 @@ import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import withInlineEditor from '../Hoc/withInlineEditor.js';
+import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import GridHeaderRow from './GridHeaderRow.js';
@@ -217,42 +218,8 @@ function GridComponent(props) {
 			}
 		},
 		getFooterToolbarItems = () => {
-			const
-				iconButtonProps = {
-					_hover: {
-						bg: 'trueGray.400',
-					},
-					mx: 1,
-					px: 3,
-				},
-				iconProps = {
-					alignSelf: 'center',
-					size: styles.GRID_TOOLBAR_ITEMS_ICON_SIZE,
-					h: 20,
-					w: 20,
-				},
-				items = _.map(additionalToolbarButtons, (config, ix) => {
-					let {
-							text,
-							handler,
-							icon = null,
-							isDisabled = false,
-						} = config;
-					if (icon) {
-						const thisIconProps = {
-							color: isDisabled ? styles.GRID_TOOLBAR_ITEMS_DISABLED_COLOR : styles.GRID_TOOLBAR_ITEMS_COLOR,
-						};
-						icon = React.cloneElement(icon, {...iconProps, ...thisIconProps});
-					}
-					return <IconButton
-								key={ix}
-								{...iconButtonProps}
-								onPress={handler}
-								icon={icon}
-								isDisabled={isDisabled}
-								tooltip={text}
-							/>;
-				});
+			const items = _.map(additionalToolbarButtons, getIconButtonFromConfig);
+
 			if (canRowsReorder) {
 				items.unshift(<IconButton
 					key="reorderBtn"
@@ -856,16 +823,14 @@ export const Grid = withAlert(
 					withData(
 						withMultiSelection(
 							withSelection(
-								// withSideEditor(
-									withFilters(
-										withPresetButtons(
-											withContextMenu(
-												GridComponent
-											),
-											true // isGrid
-										)
+								withFilters(
+									withPresetButtons(
+										withContextMenu(
+											GridComponent
+										),
+										true // isGrid
 									)
-								// )
+								)
 							)
 						)
 					)
@@ -920,13 +885,13 @@ export const InlineGridEditor = withAlert(
 											withMultiSelection(
 												withSelection(
 													withInlineEditor(
-														withPresetButtons(
-															withContextMenu(
-																withFilters(
+														withFilters(
+															withPresetButtons(
+																withContextMenu(
 																	GridComponent
-																),
-																true // isGrid
-															)
+																)
+															),
+															true // isGrid
 														)
 													)
 												)

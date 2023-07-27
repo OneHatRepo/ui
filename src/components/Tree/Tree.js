@@ -32,6 +32,7 @@ import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
+import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import TreeNode, { ReorderableTreeNode } from './TreeNode.js';
@@ -251,7 +252,7 @@ function TreeComponent(props) {
 					isDisabled: false,
 				});
 			}
-			const items = _.map(buttons, getIconFromConfig);
+			const items = _.map(buttons, getIconButtonFromConfig);
 
 			items.unshift(<Input // Add text input to beginning of header items
 				key="searchNodes"
@@ -270,40 +271,7 @@ function TreeComponent(props) {
 			return items;
 		},
 		getFooterToolbarItems = () => {
-			return _.map(additionalToolbarButtons, getIconFromConfig);
-		},
-		getIconFromConfig = (config, ix) => {
-			const
-				iconButtonProps = {
-					_hover: {
-						bg: 'trueGray.400',
-					},
-					mx: 1,
-					px: 3,
-				},
-				_icon = {
-					alignSelf: 'center',
-					size: styles.TREE_TOOLBAR_ITEMS_ICON_SIZE,
-					h: 20,
-					w: 20,
-					color: isDisabled ? styles.TREE_TOOLBAR_ITEMS_DISABLED_COLOR : styles.TREE_TOOLBAR_ITEMS_COLOR,
-				};
-			let {
-					key,
-					text,
-					handler,
-					icon = null,
-					isDisabled = false,
-				} = config;
-			return <IconButton
-						key={key || ix}
-						onPress={handler}
-						icon={icon}
-						_icon={_icon}
-						isDisabled={isDisabled}
-						tooltip={text}
-						{...iconButtonProps}
-					/>;
+			return _.map(additionalToolbarButtons, getIconButtonFromConfig);
 		},
 		buildTreeNodeDatum = (treeNode) => {
 			// Build the data-representation of one node and its children,
@@ -1115,24 +1083,20 @@ function TreeComponent(props) {
 }
 
 export const Tree = withAlert(
-				withEvents(
-					withData(
-						// withMultiSelection(
-							withSelection(
-								// withSideEditor(
-									withFilters(
-										// withPresetButtons(
+						withEvents(
+							withData(
+								// withMultiSelection(
+									withSelection(
+										withFilters(
 											withContextMenu(
 												TreeComponent
 											)
-										// )
+										)
 									)
 								// )
 							)
-						// )
-					)
-				)
-			);
+						)
+					);
 
 export const SideTreeEditor = withAlert(
 									withEvents(
@@ -1146,7 +1110,8 @@ export const SideTreeEditor = withAlert(
 																	TreeComponent
 																)
 															)
-														)
+														),
+														true // isTree
 													)
 												)
 											// )
@@ -1166,7 +1131,8 @@ export const WindowedTreeEditor = withAlert(
 																	TreeComponent
 																)
 															)
-														)
+														),
+														true // isTree
 													)
 												)
 											// )

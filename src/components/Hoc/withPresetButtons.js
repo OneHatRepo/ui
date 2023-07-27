@@ -34,6 +34,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 			{
 				// for local use
 				isEditor = false,
+				isTree = false,
 				useEditor = true,
 				disableAdd = !isEditor,
 				disableEdit = !isEditor,
@@ -123,6 +124,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						handler = onAdd;
 						icon = <Plus />;
 						if (selectorId && !selectorSelected) {
+							isDisabled = true;
+						}
+						if (isTree && _.isEmpty(selection)) {
 							isDisabled = true;
 						}
 						break;
