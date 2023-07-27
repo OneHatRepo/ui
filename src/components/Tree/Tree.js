@@ -302,15 +302,14 @@ function TreeComponent(props) {
 			return data;
 		},
 		renderTreeNode = (datum) => {
-			const
-				item = datum.item,
-				depth = item.depth;
-			if (item.isDestroyed) {
-				return null;
-			}
 			if (!datum.isVisible) {
 				return null;
 			}
+			const item = datum.item;
+			if (item.isDestroyed) {
+				return null;
+			}
+			const depth = item.depth;
 
 			let nodeProps = getNodeProps ? getNodeProps(item) : {},
 				isSelected = isInSelection(item);

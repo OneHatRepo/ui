@@ -11,7 +11,7 @@ import {
 } from '../../Constants/Editor.js';
 import _ from 'lodash';
 
-export default function withEditor(WrappedComponent) {
+export default function withEditor(WrappedComponent, isTree = false) {
 	return (props) => {
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
@@ -24,7 +24,6 @@ export default function withEditor(WrappedComponent) {
 				disableDelete = false,
 				disableDuplicate = false,
 				disableView = false,
-				isTree = false,
 				getRecordIdentifier = (selection) => {
 					if (selection.length > 1) {
 						return 'records?';
@@ -68,13 +67,15 @@ export default function withEditor(WrappedComponent) {
 				}
 
 				// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
-				const currentSorter = Repository.sorters[0];
-				if (currentSorter.name !== Repository.schema.model.idProperty || currentSorter.direction !== 'DESC') {
-					Repository.pauseEvents();
-					Repository.sort(Repository.schema.model.idProperty, 'DESC');
-					Repository.setPage(1);
-					Repository.resumeEvents();
-					await Repository.reload();
+				if (!isTree) {
+					const currentSorter = Repository.sorters[0];
+					if (currentSorter.name !== Repository.schema.model.idProperty || currentSorter.direction !== 'DESC') {
+						Repository.pauseEvents();
+						Repository.sort(Repository.schema.model.idProperty, 'DESC');
+						Repository.setPage(1);
+						Repository.resumeEvents();
+						await Repository.reload();
+					}
 				}
 
 				// Unmap the values, so we can input true originalData
