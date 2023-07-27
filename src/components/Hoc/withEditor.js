@@ -11,7 +11,7 @@ export default function withEditor(WrappedComponent) {
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
-				useEditor = false,
+				useEditor = true,
 				userCanEdit = true,
 				userCanView = true,
 				disableAdd = false,
