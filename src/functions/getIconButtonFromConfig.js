@@ -1,9 +1,15 @@
 import IconButton from '../Components/Buttons/IconButton.js';
 import UiGlobals from '../UiGlobals.js';
 
-
-export default function getIconButtonFromConfig($config, ix) {
+export default function getIconButtonFromConfig(config, ix) {
 	const
+		{
+			key,
+			text,
+			handler,
+			icon = null,
+			isDisabled = false,
+		} = config,
 		styles = UiGlobals.styles,
 		iconButtonProps = {
 			_hover: {
@@ -19,13 +25,6 @@ export default function getIconButtonFromConfig($config, ix) {
 			w: 20,
 			color: isDisabled ? styles.TOOLBAR_ITEMS_DISABLED_COLOR : styles.TOOLBAR_ITEMS_COLOR,
 		};
-	let {
-			key,
-			text,
-			handler,
-			icon = null,
-			isDisabled = false,
-		} = config;
 	return <IconButton
 				key={key || ix}
 				onPress={handler}

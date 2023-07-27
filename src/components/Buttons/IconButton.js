@@ -6,6 +6,7 @@ import {
 	Tooltip,
 } from 'native-base';
 import styles from '../../Constants/Styles.js';
+import _ from 'lodash';
 
 const IconButton = React.forwardRef((props, ref) => {
 	const {
@@ -17,12 +18,16 @@ const IconButton = React.forwardRef((props, ref) => {
 			tooltipPlacement = 'bottom',
 		} = props;
 	const propsIcon = props._icon || {};
-	let icon = props.icon || <Icon {...propsIcon} />,
+	let icon = props.icon,
 		ret;
 	if (isLoading) {
 		icon = <Spinner {..._spinner} />;
 	}
-	if (!React.isValidElement(icon)) {
+	if (React.isValidElement(icon)) {
+		if (!_.isEmpty(propsIcon)) {
+			icon = React.cloneElement(icon, {...propsIcon});
+		}
+	} else {
 		icon = <Icon as={icon} {...propsIcon} />;
 	}
 	const pressable = <Pressable
