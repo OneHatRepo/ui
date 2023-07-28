@@ -145,12 +145,15 @@ function TreeComponent(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[isReorderMode, setIsReorderMode] = useState(false),
 		[isSearchModalShown, setIsSearchModalShown] = useState(false),
-		[treeNodeData, setTreeNodeData] = useState({}),
+		[treeNodeData, setTreeNodeDataRaw] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
+		setTreeNodeData = (x) => {
+			setTreeNodeDataRaw(x);
+		},
 		onNodeClick = (item, e) => {
 			if (!setSelection) {
 				return;
@@ -449,17 +452,20 @@ function TreeComponent(props) {
 
 			return !_.isEmpty(intersection);
 		},
-		buildAndSetTreeNodeData = async () => {
-			let rootNodes;
-			if (Repository) {
-				if (!Repository.areRootNodesLoaded) {
-					rootNodes = await Repository.getRootNodes(1);
+		buildAndSetTreeNodeData = async (nodes = null) => {
+			if (!nodes) {
+				if (Repository) {
+					if (!Repository.areRootNodesLoaded) {
+						nodes = await Repository.getRootNodes(1);
+					}
+				} else {
+					nodes = assembleDataTreeNodes();
 				}
 			} else {
-				rootNodes = assembleDataTreeNodes();
+				debugger;
 			}
 
-			const treeNodeData = buildTreeNodeData(rootNodes);
+			const treeNodeData = buildTreeNodeData(nodes);
 			setTreeNodeData(treeNodeData);
 		},
 		assembleDataTreeNodes = () => {
@@ -966,7 +972,6 @@ function TreeComponent(props) {
 		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
-		Repository.ons(['changePage', 'changePageSize',], deselectAll);
 		Repository.ons(['changeData', 'change'], buildAndSetTreeNodeData);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
@@ -974,7 +979,6 @@ function TreeComponent(props) {
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
-			Repository.offs(['changePage', 'changePageSize',], deselectAll);
 			Repository.offs(['changeData', 'change'], buildAndSetTreeNodeData);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
