@@ -145,15 +145,12 @@ function TreeComponent(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[isReorderMode, setIsReorderMode] = useState(false),
 		[isSearchModalShown, setIsSearchModalShown] = useState(false),
-		[treeNodeData, setTreeNodeDataRaw] = useState({}),
+		[treeNodeData, setTreeNodeData] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
-		setTreeNodeData = (x) => {
-			setTreeNodeDataRaw(x);
-		},
 		onNodeClick = (item, e) => {
 			if (!setSelection) {
 				return;
@@ -420,6 +417,9 @@ function TreeComponent(props) {
 			let nodes = [];
 			_.each(data, (datum) => {
 				const node = renderTreeNode(datum);
+				if (!node) {
+					return;
+				}
 				nodes.push(node);
 
 				if (datum.children.length && datum.isExpanded) {
@@ -452,17 +452,16 @@ function TreeComponent(props) {
 
 			return !_.isEmpty(intersection);
 		},
-		buildAndSetTreeNodeData = async (nodes = null) => {
-			if (!nodes) {
-				if (Repository) {
-					if (!Repository.areRootNodesLoaded) {
-						nodes = await Repository.getRootNodes(1);
-					}
+		buildAndSetTreeNodeData = async (entities) => {
+			let nodes = [];
+			if (Repository) {
+				if (!Repository.areRootNodesLoaded) {
+					nodes = await Repository.loadRootNodes(1);
 				} else {
-					nodes = assembleDataTreeNodes();
+					nodes = Repository.getRootNodes();
 				}
 			} else {
-				debugger;
+				nodes = assembleDataTreeNodes();
 			}
 
 			const treeNodeData = buildTreeNodeData(nodes);
@@ -1006,6 +1005,7 @@ function TreeComponent(props) {
 	if (!isReady) {
 		return null;
 	}
+	
 	const treeNodes = renderTreeNodes(treeNodeData);
 
 	// headers & footers

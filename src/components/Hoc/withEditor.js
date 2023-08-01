@@ -64,10 +64,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						throw Error('Must select a parent node.');
 					}
 					addValues.parentId = selection[0].id;
-				}
-
-				// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
-				if (!isTree) {
+				} else {
+					// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
 					const currentSorter = Repository.sorters[0];
 					if (currentSorter.name !== Repository.schema.model.idProperty || currentSorter.direction !== 'DESC') {
 						Repository.pauseEvents();
@@ -81,7 +79,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// Unmap the values, so we can input true originalData
 				addValues = Repository.unmapData(addValues);
 
-				const entity = await Repository.add(addValues, false, true, true);
+				const entity = await Repository.add(addValues, false, true);
 				setSelection([entity]);
 				setIsEditorViewOnly(false);
 				setEditorMode(EDITOR_MODE__ADD);
