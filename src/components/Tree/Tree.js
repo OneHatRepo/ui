@@ -103,7 +103,7 @@ function TreeComponent(props) {
 			additionalToolbarButtons = [],
 			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
 			parentIdIx,
-
+		
 			// withEditor
 			onAdd,
 			onEdit,
@@ -112,6 +112,7 @@ function TreeComponent(props) {
 			onDuplicate,
 			onReset,
 			onContextMenu,
+			withEditListeners,
 
 			// withData
 			Repository,
@@ -141,16 +142,23 @@ function TreeComponent(props) {
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
 		treeRef = useRef(),
+		treeNodeData = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[isReorderMode, setIsReorderMode] = useState(false),
 		[isSearchModalShown, setIsSearchModalShown] = useState(false),
-		[treeNodeData, setTreeNodeData] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
+		getTreeNodeData = () => {
+			return treeNodeData.current;
+		},
+		setTreeNodeData = (tnd) => {
+			treeNodeData.current = tnd;
+			forceUpdate();
+		},
 		onNodeClick = (item, e) => {
 			if (!setSelection) {
 				return;
@@ -224,6 +232,47 @@ function TreeComponent(props) {
 					forceUpdate();
 				});
 			}
+		},
+		onBeforeAdd = async () => {
+			const
+				parentNode = selection[0],
+				parentNodeDatum = getNodeData(parentNode.id);
+
+			if (parentNode.hasChildren) {
+				await loadChildren(parentNodeDatum);
+			}
+		},
+		onAfterAdd = async (entity) => {
+			const
+				parentNode = entity.parent,
+				parentNodeDatum = getNodeData(parentNode.id);
+
+			if (!parentNodeDatum.isExpanded) {
+				parentNodeDatum.isExpanded = true;
+				forceUpdate();
+			}
+		},
+		getNodeData = (nodeId) => {
+			function findNodeById(node, id) {
+				if (node.item.id === id) {
+					return node;
+				}
+				if (!_.isEmpty(node.children)) {
+					return _.find(node.children, (node2) => {
+						return findNodeById(node2, id);
+					})
+				}
+				return false;
+			}
+			let found = null;
+			_.each(getTreeNodeData(), (node) => {
+				const foundNode = findNodeById(node, nodeId);
+				if (foundNode) {
+					found = foundNode;
+					return false;
+				}
+			});
+			return found;
 		},
 		getHeaderToolbarItems = () => {
 			const
@@ -464,8 +513,7 @@ function TreeComponent(props) {
 				nodes = assembleDataTreeNodes();
 			}
 
-			const treeNodeData = buildTreeNodeData(nodes);
-			setTreeNodeData(treeNodeData);
+			setTreeNodeData(buildTreeNodeData(nodes));
 		},
 		assembleDataTreeNodes = () => {
 			// Populates the TreeNodes with .parent and .children references
@@ -516,7 +564,7 @@ function TreeComponent(props) {
 		reloadTree = () => {
 			Repository.areRootNodesLoaded = false;
 			return buildAndSetTreeNodeData();
-		};
+		},
 
 		// Button handlers
 		onToggle = (datum) => {
@@ -537,16 +585,16 @@ function TreeComponent(props) {
 			
 			forceUpdate();
 		},
-		loadChildren = async (datum, depth) => {
+		loadChildren = async (datum, depth = 1) => {
 			// Show loading indicator (spinner underneath current node?)
 			datum.isLoading = true;
 			forceUpdate();
 			
 			try {
 
-				const children = await datum.item.loadChildren(1);
-				const tnd = buildTreeNodeData(children);
-				datum.children = tnd;
+				const children = await datum.item.loadChildren(depth);
+				datum.children = buildTreeNodeData(children);
+				datum.isExpanded = true;
 
 			} catch (err) {
 				// TODO: how do I handle errors? 
@@ -562,7 +610,7 @@ function TreeComponent(props) {
 		},
 		onCollapseAll = (setNewTreeNodeData = true) => {
 			// Go through whole tree and collapse all nodes
-			const newTreeNodeData = _.clone(treeNodeData);
+			const newTreeNodeData = _.clone(getTreeNodeData());
 			collapseNodes(newTreeNodeData);
 
 			if (setNewTreeNodeData) {
@@ -632,7 +680,7 @@ function TreeComponent(props) {
 			// Helper for onSearchTree
 
 			// First, close thw whole tree.
-			let newTreeNodeData = _.clone(treeNodeData);
+			let newTreeNodeData = _.clone(getTreeNodeData());
 			collapseNodes(newTreeNodeData);
 
 			// As it navigates down, it will expand the appropriate branches,
@@ -998,15 +1046,19 @@ function TreeComponent(props) {
 
 	}, [selectorId, selectorSelected]);
 
+	// Set withEdit's listeners on every render
+	withEditListeners.current.onBeforeAdd = onBeforeAdd;
+	withEditListeners.current.onAfterAdd = onAfterAdd;
+
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, treeNodeData]),
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode, treeNodeData]);
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, getTreeNodeData()]),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode, getTreeNodeData()]);
 
 	if (!isReady) {
 		return null;
 	}
 	
-	const treeNodes = renderTreeNodes(treeNodeData);
+	const treeNodes = renderTreeNodes(getTreeNodeData());
 
 	// headers & footers
 	let treeFooterComponent = null;

@@ -1,4 +1,4 @@
-import { useEffect, useState, } from 'react';
+import { useEffect, useState, useRef, } from 'react';
 import {
 	Column,
 	Modal,
@@ -46,6 +46,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// withAlert
 				confirm,
 			} = props,
+			listeners = useRef({}),
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
@@ -57,6 +58,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
 					addValues[selectorId] = selectorSelected.id;
+				}
+
+				if (listeners.current.onBeforeAdd) {
+					const listenerResult = await listeners.current.onBeforeAdd();
+					if (listenerResult === false) {
+						return;
+					}
 				}
 
 				if (isTree) {
@@ -84,13 +92,29 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorViewOnly(false);
 				setEditorMode(EDITOR_MODE__ADD);
 				setIsEditorShown(true);
+
+				if (listeners.current.onAfterAdd) {
+					await listeners.current.onAfterAdd(entity);
+				}
 			},
-			onEdit = () => {
+			onEdit = async () => {
+				if (listeners.current.onBeforeEdit) {
+					const listenerResult = await listeners.current.onBeforeEdit();
+					if (listenerResult === false) {
+						return;
+					}
+				}
 				setIsEditorViewOnly(false);
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
-			onDelete = () => {
+			onDelete = async () => {
+				if (listeners.current.onBeforeDelete) {
+					const listenerResult = await listeners.current.onBeforeDelete();
+					if (listenerResult === false) {
+						return;
+					}
+				}
 				const
 					isSingle = selection.length === 1,
 					isPhantom = selection[0] && selection[0].isPhantom;
@@ -108,7 +132,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await Repository.save();
 				}
 			},
-			viewRecord = () => {
+			viewRecord = async () => {
 				if (!userCanView) {
 					return;
 				}
@@ -118,6 +142,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorViewOnly(true);
 				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(true);
+
+				if (listeners.current.onAfterDelete) {
+					await listeners.current.onAfterDelete(entity);
+				}
 			},
 			duplicateRecord = async () => {
 				if (!userCanEdit || disableDuplicate) {
@@ -208,42 +236,34 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			editorMode = calculateEditorMode();
 		}
 
-		return <>
-					<WrappedComponent
-						{...props}
-						currentRecord={currentRecord}
-						setCurrentRecord={setCurrentRecord}
-						isEditorShown={isEditorShown}
-						isEditorViewOnly={isEditorViewOnly}
-						editorMode={editorMode}
-						setEditorMode={setEditorMode}
-						setIsEditorShown={setIsEditorShown}
-						onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
-						onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
-						onDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onDelete}
-						onView={viewRecord}
-						onDuplicate={duplicateRecord}
-						onEditorSave={onEditorSave}
-						onEditorCancel={onEditorCancel}
-						onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
-						onEditorClose={onEditorClose}
-						isEditor={true}
-						useEditor={useEditor}
-						userCanEdit={userCanEdit}
-						userCanView={userCanView}
-						disableAdd={disableAdd}
-						disableEdit={disableEdit}
-						disableDelete={disableDelete}
-						disableDuplicate={disableDuplicate}
-						disableView ={disableView}
-					/>
-					{isTree && isModalShown && 
-						<Modal
-							isOpen={true}
-							onClose={() => setIsModalShown(false)}
-						>
-
-						</Modal>}
-				</>;
+		return <WrappedComponent
+					{...props}
+					currentRecord={currentRecord}
+					setCurrentRecord={setCurrentRecord}
+					isEditorShown={isEditorShown}
+					isEditorViewOnly={isEditorViewOnly}
+					editorMode={editorMode}
+					setEditorMode={setEditorMode}
+					setIsEditorShown={setIsEditorShown}
+					onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
+					onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
+					onDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onDelete}
+					onView={viewRecord}
+					onDuplicate={duplicateRecord}
+					onEditorSave={onEditorSave}
+					onEditorCancel={onEditorCancel}
+					onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
+					onEditorClose={onEditorClose}
+					withEditListeners={listeners}
+					isEditor={true}
+					useEditor={useEditor}
+					userCanEdit={userCanEdit}
+					userCanView={userCanView}
+					disableAdd={disableAdd}
+					disableEdit={disableEdit}
+					disableDelete={disableDelete}
+					disableDuplicate={disableDuplicate}
+					disableView ={disableView}
+				/>;
 	};
 }
