@@ -52,18 +52,6 @@ import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
 
-//////////////////////
-//////////////////////
-
-// Need to take into account whether using Repository or data.
-// If using data, everything exists at once. What format will data be in?
-// How does this interface with Repository?
-// Maybe if Repository is not AjaxRepository, everything needs to be present at once!
-
-//////////////////////
-//////////////////////
-
-
 function TreeComponent(props) {
 	const {
 			areRootsVisible = true,
@@ -152,6 +140,8 @@ function TreeComponent(props) {
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
+
+		// state getters & setters
 		getTreeNodeData = () => {
 			return treeNodeData.current;
 		},
@@ -159,6 +149,8 @@ function TreeComponent(props) {
 			treeNodeData.current = tnd;
 			forceUpdate();
 		},
+
+		// event handers
 		onNodeClick = (item, e) => {
 			if (!setSelection) {
 				return;
@@ -221,18 +213,6 @@ function TreeComponent(props) {
 				}
 			}
 		},
-		onRefresh = () => {
-			if (!Repository) {
-				return;
-			}
-			const promise = Repository.reload();
-			if (promise) { // Some repository types don't use promises
-				promise.then(() => {
-					setIsLoading(false);
-					forceUpdate();
-				});
-			}
-		},
 		onBeforeAdd = async () => {
 			// Load children before adding the new node
 			const
@@ -258,6 +238,60 @@ function TreeComponent(props) {
 			parentNodeDatum.children.unshift(newChildNodeDatum);
 			forceUpdate();
 		},
+		onToggle = (datum) => {
+			if (datum.isLoading) {
+				return;
+			}
+
+			datum.isExpanded = !datum.isExpanded;
+
+			if (datum.isExpanded && datum.item.repository?.isRemote && datum.item.hasChildren && !datum.item.areChildrenLoaded) {
+				loadChildren(datum, 1);
+				return;
+			}
+
+			if (!datum.isExpanded && datumContainsSelection(datum)) {
+				deselectAll();
+			}
+			
+			forceUpdate();
+		},
+		onCollapseAll = (setNewTreeNodeData = true) => {
+			// Go through whole tree and collapse all nodes
+			const newTreeNodeData = _.clone(getTreeNodeData());
+			collapseNodes(newTreeNodeData);
+
+			if (setNewTreeNodeData) {
+				setTreeNodeData(newTreeNodeData);
+			}
+			return newTreeNodeData;
+		},
+		onSearchTree = async (value) => {
+			let found = [];
+			if (Repository?.isRemote) {
+				// Search tree on server
+				found = await Repository.searchNodes(value);
+			} else {
+				// Search local tree data
+				found = findTreeNodesByText(value);
+			}
+
+			const isMultipleHits = found.length > 1;
+			if (!isMultipleHits) {
+				expandPath(found[0].path);
+				return;
+			}
+
+			const searchFormData = [];
+			_.each(found, (item) => {
+				searchFormData.push([item.id, getNodeText(item)]);
+			});
+			setSearchFormData(searchFormData);
+			setSearchResults(found);
+			setIsSearchModalShown(true);
+		},
+
+		// utilities
 		getNodeData = (itemId) => {
 			function findNodeById(node, id) {
 				if (node.item.id === id) {
@@ -280,6 +314,245 @@ function TreeComponent(props) {
 			});
 			return found;
 		},
+		buildTreeNodeDatum = (treeNode) => {
+			// Build the data-representation of one node and its children,
+			// caching text & icon, keeping track of the state for whole tree
+			// renderTreeNode uses this to render the nodes.
+			const
+				isRoot = treeNode.isRoot,
+				children = buildTreeNodeData(treeNode.children), // recursively get data for children
+				datum = {
+					item: treeNode,
+					text: getNodeText(treeNode),
+					iconCollapsed: getNodeIcon(treeNode, false),
+					iconExpanded: getNodeIcon(treeNode, true),
+					iconLeaf: getNodeIcon(treeNode),
+					isExpanded: isRoot, // all non-root treeNodes are collapsed by default
+					isVisible: isRoot ? areRootsVisible : true,
+					isLoading: false,
+					children,
+				};
+
+			return datum;
+		},
+		buildTreeNodeData = (treeNodes) => {
+			const data = [];
+			_.each(treeNodes, (item) => {
+				data.push(buildTreeNodeDatum(item));
+			});
+			return data;
+		},
+		buildAndSetTreeNodeData = async () => {
+			let nodes = [];
+			if (Repository) {
+				if (!Repository.areRootNodesLoaded) {
+					nodes = await Repository.loadRootNodes(1);
+				} else {
+					nodes = Repository.getRootNodes();
+				}
+			} else {
+				nodes = assembleDataTreeNodes();
+			}
+
+			setTreeNodeData(buildTreeNodeData(nodes));
+		},
+		datumContainsSelection = (datum) => {
+			if (_.isEmpty(selection)) {
+				return false;
+			}
+			const
+				selectionIds = _.map(selection, (item) => item.id),
+				datumIds = getDatumChildIds(datum),
+				intersection = selectionIds.filter(x => datumIds.includes(x));
+
+			return !_.isEmpty(intersection);
+		},
+		findTreeNodesByText = (text) => {
+			// Helper for onSearchTree
+			// Searches whole treeNodeData for any matching items
+			// Returns multiple nodes
+
+			const regex = new RegExp(text, 'i'); // instead of matching based on full text match, search for a partial match
+
+			function searchChildren(children, found = []) {
+				_.each(children, (child) => {
+					if (child.text.match(regex)) {
+						found.push(child);
+					}
+					if (child.children) {
+						searchChildren(child.children, found);
+					}
+				});
+				return found;
+			}
+			return searchChildren(treeNodeData);
+		},
+		getTreeNodeByNodeId = (node_id) => {
+			if (Repository) {
+				return Repository.getById(node_id);
+			}
+			return data[node_id]; // TODO: This is probably not right!
+		},
+		getDatumChildIds = (datum) => {
+			let ids = [];
+			 _.each(datum.children, (childDatum) => {
+				ids.push(childDatum.item.id);
+				if (childDatum.children.length) {
+					const childIds = getDatumChildIds(childDatum);
+					ids = ids.concat(childIds);
+					const t = true;
+				}
+			});
+			return ids;
+		},
+		assembleDataTreeNodes = () => {
+			// Populates the TreeNodes with .parent and .children references
+			// NOTE: This is only for 'data', not for Repositories!
+			// 'data' is essentially an Adjacency List, not a ClosureTable.
+
+			const clonedData = _.clone(data);
+
+			// Reset all parent/child relationships
+			_.each(clonedData, (treeNode) => {
+				treeNode.isRoot = !treeNode[parentIdIx];
+				treeNode.parent = null;
+				treeNode.children = [];
+			});
+
+			// Rebuild all parent/child relationships
+			_.each(clonedData, (treeNode) => {
+				const parent = _.find(clonedData, (tn) => {
+					return tn[idIx] === treeNode[parentIdIx];
+				});
+				if (parent) {
+					treeNode.parent = parent;
+					parent.children.push(treeNode);
+				}
+			});
+
+			// populate calculated fields
+			const treeNodes = [];
+			_.each(clonedData, (treeNode) => {
+				treeNode.hasChildren = !_.isEmpty(treeNode.children);
+
+				let parent = treeNode.parent,
+					i = 0;
+				while(parent) {
+					i++;
+					parent = parent.parent;
+				}
+				treeNode.depth = i;
+				treeNode.hash = treeNode[idIx];
+
+				if (treeNode.isRoot) {
+					treeNodes.push(treeNode);
+				}
+			});
+
+			return treeNodes;
+		},
+		reloadTree = () => {
+			Repository.areRootNodesLoaded = false;
+			return buildAndSetTreeNodeData();
+		},
+		loadChildren = async (datum, depth = 1) => {
+			// Show loading indicator (spinner underneath current node?)
+			datum.isLoading = true;
+			forceUpdate();
+			
+			try {
+
+				const children = await datum.item.loadChildren(depth);
+				datum.children = buildTreeNodeData(children);
+				datum.isExpanded = true;
+
+			} catch (err) {
+				// TODO: how do I handle errors? 
+				// 		Color parent node red
+				// 		Modal alert box?
+				// 		Inline error msg? I'm concerned about modals not stacking correctly, but if we put it inline, it'll work. 
+				datum.isExpanded = false;
+			}
+
+			// Hide loading indicator
+			datum.isLoading = false;
+			forceUpdate();
+		},
+		collapseNodes = (nodes) => {
+			_.each(nodes, (node) => {
+				node.isExpanded = false;
+				if (!_.isEmpty(node.children)) {
+					collapseNodes(node.children);
+				}
+			});
+		},
+		expandPath = async (path) => {
+			// First, close thw whole tree.
+			let newTreeNodeData = _.clone(getTreeNodeData());
+			collapseNodes(newTreeNodeData);
+
+			// As it navigates down, it will expand the appropriate branches,
+			// and then finally highlight & select the node in question
+			let pathParts,
+				id,
+				currentLevelData = newTreeNodeData,
+				currentDatum,
+				parentDatum,
+				currentNode;
+			
+			while(path.length) {
+				pathParts = path.split('/');
+				id = parseInt(pathParts[0], 10); // grab the first part of the path
+				
+				// find match in current level
+				currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
+					return treeNodeDatum.item.id === id; 
+				});
+
+				if (!currentDatum) {
+					// datum is not currently loaded, so load it
+					await loadChildren(parentDatum, 1);
+					currentLevelData = parentDatum.children;
+					currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
+						return treeNodeDatum.item.id === id; 
+					});
+				}
+				
+				currentNode = currentDatum.item;
+				
+				// THE MAGIC!
+				currentDatum.isExpanded = true;
+				
+				path = pathParts.slice(1).join('/'); // put the rest of it back together
+				currentLevelData = currentDatum.children;
+				parentDatum = currentDatum;
+			}
+
+			setSelection([currentNode]);
+			scrollToNode(currentNode);
+			highlightNode(currentNode);
+
+			setTreeNodeData(newTreeNodeData);
+		},
+		scrollToNode = (node) => {
+			// Helper for expandPath
+			// Scroll the tree so the given node is in view
+
+			// TODO: This will probably need different methods in web and mobile
+
+
+		},
+		highlightNode = (node) => {
+			// Helper for expandPath
+			// Show a brief highlight animation to draw attention to the node
+
+			// TODO: This will probably need different methods in web and mobile
+			// react-highlight for web?
+
+
+		},
+
+		// render
 		getHeaderToolbarItems = () => {
 			const
 				buttons = [
@@ -327,34 +600,6 @@ function TreeComponent(props) {
 		},
 		getFooterToolbarItems = () => {
 			return _.map(additionalToolbarButtons, getIconButtonFromConfig);
-		},
-		buildTreeNodeDatum = (treeNode) => {
-			// Build the data-representation of one node and its children,
-			// caching text & icon, keeping track of the state for whole tree
-			// renderTreeNode uses this to render the nodes.
-			const
-				isRoot = treeNode.isRoot,
-				children = buildTreeNodeData(treeNode.children), // recursively get data for children
-				datum = {
-					item: treeNode,
-					text: getNodeText(treeNode),
-					iconCollapsed: getNodeIcon(treeNode, false),
-					iconExpanded: getNodeIcon(treeNode, true),
-					iconLeaf: getNodeIcon(treeNode),
-					isExpanded: isRoot, // all non-root treeNodes are collapsed by default
-					isVisible: isRoot ? areRootsVisible : true,
-					isLoading: false,
-					children,
-				};
-
-			return datum;
-		},
-		buildTreeNodeData = (treeNodes) => {
-			const data = [];
-			_.each(treeNodes, (item) => {
-				data.push(buildTreeNodeDatum(item));
-			});
-			return data;
 		},
 		renderTreeNode = (datum) => {
 			if (!datum.isVisible) {
@@ -484,285 +729,8 @@ function TreeComponent(props) {
 			});
 			return nodes;
 		},
-		getDatumChildIds = (datum) => {
-			let ids = [];
-			 _.each(datum.children, (childDatum) => {
-				ids.push(childDatum.item.id);
-				if (childDatum.children.length) {
-					const childIds = getDatumChildIds(childDatum);
-					ids = ids.concat(childIds);
-					const t = true;
-				}
-			});
-			return ids;
-		},
-		datumContainsSelection = (datum) => {
-			if (_.isEmpty(selection)) {
-				return false;
-			}
-			const
-				selectionIds = _.map(selection, (item) => item.id),
-				datumIds = getDatumChildIds(datum),
-				intersection = selectionIds.filter(x => datumIds.includes(x));
 
-			return !_.isEmpty(intersection);
-		},
-		buildAndSetTreeNodeData = async () => {
-			let nodes = [];
-			if (Repository) {
-				if (!Repository.areRootNodesLoaded) {
-					nodes = await Repository.loadRootNodes(1);
-				} else {
-					nodes = Repository.getRootNodes();
-				}
-			} else {
-				nodes = assembleDataTreeNodes();
-			}
-
-			setTreeNodeData(buildTreeNodeData(nodes));
-		},
-		updateTreeNodeData = (entities) => {
-			// This is called when the Repository 'changeData' or 'change' events are fired
-
-			// Find the place on the tree where these treeNodes exist.
-
-			// If the parent node is collapsed, expand it
-
-			// Reconcile tree with Repository?
-
-
-			// forceUpdate();
-		},
-		assembleDataTreeNodes = () => {
-			// Populates the TreeNodes with .parent and .children references
-			// NOTE: This is only for 'data', not for Repositories!
-			// 'data' is essentially an Adjacency List, not a ClosureTable.
-
-			const clonedData = _.clone(data);
-
-			// Reset all parent/child relationships
-			_.each(clonedData, (treeNode) => {
-				treeNode.isRoot = !treeNode[parentIdIx];
-				treeNode.parent = null;
-				treeNode.children = [];
-			});
-
-			// Rebuild all parent/child relationships
-			_.each(clonedData, (treeNode) => {
-				const parent = _.find(clonedData, (tn) => {
-					return tn[idIx] === treeNode[parentIdIx];
-				});
-				if (parent) {
-					treeNode.parent = parent;
-					parent.children.push(treeNode);
-				}
-			});
-
-			// populate calculated fields
-			const treeNodes = [];
-			_.each(clonedData, (treeNode) => {
-				treeNode.hasChildren = !_.isEmpty(treeNode.children);
-
-				let parent = treeNode.parent,
-					i = 0;
-				while(parent) {
-					i++;
-					parent = parent.parent;
-				}
-				treeNode.depth = i;
-				treeNode.hash = treeNode[idIx];
-
-				if (treeNode.isRoot) {
-					treeNodes.push(treeNode);
-				}
-			});
-
-			return treeNodes;
-		},
-		reloadTree = () => {
-			Repository.areRootNodesLoaded = false;
-			return buildAndSetTreeNodeData();
-		},
-
-		// Button handlers
-		onToggle = (datum) => {
-			if (datum.isLoading) {
-				return;
-			}
-
-			datum.isExpanded = !datum.isExpanded;
-
-			if (datum.isExpanded && datum.item.repository?.isRemote && datum.item.hasChildren && !datum.item.areChildrenLoaded) {
-				loadChildren(datum, 1);
-				return;
-			}
-
-			if (!datum.isExpanded && datumContainsSelection(datum)) {
-				deselectAll();
-			}
-			
-			forceUpdate();
-		},
-		loadChildren = async (datum, depth = 1) => {
-			// Show loading indicator (spinner underneath current node?)
-			datum.isLoading = true;
-			forceUpdate();
-			
-			try {
-
-				const children = await datum.item.loadChildren(depth);
-				datum.children = buildTreeNodeData(children);
-				datum.isExpanded = true;
-
-			} catch (err) {
-				// TODO: how do I handle errors? 
-				// 		Color parent node red
-				// 		Modal alert box?
-				// 		Inline error msg? I'm concerned about modals not stacking correctly, but if we put it inline, it'll work. 
-				datum.isExpanded = false;
-			}
-
-			// Hide loading indicator
-			datum.isLoading = false;
-			forceUpdate();
-		},
-		onCollapseAll = (setNewTreeNodeData = true) => {
-			// Go through whole tree and collapse all nodes
-			const newTreeNodeData = _.clone(getTreeNodeData());
-			collapseNodes(newTreeNodeData);
-
-			if (setNewTreeNodeData) {
-				setTreeNodeData(newTreeNodeData);
-			}
-			return newTreeNodeData;
-		},
-		collapseNodes = (nodes) => {
-			_.each(nodes, (node) => {
-				node.isExpanded = false;
-				if (!_.isEmpty(node.children)) {
-					collapseNodes(node.children);
-				}
-			});
-		},
-		onSearchTree = async (value) => {
-			let found = [];
-			if (Repository?.isRemote) {
-				// Search tree on server
-				found = await Repository.searchNodes(value);
-			} else {
-				// Search local tree data
-				found = findTreeNodesByText(value);
-			}
-
-			const isMultipleHits = found.length > 1;
-			if (!isMultipleHits) {
-				expandPath(found[0].path);
-				return;
-			}
-
-			const searchFormData = [];
-			_.each(found, (item) => {
-				searchFormData.push([item.id, getNodeText(item)]);
-			});
-			setSearchFormData(searchFormData);
-			setSearchResults(found);
-			setIsSearchModalShown(true);
-		},
-		findTreeNodesByText = (text) => {
-			// Helper for onSearchTree
-			// Searches whole treeNodeData for any matching items
-			// Returns multiple nodes
-
-			const regex = new RegExp(text, 'i'); // instead of matching based on full text match, search for a partial match
-
-			function searchChildren(children, found = []) {
-				_.each(children, (child) => {
-					if (child.text.match(regex)) {
-						found.push(child);
-					}
-					if (child.children) {
-						searchChildren(child.children, found);
-					}
-				});
-				return found;
-			}
-			return searchChildren(treeNodeData);
-		},
-		getTreeNodeByNodeId = (node_id) => {
-			if (Repository) {
-				return Repository.getById(node_id);
-			}
-			return data[node_id]; // TODO: This is probably not right!
-		},
-		expandPath = async (path) => {
-			// Helper for onSearchTree
-
-			// First, close thw whole tree.
-			let newTreeNodeData = _.clone(getTreeNodeData());
-			collapseNodes(newTreeNodeData);
-
-			// As it navigates down, it will expand the appropriate branches,
-			// and then finally highlight & select the node in question
-			let pathParts,
-				id,
-				currentLevelData = newTreeNodeData,
-				currentDatum,
-				parentDatum,
-				currentNode;
-			
-			while(path.length) {
-				pathParts = path.split('/');
-				id = parseInt(pathParts[0], 10); // grab the first part of the path
-				
-				// find match in current level
-				currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
-					return treeNodeDatum.item.id === id; 
-				});
-
-				if (!currentDatum) {
-					// datum is not currently loaded, so load it
-					await loadChildren(parentDatum, 1);
-					currentLevelData = parentDatum.children;
-					currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
-						return treeNodeDatum.item.id === id; 
-					});
-				}
-				
-				currentNode = currentDatum.item;
-				
-				// THE MAGIC!
-				currentDatum.isExpanded = true;
-				
-				path = pathParts.slice(1).join('/'); // put the rest of it back together
-				currentLevelData = currentDatum.children;
-				parentDatum = currentDatum;
-			}
-
-			setSelection([currentNode]);
-			scrollToNode(currentNode);
-			highlightNode(currentNode);
-
-			setTreeNodeData(newTreeNodeData);
-		},
-		scrollToNode = (node) => {
-			// Helper for expandPath
-			// Scroll the tree so the given node is in view
-
-			// TODO: This will probably need different methods in web and mobile
-
-
-		},
-		highlightNode = (node) => {
-			// Helper for expandPath
-			// Show a brief highlight animation to draw attention to the node
-
-			// TODO: This will probably need different methods in web and mobile
-			// react-highlight for web?
-
-
-		},
-
-		// Drag/Drop
+		// drag/drop
 		getReorderProxy = (node) => {
 			const
 				row = node.parentElement.parentElement,
@@ -1037,14 +1005,12 @@ function TreeComponent(props) {
 		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
-		Repository.ons(['changeData', 'change'], updateTreeNodeData);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
-			Repository.offs(['changeData', 'change'], updateTreeNodeData);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
 		};
@@ -1102,7 +1068,7 @@ function TreeComponent(props) {
 							deselectAll();
 						}
 					}}>
-						{!treeNodes?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
+						{!treeNodes?.length ? <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
 							treeNodes}
 					</Column>
 
