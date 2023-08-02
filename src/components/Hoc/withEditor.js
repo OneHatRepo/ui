@@ -52,6 +52,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
 			[isModalShown, setIsModalShown] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
+			getListeners = () => {
+				return listeners.current;
+			},
+			setListeners = (obj) => {
+				listeners.current = obj;
+				// forceUpdate(); // we don't want to get into an infinite loop of renders. Simply directly assign the listeners in every child render
+			},
 			onAdd = async () => {
 				const defaultValues = Repository.getSchema().model.defaultValues;
 				let addValues = _.clone(defaultValues);
@@ -60,8 +67,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					addValues[selectorId] = selectorSelected.id;
 				}
 
-				if (listeners.current.onBeforeAdd) {
-					const listenerResult = await listeners.current.onBeforeAdd();
+				if (getListeners().onBeforeAdd) {
+					const listenerResult = await getListeners().onBeforeAdd();
 					if (listenerResult === false) {
 						return;
 					}
@@ -93,13 +100,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__ADD);
 				setIsEditorShown(true);
 
-				if (listeners.current.onAfterAdd) {
-					await listeners.current.onAfterAdd(entity);
+				if (getListeners().onAfterAdd) {
+					await getListeners().onAfterAdd(entity);
 				}
 			},
 			onEdit = async () => {
-				if (listeners.current.onBeforeEdit) {
-					const listenerResult = await listeners.current.onBeforeEdit();
+				if (getListeners().onBeforeEdit) {
+					const listenerResult = await getListeners().onBeforeEdit();
 					if (listenerResult === false) {
 						return;
 					}
@@ -109,8 +116,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			onDelete = async () => {
-				if (listeners.current.onBeforeDelete) {
-					const listenerResult = await listeners.current.onBeforeDelete();
+				if (getListeners().onBeforeDelete) {
+					const listenerResult = await getListeners().onBeforeDelete();
 					if (listenerResult === false) {
 						return;
 					}
@@ -143,8 +150,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(true);
 
-				if (listeners.current.onAfterDelete) {
-					await listeners.current.onAfterDelete(entity);
+				if (getListeners().onAfterDelete) {
+					await getListeners().onAfterDelete(entity);
 				}
 			},
 			duplicateRecord = async () => {
@@ -254,7 +261,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onEditorCancel={onEditorCancel}
 					onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
 					onEditorClose={onEditorClose}
-					withEditListeners={listeners}
+					setWithEditListeners={setListeners}
 					isEditor={true}
 					useEditor={useEditor}
 					userCanEdit={userCanEdit}

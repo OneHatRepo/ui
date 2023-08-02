@@ -112,7 +112,7 @@ function TreeComponent(props) {
 			onDuplicate,
 			onReset,
 			onContextMenu,
-			withEditListeners,
+			setWithEditListeners,
 
 			// withData
 			Repository,
@@ -234,25 +234,31 @@ function TreeComponent(props) {
 			}
 		},
 		onBeforeAdd = async () => {
+			// Load children before adding the new node
 			const
 				parentNode = selection[0],
 				parentNodeDatum = getNodeData(parentNode.id);
 
-			if (parentNode.hasChildren) {
+			if (parentNode.hasChildren && !parentNode.areChildrenLoaded) {
 				await loadChildren(parentNodeDatum);
 			}
 		},
-		onAfterAdd = async (entity) => {
+		onAfterAdd = async (newChildNode) => {
+			// Expand the parent before showing the new node
 			const
-				parentNode = entity.parent,
+				parentNode = newChildNode.parent,
 				parentNodeDatum = getNodeData(parentNode.id);
 
 			if (!parentNodeDatum.isExpanded) {
 				parentNodeDatum.isExpanded = true;
-				forceUpdate();
 			}
+
+			// Add the newChildNode to the tree
+			const newChildNodeDatum = buildTreeNodeDatum(newChildNode);
+			parentNodeDatum.children.unshift(newChildNodeDatum);
+			forceUpdate();
 		},
-		getNodeData = (nodeId) => {
+		getNodeData = (itemId) => {
 			function findNodeById(node, id) {
 				if (node.item.id === id) {
 					return node;
@@ -266,7 +272,7 @@ function TreeComponent(props) {
 			}
 			let found = null;
 			_.each(getTreeNodeData(), (node) => {
-				const foundNode = findNodeById(node, nodeId);
+				const foundNode = findNodeById(node, itemId);
 				if (foundNode) {
 					found = foundNode;
 					return false;
@@ -335,7 +341,7 @@ function TreeComponent(props) {
 					iconCollapsed: getNodeIcon(treeNode, false),
 					iconExpanded: getNodeIcon(treeNode, true),
 					iconLeaf: getNodeIcon(treeNode),
-					isExpanded: isRoot, // all non-root treeNodes are not expanded by default
+					isExpanded: isRoot, // all non-root treeNodes are collapsed by default
 					isVisible: isRoot ? areRootsVisible : true,
 					isLoading: false,
 					children,
@@ -501,7 +507,7 @@ function TreeComponent(props) {
 
 			return !_.isEmpty(intersection);
 		},
-		buildAndSetTreeNodeData = async (entities) => {
+		buildAndSetTreeNodeData = async () => {
 			let nodes = [];
 			if (Repository) {
 				if (!Repository.areRootNodesLoaded) {
@@ -514,6 +520,18 @@ function TreeComponent(props) {
 			}
 
 			setTreeNodeData(buildTreeNodeData(nodes));
+		},
+		updateTreeNodeData = (entities) => {
+			// This is called when the Repository 'changeData' or 'change' events are fired
+
+			// Find the place on the tree where these treeNodes exist.
+
+			// If the parent node is collapsed, expand it
+
+			// Reconcile tree with Repository?
+
+
+			// forceUpdate();
 		},
 		assembleDataTreeNodes = () => {
 			// Populates the TreeNodes with .parent and .children references
@@ -1019,14 +1037,14 @@ function TreeComponent(props) {
 		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
-		Repository.ons(['changeData', 'change'], buildAndSetTreeNodeData);
+		Repository.ons(['changeData', 'change'], updateTreeNodeData);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
-			Repository.offs(['changeData', 'change'], buildAndSetTreeNodeData);
+			Repository.offs(['changeData', 'change'], updateTreeNodeData);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
 		};
@@ -1043,13 +1061,13 @@ function TreeComponent(props) {
 			}
 			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
 		}
-
 	}, [selectorId, selectorSelected]);
 
-	// Set withEdit's listeners on every render
-	withEditListeners.current.onBeforeAdd = onBeforeAdd;
-	withEditListeners.current.onAfterAdd = onAfterAdd;
-
+	setWithEditListeners({ // Update withEdit's listeners on every render
+		onBeforeAdd,
+		onAfterAdd,
+	});
+	
 	const
 		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, getTreeNodeData()]),
 		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode, getTreeNodeData()]);
