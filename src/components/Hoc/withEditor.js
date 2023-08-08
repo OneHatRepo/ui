@@ -193,6 +193,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				await Repository.save();
 				setIsEditorShown(false);
+				
+				if (getListeners().onAfterEdit) {
+					await getListeners().onAfterEdit(what);
+				}
 			},
 			onEditorCancel = async () => {
 				const

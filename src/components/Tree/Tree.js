@@ -216,26 +216,37 @@ function TreeComponent(props) {
 		onBeforeAdd = async () => {
 			// Load children before adding the new node
 			const
-				parentNode = selection[0],
-				parentNodeDatum = getNodeData(parentNode.id);
+				parent = selection[0],
+				parentDatum = getNodeData(parent.id);
 
-			if (parentNode.hasChildren && !parentNode.areChildrenLoaded) {
-				await loadChildren(parentNodeDatum);
+			if (parent.hasChildren && !parent.areChildrenLoaded) {
+				await loadChildren(parentDatum);
 			}
 		},
-		onAfterAdd = async (newChildNode) => {
+		onAfterAdd = async (entity) => {
 			// Expand the parent before showing the new node
 			const
-				parentNode = newChildNode.parent,
-				parentNodeDatum = getNodeData(parentNode.id);
+				parent = entity.parent,
+				parentDatum = getNodeData(parent.id);
 
-			if (!parentNodeDatum.isExpanded) {
-				parentNodeDatum.isExpanded = true;
+			if (!parentDatum.isExpanded) {
+				parentDatum.isExpanded = true;
 			}
 
-			// Add the newChildNode to the tree
-			const newChildNodeDatum = buildTreeNodeDatum(newChildNode);
-			parentNodeDatum.children.unshift(newChildNodeDatum);
+			// Add the entity to the tree
+			const entityDatum = buildTreeNodeDatum(entity);
+			parentDatum.children.unshift(entityDatum);
+			forceUpdate();
+		},
+		onAfterEdit = async (entities) => {
+			// Refresh the node's display
+			const
+				node = entities[0],
+				existingDatum = getNodeData(entities[0].id),
+				newDatum = buildTreeNodeDatum(node);
+
+			// copy the updated data to existingDatum
+			_.merge(existingDatum, newDatum);
 			forceUpdate();
 		},
 		onToggle = (datum) => {
@@ -1032,6 +1043,7 @@ function TreeComponent(props) {
 	setWithEditListeners({ // Update withEdit's listeners on every render
 		onBeforeAdd,
 		onAfterAdd,
+		onAfterEdit,
 	});
 	
 	const
