@@ -238,13 +238,8 @@ function TreeComponent(props) {
 			parentDatum.children.unshift(entityDatum);
 			forceUpdate();
 		},
-		onBeforeEditSave = async (entities) => {
-			const
-				node = entities[0],
-				datum = getNodeData(node.id); // TODO: Make this work for >1 entity
-			
-			datum.isLoading = true;
-			forceUpdate();
+		onBeforeEditSave = (entities) => {
+			onBeforeSave(entities);
 		},
 		onAfterEdit = async (entities) => {
 			// Refresh the node's display
@@ -257,6 +252,21 @@ function TreeComponent(props) {
 			_.merge(existingDatum, newDatum);
 			existingDatum.isLoading = false;
 			forceUpdate();
+		},
+		onBeforeDeleteSave = (entities) => {
+			onBeforeSave(entities);
+		},
+		onBeforeSave = (entities) => {
+			const
+				node = entities[0],
+				datum = getNodeData(node.id); // TODO: Make this work for >1 entity
+			
+			datum.isLoading = true;
+			forceUpdate();
+		},
+		onAfterDelete = (entities) => {
+			// TODO: Take moveSubtreeUp into account
+			debugger;
 		},
 		onToggle = (datum) => {
 			if (datum.isLoading) {
@@ -1054,6 +1064,8 @@ function TreeComponent(props) {
 		onAfterAdd,
 		onBeforeEditSave,
 		onAfterEdit,
+		onBeforeDeleteSave,
+		onAfterDelete,
 	});
 	
 	const

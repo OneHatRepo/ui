@@ -217,9 +217,17 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(false);
 			},
 			onEditorDelete = async () => {
+				if (getListeners().onBeforeDeleteSave) {
+					await getListeners().onBeforeDeleteSave(selection);
+				}
+
 				await deleteRecord();
 				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(false);
+				
+				if (getListeners().onAfterDelete) {
+					await getListeners().onAfterDelete(selection);
+				}
 			},
 			calculateEditorMode = () => {
 				let mode = EDITOR_MODE__VIEW;
