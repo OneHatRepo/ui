@@ -238,15 +238,24 @@ function TreeComponent(props) {
 			parentDatum.children.unshift(entityDatum);
 			forceUpdate();
 		},
+		onBeforeEditSave = async (entities) => {
+			const
+				node = entities[0],
+				datum = getNodeData(node.id); // TODO: Make this work for >1 entity
+			
+			datum.isLoading = true;
+			forceUpdate();
+		},
 		onAfterEdit = async (entities) => {
 			// Refresh the node's display
 			const
 				node = entities[0],
-				existingDatum = getNodeData(entities[0].id),
+				existingDatum = getNodeData(node.id), // TODO: Make this work for >1 entity
 				newDatum = buildTreeNodeDatum(node);
 
 			// copy the updated data to existingDatum
 			_.merge(existingDatum, newDatum);
+			existingDatum.isLoading = false;
 			forceUpdate();
 		},
 		onToggle = (datum) => {
@@ -1043,6 +1052,7 @@ function TreeComponent(props) {
 	setWithEditListeners({ // Update withEdit's listeners on every render
 		onBeforeAdd,
 		onAfterAdd,
+		onBeforeEditSave,
 		onAfterEdit,
 	});
 	

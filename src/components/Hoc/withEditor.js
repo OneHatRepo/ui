@@ -191,6 +191,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						}
 					});
 				}
+
+				if (getListeners().onBeforeEditSave) {
+					await getListeners().onBeforeEditSave(what);
+				}
+
 				await Repository.save();
 				setIsEditorShown(false);
 				
