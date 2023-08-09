@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, } from 'react';
 import {
+	AlertDialog,
 	Button,
 	Column,
 	Icon,
@@ -30,26 +31,29 @@ export default function withAlert(WrappedComponent) {
 			[customButtons, setCustomButtons] = useState(),
 			[mode, setMode] = useState(ALERT_MODE_OK),
 			autoFocusRef = useRef(null),
-			onAlert = (arg1, callback, includeCancel = false) => {
+			cancelRef = useRef(null),
+			onAlert = (arg1, okCallback, includeCancel = false) => {
 				clearAll();
 				if (_.isString(arg1)) {
 					setMode(ALERT_MODE_OK);
 					setTitle('Alert');
 					setMessage(arg1);
-					setOkCallback(() => callback);
+					setOkCallback(() => okCallback);
+					setIncludeCancel(includeCancel);
 				} else if (_.isPlainObject(arg1)) {
 					// custom
 					const {
 							title = 'Alert',
 							message,
 							buttons,
+							includeCancel,
 						} = arg1;
 					setMode(ALERT_MODE_CUSTOM);
 					setTitle(title);
 					setMessage(message);
 					setCustomButtons(buttons);
+					setIncludeCancel(includeCancel);
 				}
-				setIncludeCancel(includeCancel);
 				showAlert();
 			},
 			onConfirm = (message, callback, includeCancel = false) => {
@@ -65,31 +69,29 @@ export default function withAlert(WrappedComponent) {
 				setIsAlertShown(false);
 			},
 			onOk = () => {
-				const callback = okCallback;
-				hideAlert();
-				if (callback) {
-					callback();
+				if (okCallback) {
+					okCallback();
 				}
+				hideAlert();
 			},
 			onYes = () => {
-				const callback = yesCallback;
-				hideAlert();
-				if (callback) {
-					callback();
+				if (yesCallback) {
+					yesCallback();
 				}
+				hideAlert();
 			},
 			onNo = () => {
-				const callback = noCallback;
-				hideAlert();
-				if (callback) {
-					callback();
+				if (noCallback) {
+					noCallback();
 				}
+				hideAlert();
 			},
 			showAlert = () => {
 				setIsAlertShown(true);
 			},
 			hideAlert = () => {
 				setIsAlertShown(false);
+				clearAll();
 			},
 			clearAll = () => {
 				setOkCallback();
@@ -104,7 +106,9 @@ export default function withAlert(WrappedComponent) {
 								key="cancelBtn"
 								onPress={onCancel}
 								color="#fff"
-								variant="ghost"
+								colorScheme="coolGray"
+								variant="ghost" // or 'unstyled'
+								ref={cancelRef}
 							>Cancel</Button>);
 		}
 		switch(mode) {
@@ -131,7 +135,9 @@ export default function withAlert(WrappedComponent) {
 							>Yes</Button>);
 				break;
 			case ALERT_MODE_CUSTOM:
-				buttons = customButtons;
+				_.each(customButtons, (button) => {
+					buttons.push(button);
+				});
 				break;
 			default:
 		}
@@ -141,36 +147,32 @@ export default function withAlert(WrappedComponent) {
 						{...props}
 						alert={onAlert}
 						confirm={onConfirm}
+						hideAlert={hideAlert}
 					/>
-					<Modal
+
+					<AlertDialog
+						leastDestructiveRef={cancelRef}
 						isOpen={isAlertShown}
-						onOpen={() => {debugger;}}
 						onClose={() => setIsAlertShown(false)}
 					>
-						<Column bg="#fff" w={400} onLayout={() => {
-							if (autoFocusRef.current) {
-								autoFocusRef.current.focus();
-							}
-						}}>
-							<Panel
-								title={title}
-								isCollapsible={false}
-								p={0}
-								footer={<Footer justifyContent="flex-end" >
-											<Button.Group space={2}>
-												{buttons}
-											</Button.Group>
-										</Footer>}
-								>
-								<Row flex={1} p={5}>
+						<AlertDialog.Content>
+							<AlertDialog.CloseButton />
+							<AlertDialog.Header>{title}</AlertDialog.Header>
+							<AlertDialog.Body>
+								<Row>
 									<Column w="40px" p={0} mr={5}>
 										<Icon as={TriangleExclamation} size={10} color="#f00" />
 									</Column>
-									<Text>{message}</Text>
+									<Text flex={1}>{message}</Text>
 								</Row>
-							</Panel>
-						</Column>
-					</Modal>
+							</AlertDialog.Body>
+							<AlertDialog.Footer>
+								<Button.Group space={2}>
+									{buttons}
+								</Button.Group>
+							</AlertDialog.Footer>
+						</AlertDialog.Content>
+					</AlertDialog>
 				</>;
 	};
 }
