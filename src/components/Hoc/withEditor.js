@@ -1,8 +1,6 @@
 import { useEffect, useState, useRef, } from 'react';
 import {
-	Column,
-	Modal,
-	Text,
+	Button,
 } from 'native-base';
 import {
 	EDITOR_MODE__VIEW,
@@ -44,6 +42,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setSelection,
 
 				// withAlert
+				alert,
 				confirm,
 			} = props,
 			listeners = useRef({}),
@@ -124,14 +123,43 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				const
 					isSingle = selection.length === 1,
-					isPhantom = selection[0] && selection[0].isPhantom;
+					firstSelection = selection[0],
+					isTree = firstSelection?.isTree,
+					hasChildren = firstSelection?.hasChildren,
+					isPhantom = firstSelection?.isPhantom;
 
+				if (isSingle && isTree && hasChildren) {
+					alert({
+						title: 'Move up children?',
+						message: 'The node you have selected for deletion has children. ' + 
+								'Should these children be moved up to this node\'s parent, or be deleted?',
+						buttons: [
+							<Button colorScheme="danger" onPress={onMoveChildren} key="moveBtn">
+								Move Children
+							</Button>,
+							<Button colorScheme="danger" onPress={onDeleteChildren} key="deleteBtn">
+								Delete Children
+							</Button>
+						],
+						includeCancel: true,
+					});
+				} else
 				if (isSingle && isPhantom) {
 					deleteRecord();
 				} else {
 					const identifier = getRecordIdentifier(selection);
 					confirm('Are you sure you want to delete the ' + identifier, deleteRecord);
 				}
+			},
+			onMoveChildren = () => {
+				debugger;
+
+				// deleteRecord(true);
+			},
+			onDeleteChildren = () => {
+				debugger;
+				
+				// deleteRecord();
 			},
 			deleteRecord = async () => {
 				await Repository.delete(selection);
