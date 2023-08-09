@@ -132,6 +132,7 @@ export default function withAlert(WrappedComponent) {
 								ref={autoFocusRef}
 								onPress={onYes}
 								color="#fff"
+								colorScheme="danger"
 							>Yes</Button>);
 				break;
 			case ALERT_MODE_CUSTOM:

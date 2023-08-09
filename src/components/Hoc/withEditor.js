@@ -44,6 +44,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// withAlert
 				alert,
 				confirm,
+				hideAlert,
 			} = props,
 			listeners = useRef({}),
 			[currentRecord, setCurrentRecord] = useState(null),
@@ -152,13 +153,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			onMoveChildren = () => {
-				debugger;
-
+				hideAlert();
 				// deleteRecord(true);
 			},
 			onDeleteChildren = () => {
-				debugger;
-				
+				hideAlert();
 				// deleteRecord();
 			},
 			deleteRecord = async () => {
