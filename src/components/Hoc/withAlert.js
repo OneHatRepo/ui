@@ -107,7 +107,7 @@ export default function withAlert(WrappedComponent) {
 								onPress={onCancel}
 								color="#fff"
 								colorScheme="coolGray"
-								variant="ghost" // or 'unstyled'
+								variant="ghost" // or unstyled
 								ref={cancelRef}
 							>Cancel</Button>);
 		}

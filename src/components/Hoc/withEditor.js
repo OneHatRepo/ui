@@ -154,16 +154,23 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			},
 			onMoveChildren = () => {
 				hideAlert();
-				// deleteRecord(true);
+				deleteRecord(true);
 			},
 			onDeleteChildren = () => {
 				hideAlert();
-				// deleteRecord();
+				deleteRecord();
 			},
-			deleteRecord = async () => {
+			deleteRecord = async (moveSubtreeUp) => {
+				if (getListeners().onBeforeDeleteSave) {
+					await getListeners().onBeforeDeleteSave(selection);
+				}
+
 				await Repository.delete(selection);
 				if (!Repository.isAutoSave) {
 					await Repository.save();
+				}
+				if (getListeners().onAfterDelete) {
+					await getListeners().onAfterDelete(selection);
 				}
 			},
 			viewRecord = async () => {

@@ -264,8 +264,9 @@ function TreeComponent(props) {
 			datum.isLoading = true;
 			forceUpdate();
 		},
-		onAfterDelete = (entities) => {
-			// TODO: Take moveSubtreeUp into account
+		onAfterDelete = async (entities) => {
+			// TODO: Refresh the parent node
+
 			debugger;
 		},
 		onToggle = (datum) => {
