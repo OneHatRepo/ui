@@ -19,7 +19,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 		}
 
 		return <Container
-					center={<WrappedComponent isTree={isTree} {...props} />}
+					center={<WrappedComponent {...props} />}
 					east={<Editor
 								editorType={EDITOR_TYPE__SIDE}
 								flex={sideFlex}
@@ -27,5 +27,5 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								{...editorProps}
 							/>}
 				/>;
-	});
+	}, isTree);
 }

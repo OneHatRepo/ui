@@ -40,7 +40,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 		}
 
 		return <>
-					<WrappedComponent isTree={isTree} {...props} />
+					<WrappedComponent {...props} />
 					{useEditor && isEditorShown && 
 						<Modal
 							isOpen={true}
@@ -53,5 +53,5 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 							/>
 						</Modal>}
 				</>;
-	});
+	}, isTree);
 }
