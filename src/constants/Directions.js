@@ -1,5 +1,6 @@
 export const HORIZONTAL = 'HORIZONTAL';
 export const VERTICAL = 'VERTICAL';
+export const XY = 'XY';
 export const LEFT = 'LEFT';
 export const RIGHT = 'RIGHT';
 export const NORTH = 'NORTH';

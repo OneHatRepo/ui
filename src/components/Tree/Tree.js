@@ -13,7 +13,7 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
 import {
-	VERTICAL,
+	XY,
 } from '../../Constants/Directions.js';
 import {
 	DROP_POSITION_BEFORE,
@@ -54,6 +54,7 @@ import NoRecordsFound from '../Grid/NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
+const DEPTH_INDENT_PX = 20;
 
 function TreeComponent(props) {
 	const {
@@ -144,6 +145,7 @@ function TreeComponent(props) {
 		[searchFormData, setSearchFormData] = useState([]),
 		[dragNodeSlot, setDragNodeSlot] = useState(null),
 		[dragNodeIx, setDragNodeIx] = useState(),
+		[dragProxyDepth, setDragProxyDepth] = useState(0),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
 
 		// state getters & setters
@@ -734,7 +736,7 @@ function TreeComponent(props) {
 							}
 						}}
 						flexDirection="row"
-						ml={((areRootsVisible ? depth : depth -1) * 20) + 'px'}
+						ml={((areRootsVisible ? depth : depth -1) * DEPTH_INDENT_PX) + 'px'}
 					>
 						{({
 							isHovered,
@@ -760,10 +762,10 @@ function TreeComponent(props) {
 							}
 							let WhichTreeNode = TreeNode,
 								dragProps = {};
-							if (canNodesReorder && isReorderMode) {
+							if (canNodesReorder && isReorderMode && !datum.item.isRoot) {
 								WhichTreeNode = ReorderableTreeNode;
 								dragProps = {
-									mode: VERTICAL,
+									mode: XY,
 									onDragStart: onNodeReorderDragStart,
 									onDrag: onNodeReorderDrag,
 									onDragStop: onNodeReorderDragStop,
@@ -828,7 +830,7 @@ function TreeComponent(props) {
 			setDragNodeIx(dragNodeIx); // the ix of which record is being dragged
 
 			proxy.style.top = top + 'px';
-			proxy.style.left = '20px';
+			proxy.style.left = (dragProxyDepth * DEPTH_INDENT_PX) + 'px';
 			proxy.style.height = rowRect.height + 'px';
 			proxy.style.width = rowRect.width + 'px';
 			proxy.style.display = 'flex';
@@ -921,8 +923,9 @@ function TreeComponent(props) {
 			marker.style.height = '4px';
 			marker.style.width = treeNodesContainerRect.width + 'px';
 			marker.style.backgroundColor = '#f00';
-
 			treeNodesContainer.appendChild(marker);
+
+			proxy.style.left = rowContainerRect.left + 'px'; // start proxy at indentation of whatever it's replacing
 
 			setDragNodeSlot({ ix: newIx, marker, useBottom, });
 		},
@@ -996,6 +999,22 @@ function TreeComponent(props) {
 				}
 			});
 
+
+
+			// Figure out which record user wants to be the parentId
+			// Take into account the X tranposition for depth
+			// Contrain the X transposition to proper depth
+
+			// Don't allow the creation of a new root node
+			// Basically, the node can be a child of any node except itself or its own descendants
+			// Maybe the proxy should grab itself and all descendants??
+
+			// const dragProxyDepth = 0;
+			// proxy.style.left = (dragProxyDepth * DEPTH_INDENT_PX) + 'px';
+			// setDragProxyDepth(dragProxyDepth);
+
+
+
 			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
 			const
 				rowContainerRect = rows[newIx].getBoundingClientRect(),
@@ -1005,8 +1024,6 @@ function TreeComponent(props) {
 			}
 
 			setDragNodeSlot({ ix: newIx, marker, useBottom, });
-			// console.log('onNodeReorderDrag', newIx);
-
 		},
 		onNodeReorderDragStop = (delta, e, config) => {
 			// console.log('onNodeReorderDragStop', delta, e, config);
