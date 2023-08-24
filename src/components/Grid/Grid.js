@@ -784,7 +784,7 @@ function GridComponent(props) {
 								overflow: 'auto',
 								borderWidth: isReorderMode ? styles.REORDER_BORDER_WIDTH : 0,
 								borderColor: isReorderMode ? styles.REORDER_BORDER_COLOR : null,
-								borderStyle: styles.REORDER_BORDER_STYLE;
+								borderStyle: styles.REORDER_BORDER_STYLE,
 								flex: 1,
 							}}
 							refreshing={isLoading}
