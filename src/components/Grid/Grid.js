@@ -223,7 +223,6 @@ function GridComponent(props) {
 			if (canRowsReorder) {
 				items.unshift(<IconButton
 					key="reorderBtn"
-					{...iconButtonProps}
 					onPress={() => setIsReorderMode(!isReorderMode)}
 					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
 				/>);
@@ -388,7 +387,7 @@ function GridComponent(props) {
 				row = node.parentElement.parentElement,
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(row.parentElement.children, (childNode) => {
+				rows = _.filter(parent.children, (childNode) => {
 					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
 				}),
 				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
@@ -473,7 +472,7 @@ function GridComponent(props) {
 				row = node.parentElement.parentElement,
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(row.parentElement.children, (childNode) => {
+				rows = _.filter(parent.children, (childNode) => {
 					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
 				}),
 				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
@@ -537,7 +536,7 @@ function GridComponent(props) {
 			const
 				rowContainerRect = rows[newIx].getBoundingClientRect(),
 				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth); // get relative Y position
-			let marker = dragRowSlot && dragRowSlot.marker;
+			let marker = dragRowSlot?.marker;
 			if (marker) {
 				marker.style.top = top -4 + 'px'; // -4 so it's always visible
 			}

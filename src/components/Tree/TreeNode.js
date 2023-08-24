@@ -19,7 +19,6 @@ import _ from 'lodash';
 export default function TreeNode(props) {
 	const {
 			nodeProps = {},
-			dragProps = {},
 			bg,
 			datum,
 			onToggle,
@@ -46,7 +45,6 @@ export default function TreeNode(props) {
 					alignItems="center"
 					flexGrow={1}
 					{...nodeProps}
-					{...dragProps}
 					bg={bg}
 					key={hash}
 				>

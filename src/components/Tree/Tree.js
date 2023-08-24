@@ -767,16 +767,18 @@ function TreeComponent(props) {
 									onDragStart: onNodeReorderDragStart,
 									onDrag: onNodeReorderDrag,
 									onDragStop: onNodeReorderDragStop,
-									getParentNode: (node) => node.parentElement.parentElement.parentElement,
+									getParentNode: (node) => node.parentElement.parentElement,
+									getDraggableNodeFromNode: (node) => node.parentElement,
 									getProxy: getReorderProxy,
-									proxyParent: treeRef.current?.getScrollableNode().children[0],
+									proxyParent: treeRef.current,
 									proxyPositionRelativeToParent: true,
 								};
+								nodeProps.width = '100%';
 							}
 							
 							return <WhichTreeNode
 										nodeProps={nodeProps}
-										dragProps={dragProps}
+										{...dragProps}
 										bg={bg}
 										datum={datum}
 										onToggle={onToggle}
@@ -806,13 +808,16 @@ function TreeComponent(props) {
 		// drag/drop
 		getReorderProxy = (node) => {
 			const
-				row = node.parentElement.parentElement,
+				row = node,
 				rowRect = row.getBoundingClientRect(),
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
 				proxy = row.cloneNode(true),
 				top = rowRect.top - parentRect.top,
-				dragNodeIx = Array.from(parent.children).indexOf(row)
+				rows = _.filter(parent.children, (childNode) => {
+					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
+				}),
+				dragNodeIx = Array.from(rows).indexOf(row)
 			
 			setDragNodeIx(dragNodeIx); // the ix of which record is being dragged
 
@@ -833,12 +838,10 @@ function TreeComponent(props) {
 				row = node.parentElement.parentElement,
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(row.parentElement.children, (childNode) => {
+				rows = _.filter(parent.children, (childNode) => {
 					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
 				}),
-				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
-				headerNodeIx = showHeaders ? 0 : null,
-				firstActualNodeIx = showHeaders ? 1 : 0;
+				currentY = proxyRect.top - parentRect.top; // top position of pointer, relative to page
 
 			// Figure out which index the user wants
 			let newIx = 0;
@@ -854,16 +857,16 @@ function TreeComponent(props) {
 					compensatedBottom = bottom - parentRect.top,
 					halfHeight = height / 2;
 
-				if (ix === headerNodeIx || child === proxy) {
+				if (child === proxy) {
 					return;
 				}
-				if (ix === firstActualNodeIx) {
+				if (ix === 0) {
 					// first row
 					if (currentY < compensatedTop + halfHeight) {
-						newIx = firstActualNodeIx;
+						newIx = 0;
 						return false;
 					} else if (currentY < compensatedBottom) {
-						newIx = firstActualNodeIx + 1;
+						newIx = 0 + 1;
 						return false;
 					}
 					return;
@@ -897,7 +900,7 @@ function TreeComponent(props) {
 			const
 				rowContainerRect = rows[newIx].getBoundingClientRect(),
 				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth), // get relative Y position
-				treeNodesContainer = treeRef.current._listRef._scrollRef.childNodes[0],
+				treeNodesContainer = treeRef.current,
 				treeNodesContainerRect = treeNodesContainer.getBoundingClientRect(),
 				marker = document.createElement('div');
 
@@ -915,15 +918,14 @@ function TreeComponent(props) {
 			// console.log('onNodeReorderDrag', info, e, proxy, node);
 			const
 				proxyRect = proxy.getBoundingClientRect(),
-				row = node.parentElement.parentElement,
+				row = node,
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(row.parentElement.children, (childNode) => {
+				rows = _.filter(parent.children, (childNode) => {
 					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
 				}),
 				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
-				headerNodeIx = showHeaders ? 0 : null,
-				firstActualNodeIx = showHeaders ? 1 : 0;
+				marker = dragNodeSlot.marker;
 
 			// Figure out which index the user wants
 			let newIx = 0;
@@ -939,20 +941,22 @@ function TreeComponent(props) {
 					compensatedBottom = bottom - parentRect.top,
 					halfHeight = height / 2;
 
-				if (ix === headerNodeIx || child === proxy) {
+				if (child === proxy || child === marker) {
 					return;
 				}
-				if (ix === firstActualNodeIx) {
+				if (ix === 0) {
 					// first row
 					if (currentY < compensatedTop + halfHeight) {
-						newIx = firstActualNodeIx;
+						// first half
+						newIx = 0;
 						return false;
 					} else if (currentY < compensatedBottom) {
-						newIx = firstActualNodeIx + 1;
+						// send half
+						newIx = 1;
 						return false;
 					}
 					return;
-				} else if (ix === all.length -1) {
+				} else if (ix === all.length -2) { // i.e. minus proxy and marker
 					// last row
 					if (currentY < compensatedTop + halfHeight) {
 						newIx = ix;
@@ -978,11 +982,12 @@ function TreeComponent(props) {
 				useBottom = true;
 			}
 
+			console.log('newIx', newIx);
+
 			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
 			const
 				rowContainerRect = rows[newIx].getBoundingClientRect(),
 				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth); // get relative Y position
-			let marker = dragNodeSlot && dragNodeSlot.marker;
 			if (marker) {
 				marker.style.top = top -4 + 'px'; // -4 so it's always visible
 			}
@@ -995,12 +1000,10 @@ function TreeComponent(props) {
 			// console.log('onNodeReorderDragStop', delta, e, config);
 			const
 				dropIx = dragNodeSlot.ix,
-				compensatedDragIx = showHeaders ? dragNodeIx -1 : dragNodeIx, // ix, without taking header row into account
-				compensatedDropIx = showHeaders ? dropIx -1 : dropIx, // // ix, without taking header row into account
 				dropPosition = dragNodeSlot.useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE;
 
 			let shouldMove = true,
-				finalDropIx = compensatedDropIx;
+				finalDropIx = dropIx;
 			
 			if (dropPosition === DROP_POSITION_BEFORE) {
 				if (dragNodeIx === dropIx || dragNodeIx === dropIx -1) { // basically before or after the drag row's origin
@@ -1009,7 +1012,7 @@ function TreeComponent(props) {
 				} else {
 					// Actually move it
 					if (!Repository) { // If we're just going to be switching rows, rather than telling server to reorder rows, so maybe adjust finalDropIx...
-						if (finalDropIx > compensatedDragIx) { // if we're dropping *before* the origin ix
+						if (finalDropIx > dragNodeIx) { // if we're dropping *before* the origin ix
 							finalDropIx = finalDropIx -1; // Because we're using BEFORE, we want to switch with the row *prior to* the ix we're dropping before
 						}
 					}
@@ -1027,7 +1030,7 @@ function TreeComponent(props) {
 				let dragRecord,
 					dropRecord;
 				if (Repository) {
-					dragRecord = Repository.getByIx(compensatedDragIx);
+					dragRecord = Repository.getByIx(dragNodeIx);
 					dropRecord = Repository.getByIx(finalDropIx);
 					
 					Repository.reorder(dragRecord, dropRecord, dropPosition);
@@ -1038,7 +1041,7 @@ function TreeComponent(props) {
 						arr.splice(fromIndex, 1);
 						arr.splice(toIndex, 0, element);
 					}
-					arrayMove(data, compensatedDragIx, finalDropIx);
+					arrayMove(data, dragNodeIx, finalDropIx);
 				}
 			}
 
@@ -1151,6 +1154,7 @@ function TreeComponent(props) {
 					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
 
 					<Column
+						ref={treeRef}
 						w="100%"
 						flex={1}
 						p={2}

@@ -29,6 +29,7 @@ export default function withDraggable(WrappedComponent) {
 				onDrag,
 				onDragStop,
 				onChangeIsDragging,
+				getDraggableNodeFromNode = (node) => node,
 				getParentNode = (node) => node.parentElement.parentElement,
 				getProxy,
 				proxyParent,
@@ -57,7 +58,7 @@ export default function withDraggable(WrappedComponent) {
 				}
 				
 				const
-					node = info.node,
+					node = getDraggableNodeFromNode(info.node),
 					parentContainer = getParentNode && getParentNode(node);
 
 				setNode(node);
