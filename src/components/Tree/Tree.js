@@ -249,8 +249,18 @@ function TreeComponent(props) {
 				newDatum = buildTreeNodeDatum(node);
 
 			// copy the updated data to existingDatum
-			_.merge(existingDatum, newDatum);
+			_.assign(existingDatum, newDatum);
 			existingDatum.isLoading = false;
+
+
+			if (node.parent?.id) {
+				const
+					existingParentDatum = getNodeData(node.parent.id),
+					newParentDatum = buildTreeNodeDatum(node.parent);
+				_.assign(existingParentDatum, newParentDatum);
+				existingParentDatum.isExpanded = true;
+			}
+
 			forceUpdate();
 		},
 		onBeforeDeleteSave = (entities) => {
@@ -265,9 +275,10 @@ function TreeComponent(props) {
 			forceUpdate();
 		},
 		onAfterDelete = async (entities) => {
-			// TODO: Refresh the parent node
-
-			debugger;
+			const parent = entities[0].parent;
+			if (parent) {
+				reloadNode(parent);
+			}
 		},
 		onToggle = (datum) => {
 			if (datum.isLoading) {
@@ -323,21 +334,28 @@ function TreeComponent(props) {
 		},
 
 		// utilities
-		getNodeData = (itemId) => {
-			function findNodeById(node, id) {
+		getNodeData = (id) => {
+			function findNodeById(node) {
 				if (node.item.id === id) {
 					return node;
 				}
 				if (!_.isEmpty(node.children)) {
-					return _.find(node.children, (node2) => {
-						return findNodeById(node2, id);
+					let found1 = null;
+					_.each(node.children, (node2) => {
+						const found2 = findNodeById(node2);
+						if (found2) {
+							found1 = found2;
+							return false; // break loop
+						}
 					})
+					return found1
 				}
 				return false;
 			}
+			const treeNodeData = getTreeNodeData();
 			let found = null;
-			_.each(getTreeNodeData(), (node) => {
-				const foundNode = findNodeById(node, itemId);
+			_.each(treeNodeData, (node) => {
+				const foundNode = findNodeById(node);
 				if (foundNode) {
 					found = foundNode;
 					return false;
@@ -485,6 +503,24 @@ function TreeComponent(props) {
 		reloadTree = () => {
 			Repository.areRootNodesLoaded = false;
 			return buildAndSetTreeNodeData();
+		},
+		reloadNode = async (node) => {
+
+			// mark node as loading
+			const existingDatum = getNodeData(node.id);
+			existingDatum.isLoading = true;
+			forceUpdate();
+
+			// reload from server
+			await node.reload();
+
+			// Refresh the node's display
+			const newDatum = buildTreeNodeDatum(node);
+
+			// copy the updated data to existingDatum
+			_.assign(existingDatum, newDatum);
+			existingDatum.isLoading = false;
+			forceUpdate();
 		},
 		loadChildren = async (datum, depth = 1) => {
 			// Show loading indicator (spinner underneath current node?)
