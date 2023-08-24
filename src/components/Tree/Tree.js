@@ -1130,7 +1130,17 @@ function TreeComponent(props) {
 			treeFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 		}
 	}
-	
+
+	const borderProps = {};
+	if (isReorderMode) {
+		borderProps.borderWidth = isReorderMode ? styles.REORDER_BORDER_WIDTH : 0;
+		borderProps.borderColor = isReorderMode ? styles.REORDER_BORDER_COLOR : null;
+		borderProps.borderStyle = styles.REORDER_BORDER_STYLE;
+	} else {
+		borderProps.borderTopWidth = isLoading ? 2 : 1;
+		borderProps.borderTopColor = isLoading ? '#f00' : 'trueGray.300';
+	}
+
 	return <>
 				<Column
 					{...testProps('Tree')}
@@ -1140,11 +1150,17 @@ function TreeComponent(props) {
 					{topToolbar}
 					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
 
-					<Column w="100%" flex={1} p={2} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
-						if (!isReorderMode) {
-							deselectAll();
-						}
-					}}>
+					<Column
+						w="100%"
+						flex={1}
+						p={2}
+						{...borderProps}
+						onClick={() => {
+							if (!isReorderMode) {
+								deselectAll();
+							}
+						}}
+					>
 						{!treeNodes?.length ? <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
 							treeNodes}
 					</Column>
