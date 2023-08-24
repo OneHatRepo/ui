@@ -165,7 +165,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await getListeners().onBeforeDeleteSave(selection);
 				}
 
-				await Repository.delete(selection);
+				await Repository.delete(selection, moveSubtreeUp);
 				if (!Repository.isAutoSave) {
 					await Repository.save();
 				}

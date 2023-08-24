@@ -282,7 +282,7 @@ function TreeComponent(props) {
 		onAfterDelete = async (entities) => {
 			const parent = entities[0].parent;
 			if (parent) {
-				reloadNode(parent);
+				await reloadNode(parent);
 			}
 		},
 		onToggle = (datum) => {
@@ -510,7 +510,6 @@ function TreeComponent(props) {
 			return buildAndSetTreeNodeData();
 		},
 		reloadNode = async (node) => {
-
 			// mark node as loading
 			const existingDatum = getNodeData(node.id);
 			existingDatum.isLoading = true;
@@ -523,7 +522,7 @@ function TreeComponent(props) {
 			const newDatum = buildTreeNodeDatum(node);
 
 			// copy the updated data to existingDatum
-			_.assign(existingDatum, newDatum);
+			_.assign(existingDatum, _.omit(newDatum, ['isExpanded']));
 			existingDatum.isLoading = false;
 			forceUpdate();
 		},
