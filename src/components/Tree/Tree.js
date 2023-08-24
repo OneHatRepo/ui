@@ -815,7 +815,13 @@ function TreeComponent(props) {
 				proxy = row.cloneNode(true),
 				top = rowRect.top - parentRect.top,
 				rows = _.filter(parent.children, (childNode) => {
-					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
+					if (childNode.getBoundingClientRect().height === 0 && childNode.style.visibility !== 'hidden') {
+						return false; // Skip zero-height children
+					}
+					if (childNode === proxy) {
+						return false;
+					}
+					return true;
 				}),
 				dragNodeIx = Array.from(rows).indexOf(row)
 			
@@ -835,11 +841,17 @@ function TreeComponent(props) {
 			// console.log('onNodeReorderDragStart', info, e, proxy, node);
 			const
 				proxyRect = proxy.getBoundingClientRect(),
-				row = node.parentElement.parentElement,
+				row = node,
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
 				rows = _.filter(parent.children, (childNode) => {
-					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
+					if (childNode.getBoundingClientRect().height === 0 && childNode.style.visibility !== 'hidden') {
+						return false; // Skip zero-height children
+					}
+					if (childNode === proxy) {
+						return false;
+					}
+					return true;
 				}),
 				currentY = proxyRect.top - parentRect.top; // top position of pointer, relative to page
 
@@ -899,7 +911,7 @@ function TreeComponent(props) {
 			// Render marker showing destination location
 			const
 				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth), // get relative Y position
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth || 0), // get relative Y position
 				treeNodesContainer = treeRef.current,
 				treeNodesContainerRect = treeNodesContainer.getBoundingClientRect(),
 				marker = document.createElement('div');
@@ -921,14 +933,21 @@ function TreeComponent(props) {
 				row = node,
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
+				marker = dragNodeSlot.marker,
 				rows = _.filter(parent.children, (childNode) => {
-					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
+					if (childNode.getBoundingClientRect().height === 0 && childNode.style.visibility !== 'hidden') {
+						return false; // Skip zero-height children
+					}
+					if (childNode === proxy || childNode === marker) {
+						return false;
+					}
+					return true;
 				}),
-				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
-				marker = dragNodeSlot.marker;
+				currentY = proxyRect.top - parentRect.top; // top position of pointer, relative to page
 
 			// Figure out which index the user wants
-			let newIx = 0;
+			let newIx = 0,
+				useBottom = false;
 			_.each(rows, (child, ix, all) => {
 				const
 					rect = child.getBoundingClientRect(), // rect of the row of this iteration
@@ -940,56 +959,49 @@ function TreeComponent(props) {
 					compensatedTop = top - parentRect.top,
 					compensatedBottom = bottom - parentRect.top,
 					halfHeight = height / 2;
-
-				if (child === proxy || child === marker) {
-					return;
-				}
+				
 				if (ix === 0) {
 					// first row
 					if (currentY < compensatedTop + halfHeight) {
-						// first half
+						// top half
 						newIx = 0;
 						return false;
 					} else if (currentY < compensatedBottom) {
-						// send half
+						// bottom half
 						newIx = 1;
 						return false;
 					}
 					return;
-				} else if (ix === all.length -2) { // i.e. minus proxy and marker
+				} else if (ix === all.length -1) { // compensate for zero-indexing
 					// last row
+					// top half
+					newIx = ix;
 					if (currentY < compensatedTop + halfHeight) {
-						newIx = ix;
 						return false;
 					}
-					newIx = ix +1;
+					// bottom half
+					useBottom = true;
 					return false;
 				}
 				
 				// all other rows
 				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
+					// top half
 					newIx = ix;
 					return false;
 				} else if (currentY < compensatedBottom) {
+					// bottom half
 					newIx = ix +1;
 					return false;
 				}
 			});
 
-			let useBottom = false;
-			if (!rows[newIx] || rows[newIx] === proxy) {
-				newIx--;
-				useBottom = true;
-			}
-
-			console.log('newIx', newIx);
-
 			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
 			const
 				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth); // get relative Y position
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(marker.style.height); // get relative Y position
 			if (marker) {
-				marker.style.top = top -4 + 'px'; // -4 so it's always visible
+				marker.style.top = (top -4) + 'px'; // -4 so it's always visible
 			}
 
 			setDragNodeSlot({ ix: newIx, marker, useBottom, });

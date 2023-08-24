@@ -1,4 +1,4 @@
-import { useState, useMemo, } from 'react';
+import { useMemo, } from 'react';
 import {
 	Box,
 	Icon,
@@ -6,9 +6,6 @@ import {
 	Spinner,
 	Text,
 } from 'native-base';
-import {
-	VERTICAL,
-} from '../../Constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
