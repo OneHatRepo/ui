@@ -18,6 +18,9 @@ import {
 import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
+	COLLAPSED,
+	EXPANDED,
+	LEAF,
 } from '../../Constants/Tree.js';
 import * as colourMixer from '@k-renwick/colour-mixer'
 import UiGlobals from '../../UiGlobals.js';
@@ -62,17 +65,19 @@ function TreeComponent(props) {
 				}
 				return item[displayIx];
 			},
-			getNodeIcon = (item, isExpanded) => { // decides what icon to show for this node
+			getNodeIcon = (which, item) => { // decides what icon to show for this node
 				// TODO: Allow for dynamic props on the icon (e.g. special color for some icons)
 				let icon;
-				if (item.hasChildren) {
-					if (isExpanded) {
-						icon = FolderOpen;
-					} else {
+				switch(which) {
+					case COLLAPSED:
 						icon = FolderClosed;
-					}
-				} else {
-					icon = Dot;
+						break;
+					case EXPANDED:
+						icon = FolderOpen;
+						break;
+					case LEAF:
+						icon = Dot;
+						break;
 				}
 				return icon;
 			},
@@ -373,9 +378,9 @@ function TreeComponent(props) {
 				datum = {
 					item: treeNode,
 					text: getNodeText(treeNode),
-					iconCollapsed: getNodeIcon(treeNode, false),
-					iconExpanded: getNodeIcon(treeNode, true),
-					iconLeaf: getNodeIcon(treeNode),
+					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
+					iconExpanded: getNodeIcon(EXPANDED, treeNode),
+					iconLeaf: getNodeIcon(LEAF, treeNode),
 					isExpanded: isRoot, // all non-root treeNodes are collapsed by default
 					isVisible: isRoot ? areRootsVisible : true,
 					isLoading: false,
