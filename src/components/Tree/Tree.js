@@ -645,8 +645,10 @@ function TreeComponent(props) {
 			if (canNodesReorder) {
 				buttons.push({
 					key: 'reorderBtn',
-					text: 'Enter reorder mode',
-					handler: () => setIsReorderMode(!isReorderMode),
+					text: (isReorderMode ? 'Exit' : 'Enter') + ' reorder mode',
+					handler: () => {
+						setIsReorderMode(!isReorderMode)
+					},
 					icon: isReorderMode ? NoReorderRows : ReorderRows,
 					isDisabled: false,
 				});
@@ -757,29 +759,29 @@ function TreeComponent(props) {
 								bg = colourMixer.blend(bg, ratio, mixWithObj.color);
 							}
 							let WhichTreeNode = TreeNode,
-								rowReorderProps = {};
+								dragProps = {};
 							if (canNodesReorder && isReorderMode) {
 								WhichTreeNode = ReorderableTreeNode;
-								rowReorderProps = {
+								dragProps = {
 									mode: VERTICAL,
 									onDragStart: onNodeReorderDragStart,
 									onDrag: onNodeReorderDrag,
 									onDragStop: onNodeReorderDragStop,
-									proxyParent: treeRef.current?.getScrollableNode().children[0],
-									proxyPositionRelativeToParent: true,
 									getParentNode: (node) => node.parentElement.parentElement.parentElement,
 									getProxy: getReorderProxy,
+									proxyParent: treeRef.current?.getScrollableNode().children[0],
+									proxyPositionRelativeToParent: true,
 								};
 							}
 							
 							return <WhichTreeNode
 										nodeProps={nodeProps}
+										dragProps={dragProps}
 										bg={bg}
 										datum={datum}
 										onToggle={onToggle}
 
 										// fields={fields}
-										{...rowReorderProps}
 									/>;
 						}}
 					</Pressable>;
@@ -1110,7 +1112,7 @@ function TreeComponent(props) {
 	});
 	
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, getTreeNodeData()]),
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, isReorderMode, getTreeNodeData()]),
 		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode, getTreeNodeData()]);
 
 	if (!isReady) {

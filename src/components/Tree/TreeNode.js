@@ -19,6 +19,7 @@ import _ from 'lodash';
 export default function TreeNode(props) {
 	const {
 			nodeProps = {},
+			dragProps = {},
 			bg,
 			datum,
 			onToggle,
@@ -45,6 +46,7 @@ export default function TreeNode(props) {
 					alignItems="center"
 					flexGrow={1}
 					{...nodeProps}
+					{...dragProps}
 					bg={bg}
 					key={hash}
 				>
@@ -84,13 +86,4 @@ export default function TreeNode(props) {
 	]);
 }
 
-function withAdditionalProps(WrappedComponent) {
-	return (props) => {
-		return <WrappedComponent
-					mode={VERTICAL}
-					{...props}
-				/>;
-	};
-}
-
-export const ReorderableTreeNode = withAdditionalProps(withDraggable(TreeNode));
+export const ReorderableTreeNode = withDraggable(TreeNode);
