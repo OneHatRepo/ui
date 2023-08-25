@@ -968,11 +968,11 @@ function TreeComponent(props) {
 			
 			if (dragNodeContainsDropNode) {
 				// the node can be a child of any node except itself or its own descendants
-
 				setDropRowIx(null);
 				setHighlitedDatum(null);
 
 			} else {
+				console.log('setDropRowIx', newIx);
 				setDropRowIx(newIx);
 
 				// highlight the drop node
@@ -983,10 +983,10 @@ function TreeComponent(props) {
 				proxy.style.left = (depth * DEPTH_INDENT_PX) + 'px';
 			}
 		},
-		onDragStop = (delta, e, config) => {
+		onDragStop = async (delta, e, config) => {
 			// console.log('onDragStop', delta, e, config);
 
-			if (!dropRowIx) {
+			if (_.isNil(dropRowIx)) {
 				return;
 			}
 			
@@ -998,15 +998,19 @@ function TreeComponent(props) {
 
 			if (Repository) {
 				
-				Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
+				const commonAncestorId = await Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
+				const commonAncestorDatum = getDatumById(commonAncestorId);
+				reloadNode(commonAncestorDatum.item);
 
 			} else {
-				function arrayMove(arr, fromIndex, toIndex) {
-					var element = arr[fromIndex];
-					arr.splice(fromIndex, 1);
-					arr.splice(toIndex, 0, element);
-				}
-				arrayMove(data, dragNodeIx, finalDropIx);
+
+				throw Error('Not yet implemented');
+				// function arrayMove(arr, fromIndex, toIndex) {
+				// 	var element = arr[fromIndex];
+				// 	arr.splice(fromIndex, 1);
+				// 	arr.splice(toIndex, 0, element);
+				// }
+				// arrayMove(data, dragNodeIx, finalDropIx);
 			}
 		};
 
