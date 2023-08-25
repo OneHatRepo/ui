@@ -35,6 +35,7 @@ export default function withDraggable(WrappedComponent) {
 				proxyParent,
 				proxyPositionRelativeToParent = false,
 				handle,
+				draggableProps = {},
 				...propsToPass
 			} = props,
 			{
@@ -227,6 +228,7 @@ export default function withDraggable(WrappedComponent) {
 							onStop={handleStop}
 							position={{ x: 0, y: 0, /* reset to dropped position */ }}
 							// bounds={bounds}
+							{...draggableProps}
 						>
 							<div className="nsResize" style={{ width: '100%', }}>
 								<WrappedComponent {...propsToPass} />
@@ -240,6 +242,7 @@ export default function withDraggable(WrappedComponent) {
 							onStop={handleStop}
 							position={{ x: 0, y: 0, /* reset to dropped position */ }}
 							// bounds={bounds}
+							{...draggableProps}
 						>
 							<div className="ewResize" style={{ height: '100%', }}>
 								<WrappedComponent {...propsToPass} />
@@ -253,8 +256,9 @@ export default function withDraggable(WrappedComponent) {
 						onStart={handleStart}
 						onDrag={handleDrag}
 						onStop={handleStop}
-						// position={{ x: 0, y: 0, /* reset to dropped position */ }}
+						position={{ x: 0, y: 0, /* reset to dropped position */ }}
 						handle={handle}
+						{...draggableProps}
 					>
 						<WrappedComponent {...propsToPass} />
 					</Draggable>;

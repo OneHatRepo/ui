@@ -13,7 +13,7 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
 import {
-	XY,
+	VERTICAL,
 } from '../../Constants/Directions.js';
 import {
 	DROP_POSITION_BEFORE,
@@ -461,6 +461,14 @@ function TreeComponent(props) {
 			});
 			return ids;
 		},
+		getDatumByIx = (ix) => {
+			// debugger;
+
+			// LEFT OFF HERE.
+			// Need to get record from the ix of tree rows
+
+
+		},
 		assembleDataTreeNodes = () => {
 			// Populates the TreeNodes with .parent and .children references
 			// NOTE: This is only for 'data', not for Repositories!
@@ -765,7 +773,7 @@ function TreeComponent(props) {
 							if (canNodesReorder && isReorderMode && !datum.item.isRoot) {
 								WhichTreeNode = ReorderableTreeNode;
 								dragProps = {
-									mode: XY,
+									mode: VERTICAL,
 									onDragStart: onNodeReorderDragStart,
 									onDrag: onNodeReorderDrag,
 									onDragStop: onNodeReorderDragStop,
@@ -1000,7 +1008,28 @@ function TreeComponent(props) {
 			});
 
 
+			// Is this ix a valid slot?
+			const
+				isDraggingLastRow = row === rows[rows.length -1],
+				isDesiringLastSlot = newIx === rows.length -1;
+			let isValidSlot = true;
+			if (newIx === 0) {
+				isValidSlot = false;
+			}
+			if (isDesiringLastSlot && isDraggingLastRow && useBottom) {
+				isValidSlot = false;
+			}
+			if (!isValidSlot) {
+				return;
+			}
 
+			let datum = getDatumByIx(newIx);
+			const
+				x = info.x,
+				startingDepth = datum.item.depth,
+				deltaDepth = Math.floor(x / DEPTH_INDENT_PX),
+				newDepth = startingDepth + deltaDepth;
+			
 			// Figure out which record user wants to be the parentId
 			// Take into account the X tranposition for depth
 			// Contrain the X transposition to proper depth
