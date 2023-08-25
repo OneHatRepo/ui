@@ -16,8 +16,6 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import {
-	DROP_POSITION_BEFORE,
-	DROP_POSITION_AFTER,
 	COLLAPSED,
 	EXPANDED,
 	LEAF,
@@ -36,12 +34,12 @@ import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
+import inArray from '../../Functions/inArray.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
-import TreeNode, { ReorderableTreeNode } from './TreeNode.js';
+import TreeNode, { DraggableTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
-import IconButton from '../Buttons/IconButton.js';
 import Dot from '../Icons/Dot.js';
 import Collapse from '../Icons/Collapse.js';
 import FolderClosed from '../Icons/FolderClosed.js';
@@ -139,13 +137,14 @@ function TreeComponent(props) {
 		treeNodeData = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[isReorderMode, setIsReorderMode] = useState(false),
 		[isSearchModalShown, setIsSearchModalShown] = useState(false),
+		[rowToDatumMap, setRowToDatumMap] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
-		[dragNodeSlot, setDragNodeSlot] = useState(null),
-		[dragNodeIx, setDragNodeIx] = useState(),
-		[dragProxyDepth, setDragProxyDepth] = useState(0),
+		[highlitedDatum, setHighlitedDatum] = useState(null),
+		[isDragMode, setIsDragMode] = useState(false),
+		[dragNodeId, setDragNodeId] = useState(null),
+		[dropRowIx, setDropRowIx] = useState(null),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
 
 		// state getters & setters
@@ -244,6 +243,8 @@ function TreeComponent(props) {
 			const entityDatum = buildTreeNodeDatum(entity);
 			parentDatum.children.unshift(entityDatum);
 			forceUpdate();
+			
+			buildRowToDatumMap();
 		},
 		onBeforeEditSave = (entities) => {
 			onBeforeSave(entities);
@@ -284,7 +285,9 @@ function TreeComponent(props) {
 		onAfterDelete = async (entities) => {
 			const parent = entities[0].parent;
 			if (parent) {
-				await reloadNode(parent);
+				await reloadNode(parent); // includes buildRowToDatumMap
+			} else {
+				buildRowToDatumMap();
 			}
 		},
 		onToggle = (datum) => {
@@ -304,6 +307,8 @@ function TreeComponent(props) {
 			}
 			
 			forceUpdate();
+
+			buildRowToDatumMap();
 		},
 		onCollapseAll = (setNewTreeNodeData = true) => {
 			// Go through whole tree and collapse all nodes
@@ -313,6 +318,7 @@ function TreeComponent(props) {
 			if (setNewTreeNodeData) {
 				setTreeNodeData(newTreeNodeData);
 			}
+			buildRowToDatumMap();
 			return newTreeNodeData;
 		},
 		onSearchTree = async (value) => {
@@ -359,9 +365,8 @@ function TreeComponent(props) {
 				}
 				return false;
 			}
-			const treeNodeData = getTreeNodeData();
 			let found = null;
-			_.each(treeNodeData, (node) => {
+			_.each(getTreeNodeData(), (node) => {
 				const foundNode = findNodeById(node);
 				if (foundNode) {
 					found = foundNode;
@@ -410,7 +415,35 @@ function TreeComponent(props) {
 				nodes = assembleDataTreeNodes();
 			}
 
-			setTreeNodeData(buildTreeNodeData(nodes));
+			const treeNodeData = buildTreeNodeData(nodes);
+			setTreeNodeData(treeNodeData);
+
+			buildRowToDatumMap();
+		},
+		buildRowToDatumMap = () => {
+			const rowToDatumMap = {};
+			let ix = 0;
+
+			function walkTree(datum) {
+				if (!datum.isVisible) {
+					return;
+				}
+
+				// Add this datum's id
+				rowToDatumMap[ix] = datum;
+				ix++;
+
+				if (datum.isExpanded) {
+					_.each(datum.children, (child) => {
+						walkTree(child);
+					});
+				}
+			}
+			_.each(getTreeNodeData(), (rootDatum) => {
+				walkTree(rootDatum);
+			});
+			
+			setRowToDatumMap(rowToDatumMap);
 		},
 		datumContainsSelection = (datum) => {
 			if (_.isEmpty(selection)) {
@@ -441,7 +474,7 @@ function TreeComponent(props) {
 				});
 				return found;
 			}
-			return searchChildren(treeNodeData);
+			return searchChildren(getTreeNodeData());
 		},
 		getTreeNodeByNodeId = (node_id) => {
 			if (Repository) {
@@ -461,13 +494,26 @@ function TreeComponent(props) {
 			});
 			return ids;
 		},
-		getDatumByIx = (ix) => {
-			// debugger;
+		getDatumById = (id) => {
 
-			// LEFT OFF HERE.
-			// Need to get record from the ix of tree rows
+			let found = null;
 
+			function walkTree(datum) {
+				if (datum.item.id === id) {
+					found = datum;
+					return;
+				}
+				_.each(datum.children, (child) => {
+					if (!found) {
+						walkTree(child);
+					}
+				});
+			}
+			_.each(getTreeNodeData(), (rootDatum) => {
+				walkTree(rootDatum);
+			});
 
+			return found;
 		},
 		assembleDataTreeNodes = () => {
 			// Populates the TreeNodes with .parent and .children references
@@ -535,6 +581,8 @@ function TreeComponent(props) {
 			_.assign(existingDatum, _.omit(newDatum, ['isExpanded']));
 			existingDatum.isLoading = false;
 			forceUpdate();
+
+			buildRowToDatumMap();
 		},
 		loadChildren = async (datum, depth = 1) => {
 			// Show loading indicator (spinner underneath current node?)
@@ -558,12 +606,18 @@ function TreeComponent(props) {
 			// Hide loading indicator
 			datum.isLoading = false;
 			forceUpdate();
+			
+			buildRowToDatumMap();
 		},
 		collapseNodes = (nodes) => {
+			collapseNodesRecursive(nodes);
+			buildRowToDatumMap();
+		},
+		collapseNodesRecursive = (nodes) => {
 			_.each(nodes, (node) => {
 				node.isExpanded = false;
 				if (!_.isEmpty(node.children)) {
-					collapseNodes(node.children);
+					collapseNodesRecursive(node.children);
 				}
 			});
 		},
@@ -611,24 +665,16 @@ function TreeComponent(props) {
 
 			setSelection([currentNode]);
 			scrollToNode(currentNode);
-			highlightNode(currentNode);
+			setHighlitedDatum(currentDatum);
 
 			setTreeNodeData(newTreeNodeData);
+			buildRowToDatumMap();
 		},
 		scrollToNode = (node) => {
 			// Helper for expandPath
 			// Scroll the tree so the given node is in view
 
 			// TODO: This will probably need different methods in web and mobile
-
-
-		},
-		highlightNode = (node) => {
-			// Helper for expandPath
-			// Show a brief highlight animation to draw attention to the node
-
-			// TODO: This will probably need different methods in web and mobile
-			// react-highlight for web?
 
 
 		},
@@ -655,11 +701,11 @@ function TreeComponent(props) {
 			if (canNodesReorder) {
 				buttons.push({
 					key: 'reorderBtn',
-					text: (isReorderMode ? 'Exit' : 'Enter') + ' reorder mode',
+					text: (isDragMode ? 'Exit' : 'Enter') + ' reorder mode',
 					handler: () => {
-						setIsReorderMode(!isReorderMode)
+						setIsDragMode(!isDragMode)
 					},
-					icon: isReorderMode ? NoReorderRows : ReorderRows,
+					icon: isDragMode ? NoReorderRows : ReorderRows,
 					isDisabled: false,
 				});
 			}
@@ -704,7 +750,7 @@ function TreeComponent(props) {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
-							if (isReorderMode) {
+							if (isDragMode) {
 								return
 							}
 							switch (e.detail) {
@@ -728,7 +774,7 @@ function TreeComponent(props) {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
-							if (isReorderMode) {
+							if (isDragMode) {
 								return;
 							}
 
@@ -753,33 +799,36 @@ function TreeComponent(props) {
 						}) => {
 							let bg = nodeProps.bg || styles.TREE_NODE_BG,
 								mixWith;
-							if (isSelected) {
-								if (showHovers && isHovered) {
-									mixWith = styles.TREE_NODE_SELECTED_HOVER_BG;
-								} else {
-									mixWith = styles.TREE_NODE_SELECTED_BG;
+							if (!isDragMode) {
+								if (isSelected) {
+									if (showHovers && isHovered) {
+										mixWith = styles.TREE_NODE_SELECTED_HOVER_BG;
+									} else {
+										mixWith = styles.TREE_NODE_SELECTED_BG;
+									}
+								} else if (showHovers && isHovered) {
+									mixWith = styles.TREE_NODE_HOVER_BG;
 								}
-							} else if (showHovers && isHovered) {
-								mixWith = styles.TREE_NODE_HOVER_BG;
-							}
-							if (mixWith) {
-								const
-									mixWithObj = nbToRgb(mixWith),
-									ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
-								bg = colourMixer.blend(bg, ratio, mixWithObj.color);
+								if (mixWith) {
+									const
+										mixWithObj = nbToRgb(mixWith),
+										ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
+									bg = colourMixer.blend(bg, ratio, mixWithObj.color);
+								}
+							} else {
+
 							}
 							let WhichTreeNode = TreeNode,
 								dragProps = {};
-							if (canNodesReorder && isReorderMode && !datum.item.isRoot) {
-								WhichTreeNode = ReorderableTreeNode;
+							if (canNodesReorder && isDragMode && !datum.item.isRoot) { // Can't drag root nodes
+								WhichTreeNode = DraggableTreeNode;
 								dragProps = {
 									mode: VERTICAL,
-									onDragStart: onNodeReorderDragStart,
-									onDrag: onNodeReorderDrag,
-									onDragStop: onNodeReorderDragStop,
+									onDrag,
+									onDragStop,
 									getParentNode: (node) => node.parentElement.parentElement,
 									getDraggableNodeFromNode: (node) => node.parentElement,
-									getProxy: getReorderProxy,
+									getProxy: getDragProxy,
 									proxyParent: treeRef.current,
 									proxyPositionRelativeToParent: true,
 								};
@@ -792,6 +841,8 @@ function TreeComponent(props) {
 										bg={bg}
 										datum={datum}
 										onToggle={onToggle}
+										isDragMode={isDragMode}
+										isHighlighted={highlitedDatum === datum}
 
 										// fields={fields}
 									/>;
@@ -816,7 +867,10 @@ function TreeComponent(props) {
 		},
 
 		// drag/drop
-		getReorderProxy = (node) => {
+		getDragProxy = (node) => {
+
+			// TODO: Maybe the proxy should grab itself and all descendants??
+
 			const
 				row = node,
 				rowRect = row.getBoundingClientRect(),
@@ -833,22 +887,22 @@ function TreeComponent(props) {
 					}
 					return true;
 				}),
-				dragNodeIx = Array.from(rows).indexOf(row)
+				dragRowIx = Array.from(rows).indexOf(row),
+				dragRowRecord = rowToDatumMap[dragRowIx].item;
 			
-			setDragNodeIx(dragNodeIx); // the ix of which record is being dragged
+			setDragNodeId(dragRowRecord.id); // the id of which record is being dragged
 
 			proxy.style.top = top + 'px';
-			proxy.style.left = (dragProxyDepth * DEPTH_INDENT_PX) + 'px';
+			proxy.style.left = (dragRowRecord.depth * DEPTH_INDENT_PX) + 'px';
 			proxy.style.height = rowRect.height + 'px';
 			proxy.style.width = rowRect.width + 'px';
 			proxy.style.display = 'flex';
-			// proxy.style.backgroundColor = '#ccc';
 			proxy.style.position = 'absolute';
-			proxy.style.border = '1px solid #000';
+			proxy.style.border = '1px solid #bbb';
 			return proxy;
 		},
-		onNodeReorderDragStart = (info, e, proxy, node) => {
-			// console.log('onNodeReorderDragStart', info, e, proxy, node);
+		onDrag = (info, e, proxy, node) => {
+			// console.log('onDrag', info, e, proxy, node);
 			const
 				proxyRect = proxy.getBoundingClientRect(),
 				row = node,
@@ -865,8 +919,8 @@ function TreeComponent(props) {
 				}),
 				currentY = proxyRect.top - parentRect.top; // top position of pointer, relative to page
 
-			// Figure out which index the user wants
-			let newIx = 0;
+			// Figure out which row the user wants as a parentId
+			let newIx = 0; // default to root being new parentId
 			_.each(rows, (child, ix, all) => {
 				const
 					rect = child.getBoundingClientRect(), // rect of the row of this iteration
@@ -875,238 +929,85 @@ function TreeComponent(props) {
 						bottom,
 						height,
 					} = rect,
-					compensatedTop = top - parentRect.top,
-					compensatedBottom = bottom - parentRect.top,
-					halfHeight = height / 2;
+					compensatedBottom = bottom - parentRect.top;
 
 				if (child === proxy) {
 					return;
 				}
 				if (ix === 0) {
 					// first row
-					if (currentY < compensatedTop + halfHeight) {
+					if (currentY < compensatedBottom) {
 						newIx = 0;
-						return false;
-					} else if (currentY < compensatedBottom) {
-						newIx = 0 + 1;
 						return false;
 					}
 					return;
 				} else if (ix === all.length -1) {
 					// last row
-					if (currentY < compensatedTop + halfHeight) {
+					if (currentY < compensatedBottom) {
 						newIx = ix;
 						return false;
 					}
-					newIx = ix +1;
-					return false;
-				}
-				
-				// all other rows
-				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
-					newIx = ix;
-					return false;
-				} else if (currentY < compensatedBottom) {
-					newIx = ix +1;
-					return false;
-				}
-			});
-
-			let useBottom = false;
-			if (!rows[newIx] || rows[newIx] === proxy) {
-				newIx--;
-				useBottom = true;
-			}
-
-			// Render marker showing destination location
-			const
-				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth || 0), // get relative Y position
-				treeNodesContainer = treeRef.current,
-				treeNodesContainerRect = treeNodesContainer.getBoundingClientRect(),
-				marker = document.createElement('div');
-
-			marker.style.position = 'absolute';
-			marker.style.top = top -4 + 'px'; // -4 so it's always visible
-			marker.style.height = '4px';
-			marker.style.width = treeNodesContainerRect.width + 'px';
-			marker.style.backgroundColor = '#f00';
-			treeNodesContainer.appendChild(marker);
-
-			proxy.style.left = rowContainerRect.left + 'px'; // start proxy at indentation of whatever it's replacing
-
-			setDragNodeSlot({ ix: newIx, marker, useBottom, });
-		},
-		onNodeReorderDrag = (info, e, proxy, node) => {
-			// console.log('onNodeReorderDrag', info, e, proxy, node);
-			const
-				proxyRect = proxy.getBoundingClientRect(),
-				row = node,
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				marker = dragNodeSlot.marker,
-				rows = _.filter(parent.children, (childNode) => {
-					if (childNode.getBoundingClientRect().height === 0 && childNode.style.visibility !== 'hidden') {
-						return false; // Skip zero-height children
-					}
-					if (childNode === proxy || childNode === marker) {
-						return false;
-					}
-					return true;
-				}),
-				currentY = proxyRect.top - parentRect.top; // top position of pointer, relative to page
-
-			// Figure out which index the user wants
-			let newIx = 0,
-				useBottom = false;
-			_.each(rows, (child, ix, all) => {
-				const
-					rect = child.getBoundingClientRect(), // rect of the row of this iteration
-					{
-						top,
-						bottom,
-						height,
-					} = rect,
-					compensatedTop = top - parentRect.top,
-					compensatedBottom = bottom - parentRect.top,
-					halfHeight = height / 2;
-				
-				if (ix === 0) {
-					// first row
-					if (currentY < compensatedTop + halfHeight) {
-						// top half
-						newIx = 0;
-						return false;
-					} else if (currentY < compensatedBottom) {
-						// bottom half
-						newIx = 1;
-						return false;
-					}
 					return;
-				} else if (ix === all.length -1) { // compensate for zero-indexing
-					// last row
-					// top half
-					newIx = ix;
-					if (currentY < compensatedTop + halfHeight) {
-						return false;
-					}
-					// bottom half
-					useBottom = true;
-					return false;
 				}
 				
 				// all other rows
-				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
-					// top half
+				if (currentY < compensatedBottom) {
 					newIx = ix;
-					return false;
-				} else if (currentY < compensatedBottom) {
-					// bottom half
-					newIx = ix +1;
 					return false;
 				}
 			});
 
 
-			// Is this ix a valid slot?
 			const
-				isDraggingLastRow = row === rows[rows.length -1],
-				isDesiringLastSlot = newIx === rows.length -1;
-			let isValidSlot = true;
-			if (newIx === 0) {
-				isValidSlot = false;
+				dragDatum = getDatumById(dragNodeId),
+				dragDatumChildIds = getDatumChildIds(dragDatum),
+				dropRowDatum = rowToDatumMap[newIx],
+				dropRowRecord = dropRowDatum.item,
+				dropNodeId = dropRowRecord.id,
+				dragNodeContainsDropNode = inArray(dropNodeId, dragDatumChildIds) || dropRowRecord.id === dragNodeId;
+			
+			if (dragNodeContainsDropNode) {
+				// the node can be a child of any node except itself or its own descendants
+
+				setDropRowIx(null);
+				setHighlitedDatum(null);
+
+			} else {
+				setDropRowIx(newIx);
+
+				// highlight the drop node
+				setHighlitedDatum(dropRowDatum);
+
+				// shift proxy's depth
+				const depth = (dropRowRecord.id === dragNodeId) ? dropRowRecord.depth : dropRowRecord.depth + 1;
+				proxy.style.left = (depth * DEPTH_INDENT_PX) + 'px';
 			}
-			if (isDesiringLastSlot && isDraggingLastRow && useBottom) {
-				isValidSlot = false;
-			}
-			if (!isValidSlot) {
+		},
+		onDragStop = (delta, e, config) => {
+			// console.log('onDragStop', delta, e, config);
+
+			if (!dropRowIx) {
 				return;
 			}
-
-			let datum = getDatumByIx(newIx);
-			const
-				x = info.x,
-				startingDepth = datum.item.depth,
-				deltaDepth = Math.floor(x / DEPTH_INDENT_PX),
-				newDepth = startingDepth + deltaDepth;
 			
-			// Figure out which record user wants to be the parentId
-			// Take into account the X tranposition for depth
-			// Contrain the X transposition to proper depth
-
-			// Don't allow the creation of a new root node
-			// Basically, the node can be a child of any node except itself or its own descendants
-			// Maybe the proxy should grab itself and all descendants??
-
-			// const dragProxyDepth = 0;
-			// proxy.style.left = (dragProxyDepth * DEPTH_INDENT_PX) + 'px';
-			// setDragProxyDepth(dragProxyDepth);
-
-
-
-			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
 			const
-				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(marker.style.height); // get relative Y position
-			if (marker) {
-				marker.style.top = (top -4) + 'px'; // -4 so it's always visible
-			}
+				dragDatum = getDatumById(dragNodeId),
+				dragRowRecord = dragDatum.item,
+				dropRowDatum = rowToDatumMap[dropRowIx],
+				dropRowRecord = dropRowDatum.item;
 
-			setDragNodeSlot({ ix: newIx, marker, useBottom, });
-		},
-		onNodeReorderDragStop = (delta, e, config) => {
-			// console.log('onNodeReorderDragStop', delta, e, config);
-			const
-				dropIx = dragNodeSlot.ix,
-				dropPosition = dragNodeSlot.useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE;
+			if (Repository) {
+				
+				Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
 
-			let shouldMove = true,
-				finalDropIx = dropIx;
-			
-			if (dropPosition === DROP_POSITION_BEFORE) {
-				if (dragNodeIx === dropIx || dragNodeIx === dropIx -1) { // basically before or after the drag row's origin
-					// Same as origin; don't do anything
-					shouldMove = false;
-				} else {
-					// Actually move it
-					if (!Repository) { // If we're just going to be switching rows, rather than telling server to reorder rows, so maybe adjust finalDropIx...
-						if (finalDropIx > dragNodeIx) { // if we're dropping *before* the origin ix
-							finalDropIx = finalDropIx -1; // Because we're using BEFORE, we want to switch with the row *prior to* the ix we're dropping before
-						}
-					}
+			} else {
+				function arrayMove(arr, fromIndex, toIndex) {
+					var element = arr[fromIndex];
+					arr.splice(fromIndex, 1);
+					arr.splice(toIndex, 0, element);
 				}
-			} else if (dropPosition === DROP_POSITION_AFTER) {
-				// Only happens on the very last row. Everything else is BEFORE...
-				if (dragNodeIx === dropIx) {
-					// Same as origin; don't do anything
-					shouldMove = false;
-				}
+				arrayMove(data, dragNodeIx, finalDropIx);
 			}
-
-			if (shouldMove) {
-				// Update the row with the new ix
-				let dragRecord,
-					dropRecord;
-				if (Repository) {
-					dragRecord = Repository.getByIx(dragNodeIx);
-					dropRecord = Repository.getByIx(finalDropIx);
-					
-					Repository.reorder(dragRecord, dropRecord, dropPosition);
-
-				} else {
-					function arrayMove(arr, fromIndex, toIndex) {
-						var element = arr[fromIndex];
-						arr.splice(fromIndex, 1);
-						arr.splice(toIndex, 0, element);
-					}
-					arrayMove(data, dragNodeIx, finalDropIx);
-				}
-			}
-
-			if (dragNodeSlot) {
-				dragNodeSlot.marker.remove();
-			}
-			setDragNodeSlot(null);
 		};
 
 	useEffect(() => {
@@ -1173,8 +1074,8 @@ function TreeComponent(props) {
 	});
 	
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, isReorderMode, getTreeNodeData()]),
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode, getTreeNodeData()]);
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, isDragMode, getTreeNodeData()]),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode, getTreeNodeData()]);
 
 	if (!isReady) {
 		return null;
@@ -1193,9 +1094,9 @@ function TreeComponent(props) {
 	}
 
 	const borderProps = {};
-	if (isReorderMode) {
-		borderProps.borderWidth = isReorderMode ? styles.REORDER_BORDER_WIDTH : 0;
-		borderProps.borderColor = isReorderMode ? styles.REORDER_BORDER_COLOR : null;
+	if (isDragMode) {
+		borderProps.borderWidth = isDragMode ? styles.REORDER_BORDER_WIDTH : 0;
+		borderProps.borderColor = isDragMode ? styles.REORDER_BORDER_COLOR : null;
 		borderProps.borderStyle = styles.REORDER_BORDER_STYLE;
 	} else {
 		borderProps.borderTopWidth = isLoading ? 2 : 1;
@@ -1218,7 +1119,7 @@ function TreeComponent(props) {
 						p={2}
 						{...borderProps}
 						onClick={() => {
-							if (!isReorderMode) {
+							if (!isDragMode) {
 								deselectAll();
 							}
 						}}

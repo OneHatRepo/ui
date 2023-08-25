@@ -19,6 +19,8 @@ export default function TreeNode(props) {
 			bg,
 			datum,
 			onToggle,
+			isDragMode,
+			isHighlighted,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -34,7 +36,9 @@ export default function TreeNode(props) {
 		iconLeaf = datum.iconLeaf,
 		hash = item?.hash || item;
 
-	const icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf;
+	const
+		icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf,
+		adjustedBg = isHighlighted ? styles.TREE_NODE_HIGHLIGHTED_BG : bg;
 
 	return useMemo(() => {
 		
@@ -42,14 +46,14 @@ export default function TreeNode(props) {
 					alignItems="center"
 					flexGrow={1}
 					{...nodeProps}
-					bg={bg}
+					bg={adjustedBg}
 					key={hash}
 				>
 					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 					
 					{isLoading ? 
 						<Spinner px={2} /> : 
-						(hasChildren ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} px={2} />)}
+						(hasChildren && !isDragMode ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} px={2} />)}
 
 					<Text
 						overflow="hidden"
@@ -67,7 +71,7 @@ export default function TreeNode(props) {
 				</Row>;
 	}, [
 		nodeProps,
-		bg,
+		adjustedBg,
 		item,
 		isPhantom,
 		hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
@@ -78,7 +82,9 @@ export default function TreeNode(props) {
 		icon,
 		onToggle,
 		isLoading,
+		isDragMode,
+		isHighlighted,
 	]);
 }
 
-export const ReorderableTreeNode = withDraggable(TreeNode);
+export const DraggableTreeNode = withDraggable(TreeNode);
