@@ -525,6 +525,12 @@ function Form(props) {
 	if (_.isEmpty(formState.dirtyFields) && !record?.isRemotePhantom) {
 		isSaveDisabled = true;
 	}
+
+	if (editorType === EDITOR_TYPE__INLINE) {
+		buttonGroupProps.position = 'fixed';
+		buttonGroupProps.left = 10; // TODO: I would prefer to have this be centered, but it's a lot more complex than just making it stick to the left
+		footerProps.alignItems = 'flex-start';
+	}
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
 

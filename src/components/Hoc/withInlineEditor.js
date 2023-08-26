@@ -65,7 +65,7 @@ export default function withInlineEditor(WrappedComponent) {
 					rowBounds = currentRow.getBoundingClientRect(),
 					editor = inlineEditorRef.current,
 					editorStyle = editor.style,
-					editorBounds = editor.getBoundingClientRect(),
+					editorBounds = editor.parentElement.getBoundingClientRect(), // reference parentElement, because this doesn't change based on last moveEditor call
 					delta = editorBounds.top - rowBounds.top;
 
 				editorStyle.top = (-1 * delta) -20 + 'px';
