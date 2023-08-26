@@ -40,6 +40,7 @@ export default function GridHeaderRow(props) {
 			setSelection,
 			gridRef,
 			isHovered,
+			isInlineEditorShown,
 		} = props,
 		styles = UiGlobals.styles,
 		sortFn = Repository && Repository.getSortFn(),
@@ -316,6 +317,10 @@ export default function GridHeaderRow(props) {
 						}
 					}
 
+					if (isInlineEditorShown) {
+						propsToPass.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
+					}
+
 					return <Pressable
 								key={ix}
 								onPress={(e) => {
@@ -453,6 +458,7 @@ export default function GridHeaderRow(props) {
 		isSortDirectionAsc,
 		sortFn,
 		sortField,
+		isInlineEditorShown,
 	]);
 }
 

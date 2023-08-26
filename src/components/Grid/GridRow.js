@@ -23,6 +23,7 @@ export default function GridRow(props) {
 			hideNavColumn,
 			bg,
 			item,
+			isInlineEditorShown,
 		} = props,
 		styles = UiGlobals.styles,
 		isPhantom = item.isPhantom,
@@ -43,6 +44,10 @@ export default function GridRow(props) {
 						}
 						propsToPass.p = 1;
 						propsToPass.justifyContent = 'center';
+
+						if (isInlineEditorShown) {
+							propsToPass.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
+						}
 
 						let value;
 						if (_.isPlainObject(config)) {
@@ -141,6 +146,7 @@ export default function GridRow(props) {
 			item,
 			isPhantom,
 			hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
+			isInlineEditorShown,
 		]);
 }
 

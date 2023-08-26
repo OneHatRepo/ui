@@ -67,6 +67,7 @@ const defaults = {
 	ICON_BUTTON_BG_DISABLED: 'trueGray.200',
 	ICON_BUTTON_BG_HOVER: '#000:alpha.20',
 	ICON_BUTTON_BG_PRESSED: '#000:alpha.30',
+	INLINE_EDITOR_MIN_WIDTH: 150,
 	PANEL_FOOTER_BG: 'primary.100', // :alpha.50
 	PANEL_HEADER_BG: 'primary.100',
 	PANEL_HEADER_BG_VERTICAL: 'primary.100',

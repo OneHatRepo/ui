@@ -149,6 +149,11 @@ function Form(props) {
 					borderRightColor: 'trueGray.200',
 					px: 1,
 				};
+
+			if (editorType === EDITOR_TYPE__INLINE) {
+				columnProps.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
+			}
+
 			_.each(columnsConfig, (config, ix) => {
 				let {
 						fieldName,
@@ -201,13 +206,7 @@ function Form(props) {
 												}
 											}
 											const Element = getComponentFromType(editor);
-											if (!Element) {
-												debugger;
-												// LEFT OFF HERE
-												// Trying inline editor, based on columnsConfig
-												// Getting an error that the OrdersEditor is missing users__email.
-												// Why is this even on the OrdersEditor? Runner?
-											}
+
 											let element = <Element
 																name={name}
 																value={value}

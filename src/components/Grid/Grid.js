@@ -137,8 +137,8 @@ function GridComponent(props) {
 		gridRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[isReorderMode, setIsReorderMode] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
+		[isDragMode, setIsDragMode] = useState(false),
 		[dragRowSlot, setDragRowSlot] = useState(null),
 		[dragRowIx, setDragRowIx] = useState(),
 		setLocalColumnsConfig = (config) => {
@@ -226,8 +226,8 @@ function GridComponent(props) {
 			if (canRowsReorder) {
 				items.unshift(<IconButton
 					key="reorderBtn"
-					onPress={() => setIsReorderMode(!isReorderMode)}
-					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
+					onPress={() => setIsDragMode(!isDragMode)}
+					icon={<Icon as={isDragMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
 				/>);
 			}
 			return items;
@@ -254,7 +254,7 @@ function GridComponent(props) {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
-							if (isHeaderRow || isReorderMode) {
+							if (isHeaderRow || isDragMode) {
 								return
 							}
 							switch (e.detail) {
@@ -281,7 +281,7 @@ function GridComponent(props) {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
-							if (isHeaderRow || isReorderMode) {
+							if (isHeaderRow || isDragMode) {
 								return
 							}
 							
@@ -315,6 +315,7 @@ function GridComponent(props) {
 											setSelection={setSelection}
 											gridRef={gridRef}
 											isHovered={isHovered}
+											isInlineEditorShown={isInlineEditorShown}
 										/>;
 							}
 
@@ -337,7 +338,7 @@ function GridComponent(props) {
 							}
 							let WhichGridRow = GridRow,
 								rowReorderProps = {};
-							if (canRowsReorder && isReorderMode) {
+							if (canRowsReorder && isDragMode) {
 								WhichGridRow = ReorderableGridRow;
 								rowReorderProps = {
 									mode: VERTICAL,
@@ -359,6 +360,7 @@ function GridComponent(props) {
 										hideNavColumn={hideNavColumn}
 										bg={bg}
 										item={item}
+										isInlineEditorShown={isInlineEditorShown}
 										{...rowReorderProps}
 									/>;
 						}}
@@ -666,10 +668,10 @@ function GridComponent(props) {
 							...propsToPass,
 						};
 
-					if (!config.w && !config.flex) {
+					if (!(config.w || config.width) && !config.flex) {
 						// Neither is set
 						config.w = 100; // default
-					} else if (config.flex && config.width) {
+					} else if (config.flex && (config.w || config.width)) {
 						// Both are set. Width overrules flex.
 						delete config.flex;
 					}
@@ -735,7 +737,7 @@ function GridComponent(props) {
 
 	}, [selectorId, selectorSelected]);
 
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isReorderMode]);
+	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode]);
 
 	if (!isReady) {
 		return null;
@@ -777,7 +779,7 @@ function GridComponent(props) {
 				{topToolbar}
 
 				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
-					if (!isReorderMode && !isInlineEditorShown) {
+					if (!isDragMode && !isInlineEditorShown) {
 						deselectAll();
 					}
 				}}>
@@ -790,8 +792,8 @@ function GridComponent(props) {
 							nestedScrollEnabled={true}
 							contentContainerStyle={{
 								overflow: 'auto',
-								borderWidth: isReorderMode ? styles.REORDER_BORDER_WIDTH : 0,
-								borderColor: isReorderMode ? styles.REORDER_BORDER_COLOR : null,
+								borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
+								borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
 								borderStyle: styles.REORDER_BORDER_STYLE,
 								flex: 1,
 							}}
