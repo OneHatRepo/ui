@@ -87,6 +87,7 @@ function Form(props) {
 			onSave,
 			onClose,
 			onDelete,
+			editorStateRef,
 
 			// DataMgt
 			selectorId,
@@ -450,6 +451,10 @@ function Form(props) {
 	// if (Repository && (!record || _.isEmpty(record))) {
 	// 	return null;
 	// }
+
+	if (!_.isNil(editorStateRef)) {
+		editorStateRef.current = formState; // Update state so HOC can know what's going on
+	}
 	
 	const sizeProps = {};
 	if (!flex && !h && !w) {
@@ -532,13 +537,7 @@ function Form(props) {
 					{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
 						<Button
 							key="viewBtn"
-							onPress={() => {
-								if (!_.isEmpty(formState.dirtyFields)) {
-									confirm('This record has unsaved changes. Are you sure you want to switch to "View" mode? Changes will be lost.', onViewMode);
-								} else {
-									onViewMode();
-								}
-							}}
+							onPress={onViewMode}
 							leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
 							color="#fff"
 						>To View</Button>}
@@ -579,13 +578,7 @@ function Form(props) {
 						{!isViewOnly && onCancel && <Button
 														key="cancelBtn"
 														variant="ghost"
-														onPress={() => {
-															if (!_.isEmpty(formState.dirtyFields)) {
-																confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', onCancel);
-															} else {
-																onCancel();
-															}
-														}}
+														onPress={onCancel}
 														color="#fff"
 													>Cancel</Button>}
 						{!isViewOnly && onSave && <Button

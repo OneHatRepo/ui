@@ -47,10 +47,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				hideAlert,
 			} = props,
 			listeners = useRef({}),
+			editorStateRef = useRef(),
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
-			[isModalShown, setIsModalShown] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
 			getListeners = () => {
 				return listeners.current;
@@ -237,15 +237,23 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await getListeners().onAfterEdit(what);
 				}
 			},
-			onEditorCancel = async () => {
-				const
-					isSingle = selection.length === 1,
-					isPhantom = selection[0] && selection[0].isPhantom;
-				if (isSingle && isPhantom) {
-					await deleteRecord();
+			onEditorCancel =  () => {
+				async function doIt() {
+					const
+						isSingle = selection.length === 1,
+						isPhantom = selection[0] && selection[0].isPhantom;
+					if (isSingle && isPhantom) {
+						await deleteRecord();
+					}
+					setEditorMode(EDITOR_MODE__VIEW);
+					setIsEditorShown(false);
 				}
-				setEditorMode(EDITOR_MODE__VIEW);
-				setIsEditorShown(false);
+				const formState = editorStateRef.current;
+				if (!_.isEmpty(formState.dirtyFields)) {
+					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
+				} else {
+					doIt();
+				}
 			},
 			onEditorClose = () => {
 				setIsEditorShown(false);
@@ -279,6 +287,20 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					}
 				}
 				return mode;
+			},
+			onEditMode = () => {
+				setEditorMode(EDITOR_MODE__EDIT);
+			},
+			onViewMode = () => {
+				function doIt() {
+					setEditorMode(EDITOR_MODE__VIEW);
+				}
+				const formState = editorStateRef.current;
+				if (!_.isEmpty(formState.dirtyFields)) {
+					confirm('This record has unsaved changes. Are you sure you want to switch to "View" mode? Changes will be lost.', doIt);
+				} else {
+					doIt();
+				}
 			};
 
 		useEffect(() => {
@@ -301,7 +323,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isEditorShown={isEditorShown}
 					isEditorViewOnly={isEditorViewOnly}
 					editorMode={editorMode}
-					setEditorMode={setEditorMode}
+					onEditMode={onEditMode}
+					onViewMode={onViewMode}
+					editorStateRef={editorStateRef}
 					setIsEditorShown={setIsEditorShown}
 					onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
 					onEdit={(!userCanEdit || disableEdit) ? null : onEdit}

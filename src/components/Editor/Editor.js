@@ -1,7 +1,5 @@
 import {
 	EDITOR_MODE__VIEW,
-	EDITOR_MODE__ADD,
-	EDITOR_MODE__EDIT,
 } from '../../Constants/Editor.js';
 import _ from 'lodash';
 
@@ -16,7 +14,6 @@ export default function Editor(props) {
 			onEditorClose: onClose,
 			onEditorDelete: onDelete,
 			editorMode,
-			setEditorMode,
 
 			// withData
 			Repository,
@@ -24,13 +21,7 @@ export default function Editor(props) {
 			// withSelection
 			selection,
 
-		} = props,
-		onEditMode = () => {
-			setEditorMode(EDITOR_MODE__EDIT);
-		},
-		onViewMode = () => {
-			setEditorMode(EDITOR_MODE__VIEW);
-		};
+		} = prop;
 
 	if (_.isEmpty(selection)) {
 		return null;
@@ -52,7 +43,6 @@ export default function Editor(props) {
 	return <Form
 				{...props}
 				record={selection}
-				onViewMode={onViewMode}
 				onCancel={onCancel}
 				onSave={onSave}
 				onClose={onClose}

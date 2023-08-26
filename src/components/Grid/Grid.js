@@ -127,8 +127,8 @@ function GridComponent(props) {
 			selectorSelected,
 
 			// withInlineEditor
-			inlineEditorRef,
-			onScrollRow,
+			inlineEditor = null,
+			isInlineEditorShown = false,
 			onEditorRowClick,
 
 		} = props,
@@ -148,6 +148,9 @@ function GridComponent(props) {
 			}
 		},
 		onRowClick = (item, e) => {
+			if (isInlineEditorShown) {
+				return;
+			}
 			const
 				{
 					shiftKey,
@@ -232,6 +235,9 @@ function GridComponent(props) {
 		renderRow = (row) => {
 			if (row.item.isDestroyed) {
 				return null;
+			}
+			if (row.item.id === 'inlineEditor') {
+				return inlineEditor;
 			}
 
 			let {
@@ -741,6 +747,9 @@ function GridComponent(props) {
 	if (showHeaders) {
 		rowData.unshift({ id: 'headerRow' });
 	}
+	if (inlineEditor) {
+		rowData.push({ id: 'inlineEditor' }); // make editor the last row so it can scroll with all other rows
+	}
 	const initialNumToRender = rowData.length || 10;
 
 	// headers & footers
@@ -768,7 +777,7 @@ function GridComponent(props) {
 				{topToolbar}
 
 				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
-					if (!isReorderMode) {
+					if (!isReorderMode && !isInlineEditorShown) {
 						deselectAll();
 					}
 				}}>
