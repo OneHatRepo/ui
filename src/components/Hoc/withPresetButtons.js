@@ -24,6 +24,12 @@ const presetButtons = [
 
 export default function withPresetButtons(WrappedComponent, isGrid = false) {
 	return (props) => {
+
+		if (props.disablePresetButtons) {
+			// bypass everything
+			return <WrappedComponent {...props} />;
+		}
+
 		const {
 				// extract and pass
 				contextMenuItems,

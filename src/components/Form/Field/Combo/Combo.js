@@ -492,6 +492,7 @@ export function ComboComponent(props) {
 													};
 												}}
 												{...props}
+												disablePresetButtons={true}
 												disablePagination={disablePagination}
 												fireEvent={onEvent}
 												setSelection={(selection) => {
