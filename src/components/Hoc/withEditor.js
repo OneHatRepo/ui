@@ -115,7 +115,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
-			onDelete = async () => {
+			onDelete = async (cb) => {
 				if (getListeners().onBeforeDelete) {
 					const listenerResult = await getListeners().onBeforeDelete();
 					if (listenerResult === false) {
@@ -126,7 +126,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isSingle = selection.length === 1,
 					firstSelection = selection[0],
 					isTree = firstSelection?.isTree,
-					hasChildren = firstSelection?.hasChildren,
+					hasChildren = isTree ? firstSelection?.hasChildren : false,
 					isPhantom = firstSelection?.isPhantom;
 
 				if (isSingle && isTree && hasChildren) {
@@ -135,10 +135,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
-							<Button colorScheme="danger" onPress={onMoveChildren} key="moveBtn">
+							<Button colorScheme="danger" onPress={() => onMoveChildren(cb)} key="moveBtn">
 								Move Children
 							</Button>,
-							<Button colorScheme="danger" onPress={onDeleteChildren} key="deleteBtn">
+							<Button colorScheme="danger" onPress={() => onDeleteChildren(cb)} key="deleteBtn">
 								Delete Children
 							</Button>
 						],
@@ -146,21 +146,21 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					});
 				} else
 				if (isSingle && isPhantom) {
-					deleteRecord();
+					deleteRecord(cb);
 				} else {
 					const identifier = getRecordIdentifier(selection);
-					confirm('Are you sure you want to delete the ' + identifier, deleteRecord);
+					confirm('Are you sure you want to delete the ' + identifier, () => deleteRecord(cb));
 				}
 			},
-			onMoveChildren = () => {
+			onMoveChildren = (cb) => {
 				hideAlert();
-				deleteRecord(true);
+				deleteRecord(true, cb);
 			},
-			onDeleteChildren = () => {
+			onDeleteChildren = (cb) => {
 				hideAlert();
-				deleteRecord();
+				deleteRecord(false, cb);
 			},
-			deleteRecord = async (moveSubtreeUp) => {
+			deleteRecord = async (moveSubtreeUp, cb) => {
 				if (getListeners().onBeforeDeleteSave) {
 					await getListeners().onBeforeDeleteSave(selection);
 				}
@@ -171,6 +171,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				if (getListeners().onAfterDelete) {
 					await getListeners().onAfterDelete(selection);
+				}
+				if (cb) {
+					cb();
 				}
 			},
 			viewRecord = async () => {
@@ -259,17 +262,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(false);
 			},
 			onEditorDelete = async () => {
-				if (getListeners().onBeforeDeleteSave) {
-					await getListeners().onBeforeDeleteSave(selection);
-				}
-
-				await deleteRecord();
-				setEditorMode(EDITOR_MODE__VIEW);
-				setIsEditorShown(false);
-				
-				if (getListeners().onAfterDelete) {
-					await getListeners().onAfterDelete(selection);
-				}
+				onDelete(() => {
+					setEditorMode(EDITOR_MODE__VIEW);
+					setIsEditorShown(false);
+				});
 			},
 			calculateEditorMode = () => {
 				let mode = EDITOR_MODE__VIEW;

@@ -58,9 +58,6 @@ export default function withInlineEditor(WrappedComponent) {
 				moveEditor(currentRow);
 			},
 			moveEditor = (currentRow) => {
-				if (!inlineEditorRef.current) {
-					debugger;
-				}
 				const 
 					rowBounds = currentRow.getBoundingClientRect(),
 					editor = inlineEditorRef.current,

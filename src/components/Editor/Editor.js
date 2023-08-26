@@ -14,6 +14,7 @@ export default function Editor(props) {
 			onEditorClose: onClose,
 			onEditorDelete: onDelete,
 			editorMode,
+			onEditMode,
 
 			// withData
 			Repository,

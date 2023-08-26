@@ -20,7 +20,12 @@ export default function Viewer(props) {
 	const {
 			additionalViewButtons = [],
 			ancillaryItems = [],
+			viewerCanDelete = false,
+
+			// withData
 			record,
+
+			// withEditor
 			onEditMode,
 			onClose,
 			onDelete,
@@ -80,19 +85,18 @@ export default function Viewer(props) {
 					</Column>
 				</ScrollView>
 				<Footer justifyContent="flex-end">
-					{onDelete && <Row flex={1} justifyContent="flex-start">
-											<Button
-												key="deleteBtn"
-												onPress={() => {
-													confirm('Are you sure you want to delete this record?', onDelete);
-												}}
-												bg="warning"
-												_hover={{
-													bg: 'warningHover',
-												}}
-												color="#fff"
-											>Delete</Button>
-										</Row>}
+					{onDelete && viewerCanDelete && 
+						<Row flex={1} justifyContent="flex-start">
+							<Button
+								key="deleteBtn"
+								onPress={onDelete}
+								bg="warning"
+								_hover={{
+									bg: 'warningHover',
+								}}
+								color="#fff"
+							>Delete</Button>
+						</Row>}
 					<Button.Group space={2}>
 						<Button
 							key="closeBtn"

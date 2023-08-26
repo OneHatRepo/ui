@@ -559,19 +559,18 @@ function Form(props) {
 				{editor}
 
 				<Footer justifyContent="flex-end" {...footerProps}>
-					{onDelete && <Row flex={1} justifyContent="flex-start">
-										<Button
-											key="deleteBtn"
-											onPress={() => {
-												confirm('Are you sure you want to delete this record?', onDelete);
-											}}
-											bg="warning"
-											_hover={{
-												bg: 'warningHover',
-											}}
-											color="#fff"
-										>Delete</Button>
-									</Row>}
+					{onDelete && editorMode === EDITOR_MODE__EDIT && 
+						<Row flex={1} justifyContent="flex-start">
+							<Button
+								key="deleteBtn"
+								onPress={onDelete}
+								bg="warning"
+								_hover={{
+									bg: 'warningHover',
+								}}
+								color="#fff"
+							>Delete</Button>
+						</Row>}
 					<Button.Group space={2} {...buttonGroupProps}>
 				
 						{!isViewOnly && <IconButton
