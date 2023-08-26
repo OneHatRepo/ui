@@ -165,7 +165,11 @@ function Form(props) {
 					} = config;
 
 				if (!isEditable) {
-					const renderedValue = renderer ? renderer(record) : record[fieldName];
+					let renderedValue = renderer ? renderer(record) : record[fieldName];
+					if (_.isBoolean(renderedValue)) {
+						renderedValue = renderedValue.toString();
+					}
+					renderedValue += "\n(not editable)";
 					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>
 										<Text numberOfLines={1} ellipsizeMode="head">{renderedValue}</Text>
 									</Box>);
