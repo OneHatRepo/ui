@@ -13,7 +13,7 @@ import BooleanCombo from './Form/Field/Combo/BooleanCombo.js';
 import CheckboxGroup from './Form/Field/CheckboxGroup/CheckboxGroup.js';
 import Color from './Form/Field/Color.js';
 import Combo from './Form/Field/Combo/Combo.js';
-// import ComboEditor from '../Components/Form/Field/Combo/ComboEditor.js';
+// import { ComboEditor } from '../Components/Form/Field/Combo/Combo.js';
 import Container from './Container/Container.js';
 import DataMgt from './Screens/DataMgt.js';
 import Date from './Form/Field/Date.js';

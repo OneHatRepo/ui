@@ -34,7 +34,7 @@ export default function Editor(props) {
 					record={selection[0]}
 					onEditMode={isViewOnly ? null : onEditMode}
 					onClose={onClose}
-					// onDelete={onDelete}
+					onDelete={onDelete}
 				/>;
 	}
 

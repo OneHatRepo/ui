@@ -12,10 +12,13 @@ import {
 } from '../../../../Constants/UiModes.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
+import withAlert from '../../../Hoc/withAlert.js';
 import withData from '../../../Hoc/withData.js';
 import withEvents from '../../../Hoc/withEvents.js';
+import withPresetButtons from '../../../Hoc/withPresetButtons.js';
 import withSelection from '../../../Hoc/withSelection.js';
 import withValue from '../../../Hoc/withValue.js';
+import withWindowedEditor from '../../../Hoc/withWindowedEditor.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
 import { Grid } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
@@ -26,7 +29,7 @@ import _ from 'lodash';
 // The default export is *with* the HOC. A separate *raw* component is
 // exported which can be combined with many HOCs for various functionality.
 
-export function Combo(props) {
+export function ComboComponent(props) {
 	const {
 			additionalButtons,
 			autoFocus = false,
@@ -515,13 +518,27 @@ export function Combo(props) {
 	return comboComponent;
 }
 
-export default 
-				// withEvents(
-					withData(
+export const Combo = withData(
 						withValue(
 							withSelection(
-								Combo
+								ComboComponent
 							)
 						)
 					);
-				// );
+
+
+export const ComboEditor = withAlert(
+								withData(
+									withValue(
+										withSelection(
+											withWindowedEditor(
+												withPresetButtons(
+													ComboComponent
+												)
+											)
+										)
+									)
+								)
+							);
+
+export default Combo;
