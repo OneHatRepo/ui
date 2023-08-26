@@ -20,7 +20,7 @@ import withSelection from '../../../Hoc/withSelection.js';
 import withValue from '../../../Hoc/withValue.js';
 import withWindowedEditor from '../../../Hoc/withWindowedEditor.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
-import { Grid } from '../../../Grid/Grid.js';
+import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
 import _ from 'lodash';
@@ -39,7 +39,9 @@ export function ComboComponent(props) {
 			menuMinWidth = 150,
 			disableDirectEntry = false,
 			disablePagination = true,
+			hideMenuOnSelection = true,
 			_input = {},
+			isEditor = false,
 
 			// withValue
 			value,
@@ -344,6 +346,8 @@ export function ComboComponent(props) {
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
+
+	const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 	
 	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 								{disableDirectEntry ?
@@ -477,7 +481,7 @@ export function ComboComponent(props) {
 											borderTopWidth={0}
 											p={0}
 										>
-											<Grid
+											<WhichGrid
 												showHeaders={false}
 												showHovers={true}
 												shadow={1}
@@ -492,14 +496,16 @@ export function ComboComponent(props) {
 													};
 												}}
 												{...props}
-												disablePresetButtons={true}
+												disablePresetButtons={!isEditor}
 												disablePagination={disablePagination}
 												fireEvent={onEvent}
 												setSelection={(selection) => {
 													// Decorator fn to add local functionality
 													// Close the menu when row is selected on grid
 													setSelection(selection);
-													hideMenu();
+													if (hideMenuOnSelection) {
+														hideMenu();
+													}
 												}}
 												selectionMode={selectionMode}
 												setValue={(value) => {
@@ -528,18 +534,21 @@ export const Combo = withData(
 					);
 
 
-export const ComboEditor = withAlert(
-								withData(
-									withValue(
-										withSelection(
-											withWindowedEditor(
-												withPresetButtons(
-													ComboComponent
-												)
-											)
-										)
-									)
-								)
-							);
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					isEditor={true}
+					hideMenuOnSelection={false}
+					disableView={true}
+					disableCopy={true}
+					disableDuplicate={true}
+					disablePrint={true}
+					{...props}
+				/>;
+	};
+}
+
+export const ComboEditor = withAdditionalProps(Combo);
 
 export default Combo;
