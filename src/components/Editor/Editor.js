@@ -21,7 +21,7 @@ export default function Editor(props) {
 			// withSelection
 			selection,
 
-		} = prop;
+		} = props;
 
 	if (_.isEmpty(selection)) {
 		return null;
