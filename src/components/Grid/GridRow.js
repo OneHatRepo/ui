@@ -69,6 +69,16 @@ export default function GridRow(props) {
 									'showDragHandles',
 								]);
 
+								if (!extraProps._web) {
+									extraProps._web = {};
+								}
+								if (!extraProps._web.style) {
+									extraProps._web.style = {};
+								}
+								extraProps._web.style = {
+									userSelect: 'none',
+								};
+
 								return <Row key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</Row>;
 							}
 							if (config.fieldName) {
@@ -103,7 +113,9 @@ export default function GridRow(props) {
 									overflow="hidden"
 									textOverflow="ellipsis"
 									alignSelf="center"
-									style={{ userSelect: 'none', }}
+									style={{
+										userSelect: 'none',
+									}}
 									fontSize={styles.GRID_CELL_FONTSIZE}
 									px={styles.GRID_CELL_PX}
 									py={styles.GRID_CELL_PY}

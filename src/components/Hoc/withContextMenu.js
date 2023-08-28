@@ -64,6 +64,12 @@ export default function withContextMenu(WrappedComponent) {
 					};
 					icon = React.cloneElement(icon, {...iconProps});
 				}
+
+				// <div style={{
+				// 	userSelect: 'none',
+				// }}>
+				// </div>
+
 				return <Pressable
 							key={ix}
 							onPress={() => {
@@ -79,6 +85,10 @@ export default function withContextMenu(WrappedComponent) {
 								bg: '#ffc',
 							}}
 							isDisabled={isDisabled}
+							style={{
+								userSelect: 'none',
+							}}
+							userSelect="none"
 						>
 							{icon}
 							<Text
@@ -86,6 +96,10 @@ export default function withContextMenu(WrappedComponent) {
 								color={isDisabled ? 'disabled' : 'trueGray.800'}
 								numberOfLines={1}
 								ellipsizeMode="head"
+								style={{
+									userSelect: 'none',
+								}}
+								userSelect="none"
 							>{text}</Text>
 						</Pressable>;
 			});
@@ -96,6 +110,7 @@ export default function withContextMenu(WrappedComponent) {
 													flex={1}
 													py={2}
 													px={4}
+													userSelect="none"
 												>id: {selection?.[0]?.id}</Text>);
 			}
 			setContextMenuItemComponents(contextMenuItemComponents);
