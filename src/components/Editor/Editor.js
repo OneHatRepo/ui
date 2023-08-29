@@ -1,4 +1,7 @@
 import {
+	Box,
+} from 'native-base';
+import {
 	EDITOR_MODE__VIEW,
 } from '../../Constants/Editor.js';
 import _ from 'lodash';
@@ -25,6 +28,7 @@ export default function Editor(props) {
 		} = props;
 
 	if (_.isEmpty(selection)) {
+		return <Box {...props} bg="#ddd" />;
 		return null;
 	}
 
