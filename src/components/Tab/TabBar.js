@@ -32,7 +32,6 @@ export default function TabBar(props) {
 			startsCollapsed = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
-			saveCurrentTab = true,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -55,14 +54,15 @@ export default function TabBar(props) {
 			return currentTabIx;
 		},
 		setCurrentTab = (ix) => {
+			if ((useLocal && ix === currentTabIxLocal) || ix === currentTabIx) {
+				return; // no change
+			}
 			if (useLocal) {
 				setCurrentTabIxLocal(ix);
+				setSaved(id + '-currentTabIx', ix);
 			}
 			if (onChangeCurrentTab) {
 				onChangeCurrentTab(ix);
-			}
-			if (saveCurrentTab) {
-				setSaved(id + '-currentTabIx', ix);
 			}
 		},
 		onToggleCollapse = () => {
@@ -310,7 +310,7 @@ export default function TabBar(props) {
 				setIsCollapsed(val);
 			}
 
-			if (saveCurrentTab) {
+			if (useLocal) {
 				key = id + '-currentTabIx';
 				val = await getSaved(key);
 				if (!_.isNil(val)) {
