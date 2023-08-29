@@ -31,6 +31,7 @@ export default function Viewer(props) {
 			onDelete,
 		} = props,
 		styles = UiGlobals.styles,
+		flex = props.flex || 1,
 		buildAncillary = () => {
 			let components = [];
 			if (ancillaryItems.length) {
@@ -61,8 +62,8 @@ export default function Viewer(props) {
 			return components;
 		};
 
-	return <Column flex={1} w="100%">
-				<ScrollView flex={1} w="100%">
+	return <Column flex={flex}>
+				<ScrollView width="100%" _web={{ height: 1 }}>
 					<Column m={2}>
 						{onEditMode && <Row mb={4} justifyContent="flex-end">
 											<Button

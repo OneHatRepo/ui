@@ -499,7 +499,7 @@ function Form(props) {
 		// for all other editor types
 		formComponents = buildFromItems();
 		const formAncillaryComponents = buildAncillary();
-		editor = <ScrollView flex={1} width="100%" pb={1}>
+		editor = <ScrollView _web={{ height: 1 }} width="100%" pb={1}>
 					<Row>{formComponents}</Row>
 					<Column pt={4}>{formAncillaryComponents}</Column>
 				</ScrollView>;
