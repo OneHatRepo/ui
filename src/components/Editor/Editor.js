@@ -28,8 +28,8 @@ export default function Editor(props) {
 		} = props;
 
 	if (_.isEmpty(selection)) {
+		return null; // hide the editor when no selection
 		return <Box {...props} bg="#ddd" />;
-		return null;
 	}
 
 	if (Repository?.isRemotePhantomMode && selection.length === 1 && editorMode === EDITOR_MODE__VIEW) {

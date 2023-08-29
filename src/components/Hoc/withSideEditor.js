@@ -27,6 +27,8 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								{...props}
 								editorType={EDITOR_TYPE__SIDE}
 								flex={sideFlex}
+								borderLeftWidth={1}
+								borderLeftColor="#ccc"
 								{...editorProps}
 							/>}
 				/>;
