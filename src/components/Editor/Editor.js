@@ -32,7 +32,7 @@ export default function Editor(props) {
 		return null;
 	}
 
-	if (Repository.isRemotePhantomMode && selection.length === 1 && editorMode === EDITOR_MODE__VIEW) {
+	if (Repository?.isRemotePhantomMode && selection.length === 1 && editorMode === EDITOR_MODE__VIEW) {
 		return <Viewer
 					{...props}
 					record={selection[0]}
