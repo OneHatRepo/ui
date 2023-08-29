@@ -62,7 +62,7 @@ export default function Viewer(props) {
 			return components;
 		};
 
-	return <Column flex={flex}>
+	return <Column flex={flex} {...props}>
 				<ScrollView width="100%" _web={{ height: 1 }}>
 					<Column m={2}>
 						{onEditMode && <Row mb={4} justifyContent="flex-end">

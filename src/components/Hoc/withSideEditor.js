@@ -1,4 +1,3 @@
-import { useState, } from 'react';
 import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
@@ -13,9 +12,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 				Editor,
 				editorProps = {},
 				sideFlex = 100,
-			} = props,
-			[selection, setSelection] = useState(null);
-
+			} = props;
 
 		if (!Editor) {
 			throw Error('Editor is not defined');
@@ -25,13 +22,11 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 					center={<WrappedComponent
 								isTree={isTree}
 								{...props}
-								onSelectionChange={setSelection}	
 							/>}
 					east={<Editor
+								{...props}
 								editorType={EDITOR_TYPE__SIDE}
 								flex={sideFlex}
-								selection={selection} // This needs to be whatever the selection is in the center component
-								// {...props}
 								{...editorProps}
 							/>}
 				/>;

@@ -64,6 +64,8 @@ export default function ManagerScreen(props) {
 				<Row
 					h="80px"
 					py={2}
+					borderBottomWidth={2}
+					borderBottomColor="#ccc"
 				>
 					<Text p={4} fontSize="26" fontWeight={700}>{title}</Text>
 					<IconButton
