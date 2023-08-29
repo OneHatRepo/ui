@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useId, } from 'react';
+import React, { useState, useEffect, } from 'react';
 import {
 	Column,
 	Row,
@@ -20,8 +20,8 @@ export default function ManagerScreen(props) {
 			title,
 			sideModeComponent,
 			fullModeComponent,
+			id,
 		} = props,
-		id = useId(),
 		[isReady, setIsReady] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
 		setMode = (newMode) => {

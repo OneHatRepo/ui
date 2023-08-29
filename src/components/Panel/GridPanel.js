@@ -28,7 +28,11 @@ export function GridPanel(props) {
 		}
 	}
 
-	return <Panel {...props} {..._panel}>
+	if (!props._panel) {
+		props._panel = {};
+	}
+
+	return <Panel {...props} {...props._panel}>
 				<WhichGrid {...props} />
 			</Panel>;
 }
