@@ -56,7 +56,7 @@ export default function Viewer(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					return <Column key={'ancillary-' + ix} px={2} pb={1}>{title}{element}</Column>;
+					return <Column key={'ancillary-' + ix} my={5}>{title}{element}</Column>;
 				});
 			}
 			return components;

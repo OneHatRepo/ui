@@ -63,6 +63,8 @@ const defaults = {
 	GRID_ROW_HOVER_BG: 'hover',
 	GRID_ROW_SELECTED_BG: 'selected',
 	GRID_ROW_SELECTED_HOVER_BG: 'selectedHover',
+	GRID_BORDER_WIDTH: 1,
+	GRID_BORDER_COLOR: 'trueGray.300',
 	ICON_BUTTON_BG: 'trueGray.200:alpha.0',
 	ICON_BUTTON_BG_DISABLED: 'trueGray.200',
 	ICON_BUTTON_BG_HOVER: '#000:alpha.20',

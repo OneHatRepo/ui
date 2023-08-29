@@ -427,7 +427,7 @@ function Form(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					return <Column key={'ancillary-' + ix} px={2} pb={1}>{title}{element}</Column>;
+					return <Column key={'ancillary-' + ix} mx={2} my={5}>{title}{element}</Column>;
 				});
 			}
 			return components;

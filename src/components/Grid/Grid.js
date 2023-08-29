@@ -774,6 +774,8 @@ function GridComponent(props) {
 				{...testProps('Grid')}
 				w="100%"
 				bg={bg}
+				borderWidth={styles.GRID_BORDER_WIDTH}
+				borderColor={styles.GRID_BORDER_COLOR}
 				{...sizeProps}
 			>
 				{topToolbar}
