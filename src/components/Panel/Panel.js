@@ -1,3 +1,4 @@
+import { useEffect, useState, } from 'react';
 import {
 	Column,
 	Row,
@@ -33,7 +34,6 @@ function Panel(props) {
 			
 			// Header
 			title = props.model,
-			titleSuffix = '',
 			showHeader = true,
 			header = null,
 			isClosable = false,
@@ -42,6 +42,7 @@ function Panel(props) {
 			isCollapsed = false,
 			setIsCollapsed,
 			collapseDirection = VERTICAL, // HORIZONTAL, VERTICAL
+			disableTitleChange = false,
 
 			// Content
 			topToolbar = null,
@@ -51,9 +52,31 @@ function Panel(props) {
 
 			...propsToPass
 		} = props,
+		[titleSuffix, setTitleSuffix] = useState(''),
 		onToggleCollapse = () => {
 			setIsCollapsed(!isCollapsed);
 		};
+
+	if (!disableTitleChange) {
+		const
+			selectorSelected = props.selectorSelected,
+			[isReady, setIsReady] = useState(disableTitleChange);
+
+		useEffect(() => {
+			let titleSuffix = '';
+			if (selectorSelected?.[0]?.displayValue) {
+				titleSuffix = ' for ' + selectorSelected[0].displayValue;
+			} 
+			setTitleSuffix(titleSuffix);
+			if (!isReady) {
+				setIsReady(true);
+			}
+		}, [selectorSelected, disableTitleChange]);
+	
+		if (!isReady) {
+			return null;
+		}
+	}
 
 	let headerComponent = header;
 	if (showHeader && title) {

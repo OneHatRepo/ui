@@ -1,38 +1,31 @@
-import { useEffect, useState, } from 'react';
 import Panel from './Panel.js';
-import { Tree, } from '../Tree/Tree.js';
+import Tree, { WindowedTreeEditor, SideTreeEditor, } from '../Tree/Tree.js';
+import {
+	EDITOR_TYPE__WINDOWED,
+	EDITOR_TYPE__SIDE,
+} from '../../Constants/Editor.js';
 import _ from 'lodash';
 
 export function TreePanel(props) {
 	const {
-			disableTitleChange = false,
-			selectorSelected,
-		} = props,
-		originalTitle = props.title,
-		[isReady, setIsReady] = useState(disableTitleChange),
-		[title, setTitle] = useState(originalTitle);
+			isEditor = false,
+			editorType = EDITOR_TYPE__WINDOWED,
+		} = props;
 
-	useEffect(() => {
-		if (!disableTitleChange && originalTitle) {
-			let newTitle = originalTitle;
-			if (selectorSelected?.[0]?.displayValue) {
-				newTitle = originalTitle + ' for ' + selectorSelected[0].displayValue;
-			}
-			if (newTitle !== title) {
-				setTitle(newTitle);
-			}
+	let WhichTree = Tree;
+	if (isEditor) {
+		switch(editorType) {
+			case EDITOR_TYPE__WINDOWED:
+				WhichTree = WindowedTreeEditor;
+				break;
+			case EDITOR_TYPE__SIDE:
+				WhichTree = SideTreeEditor;
+				break;
 		}
-		if (!isReady) {
-			setIsReady(true);
-		}
-	}, [selectorSelected, disableTitleChange, originalTitle]);
-
-	if (!isReady) {
-		return null;
 	}
 
-	return <Panel {...props} title={title}>
-				<Tree {...props} />
+	return <Panel {...props._panel}>
+				<WhichTree {...props} />
 			</Panel>;
 }
 

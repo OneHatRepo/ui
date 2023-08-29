@@ -1,6 +1,5 @@
-import { useEffect, useState, } from 'react';
 import Panel from './Panel.js';
-import Grid, { InlineGridEditor, SideGridEditor, } from '../Grid/Grid.js';
+import Grid, { InlineGridEditor, WindowedGridEditor, SideGridEditor, } from '../Grid/Grid.js';
 import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,
@@ -10,47 +9,26 @@ import _ from 'lodash';
 
 export function GridPanel(props) {
 	const {
+			isEditor = false,
 			editorType = EDITOR_TYPE__WINDOWED,
-			disableTitleChange = false,
-			selectorSelected,
-		} = props,
-		originalTitle = props.title,
-		[isReady, setIsReady] = useState(disableTitleChange),
-		[title, setTitle] = useState(originalTitle);
+		} = props;
 
-	let WhichGrid;
-	switch(editorType) {
-		case EDITOR_TYPE__INLINE:
-			WhichGrid = InlineGridEditor;
-			break;
-		case EDITOR_TYPE__WINDOWED:
-			WhichGrid = Grid;
-			break;
-		case EDITOR_TYPE__SIDE:
-			WhichGrid = SideGridEditor;
-			break;
+	let WhichGrid = Grid;
+	if (isEditor) {
+		switch(editorType) {
+			case EDITOR_TYPE__INLINE:
+				WhichGrid = InlineGridEditor;
+				break;
+			case EDITOR_TYPE__WINDOWED:
+				WhichGrid = WindowedGridEditor;
+				break;
+			case EDITOR_TYPE__SIDE:
+				WhichGrid = SideGridEditor;
+				break;
+		}
 	}
 
-	useEffect(() => {
-		if (!disableTitleChange && originalTitle) {
-			let newTitle = originalTitle;
-			if (selectorSelected?.[0]?.displayValue) {
-				newTitle = originalTitle + ' for ' + selectorSelected[0].displayValue;
-			}
-			if (newTitle !== title) {
-				setTitle(newTitle);
-			}
-		}
-		if (!isReady) {
-			setIsReady(true);
-		}
-	}, [selectorSelected, disableTitleChange, originalTitle]);
-
-	if (!isReady) {
-		return null;
-	}
-
-	return <Panel {...props} title={title}>
+	return <Panel {...props} {..._panel}>
 				<WhichGrid {...props} />
 			</Panel>;
 }
