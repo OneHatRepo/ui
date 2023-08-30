@@ -52,6 +52,17 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
+			setSelectionDecorated = (newSelection) => {
+				function doIt() {
+					setSelection(newSelection);
+				}
+				const formState = editorStateRef.current;
+				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== selection && editorMode === EDITOR_MODE__EDIT) {
+					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
+				} else {
+					doIt();
+				}
+			},
 			getListeners = () => {
 				return listeners.current;
 			},
@@ -342,6 +353,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					disableDelete={disableDelete}
 					disableDuplicate={disableDuplicate}
 					disableView ={disableView}
+					setSelection={setSelectionDecorated}
 				/>;
 	};
 }
