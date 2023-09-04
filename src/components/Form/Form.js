@@ -287,12 +287,14 @@ function Form(props) {
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
+			if (!label && Repository && model[name].title) {
+				label = model[name].title;
+			}
+
 			if (isViewOnly || !isEditable) {
-				const Text = getComponentFromType('Text');
-				if (!label && Repository && model.titles?.[name]) {
-					label = model.titles[name];
-				}
-				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
+				const
+					Text = getComponentFromType('Text'),
+					value = (record && record[name]) || (startingValues && startingValues[name]) || null;
 				let element = <Text
 									value={value}
 									{...propsToPass}
@@ -307,9 +309,6 @@ function Form(props) {
 				return <Row key={ix} px={2} pb={1}>{element}</Row>;
 			}
 
-			if (!label && Repository && model.titles?.[name]) {
-				label = model.titles[name];
-			}
 
 		
 			// // These rules are for fields *outside* the model
