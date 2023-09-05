@@ -66,6 +66,7 @@ export default function withFilters(WrappedComponent) {
 								!_.isEmpty(defaultFilters) ? defaultFilters : // component filters override model filters
 								!_.isEmpty(modelDefaultFilters) ? modelDefaultFilters : [],
 				isUsingCustomFilters = startingFilters === customFilters,
+				modelFilterTypes = Repository.getSchema().getFilterTypes(),
 				[isReady, setIsReady] = useState(false),
 				[isFilterSelectorShown, setIsFilterSelectorShown] = useState(false),
 				getFormattedFilter = (filter) => {
@@ -80,17 +81,13 @@ export default function withFilters(WrappedComponent) {
 							title = propertyDef.title;
 							type = propertyDef.filterType;
 						} else {
-							const modelFilterTypes = Repository.getSchema().getFilterTypes();
 							if (!modelFilterTypes[field]) {
 								throw Error('not a propertyDef, and not an ancillaryFilter!');
 							}
-
 							const ancillaryFilter = modelFilterTypes[field];
 							title = ancillaryFilter.title;
 							type = FILTER_TYPE_ANCILLARY;
 						}
-
-
 						formatted = {
 							field,
 							title,
@@ -257,10 +254,8 @@ export default function withFilters(WrappedComponent) {
 
 						if (_.isString(filterType)) {
 							if (filterType === FILTER_TYPE_ANCILLARY) {
-								// Convert field to PluralCamelGrid
-								title = Inflector.camel2words(Inflector.singularize(field));
-								filterType = Inflector.camelize(Inflector.pluralize(field)) + 'Combo';
-
+								title = modelFilterTypes[field].title;
+								filterType = Inflector.camelize(Inflector.pluralize(field)) + 'Combo'; // Convert field to PluralCamelCombo
 							}
 							Element = getComponentFromType(filterType);
 							if (filterType === 'Input') {
@@ -418,8 +413,7 @@ export default function withFilters(WrappedComponent) {
 					usedFields = _.filter(_.map(modalFilters, (filter) => {
 						return filter?.field;
 					}), el => !_.isNil(el)),
-					formStartingValues = {},
-					modelFilterTypes = Repository.getSchema().getFilterTypes();
+					formStartingValues = {};
 				
 				_.each(modalSlots, (field, ix) => {
 
