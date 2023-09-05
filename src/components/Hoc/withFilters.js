@@ -11,6 +11,7 @@ import {
 import {
 	FILTER_TYPE_ANCILLARY
 } from '../../Constants/Filters.js';
+import Inflector from 'inflector-js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -245,14 +246,20 @@ export default function withFilters(WrappedComponent) {
 						let {
 								field,
 								type: filterType,
+								title,
 							} = filter,
+
 							propertyDef = Repository.getSchema().getPropertyDefinition(field);
+						
+						if (!title) {
+							title = propertyDef?.title;
+						}
 
 						if (_.isString(filterType)) {
 							if (filterType === FILTER_TYPE_ANCILLARY) {
 								// Convert field to PluralCamelGrid
-								debugger;
-								
+								title = Inflector.camel2words(Inflector.singularize(field));
+								filterType = Inflector.camelize(Inflector.pluralize(field)) + 'Combo';
 
 							}
 							Element = getComponentFromType(filterType);
@@ -275,7 +282,7 @@ export default function withFilters(WrappedComponent) {
 							elementProps.minWidth = 100;
 						}
 
-						const tooltip = filter.tooltip || filter.title || propertyDef.title;
+						const tooltip = filter.tooltip || title;
 						let filterElement = <Element
 												key={'filter-' + field}
 												tooltip={tooltip}
@@ -287,7 +294,7 @@ export default function withFilters(WrappedComponent) {
 											/>;
 						if (showLabels && field !== 'q') {
 							filterElement = <Row key={'label-' + ix} alignItems="center">
-												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{propertyDef.title}</Text>
+												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{title}</Text>
 												{filterElement}
 											</Row>;
 						}
