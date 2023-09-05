@@ -12,13 +12,9 @@ import {
 } from '../../../../Constants/UiModes.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
-import withAlert from '../../../Hoc/withAlert.js';
 import withData from '../../../Hoc/withData.js';
-import withEvents from '../../../Hoc/withEvents.js';
-import withPresetButtons from '../../../Hoc/withPresetButtons.js';
 import withSelection from '../../../Hoc/withSelection.js';
 import withValue from '../../../Hoc/withValue.js';
-import withWindowedEditor from '../../../Hoc/withWindowedEditor.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
@@ -53,9 +49,6 @@ export function ComboComponent(props) {
 			idIx,
 			displayIx,
 
-			// withEvents
-			onEvent,
-
 			// withSelection
 			selection,
 			setSelection,
@@ -70,11 +63,11 @@ export function ComboComponent(props) {
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
-		// isTyping = useRef(false),
-		// typingTimeout = useRef(),
+		isManuallyEnteringText = useRef(false),
+		savedSearch = useRef(null),
+		typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
-		[isManuallyEnteringText, setIsManuallyEnteringText] = useState(false), // when typing a value, not using trigger/grid
 		[textValue, setTextValue] = useState(''),
 		[width, setWidth] = useState(0),
 		[height, setHeight] = useState(null),
@@ -126,6 +119,18 @@ export function ComboComponent(props) {
 			}
 			setIsMenuShown(false);
 		},
+		getIsManuallyEnteringText = () => {
+			return isManuallyEnteringText.current;
+		},
+		setIsManuallyEnteringText = (bool) => {
+			isManuallyEnteringText.current = bool;
+		},
+		getSavedSearch = () => {
+			return savedSearch.current;
+		},
+		setSavedSearch = (val) => {
+			savedSearch.current = val;
+		},
 		toggleMenu = () => {
 			setIsMenuShown(!isMenuShown);
 		},
@@ -168,21 +173,19 @@ export function ComboComponent(props) {
 				return;
 			}
 			setTextValue(value);
-			// searchForMatches(value);
-			// setIsManuallyEnteringText(true);
 
-			// isTyping.current = true;
-			// if (typingTimeout.current) {
-			// 	clearTimeout(typingTimeout.current);
-			// }
-			// typingTimeout.current = setTimeout(() => {
-			// 	isTyping.current = false;
-			// }, 300);
+			setIsManuallyEnteringText(true);
+			clearTimeout(typingTimeout.current);
+			typingTimeout.current = setTimeout(() => {
+				searchForMatches(value);
+			}, 300);
 		},
 		onInputBlur = (e) => {
 			const {
 					relatedTarget
 				} = e;
+
+			setIsManuallyEnteringText(false);
 
 			// If user focused on the trigger and text is blank, clear the selection and close the menu
 			if ((triggerRef.current === relatedTarget || triggerRef.current.contains(relatedTarget)) && (_.isEmpty(textValue) || _.isNil(textValue))) {
@@ -211,7 +214,7 @@ export function ComboComponent(props) {
 			if (_.isEmpty(textValue) || _.isNil(textValue)) {
 				setSelection([]); // delete current selection
 
-			} else if (isManuallyEnteringText) {
+			} else if (getIsManuallyEnteringText()) {
 				if (forceSelection) {
 					setSelection([]); // delete current selection
 					hideMenu();
@@ -257,43 +260,57 @@ export function ComboComponent(props) {
 				hideMenu();
 			}
 		},
-		searchForMatches = (value) => {
-
-			// Do a search for this value
-			// TODO: Do fuzzy seach for results
-			// Would have to do differently for remote repositories
-			// Narrow results in grid to those that match the filter.
-			// If filter is cleared, show original results.
+		searchForMatches = async (value) => {
 
 			let found;
 			if (Repository) {
 				
-				debugger;
-				
 				// Set filter
 				let filter = {};
-				if (value !== '') {
+				if (Repository.isRemote) {
+					let searchField = 'q';
 
-					// TODO: Want to build a search functionality that shows results in combo grid
-
-					if (Repository.isRemote) {
-						// 'q' fuzzy search from server 
-						
-	
-					} else {
-						// Fuzzy search with getBy filter function
-						filter = (entity) => {
-							const
-								displayValue = entity.displayValue,
-								regex = new RegExp('^' + value);
-							return displayValue.match(regex);
-						};
+					// Check to see if displayField is a real field
+					const
+						schema = Repository.getSchema(),
+						displayFieldName = schema.model.displayProperty;
+						displayFieldDef = schema.getPropertyDefinition(displayFieldName);
+					if (!displayFieldDef.isVirtual) {
+						searchField = displayFieldName + ' LIKE';
 					}
+
+					if (!_.isEmpty(value)) {
+						value += '%';
+					}
+
+					await Repository.filter(searchField, value);
+					if (!this.isAutoLoad) {
+						await Repository.reload();
+					}
+
+				} else {
+					throw Error('Not sure if this works yet!');
+
+					// Fuzzy search with getBy filter function
+					filter = (entity) => {
+						const
+							displayValue = entity.displayValue,
+							regex = new RegExp('^' + value);
+						return displayValue.match(regex);
+					};
+					Repository.filter(filter);
 				}
-				Repository.filter(filter);
 
-				// TODO: Auto-select if filter produces only one result
-
+				setSavedSearch(value);
+				const numResults = Repository.entities.length;
+				if (!numResults) {
+					setSelection([]);
+				} else if (numResults === 1) {
+					const selection = Repository.entities[0];
+					setSelection([selection]);
+					setSavedSearch(null);
+				}
+			
 			} else {
 				// Search through data
 				found = _.find(data, (item) => {
@@ -333,6 +350,10 @@ export function ComboComponent(props) {
 	}, [isRendered]);
 
 	useEffect(() => {
+		if (getIsManuallyEnteringText() && getSavedSearch()) {
+			return
+		}
+
 		// Adjust text input to match selection
 		let localTextValue = getDisplayFromSelection(selection);
 		if (!_.isEqual(localTextValue, textValue)) {
@@ -498,7 +519,6 @@ export function ComboComponent(props) {
 												{...props}
 												disablePresetButtons={!isEditor}
 												disablePagination={disablePagination}
-												fireEvent={onEvent}
 												setSelection={(selection) => {
 													// Decorator fn to add local functionality
 													// Close the menu when row is selected on grid
