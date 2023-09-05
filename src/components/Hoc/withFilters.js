@@ -8,6 +8,9 @@ import {
 import {
 	EDITOR_TYPE__PLAIN,
 } from '../../Constants/Editor.js';
+import {
+	FILTER_TYPE_ANCILLARY
+} from '../../Constants/Filters.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -71,10 +74,26 @@ export default function withFilters(WrappedComponent) {
 							field = filter,
 							propertyDef = Repository.getSchema().getPropertyDefinition(field);
 						
+						let title, type;
+						if (propertyDef) {
+							title = propertyDef.title;
+							type = propertyDef.filterType;
+						} else {
+							const modelFilterTypes = Repository.getSchema().getFilterTypes();
+							if (!modelFilterTypes[field]) {
+								throw Error('not a propertyDef, and not an ancillaryFilter!');
+							}
+
+							const ancillaryFilter = modelFilterTypes[field];
+							title = ancillaryFilter.title;
+							type = FILTER_TYPE_ANCILLARY;
+						}
+
+
 						formatted = {
 							field,
-							title: propertyDef.title,
-							type: propertyDef.filterType,
+							title,
+							type,
 							value: null, // value starts as null
 						};
 					} else if (_.isPlainObject(filter)) {
@@ -223,13 +242,19 @@ export default function withFilters(WrappedComponent) {
 					_.each(filters, (filter, ix) => {
 						let Element,
 							elementProps = {};
-						const {
+						let {
 								field,
 								type: filterType,
 							} = filter,
 							propertyDef = Repository.getSchema().getPropertyDefinition(field);
 
 						if (_.isString(filterType)) {
+							if (filterType === FILTER_TYPE_ANCILLARY) {
+								// Convert field to PluralCamelGrid
+								debugger;
+								
+
+							}
 							Element = getComponentFromType(filterType);
 							if (filterType === 'Input') {
 								elementProps.autoSubmit = true;
@@ -397,6 +422,15 @@ export default function withFilters(WrappedComponent) {
 						if (inArray(filterField, usedFields) && field !== filterField) { // Show all filters not yet applied, but include the current filter
 							return; // skip, since it's already been used
 						}
+
+						// Is it an ancillary filter?
+						const isAncillary = _.isPlainObject(filterType) && filterType.isAncillary;
+						if (isAncillary) {
+							data.push([ filterField, filterType.title ]);
+							return;
+						}
+
+						// basic property filter
 						const propertyDef = Repository.getSchema().getPropertyDefinition(filterField);
 						data.push([ filterField, propertyDef.title ]);
 					});
