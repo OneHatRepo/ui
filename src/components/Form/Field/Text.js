@@ -15,9 +15,9 @@ const
 					ellipsizeMode="head" 
 					flex={1}
 					fontSize={styles.FORM_TEXT_FONTSIZE}
-					bg={styles.FORM_TEXT_BG}
+					minHeight='40px'
 					px={3}
-					py={1}
+					py={2}
 					{...props}
 				>{props.value}</Text>;
 	},

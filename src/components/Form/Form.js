@@ -199,7 +199,8 @@ function Form(props) {
 												} = fieldState;
 											let editorProps = {};
 											if (!editor) {
-												editor = model.editorTypes[fieldName];
+												const propertyDef = fieldName && Repository?.getSchema().getPropertyDefinition(fieldName);
+												editor = propertyDef[fieldName].editoType;
 												if (_.isPlainObject(editor)) {
 													const {
 															type,
@@ -259,14 +260,16 @@ function Form(props) {
 				} = item;
 			let editorTypeProps = {};
 
-			const model = Repository?.getSchema().model;
-			if (!type && Repository) {
-				const 
-					editorTypes = model.editorTypes,
+			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
+			if (propertyDef?.isEditingDisabled) {
+				isEditable = false;
+			}
+			if (isEditable && !type && Repository) {
+				const
 					{
 						type: t,
 						...p
-					} =  editorTypes[name];
+					} =  propertyDef.editorType;
 				type = t;
 				editorTypeProps = p;
 			}
@@ -287,8 +290,8 @@ function Form(props) {
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
-			if (!label && Repository && model[name].title) {
-				label = model[name].title;
+			if (!label && Repository && propertyDef.title) {
+				label = propertyDef.title;
 			}
 
 			if (isViewOnly || !isEditable) {
@@ -482,7 +485,6 @@ function Form(props) {
 	let formComponents,
 		editor;
 	if (editorType === EDITOR_TYPE__INLINE) {
-		// for inline editor
 		formComponents = buildFromColumnsConfig();
 		editor = <ScrollView
 					horizontal={true}
@@ -494,8 +496,14 @@ function Form(props) {
 					borderTopColor="primary.100"
 					borderBottomColor="primary.100"
 				>{formComponents}</ScrollView>;
+	} else if (editorType === EDITOR_TYPE__PLAIN) {
+		formComponents = buildFromItems();
+		const formAncillaryComponents = buildAncillary();
+		editor = <>
+					<Row>{formComponents}</Row>
+					<Column pt={4}>{formAncillaryComponents}</Column>
+				</>;
 	} else {
-		// for all other editor types
 		formComponents = buildFromItems();
 		const formAncillaryComponents = buildAncillary();
 		editor = <ScrollView _web={{ height: 1 }} width="100%" pb={1}>

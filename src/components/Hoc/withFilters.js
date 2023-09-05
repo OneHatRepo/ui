@@ -5,6 +5,9 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import {
+	EDITOR_TYPE__PLAIN,
+} from '../../Constants/Editor.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -50,11 +53,7 @@ export default function withFilters(WrappedComponent) {
 				// aliases
 				{
 					defaultFilters: modelDefaultFilters,
-					filterTypes: modelFilterTypes,
-					titles: modelTitles,
-					virtualFields: modelVirtualFields,
-					excludeFields: modelExcludeFields,
-					filteringDisabled: modelFilteringDisabled,
+					ancillaryFilters: modelAncillaryFilters,
 				} = Repository.getSchema().model,
 				id = useId(),
 
@@ -68,11 +67,14 @@ export default function withFilters(WrappedComponent) {
 				getFormattedFilter = (filter) => {
 					let formatted = null;
 					if (_.isString(filter)) {
-						const field = filter;
+						const
+							field = filter,
+							propertyDef = Repository.getSchema().getPropertyDefinition(field);
+						
 						formatted = {
 							field,
-							title: modelTitles[field],
-							type: modelFilterTypes[field],
+							title: propertyDef.title,
+							type: propertyDef.filterType,
 							value: null, // value starts as null
 						};
 					} else if (_.isPlainObject(filter)) {
@@ -224,7 +226,8 @@ export default function withFilters(WrappedComponent) {
 						const {
 								field,
 								type: filterType,
-							} = filter;
+							} = filter,
+							propertyDef = Repository.getSchema().getPropertyDefinition(field);
 
 						if (_.isString(filterType)) {
 							Element = getComponentFromType(filterType);
@@ -247,7 +250,7 @@ export default function withFilters(WrappedComponent) {
 							elementProps.minWidth = 100;
 						}
 
-						const tooltip = filter.tooltip || filter.title || modelTitles[filter.field];
+						const tooltip = filter.tooltip || filter.title || propertyDef.title;
 						let filterElement = <Element
 												key={'filter-' + field}
 												tooltip={tooltip}
@@ -259,7 +262,7 @@ export default function withFilters(WrappedComponent) {
 											/>;
 						if (showLabels && field !== 'q') {
 							filterElement = <Row key={'label-' + ix} alignItems="center">
-												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{modelTitles[field]}</Text>
+												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{propertyDef.title}</Text>
 												{filterElement}
 											</Row>;
 						}
@@ -383,17 +386,19 @@ export default function withFilters(WrappedComponent) {
 					usedFields = _.filter(_.map(modalFilters, (filter) => {
 						return filter?.field;
 					}), el => !_.isNil(el)),
-					formStartingValues = {};
+					formStartingValues = {},
+					modelFilterTypes = Repository.getSchema().getFilterTypes();
 				
 				_.each(modalSlots, (field, ix) => {
 
-					// Create the data for the combobox.
+					// Create the data for the combobox. (i.e. List all the possible filters for this slot)
 					const data = [];
 					_.each(modelFilterTypes, (filterType, filterField) => {
 						if (inArray(filterField, usedFields) && field !== filterField) { // Show all filters not yet applied, but include the current filter
 							return; // skip, since it's already been used
 						}
-						data.push([ filterField, modelTitles[filterField] ]);
+						const propertyDef = Repository.getSchema().getPropertyDefinition(filterField);
+						data.push([ filterField, propertyDef.title ]);
 					});
 
 					const
@@ -447,6 +452,7 @@ export default function withFilters(WrappedComponent) {
 								<FormPanel
 									title="Filter Selector"
 									instructions="Please select which fields to filter by."
+									editorType={EDITOR_TYPE__PLAIN}
 									flex={1}
 									startingValues={formStartingValues}
 									items={[
