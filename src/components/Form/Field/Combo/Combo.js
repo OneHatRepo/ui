@@ -505,6 +505,8 @@ export function ComboComponent(props) {
 											<WhichGrid
 												showHeaders={false}
 												showHovers={true}
+												pageSize={100}
+												disableAdjustingPageSizeToHeight={true}
 												shadow={1}
 												getRowProps={() => {
 													return {

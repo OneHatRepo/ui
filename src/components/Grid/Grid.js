@@ -21,6 +21,11 @@ import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
 } from '../../Constants/Grid.js';
+import {
+	UI_MODE_WEB,
+	UI_MODE_REACT_NATIVE,
+	CURRENT_MODE,
+} from '../../Constants/UiModes.js';
 import * as colourMixer from '@k-renwick/colour-mixer'
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
@@ -70,6 +75,7 @@ function GridComponent(props) {
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
+			disableAdjustingPageSizeToHeight = false,
 			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
 			showRowExpander = false,
@@ -608,6 +614,41 @@ function GridComponent(props) {
 				dragRowSlot.marker.remove();
 			}
 			setDragRowSlot(null);
+		},
+		onLayout = (e) => {
+			if (disableAdjustingPageSizeToHeight || !Repository) {
+				return;
+			}
+			const {
+					nativeEvent: {
+						layout,
+						target,
+					},
+				} = e;
+			let pageSize;
+			if (CURRENT_MODE === UI_MODE_WEB) {
+				const
+					targetBoundingBox = target.getBoundingClientRect(),
+					targetHeight = targetBoundingBox.height,
+					firstRow = target.children[0]?.children[0]?.children[0]?.children[0]?.children[0];
+				if (firstRow) {
+					const
+						rowBoundingBox = firstRow.getBoundingClientRect(),
+						rowHeight = rowBoundingBox.height,
+						rowsPerTarget = Math.floor(targetHeight / rowHeight);
+					pageSize = rowsPerTarget;
+					if (showHeaders) {
+						pageSize--;
+					}
+					if (bottomToolbar) {
+						pageSize--;
+					}
+				}
+			}
+			
+			if (pageSize) {
+				Repository.setPageSize(pageSize);
+			}
 		};
 		
 	useEffect(() => {
@@ -752,7 +793,7 @@ function GridComponent(props) {
 	if (inlineEditor) {
 		rowData.push({ id: 'inlineEditor' }); // make editor the last row so it can scroll with all other rows
 	}
-	const initialNumToRender = rowData.length || 10;
+	const initialNumToRender = rowData?.length || 10;
 
 	// headers & footers
 	let listFooterComponent = null;
@@ -776,6 +817,7 @@ function GridComponent(props) {
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
 				borderColor={styles.GRID_BORDER_COLOR}
+				onLayout={onLayout}
 				{...sizeProps}
 			>
 				{topToolbar}

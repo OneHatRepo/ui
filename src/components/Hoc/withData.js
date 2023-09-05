@@ -19,6 +19,7 @@ export default function withData(WrappedComponent) {
 				uniqueRepository = false,
 				model,
 				autoLoad = false,
+				pageSize,
 
 				// For plain JS data
 				data,
@@ -49,6 +50,10 @@ export default function withData(WrappedComponent) {
 					Repository = await oneHatData.createRepository({ schema });
 				} else {
 					Repository = oneHatData.getRepository(model);
+				}
+
+				if (pageSize) {
+					Repository.setPageSize(pageSize);
 				}
 
 				if (Repository && (autoLoad || Repository.autoLoad) && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
