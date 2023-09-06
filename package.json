@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.3.5",
+	"version": "0.3.6",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -37,6 +37,7 @@
 		"yup": "^1.2.0"
 	},
 	"peerDependencies": {
+		"@files-ui/react": "^1.0.8",
 		"ckeditor5-custom-build": "file:ckeditor5",
 		"react": "*",
 		"react-color": "^2.19.3",
@@ -44,8 +45,7 @@
 		"react-draggable": "^4.4.5",
 		"react-native-draggable": "^3.3.0",
 		"react-dom": "*",
-		"react-native": "*",
-		"react-uploader": "^3.41.0"
+		"react-native": "*"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.22.1",

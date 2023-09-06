@@ -16,8 +16,7 @@ import {
 	FILE_MODE_IMAGE,
 	FILE_MODE_FILE,
 } from '../../../Constants/File.js';
-import { Uploader } from 'uploader'; // Installed by "react-uploader".
-import { UploadButton } from 'react-uploader';
+import { Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
 import IconButton from '../../Buttons/IconButton.js';
 import withValue from '../../Hoc/withValue.js';
 import File from '../../Icons/File.js';
@@ -79,6 +78,8 @@ function FileElement(props) {
 			};
 			setIsDropping(false);
 		};
+
+	return null;
 		
 	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
 				<Tooltip label={tooltip} placement={tooltipPlacement}>
