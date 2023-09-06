@@ -63,7 +63,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				selection,
 				setSelection,
 
-				// DataMgt
+				// parent container
 				selectorId,
 				selectorSelected,
 			} = props,

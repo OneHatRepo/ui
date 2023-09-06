@@ -25,6 +25,9 @@ export default function Viewer(props) {
 			// withData
 			record,
 
+			// parent container
+			selectorSelected,
+
 			// withEditor
 			onEditMode,
 			onClose,
@@ -39,7 +42,7 @@ export default function Viewer(props) {
 					let {
 						type,
 						title = null,
-						selectorId,
+						selectorId = null,
 						...propsToPass
 					} = item;
 					const

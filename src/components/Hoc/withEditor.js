@@ -30,7 +30,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				},
 				record,
 
-				// DataMgt
+				// parent container
 				selectorId,
 				selectorSelected,
 
