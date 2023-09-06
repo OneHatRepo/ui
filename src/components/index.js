@@ -20,7 +20,6 @@ import Date from './Form/Field/Date.js';
 import DateRange from './Filter/DateRange.js';
 import DisplayField from './Form/Field/DisplayField.js';
 import FieldSet from './Form/FieldSet.js';
-// import File from './Form/Field/File.js'; // web only
 import FiltersForm from './Form/FiltersForm.js';
 // import FiltersToolbar from '../Components/Toolbar/FiltersToolbar.js';
 import Form from './Form/Form.js';
@@ -70,7 +69,6 @@ const components = {
 	DateRange,
 	DisplayField,
 	FieldSet,
-	// File,
 	FiltersForm,
 	// FiltersToolbar,
 	Form,

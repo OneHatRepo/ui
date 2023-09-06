@@ -16,27 +16,19 @@ import {
 	FILE_MODE_IMAGE,
 	FILE_MODE_FILE,
 } from '../../../Constants/File.js';
+import { Uploader } from 'uploader'; // Installed by "react-uploader".
+import { UploadButton } from 'react-uploader';
 import IconButton from '../../Buttons/IconButton.js';
 import withValue from '../../Hoc/withValue.js';
 import File from '../../Icons/File.js';
 import Trash from '../../Icons/Trash.js';
 import _ from 'lodash';
 
-// NOTES: Since this arrangement of form and fields has only a single value per field, 
-// but there are multiple fields used in file uploads, change things so that the single
-// value is a JSON object, with the separate values encoded within.
-
-// TODO:
-// √ Combine values into single JSON value
-// Build interpreter so the field can work with existing value
-// Build back-end to receive this
-// Build thumbnail viewer for existing image
-// Build editor, with large viewer for existing image / video / pdf
-// 
-
 function FileElement(props) {
 
-	throw new Error('Deprecated. Use platform-specific File component instead.');
+	if (CURRENT_MODE !== UI_MODE_WEB) {
+		throw new Error('Not yet implemented except for web.');
+	}
 
 	const {
 			name,
@@ -49,7 +41,6 @@ function FileElement(props) {
 
 			mode = FILE_MODE_IMAGE, // FILE_MODE_IMAGE, FILE_MODE_FILE
 			imagePath = '',
-			version = 2,
 			tooltip = 'Choose or drag a file on top of this control.',
 			tooltipPlacement = 'bottom',
 		} = props,
@@ -57,23 +48,6 @@ function FileElement(props) {
 		dragRef = useRef(),
 		fileInputRef = useRef(),
 		[isDropping, setIsDropping] = useState(false),
-		[localDataUri, setLocalDataUri] = useState(null),
-		[localControl, setLocalControl] = useState(null),
-		[localFilename, setLocalFilename] = useState(null),
-		onClear = () => {
-			setLocalDataUri(null);
-			setLocalControl(null);
-			setLocalFilename(null);
-
-			setValue({
-				dataUri: null,
-				control: null,
-				filename: null,
-				version,
-			});
-
-			fileInputRef.current.value = null;
-		},
 		onSelect = () => {
 			fileInputRef.current.click();
 			
@@ -84,57 +58,13 @@ function FileElement(props) {
 				version,
 			});
 		},
-		onChangeFile = (e) => {
-			const
-				files = fileInputRef.current.files,
-				file = files[0],
-				reader = new FileReader();
-
-			reader.readAsBinaryString(file);
-			reader.onload = (e) => {
-				setBase64(file, e.target.result);
-			};
-		},
 		setBase64 = (file, readerResult) => {
 			const
-				base64 = btoa(readerResult), // 'btoa' is deprecated in Node.js, but not browsers, so use it!
+				base64 = btoa(readerResult), // 'btoa' is deprecated in Node.js, but not browsers, so use it! // https://developer.mozilla.org/en-US/docs/Web/API/btoa
 				dataUri = `data:${file.type};base64,${base64}`,
 				control = '',
 				filename = file.name;
 
-			setLocalDataUri(dataUri);
-			setLocalControl(control);
-			setLocalFilename(filename);
-
-			setValue({
-				dataUri,
-				control,
-				filename,
-				version,
-			});
-		},
-		onDragEnter = (e) => {
-			const
-				fileTypes = e.dataTransfer && e.dataTransfer.types,
-				items = e.dataTransfer && e.dataTransfer.items;
-
-			if (fileTypes.indexOf('Files') === -1) {
-				return;
-			}
-			if (items && items.length > 1) {
-				throw new Error('You can only drop a single file!');
-			}
-
-			setIsDropping(true);
-		},
-		onDragLeave = (e) => {
-			if (dragRef.current.contains(e.relatedTarget)) {
-				return; // ignore events that bubble from within
-			}
-			setIsDropping(false);
-		},
-		onDragOver = (e) => {
-			e.preventDefault();
 		},
 		onDrop = (e) => {
 			e.preventDefault();
@@ -149,21 +79,6 @@ function FileElement(props) {
 			};
 			setIsDropping(false);
 		};
-
-	// useEffect(() => {
-	// 	const {
-	// 			dataUri,
-	// 			control,
-	// 			filename,
-	// 		} = value;
-	// 	setLocalDataUri(dataUri);
-	// 	setLocalControl(control);
-	// 	setLocalFilename(filename);
-	// }, []);
-
-	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
-		throw new Error('Not yet implemented for RN.');
-	}
 		
 	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
 				<Tooltip label={tooltip} placement={tooltipPlacement}>
