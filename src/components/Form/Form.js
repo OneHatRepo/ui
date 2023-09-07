@@ -89,7 +89,7 @@ function Form(props) {
 			onDelete,
 			editorStateRef,
 
-			// DataMgt
+			// parent container
 			selectorId,
 			selectorSelected,
 
@@ -419,7 +419,7 @@ function Form(props) {
 						Element = getComponentFromType(type),
 						element = <Element
 										selectorId={selectorId}
-										selectorSelected={selectorId ? record : selectorSelected}
+										selectorSelected={selectorSelected || record}
 										flex={1}
 										{...propsToPass}
 									/>;

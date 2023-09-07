@@ -1,10 +1,10 @@
 import { useState, useEffect, } from 'react';
 import {
 	Box,
-	Icon,
+	Button,
+	Column,
 	Row,
 	Text,
-	Tooltip,
 } from 'native-base';
 import {
 	CURRENT_MODE,
@@ -19,6 +19,10 @@ import {
 import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
 import withData from '../../Components/Hoc/withData.js';
 import _ from 'lodash';
+
+const
+	EXPANDED_MAX = 100,
+	COLLAPSED_MAX = 2;
 
 // Note this component uploads only one file per server request---
 // it doesn't upload multiple files simultaneously.
@@ -37,7 +41,6 @@ function AttachmentsElement(props) {
 			maxFiles = null,
 			disabled = false,
 			clickable = true,
-			isImageOnly = false,
 
 			// parentContainer
 			selectorSelected,
@@ -47,11 +50,11 @@ function AttachmentsElement(props) {
 
 		} = props,
 		styles = UiGlobals.styles,
-		WhichFile = isImageOnly ? Avatar : FileMosaic,
-		model = selectorSelected.repository.name,
-		modelid = selectorSelected.id,
+		model = selectorSelected?.repository.name,
+		modelid = selectorSelected?.id,
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
+		[showAll, setShowAll] = useState(false),
 		[files, setFiles] = useState([]),
 		buildFiles = () => {
 			const files = _.map(Repository.entities, (entity) => {
@@ -77,7 +80,11 @@ function AttachmentsElement(props) {
 			console.log('files', files);
 			setFiles(files);
 		},
+		toggleShowAll = () => {
+			setShowAll(!showAll);
+		},
 		onDropzoneChange = (files) => {
+			setFiles(files);
 			_.each(files, (file) => {
 				file.extraUploadData = {
 					model,
@@ -109,6 +116,10 @@ function AttachmentsElement(props) {
 
 	useEffect(() => {
 
+		if (!model) {
+			return () => {};
+		}
+
 		(async () => {
 
 			// Load Repository
@@ -138,6 +149,7 @@ function AttachmentsElement(props) {
 				});
 			}
 			Repository.filter(filters);
+			Repository.setPageSize(showAll ? EXPANDED_MAX : COLLAPSED_MAX);
 			await Repository.load();
 
 			buildFiles();
@@ -148,26 +160,61 @@ function AttachmentsElement(props) {
 			
 		})();
 
-
 		Repository.on('load', buildFiles);
 		return () => {
 			Repository.off('load', buildFiles);
 		};
-	}, [model, modelid]);
+	}, [model, modelid, showAll]);
 
 	if (!isReady) {
 		return null;
 	}
+	
 
 	if (canCrud) {
-		return <Box borderTopColor="#f00" borderTopWidth={isUploading ? 2 : 0}>
-					<Dropzone
+		_fileMosaic.onDelete = onFileDelete;
+	}
+	let content = <Column
+						flex={1}
+						minHeight={150}
+						background={styles.ATTACHMENTS_BG}
+					>
+						<Row>
+							{files.map((file) => {
+								console.log(file);
+								return <Box
+											key={file.id}
+											marginRight={4}
+										>
+											<FileMosaic
+												{...file}
+												backgroundBlurImage={false}
+												{..._fileMosaic}
+											/>
+										</Box>;
+							})}
+						</Row>
+						{Repository.total <= COLLAPSED_MAX ? null :
+							<Button
+								onPress={toggleShowAll}
+								marginTop={4}
+								_text={{
+									color: 'trueGray.600',
+									fontStyle: 'italic',
+									textAlign: 'left',
+									width: '100%',
+								}}
+								variant="ghost"
+							>{'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}</Button>}
+					</Column>;
+	
+	if (canCrud) {
+		content = <Dropzone
 						value={files}
 						onChange={onDropzoneChange}
 						accept={accept}
 						maxFiles={maxFiles}
 						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
-						// validator={() => {}}
 						autoClean={true}
 						uploadConfig={{
 							url: Repository.api.baseURL + Repository.name + '/uploadAttachment',
@@ -184,38 +231,11 @@ function AttachmentsElement(props) {
 						clickable={clickable}
 						{..._dropZone}
 					>
-						{files.map((file) => {
-							console.log(file);
-							return <FileMosaic
-										key={file.id}
-										id={file.id}
-										file={file}
-										backgroundBlurImage={false}
-										onDelete={onFileDelete}
-										{..._fileMosaic}
-									/>;
-						})}
-					</Dropzone>
-				</Box>;
+						{content}
+					</Dropzone>;
 
 	}
-		
-	return <Row
-				flex={1}
-				minHeight={150}
-				background={styles.ATTACHMENTS_BG}
-				color={styles.ATTACHMENTS_COLOR}
-			>
-				{files.map((file) => {
-					return <FileMosaic
-								key={file.id}
-								id={file.id}
-								file={file}
-								onDelete={onFileDelete}
-								{..._fileMosaic}
-							/>;
-				})}
-			</Row>;
+	return content;
 }
 
 function withAdditionalProps(WrappedComponent) {
