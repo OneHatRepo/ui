@@ -115,10 +115,10 @@ function Form(props) {
 			// resetField,
 			// setError,
 			// clearErrors,
-			// setValue,
+			setValue: formSetValue,
 			// setFocus,
-			getValues,
-			getFieldState,
+			getValues: formGetValues,
+			// getFieldState,
 			// trigger,
 		} = useForm({
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
@@ -204,6 +204,7 @@ function Form(props) {
 												if (_.isPlainObject(editor)) {
 													const {
 															type,
+															onChange: onEditorChange,
 															...p
 														} = editor;
 													editorProps = p;
@@ -217,6 +218,9 @@ function Form(props) {
 																value={value}
 																setValue={(newValue) => {
 																	onChange(newValue);
+																	if (onEditorChange) {
+																		onEditorChange(newValue, formSetValue, formGetValues, formState);
+																	}
 																}}
 																onBlur={onBlur}
 																selectorId={selectorId}
@@ -256,6 +260,7 @@ function Form(props) {
 					isEditable = true,
 					label,
 					items,
+					onChange: onEditorChange,
 					...propsToPass
 				} = item;
 			let editorTypeProps = {};
@@ -363,10 +368,10 @@ function Form(props) {
 							let element = <Element
 												name={name}
 												value={value}
-												onChangeValue={(value) => {
-													onChange(value); // form onChange handler
-													if (propsToPass.onChange) {
-														propsToPass.onChange(value); // item onChange handler
+												onChangeValue={(newValue) => {
+													onChange(newValue);
+													if (onEditorChange) {
+														onEditorChange(newValue, formSetValue, formGetValues, formState);
 													}
 												}}
 												onBlur={onBlur}
