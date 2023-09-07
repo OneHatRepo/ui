@@ -4,7 +4,6 @@ import {
 	Button,
 	Column,
 	Row,
-	Text,
 } from 'native-base';
 import {
 	CURRENT_MODE,
@@ -77,7 +76,6 @@ function AttachmentsElement(props) {
 					// xhr: null, //	XMLHttpRequest	A reference to the XHR object that allows the upload, progress and abort events.
 				};
 			});
-			console.log('files', files);
 			setFiles(files);
 		},
 		toggleShowAll = () => {
@@ -175,13 +173,13 @@ function AttachmentsElement(props) {
 		_fileMosaic.onDelete = onFileDelete;
 	}
 	let content = <Column
-						flex={1}
-						minHeight={150}
+						w="100%"
+						// minHeight={50}
+						p={2}
 						background={styles.ATTACHMENTS_BG}
 					>
-						<Row>
+						<Row flexWrap="wrap">
 							{files.map((file) => {
-								console.log(file);
 								return <Box
 											key={file.id}
 											marginRight={4}
@@ -221,6 +219,9 @@ function AttachmentsElement(props) {
 							method: 'POST',
 							headers: Repository.headers,
 							autoUpload: true,
+						}}
+						headerConfig={{
+							deleteFiles: false,
 						}}
 						onUploadStart={onUploadStart}
 						onUploadFinish={onUploadFinish}
