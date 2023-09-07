@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, } from 'react';
+import { useState, useEffect, } from 'react';
 import {
 	Box,
 	Icon,
@@ -20,6 +20,9 @@ import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files
 import withData from '../../Components/Hoc/withData.js';
 import _ from 'lodash';
 
+// Note this component uploads only one file per server request---
+// it doesn't upload multiple files simultaneously.
+
 function AttachmentsElement(props) {
 
 	if (CURRENT_MODE !== UI_MODE_WEB) {
@@ -30,12 +33,14 @@ function AttachmentsElement(props) {
 			canCrud = true,
 			_dropZone = {},
 			_fileMosaic = {},
-			accept = '*', // 'image/*'
+			accept, // 'image/*'
 			maxFiles = null,
-			maxFileSize = 28 * 1024,
 			disabled = false,
 			clickable = true,
 			isImageOnly = false,
+
+			// parentContainer
+			selectorSelected,
 
 			// withData
 			Repository,
@@ -43,67 +48,155 @@ function AttachmentsElement(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		WhichFile = isImageOnly ? Avatar : FileMosaic,
-		files = _.map(Repository.entities, () => {
-			// const ExtFile = {
-			// 	id	string | number	The identifier of the file
-			// 	file	File	The file object obtained from client drop or selection
-			// 	name	string	The name of the file
-			// 	type	string	The file mime type.
-			// 	size	number	The size of the file in bytes.
-			// 	valid	boolean	If present, it will show a valid or rejected message ("valid", "denied"). By default valid is undefined.
-			// 	errors	string[]	The list of errors according to the validation criteria or the result of the given custom validation function.
-			// 	uploadStatus	UPLOADSTATUS	The current upload status. (e.g. "uploading").
-			// 	uploadMessage	string	A message that shows the result of the upload process.
-			// 	imageUrl	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
-			// 	downloadUrl	string	The url to be used to perform a GET request in order to download the file. If defined, the download icon will be shown.
-			// 	progress	number	The current percentage of upload progress. This value will have a higher priority over the upload progress value calculated inside the component.
-			// 	extraUploadData	Record<string, any>	The additional data that will be sent to the server when files are uploaded individually
-			// 	extraData	Object	Any kind of extra data that could be needed.
-			// 	serverResponse	ServerResponse	The upload response from server.
-			// 	xhr	XMLHttpRequest	A reference to the XHR object that allows the upload, progress and abort events.
-			// };
+		model = selectorSelected.repository.name,
+		modelid = selectorSelected.id,
+		[isReady, setIsReady] = useState(false),
+		[isUploading, setIsUploading] = useState(false),
+		[files, setFiles] = useState([]),
+		buildFiles = () => {
+			const files = _.map(Repository.entities, (entity) => {
+				return {
+					id: entity.id, //	string | number	The identifier of the file
+					// file: null, //	File	The file object obtained from client drop or selection
+					name: entity.attachments__filename, // string	The name of the file
+					type: entity.attachments__mimetype, // string	The file mime type.
+					size: entity.attachments__size, //	number	The size of the file in bytes.
+					// valid: null, //	boolean	If present, it will show a valid or rejected message ("valid", "denied"). By default valid is undefined.
+					// errors: null, //	string[]	The list of errors according to the validation criteria or the result of the given custom validation function.
+					// uploadStatus: null, //	UPLOADSTATUS	The current upload status. (e.g. "uploading").
+					// uploadMessage: null, //	string	A message that shows the result of the upload process.
+					imageUrl: entity.attachments__uri, //	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
+					downloadUrl: entity.attachments__uri, //	string	The url to be used to perform a GET request in order to download the file. If defined, the download icon will be shown.
+					// progress: null, //	number	The current percentage of upload progress. This value will have a higher priority over the upload progress value calculated inside the component.
+					// extraUploadData: null, //	Record<string, any>	The additional data that will be sent to the server when files are uploaded individually
+					// extraData: null, //	Object	Any kind of extra data that could be needed.
+					// serverResponse: null, //	ServerResponse	The upload response from server.
+					// xhr: null, //	XMLHttpRequest	A reference to the XHR object that allows the upload, progress and abort events.
+				};
+			});
+			console.log('files', files);
+			setFiles(files);
+		},
+		onDropzoneChange = (files) => {
+			_.each(files, (file) => {
+				file.extraUploadData = {
+					model,
+					modelid,
+				};
+			});
+		},
+		onUploadStart = (files) => {
+			setIsUploading(true);
+		},
+		onUploadFinish = (files) => {
+			let isDoneUploading = true;
 
-			debugger;
+			_.each(files, (file) => {
+				if (!file.xhr || file.xhr.status !== 200) {
+					isDoneUploading = false;
+					return false; // break
+				}
+			});
 
-		}),
-		onDelete = (a,b,c,d,e) => {
-
-			debugger;
+			if (isDoneUploading) {
+				setIsUploading(false);
+				Repository.reload();
+			}
+		},
+		onFileDelete = (id) => {
+			Repository.deleteById(id);
 		};
 
+	useEffect(() => {
+
+		(async () => {
+
+			// Load Repository
+			const filters = [
+				{
+					name: 'model',
+					value: model,
+				},
+				{
+					name: 'modelid',
+					value: modelid,
+				},
+			];
+			if (accept) {
+				let name,
+					mimetypes;
+				if (_.isString(accept)) {
+					name = 'mimetype LIKE';
+					mimetypes = accept.replace('*', '%');
+				} else if (_.isArray(accept)) {
+					name = 'mimetype IN';
+					mimetypes = accept;
+				}
+				filters.push({
+					name,
+					value: mimetypes,
+				});
+			}
+			Repository.filter(filters);
+			await Repository.load();
+
+			buildFiles();
+
+			if (!isReady) {
+				setIsReady(true);
+			}
+			
+		})();
+
+
+		Repository.on('load', buildFiles);
+		return () => {
+			Repository.off('load', buildFiles);
+		};
+	}, [model, modelid]);
+
+	if (!isReady) {
+		return null;
+	}
+
 	if (canCrud) {
-		return <Dropzone
-					value={files}
-					onChange={updateFiles}
-					accept={accept}
-					maxFiles={maxFiles}
-					maxFileSize={maxFileSize}
-					validator={() => {}}
-					autoClean={true}
-					uploadConfig={{
-						url: Repository.api.baseURL + Repository.name + '/uploadAttachments',
-						method: 'POST',
-						headers: Repository.headers,
-						autoUpload: true,
-					}}
-				    onUploadFinish={handleFinishUpload}
-					background={styles.ATTACHMENTS_BG}
-					color={styles.ATTACHMENTS_COLOR}
-					minHeight={150}
-					clickable={clickable}
-					{..._dropZone}
-				>
-					{files.map((file) => {
-						return <WhichFile
-									key={file.id}
-									{...file}
-									backgroundBlurImage={false}
-									onDelete={onDelete}
-									info
-									{..._fileMosaic}
-								/>;
-					})}
-				</Dropzone>;
+		return <Box borderTopColor="#f00" borderTopWidth={isUploading ? 2 : 0}>
+					<Dropzone
+						value={files}
+						onChange={onDropzoneChange}
+						accept={accept}
+						maxFiles={maxFiles}
+						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
+						// validator={() => {}}
+						autoClean={true}
+						uploadConfig={{
+							url: Repository.api.baseURL + Repository.name + '/uploadAttachment',
+							method: 'POST',
+							headers: Repository.headers,
+							autoUpload: true,
+						}}
+						onUploadStart={onUploadStart}
+						onUploadFinish={onUploadFinish}
+						background={styles.ATTACHMENTS_BG}
+						color={styles.ATTACHMENTS_COLOR}
+						minHeight={150}
+						footer={false}
+						clickable={clickable}
+						{..._dropZone}
+					>
+						{files.map((file) => {
+							console.log(file);
+							return <FileMosaic
+										key={file.id}
+										id={file.id}
+										file={file}
+										backgroundBlurImage={false}
+										onDelete={onFileDelete}
+										{..._fileMosaic}
+									/>;
+						})}
+					</Dropzone>
+				</Box>;
 
 	}
 		
@@ -114,11 +207,11 @@ function AttachmentsElement(props) {
 				color={styles.ATTACHMENTS_COLOR}
 			>
 				{files.map((file) => {
-					return <WhichFile
+					return <FileMosaic
 								key={file.id}
-								{...file}
-								onDelete={removeFile}
-								info
+								id={file.id}
+								file={file}
+								onDelete={onFileDelete}
 								{..._fileMosaic}
 							/>;
 				})}
@@ -129,6 +222,7 @@ function withAdditionalProps(WrappedComponent) {
 	return (props) => {
 		return <WrappedComponent
 					model="Attachments"
+					uniqueRepository={true}
 					{...props}
 				/>;
 	};
