@@ -49,7 +49,7 @@ export default function Viewer(props) {
 						Element = getComponentFromType(type),
 						element = <Element
 										selectorId={selectorId}
-										selectorSelected={selectorId ? record : selectorSelected}
+										selectorSelected={selectorSelected || record}
 										flex={1}
 										{...propsToPass}
 									/>;
