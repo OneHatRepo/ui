@@ -17,6 +17,7 @@ import PageSizeCombo from '../Form/Field/Combo/PageSizeCombo.js';
 export default function Pagination(props) {
 	const {
 			minimize = false,
+			disablePageSize = false,
 	
 			// withData
 			Repository,
@@ -116,7 +117,7 @@ export default function Pagination(props) {
 						/>);
 		}
 
-		if (!minimize) {
+		if (!minimize && !disablePageSize) {
 			items.push(<PageSizeCombo key="pageSize" pageSize={pageSize} Repository={Repository} />);
 		}
 
