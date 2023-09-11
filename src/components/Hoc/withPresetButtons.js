@@ -16,8 +16,8 @@ const presetButtons = [
 	'add',
 	'edit',
 	'delete',
-	'copy',
 	'view',
+	'copy',
 	'duplicate',
 	// 'print',
 ];
@@ -47,7 +47,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				disableDelete = !isEditor,
 				disableView = !isGrid,
 				disableCopy = !isGrid,
-				disableDuplicate = !isGrid,
+				disableDuplicate = !isEditor,
 				disablePrint = !isGrid,
 
 				// withEditor
