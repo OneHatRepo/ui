@@ -87,7 +87,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'edit':
-						if (disableEdit || canEditorViewOnly) {
+						if (disableEdit || canEditorViewOnly || isSideEditor) {
 							isDisabled = true;
 						}
 						break;
