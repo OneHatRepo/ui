@@ -14,7 +14,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
-				useEditor = true,
 				userCanEdit = true,
 				userCanView = true,
 				canEditorViewOnly = false,
@@ -347,7 +346,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onEditorClose={onEditorClose}
 					setWithEditListeners={setListeners}
 					isEditor={true}
-					useEditor={useEditor}
 					userCanEdit={userCanEdit}
 					userCanView={userCanView}
 					disableAdd={disableAdd}

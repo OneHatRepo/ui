@@ -21,7 +21,6 @@ import _ from 'lodash';
 export default function withInlineEditor(WrappedComponent) {
 	return withEditor((props) => {
 		const {
-				useEditor = false,
 				editorType,
 				isEditorShown = false,
 				setIsEditorShown,
@@ -79,7 +78,7 @@ export default function withInlineEditor(WrappedComponent) {
 		}
 
 		let inlineEditor = null;
-		if (useEditor && Repository) {
+		if (Repository) {
 			inlineEditor = <>
 								{isEditorShown && <Box
 													ref={maskRef}
