@@ -16,7 +16,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 		const {
 				userCanEdit = true,
 				userCanView = true,
-				canEditorViewOnly = false,
+				canEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
 				disableAdd = false,
 				disableEdit = false,
 				disableDelete = false,
@@ -50,7 +50,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			editorStateRef = useRef(),
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isEditorShown, setIsEditorShown] = useState(false),
-			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly),
+			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly), // current state of whether editor is in view-only mode
 			[lastSelection, setLastSelection] = useState(),
 			setSelectionDecorated = (newSelection) => {
 				function doIt() {

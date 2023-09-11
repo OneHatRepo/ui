@@ -6,6 +6,9 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import {
+	EDITOR_TYPE__SIDE,
+} from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import Label from '../Form/Label.js';
@@ -29,10 +32,12 @@ export default function Viewer(props) {
 			selectorSelected,
 
 			// withEditor
+			editorType,
 			onEditMode,
 			onClose,
 			onDelete,
 		} = props,
+		isSideEditor = editorType === EDITOR_TYPE__SIDE,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
 		buildAncillary = () => {
@@ -45,12 +50,16 @@ export default function Viewer(props) {
 						selectorId = null,
 						...propsToPass
 					} = item;
+					if (!propsToPass.h) {
+						propsToPass.h = 400;
+					}
 					const
 						Element = getComponentFromType(type),
 						element = <Element
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
+										canEditorViewOnly={true}
 										{...propsToPass}
 									/>;
 					if (title) {
@@ -64,6 +73,10 @@ export default function Viewer(props) {
 			}
 			return components;
 		};
+
+	const
+		showDeleteBtn = onDelete && viewerCanDelete,
+		showCloseBtn = !isSideEditor;
 
 	return <Column flex={flex} {...props}>
 				<ScrollView width="100%" _web={{ height: 1 }}>
@@ -88,26 +101,28 @@ export default function Viewer(props) {
 
 					</Column>
 				</ScrollView>
-				<Footer justifyContent="flex-end">
-					{onDelete && viewerCanDelete && 
-						<Row flex={1} justifyContent="flex-start">
-							<Button
-								key="deleteBtn"
-								onPress={onDelete}
-								bg="warning"
-								_hover={{
-									bg: 'warningHover',
-								}}
-								color="#fff"
-							>Delete</Button>
-						</Row>}
-					<Button.Group space={2}>
-						<Button
-							key="closeBtn"
-							onPress={onClose}
-							color="#fff"
-						>Close</Button>
-					</Button.Group>
-				</Footer>
+				{(showDeleteBtn || showCloseBtn) && 
+					<Footer justifyContent="flex-end">
+						{showDeleteBtn && 
+							<Row flex={1} justifyContent="flex-start">
+								<Button
+									key="deleteBtn"
+									onPress={onDelete}
+									bg="warning"
+									_hover={{
+										bg: 'warningHover',
+									}}
+									color="#fff"
+								>Delete</Button>
+							</Row>}
+						{showCloseBtn && 
+							<Button.Group space={2}>
+								<Button
+									key="closeBtn"
+									onPress={onClose}
+									color="#fff"
+								>Close</Button>
+							</Button.Group>}
+					</Footer>}
 			</Column>;
 }

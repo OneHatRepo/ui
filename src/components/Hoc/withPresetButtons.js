@@ -62,7 +62,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 
 				// withSelection
 				selection,
-				setSelection,
 
 				// parent container
 				selectorId,
@@ -251,7 +250,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				}
 	
 				// Send it to clipboard
-				navigator.clipboard.writeText(text);
+				navigator?.clipboard.writeText(text);
 			};
 			// onPrint = () => {
 			// 	debugger;

@@ -420,6 +420,9 @@ function Form(props) {
 						selectorId,
 						...propsToPass
 					} = item;
+					if (!propsToPass.h) {
+						propsToPass.h = 400;
+					}
 					const
 						Element = getComponentFromType(type),
 						element = <Element
@@ -607,7 +610,7 @@ function Form(props) {
 														isDisabled={isSaveDisabled}
 														color="#fff"
 													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-						{isEditorViewOnly && onClose && <Button
+						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
 														key="closeBtn"
 														onPress={onClose}
 														color="#fff"

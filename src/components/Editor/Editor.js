@@ -29,10 +29,10 @@ export default function Editor(props) {
 
 	if (_.isEmpty(selection)) {
 		return null; // hide the editor when no selection
-		return <Box {...props} bg="#ddd" />;
 	}
 
-	if (Repository?.isRemotePhantomMode && selection.length === 1 && editorMode === EDITOR_MODE__VIEW) {
+	// Repository?.isRemotePhantomMode && selection.length === 1 && 
+	if (editorMode === EDITOR_MODE__VIEW) {
 		return <Viewer
 					{...props}
 					record={selection[0]}

@@ -9,6 +9,7 @@ import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import Inflector from 'inflector-js';
 import Header from './Header.js';
 import Mask from './Mask.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
@@ -33,7 +34,7 @@ function Panel(props) {
 			onLayout = null,
 			
 			// Header
-			title = props.model,
+			title = Inflector.humanize(Inflector.underscore(props.model)),
 			showHeader = true,
 			header = null,
 			isClosable = false,
