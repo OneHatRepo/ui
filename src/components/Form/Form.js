@@ -102,6 +102,7 @@ function Form(props) {
 		isMultiple = _.isArray(record),
 		isSingle = !isMultiple, // for convenience
 		forceUpdate = useForceUpdate(),
+		[previousRecord, setPreviousRecord] = useState(record),
 		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		{
@@ -448,6 +449,13 @@ function Form(props) {
 				alert(errors.message);
 			}
 		};
+
+	useEffect(() => {
+		if (record !== previousRecord) {
+			setPreviousRecord(record);
+			reset(defaultValues);
+		}
+	}, [record]);
 
 	useEffect(() => {
 		if (!Repository) {
