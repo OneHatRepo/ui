@@ -60,7 +60,7 @@ export default function ManagerScreen(props) {
 		whichComponent = sideModeComponent;
 	}
 
-	return <Column flex={1} w="100%">
+	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%">
 				<Row
 					h="80px"
 					py={2}
@@ -89,6 +89,8 @@ export default function ManagerScreen(props) {
 						tooltip="Side Editor"
 					/>
 				</Row>
+
 				{whichComponent}
+
 			</Column>;
 }

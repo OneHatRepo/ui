@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react';
 import {
 	Column,
 	FlatList,
@@ -141,6 +141,7 @@ function GridComponent(props) {
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
 		gridRef = useRef(),
+		debouncedOnLayoutRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -616,40 +617,34 @@ function GridComponent(props) {
 			setDragRowSlot(null);
 		},
 		onLayout = (e) => {
-			if (disableAdjustingPageSizeToHeight || !Repository) {
+			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB) {
 				return;
 			}
-			const {
-					nativeEvent: {
-						layout,
-						target,
-					},
-				} = e;
-			let pageSize;
-			if (CURRENT_MODE === UI_MODE_WEB) {
-				const
-					targetBoundingBox = target.getBoundingClientRect(),
-					targetHeight = targetBoundingBox.height,
-					firstRow = target.children[0]?.children[0]?.children[0]?.children[0]?.children[0];
-				if (firstRow) {
-					const
-						rowBoundingBox = firstRow.getBoundingClientRect(),
-						rowHeight = rowBoundingBox.height,
-						rowsPerTarget = Math.floor(targetHeight / rowHeight);
-					pageSize = rowsPerTarget;
-					if (showHeaders) {
-						pageSize--;
-					}
-					if (bottomToolbar) {
-						pageSize--;
-					}
-				}
+
+			const
+				gr = gridRef.current,
+				scrollableNode = gr.getScrollableNode(),
+				scrollableNodeBoundingBox = scrollableNode.getBoundingClientRect(),
+				scrollableNodeHeight = scrollableNodeBoundingBox.height,
+				firstRow = scrollableNode.children[0].children[showHeaders ? 1: 0];
+
+			if (!firstRow) {
+				return;
 			}
-			
-			if (pageSize) {
+
+			const
+				rowHeight = firstRow.getBoundingClientRect().height,
+				rowsPerContainer = Math.floor(scrollableNodeHeight / rowHeight);
+			let pageSize = rowsPerContainer;
+			if (showHeaders) {
+				pageSize--;
+			}
+			if (pageSize !== Repository.pageSize) {
 				Repository.setPageSize(pageSize);
 			}
-		};
+		},
+		debouncedOnLayout = useCallback(_.debounce(onLayout, 500), []);
+
 		
 	useEffect(() => {
 
@@ -811,13 +806,14 @@ function GridComponent(props) {
 	} else {
 		sizeProps.flex = flex ?? 1;
 	}
+
 	return <Column
 				{...testProps('Grid')}
 				w="100%"
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
 				borderColor={styles.GRID_BORDER_COLOR}
-				onLayout={onLayout}
+				onLayout={debouncedOnLayout}
 				{...sizeProps}
 			>
 				{topToolbar}
