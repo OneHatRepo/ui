@@ -34,7 +34,7 @@ export function ComboComponent(props) {
 			tooltip = null,
 			menuMinWidth = 150,
 			disableDirectEntry = false,
-			disablePagination = true,
+			disablePagination = false,
 			hideMenuOnSelection = true,
 			_input = {},
 			isEditor = false,

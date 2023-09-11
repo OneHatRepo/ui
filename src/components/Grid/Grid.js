@@ -141,7 +141,6 @@ function GridComponent(props) {
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
 		gridRef = useRef(),
-		debouncedOnLayoutRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -617,7 +616,7 @@ function GridComponent(props) {
 			setDragRowSlot(null);
 		},
 		onLayout = (e) => {
-			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB) {
+			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current) {
 				return;
 			}
 
@@ -818,7 +817,7 @@ function GridComponent(props) {
 			>
 				{topToolbar}
 
-				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+				<Column w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 					if (!isDragMode && !isInlineEditorShown) {
 						deselectAll();
 					}
