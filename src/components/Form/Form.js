@@ -81,7 +81,7 @@ function Form(props) {
 			Repository,
 			
 			// withEditor
-			isViewOnly = false,
+			isEditorViewOnly = false,
 			editorMode,
 			onCancel,
 			onSave,
@@ -299,7 +299,7 @@ function Form(props) {
 				label = propertyDef.title;
 			}
 
-			if (isViewOnly || !isEditable) {
+			if (isEditorViewOnly || !isEditable) {
 				const
 					Text = getComponentFromType('Text'),
 					value = (record && record[name]) || (startingValues && startingValues[name]) || null;
@@ -585,7 +585,7 @@ function Form(props) {
 						</Row>}
 					<Button.Group space={2} {...buttonGroupProps}>
 				
-						{!isViewOnly && <IconButton
+						{!isEditorViewOnly && <IconButton
 											key="resetBtn"
 											onPress={() => {
 												if (onReset) {
@@ -595,19 +595,19 @@ function Form(props) {
 											}}
 											icon={<Rotate color="#fff" />}
 										/>}
-						{!isViewOnly && onCancel && <Button
+						{!isEditorViewOnly && onCancel && <Button
 														key="cancelBtn"
 														variant="ghost"
 														onPress={onCancel}
 														color="#fff"
 													>Cancel</Button>}
-						{!isViewOnly && onSave && <Button
+						{!isEditorViewOnly && onSave && <Button
 														key="saveBtn"
 														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
 														isDisabled={isSaveDisabled}
 														color="#fff"
 													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-						{isViewOnly && onClose && <Button
+						{isEditorViewOnly && onClose && <Button
 														key="closeBtn"
 														onPress={onClose}
 														color="#fff"

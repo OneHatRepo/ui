@@ -29,7 +29,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 	return withEditor((props) => {
 		const {
 				useEditor = false,
-				isEditorShown,
+				isEditorShown = false,
 				setIsEditorShown,
 				Editor,
 				editorProps = {},

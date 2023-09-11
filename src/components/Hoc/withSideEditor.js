@@ -21,6 +21,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 		return <Container
 					center={<WrappedComponent
 								isTree={isTree}
+								isSideEditor={true}
 								{...props}
 							/>}
 					east={<Editor

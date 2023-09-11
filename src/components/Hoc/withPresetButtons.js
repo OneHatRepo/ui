@@ -41,7 +41,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				// for local use
 				isEditor = false,
 				isTree = false,
+				isSideEditor = false,
 				useEditor = true,
+				canEditorViewOnly = false,
 				disableAdd = !isEditor,
 				disableEdit = !isEditor,
 				disableDelete = !isEditor,
@@ -81,22 +83,22 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				let isDisabled = false;
 				switch(type) {
 					case 'add':
-						if (disableAdd || !useEditor) {
+						if (disableAdd || !useEditor || canEditorViewOnly) {
 							isDisabled = true;
 						}
 						break;
 					case 'edit':
-						if (disableEdit || !useEditor) {
+						if (disableEdit || !useEditor || canEditorViewOnly) {
 							isDisabled = true;
 						}
 						break;
 					case 'delete':
-						if (disableDelete || !useEditor) {
+						if (disableDelete || !useEditor || canEditorViewOnly) {
 							isDisabled = true;
 						}
 						break;
 					case 'view':
-						if (disableView) {
+						if (disableView || isSideEditor) {
 							isDisabled = true;
 						}
 						break;
@@ -106,7 +108,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'duplicate':
-						if (disableDuplicate || !useEditor) {
+						if (disableDuplicate || !useEditor || canEditorViewOnly) {
 							isDisabled = true;
 						}
 						break;

@@ -23,7 +23,7 @@ export default function withInlineEditor(WrappedComponent) {
 		const {
 				useEditor = false,
 				editorType,
-				isEditorShown,
+				isEditorShown = false,
 				setIsEditorShown,
 				isEditorViewOnly,
 				onEditorCancel,
@@ -108,7 +108,7 @@ export default function withInlineEditor(WrappedComponent) {
 															record={selection[0]}
 															Repository={Repository}
 															isMultiple={selection.length > 1}
-															isViewOnly={isEditorViewOnly}
+															isEditorViewOnly={isEditorViewOnly}
 															columnsConfig={localColumnsConfig}
 															onCancel={onEditorCancel}
 															onSave={onEditorSave}

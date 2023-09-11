@@ -11,7 +11,7 @@ export default function Editor(props) {
 	const {
 			Form,
 			Viewer,
-			isEditorViewOnly: isViewOnly,
+			isEditorViewOnly,
 			onEditorCancel: onCancel,
 			onEditorSave: onSave,
 			onEditorClose: onClose,
@@ -36,7 +36,7 @@ export default function Editor(props) {
 		return <Viewer
 					{...props}
 					record={selection[0]}
-					onEditMode={isViewOnly ? null : onEditMode}
+					onEditMode={isEditorViewOnly ? null : onEditMode}
 					onClose={onClose}
 					onDelete={onDelete}
 				/>;
