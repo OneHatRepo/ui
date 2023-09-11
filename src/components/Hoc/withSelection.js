@@ -213,7 +213,7 @@ export default function withSelection(WrappedComponent) {
 					setValue(localValue);
 				}
 			},
-			conformSelectionToValue = () => {
+			conformSelectionToValue = async () => {
 				// adjust the selection to match the value
 				let newSelection = [];
 				if (Repository) {
@@ -222,9 +222,20 @@ export default function withSelection(WrappedComponent) {
 						if (_.isArray(value)) {
 							newSelection = Repository.getBy((entity) => inArray(entity.id, value));
 						} else {
-							const found = Repository.getById(value);
+							let found = Repository.getById(value);
 							if (found) {
 								newSelection.push(found);
+							} else if (Repository?.isRemote && Repository?.entities.length) {
+
+								// Value cannot be found in Repository, but actually exists on server
+								// Try to get this value from the server directly
+								Repository.filter(Repository.schema.model.idProperty, value);
+								await Repository.load();
+								found = Repository.getById(value);
+								if (found) {
+									newSelection.push(found);
+								}
+
 							}
 						}
 					}
@@ -270,7 +281,7 @@ export default function withSelection(WrappedComponent) {
 
 				if (usesWithValue && !_.isNil(value)) {
 
-					conformSelectionToValue();
+					await conformSelectionToValue();
 
 				} else if (autoSelectFirstItem) {
 					let newSelection = [];
