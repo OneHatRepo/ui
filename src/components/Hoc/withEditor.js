@@ -72,7 +72,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// forceUpdate(); // we don't want to get into an infinite loop of renders. Simply directly assign the listeners in every child render
 			},
 			onAdd = async () => {
-				const defaultValues = Repository.getSchema().model.defaultValues;
+				const defaultValues = Repository.getSchema().getDefaultValues();
 				let addValues = _.clone(defaultValues);
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
