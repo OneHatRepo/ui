@@ -90,16 +90,12 @@ export function ComboComponent(props) {
 					if (rectTop !== top) {
 						setTop(rectTop);
 					}
-					setHeight(null);
 				} else {
 					// Menu is above the combo
-
-					const rectTop = rect.top -200;
+					const rectTop = rect.top - styles.FORM_COMBO_MENU_HEIGHT;
 					if (rectTop !== top) {
 						setTop(rectTop);
 					}
-
-					setHeight(200);
 				}
 				if (rect.left !== left) {
 					setLeft(rect.left);
@@ -489,14 +485,12 @@ export function ComboComponent(props) {
 										top={top + 'px'}
 										left={left + 'px'}
 										w={width + 'px'}
-										h={height ? height + 'px' : null}
 										minWidth={menuMinWidth}
 										overflow="auto"
 										bg="#fff"
 									>
 										<Popover.Body
 											ref={menuRef}
-											maxHeight={200}
 											borderWidth={1}
 											borderColor='trueGray.400'
 											borderTopWidth={0}
@@ -505,8 +499,6 @@ export function ComboComponent(props) {
 											<WhichGrid
 												showHeaders={false}
 												showHovers={true}
-												pageSize={100}
-												disableAdjustingPageSizeToHeight={true}
 												shadow={1}
 												getRowProps={() => {
 													return {
@@ -519,6 +511,7 @@ export function ComboComponent(props) {
 													};
 												}}
 												{...props}
+												h={styles.FORM_COMBO_MENU_HEIGHT + 'px'}
 												disablePresetButtons={!isEditor}
 												disablePagination={disablePagination}
 												setSelection={(selection) => {
