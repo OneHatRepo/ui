@@ -104,6 +104,7 @@ function GridComponent(props) {
 			onDuplicate,
 			onReset,
 			onContextMenu,
+			isAdding,
 
 			// withData
 			Repository,
@@ -141,6 +142,7 @@ function GridComponent(props) {
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
 		gridRef = useRef(),
+		isAddingRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -616,7 +618,7 @@ function GridComponent(props) {
 			setDragRowSlot(null);
 		},
 		onLayout = (e) => {
-			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current) {
+			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current || isAddingRef.current) {
 				return;
 			}
 
@@ -644,7 +646,6 @@ function GridComponent(props) {
 		},
 		debouncedOnLayout = useCallback(_.debounce(onLayout, 500), []);
 
-		
 	useEffect(() => {
 
 		const calculateLocalColumnsConfig = () => {
@@ -771,6 +772,9 @@ function GridComponent(props) {
 		}
 
 	}, [selectorId, selectorSelected]);
+
+
+	isAddingRef.current = isAdding;
 
 	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode]);
 

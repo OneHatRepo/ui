@@ -49,7 +49,7 @@ function AttachmentsElement(props) {
 
 		} = props,
 		styles = UiGlobals.styles,
-		model = selectorSelected?.repository.name,
+		model = selectorSelected?.repository?.name,
 		modelid = selectorSelected?.id,
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),

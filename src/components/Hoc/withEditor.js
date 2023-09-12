@@ -49,6 +49,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			listeners = useRef({}),
 			editorStateRef = useRef(),
 			[currentRecord, setCurrentRecord] = useState(null),
+			[isAdding, setIsAdding] = useState(false),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly), // current state of whether editor is in view-only mode
 			[lastSelection, setLastSelection] = useState(),
@@ -105,6 +106,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// Unmap the values, so we can input true originalData
 				addValues = Repository.unmapData(addValues);
 
+				setIsAdding(true);
 				const entity = await Repository.add(addValues, false, true);
 				setSelection([entity]);
 				setIsEditorViewOnly(false);
@@ -245,11 +247,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				await Repository.save();
+
+				setIsAdding(false);
 				setIsEditorShown(false);
 				
 				if (getListeners().onAfterEdit) {
 					await getListeners().onAfterEdit(what);
 				}
+
+				return true;
 			},
 			onEditorCancel =  () => {
 				async function doIt() {
@@ -259,6 +265,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (isSingle && isPhantom) {
 						await deleteRecord();
 					}
+					
+					setIsAdding(false);
 					setEditorMode(EDITOR_MODE__VIEW);
 					setIsEditorShown(false);
 				}
@@ -330,6 +338,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setCurrentRecord={setCurrentRecord}
 					isEditorShown={isEditorShown}
 					isEditorViewOnly={isEditorViewOnly}
+					isAdding={isAdding}
 					editorMode={editorMode}
 					onEditMode={onEditMode}
 					onViewMode={onViewMode}

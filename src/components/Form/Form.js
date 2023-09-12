@@ -448,6 +448,14 @@ function Form(props) {
 			if (editorType === EDITOR_TYPE__INLINE) {
 				alert(errors.message);
 			}
+		},
+		onSaveDecorated = async (data, e) => {
+			// reset the form after a save
+			const result = await onSave(data, e);
+			if (result) {
+				const values = record.submitValues;
+				reset(values);
+			}
 		};
 
 	useEffect(() => {
@@ -614,7 +622,7 @@ function Form(props) {
 													>Cancel</Button>}
 						{!isEditorViewOnly && onSave && <Button
 														key="saveBtn"
-														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
+														onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 														isDisabled={isSaveDisabled}
 														color="#fff"
 													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
