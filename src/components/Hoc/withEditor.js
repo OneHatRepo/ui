@@ -250,7 +250,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				await Repository.save();
 
 				setIsAdding(false);
-				setIsEditorShown(false);
+				setEditorMode(EDITOR_MODE__EDIT);
+				// setIsEditorShown(false);
 				
 				if (getListeners().onAfterEdit) {
 					await getListeners().onAfterEdit(what);
