@@ -185,6 +185,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (getListeners().onAfterDelete) {
 					await getListeners().onAfterDelete(selection);
 				}
+				setSelection([]);
 				if (cb) {
 					cb();
 				}
