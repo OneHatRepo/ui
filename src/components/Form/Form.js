@@ -163,6 +163,7 @@ function Form(props) {
 						renderer,
 						w,
 						flex,
+						useSelectorId = false,
 					} = config;
 
 				if (!isEditable) {
@@ -214,6 +215,11 @@ function Form(props) {
 											}
 											const Element = getComponentFromType(editor);
 
+											if (useSelectorId) {
+												editorProps.selectorId = selectorId;
+												editorProps.selectorSelected = editorProps;
+											}
+											
 											let element = <Element
 																name={name}
 																value={value}
@@ -224,8 +230,6 @@ function Form(props) {
 																	}
 																}}
 																onBlur={onBlur}
-																selectorId={selectorId}
-																selectorSelected={selectorSelected}
 																flex={1}
 																{...editorProps}
 																// {...defaults}
@@ -262,6 +266,7 @@ function Form(props) {
 					label,
 					items,
 					onChange: onEditorChange,
+					useSelectorId = false,
 					...propsToPass
 				} = item;
 			let editorTypeProps = {};
@@ -366,6 +371,11 @@ function Form(props) {
 							if (isValidElement(Element)) {
 								throw new Error('Should not yet be valid React element. Did you use <Element> instead of () => <Element> when defining it?')
 							}
+
+							if (useSelectorId) {
+								editorTypeProps.selectorId = selectorId;
+								editorTypeProps.selectorSelected = editorProps;
+							}
 							let element = <Element
 												name={name}
 												value={value}
@@ -376,8 +386,6 @@ function Form(props) {
 													}
 												}}
 												onBlur={onBlur}
-												selectorId={selectorId}
-												selectorSelected={selectorSelected}
 												flex={1}
 												{...defaults}
 												{...propsToPass}
