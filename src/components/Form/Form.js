@@ -82,6 +82,7 @@ function Form(props) {
 			
 			// withEditor
 			isEditorViewOnly = false,
+			isSaving = false,
 			editorMode,
 			onCancel,
 			onSave,
@@ -514,6 +515,13 @@ function Form(props) {
 		sizeProps.maxHeight = maxHeight;
 	}
 
+	const savingProps = {};
+	if (isSaving) {
+		savingProps.borderTopWidth = 2;
+		savingProps.borderTopColor = '#f00';
+	}
+
+
 	let formComponents,
 		editor;
 	if (editorType === EDITOR_TYPE__INLINE) {
@@ -597,7 +605,7 @@ function Form(props) {
 				
 				{editor}
 
-				<Footer justifyContent="flex-end" {...footerProps}>
+				<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
 					{onDelete && editorMode === EDITOR_MODE__EDIT && 
 						<Row flex={1} justifyContent="flex-start">
 							<Button
