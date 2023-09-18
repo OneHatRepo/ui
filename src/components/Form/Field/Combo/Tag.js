@@ -10,7 +10,7 @@ export default function Tag(props) {
 				allowToggleSelection={true}
 				disablePagination={true}
 				disableAdjustingPageSizeToHeight={true}
-				pageSize={1000}
+				pageSize={500}
 				{...props}
 			/>;
 }
