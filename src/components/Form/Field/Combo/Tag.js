@@ -6,7 +6,8 @@ import Combo from './Combo.js';
 export default function Tag(props) {
 	return <Combo
 				selectionMode={SELECTION_MODE_MULTI}
-				valueAsArray={true}
+				valueIsAlwaysArray={true}
+				valueAsIdAndText={true}
 				valueAsStringifiedJson={true}
 				disableDirectEntry={true}
 				allowToggleSelection={true}
