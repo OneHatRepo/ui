@@ -55,7 +55,7 @@ export function ComboComponent(props) {
 			selectionMode,
 			selectNext,
 			selectPrev,
-			getDisplayFromSelection,
+			getDisplayValuesFromSelection,
 
 			tooltipPlacement = 'bottom',
 		} = props,
@@ -318,7 +318,7 @@ export function ComboComponent(props) {
 				if (found) {
 					const
 						newSelection = [found],
-						newTextValue = getDisplayFromSelection(newSelection);
+						newTextValue = getDisplayValuesFromSelection(newSelection);
 
 					setTextValue(newTextValue);
 					setSelection(newSelection);
@@ -351,7 +351,7 @@ export function ComboComponent(props) {
 		}
 
 		// Adjust text input to match selection
-		let localTextValue = getDisplayFromSelection(selection);
+		let localTextValue = getDisplayValuesFromSelection(selection);
 		if (!_.isEqual(localTextValue, textValue)) {
 			setTextValue(localTextValue);
 		}

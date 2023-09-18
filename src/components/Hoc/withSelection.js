@@ -38,9 +38,14 @@ export default function withSelection(WrappedComponent) {
 				displayIx,
 			} = props,
 			usesWithValue = !!setValue,
-			[localSelection, setLocalSelection] = useState(selection || defaultSelection || []),
+			initialSelection = selection || defaultSelection || [],
+			[localSelection, setLocalSelection] = useState(initialSelection),
 			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
 			setSelection = (selection) => {
+				if (_.isEqual(selection, localSelection)) {
+					return;
+				}
+
 				setLocalSelection(selection);
 				if (onChangeSelection) {
 					onChangeSelection(selection);
@@ -175,7 +180,7 @@ export default function withSelection(WrappedComponent) {
 				});
 				return found;
 			},
-			getIdFromSelection = () => {
+			getIdsFromLocalSelection = () => {
 				if (!localSelection[0]) {
 					return null;
 				}
@@ -190,7 +195,7 @@ export default function withSelection(WrappedComponent) {
 				}
 				return values;
 			},
-			getDisplayFromSelection = (selection) => {
+			getDisplayValuesFromLocalSelection = (selection) => {
 				if (!selection[0]) {
 					return '';
 				}
@@ -203,18 +208,17 @@ export default function withSelection(WrappedComponent) {
 						})
 						.join(', ');
 			},
-			conformValueToSelection = () => {
+			conformValueToLocalSelection = () => {
 				if (!setValue) {
 					return;
 				}
-				// Adjust the value to match the selection
-				const localValue = getIdFromSelection();
+				
+				const localValue = getIdsFromLocalSelection();
 				if (!_.isEqual(localValue, value)) {
 					setValue(localValue);
 				}
 			},
 			conformSelectionToValue = async () => {
-				// adjust the selection to match the value
 				let newSelection = [];
 				if (Repository) {
 					// Get entity or entities that match value
@@ -273,7 +277,8 @@ export default function withSelection(WrappedComponent) {
 
 			(async () => {
 
-				if (Repository && usesWithValue && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
+				if (usesWithValue && Repository?.isRemote 
+					&& !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading) {
 					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
 					// so first load repo, then conform to value
 					await Repository.load();
@@ -282,6 +287,10 @@ export default function withSelection(WrappedComponent) {
 				if (usesWithValue && !_.isNil(value)) {
 
 					await conformSelectionToValue();
+
+				} else if (!_.isEmpty(selection)) {
+
+					conformValueToLocalSelection();
 
 				} else if (autoSelectFirstItem) {
 					let newSelection = [];
@@ -300,7 +309,6 @@ export default function withSelection(WrappedComponent) {
 
 		}, []);
 
-
 		if (usesWithValue) {
 			useEffect(() => {
 				if (!isReady) {
@@ -309,15 +317,16 @@ export default function withSelection(WrappedComponent) {
 	
 				conformSelectionToValue();
 	
-			}, [value, isReady]);
+			}, [value]);
 	
 			useEffect(() => {
 				if (!isReady) {
 					return () => {};
 				}
 	
-				conformValueToSelection();
-			}, [selection, isReady]);
+				conformValueToLocalSelection();
+				
+			}, [selection]);
 		}
 
 		if (!isReady) {
@@ -336,8 +345,8 @@ export default function withSelection(WrappedComponent) {
 					deselectAll={deselectAll}
 					selectRangeTo={selectRangeTo}
 					isInSelection={isInSelection}
-					getIdFromSelection={getIdFromSelection}
-					getDisplayFromSelection={getDisplayFromSelection}
+					getIdsFromSelection={getIdsFromLocalSelection}
+					getDisplayValuesFromSelection={getDisplayValuesFromLocalSelection}
 				/>;
 	};
 }

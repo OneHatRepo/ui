@@ -19,6 +19,8 @@ export default function withValue(WrappedComponent) {
 				onChangeValue,
 				value,
 				startingValue = null,
+				valueAsArray = false,
+				valueAsStringifiedJson = false,
 
 				// withData
 				Repository,
@@ -26,6 +28,13 @@ export default function withValue(WrappedComponent) {
 			} = props,
 			[localValue, setLocalValue] = useState(startingValue || value),
 			setValue = (newValue) => {
+				if (valueAsArray && !_.isArray(newValue)) {
+					newValue = _.isNil(newValue) ? [] : [newValue];
+				}
+				if (valueAsStringifiedJson) {
+					newValue = JSON.stringify(newValue);
+				}
+
 				if (newValue === localValue) {
 					return;
 				}
@@ -33,10 +42,6 @@ export default function withValue(WrappedComponent) {
 				setLocalValue(newValue);
 				
 				if (onChangeValue) {
-					if (_.isArray(newValue)) {
-						// convert from inner value to outer value
-						newValue = JSON.stringify(newValue);
-					}
 					onChangeValue(newValue);
 				}
 			},
@@ -72,8 +77,8 @@ export default function withValue(WrappedComponent) {
 
 		
 		let convertedValue = localValue;
-		if (_.isString(localValue) && isJson(localValue) && !_.isNil(localValue)) {
-			// convert from outer value to inner value
+		if (_.isString(localValue) && valueAsStringifiedJson && !_.isNil(localValue)) {
+			// localValue is stored as stringified JSON, so convert to normal JS primitives for field components
 			convertedValue = JSON.parse(localValue);
 		}
 
