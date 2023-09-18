@@ -164,6 +164,10 @@ function GridComponent(props) {
 					shiftKey,
 					metaKey,
 				 } = e;
+			let allowToggle = allowToggleSelection;
+			if (metaKey) {
+				allowToggle = true;
+			}
 				
 			if (selectionMode === SELECTION_MODE_MULTI) {
 				if (shiftKey) {
@@ -172,28 +176,18 @@ function GridComponent(props) {
 					} else {
 						selectRangeTo(item);
 					}
-				} else if (metaKey) {
-					if (isInSelection(item)) {
-						// Already selected
-						if (allowToggleSelection) {
-							removeFromSelection(item);
-						} else {
-							// Do nothing.
-						}
-					} else {
-						addToSelection(item);
-					}
 				} else {
-					if (isInSelection(item)) {
-						// Already selected
-						if (allowToggleSelection) {
+					if (allowToggleSelection) {
+						if (isInSelection(item)) {
 							removeFromSelection(item);
 						} else {
-							// Do nothing.
+							addToSelection(item);
 						}
 					} else {
-						// select just this one
-						setSelection([item]);
+						if (!isInSelection(item)) {
+							// select just this one
+							setSelection([item]);
+						}
 					}
 				}
 			} else {
@@ -826,7 +820,7 @@ function GridComponent(props) {
 						deselectAll();
 					}
 				}}>
-					{!entities.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
+					{!entities?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
 						<FlatList
 							ref={gridRef}
 							// ListHeaderComponent={listHeaderComponent}
