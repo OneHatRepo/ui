@@ -86,7 +86,7 @@ function GridComponent(props) {
 			canColumnsReorder = true,
 			canColumnsResize = true,
 			canRowsReorder = false,
-			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
+			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
 			bottomToolbar = 'pagination',
@@ -177,7 +177,7 @@ function GridComponent(props) {
 						selectRangeTo(item);
 					}
 				} else {
-					if (allowToggleSelection) {
+					if (allowToggle) {
 						if (isInSelection(item)) {
 							removeFromSelection(item);
 						} else {
@@ -195,7 +195,7 @@ function GridComponent(props) {
 				let newSelection = selection;
 				if (isInSelection(item)) {
 					// Already selected
-					if (allowToggleSelection) {
+					if (allowToggle) {
 						// Create empty selection
 						newSelection = [];
 					} else {
