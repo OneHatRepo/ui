@@ -34,7 +34,6 @@ export function ComboComponent(props) {
 			tooltip = null,
 			menuMinWidth = 150,
 			disableDirectEntry = false,
-			disablePagination = false,
 			hideMenuOnSelection = true,
 			_input = {},
 			isEditor = false,
@@ -510,10 +509,11 @@ export function ComboComponent(props) {
 														w: '100%',
 													};
 												}}
+												allowToggleSelection={true}
+												disableAdjustingPageSizeToHeight={true}
 												{...props}
 												h={styles.FORM_COMBO_MENU_HEIGHT + 'px'}
 												disablePresetButtons={!isEditor}
-												disablePagination={disablePagination}
 												setSelection={(selection) => {
 													// Decorator fn to add local functionality
 													// Close the menu when row is selected on grid

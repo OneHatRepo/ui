@@ -11,9 +11,6 @@ function withAdditionalProps(WrappedComponent) {
 					valueAsIdAndText={true}
 					valueAsStringifiedJson={true}
 					disableDirectEntry={true}
-					allowToggleSelection={true}
-					disablePagination={true}
-					disableAdjustingPageSizeToHeight={true}
 					pageSize={500}
 					{...props}
 				/>;
