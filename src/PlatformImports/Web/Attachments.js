@@ -1,4 +1,4 @@
-import { useState, useEffect, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	Button,
@@ -49,8 +49,9 @@ function AttachmentsElement(props) {
 
 		} = props,
 		styles = UiGlobals.styles,
-		model = selectorSelected?.repository?.name,
-		modelid = selectorSelected?.id,
+		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name,
+		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity.id) : selectorSelected?.id,
+		modelid = useRef(modelidCalc),
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
 		[showAll, setShowAll] = useState(false),
@@ -78,6 +79,9 @@ function AttachmentsElement(props) {
 			});
 			setFiles(files);
 		},
+		clearFiles = () => {
+			setFiles([]);
+		},
 		toggleShowAll = () => {
 			setShowAll(!showAll);
 		},
@@ -86,7 +90,7 @@ function AttachmentsElement(props) {
 			_.each(files, (file) => {
 				file.extraUploadData = {
 					model,
-					modelid,
+					modelid: modelid.current,
 				};
 			});
 		},
@@ -112,6 +116,10 @@ function AttachmentsElement(props) {
 			Repository.deleteById(id);
 		};
 
+	if (!_.isEqual(modelidCalc, modelid.current)) {
+		modelid.current = modelidCalc;
+	}
+
 	useEffect(() => {
 
 		if (!model) {
@@ -120,37 +128,43 @@ function AttachmentsElement(props) {
 
 		(async () => {
 
-			// Load Repository
-			const filters = [
-				{
-					name: 'model',
-					value: model,
-				},
-				{
-					name: 'modelid',
-					value: modelid,
-				},
-			];
-			if (accept) {
-				let name,
-					mimetypes;
-				if (_.isString(accept)) {
-					name = 'mimetype LIKE';
-					mimetypes = accept.replace('*', '%');
-				} else if (_.isArray(accept)) {
-					name = 'mimetype IN';
-					mimetypes = accept;
-				}
-				filters.push({
-					name,
-					value: mimetypes,
-				});
-			}
-			Repository.filter(filters);
-			Repository.setPageSize(showAll ? EXPANDED_MAX : COLLAPSED_MAX);
-			await Repository.load();
+			if (!_.isArray(modelid.current)) {
 
-			buildFiles();
+				// Load Repository
+				const filters = [
+					{
+						name: 'model',
+						value: model,
+					},
+					{
+						name: 'modelid',
+						value: modelid.current,
+					},
+				];
+				if (accept) {
+					let name,
+						mimetypes;
+					if (_.isString(accept)) {
+						name = 'mimetype LIKE';
+						mimetypes = accept.replace('*', '%');
+					} else if (_.isArray(accept)) {
+						name = 'mimetype IN';
+						mimetypes = accept;
+					}
+					filters.push({
+						name,
+						value: mimetypes,
+					});
+				}
+				Repository.filter(filters);
+				Repository.setPageSize(showAll ? EXPANDED_MAX : COLLAPSED_MAX);
+				await Repository.load();
+
+				buildFiles();
+			} else {
+				clearFiles();
+			}
+
 
 			if (!isReady) {
 				setIsReady(true);
@@ -162,7 +176,7 @@ function AttachmentsElement(props) {
 		return () => {
 			Repository.off('load', buildFiles);
 		};
-	}, [model, modelid, showAll]);
+	}, [model, modelid.current, showAll]);
 
 	if (!isReady) {
 		return null;
