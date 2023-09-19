@@ -307,6 +307,8 @@ export default function GridHeaderRow(props) {
 
 					if (all.length === 1) {
 						propsToPass.w = '100%';
+						isReorderable = false;
+						isResizable = false;
 					} else {
 						if (w) {
 							propsToPass.w = w;
