@@ -4,6 +4,7 @@ import _ from 'lodash';
 
 const Globals = {
 	mode: CURRENT_MODE,
+	customInflect: (str) => str,
 };
 
 export default Globals;

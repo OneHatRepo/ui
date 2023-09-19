@@ -14,6 +14,7 @@ import Header from './Header.js';
 import Mask from './Mask.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
 import emptyFn from '../../Functions/emptyFn.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 // Note on collapseDirections:
@@ -34,7 +35,7 @@ function Panel(props) {
 			onLayout = null,
 			
 			// Header
-			title = Inflector.humanize(Inflector.underscore(props.model)),
+			title = UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))),
 			showHeader = true,
 			header = null,
 			isClosable = false,
