@@ -439,6 +439,7 @@ function Form(props) {
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
+										uniqueRepository={true}
 										{...propsToPass}
 									/>;
 					if (title) {

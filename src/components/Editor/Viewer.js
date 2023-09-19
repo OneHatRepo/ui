@@ -59,7 +59,9 @@ export default function Viewer(props) {
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
+										h={350}
 										canEditorViewOnly={true}
+										uniqueRepository={true}
 										{...propsToPass}
 									/>;
 					if (title) {
