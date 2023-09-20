@@ -28,8 +28,7 @@ import _ from 'lodash';
 export default function withWindowedEditor(WrappedComponent, isTree = false) {
 	return withEditor((props) => {
 		const {
-				useEditor = false,
-				isEditorShown,
+				isEditorShown = false,
 				setIsEditorShown,
 				Editor,
 				editorProps = {},
@@ -41,7 +40,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 
 		return <>
 					<WrappedComponent {...props} />
-					{useEditor && isEditorShown && 
+					{isEditorShown && 
 						<Modal
 							isOpen={true}
 							onClose={() => setIsEditorShown(false)}

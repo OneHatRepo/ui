@@ -21,9 +21,8 @@ import _ from 'lodash';
 export default function withInlineEditor(WrappedComponent) {
 	return withEditor((props) => {
 		const {
-				useEditor = false,
 				editorType,
-				isEditorShown,
+				isEditorShown = false,
 				setIsEditorShown,
 				isEditorViewOnly,
 				onEditorCancel,
@@ -79,7 +78,7 @@ export default function withInlineEditor(WrappedComponent) {
 		}
 
 		let inlineEditor = null;
-		if (useEditor && Repository) {
+		if (Repository) {
 			inlineEditor = <>
 								{isEditorShown && <Box
 													ref={maskRef}
@@ -108,7 +107,7 @@ export default function withInlineEditor(WrappedComponent) {
 															record={selection[0]}
 															Repository={Repository}
 															isMultiple={selection.length > 1}
-															isViewOnly={isEditorViewOnly}
+															isEditorViewOnly={isEditorViewOnly}
 															columnsConfig={localColumnsConfig}
 															onCancel={onEditorCancel}
 															onSave={onEditorSave}

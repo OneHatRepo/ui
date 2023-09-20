@@ -34,7 +34,6 @@ export function ComboComponent(props) {
 			tooltip = null,
 			menuMinWidth = 150,
 			disableDirectEntry = false,
-			disablePagination = true,
 			hideMenuOnSelection = true,
 			_input = {},
 			isEditor = false,
@@ -55,7 +54,7 @@ export function ComboComponent(props) {
 			selectionMode,
 			selectNext,
 			selectPrev,
-			getDisplayFromSelection,
+			getDisplayValuesFromSelection,
 
 			tooltipPlacement = 'bottom',
 		} = props,
@@ -90,16 +89,12 @@ export function ComboComponent(props) {
 					if (rectTop !== top) {
 						setTop(rectTop);
 					}
-					setHeight(null);
 				} else {
 					// Menu is above the combo
-
-					const rectTop = rect.top -200;
+					const rectTop = rect.top - styles.FORM_COMBO_MENU_HEIGHT;
 					if (rectTop !== top) {
 						setTop(rectTop);
 					}
-
-					setHeight(200);
 				}
 				if (rect.left !== left) {
 					setLeft(rect.left);
@@ -322,7 +317,7 @@ export function ComboComponent(props) {
 				if (found) {
 					const
 						newSelection = [found],
-						newTextValue = getDisplayFromSelection(newSelection);
+						newTextValue = getDisplayValuesFromSelection(newSelection);
 
 					setTextValue(newTextValue);
 					setSelection(newSelection);
@@ -355,7 +350,7 @@ export function ComboComponent(props) {
 		}
 
 		// Adjust text input to match selection
-		let localTextValue = getDisplayFromSelection(selection);
+		let localTextValue = getDisplayValuesFromSelection(selection);
 		if (!_.isEqual(localTextValue, textValue)) {
 			setTextValue(localTextValue);
 		}
@@ -489,14 +484,12 @@ export function ComboComponent(props) {
 										top={top + 'px'}
 										left={left + 'px'}
 										w={width + 'px'}
-										h={height ? height + 'px' : null}
 										minWidth={menuMinWidth}
 										overflow="auto"
 										bg="#fff"
 									>
 										<Popover.Body
 											ref={menuRef}
-											maxHeight={200}
 											borderWidth={1}
 											borderColor='trueGray.400'
 											borderTopWidth={0}
@@ -505,8 +498,6 @@ export function ComboComponent(props) {
 											<WhichGrid
 												showHeaders={false}
 												showHovers={true}
-												pageSize={100}
-												disableAdjustingPageSizeToHeight={true}
 												shadow={1}
 												getRowProps={() => {
 													return {
@@ -518,9 +509,11 @@ export function ComboComponent(props) {
 														w: '100%',
 													};
 												}}
+												allowToggleSelection={true}
+												disableAdjustingPageSizeToHeight={true}
 												{...props}
+												h={styles.FORM_COMBO_MENU_HEIGHT + 'px'}
 												disablePresetButtons={!isEditor}
-												disablePagination={disablePagination}
 												setSelection={(selection) => {
 													// Decorator fn to add local functionality
 													// Close the menu when row is selected on grid

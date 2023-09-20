@@ -285,7 +285,7 @@ export default function GridHeaderRow(props) {
 
 				// These header Components should match the columns exactly
 				// so we can drag/drop them to control the columns.
-				const headerColumns = _.map(localColumnsConfig, (config, ix) => {
+				const headerColumns = _.map(localColumnsConfig, (config, ix, all) => {
 					let {
 							columnId,
 							fieldName,
@@ -305,15 +305,21 @@ export default function GridHeaderRow(props) {
 							borderRightColor: '#fff',
 						}
 
-					if (w) {
-						propsToPass.w = w;
-					} else if (flex) {
-						propsToPass.flex = flex;
-						propsToPass.minWidth = 100;
-					} else if (localColumnsConfig.length === 1) {
-						// Only one column and flex is not set
-						propsToPass.flex = 1;
-						if (!header) {
+					if (all.length === 1) {
+						propsToPass.w = '100%';
+						isReorderable = false;
+						isResizable = false;
+					} else {
+						if (w) {
+							propsToPass.w = w;
+						} else if (flex) {
+							propsToPass.flex = flex;
+							propsToPass.minWidth = 100;
+						} else if (localColumnsConfig.length === 1) {
+							// Only one column and flex is not set
+							propsToPass.flex = 1;
+							if (!header) {
+							}
 						}
 					}
 

@@ -32,15 +32,19 @@ export default function GridRow(props) {
 		return useMemo(() => {
 			const renderColumns = (item) => {
 				if (_.isArray(columnsConfig)) {
-					return _.map(columnsConfig, (config, key) => {
+					return _.map(columnsConfig, (config, key, all) => {
 						const propsToPass = columnProps[key] || {};
-						if (config.w) {
-							propsToPass.w = config.w;
-						} else if (config.flex) {
-							propsToPass.flex = config.flex;
-							propsToPass.minWidth = 100;
+						if (all.length === 1) {
+							propsToPass.w = '100%';
 						} else {
-							propsToPass.flex = 1;
+							if (config.w) {
+								propsToPass.w = config.w;
+							} else if (config.flex) {
+								propsToPass.flex = config.flex;
+								propsToPass.minWidth = 100;
+							} else {
+								propsToPass.flex = 1;
+							}
 						}
 						propsToPass.p = 1;
 						propsToPass.justifyContent = 'center';

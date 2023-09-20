@@ -16,8 +16,8 @@ const presetButtons = [
 	'add',
 	'edit',
 	'delete',
-	'copy',
 	'view',
+	'copy',
 	'duplicate',
 	// 'print',
 ];
@@ -41,13 +41,14 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				// for local use
 				isEditor = false,
 				isTree = false,
-				useEditor = true,
+				isSideEditor = false,
+				canEditorViewOnly = false,
 				disableAdd = !isEditor,
 				disableEdit = !isEditor,
 				disableDelete = !isEditor,
 				disableView = !isGrid,
 				disableCopy = !isGrid,
-				disableDuplicate = !isGrid,
+				disableDuplicate = !isEditor,
 				disablePrint = !isGrid,
 
 				// withEditor
@@ -61,7 +62,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 
 				// withSelection
 				selection,
-				setSelection,
 
 				// parent container
 				selectorId,
@@ -81,22 +81,22 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				let isDisabled = false;
 				switch(type) {
 					case 'add':
-						if (disableAdd || !useEditor) {
+						if (disableAdd || canEditorViewOnly) {
 							isDisabled = true;
 						}
 						break;
 					case 'edit':
-						if (disableEdit || !useEditor) {
+						if (disableEdit || canEditorViewOnly || isSideEditor) {
 							isDisabled = true;
 						}
 						break;
 					case 'delete':
-						if (disableDelete || !useEditor) {
+						if (disableDelete || canEditorViewOnly) {
 							isDisabled = true;
 						}
 						break;
 					case 'view':
-						if (disableView) {
+						if (disableView || isSideEditor) {
 							isDisabled = true;
 						}
 						break;
@@ -106,7 +106,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'duplicate':
-						if (disableDuplicate || !useEditor) {
+						if (disableDuplicate || canEditorViewOnly) {
 							isDisabled = true;
 						}
 						break;
@@ -250,7 +250,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				}
 	
 				// Send it to clipboard
-				navigator.clipboard.writeText(text);
+				navigator?.clipboard.writeText(text);
 			};
 			// onPrint = () => {
 			// 	debugger;

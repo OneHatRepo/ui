@@ -9,6 +9,7 @@ import _ from 'lodash';
 export default function PaginationToolbar(props) {
 	const {
 			toolbarItems = [],
+			disablePageSize = false,
 		} = props,
 		[minimize, setMinimize] = useState(false),
 		propsToPass = _.omit(props, 'toolbarItems'),
@@ -48,7 +49,7 @@ export default function PaginationToolbar(props) {
 				w="100%"
 				onLayout={(e) => onLayout(e)}
 			>
-				{showPagination && <Pagination {...propsToPass} w={toolbarItems.length ? null : '100%'} minimize={minimize} />}
+				{showPagination && <Pagination {...propsToPass} w={toolbarItems.length ? null : '100%'} minimize={minimize} disablePageSize={disablePageSize} />}
 				{toolbarItems.length ? <Row flex={1} {...toolbarProps}>{toolbarItems}</Row> : null}
 			</Toolbar>;
 };

@@ -14,9 +14,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
-				useEditor = true,
 				userCanEdit = true,
 				userCanView = true,
+				canEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
 				disableAdd = false,
 				disableEdit = false,
 				disableDelete = false,
@@ -49,8 +49,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			listeners = useRef({}),
 			editorStateRef = useRef(),
 			[currentRecord, setCurrentRecord] = useState(null),
+			[isAdding, setIsAdding] = useState(false),
+			[isSaving, setIsSaving] = useState(false),
 			[isEditorShown, setIsEditorShown] = useState(false),
-			[isEditorViewOnly, setIsEditorViewOnly] = useState(false),
+			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly), // current state of whether editor is in view-only mode
 			[lastSelection, setLastSelection] = useState(),
 			setSelectionDecorated = (newSelection) => {
 				function doIt() {
@@ -71,7 +73,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// forceUpdate(); // we don't want to get into an infinite loop of renders. Simply directly assign the listeners in every child render
 			},
 			onAdd = async () => {
-				const defaultValues = Repository.getSchema().model.defaultValues;
+				const defaultValues = Repository.getSchema().getDefaultValues();
 				let addValues = _.clone(defaultValues);
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
@@ -105,7 +107,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// Unmap the values, so we can input true originalData
 				addValues = Repository.unmapData(addValues);
 
+				setIsAdding(true);
+				setIsSaving(true);
 				const entity = await Repository.add(addValues, false, true);
+				setIsSaving(false);
 				setSelection([entity]);
 				setIsEditorViewOnly(false);
 				setEditorMode(EDITOR_MODE__ADD);
@@ -183,6 +188,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (getListeners().onAfterDelete) {
 					await getListeners().onAfterDelete(selection);
 				}
+				setSelection([]);
 				if (cb) {
 					cb();
 				}
@@ -198,8 +204,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(true);
 
-				if (getListeners().onAfterDelete) {
-					await getListeners().onAfterDelete(entity);
+				if (getListeners().onAfterView) {
+					await getListeners().onAfterView(entity);
 				}
 			},
 			duplicateRecord = async () => {
@@ -244,12 +250,19 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await getListeners().onBeforeEditSave(what);
 				}
 
+				setIsSaving(true);
 				await Repository.save();
-				setIsEditorShown(false);
+				setIsSaving(false);
+
+				setIsAdding(false);
+				setEditorMode(EDITOR_MODE__EDIT);
+				// setIsEditorShown(false);
 				
 				if (getListeners().onAfterEdit) {
 					await getListeners().onAfterEdit(what);
 				}
+
+				return true;
 			},
 			onEditorCancel =  () => {
 				async function doIt() {
@@ -259,6 +272,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (isSingle && isPhantom) {
 						await deleteRecord();
 					}
+					
+					setIsAdding(false);
 					setEditorMode(EDITOR_MODE__VIEW);
 					setIsEditorShown(false);
 				}
@@ -279,8 +294,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				});
 			},
 			calculateEditorMode = () => {
-				let mode = EDITOR_MODE__VIEW;
-				if (userCanEdit) {
+				let mode = editorMode;
+				if (!canEditorViewOnly && userCanEdit) {
 					if (selection.length > 1) {
 						if (!disableEdit) {
 							// For multiple entities selected, change it to edit multiple mode
@@ -314,6 +329,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			// When selection changes, set the mode appropriately
 			const mode = calculateEditorMode();
 			setEditorMode(mode);
+
 			setLastSelection(selection);
 		}, [selection]);
 
@@ -329,6 +345,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setCurrentRecord={setCurrentRecord}
 					isEditorShown={isEditorShown}
 					isEditorViewOnly={isEditorViewOnly}
+					isAdding={isAdding}
+					isSaving={isSaving}
 					editorMode={editorMode}
 					onEditMode={onEditMode}
 					onViewMode={onViewMode}
@@ -345,7 +363,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onEditorClose={onEditorClose}
 					setWithEditListeners={setListeners}
 					isEditor={true}
-					useEditor={useEditor}
 					userCanEdit={userCanEdit}
 					userCanView={userCanView}
 					disableAdd={disableAdd}

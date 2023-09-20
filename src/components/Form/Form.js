@@ -81,7 +81,8 @@ function Form(props) {
 			Repository,
 			
 			// withEditor
-			isViewOnly = false,
+			isEditorViewOnly = false,
+			isSaving = false,
 			editorMode,
 			onCancel,
 			onSave,
@@ -102,6 +103,7 @@ function Form(props) {
 		isMultiple = _.isArray(record),
 		isSingle = !isMultiple, // for convenience
 		forceUpdate = useForceUpdate(),
+		[previousRecord, setPreviousRecord] = useState(record),
 		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		{
@@ -162,6 +164,7 @@ function Form(props) {
 						renderer,
 						w,
 						flex,
+						useSelectorId = false,
 					} = config;
 
 				if (!isEditable) {
@@ -213,6 +216,11 @@ function Form(props) {
 											}
 											const Element = getComponentFromType(editor);
 
+											if (useSelectorId) {
+												editorProps.selectorId = selectorId;
+												editorProps.selectorSelected = editorProps;
+											}
+											
 											let element = <Element
 																name={name}
 																value={value}
@@ -223,8 +231,6 @@ function Form(props) {
 																	}
 																}}
 																onBlur={onBlur}
-																selectorId={selectorId}
-																selectorSelected={selectorSelected}
 																flex={1}
 																{...editorProps}
 																// {...defaults}
@@ -261,6 +267,7 @@ function Form(props) {
 					label,
 					items,
 					onChange: onEditorChange,
+					useSelectorId = false,
 					...propsToPass
 				} = item;
 			let editorTypeProps = {};
@@ -299,7 +306,7 @@ function Form(props) {
 				label = propertyDef.title;
 			}
 
-			if (isViewOnly || !isEditable) {
+			if (isEditorViewOnly || !isEditable) {
 				const
 					Text = getComponentFromType('Text'),
 					value = (record && record[name]) || (startingValues && startingValues[name]) || null;
@@ -365,6 +372,11 @@ function Form(props) {
 							if (isValidElement(Element)) {
 								throw new Error('Should not yet be valid React element. Did you use <Element> instead of () => <Element> when defining it?')
 							}
+
+							if (useSelectorId) {
+								editorTypeProps.selectorId = selectorId;
+								editorTypeProps.selectorSelected = editorProps;
+							}
 							let element = <Element
 												name={name}
 												value={value}
@@ -375,8 +387,6 @@ function Form(props) {
 													}
 												}}
 												onBlur={onBlur}
-												selectorId={selectorId}
-												selectorSelected={selectorSelected}
 												flex={1}
 												{...defaults}
 												{...propsToPass}
@@ -411,21 +421,28 @@ function Form(props) {
 					/>;
 		},
 		buildAncillary = () => {
-			let components = [];
+			const components = [];
 			if (ancillaryItems.length) {
-				components = _.map(ancillaryItems, (item, ix) => {
+				_.each(ancillaryItems, (item, ix) => {
 					let {
 						type,
 						title = null,
 						selectorId,
 						...propsToPass
 					} = item;
+					if (isMultiple && type !== 'Attachments') {
+						return;
+					}
+					if (!propsToPass.h) {
+						propsToPass.h = 400;
+					}
 					const
 						Element = getComponentFromType(type),
 						element = <Element
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
+										uniqueRepository={true}
 										{...propsToPass}
 									/>;
 					if (title) {
@@ -434,7 +451,7 @@ function Form(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					return <Column key={'ancillary-' + ix} mx={2} my={5}>{title}{element}</Column>;
+					components.push(<Column key={'ancillary-' + ix} mx={2} my={5}>{title}{element}</Column>);
 				});
 			}
 			return components;
@@ -444,7 +461,22 @@ function Form(props) {
 			if (editorType === EDITOR_TYPE__INLINE) {
 				alert(errors.message);
 			}
+		},
+		onSaveDecorated = async (data, e) => {
+			// reset the form after a save
+			const result = await onSave(data, e);
+			if (result) {
+				const values = record.submitValues;
+				reset(values);
+			}
 		};
+
+	useEffect(() => {
+		if (record !== previousRecord) {
+			setPreviousRecord(record);
+			reset(defaultValues);
+		}
+	}, [record]);
 
 	useEffect(() => {
 		if (!Repository) {
@@ -486,6 +518,13 @@ function Form(props) {
 	if (maxHeight) {
 		sizeProps.maxHeight = maxHeight;
 	}
+
+	const savingProps = {};
+	if (isSaving) {
+		savingProps.borderTopWidth = 2;
+		savingProps.borderTopColor = '#f00';
+	}
+
 
 	let formComponents,
 		editor;
@@ -570,8 +609,8 @@ function Form(props) {
 				
 				{editor}
 
-				<Footer justifyContent="flex-end" {...footerProps}>
-					{onDelete && editorMode === EDITOR_MODE__EDIT && 
+				<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
+					{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 						<Row flex={1} justifyContent="flex-start">
 							<Button
 								key="deleteBtn"
@@ -585,7 +624,7 @@ function Form(props) {
 						</Row>}
 					<Button.Group space={2} {...buttonGroupProps}>
 				
-						{!isViewOnly && <IconButton
+						{!isEditorViewOnly && <IconButton
 											key="resetBtn"
 											onPress={() => {
 												if (onReset) {
@@ -595,19 +634,19 @@ function Form(props) {
 											}}
 											icon={<Rotate color="#fff" />}
 										/>}
-						{!isViewOnly && onCancel && <Button
+						{!isEditorViewOnly && isSingle && onCancel && <Button
 														key="cancelBtn"
 														variant="ghost"
 														onPress={onCancel}
 														color="#fff"
 													>Cancel</Button>}
-						{!isViewOnly && onSave && <Button
+						{!isEditorViewOnly && onSave && <Button
 														key="saveBtn"
-														onPress={(e) => handleSubmit(onSave, onSubmitError)(e)}
+														onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 														isDisabled={isSaveDisabled}
 														color="#fff"
 													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-						{isViewOnly && onClose && <Button
+						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
 														key="closeBtn"
 														onPress={onClose}
 														color="#fff"

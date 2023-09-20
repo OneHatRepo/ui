@@ -6,6 +6,9 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import {
+	EDITOR_TYPE__SIDE,
+} from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import Label from '../Form/Label.js';
@@ -29,28 +32,40 @@ export default function Viewer(props) {
 			selectorSelected,
 
 			// withEditor
+			editorType,
 			onEditMode,
 			onClose,
 			onDelete,
 		} = props,
+		isMultiple = _.isArray(record),
+		isSideEditor = editorType === EDITOR_TYPE__SIDE,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
 		buildAncillary = () => {
-			let components = [];
+			const components = [];
 			if (ancillaryItems.length) {
-				components = _.map(ancillaryItems, (item, ix) => {
+				_.each(ancillaryItems, (item, ix) => {
 					let {
 						type,
 						title = null,
 						selectorId = null,
 						...propsToPass
 					} = item;
+					if (isMultiple && type !== 'Attachments') {
+						return;
+					}
+					if (!propsToPass.h) {
+						propsToPass.h = 400;
+					}
 					const
 						Element = getComponentFromType(type),
 						element = <Element
 										selectorId={selectorId}
-										selectorSelected={selectorId ? record : selectorSelected}
+										selectorSelected={selectorSelected || record}
 										flex={1}
+										h={350}
+										canEditorViewOnly={true}
+										uniqueRepository={true}
 										{...propsToPass}
 									/>;
 					if (title) {
@@ -59,11 +74,15 @@ export default function Viewer(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					return <Column key={'ancillary-' + ix} my={5}>{title}{element}</Column>;
+					components.push(<Column key={'ancillary-' + ix} my={5}>{title}{element}</Column>);
 				});
 			}
 			return components;
 		};
+
+	const
+		showDeleteBtn = onDelete && viewerCanDelete,
+		showCloseBtn = !isSideEditor;
 
 	return <Column flex={flex} {...props}>
 				<ScrollView width="100%" _web={{ height: 1 }}>
@@ -88,26 +107,28 @@ export default function Viewer(props) {
 
 					</Column>
 				</ScrollView>
-				<Footer justifyContent="flex-end">
-					{onDelete && viewerCanDelete && 
-						<Row flex={1} justifyContent="flex-start">
-							<Button
-								key="deleteBtn"
-								onPress={onDelete}
-								bg="warning"
-								_hover={{
-									bg: 'warningHover',
-								}}
-								color="#fff"
-							>Delete</Button>
-						</Row>}
-					<Button.Group space={2}>
-						<Button
-							key="closeBtn"
-							onPress={onClose}
-							color="#fff"
-						>Close</Button>
-					</Button.Group>
-				</Footer>
+				{(showDeleteBtn || showCloseBtn) && 
+					<Footer justifyContent="flex-end">
+						{showDeleteBtn && 
+							<Row flex={1} justifyContent="flex-start">
+								<Button
+									key="deleteBtn"
+									onPress={onDelete}
+									bg="warning"
+									_hover={{
+										bg: 'warningHover',
+									}}
+									color="#fff"
+								>Delete</Button>
+							</Row>}
+						{showCloseBtn && 
+							<Button.Group space={2}>
+								<Button
+									key="closeBtn"
+									onPress={onClose}
+									color="#fff"
+								>Close</Button>
+							</Button.Group>}
+					</Footer>}
 			</Column>;
 }

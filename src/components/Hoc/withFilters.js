@@ -59,7 +59,7 @@ export default function withFilters(WrappedComponent) {
 					defaultFilters: modelDefaultFilters,
 					ancillaryFilters: modelAncillaryFilters,
 				} = Repository.getSchema().model,
-				id = useId(),
+				id = props.id || useId(),
 
 				// determine the starting filters
 				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters
@@ -235,6 +235,9 @@ export default function withFilters(WrappedComponent) {
 					const
 						filterProps = {
 							mx: 1,
+							disableAdjustingPageSizeToHeight: true,
+							pageSize: 20,
+							uniqueRepository: true,
 						},
 						filterElements = [];
 					_.each(filters, (filter, ix) => {

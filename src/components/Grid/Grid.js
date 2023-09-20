@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react';
 import {
 	Column,
 	FlatList,
@@ -86,7 +86,7 @@ function GridComponent(props) {
 			canColumnsReorder = true,
 			canColumnsResize = true,
 			canRowsReorder = false,
-			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the item clicked on
+			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
 			bottomToolbar = 'pagination',
@@ -104,6 +104,7 @@ function GridComponent(props) {
 			onDuplicate,
 			onReset,
 			onContextMenu,
+			isAdding,
 
 			// withData
 			Repository,
@@ -141,6 +142,7 @@ function GridComponent(props) {
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
 		gridRef = useRef(),
+		isAddingRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -162,6 +164,10 @@ function GridComponent(props) {
 					shiftKey,
 					metaKey,
 				 } = e;
+			let allowToggle = allowToggleSelection;
+			if (metaKey) {
+				allowToggle = true;
+			}
 				
 			if (selectionMode === SELECTION_MODE_MULTI) {
 				if (shiftKey) {
@@ -170,28 +176,18 @@ function GridComponent(props) {
 					} else {
 						selectRangeTo(item);
 					}
-				} else if (metaKey) {
-					if (isInSelection(item)) {
-						// Already selected
-						if (allowToggleSelection) {
-							removeFromSelection(item);
-						} else {
-							// Do nothing.
-						}
-					} else {
-						addToSelection(item);
-					}
 				} else {
-					if (isInSelection(item)) {
-						// Already selected
-						if (allowToggleSelection) {
+					if (allowToggle) {
+						if (isInSelection(item)) {
 							removeFromSelection(item);
 						} else {
-							// Do nothing.
+							addToSelection(item);
 						}
 					} else {
-						// select just this one
-						setSelection([item]);
+						if (!isInSelection(item)) {
+							// select just this one
+							setSelection([item]);
+						}
 					}
 				}
 			} else {
@@ -199,7 +195,7 @@ function GridComponent(props) {
 				let newSelection = selection;
 				if (isInSelection(item)) {
 					// Already selected
-					if (allowToggleSelection) {
+					if (allowToggle) {
 						// Create empty selection
 						newSelection = [];
 					} else {
@@ -616,41 +612,34 @@ function GridComponent(props) {
 			setDragRowSlot(null);
 		},
 		onLayout = (e) => {
-			if (disableAdjustingPageSizeToHeight || !Repository) {
+			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current || isAddingRef.current) {
 				return;
 			}
-			const {
-					nativeEvent: {
-						layout,
-						target,
-					},
-				} = e;
-			let pageSize;
-			if (CURRENT_MODE === UI_MODE_WEB) {
-				const
-					targetBoundingBox = target.getBoundingClientRect(),
-					targetHeight = targetBoundingBox.height,
-					firstRow = target.children[0]?.children[0]?.children[0]?.children[0]?.children[0];
-				if (firstRow) {
-					const
-						rowBoundingBox = firstRow.getBoundingClientRect(),
-						rowHeight = rowBoundingBox.height,
-						rowsPerTarget = Math.floor(targetHeight / rowHeight);
-					pageSize = rowsPerTarget;
-					if (showHeaders) {
-						pageSize--;
-					}
-					if (bottomToolbar) {
-						pageSize--;
-					}
-				}
+
+			const
+				gr = gridRef.current,
+				scrollableNode = gr.getScrollableNode(),
+				scrollableNodeBoundingBox = scrollableNode.getBoundingClientRect(),
+				scrollableNodeHeight = scrollableNodeBoundingBox.height,
+				firstRow = scrollableNode.children[0].children[showHeaders ? 1: 0];
+
+			if (!firstRow) {
+				return;
 			}
-			
-			if (pageSize) {
+
+			const
+				rowHeight = firstRow.getBoundingClientRect().height,
+				rowsPerContainer = Math.floor(scrollableNodeHeight / rowHeight);
+			let pageSize = rowsPerContainer;
+			if (showHeaders) {
+				pageSize--;
+			}
+			if (pageSize !== Repository.pageSize) {
 				Repository.setPageSize(pageSize);
 			}
-		};
-		
+		},
+		debouncedOnLayout = useCallback(_.debounce(onLayout, 500), []);
+
 	useEffect(() => {
 
 		const calculateLocalColumnsConfig = () => {
@@ -778,6 +767,9 @@ function GridComponent(props) {
 
 	}, [selectorId, selectorSelected]);
 
+
+	isAddingRef.current = isAdding;
+
 	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode]);
 
 	if (!isReady) {
@@ -799,7 +791,7 @@ function GridComponent(props) {
 	let listFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
+			listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} disablePageSize={!disableAdjustingPageSizeToHeight} />;
 		} else if (footerToolbarItemComponents.length) {
 			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 		}
@@ -811,23 +803,24 @@ function GridComponent(props) {
 	} else {
 		sizeProps.flex = flex ?? 1;
 	}
+
 	return <Column
 				{...testProps('Grid')}
 				w="100%"
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
 				borderColor={styles.GRID_BORDER_COLOR}
-				onLayout={onLayout}
+				onLayout={debouncedOnLayout}
 				{...sizeProps}
 			>
 				{topToolbar}
 
-				<Column w="100%" flex={1} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+				<Column w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 					if (!isDragMode && !isInlineEditorShown) {
 						deselectAll();
 					}
 				}}>
-					{!entities.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
+					{!entities?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
 						<FlatList
 							ref={gridRef}
 							// ListHeaderComponent={listHeaderComponent}

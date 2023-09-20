@@ -11,7 +11,7 @@ export default function Editor(props) {
 	const {
 			Form,
 			Viewer,
-			isEditorViewOnly: isViewOnly,
+			isEditorViewOnly,
 			onEditorCancel: onCancel,
 			onEditorSave: onSave,
 			onEditorClose: onClose,
@@ -29,14 +29,18 @@ export default function Editor(props) {
 
 	if (_.isEmpty(selection)) {
 		return null; // hide the editor when no selection
-		return <Box {...props} bg="#ddd" />;
 	}
 
-	if (Repository?.isRemotePhantomMode && selection.length === 1 && editorMode === EDITOR_MODE__VIEW) {
+	// Repository?.isRemotePhantomMode && selection.length === 1 && 
+	if (editorMode === EDITOR_MODE__VIEW) {
+		const record = selection[0];
+		if (record.isDestroyed) {
+			return null;
+		}
 		return <Viewer
 					{...props}
-					record={selection[0]}
-					onEditMode={isViewOnly ? null : onEditMode}
+					record={record}
+					onEditMode={isEditorViewOnly ? null : onEditMode}
 					onClose={onClose}
 					onDelete={onDelete}
 				/>;
