@@ -610,7 +610,7 @@ function Form(props) {
 				{editor}
 
 				<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
-					{onDelete && editorMode === EDITOR_MODE__EDIT && 
+					{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 						<Row flex={1} justifyContent="flex-start">
 							<Button
 								key="deleteBtn"
@@ -634,7 +634,7 @@ function Form(props) {
 											}}
 											icon={<Rotate color="#fff" />}
 										/>}
-						{!isEditorViewOnly && onCancel && <Button
+						{!isEditorViewOnly && isSingle && onCancel && <Button
 														key="cancelBtn"
 														variant="ghost"
 														onPress={onCancel}
