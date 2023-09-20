@@ -37,19 +37,23 @@ export default function Viewer(props) {
 			onClose,
 			onDelete,
 		} = props,
+		isMultiple = _.isArray(record),
 		isSideEditor = editorType === EDITOR_TYPE__SIDE,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
 		buildAncillary = () => {
-			let components = [];
+			const components = [];
 			if (ancillaryItems.length) {
-				components = _.map(ancillaryItems, (item, ix) => {
+				_.each(ancillaryItems, (item, ix) => {
 					let {
 						type,
 						title = null,
 						selectorId = null,
 						...propsToPass
 					} = item;
+					if (isMultiple && type !== 'Attachments') {
+						return;
+					}
 					if (!propsToPass.h) {
 						propsToPass.h = 400;
 					}
@@ -70,7 +74,7 @@ export default function Viewer(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					return <Column key={'ancillary-' + ix} my={5}>{title}{element}</Column>;
+					components.push(<Column key={'ancillary-' + ix} my={5}>{title}{element}</Column>);
 				});
 			}
 			return components;

@@ -421,15 +421,18 @@ function Form(props) {
 					/>;
 		},
 		buildAncillary = () => {
-			let components = [];
+			const components = [];
 			if (ancillaryItems.length) {
-				components = _.map(ancillaryItems, (item, ix) => {
+				_.each(ancillaryItems, (item, ix) => {
 					let {
 						type,
 						title = null,
 						selectorId,
 						...propsToPass
 					} = item;
+					if (isMultiple && type !== 'Attachments') {
+						return;
+					}
 					if (!propsToPass.h) {
 						propsToPass.h = 400;
 					}
@@ -448,7 +451,7 @@ function Form(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					return <Column key={'ancillary-' + ix} mx={2} my={5}>{title}{element}</Column>;
+					components.push(<Column key={'ancillary-' + ix} mx={2} my={5}>{title}{element}</Column>);
 				});
 			}
 			return components;
