@@ -1,18 +1,10 @@
 // Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc.
-import * as React from "react"
-import Svg, { Path } from "react-native-svg"
-import { Icon } from 'native-base';
+import { Path } from 'react-native-svg';
+import { createIcon } from '@gluestack-ui/themed';
 
-function SvgComponent(props) {
-	return (
-		<Icon
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 448 512"
-			{...props}
-		>
-			<Path d="M32 288c-17.7 0-32 14.3-32 32s14.3 32 32 32h384c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zm0-128c-17.7 0-32 14.3-32 32s14.3 32 32 32h384c17.7 0 32-14.3 32-32s-14.3-32-32-32H32z" />
-		</Icon>
-	)
-}
+const SvgComponent = createIcon({
+	viewBox: '0 0 448 512',
+	path: <Path d="M32 288c-17.7 0-32 14.3-32 32s14.3 32 32 32h384c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zm0-128c-17.7 0-32 14.3-32 32s14.3 32 32 32h384c17.7 0 32-14.3 32-32s-14.3-32-32-32H32z" />,
+});
 
 export default SvgComponent

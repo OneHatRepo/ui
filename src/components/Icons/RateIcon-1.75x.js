@@ -1,19 +1,13 @@
-import * as React from "react"
-import Svg, { G, Path } from "react-native-svg"
-import { Icon } from 'native-base';
+import { G, Path } from 'react-native-svg';
+import { createIcon } from '@gluestack-ui/themed';
 
-function SvgComponent(props) {
-	return (
-		<Icon
-		xmlns="http://www.w3.org/2000/svg"
-		viewBox="0 0 142.79 142.79"
-		{...props}
-		>
+const SvgComponent = createIcon({
+	viewBox: '0 0 142.79 142.79',
+	path: <G>
 			<Path d="M0 0H142.79V142.79H0z" fill="none" />
 			<Path d="M1.11 89.17h11.45v-36.8h-9.1v-4.14a30.25 30.25 0 0010.63-3.67H19v44.61h10.33v5.37H1.11zM33.12 90.6a4.67 4.67 0 114.66 4.88 4.71 4.71 0 01-4.66-4.88zM70 50.1H45.1v-5.54h32.21v3.95C65.47 63.64 63 75 62.19 94.54h-6.64C56.39 75.69 60.14 63.81 70 50.1zM76.65 88.62l3.18-4.2c3 3 6.72 5.69 12.6 5.69 6.09 0 10.93-4.41 10.93-11.38s-4.2-11-10.6-11c-3.45 0-5.6 1.07-8.58 3l-3.42-2.18 1.65-24.06h25v5.61H88.07l-1.32 14.83a15 15 0 017.67-2.07c8.52 0 15.49 4.86 15.49 15.66s-8.15 17-16.83 17a21.9 21.9 0 01-16.43-6.9z" />
 			<Path d="M121.34 74.66l-11.53-18.21h7l5.1 8.35c1.17 2.1 2.46 4.25 3.73 6.35h.31c1.15-2.1 2.29-4.25 3.44-6.35l4.61-8.35h6.72l-11.49 18.88 12.45 19.21h-7l-5.61-8.86c-1.32-2.29-2.72-4.64-4.14-6.83h-.32c-1.3 2.19-2.54 4.51-3.85 6.83l-5.16 8.86h-6.72z" />
-		</Icon>
-	)
-}
+		</G>,
+});
 
 export default SvgComponent
