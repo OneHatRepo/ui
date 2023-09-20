@@ -1,4 +1,4 @@
-import { Path, Rect } from "react-native-svg"
+import { G, Path, Rect } from "react-native-svg"
 import { createIcon } from '@gluestack-ui/themed';
 
 const SvgComponent = createIcon({
