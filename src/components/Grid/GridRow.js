@@ -7,6 +7,7 @@ import {
 import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import AngleRight from '../Icons/AngleRight.js';
@@ -86,9 +87,30 @@ export default function GridRow(props) {
 								return <Row key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</Row>;
 							}
 							if (config.fieldName) {
-								if (item.properties && item.properties[config.fieldName]) {
-									const property = item.properties[config.fieldName];	
+								if (item?.properties[config.fieldName]) {
+									const property = item.properties[config.fieldName];
 									value = property.displayValue;
+
+									if (property?.viewerType?.type) {
+										const Element = getComponentFromType(property?.viewerType?.type);
+										return <Element
+													value={value}
+													key={key}
+													overflow="hidden"
+													textOverflow="ellipsis"
+													alignSelf="center"
+													style={{
+														userSelect: 'none',
+													}}
+													fontSize={styles.GRID_CELL_FONTSIZE}
+													px={styles.GRID_CELL_PX}
+													py={styles.GRID_CELL_PY}
+													numberOfLines={1}
+													ellipsizeMode="head"
+													{...propsToPass}
+													{...propsToPass}
+												/>;
+									}
 								} else if (item[config.fieldName]) {
 									value = item[config.fieldName];
 								} else if (fields) {

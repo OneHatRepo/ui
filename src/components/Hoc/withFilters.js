@@ -430,7 +430,7 @@ export default function withFilters(WrappedComponent) {
 						// Is it an ancillary filter?
 						const isAncillary = _.isPlainObject(filterType) && filterType.isAncillary;
 						if (isAncillary) {
-							data.push([ filterField, '_ ' + filterType.title ]);
+							data.push([ filterField, filterType.title + ' •' ]);
 							return;
 						}
 

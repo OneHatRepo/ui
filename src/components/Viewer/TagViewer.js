@@ -1,7 +1,7 @@
 import {
 	Text,
 } from 'native-base';
-import UiGlobals from '../../../UiGlobals.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 function TagViewer(props) {
