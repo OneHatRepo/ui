@@ -1,15 +1,31 @@
 import React from 'react';
 import {
 	Button,
+	ButtonText,
+	ButtonIcon,
 	Icon,
 	Pressable,
 	Spinner,
 	Tooltip,
 } from '@gluestack-ui/themed';
+import SquareCheck from '../Icons/SquareCheck.js';
 import styles from '../../Constants/Styles.js';
 import _ from 'lodash';
 
 const IconButton = React.forwardRef((props, ref) => {
+
+	return <Button
+				size="md"
+				py={100}
+				// variant="solid"
+				// action="primary"
+				{...props}
+			>
+				<ButtonText>Add </ButtonText>
+				<ButtonIcon as={SquareCheck} />
+			</Button>;
+
+
 	const {
 			// _icon, // props for the icon component
 			// icon, // The actual icon component to use
