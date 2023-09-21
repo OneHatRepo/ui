@@ -1,7 +1,7 @@
 import {
-	Row,
+	HStack,
 	Spinner,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 // import ScreenContainer from '../ScreenContainer.js';
 
 export default function Loading(props) {
@@ -10,7 +10,7 @@ export default function Loading(props) {
 	// 				<Spinner flex={1} color="primary.500" />
 	// 			</ScreenContainer>;
 	// }
-	return <Row justifyContent="center" minHeight={100} {...props}>
+	return <HStack justifyContent="center" minHeight={100} {...props}>
 				<Spinner flex={1} color="primary.500" />
-			</Row>;
+			</HStack>;
 }
