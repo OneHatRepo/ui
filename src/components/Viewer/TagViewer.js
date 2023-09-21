@@ -8,19 +8,21 @@ function TagViewer(props) {
 	const {
 			value,
 		} = props,
-		values = _.map(JSON.parse(value), (val) => {
-			return val?.text;
-		}),
+		parsedValue = value ? JSON.parse(value) : null,
+		values = parsedValue ? _.map(parsedValue, (val) => {
+			const ret = val?.text;
+			return ret;
+		}).join(', ') : [],
 		styles = UiGlobals.styles;
+
 	return <Text
 				numberOfLines={1}
-				ellipsizeMode="head" 
-				flex={1}
-				fontSize={styles.FORM_TEXT_FONTSIZE}
-				minHeight='40px'
-				px={3}
-				py={2}
+				ellipsizeMode="head"
+				// fontSize={styles.FORM_TEXT_FONTSIZE}
+				// minHeight='40px'
+				// px={3}
+				// py={2}
 				{...props}
-			>{values.join(', ')}</Text>;
+			>{values}</Text>;
 }
 export default TagViewer;
