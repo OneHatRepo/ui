@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
-	Box,
-	Column,
+	HStack,
 	Pressable,
-	Row,
 	ScrollView,
-	Text,
-} from 'native-base';
+	VStack,
+} from '@gluestack-ui/themed';
 import inArray from '../../Functions/inArray.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import _ from 'lodash';
@@ -73,7 +71,7 @@ export default function Accordion(props) {
 				rowProps.overflow = 'hidden'; // otherwise some elements mistakenly show
 			}
 
-			return <Column key={ix}>
+			return <VStack key={ix}>
 						<Pressable
 							onPress={(e) => {
 								let newActiveSections = [];
@@ -94,10 +92,10 @@ export default function Accordion(props) {
 						>
 							{header}
 						</Pressable>
-						<Row {...rowProps} bg="#f00">
+						<HStack {...rowProps} bg="#f00">
 							{content}
-						</Row>
-					</Column>;
+						</HStack>
+					</VStack>;
 		});
 
 	useEffect(() => {
@@ -116,14 +114,16 @@ export default function Accordion(props) {
 		if (activeSections?.length && sections?.length) {
 			scrollTo = sectionHeight * activeIx;
 		}
-		setTimeout(()=> {
-			scrollView.scrollTo({ x: 0, y: scrollTo, animated: true });
-		}, 10); // delay so render can finish
+		if (scrollView) {
+			setTimeout(()=> {
+				scrollView.scrollTo({ x: 0, y: scrollTo, animated: true });
+			}, 10); // delay so render can finish
+		}
 
 	}, [activeSections, isRendered]);
 	
 	return <ScrollView ref={scrollViewRef} keyboardShouldPersistTaps="always" flex={1} w="100%">
-				<Column
+				<VStack
 					{...propsToPass}
 					pb={(onlyOne ? calculateExtraPadding() : 0) + 'px'}
 					onLayout={(e) => {
@@ -139,6 +139,6 @@ export default function Accordion(props) {
 					}}
 				>
 					{items}
-				</Column>
+				</VStack>
 			</ScrollView>;
 }
