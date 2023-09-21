@@ -1,8 +1,8 @@
 import React from 'react';
 import {
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import IconButton from './IconButton.js';
 import Plus from '../Icons/Plus.js';
 import Minus from '../Icons/Minus.js';
@@ -17,8 +17,8 @@ const PlusMinusButton = React.forwardRef((props, ref) => {
 			minusHandler = () => {},
 		} = props;
 
-		return <Row {...props}>
-					<Row alignItems="center">
+		return <HStack {...props}>
+					<HStack alignItems="center">
 						<IconButton
 							icon={<Minus color="#fff" />}
 							onPress={minusHandler}
@@ -32,8 +32,8 @@ const PlusMinusButton = React.forwardRef((props, ref) => {
 							isDisabled={isPlusDisabled}
 							ml={1}
 						/>
-					</Row>
-				</Row>;
+					</HStack>
+				</HStack>;
 
 });
 

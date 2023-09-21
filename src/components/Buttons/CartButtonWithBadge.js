@@ -3,7 +3,7 @@ import {
 	Icon,
 	Pressable,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	Ionicons,
 } from '@expo/vector-icons';

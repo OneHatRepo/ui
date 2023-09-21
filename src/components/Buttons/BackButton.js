@@ -2,7 +2,7 @@ import {
 	Icon,
 	Pressable,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import AngleLeft from '../Icons/AngleLeft.js';
 
 export default function BackButton(props) {
