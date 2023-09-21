@@ -80,13 +80,12 @@ export default function withFilters(WrappedComponent) {
 						if (propertyDef) {
 							title = propertyDef.title;
 							type = propertyDef.filterType;
-						} else {
-							if (!modelFilterTypes[field]) {
-								throw Error('not a propertyDef, and not an ancillaryFilter!');
-							}
+						} else if (modelAncillaryFilters[field]) {
 							const ancillaryFilter = modelFilterTypes[field];
 							title = ancillaryFilter.title;
 							type = FILTER_TYPE_ANCILLARY;
+						} else {
+							throw Error('not a propertyDef, and not an ancillaryFilter!');
 						}
 						formatted = {
 							field,
@@ -330,6 +329,7 @@ export default function withFilters(WrappedComponent) {
 							const {
 									field,
 									value,
+									type,
 								} = filter,
 								isFilterRange = getIsFilterRange(filter);
 							if (isFilterRange) {
@@ -345,8 +345,11 @@ export default function withFilters(WrappedComponent) {
 									newRepoFilters.push({ name: lowField, value: lowValue, });
 								}
 							} else {
-								newFilterNames.push(field);
-								newRepoFilters.push({ name: field, value, });
+								const
+									isAncillary = type === FILTER_TYPE_ANCILLARY,
+									filterName =  (isAncillary ? 'ancillary___' : '') + field;
+								newFilterNames.push(filterName);
+								newRepoFilters.push({ name: filterName, value, });
 							}
 						});
 

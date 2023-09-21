@@ -87,7 +87,7 @@ export default function GridRow(props) {
 								return <Row key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</Row>;
 							}
 							if (config.fieldName) {
-								if (item?.properties[config.fieldName]) {
+								if (item?.properties && item.properties[config.fieldName]) {
 									const property = item.properties[config.fieldName];
 									value = property.displayValue;
 
