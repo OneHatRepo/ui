@@ -38,6 +38,7 @@ import PlusMinusButton from './Buttons/PlusMinusButton.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
 import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Combo/Tag.js';
+import TagViewer from './Viewer/TagViewer.js';
 import TextArea from './Form/Field/TextArea.js';
 import Text from './Form/Field/Text.js';
 import TimezonesCombo from './Form/Field/Combo/TimezonesCombo.js';
@@ -87,6 +88,7 @@ const components = {
 	RadioGroup,
 	TabPanel,
 	Tag,
+	TagViewer,
 	Text,
 	TextArea,
 	TimezonesCombo,

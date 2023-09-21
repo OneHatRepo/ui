@@ -421,7 +421,7 @@ export default function withFilters(WrappedComponent) {
 				_.each(modalSlots, (field, ix) => {
 
 					// Create the data for the combobox. (i.e. List all the possible filters for this slot)
-					const data = [];
+					let data = [];
 					_.each(modelFilterTypes, (filterType, filterField) => {
 						if (inArray(filterField, usedFields) && field !== filterField) { // Show all filters not yet applied, but include the current filter
 							return; // skip, since it's already been used
@@ -430,7 +430,7 @@ export default function withFilters(WrappedComponent) {
 						// Is it an ancillary filter?
 						const isAncillary = _.isPlainObject(filterType) && filterType.isAncillary;
 						if (isAncillary) {
-							data.push([ filterField, filterType.title ]);
+							data.push([ filterField, '_ ' + filterType.title ]);
 							return;
 						}
 
@@ -438,6 +438,9 @@ export default function withFilters(WrappedComponent) {
 						const propertyDef = Repository.getSchema().getPropertyDefinition(filterField);
 						data.push([ filterField, propertyDef.title ]);
 					});
+
+					// sort by title
+					data = _.sortBy(data, [function(datum) { return datum[1]; }]);
 
 					const
 						ixPlusOne = (ix +1),
