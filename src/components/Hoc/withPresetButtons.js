@@ -143,7 +143,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
 						}
-						if (_.isEmpty(selection)) {
+						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
 							isDisabled = true;
 						}
 						break;
@@ -154,7 +154,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
 						}
-						if (_.isEmpty(selection) || selection.length > 1) {
+						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
 							isDisabled = true;
 						}
 						break;
