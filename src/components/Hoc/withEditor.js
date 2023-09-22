@@ -121,6 +121,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			onEdit = async () => {
+				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
+					return;
+				}
 				if (getListeners().onBeforeEdit) {
 					const listenerResult = await getListeners().onBeforeEdit();
 					if (listenerResult === false) {
@@ -132,6 +135,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			onDelete = async (cb) => {
+				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
+					return;
+				}
 				if (getListeners().onBeforeDelete) {
 					const listenerResult = await getListeners().onBeforeDelete();
 					if (listenerResult === false) {
@@ -165,7 +171,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					deleteRecord(cb);
 				} else {
 					const identifier = getRecordIdentifier(selection);
-					confirm('Are you sure you want to delete the ' + identifier, () => deleteRecord(cb));
+					confirm('Are you sure you want to delete the ' + identifier, () => deleteRecord(null, cb));
 				}
 			},
 			onMoveChildren = (cb) => {
@@ -268,7 +274,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				async function doIt() {
 					const
 						isSingle = selection.length === 1,
-						isPhantom = selection[0] && selection[0].isPhantom;
+						isPhantom = selection[0] && !selection[0]?.isDestroyed && selection[0].isPhantom;
 					if (isSingle && isPhantom) {
 						await deleteRecord();
 					}
@@ -301,7 +307,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							// For multiple entities selected, change it to edit multiple mode
 							mode = EDITOR_MODE__EDIT;
 						}
-					} else if (selection.length === 1 && selection[0].isPhantom) {
+					} else if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom) {
 						if (!disableAdd) {
 							// When a phantom entity is selected, change it to add mode.
 							mode = EDITOR_MODE__ADD;
@@ -354,12 +360,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsEditorShown={setIsEditorShown}
 					onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
 					onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
-					onDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onDelete}
+					onDelete={(!userCanEdit || disableDelete) ? null : onDelete}
 					onView={viewRecord}
 					onDuplicate={duplicateRecord}
 					onEditorSave={onEditorSave}
 					onEditorCancel={onEditorCancel}
-					onEditorDelete={(!userCanEdit || disableDelete || (editorMode === EDITOR_MODE__ADD && (selection[0]?.isPhantom || currentRecord?.isPhantom))) ? null : onEditorDelete}
+					onEditorDelete={(!userCanEdit || disableDelete) ? null : onEditorDelete}
 					onEditorClose={onEditorClose}
 					setWithEditListeners={setListeners}
 					isEditor={true}

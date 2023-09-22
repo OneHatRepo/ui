@@ -26,9 +26,16 @@ export default function GridRow(props) {
 			item,
 			isInlineEditorShown,
 		} = props,
-		styles = UiGlobals.styles,
+		styles = UiGlobals.styles;
+
+	if (item.isDestroyed) {
+		return null;
+	}
+
+	const
 		isPhantom = item.isPhantom,
 		hash = item?.hash || item;
+
 
 		return useMemo(() => {
 			const renderColumns = (item) => {
