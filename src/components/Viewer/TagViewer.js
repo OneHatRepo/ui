@@ -18,10 +18,10 @@ function TagViewer(props) {
 	return <Text
 				numberOfLines={1}
 				ellipsizeMode="head"
-				// fontSize={styles.FORM_TEXT_FONTSIZE}
-				// minHeight='40px'
-				// px={3}
-				// py={2}
+				fontSize={styles.FORM_TEXT_FONTSIZE}
+				minHeight='40px'
+				px={3}
+				py={2}
 				{...props}
 			>{values}</Text>;
 }
