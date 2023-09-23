@@ -203,7 +203,7 @@ function Form(props) {
 											let editorProps = {};
 											if (!editor) {
 												const propertyDef = fieldName && Repository?.getSchema().getPropertyDefinition(fieldName);
-												editor = propertyDef[fieldName].editoType;
+												editor = propertyDef[fieldName].editorType;
 												if (_.isPlainObject(editor)) {
 													const {
 															type,
@@ -276,14 +276,25 @@ function Form(props) {
 			if (propertyDef?.isEditingDisabled) {
 				isEditable = false;
 			}
-			if (isEditable && !type && Repository) {
-				const
-					{
-						type: t,
-						...p
-					} =  propertyDef.editorType;
-				type = t;
-				editorTypeProps = p;
+			if (!type && Repository) {
+				if (isEditable) {
+					const
+						{
+							type: t,
+							...p
+						} =  propertyDef.editorType;
+					type = t;
+					editorTypeProps = p;
+				} else if (propertyDef.viewerType) {
+					const
+						{
+							type: t,
+							...p
+						} =  propertyDef.viewerType;
+					type = t
+				} else {
+					type = 'Text';
+				}
 			}
 			if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
 				editorTypeProps.autoLoad = true;
@@ -307,10 +318,8 @@ function Form(props) {
 			}
 
 			if (isEditorViewOnly || !isEditable) {
-				const
-					Text = getComponentFromType('Text'),
-					value = (record && record[name]) || (startingValues && startingValues[name]) || null;
-				let element = <Text
+				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
+				let element = <Element
 									value={value}
 									{...propsToPass}
 								/>;
