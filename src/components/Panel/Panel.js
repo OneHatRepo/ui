@@ -66,14 +66,17 @@ function Panel(props) {
 
 		useEffect(() => {
 			let titleSuffix = '';
+			if (props.titleSuffix) {
+				titleSuffix += ' ' + props.titleSuffix;
+			}
 			if (selectorSelected?.[0]?.displayValue) {
-				titleSuffix = ' for ' + selectorSelected[0].displayValue;
+				titleSuffix += ' for ' + selectorSelected[0].displayValue;
 			} 
 			setTitleSuffix(titleSuffix);
 			if (!isReady) {
 				setIsReady(true);
 			}
-		}, [selectorSelected, disableTitleChange]);
+		}, [selectorSelected, props.titleSuffix]);
 	
 		if (!isReady) {
 			return null;
