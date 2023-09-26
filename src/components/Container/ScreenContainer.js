@@ -8,7 +8,7 @@ import {
 	ScrollView,
 	KeyboardAvoidingView,
 } from 'native-base';
-import { useHeaderHeight } from '@react-navigation/elements';
+// import { useHeaderHeight } from '@react-navigation/elements';
 // import testProps from '../OneHat/functions/testProps';
 
 export default function ScreenContainer(props) {
@@ -28,7 +28,7 @@ export default function ScreenContainer(props) {
 		{
 			height,
 		} = useWindowDimensions(),
-		headerHeight = subtractHeaderHeight ? useHeaderHeight() : 0,
+		headerHeight = 0,//subtractHeaderHeight ? useHeaderHeight() : 0,
 		safeAreaProps = {};
 	if (safeArea !== false) {
 		safeAreaProps.safeArea = true;
