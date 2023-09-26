@@ -117,7 +117,7 @@ export default function Viewer(props) {
 				}
 				element = <><Label {...labelProps}>{label}</Label>{element}</>;
 			}
-			return <Row key={ix} px={2} pb={1}>{element}</Row>;
+			return <Row key={ix}>{element}</Row>;
 		},
 		buildAncillary = () => {
 			const components = [];
@@ -164,7 +164,7 @@ export default function Viewer(props) {
 
 	return <Column flex={flex} {...props}>
 				<ScrollView width="100%" _web={{ height: 1 }}>
-					<Column m={2}>
+					<Column p={4}>
 						{onEditMode && <Row mb={4} justifyContent="flex-end">
 											<Button
 												key="editBtn"

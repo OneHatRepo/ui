@@ -552,15 +552,15 @@ function Form(props) {
 		formComponents = buildFromItems();
 		const formAncillaryComponents = buildAncillary();
 		editor = <>
-					<Row>{formComponents}</Row>
+					<Column p={4}>{formComponents}</Column>
 					<Column pt={4}>{formAncillaryComponents}</Column>
 				</>;
 	} else {
 		formComponents = buildFromItems();
 		const formAncillaryComponents = buildAncillary();
 		editor = <ScrollView _web={{ height: 1 }} width="100%" pb={1}>
-					<Row>{formComponents}</Row>
-					<Column pt={4}>{formAncillaryComponents}</Column>
+					<Column p={4}>{formComponents}</Column>
+					<Column m={2} pt={4}>{formAncillaryComponents}</Column>
 				</ScrollView>;
 	}
 
@@ -616,7 +616,7 @@ function Form(props) {
 					</Row>}
 				
 				{editor}
-
+				
 				<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
 					{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 						<Row flex={1} justifyContent="flex-start">

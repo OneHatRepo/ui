@@ -29,7 +29,7 @@ export default function FieldSet(props) {
 				borderWidth={1}
 				borderColor="trueGray.400"
 				bg={styles.FORM_FIELDSET_BG}
-				m={2}
+				mb={4}
 				pb={1}
 				{...propsToPass}
 			>
