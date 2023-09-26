@@ -593,7 +593,7 @@ function Form(props) {
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
 
-				<Row p={2} alignItems="center" justifyContent="flex-end">
+				<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
 					{/* <Text mr={2} fontSize={18}>{editorModeF} Mode</Text> */}
 					{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
 						<Button
@@ -611,7 +611,7 @@ function Form(props) {
 						>To View</Button>}
 				</Row>
 				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalEditButtons) && 
-					<Row p={2} alignItems="center" justifyContent="flex-end">
+					<Row p={4} alignItems="center" justifyContent="flex-end">
 						{additionalEditButtons}
 					</Row>}
 				
