@@ -1,16 +1,12 @@
 import {
-	Box,
-} from 'native-base';
-import {
 	EDITOR_MODE__VIEW,
 } from '../../Constants/Editor.js';
+import Form from '../Form/Form.js';
+import Viewer from '../Viewer/Viewer.js';
 import _ from 'lodash';
-
 
 export default function Editor(props) {
 	const {
-			Form,
-			Viewer,
 			isEditorViewOnly,
 			onEditorCancel: onCancel,
 			onEditorSave: onSave,
@@ -18,9 +14,6 @@ export default function Editor(props) {
 			onEditorDelete: onDelete,
 			editorMode,
 			onEditMode,
-
-			// withData
-			Repository,
 
 			// withSelection
 			selection,
@@ -45,9 +38,6 @@ export default function Editor(props) {
 					onDelete={onDelete}
 				/>;
 	}
-
-	// NOTE: Ideally, this form should use multiple columns when screen is wide enough,
-	// and only show in one column when it's not.
 
 	return <Form
 				{...props}

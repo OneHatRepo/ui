@@ -96,7 +96,6 @@ function Form(props) {
 
 			// withAlert
 			alert,
-			confirm,
 		} = props,
 		styles = UiGlobals.styles,
 		record = props.record?.length === 1 ? props.record[0] : props.record,
@@ -269,14 +268,14 @@ function Form(props) {
 					onChange: onEditorChange,
 					useSelectorId = false,
 					...propsToPass
-				} = item;
-			let editorTypeProps = {};
+				} = item,
+				editorTypeProps = {};
 
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (propertyDef?.isEditingDisabled) {
 				isEditable = false;
 			}
-			if (!type && Repository) {
+			if (!type) {
 				if (isEditable) {
 					const
 						{
