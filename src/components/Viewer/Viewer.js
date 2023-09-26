@@ -94,7 +94,17 @@ export default function Viewer(props) {
 				label = propertyDef.title;
 			}
 
-			const value = (record?.properties[name]?.displayValue) || null;
+			let value = record?.properties[name]?.displayValue || null;
+			const
+				schema = record?.repository.getSchema(),
+				propertyDefinition = schema?.getPropertyDefinition(name);
+			if (propertyDefinition?.isFk) {
+				// value above is the id, get the actual display value
+				const fkDisplayField = propertyDefinition.fkDisplayField;
+				if (record.properties[fkDisplayField]) {
+					value = record.properties[fkDisplayField].displayValue;
+				}
+			}
 			
 			let element = <Element
 								value={value}
