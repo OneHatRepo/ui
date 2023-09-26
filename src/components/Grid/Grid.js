@@ -195,7 +195,8 @@ function GridComponent(props) {
 				let newSelection = selection;
 				if (isInSelection(item)) {
 					// Already selected
-					if (allowToggle) {
+					const isSingle = selection.length === 1;
+					if (allowToggle || isSingle) {
 						// Create empty selection
 						newSelection = [];
 					} else {
