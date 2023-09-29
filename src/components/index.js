@@ -1,5 +1,6 @@
 import {
 	Column,
+	Checkbox,
 } from 'native-base';
 // import AccordionGridPanel from '../Components/Panel/AccordionGridPanel.js';
 import ArrayCheckboxGroup from './Form/Field/CheckboxGroup/ArrayCheckboxGroup.js';
@@ -58,6 +59,7 @@ const components = {
 	Blank,
 	BooleanCombo,
 	// CartButtonWithBadge,
+	Checkbox,
 	CheckboxGroup,
 	// CKEditor,
 	Color,

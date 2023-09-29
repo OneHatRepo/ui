@@ -68,6 +68,7 @@ function Form(props) {
 			onBack,
 			onReset,
 			onViewMode,
+			saveBtnLabel,
 			additionalEditButtons = [],
 			
 			// sizing of outer container
@@ -313,7 +314,7 @@ function Form(props) {
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
-			if (!label && Repository && propertyDef.title) {
+			if (!label && Repository && propertyDef?.title) {
 				label = propertyDef.title;
 			}
 
@@ -549,13 +550,13 @@ function Form(props) {
 					borderTopColor="primary.100"
 					borderBottomColor="primary.100"
 				>{formComponents}</ScrollView>;
-	} else if (editorType === EDITOR_TYPE__PLAIN) {
-		formComponents = buildFromItems();
-		const formAncillaryComponents = buildAncillary();
-		editor = <>
-					<Column p={4}>{formComponents}</Column>
-					<Column pt={4}>{formAncillaryComponents}</Column>
-				</>;
+	// } else if (editorType === EDITOR_TYPE__PLAIN) {
+	// 	formComponents = buildFromItems();
+	// 	const formAncillaryComponents = buildAncillary();
+	// 	editor = <>
+	// 				<Column p={4}>{formComponents}</Column>
+	// 				<Column pt={4}>{formAncillaryComponents}</Column>
+	// 			</>;
 	} else {
 		formComponents = buildFromItems();
 		const formAncillaryComponents = buildAncillary();
@@ -654,7 +655,7 @@ function Form(props) {
 														onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 														isDisabled={isSaveDisabled}
 														color="#fff"
-													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
+													>{saveBtnLabel || (editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save')}</Button>}
 						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
 														key="closeBtn"
 														onPress={onClose}
