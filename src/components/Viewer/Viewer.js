@@ -10,6 +10,7 @@ import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
+import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import Label from '../Form/Label.js';
@@ -17,7 +18,7 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import _ from 'lodash';
 
-export default function Viewer(props) {
+function Viewer(props) {
 	const {
 			viewerCanDelete = false,
 			items = [], // Columns, FieldSets, Fields, etc to define the form
@@ -210,3 +211,5 @@ export default function Viewer(props) {
 					</Footer>}
 			</Column>;
 }
+
+export default withPdfButton(Viewer);

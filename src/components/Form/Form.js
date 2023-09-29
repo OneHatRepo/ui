@@ -25,6 +25,7 @@ import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
 import withEditor from '../Hoc/withEditor.js';
+import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -708,6 +709,6 @@ function getNullFieldValues(initialValues, Repository) {
 	return ret;
 }
 
-export const FormEditor = withAlert(withEditor(Form));
+export const FormEditor = withAlert(withEditor(withPdfButton(Form)));
 
-export default withAlert(Form);
+export default withAlert(withPdfButton(Form));
