@@ -307,11 +307,11 @@ function Form(props) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
-				const defaults = item.defaults;
+				const itemDefaults = item.defaults;
 				children = _.map(items, (item, ix) => {
-					return buildNextLayer(item, ix, defaults);
+					return buildNextLayer(item, ix, itemDefaults);
 				});
-				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
+				return <Element key={ix} title={title} {...itemDefaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
 			if (!label && Repository && propertyDef?.title) {

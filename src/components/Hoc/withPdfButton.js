@@ -9,6 +9,7 @@ import Inflector from 'inflector-js';
 import qs from 'qs';
 import FormPanel from '../Panel/FormPanel.js';
 import inArray from '../../Functions/inArray.js';
+import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import { EDITOR_TYPE__PLAIN } from '@onehat/ui/src/Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
@@ -36,14 +37,15 @@ export default function withPdfButton(WrappedComponent) {
 				model,
 			} = props,
 			[isModalShown, setIsModalShown] = useState(false),
+			[width, height] = useAdjustedWindowSize(500, 800);
 			buildModalItems = () => {
-				const modalItems = _.map(_.clone(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
+				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
 
 				if (!_.isEmpty(ancillaryItems)) {
 					modalItems.push({
 						type: 'FieldSet',
 						title: 'Ancillary Items',
-						items: _.map(_.clone(ancillaryItems), (ancillaryItem) => { // clone, as we don't want to alter the item by reference
+						items: _.map(_.cloneDeep(ancillaryItems), (ancillaryItem) => { // clone, as we don't want to alter the item by reference
 							let name;
 							if (ancillaryItem.model) {
 								name = Inflector.underscore(ancillaryItem.model);
@@ -72,6 +74,10 @@ export default function withPdfButton(WrappedComponent) {
 					if (_.isEmpty(items)) {
 						return null;
 					}
+					if (!item.defaults) {
+						item.defaults = {};
+					}
+					item.defaults.labelWidth = '90%';
 					const defaults = item.defaults;
 					item.children = _.map(items, (item, ix) => {
 						return buildNextLayer(item, ix, defaults);
@@ -138,7 +144,7 @@ export default function withPdfButton(WrappedComponent) {
 						isOpen={true}
 						onClose={() => setIsModalShown(false)}
 					>
-						<Column bg="#fff" w={500}>
+						<Column bg="#fff" w={width} h={height}>
 							<FormPanel
 								title="PDF Fields to Show"
 								instructions="Please select which fields to show in the PDF."
