@@ -45,6 +45,9 @@ export default function withPdfButton(WrappedComponent) {
 					modalItems.push({
 						type: 'FieldSet',
 						title: 'Ancillary Items',
+						defaults: {
+							labelWidth: '90%',
+						},
 						items: _.map(_.cloneDeep(ancillaryItems), (ancillaryItem) => { // clone, as we don't want to alter the item by reference
 							let name;
 							if (ancillaryItem.model) {
@@ -55,6 +58,7 @@ export default function withPdfButton(WrappedComponent) {
 							name = 'ancillary___' + name;
 							return {
 								title: ancillaryItem.title,
+								label: ancillaryItem.title,
 								name,
 								type: 'Checkbox',
 							};
@@ -71,17 +75,16 @@ export default function withPdfButton(WrappedComponent) {
 						items,
 					} = item;
 				if (inArray(type, ['Column', 'FieldSet'])) {
-					if (_.isEmpty(items)) {
-						return null;
-					}
 					if (!item.defaults) {
 						item.defaults = {};
 					}
 					item.defaults.labelWidth = '90%';
-					const defaults = item.defaults;
-					item.children = _.map(items, (item, ix) => {
-						return buildNextLayer(item, ix, defaults);
-					});
+					if (!_.isEmpty(items)) {
+						const defaults = item.defaults;
+						item.children = _.map(items, (item, ix) => {
+							return buildNextLayer(item, ix, defaults);
+						});
+					}
 					return item;
 				}
 
@@ -101,7 +104,7 @@ export default function withPdfButton(WrappedComponent) {
 							name,
 							items,
 						} = item;
-					if (items) {
+					if (!_.isEmpty(items)) {
 						_.each(items, (item) => {
 							walkTree(item);
 						});
