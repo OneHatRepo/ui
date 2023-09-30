@@ -1,9 +1,8 @@
 import {
 	Column,
-	Checkbox,
 } from 'native-base';
 // import AccordionGridPanel from '../Components/Panel/AccordionGridPanel.js';
-import ArrayCheckboxGroup from './Form/Field/CheckboxGroup/ArrayCheckboxGroup.js';
+import ArrayCheckboxGroup from './Form/Field/Checkbox/ArrayCheckboxGroup.js';
 import ArrayCombo from './Form/Field/Combo/ArrayCombo.js';
 import ArrayRadioGroup from './Form/Field/RadioGroup/ArrayRadioGroup.js';
 // import BackButton from '../Components/Buttons/BackButton.js';
@@ -11,7 +10,8 @@ import Blank from './Blank.js';
 import BooleanCombo from './Form/Field/Combo/BooleanCombo.js';
 // import CartButtonWithBadge from '../Components/Buttons/CartButtonWithBadge.js';
 // import CKEditor from './Form/Field/CKEditor/CKEditor.js'; // web only
-import CheckboxGroup from './Form/Field/CheckboxGroup/CheckboxGroup.js';
+import Checkbox from './Form/Field/Checkbox/Checkbox.js';
+import CheckboxGroup from './Form/Field/Checkbox/CheckboxGroup.js';
 import Color from './Form/Field/Color.js';
 import Combo from './Form/Field/Combo/Combo.js';
 // import { ComboEditor } from '../Components/Form/Field/Combo/Combo.js';
