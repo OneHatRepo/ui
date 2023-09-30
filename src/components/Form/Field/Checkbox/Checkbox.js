@@ -1,5 +1,5 @@
 import CheckboxButton from '../../../Buttons/CheckboxButton.js';
-import withValue from '../../Hoc/withValue.js';
+import withValue from '../../../Hoc/withValue.js';
 import _ from 'lodash';
 
 const
@@ -9,14 +9,15 @@ const
 				setValue,
 			} = props,
 			onToggle = () => {
-				if (!isBlocked.current) {
-					setValue(!value);
-				}
+				setValue(!value);
 			};
 
 		return <CheckboxButton
 					isChecked={value}
 					onPress={onToggle}
+					_icon={{
+						size: 'lg',
+					}}
 				/>;
 	
 	},
