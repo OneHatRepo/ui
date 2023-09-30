@@ -68,7 +68,8 @@ function Form(props) {
 			onBack,
 			onReset,
 			onViewMode,
-			saveBtnLabel,
+			submitBtnLabel,
+			onSubmit,
 			additionalEditButtons = [],
 			
 			// sizing of outer container
@@ -479,6 +480,13 @@ function Form(props) {
 				const values = record.submitValues;
 				reset(values);
 			}
+		},
+		onSubmitDecorated = async (data, e) => {
+			const result = await onSubmit(data, e);
+			if (result) {
+				const values = record.submitValues;
+				reset(values);
+			}
 		};
 
 	useEffect(() => {
@@ -579,9 +587,11 @@ function Form(props) {
 			break;
 	}
 
-	let isSaveDisabled = false;
+	let isSaveDisabled = false,
+		isSubmitDisabled = false;
 	if (!_.isEmpty(formState.errors)) {
 		isSaveDisabled = true;
+		isSubmitDisabled = true;
 	}
 	if (_.isEmpty(formState.dirtyFields) && !record?.isRemotePhantom) {
 		isSaveDisabled = true;
@@ -655,7 +665,14 @@ function Form(props) {
 														onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 														isDisabled={isSaveDisabled}
 														color="#fff"
-													>{saveBtnLabel || (editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save')}</Button>}
+													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
+						{onSubmit && <Button
+										key="submitBtn"
+										onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
+										isDisabled={isSubmitDisabled}
+										color="#fff"
+									>{submitBtnLabel || 'Submit'}</Button>}
+			
 						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
 														key="closeBtn"
 														onPress={onClose}

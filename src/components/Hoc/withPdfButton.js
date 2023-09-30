@@ -5,6 +5,7 @@ import {
 	Modal,
 	Row,
 } from 'native-base';
+import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
 import qs from 'qs';
 import FormPanel from '../Panel/FormPanel.js';
@@ -97,6 +98,12 @@ export default function withPdfButton(WrappedComponent) {
 				item.type = 'Checkbox';
 				return item;
 			},
+			buildValidator = (modalItems) => {
+
+				// TODO: Build a real validator that checks all modalItems as booleans
+
+				return yup.object();
+			},
 			getStartingValues = (modalItems) => {
 				const startingValues = {};
 				function walkTree(item) {
@@ -142,7 +149,8 @@ export default function withPdfButton(WrappedComponent) {
 		if (isModalShown) {
 			const
 				modalItems = buildModalItems(),
-				startingValues = getStartingValues(modalItems);
+				startingValues = getStartingValues(modalItems),
+				validator = buildValidator(modalItems);
 			modal = <Modal
 						isOpen={true}
 						onClose={() => setIsModalShown(false)}
@@ -156,14 +164,15 @@ export default function withPdfButton(WrappedComponent) {
 								Repository={Repository}
 								items={modalItems}
 								startingValues={startingValues}
+								validator={validator}
 								onCancel={(e) => {
 									setIsModalShown(false);
 								}}
-								onSave={(data, e) => {
+								onSubmit={(data, e) => {
 									getPdf(data);
 									setIsModalShown(false);
 								}}
-								saveBtnLabel="View PDF"
+								submitBtnLabel="View PDF"
 							/>
 						</Column>
 					</Modal>;
