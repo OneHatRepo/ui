@@ -1,4 +1,5 @@
-import { useState, } from 'react';
+import React from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	Column,
@@ -7,8 +8,10 @@ import {
 } from 'native-base';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton.js';
+import CheckboxButton from '../Buttons/CheckboxButton.js';
 import CaretUp from '../Icons/CaretUp.js';
 import CaretDown from '../Icons/CaretDown.js';
+import _ from 'lodash';
 
 export default function FieldSet(props) {
 	const {
@@ -17,12 +20,68 @@ export default function FieldSet(props) {
 			children,
 			isCollapsed,
 			hasErrors,
+			toggleAllCheckbox = false,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
+		childRefs = useRef([]),
+		isAllCheckedRef = useRef(false),
 		[localIsCollapsed, setLocalIsCollapsed] = useState(isCollapsed),
+		getIsAllChecked = () => {
+			return isAllCheckedRef.current;
+		},
+		setIsAllChecked = (bool) => {
+			isAllCheckedRef.current = bool;
+		},
 		onToggleCollapse = () => {
 			setLocalIsCollapsed(!localIsCollapsed);
+		},
+		onToggleAllChecked = () => {
+			const bool = !getIsAllChecked();
+			setIsAllChecked(bool);
+
+			_.each(childRefs.current, (child) => {
+				if (child.value !== bool) {
+					child.value = bool;
+					child.setValue(bool);
+				}
+			});
+		},
+		decorateChildren = (children) => {
+			if (toggleAllCheckbox) {
+				children = React.Children.map(children, (child) => {
+					if (React.isValidElement(child)) {
+						return React.cloneElement(child, {
+							registerChild,
+							onChangeValue,
+						});
+					}
+					return child;
+				});
+			}
+			return children;
+		},
+		registerChild = (child) => {
+			childRefs.push(child);
+			checkChildren();
+		},
+		onChangeValue = (value, childRef) => {
+			const child = _.find(childRefs.current, child => child.childRef === childRef);
+			child.value = value;
+			checkChildren();
+		},
+		checkChildren = () => {
+			let allChildrenAreChecked = true;
+			_.each(childRefs.current, (child) => {
+				if (!child.value) {
+					allChildrenAreChecked = false;
+					return false; // break
+				}
+			});
+
+			if (!allChildrenAreChecked && getIsAllChecked()) {
+				setIsAllChecked(false);
+			}
 		};
 		
 	return <Box
@@ -50,6 +109,22 @@ export default function FieldSet(props) {
 							numberOfLines={1}
 							ellipsizeMode="head"
 						>{title}</Text>
+						{toggleAllCheckbox && <Row alignSelf="right">
+												<Text
+													fontSize={styles.FORM_FIELDSET_FONTSIZE}
+													py={1}
+													px={3}
+													flex={1}
+													numberOfLines={1}
+												>Toggle All?</Text>
+												<CheckboxButton
+													isChecked={getIsAllChecked()}
+													onPress={onToggleAllChecked}
+													_icon={{
+														size: 'lg',
+													}}
+												/>
+											</Row>}
 						<IconButton
 							_icon={{
 								as: localIsCollapsed ? <CaretDown /> : <CaretUp />,
@@ -60,6 +135,6 @@ export default function FieldSet(props) {
 						/>
 					</Row>}
 				{helpText && <Text>{helpText}</Text>}
-				{!localIsCollapsed && children}
+				{!localIsCollapsed && decorateChildren(children)}
 			</Box>;
 }

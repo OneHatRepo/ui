@@ -79,6 +79,9 @@ export default function withPdfButton(WrappedComponent) {
 					if (!item.defaults) {
 						item.defaults = {};
 					}
+					if (type === 'FieldSet') {
+						item.toggleAllCheckbox = true;
+					}
 					item.defaults.labelWidth = '90%';
 					if (!_.isEmpty(items)) {
 						const defaults = item.defaults;

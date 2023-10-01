@@ -1,4 +1,4 @@
-import { useState, useEffect, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import natsort from 'natsort';
 import _ from 'lodash';
 
@@ -23,10 +23,14 @@ export default function withValue(WrappedComponent) {
 				valueAsIdAndText = false,
 				valueAsStringifiedJson = false,
 
+				// FieldSet
+				registerChild,
+
 				// withData
 				Repository,
 				idIx,
 			} = props,
+			childRef = useRef(),
 			[localValue, setLocalValue] = useState(startingValue || value),
 			setValue = (newValue) => {
 				if (valueIsAlwaysArray && !_.isArray(newValue)) {
@@ -69,7 +73,7 @@ export default function withValue(WrappedComponent) {
 				setLocalValue(newValue);
 				
 				if (onChangeValue) {
-					onChangeValue(newValue);
+					onChangeValue(newValue, childRef.current);
 				}
 			},
 			onChangeSelection = (selection) => {
@@ -101,6 +105,16 @@ export default function withValue(WrappedComponent) {
 				setLocalValue(value);
 			}
 		}, [value]);
+
+		if (registerChild) {
+			useEffect(() => {
+				registerChild({
+					childRef: childRef.current,
+					value,
+					setValue: setLocalValue,
+				});
+			}, []);
+		}
 
 		
 		// Convert localValue to normal JS primitives for field components
