@@ -64,6 +64,8 @@ export default function withPdfButton(WrappedComponent) {
 								type: 'Checkbox',
 							};
 						}),
+						showToggleAllCheckbox: true,
+						isCollapsible: false,
 					});
 				}
 	
@@ -169,6 +171,7 @@ export default function withPdfButton(WrappedComponent) {
 								items={modalItems}
 								startingValues={startingValues}
 								validator={validator}
+								checkIsEditingDisabled={false}
 								onCancel={(e) => {
 									setIsModalShown(false);
 								}}

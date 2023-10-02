@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useContext, useCallback, } from 'react';
 import natsort from 'natsort';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import _ from 'lodash';
 
@@ -28,13 +29,21 @@ export default function withValue(WrappedComponent) {
 				Repository,
 				idIx,
 			} = props,
+			forceUpdate = useForceUpdate(),
 			childRef = useRef({}),
 			onChangeValueRef = useRef(),
+			localValueRef = useRef(startingValue || value),
 			fieldSetOnChangeValueRef = useRef(),
 			fieldSetContext = useContext(FieldSetContext),
 			fieldSetRegisterChild = fieldSetContext?.registerChild,
 			fieldSetOnChangeValue = fieldSetContext?.onChangeValue,
-			[localValue, setLocalValue] = useState(startingValue || value),
+			getLocalValue = () => {
+				return localValueRef.current;
+			},
+			setLocalValue = (value) => {
+				localValueRef.current = value;
+				forceUpdate();
+			},
 			setValueRef = useRef((newValue) => {
 				// NOTE: We useRef so that this function stays current after renders
 				if (valueIsAlwaysArray && !_.isArray(newValue)) {
@@ -70,7 +79,7 @@ export default function withValue(WrappedComponent) {
 					newValue = JSON.stringify(newValue);
 				}
 
-				if (newValue === localValue) {
+				if (newValue === getLocalValue()) {
 					return;
 				}
 
@@ -115,7 +124,7 @@ export default function withValue(WrappedComponent) {
 		fieldSetOnChangeValueRef.current = fieldSetOnChangeValue;
 
 		useEffect(() => {
-			if (!_.isEqual(value, localValue)) {
+			if (!_.isEqual(value, getLocalValue())) {
 				setLocalValue(value);
 			}
 		}, [value]);
@@ -132,7 +141,7 @@ export default function withValue(WrappedComponent) {
 
 		
 		// Convert localValue to normal JS primitives for field components
-		let convertedValue = localValue;
+		let convertedValue = getLocalValue();
 		if (_.isString(convertedValue) && valueAsStringifiedJson && !_.isNil(convertedValue)) {
 			convertedValue = JSON.parse(convertedValue);
 		}

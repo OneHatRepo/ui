@@ -65,6 +65,7 @@ function Form(props) {
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
+			checkIsEditingDisabled = true,
 			onBack,
 			onReset,
 			onViewMode,
@@ -275,7 +276,7 @@ function Form(props) {
 				editorTypeProps = {};
 
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
-			if (propertyDef?.isEditingDisabled) {
+			if (propertyDef?.isEditingDisabled && checkIsEditingDisabled) {
 				isEditable = false;
 			}
 			if (!type) {
