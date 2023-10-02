@@ -6,6 +6,7 @@ import {
 	Text,
 } from 'native-base';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton.js';
 import CheckboxButton from '../Buttons/CheckboxButton.js';
@@ -24,6 +25,7 @@ export default function FieldSet(props) {
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
+		forceUpdate = useForceUpdate(),
 		childRefs = useRef([]),
 		isAllCheckedRef = useRef(false),
 		[localIsCollapsed, setLocalIsCollapsed] = useState(isCollapsed),
@@ -32,6 +34,7 @@ export default function FieldSet(props) {
 		},
 		setIsAllChecked = (bool) => {
 			isAllCheckedRef.current = bool;
+			forceUpdate();
 		},
 		onToggleCollapse = () => {
 			setLocalIsCollapsed(!localIsCollapsed);
@@ -57,16 +60,16 @@ export default function FieldSet(props) {
 			checkChildren();
 		},
 		checkChildren = () => {
-			let allChildrenAreChecked = true;
+			let isAllChecked = true;
 			_.each(childRefs.current, (child) => {
 				if (!child.value) {
-					allChildrenAreChecked = false;
+					isAllChecked = false;
 					return false; // break
 				}
 			});
 
-			if (!allChildrenAreChecked && getIsAllChecked()) {
-				setIsAllChecked(false);
+			if (isAllChecked !== getIsAllChecked()) {
+				setIsAllChecked(isAllChecked);
 			}
 		};
 		

@@ -28,7 +28,7 @@ export default function withValue(WrappedComponent) {
 				Repository,
 				idIx,
 			} = props,
-			childRef = useRef(),
+			childRef = useRef({}),
 			fieldSetContext = useContext(FieldSetContext),
 			fieldSetRegisterChild = fieldSetContext?.registerChild,
 			fieldSetOnChangeValue = fieldSetContext?.onChangeValue,
