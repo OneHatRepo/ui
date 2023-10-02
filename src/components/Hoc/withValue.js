@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, } from 'react';
+import { useState, useEffect, useRef, useContext, } from 'react';
 import natsort from 'natsort';
+import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import _ from 'lodash';
 
 // This HOC gives the component value props, primarily for a Form Field.
@@ -23,14 +24,14 @@ export default function withValue(WrappedComponent) {
 				valueAsIdAndText = false,
 				valueAsStringifiedJson = false,
 
-				// FieldSet
-				registerChild,
-
 				// withData
 				Repository,
 				idIx,
 			} = props,
 			childRef = useRef(),
+			fieldSetContext = useContext(FieldSetContext),
+			fieldSetRegisterChild = fieldSetContext?.registerChild,
+			fieldSetOnChangeValue = fieldSetContext?.onChangeValue,
 			[localValue, setLocalValue] = useState(startingValue || value),
 			setValue = (newValue) => {
 				if (valueIsAlwaysArray && !_.isArray(newValue)) {
@@ -75,6 +76,9 @@ export default function withValue(WrappedComponent) {
 				if (onChangeValue) {
 					onChangeValue(newValue, childRef.current);
 				}
+				if (fieldSetOnChangeValue) {
+					fieldSetOnChangeValue(newValue, childRef.current);
+				}
 			},
 			onChangeSelection = (selection) => {
 				let value = null,
@@ -106,9 +110,9 @@ export default function withValue(WrappedComponent) {
 			}
 		}, [value]);
 
-		if (registerChild) {
+		if (fieldSetRegisterChild) {
 			useEffect(() => {
-				registerChild({
+				fieldSetRegisterChild({
 					childRef: childRef.current,
 					value,
 					setValue: setLocalValue,

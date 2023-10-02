@@ -1,11 +1,11 @@
-import React from 'react';
-import { useState, useEffect, useRef, } from 'react';
+import { useState, useRef, } from 'react';
 import {
 	Box,
 	Column,
 	Row,
 	Text,
 } from 'native-base';
+import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton.js';
 import CheckboxButton from '../Buttons/CheckboxButton.js';
@@ -20,7 +20,7 @@ export default function FieldSet(props) {
 			children,
 			isCollapsed,
 			hasErrors,
-			toggleAllCheckbox = false,
+			showToggleAllCheckbox = false,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -47,22 +47,8 @@ export default function FieldSet(props) {
 				}
 			});
 		},
-		decorateChildren = (children) => {
-			if (toggleAllCheckbox) {
-				children = React.Children.map(children, (child) => {
-					if (React.isValidElement(child)) {
-						return React.cloneElement(child, {
-							registerChild,
-							onChangeValue,
-						});
-					}
-					return child;
-				});
-			}
-			return children;
-		},
 		registerChild = (child) => {
-			childRefs.push(child);
+			childRefs.current.push(child);
 			checkChildren();
 		},
 		onChangeValue = (value, childRef) => {
@@ -109,22 +95,22 @@ export default function FieldSet(props) {
 							numberOfLines={1}
 							ellipsizeMode="head"
 						>{title}</Text>
-						{toggleAllCheckbox && <Row alignSelf="right">
-												<Text
-													fontSize={styles.FORM_FIELDSET_FONTSIZE}
-													py={1}
-													px={3}
-													flex={1}
-													numberOfLines={1}
-												>Toggle All?</Text>
-												<CheckboxButton
-													isChecked={getIsAllChecked()}
-													onPress={onToggleAllChecked}
-													_icon={{
-														size: 'lg',
-													}}
-												/>
-											</Row>}
+						{showToggleAllCheckbox && <Row alignSelf="right">
+														<Text
+															fontSize={styles.FORM_FIELDSET_FONTSIZE}
+															py={1}
+															px={3}
+															flex={1}
+															numberOfLines={1}
+														>Toggle All?</Text>
+														<CheckboxButton
+															isChecked={getIsAllChecked()}
+															onPress={onToggleAllChecked}
+															_icon={{
+																size: 'lg',
+															}}
+														/>
+													</Row>}
 						<IconButton
 							_icon={{
 								as: localIsCollapsed ? <CaretDown /> : <CaretUp />,
@@ -135,6 +121,8 @@ export default function FieldSet(props) {
 						/>
 					</Row>}
 				{helpText && <Text>{helpText}</Text>}
-				{!localIsCollapsed && decorateChildren(children)}
+				{!localIsCollapsed && <FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
+											{children}
+										</FieldSetContext.Provider>}
 			</Box>;
 }
