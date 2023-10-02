@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext, } from 'react';
+import { useState, useEffect, useRef, useContext, useCallback, } from 'react';
 import natsort from 'natsort';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import _ from 'lodash';
@@ -29,11 +29,14 @@ export default function withValue(WrappedComponent) {
 				idIx,
 			} = props,
 			childRef = useRef({}),
+			onChangeValueRef = useRef(),
+			fieldSetOnChangeValueRef = useRef(),
 			fieldSetContext = useContext(FieldSetContext),
 			fieldSetRegisterChild = fieldSetContext?.registerChild,
 			fieldSetOnChangeValue = fieldSetContext?.onChangeValue,
 			[localValue, setLocalValue] = useState(startingValue || value),
-			setValue = (newValue) => {
+			setValueRef = useRef((newValue) => {
+				// NOTE: We useRef so that this function stays current after renders
 				if (valueIsAlwaysArray && !_.isArray(newValue)) {
 					newValue = _.isNil(newValue) ? [] : [newValue];
 				}
@@ -73,12 +76,15 @@ export default function withValue(WrappedComponent) {
 
 				setLocalValue(newValue);
 				
-				if (onChangeValue) {
-					onChangeValue(newValue, childRef.current);
+				if (onChangeValueRef.current) {
+					onChangeValueRef.current(newValue, childRef.current);
 				}
-				if (fieldSetOnChangeValue) {
-					fieldSetOnChangeValue(newValue, childRef.current);
+				if (fieldSetOnChangeValueRef.current) {
+					fieldSetOnChangeValueRef.current(newValue, childRef.current);
 				}
+			}),
+			setValue = (args) => {
+				setValueRef.current(args);
 			},
 			onChangeSelection = (selection) => {
 				let value = null,
@@ -104,6 +110,10 @@ export default function withValue(WrappedComponent) {
 				setValue(value);
 			};
 
+		// Ensure these passed functions stay current after render
+		onChangeValueRef.current = onChangeValue;
+		fieldSetOnChangeValueRef.current = fieldSetOnChangeValue;
+
 		useEffect(() => {
 			if (!_.isEqual(value, localValue)) {
 				setLocalValue(value);
@@ -115,7 +125,7 @@ export default function withValue(WrappedComponent) {
 				fieldSetRegisterChild({
 					childRef: childRef.current,
 					value,
-					setValue: setLocalValue,
+					setValue: setValueRef.current,
 				});
 			}, []);
 		}

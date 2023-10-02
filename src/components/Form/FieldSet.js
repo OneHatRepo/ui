@@ -57,8 +57,10 @@ export default function FieldSet(props) {
 		},
 		onChangeValue = (value, childRef) => {
 			const child = _.find(childRefs.current, child => child.childRef === childRef);
-			child.value = value;
-			checkChildren();
+			if (child.value !== value) {
+				child.value = value;
+				checkChildren();
+			}
 		},
 		checkChildren = () => {
 			let isAllChecked = true;
