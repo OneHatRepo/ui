@@ -81,6 +81,7 @@ export default function withPdfButton(WrappedComponent) {
 					}
 					if (type === 'FieldSet') {
 						item.showToggleAllCheckbox = true;
+						item.isCollapsible = false;
 					}
 					item.defaults.labelWidth = '90%';
 					if (!_.isEmpty(items)) {

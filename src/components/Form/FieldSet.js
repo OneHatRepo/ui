@@ -19,6 +19,7 @@ export default function FieldSet(props) {
 			title,
 			helpText,
 			children,
+			isCollapsible = true,
 			isCollapsed,
 			hasErrors,
 			showToggleAllCheckbox = false,
@@ -114,14 +115,14 @@ export default function FieldSet(props) {
 															}}
 														/>
 													</Row>}
-						<IconButton
-							_icon={{
-								as: localIsCollapsed ? <CaretDown /> : <CaretUp />,
-								size: 'sm',
-								color: 'trueGray.300',
-							}}
-							onPress={onToggleCollapse}
-						/>
+						{isCollapsible && <IconButton
+												_icon={{
+													as: localIsCollapsed ? <CaretDown /> : <CaretUp />,
+													size: 'sm',
+													color: 'trueGray.300',
+												}}
+												onPress={onToggleCollapse}
+											/>}
 					</Row>}
 				{helpText && <Text>{helpText}</Text>}
 				{!localIsCollapsed && <FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
