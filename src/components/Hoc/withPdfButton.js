@@ -3,7 +3,6 @@ import {
 	Column,
 	Button,
 	Modal,
-	Row,
 } from 'native-base';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
@@ -36,6 +35,10 @@ export default function withPdfButton(WrappedComponent) {
 				// withData
 				Repository,
 				model,
+
+				// withSelection
+				selection,
+
 			} = props,
 			[isModalShown, setIsModalShown] = useState(false),
 			[width, height] = useAdjustedWindowSize(500, 800);
@@ -130,9 +133,12 @@ export default function withPdfButton(WrappedComponent) {
 				return startingValues;
 			},
 			getPdf = (data) => {
+				data.id = selection[0].id;
+
 				const
 					url = UiGlobals.baseURL + model + '/viewPdf?',
 					queryString = qs.stringify(data);
+
 				window.open(url + queryString, '_blank');
 			};
 
