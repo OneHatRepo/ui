@@ -46,27 +46,34 @@ export default function withPdfButton(WrappedComponent) {
 				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
 
 				if (!_.isEmpty(ancillaryItems)) {
+					const
+						ancillaryItemsClone = _.cloneDeep(ancillaryItems),
+						items = [];
+					_.each(ancillaryItemsClone, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
+						let name;
+						if (ancillaryItem.model) {
+							name = Inflector.underscore(ancillaryItem.model);
+						} else {
+							name = ancillaryItem.title;
+						}
+						if (!inArray(name, ['Photos', 'Videos', 'Files'])) {
+							return;
+						}
+						name = 'ancillary___' + name;
+						items.push({
+							title: ancillaryItem.title,
+							label: ancillaryItem.title,
+							name,
+							type: 'Checkbox',
+						});
+					});
 					modalItems.push({
 						type: 'FieldSet',
 						title: 'Ancillary Items',
 						defaults: {
 							labelWidth: '90%',
 						},
-						items: _.map(_.cloneDeep(ancillaryItems), (ancillaryItem) => { // clone, as we don't want to alter the item by reference
-							let name;
-							if (ancillaryItem.model) {
-								name = Inflector.underscore(ancillaryItem.model);
-							} else {
-								name = ancillaryItem.title;
-							}
-							name = 'ancillary___' + name;
-							return {
-								title: ancillaryItem.title,
-								label: ancillaryItem.title,
-								name,
-								type: 'Checkbox',
-							};
-						}),
+						items,
 						showToggleAllCheckbox: true,
 						isCollapsible: false,
 					});
