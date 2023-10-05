@@ -10,6 +10,7 @@ export default function SquareButton(props) {
 	const {
 			text,
 			isActive = false,
+			activeColor,
 			disableInteractions = false,
 			...propsToPass
 		} = props,
@@ -47,9 +48,9 @@ export default function SquareButton(props) {
 				alignItems="center"
 				p={2}
 				{...propsToPass}
-				bg={isActive ? '#56a6f8' : '#fff'}
-				_hover={hoverProps}
-				_pressed={pressedProps}
+				bg={isActive ? activeColor || '#56a6f8' : '#fff'}
+				// _hover={hoverProps}
+				// _pressed={pressedProps}
 			>
 				<Icon as={icon} color={color} size="xl" />
 				<Text fontSize={20} color={color}>{text}</Text>
