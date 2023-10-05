@@ -10,6 +10,7 @@ export default function SquareButton(props) {
 	const {
 			text,
 			isActive = false,
+			disableInteractions = false,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -30,6 +31,14 @@ export default function SquareButton(props) {
 	} else {
 		icon = <Icon as={icon} {...propsIcon} />;
 	}
+
+	const
+		hoverProps = {},
+		pressedProps = {};
+	if (!disableInteractions) {
+		hoverProps.bg = styles.ICON_BUTTON_BG_HOVER;
+		pressedProps.bg = styles.ICON_BUTTON_BG_PRESSED;
+	}
 	
 	return <Pressable
 				borderRadius="md"
@@ -38,13 +47,9 @@ export default function SquareButton(props) {
 				alignItems="center"
 				p={2}
 				{...propsToPass}
-				bg={isActive ? '#88f' : '#fff'}
-				_hover={{
-					bg: styles.ICON_BUTTON_BG_HOVER,
-				}}
-				_pressed={{
-					bg: styles.ICON_BUTTON_BG_PRESSED,
-				}}
+				bg={isActive ? '#56a6f8' : '#fff'}
+				_hover={hoverProps}
+				_pressed={pressedProps}
 			>
 				<Icon as={icon} color={color} size="xl" />
 				<Text fontSize={20} color={color}>{text}</Text>

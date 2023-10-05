@@ -109,6 +109,7 @@ function Viewer(props) {
 			
 			let element = <Element
 								value={value}
+								isEditable={false}
 								{...propsToPass}
 							/>;
 			if (label) {
