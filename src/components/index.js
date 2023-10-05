@@ -37,6 +37,7 @@ import Panel from './Panel/Panel.js';
 // import Picker from '../Components/Panel/Picker.js';
 import PlusMinusButton from './Buttons/PlusMinusButton.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
+import SquareButton from './Buttons/SquareButton.js';
 import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Combo/Tag.js';
 import TagViewer from './Viewer/TagViewer.js';
@@ -88,6 +89,7 @@ const components = {
 	// Picker,
 	PlusMinusButton,
 	RadioGroup,
+	SquareButton,
 	TabPanel,
 	Tag,
 	TagViewer,
