@@ -35,6 +35,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				contextMenuItems,
 				additionalToolbarButtons,
 				onChangeColumnsConfig,
+				verifyCanEdit,
+				verifyCanDelete,
+				verifyCanDuplicate,
 				...propsToPass
 			} = props,
 			{
@@ -146,6 +149,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
 							isDisabled = true;
 						}
+						if (verifyCanEdit && !verifyCanEdit(selection)) {
+							isDisabled = true;
+						}
 						break;
 					case 'delete':
 						text = 'Delete';
@@ -155,6 +161,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							isDisabled = true;
 						}
 						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
+							isDisabled = true;
+						}
+						if (verifyCanDelete && !verifyCanDelete(selection)) {
 							isDisabled = true;
 						}
 						break;
@@ -191,6 +200,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							isDisabled = true;
 						}
 						if (_.isEmpty(selection) || selection.length > 1) {
+							isDisabled = true;
+						}
+						if (verifyCanDuplicate && !verifyCanDuplicate(selection)) {
 							isDisabled = true;
 						}
 						break;
