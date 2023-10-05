@@ -104,7 +104,6 @@ export default function GridRow(props) {
 													value={value}
 													key={key}
 													overflow="hidden"
-													textOverflow="ellipsis"
 													alignSelf="center"
 													style={{
 														userSelect: 'none',
