@@ -11,11 +11,12 @@ export default function SquareButton(props) {
 			text,
 			isActive = false,
 			activeColor,
+			invertColorWhenActive = false,
 			disableInteractions = false,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
-		color = isActive ? '#fff' : '#000';
+		color = invertColorWhenActive && isActive ? '#fff' : '#000';
 	const propsIcon = props._icon || {};
 	let icon = props.icon;
 	if (!icon) {
