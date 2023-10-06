@@ -80,7 +80,7 @@ export default function Pagination(props) {
 							<Text mr={2}>Page</Text>
 							<Input
 								keyboardType="numeric"
-								value={page.toString()}
+								value={page?.toString()}
 								onChangeValue={(value) => Repository.setPage(value)}
 								maxValue={totalPages}
 								isDisabled={totalPages === 1}

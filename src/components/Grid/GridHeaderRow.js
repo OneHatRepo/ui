@@ -327,6 +327,10 @@ export default function GridHeaderRow(props) {
 						propsToPass.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
 					}
 
+					const textProps = {};
+					if (UiGlobals.mode === UI_MODE_WEB) {
+						textProps.textOverflow = 'ellipsis';
+					}
 					return <Pressable
 								key={ix}
 								onPress={(e) => {
@@ -375,7 +379,6 @@ export default function GridHeaderRow(props) {
 													return proxy;
 												}}
 											/>}
-								
 								<Text
 									key="Text"
 									fontSize={styles.GRID_HEADER_FONTSIZE}
@@ -388,6 +391,7 @@ export default function GridHeaderRow(props) {
 									justifyContent="center"
 									numberOfLines={1}
 									ellipsizeMode="head"
+									{...textProps}
 								>{header}</Text>
 								
 								{isSorter && <Icon key="Icon" as={isSortDirectionAsc ? SortDown : SortUp} textAlign="center" size="sm" mt={3} mr={2} color="trueGray.500" />}

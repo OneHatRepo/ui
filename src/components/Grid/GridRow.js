@@ -7,6 +7,9 @@ import {
 import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import {
+	UI_MODE_WEB,
+} from '../../Constants/UiModes.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
@@ -100,6 +103,10 @@ export default function GridRow(props) {
 
 									if (property?.viewerType?.type) {
 										const Element = getComponentFromType(property?.viewerType?.type);
+										const elementProps = {};
+										if (UiGlobals.mode === UI_MODE_WEB) {
+											elementProps.textOverflow = 'ellipsis';
+										}
 										return <Element
 													value={value}
 													key={key}
@@ -114,7 +121,7 @@ export default function GridRow(props) {
 													numberOfLines={1}
 													ellipsizeMode="head"
 													{...propsToPass}
-													{...propsToPass}
+													{...elementProps}
 												/>;
 									}
 								} else if (item[config.fieldName]) {
