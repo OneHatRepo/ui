@@ -380,7 +380,6 @@ export default function GridHeaderRow(props) {
 									key="Text"
 									fontSize={styles.GRID_HEADER_FONTSIZE}
 									overflow="hidden"
-									textOverflow="ellipsis"
 									flex={1}
 									h="100%"
 									px={styles.GRID_HEADER_CELL_PX}
