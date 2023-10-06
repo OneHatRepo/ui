@@ -9,6 +9,7 @@ import Inflector from 'inflector-js';
 import qs from 'qs';
 import FormPanel from '../Panel/FormPanel.js';
 import inArray from '../../Functions/inArray.js';
+import Pdf from '../Icons/Pdf.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import { EDITOR_TYPE__PLAIN } from '@onehat/ui/src/Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -149,19 +150,17 @@ export default function withPdfButton(WrappedComponent) {
 				window.open(url + queryString, '_blank');
 			};
 
-		const button = <Button
-							key="viewPdfBtn"
-							borderRadius="md"
-							colorScheme="primary"
-							flexDirection="row"
-							justifyContent="center"
-							alignItems="center"
-							px={4}
-							onPress={(e) => setIsModalShown(true)}
-						>View PDF</Button>;
-		additionalEditButtons.unshift(button);
+		const button = {
+			key: 'viewPdfBtn',
+			text: 'View PDF',
+			icon: Pdf,
+			handler: () => {
+				setIsModalShown(true);
+			},
+		};
+		additionalEditButtons.push(button);
 		if (additionalEditButtons !== additionalViewButtons) { // Ensure they're NOT the same object, otherwise this would be adding it twice!
-			additionalViewButtons.unshift(button);
+			additionalViewButtons.push(button);
 		}
 	
 		let modal = null;

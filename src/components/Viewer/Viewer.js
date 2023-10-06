@@ -11,6 +11,7 @@ import {
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import withPdfButton from '../Hoc/withPdfButton.js';
+import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import Label from '../Form/Label.js';
@@ -25,7 +26,7 @@ function Viewer(props) {
 			ancillaryItems = [], // additional items which are not controllable form elements, but should appear in the form
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			record,
-			additionalViewButtons = [],
+			additionalViewButtons,
 
 			// withData
 			Repository,
@@ -162,7 +163,8 @@ function Viewer(props) {
 
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
-		showCloseBtn = !isSideEditor;
+		showCloseBtn = !isSideEditor,
+		additionalButtons = buildAdditionalButtons(additionalViewButtons);
 
 	return <Column flex={flex} {...props}>
 				<ScrollView width="100%" _web={{ height: 1 }}>
@@ -176,9 +178,9 @@ function Viewer(props) {
 											>To Edit</Button>
 										</Row>}
 						
-						{!_.isEmpty(additionalViewButtons) && 
+						{!_.isEmpty(additionalButtons) && 
 							<Row p={2} alignItems="center" justifyContent="flex-end">
-								{additionalViewButtons}
+								{additionalButtons}
 							</Row>}
 
 						{buildFromItems()}

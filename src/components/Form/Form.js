@@ -26,6 +26,7 @@ import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
 import withEditor from '../Hoc/withEditor.js';
 import withPdfButton from '../Hoc/withPdfButton.js';
+import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -71,7 +72,7 @@ function Form(props) {
 			onViewMode,
 			submitBtnLabel,
 			onSubmit,
-			additionalEditButtons = [],
+			additionalEditButtons,
 			
 			// sizing of outer container
 			h,
@@ -603,6 +604,8 @@ function Form(props) {
 		buttonGroupProps.left = 10; // TODO: I would prefer to have this be centered, but it's a lot more complex than just making it stick to the left
 		footerProps.alignItems = 'flex-start';
 	}
+
+	const additionalButtons = buildAdditionalButtons(additionalEditButtons);
 	
 	return <Column {...sizeProps} onLayout={onLayout}>
 
@@ -623,9 +626,9 @@ function Form(props) {
 							color="#fff"
 						>To View</Button>}
 				</Row>
-				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalEditButtons) && 
+				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons) && 
 					<Row p={4} alignItems="center" justifyContent="flex-end">
-						{additionalEditButtons}
+						{additionalButtons}
 					</Row>}
 				
 				{editor}

@@ -14,6 +14,8 @@ export default function Editor(props) {
 			onEditorDelete: onDelete,
 			editorMode,
 			onEditMode,
+			_viewer = {},
+			_form = {},
 
 			// withSelection
 			selection,
@@ -36,6 +38,7 @@ export default function Editor(props) {
 					onEditMode={isEditorViewOnly ? null : onEditMode}
 					onClose={onClose}
 					onDelete={onDelete}
+					{..._viewer}
 				/>;
 	}
 
@@ -46,5 +49,6 @@ export default function Editor(props) {
 				onSave={onSave}
 				onClose={onClose}
 				onDelete={onDelete}
+				{..._form}
 			/>;
 }

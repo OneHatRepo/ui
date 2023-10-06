@@ -123,12 +123,14 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				return isDisabled;
 			},
 			getPresetButtonProps = (type) => {
-				let text,
+				let key,
+					text,
 					handler,
 					icon = null,
 					isDisabled = false;
 				switch(type) {
 					case 'add':
+						key = 'addBtn';
 						text = 'Add';
 						handler = onAdd;
 						icon = <Plus />;
@@ -140,6 +142,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'edit':
+						key = 'editBtn';
 						text = 'Edit';
 						handler = onEdit;
 						icon = <Edit />;
@@ -154,6 +157,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'delete':
+						key = 'deleteBtn';
 						text = 'Delete';
 						handler = onDelete;
 						icon = <Trash />;
@@ -168,6 +172,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'view':
+						key = 'viewBtn';
 						text = 'View';
 						handler = onView;
 						icon = <Eye />;
@@ -180,6 +185,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'copy':
+						key = 'copyBtn';
 						text = 'Copy to Clipboard';
 						handler = onCopyToClipboard;
 						icon = <Clipboard />;
@@ -192,6 +198,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'duplicate':
+						key = 'duplicateBtn';
 						text = 'Duplicate';
 						handler = onDuplicate;
 						icon = <Duplicate />;
@@ -214,6 +221,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					default:
 				}
 				return {
+					key,
 					text,
 					handler,
 					icon,
