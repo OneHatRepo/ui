@@ -4,6 +4,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import withComponent from '../Hoc/withComponent.js';
 import IconButton from '../Buttons/IconButton';
 import FullWidth from '../Icons/FullWidth';
 import SideBySide from '../Icons/SideBySide';
@@ -15,7 +16,7 @@ const
 	MODE_FULL = 'MODE_FULL',
 	MODE_SIDE = 'MODE_SIDE';
 
-export default function ManagerScreen(props) {
+function ManagerScreen(props) {
 	const {
 			title,
 			sideModeComponent,
@@ -94,3 +95,5 @@ export default function ManagerScreen(props) {
 
 			</Column>;
 }
+
+export default withComponent(ManagerScreen);

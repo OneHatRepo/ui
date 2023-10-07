@@ -83,6 +83,9 @@ function Form(props) {
 			flex,
 			onLayout, // onLayout handler for main view
 
+			// withComponent
+			self,
+
 			// withData
 			Repository,
 			
@@ -238,6 +241,8 @@ function Form(props) {
 																onBlur={onBlur}
 																flex={1}
 																{...editorProps}
+																parent={self}
+																reference={fieldName}
 																// {...defaults}
 																// {...propsToPass}
 															/>;
@@ -326,6 +331,8 @@ function Form(props) {
 				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
 				let element = <Element
 									value={value}
+									parent={self}
+									reference={name}
 									{...propsToPass}
 								/>;
 				if (label) {
@@ -402,6 +409,8 @@ function Form(props) {
 												}}
 												onBlur={onBlur}
 												flex={1}
+												parent={self}
+												reference={name}
 												{...defaults}
 												{...propsToPass}
 												{...editorTypeProps}
@@ -457,6 +466,7 @@ function Form(props) {
 										selectorSelected={selectorSelected || record}
 										flex={1}
 										uniqueRepository={true}
+										parent={self}
 										{...propsToPass}
 									/>;
 					if (title) {

@@ -8,12 +8,14 @@ import _ from 'lodash';
 export default function withComponent(WrappedComponent) {
 	return (props) => {
 		const {
+				// self: parent,
 				parent,
 				...propsToPass
 			} = props,
 			{ reference } = props,
 			childrenRef = useRef({}),
 			selfRef = useRef({
+				parent,
 				reference,
 				registerChild: (childRef) => {
 					const {
@@ -28,10 +30,9 @@ export default function withComponent(WrappedComponent) {
 					const {
 							reference,
 						} = childRef;
-					if (typeof childrenRef.current[reference] === 'undefined') {
-						throw Error('reference does not exist!');
+					if (typeof childrenRef.current[reference] !== 'undefined') {
+						delete childrenRef.current[reference];
 					}
-					delete childrenRef.current[reference];
 				},
 				children: childrenRef.current,
 			});
@@ -49,6 +50,7 @@ export default function withComponent(WrappedComponent) {
 		}, []);
 
 		return <WrappedComponent
+					// parent={parent}
 					self={selfRef.current}
 					{...propsToPass}
 				/>

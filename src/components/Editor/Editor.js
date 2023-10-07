@@ -1,11 +1,12 @@
 import {
 	EDITOR_MODE__VIEW,
 } from '../../Constants/Editor.js';
+import withComponent from '../Hoc/withComponent.js';
 import Form from '../Form/Form.js';
 import Viewer from '../Viewer/Viewer.js';
 import _ from 'lodash';
 
-export default function Editor(props) {
+function Editor(props) {
 	const {
 			isEditorViewOnly,
 			onEditorCancel: onCancel,
@@ -16,6 +17,9 @@ export default function Editor(props) {
 			onEditMode,
 			_viewer = {},
 			_form = {},
+
+			// withComponent
+			self: parent,
 
 			// withSelection
 			selection,
@@ -38,6 +42,8 @@ export default function Editor(props) {
 					onEditMode={isEditorViewOnly ? null : onEditMode}
 					onClose={onClose}
 					onDelete={onDelete}
+					parent={parent}
+					reference="viewer"
 					{..._viewer}
 				/>;
 	}
@@ -49,6 +55,10 @@ export default function Editor(props) {
 				onSave={onSave}
 				onClose={onClose}
 				onDelete={onDelete}
+				parent={parent}
+				reference="form"
 				{..._form}
 			/>;
 }
+
+export default withComponent(Editor);

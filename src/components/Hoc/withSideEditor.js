@@ -12,6 +12,11 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 				Editor,
 				editorProps = {},
 				sideFlex = 100,
+
+				// withComponent
+				self: parent,
+				
+				...propsToPass
 			} = props;
 
 		if (!Editor) {
@@ -25,12 +30,13 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								{...props}
 							/>}
 					east={<Editor
-								{...props}
+								{...propsToPass}
 								editorType={EDITOR_TYPE__SIDE}
 								flex={sideFlex}
 								borderLeftWidth={1}
 								borderLeftColor="#ccc"
 								{...editorProps}
+								parent={parent}
 							/>}
 				/>;
 	});

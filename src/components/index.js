@@ -8,6 +8,7 @@ import ArrayRadioGroup from './Form/Field/RadioGroup/ArrayRadioGroup.js';
 // import BackButton from '../Components/Buttons/BackButton.js';
 import Blank from './Blank.js';
 import BooleanCombo from './Form/Field/Combo/BooleanCombo.js';
+import Button from '../Components/Buttons/Button.js';
 // import CartButtonWithBadge from '../Components/Buttons/CartButtonWithBadge.js';
 // import CKEditor from './Form/Field/CKEditor/CKEditor.js'; // web only
 import Checkbox from './Form/Field/Checkbox/Checkbox.js';
@@ -59,6 +60,7 @@ const components = {
 	// BackButton,
 	Blank,
 	BooleanCombo,
+	Button,
 	// CartButtonWithBadge,
 	Checkbox,
 	CheckboxGroup,

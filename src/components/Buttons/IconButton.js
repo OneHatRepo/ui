@@ -5,6 +5,7 @@ import {
 	Spinner,
 	Tooltip,
 } from 'native-base';
+import withComponent from '../Hoc/withComponent.js';
 import styles from '../../Constants/Styles.js';
 import _ from 'lodash';
 
@@ -59,4 +60,4 @@ const IconButton = React.forwardRef((props, ref) => {
 	return ret;
 });
 
-export default IconButton;
+export default withComponent(IconButton);

@@ -30,6 +30,9 @@ export default function withInlineEditor(WrappedComponent) {
 				onEditorClose,
 				editorStateRef,
 
+				// withComponent
+				self: parent,
+
 				// withSelection
 				selection,
 
@@ -102,6 +105,7 @@ export default function withInlineEditor(WrappedComponent) {
 									zIndex={10}
 								>
 									{isEditorShown && <Form
+															parent={parent}
 															editorType={EDITOR_TYPE__INLINE}
 															editorStateRef={editorStateRef}
 															record={selection[0]}

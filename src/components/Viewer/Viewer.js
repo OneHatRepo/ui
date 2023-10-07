@@ -29,6 +29,9 @@ function Viewer(props) {
 			record,
 			additionalViewButtons,
 
+			// withComponent
+			self,
+
 			// withData
 			Repository,
 
@@ -112,7 +115,10 @@ function Viewer(props) {
 			let element = <Element
 								value={value}
 								isEditable={false}
+								parent={self}
+								reference={name}
 								{...propsToPass}
+								{...editorTypeProps}
 							/>;
 			if (label) {
 				const labelProps = {};
@@ -148,6 +154,7 @@ function Viewer(props) {
 										h={350}
 										canEditorViewOnly={true}
 										uniqueRepository={true}
+										parent={self}
 										{...propsToPass}
 									/>;
 					if (title) {

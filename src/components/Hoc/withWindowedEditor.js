@@ -32,6 +32,11 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown,
 				Editor,
 				editorProps = {},
+
+				// withComponent
+				self: parent,
+				
+				...propsToPass
 			} = props;
 
 		if (!Editor) {
@@ -47,8 +52,9 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 						>
 							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
-								{...props}
+								{...propsToPass}
 								{...editorProps}
+								parent={parent}
 							/>
 						</Modal>}
 				</>;
