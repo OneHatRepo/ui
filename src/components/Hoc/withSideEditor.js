@@ -14,7 +14,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 				sideFlex = 100,
 
 				// withComponent
-				self: parent,
+				self,
 				
 				...propsToPass
 			} = props;
@@ -36,7 +36,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								borderLeftWidth={1}
 								borderLeftColor="#ccc"
 								{...editorProps}
-								parent={parent}
+								parent={self}
 							/>}
 				/>;
 	});

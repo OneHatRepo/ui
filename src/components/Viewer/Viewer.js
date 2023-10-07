@@ -1,5 +1,4 @@
 import {
-	Button,
 	Column,
 	Icon,
 	ScrollView,
@@ -12,9 +11,9 @@ import {
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
 import withPdfButton from '../Hoc/withPdfButton.js';
-import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
@@ -167,12 +166,48 @@ function Viewer(props) {
 				});
 			}
 			return components;
+		},
+		buildAdditionalButtons = (configs) => {
+			const additionalButtons = [];
+			_.each(additionalViewButtons, (config) => {
+				const {
+						key,
+						text,
+						handler,
+						icon,
+						isDisabled,
+						color = '#fff',
+					} = config,
+					buttonProps = {};
+				if (key) {
+					buttonProps.key = key;
+					buttonProps.reference = key;
+				}
+				if (handler) {
+					buttonProps.onPress = handler;
+				}
+				if (icon) {
+					buttonProps.leftIcon = <Icon as={icon} color="#fff" size="sm" />;
+				}
+				if (isDisabled) {
+					buttonProps.isDisabled = isDisabled;
+				}
+				
+				const button = <Button
+									color={color}
+									ml={2}
+									parent={self}
+									{...buttonProps}
+								>{text}</Button>;
+				additionalButtons.push(button);
+			});
+			return additionalButtons;
 		};
 
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
 		showCloseBtn = !isSideEditor,
-		additionalButtons = buildAdditionalButtons(additionalViewButtons);
+		additionalButtons = buildAdditionalButtons();
 
 	return <Column flex={flex} {...props}>
 				<ScrollView width="100%" _web={{ height: 1 }}>

@@ -7,4 +7,4 @@ const ButtonComponent = function(props) {
 	return <Button {...props} />;
 }
 
-export default withComponent(IconButton);
+export default withComponent(ButtonComponent);

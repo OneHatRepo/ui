@@ -19,7 +19,7 @@ function Editor(props) {
 			_form = {},
 
 			// withComponent
-			self: parent,
+			self,
 
 			// withSelection
 			selection,
@@ -42,7 +42,7 @@ function Editor(props) {
 					onEditMode={isEditorViewOnly ? null : onEditMode}
 					onClose={onClose}
 					onDelete={onDelete}
-					parent={parent}
+					parent={self}
 					reference="viewer"
 					{..._viewer}
 				/>;
@@ -55,7 +55,7 @@ function Editor(props) {
 				onSave={onSave}
 				onClose={onClose}
 				onDelete={onDelete}
-				parent={parent}
+				parent={self}
 				reference="form"
 				{..._form}
 			/>;
