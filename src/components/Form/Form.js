@@ -24,6 +24,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
+import withComponent from '../Hoc/withComponent.js';
 import withEditor from '../Hoc/withEditor.js';
 import withPdfButton from '../Hoc/withPdfButton.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
@@ -731,6 +732,6 @@ function getNullFieldValues(initialValues, Repository) {
 	return ret;
 }
 
-export const FormEditor = withAlert(withEditor(withPdfButton(Form)));
+export const FormEditor = withComponent(withAlert(withEditor(withPdfButton(Form))));
 
-export default withAlert(withPdfButton(Form));
+export default withComponent(withAlert(withPdfButton(Form)));

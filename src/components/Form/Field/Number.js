@@ -10,6 +10,7 @@ import {
 } from '../../../Constants/Input.js';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
+import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import Plus from '../../Icons/Plus.js';
@@ -165,4 +166,4 @@ function NumberElement(props) {
 			</Row>;
 }
 
-export default withValue(NumberElement);
+export default withComponent(withValue(NumberElement));

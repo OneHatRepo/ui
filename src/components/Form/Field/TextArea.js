@@ -3,6 +3,7 @@ import {
 	TextArea,
 } from 'native-base';
 import UiGlobals from '../../../UiGlobals.js';
+import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
@@ -23,7 +24,7 @@ const
 					value={value}
 				/>;
 	},
-	TextAreaField = withValue(TextAreaElement);
+	TextAreaField = withComponent(withValue(TextAreaElement));
 
 // Tooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {

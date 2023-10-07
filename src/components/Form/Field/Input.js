@@ -7,6 +7,7 @@ import {
 	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input.js';
 import UiGlobals from '../../../UiGlobals.js';
+import withComponent from '../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
@@ -89,7 +90,7 @@ function InputElement(props) {
 }
 
 const
-	InputField = withValue(InputElement),
+	InputField = withComponent(withValue(InputElement)),
 	InputForwardRef = React.forwardRef((props, ref) => {
 		return <InputField {...props} outerRef={ref} component="Input" />;
 	});

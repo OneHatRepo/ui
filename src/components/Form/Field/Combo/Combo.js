@@ -12,6 +12,7 @@ import {
 } from '../../../../Constants/UiModes.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
+import withComponent from '../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withSelection from '../../../Hoc/withSelection.js';
 import withValue from '../../../Hoc/withValue.js';
@@ -540,10 +541,12 @@ export function ComboComponent(props) {
 	return comboComponent;
 }
 
-export const Combo = withData(
-						withValue(
-							withSelection(
-								ComboComponent
+export const Combo = withComponent(
+						withData(
+							withValue(
+								withSelection(
+									ComboComponent
+								)
 							)
 						)
 					);

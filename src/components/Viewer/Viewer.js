@@ -10,6 +10,7 @@ import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
+import withComponent from '../Hoc/withComponent.js';
 import withPdfButton from '../Hoc/withPdfButton.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import inArray from '../../Functions/inArray.js';
@@ -215,4 +216,4 @@ function Viewer(props) {
 			</Column>;
 }
 
-export default withPdfButton(Viewer);
+export default withComponent(withPdfButton(Viewer));

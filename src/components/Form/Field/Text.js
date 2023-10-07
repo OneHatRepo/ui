@@ -3,6 +3,7 @@ import {
 	Text,
 } from 'native-base';
 import UiGlobals from '../../../UiGlobals.js';
+import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 
 const
@@ -20,7 +21,7 @@ const
 					{...props}
 				>{props.value}</Text>;
 	},
-	TextField = TextElement; // NOT using withValue on Text element, as this element is simply for display purposes!
+	TextField = withComponent(TextElement); // NOT using withValue on Text element, as this element is simply for display purposes!
 
 // Tooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {

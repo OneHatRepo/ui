@@ -31,6 +31,7 @@ import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
+import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
@@ -866,80 +867,88 @@ function GridComponent(props) {
 
 }
 
-export const Grid = withAlert(
-				withEvents(
-					withData(
-						withMultiSelection(
-							withSelection(
-								withFilters(
-									withPresetButtons(
-										withContextMenu(
-											GridComponent
-										),
-										true // isGrid
+export const Grid = withComponent(
+						withAlert(
+							withEvents(
+								withData(
+									withMultiSelection(
+										withSelection(
+											withFilters(
+												withPresetButtons(
+													withContextMenu(
+														GridComponent
+													),
+													true // isGrid
+												)
+											)
+										)
 									)
 								)
 							)
 						)
-					)
-				)
-			);
+					);
 
-export const SideGridEditor = withAlert(
-									withEvents(
-										withData(
-											withMultiSelection(
-												withSelection(
-													withSideEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	GridComponent
-																),
-																true // isGrid
-															)
-														)
-													)
-												)
-											)
-										)
-									)
-								);
-
-export const WindowedGridEditor = withAlert(
-									withEvents(
-										withData(
-											withMultiSelection(
-												withSelection(
-													withWindowedEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	GridComponent
-																),
-																true // isGrid
-															)
-														)
-													)
-												)
-											)
-										)
-									)
-								);
-
-export const InlineGridEditor = withAlert(
-									withEvents(
-										withData(
-											withMultiSelection(
-												withSelection(
-													withInlineEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	GridComponent
+export const SideGridEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												withMultiSelection(
+													withSelection(
+														withSideEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		GridComponent
+																	),
+																	true // isGrid
 																)
-															),
-															true // isGrid
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								);
+
+export const WindowedGridEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												withMultiSelection(
+													withSelection(
+														withWindowedEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		GridComponent
+																	),
+																	true // isGrid
+																)
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								);
+
+export const InlineGridEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												withMultiSelection(
+													withSelection(
+														withInlineEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		GridComponent
+																	)
+																),
+																true // isGrid
+															)
 														)
 													)
 												)
