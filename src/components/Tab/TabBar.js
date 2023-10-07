@@ -11,6 +11,7 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
+import withComponent from '../Hoc/withComponent.js';
 import IconButton from '../Buttons/IconButton.js';
 import Minimize from '../Icons/Minimize.js';
 import Maximize from '../Icons/Maximize.js';
@@ -19,7 +20,7 @@ import setSaved from '../../Functions/setSaved.js';
 import _ from 'lodash';
 
 
-export default function TabBar(props) {
+function TabBar(props) {
 	const {
 			tabs = [], // { _icon, title, content, path, items, }
 			content, // e.g. Expo Router slot
@@ -387,3 +388,5 @@ export default function TabBar(props) {
 					</Column>}
 			</Column>;
 }
+
+export default withComponent(TabBar);

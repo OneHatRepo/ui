@@ -2,6 +2,7 @@ import {
 	Text,
 } from 'native-base';
 import UiGlobals from '../../UiGlobals.js';
+import withComponent from '../Hoc/withComponent.js';
 import _ from 'lodash';
 
 function TagViewer(props) {
@@ -25,4 +26,5 @@ function TagViewer(props) {
 				{...props}
 			>{values}</Text>;
 }
-export default TagViewer;
+
+export default withComponent(TagViewer);
