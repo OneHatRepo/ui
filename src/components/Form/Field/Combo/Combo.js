@@ -12,7 +12,7 @@ import {
 } from '../../../../Constants/UiModes.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withSelection from '../../../Hoc/withSelection.js';
 import withValue from '../../../Hoc/withValue.js';

@@ -20,7 +20,7 @@ import Formatters from '@onehat/data/src/Util/Formatters.js';
 import Parsers from '@onehat/data/src/Util/Parsers.js';
 import Input from '../Field/Input.js';
 import IconButton from '../../Buttons/IconButton.js';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
 import Calendar from '../../Icons/Calendar.js';

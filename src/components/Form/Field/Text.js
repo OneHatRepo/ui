@@ -3,7 +3,7 @@ import {
 	Text,
 } from 'native-base';
 import UiGlobals from '../../../UiGlobals.js';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 
 const

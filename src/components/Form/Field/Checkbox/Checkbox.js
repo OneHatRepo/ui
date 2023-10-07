@@ -1,5 +1,5 @@
 import CheckboxButton from '../../../Buttons/CheckboxButton.js';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../../Hoc/withComponent.js';
 import withValue from '../../../Hoc/withValue.js';
 import _ from 'lodash';
 

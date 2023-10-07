@@ -3,7 +3,7 @@ import {
 	TextArea,
 } from 'native-base';
 import UiGlobals from '../../../UiGlobals.js';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';

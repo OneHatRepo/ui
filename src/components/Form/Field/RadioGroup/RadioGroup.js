@@ -4,7 +4,7 @@ import {
 	Radio,
 	Row,
 } from 'native-base';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import withTooltip from '../../../Hoc/withTooltip.js';

@@ -17,7 +17,7 @@ import {
 	FILE_MODE_FILE,
 } from '../../../Constants/File.js';
 import IconButton from '../../Buttons/IconButton.js';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import File from '../../Icons/File.js';
 import Trash from '../../Icons/Trash.js';

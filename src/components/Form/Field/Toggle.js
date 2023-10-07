@@ -9,7 +9,7 @@ import {
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Na from '../../Icons/Na.js';
-import withComponent from '../Hoc/withComponent.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
