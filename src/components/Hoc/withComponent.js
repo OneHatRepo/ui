@@ -1,5 +1,9 @@
-import React, { useRef, useEffect, } from 'react';
+import React, { useState, useRef, useEffect, } from 'react';
 import _ from 'lodash';
+
+// This HOC establishes a parent-child relationship between components.
+// Basically anything wrapped in withComponent registers itself with a parent
+// and allows children to register.
 
 export default function withComponent(WrappedComponent) {
 	return (props) => {
@@ -7,16 +11,18 @@ export default function withComponent(WrappedComponent) {
 				parent,
 				...propsToPass
 			} = props,
+			{ reference } = props,
 			childrenRef = useRef({}),
 			selfRef = useRef({
+				reference,
 				registerChild: (childRef) => {
 					const {
 							reference,
 						} = childRef;
-					if (typeof childrenRef.current[reference] === 'undefined') {
+					if (typeof childrenRef.current[reference] !== 'undefined') {
 						throw Error('reference already exists!');
 					}
-					childrenRef.current[reference] = childRef;
+					childrenRef.current[reference] = childRef; // so we can do component addresses like self.children.workOrdersGridEditor
 				},
 				unregisterChild: (childRef) => {
 					const {
@@ -27,16 +33,15 @@ export default function withComponent(WrappedComponent) {
 					}
 					delete childrenRef.current[reference];
 				},
+				children: selfRef.current,
 			});
 
 		useEffect(() => {
-			if (parent) {
-				parent.registerChild({
-					childRef: selfRef.current,
-				});
+			if (parent && reference) {
+				parent.registerChild(selfRef.current);
 			}
 			return () => {
-				if (parent) {
+				if (parentt && reference) {
 					parent.unregisterChild(selfRef.current);
 				}
 				childrenRef.current = {};
@@ -44,7 +49,7 @@ export default function withComponent(WrappedComponent) {
 		}, []);
 
 		return <WrappedComponent
-					parent={selfRef}
+					self={selfRef.current}
 					{...propsToPass}
 				/>
 
