@@ -32,6 +32,7 @@ export default function buildAdditionalButtons(configs) {
 			
 			const button = <Button
 								color={color}
+								ml={2}
 								{...buttonProps}
 							>{text}</Button>;
 			additionalButtons.push(button);

@@ -33,7 +33,7 @@ export default function withComponent(WrappedComponent) {
 					}
 					delete childrenRef.current[reference];
 				},
-				children: selfRef.current,
+				children: childrenRef.current,
 			});
 
 		useEffect(() => {
@@ -41,7 +41,7 @@ export default function withComponent(WrappedComponent) {
 				parent.registerChild(selfRef.current);
 			}
 			return () => {
-				if (parentt && reference) {
+				if (parent && reference) {
 					parent.unregisterChild(selfRef.current);
 				}
 				childrenRef.current = {};
