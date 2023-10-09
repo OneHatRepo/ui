@@ -1,4 +1,4 @@
-import { useState, useEffect, useId, } from 'react';
+import { useState, useEffect, useId, useRef, } from 'react';
 import {
 	Column,
 	Modal,
@@ -46,6 +46,9 @@ export default function withFilters(WrappedComponent) {
 
 				// withData
 				Repository,
+
+				// withComponent
+				self,
 			} = props;
 
 		let modal = null,
@@ -59,7 +62,7 @@ export default function withFilters(WrappedComponent) {
 					defaultFilters: modelDefaultFilters,
 					ancillaryFilters: modelAncillaryFilters,
 				} = Repository.getSchema().model,
-				id = props.id || useId(),
+				id = props.id || props.reference || useId(),
 
 				// determine the starting filters
 				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters
@@ -124,6 +127,7 @@ export default function withFilters(WrappedComponent) {
 			}
 
 			const
+				filterCallbackRef = useRef(),
 				[filters, setFiltersRaw] = useState(formattedStartingFilters), // array of formatted filters
 				[slots, setSlots] = useState(startingSlots), // array of field names user is currently filtering on; blank slots have a null entry in array
 				[modalFilters, setModalFilters] = useState([]),
@@ -229,6 +233,21 @@ export default function withFilters(WrappedComponent) {
 						return inArray(filterType.type, ['NumberRange', 'DateRange'])
 					}
 					return inArray(filterType, ['NumberRange', 'DateRange']);
+				},
+				filterById = (id, cb) => {
+					onClearFilters();
+					filterCallbackRef.current = cb; // store the callback, so we can call it the next time this HOC renders with new filters
+					const newFilters = _.clone(filters);
+					_.remove(newFilters, (filter) => {
+						return filter.field === 'q';
+					});
+					newFilters.unshift({
+						field: 'q',
+						title: 'Search all text fields',
+						type: 'Input',
+						value: 'id:' + id,
+					});
+					setFilters(newFilters, false, false);
 				},
 				renderFilters = () => {
 					const
@@ -347,7 +366,7 @@ export default function withFilters(WrappedComponent) {
 							} else {
 								const
 									isAncillary = type === FILTER_TYPE_ANCILLARY,
-									filterName =  (isAncillary ? 'ancillary___' : '') + field;
+									filterName = (isAncillary ? 'ancillary___' : '') + field;
 								newFilterNames.push(filterName);
 								newRepoFilters.push({ name: filterName, value, });
 							}
@@ -362,10 +381,15 @@ export default function withFilters(WrappedComponent) {
 						setPreviousFilterNames(newFilterNames);
 					}
 
-					Repository.filter(newRepoFilters, null, false); // false so other filters remain
-
 					if (searchAllText && Repository.searchAncillary && !Repository.hasBaseParam('searchAncillary')) {
 						Repository.setBaseParam('searchAncillary', true);
+					}
+
+					await Repository.filter(newRepoFilters, null, false); // false so other filters remain
+
+					if (filterCallbackRef.current) {
+						filterCallbackRef.current(); // call the callback
+						filterCallbackRef.current = null; // clear the callback
 					}
 
 					if (!isReady) {
@@ -376,6 +400,11 @@ export default function withFilters(WrappedComponent) {
 
 			if (!isReady) {
 				return null;
+			}
+
+			if (self) {
+				self.filterById = filterById;
+				self.setFilters = setFilters;
 			}
 
 			const
@@ -499,6 +528,7 @@ export default function withFilters(WrappedComponent) {
 									editorType={EDITOR_TYPE__PLAIN}
 									flex={1}
 									startingValues={formStartingValues}
+									minHeight={minHeight}
 									items={[
 										{
 											type: 'Column',

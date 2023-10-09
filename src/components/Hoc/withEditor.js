@@ -239,27 +239,37 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			},
 			onRemoteDuplicate = async () => {
 
-				// Call copyToNew on server
+				// Call /duplicate on server
 				const 
+					Model = Repository.getSchema().name,
 					entity = selection[0],
 					id = entity.id;
-				const result = await Repository._send('POST', Repository.getSchema().name + '/copyToNew', { id });
+				const result = await Repository._send('POST', Model + '/duplicate', { id });
 				const {
 					root,
 					success,
 					total,
 					message
-				} = this._processServerResponse(result);
+				} = Repository._processServerResponse(result);
 
 				if (!success) {
-					this.throwError(message);
-					return;
+					throw Error(message);
 				}
 
-				// Capture ID
-				debugger;
-				
-				// Filter the grid with only this ID, and open it for editing.
+				const duplicateId = root.id;
+
+				// Filter the grid with only the duplicate's ID, and open it for editing.
+				self.filterById(duplicateId, () => { // because of the way useFilters is made, we have to use a callback, not await a Promise.
+
+					// Select the only node
+					const duplicateEntity = Repository.getById(duplicateId);
+					self.setSelection([duplicateEntity]);
+
+					// edit it
+					onEdit();
+
+				});
+
 			},
 			onEditorSave = async (data, e) => {
 				const
@@ -371,12 +381,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 		}, [selection]);
 
 		if (self) {
-			self.onAdd = onAdd;
-			self.onEdit = onEdit;
-			self.onDelete = onDelete;
-			self.onMoveChildren = onMoveChildren;
-			self.onDeleteChildren = onDeleteChildren;
-			self.onDuplicate = onDuplicate;
+			self.add = onAdd;
+			self.edit = onEdit;
+			self.delete = onDelete;
+			self.moveChildren = onMoveChildren;
+			self.deleteChildren = onDeleteChildren;
+			self.duplicate = onDuplicate;
 		}
 
 		if (lastSelection !== selection) {

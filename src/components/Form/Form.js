@@ -77,6 +77,7 @@ function Form(props) {
 			// sizing of outer container
 			h,
 			maxHeight,
+			minHeight = 0,
 			w,
 			maxWidth,
 			flex,
@@ -617,7 +618,7 @@ function Form(props) {
 	} else {
 		formComponents = buildFromItems();
 		const formAncillaryComponents = buildAncillary();
-		editor = <ScrollView _web={{ height: 1 }} width="100%" pb={1}>
+		editor = <ScrollView _web={{ minHeight, }} width="100%" pb={1}>
 					<Column p={4}>{formComponents}</Column>
 					<Column m={2} pt={4}>{formAncillaryComponents}</Column>
 				</ScrollView>;

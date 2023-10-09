@@ -27,6 +27,9 @@ export default function withSelection(WrappedComponent) {
 				autoSelectFirstItem = false,
 				fireEvent,
 
+				// withComponent
+				self,
+
 				// withValue
 				value,
 				setValue,
@@ -308,6 +311,19 @@ export default function withSelection(WrappedComponent) {
 			})();
 
 		}, []);
+
+		if (self) {
+			self.setSelection = setSelection;
+			self.selectNext = selectNext;
+			self.selectPrev = selectPrev;
+			self.addToSelection = addToSelection;
+			self.removeFromSelection = removeFromSelection;
+			self.deselectAll = deselectAll;
+			self.selectRangeTo = selectRangeTo;
+			self.isInSelection = isInSelection;
+			self.getIdsFromLocalSelection = getIdsFromLocalSelection;
+			self.getDisplayValuesFromSelection = getDisplayValuesFromLocalSelection;
+		}
 
 		if (usesWithValue) {
 			useEffect(() => {
