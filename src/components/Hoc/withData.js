@@ -28,6 +28,9 @@ export default function withData(WrappedComponent) {
 				displayField = 'value',
 				idIx,
 				displayIx,
+
+				// withComponent
+				self,
 			} = props,
 			propsToPass = _.omit(props, ['model']), // passing 'model' would mess things up if withData gets called twice (e.g. withData(...withData(...)) ), as we'd be trying to recreate Repository twice
 			localIdIx = idIx || (fields && idField ? fields.indexOf(idField) : null),
@@ -63,6 +66,9 @@ export default function withData(WrappedComponent) {
 				setLocalRepository(Repository);
 				if (setRepository) { // pass it on up to higher components
 					setRepository(Repository);
+				}
+				if (self) {
+					self.repository = Repository;
 				}
 				setIsReady(true);
 			})();

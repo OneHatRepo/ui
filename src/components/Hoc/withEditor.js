@@ -22,6 +22,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				disableDelete = false,
 				disableDuplicate = false,
 				disableView = false,
+				useCopyToNew = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				getRecordIdentifier = (selection) => {
 					if (selection.length > 1) {
 						return 'records?';
@@ -224,6 +225,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (selection.length !== 1) {
 					return;
 				}
+				if (useCopyToNew) {
+					return onCopyToNew();
+				}
 				const
 					entity = selection[0],
 					idProperty = Repository.getSchema().model.idProperty,
@@ -232,6 +236,30 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setSelection([duplicate]);
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
+			},
+			onCopyToNew = async () => {
+
+				// Call copyToNew on server
+				const 
+					entity = selection[0],
+					id = entity.id;
+				const result = await Repository._send('POST', Repository.getSchema().name + '/copyToNew', { id });
+				const {
+					root,
+					success,
+					total,
+					message
+				} = this._processServerResponse(result);
+
+				if (!success) {
+					this.throwError(message);
+					return;
+				}
+
+				// Capture ID
+				debugger;
+				
+				// Filter the grid with only this ID, and open it for editing.
 			},
 			onEditorSave = async (data, e) => {
 				const
