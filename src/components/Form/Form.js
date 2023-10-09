@@ -300,7 +300,7 @@ function Form(props) {
 							type: t,
 							...p
 						} =  propertyDef.viewerType;
-					type = t
+					type = t;
 				} else {
 					type = 'Text';
 				}
@@ -509,6 +509,7 @@ function Form(props) {
 									color={color}
 									ml={2}
 									parent={self}
+									reference={key}
 									{...buttonProps}
 								>{text}</Button>;
 				additionalButtons.push(button);
@@ -656,7 +657,6 @@ function Form(props) {
 	return <Column {...sizeProps} onLayout={onLayout}>
 
 				<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
-					{/* <Text mr={2} fontSize={18}>{editorModeF} Mode</Text> */}
 					{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
 						<Button
 							key="backBtn"
@@ -692,43 +692,41 @@ function Form(props) {
 								color="#fff"
 							>Delete</Button>
 						</Row>}
-					<Button.Group space={2} {...buttonGroupProps}>
 				
-						{!isEditorViewOnly && <IconButton
-											key="resetBtn"
-											onPress={() => {
-												if (onReset) {
-													onReset();
-												}
-												reset();
-											}}
-											icon={<Rotate color="#fff" />}
-										/>}
-						{!isEditorViewOnly && isSingle && onCancel && <Button
-														key="cancelBtn"
-														variant="ghost"
-														onPress={onCancel}
-														color="#fff"
-													>Cancel</Button>}
-						{!isEditorViewOnly && onSave && <Button
-														key="saveBtn"
-														onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
-														isDisabled={isSaveDisabled}
-														color="#fff"
-													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-						{onSubmit && <Button
-										key="submitBtn"
-										onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
-										isDisabled={isSubmitDisabled}
-										color="#fff"
-									>{submitBtnLabel || 'Submit'}</Button>}
-			
-						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
-														key="closeBtn"
-														onPress={onClose}
-														color="#fff"
-													>Close</Button>}
-					</Button.Group>
+					{!isEditorViewOnly && <IconButton
+										key="resetBtn"
+										onPress={() => {
+											if (onReset) {
+												onReset();
+											}
+											reset();
+										}}
+										icon={<Rotate color="#fff" />}
+									/>}
+					{!isEditorViewOnly && isSingle && onCancel && <Button
+													key="cancelBtn"
+													variant="ghost"
+													onPress={onCancel}
+													color="#fff"
+												>Cancel</Button>}
+					{!isEditorViewOnly && onSave && <Button
+													key="saveBtn"
+													onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+													isDisabled={isSaveDisabled}
+													color="#fff"
+												>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
+					{onSubmit && <Button
+									key="submitBtn"
+									onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
+									isDisabled={isSubmitDisabled}
+									color="#fff"
+								>{submitBtnLabel || 'Submit'}</Button>}
+		
+					{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
+													key="closeBtn"
+													onPress={onClose}
+													color="#fff"
+												>Close</Button>}
 				</Footer>
 			</Column>;
 }

@@ -53,7 +53,7 @@ export default function withComponent(WrappedComponent) {
 					// parent={parent}
 					self={selfRef.current}
 					{...propsToPass}
-				/>
+				/>;
 
 	};
 }

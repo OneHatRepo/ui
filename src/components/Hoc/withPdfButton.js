@@ -201,7 +201,7 @@ export default function withPdfButton(WrappedComponent) {
 					{...props}
 					additionalEditButtons={additionalEditButtons}
 					additionalViewButtons={additionalViewButtons}
-				/>;
+				/>
 				{modal}
 			</>;
 	};

@@ -54,6 +54,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				disableDuplicate = !isEditor,
 				disablePrint = !isGrid,
 
+				// withComponent
+				self,
+
 				// withEditor
 				userCanEdit = true,
 				userCanView = true,
@@ -226,6 +229,8 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					handler,
 					icon,
 					isDisabled,
+					parent: self,
+					reference: key,
 				};
 			},
 			generatePresetButtons = () => {

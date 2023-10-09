@@ -97,6 +97,9 @@ function GridComponent(props) {
 			flex,
 			bg,
 
+			// withComponent
+			self,
+
 			// withEditor
 			onAdd,
 			onEdit,
@@ -225,11 +228,13 @@ function GridComponent(props) {
 			}
 		},
 		getFooterToolbarItems = () => {
-			const items = _.map(additionalToolbarButtons, getIconButtonFromConfig);
+			const items = _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 
 			if (canRowsReorder) {
 				items.unshift(<IconButton
 					key="reorderBtn"
+					parent={self}
+					reference="reorderBtn"
 					onPress={() => setIsDragMode(!isDragMode)}
 					icon={<Icon as={isDragMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
 				/>);

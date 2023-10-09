@@ -26,7 +26,7 @@ const
 	},
 	TextAreaField = withComponent(withValue(TextAreaElement));
 
-// Tooltip needs us to forwardRef
+// withTooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {
 	return <TextAreaField {...props} outerRef={ref} />;
 }));

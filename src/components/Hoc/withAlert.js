@@ -168,9 +168,7 @@ export default function withAlert(WrappedComponent) {
 								</Row>
 							</AlertDialog.Body>
 							<AlertDialog.Footer>
-								<Button.Group space={2}>
-									{buttons}
-								</Button.Group>
+								{buttons}
 							</AlertDialog.Footer>
 						</AlertDialog.Content>
 					</AlertDialog>

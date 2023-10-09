@@ -30,6 +30,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				},
 				record,
 
+				// withComponent
+				self,
+
 				// parent container
 				selectorId,
 				selectorSelected,
@@ -199,7 +202,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					cb();
 				}
 			},
-			viewRecord = async () => {
+			onView = async () => {
 				if (!userCanView) {
 					return;
 				}
@@ -214,7 +217,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await getListeners().onAfterView(entity);
 				}
 			},
-			duplicateRecord = async () => {
+			onDuplicate = async () => {
 				if (!userCanEdit || disableDuplicate) {
 					return;
 				}
@@ -339,6 +342,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			setLastSelection(selection);
 		}, [selection]);
 
+		if (self) {
+			self.onAdd = onAdd;
+			self.onEdit = onEdit;
+			self.onDelete = onDelete;
+			self.onMoveChildren = onMoveChildren;
+			self.onDeleteChildren = onDeleteChildren;
+			self.onDuplicate = onDuplicate;
+		}
+
 		if (lastSelection !== selection) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
@@ -361,8 +373,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
 					onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
 					onDelete={(!userCanEdit || disableDelete) ? null : onDelete}
-					onView={viewRecord}
-					onDuplicate={duplicateRecord}
+					onView={onView}
+					onDuplicate={onDuplicate}
 					onEditorSave={onEditorSave}
 					onEditorCancel={onEditorCancel}
 					onEditorDelete={(!userCanEdit || disableDelete) ? null : onEditorDelete}

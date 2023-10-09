@@ -197,6 +197,7 @@ function Viewer(props) {
 									color={color}
 									ml={2}
 									parent={self}
+									reference={key}
 									{...buttonProps}
 								>{text}</Button>;
 				additionalButtons.push(button);
@@ -246,14 +247,11 @@ function Viewer(props) {
 									color="#fff"
 								>Delete</Button>
 							</Row>}
-						{showCloseBtn && 
-							<Button.Group space={2}>
-								<Button
-									key="closeBtn"
-									onPress={onClose}
-									color="#fff"
-								>Close</Button>
-							</Button.Group>}
+						{showCloseBtn && <Button
+											key="closeBtn"
+											onPress={onClose}
+											color="#fff"
+										>Close</Button>}
 					</Footer>}
 			</Column>;
 }
