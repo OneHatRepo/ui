@@ -22,7 +22,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				disableDelete = false,
 				disableDuplicate = false,
 				disableView = false,
-				useCopyToNew = false, // call specific copyToNew function on server, rather than simple duplicate on client
+				useRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				getRecordIdentifier = (selection) => {
 					if (selection.length > 1) {
 						return 'records?';
@@ -225,8 +225,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (selection.length !== 1) {
 					return;
 				}
-				if (useCopyToNew) {
-					return onCopyToNew();
+				if (useRemoteDuplicate) {
+					return onRemoteDuplicate();
 				}
 				const
 					entity = selection[0],
@@ -237,7 +237,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
-			onCopyToNew = async () => {
+			onRemoteDuplicate = async () => {
 
 				// Call copyToNew on server
 				const 
