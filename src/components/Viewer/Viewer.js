@@ -1,3 +1,4 @@
+import { useRef, } from 'react';
 import {
 	Column,
 	Icon,
@@ -45,6 +46,7 @@ function Viewer(props) {
 			selectorSelected,
 
 		} = props,
+		scrollViewRef = useRef(),
 		isMultiple = _.isArray(record),
 		isSideEditor = editorType === EDITOR_TYPE__SIDE,
 		styles = UiGlobals.styles,
@@ -205,13 +207,17 @@ function Viewer(props) {
 			return additionalButtons;
 		};
 
+	if (self) {
+		self.ref = scrollViewRef;
+	}
+
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
 		showCloseBtn = !isSideEditor,
 		additionalButtons = buildAdditionalButtons();
 
 	return <Column flex={flex} {...props}>
-				<ScrollView width="100%" _web={{ height: 1 }}>
+				<ScrollView width="100%" _web={{ height: 1 }} ref={scrollViewRef}>
 					<Column p={4}>
 						{onEditMode && <Row mb={4} justifyContent="flex-end">
 											<Button

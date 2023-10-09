@@ -774,6 +774,9 @@ function GridComponent(props) {
 
 	}, [selectorId, selectorSelected]);
 
+	if (self) {
+		self.ref = gridRef;
+	}
 
 	isAddingRef.current = isAdding;
 

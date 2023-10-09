@@ -1,4 +1,4 @@
-import { useEffect, useState, isValidElement, } from 'react';
+import { useEffect, useState, useRef, isValidElement, } from 'react';
 import {
 	Box,
 	Column,
@@ -106,6 +106,7 @@ function Form(props) {
 			// withAlert
 			alert,
 		} = props,
+		formRef = useRef(),
 		styles = UiGlobals.styles,
 		record = props.record?.length === 1 ? props.record[0] : props.record,
 		isMultiple = _.isArray(record),
@@ -565,6 +566,10 @@ function Form(props) {
 	if (!_.isNil(editorStateRef)) {
 		editorStateRef.current = formState; // Update state so HOC can know what's going on
 	}
+
+	if (self) {
+		self.ref = formRef;
+	}
 	
 	const sizeProps = {};
 	if (!flex && !h && !w) {
@@ -655,7 +660,7 @@ function Form(props) {
 
 	const additionalButtons = buildAdditionalButtons(additionalEditButtons);
 	
-	return <Column {...sizeProps} onLayout={onLayout}>
+	return <Column {...sizeProps} onLayout={onLayout} ref={formRef}>
 
 				<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
 					{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
