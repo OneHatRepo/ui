@@ -10,6 +10,7 @@ export default function withComponent(WrappedComponent) {
 		const {
 				// self: parent,
 				parent,
+				componentMethods,
 				...propsToPass
 			} = props,
 			{ reference } = props,
@@ -38,6 +39,11 @@ export default function withComponent(WrappedComponent) {
 			});
 
 		useEffect(() => {
+			if (componentMethods) {
+				_.each(componentMethods, (method, name) => {
+					selfRef.current[name] = method;
+				});
+			}
 			if (parent && reference) {
 				parent.registerChild(selfRef.current);
 			}
