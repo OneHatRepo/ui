@@ -18,6 +18,13 @@ export default function withComponent(WrappedComponent) {
 			selfRef = useRef({
 				parent,
 				reference,
+				hasChild: (childRef) => {
+					const {
+							reference,
+						} = childRef,
+						found = _.find(childrenRef.current, (ref, ix) => ix === reference);
+					return !!found;
+				},
 				registerChild: (childRef) => {
 					const {
 							reference,
@@ -44,7 +51,7 @@ export default function withComponent(WrappedComponent) {
 					selfRef.current[name] = method;
 				});
 			}
-			if (parent && reference) {
+			if (parent && reference && !parent.hasChild(selfRef.current)) {
 				parent.registerChild(selfRef.current);
 			}
 			return () => {
