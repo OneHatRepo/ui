@@ -158,8 +158,10 @@ export default function withPdfButton(WrappedComponent) {
 				setIsModalShown(true);
 			},
 		};
-		additionalEditButtons.push(button);
-		if (additionalEditButtons !== additionalViewButtons) { // Ensure they're NOT the same object, otherwise this would be adding it twice!
+		if (!_.find(additionalEditButtons, btn => button.key === btn.key)) { 
+			additionalEditButtons.push(button);
+		}
+		if (!_.find(additionalViewButtons, btn => button.key === btn.key)) { 
 			additionalViewButtons.push(button);
 		}
 	
