@@ -154,6 +154,7 @@ export default function withPdfButton(WrappedComponent) {
 			key: 'viewPdfBtn',
 			text: 'View PDF',
 			icon: Pdf,
+			isDisabled: selection.length !== 1,
 			handler: () => {
 				setIsModalShown(true);
 			},
