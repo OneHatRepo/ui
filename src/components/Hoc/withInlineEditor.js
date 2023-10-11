@@ -106,6 +106,7 @@ export default function withInlineEditor(WrappedComponent) {
 								>
 									{isEditorShown && <Form
 															parent={self}
+															reference="form"
 															editorType={EDITOR_TYPE__INLINE}
 															editorStateRef={editorStateRef}
 															record={selection[0]}

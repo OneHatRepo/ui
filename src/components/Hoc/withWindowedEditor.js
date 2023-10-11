@@ -55,6 +55,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 								{...propsToPass}
 								{...editorProps}
 								parent={self}
+								reference="editor"
 							/>
 						</Modal>}
 				</>;

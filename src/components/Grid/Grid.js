@@ -801,7 +801,7 @@ function GridComponent(props) {
 	let listFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} disablePageSize={!disableAdjustingPageSizeToHeight} />;
+			listFooterComponent = <PaginationToolbar Repository={Repository} self={self} toolbarItems={footerToolbarItemComponents} disablePageSize={!disableAdjustingPageSizeToHeight} />;
 		} else if (footerToolbarItemComponents.length) {
 			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 		}

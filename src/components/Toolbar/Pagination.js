@@ -18,6 +18,9 @@ export default function Pagination(props) {
 	const {
 			minimize = false,
 			disablePageSize = false,
+
+			// withComponent
+			self,
 	
 			// withData
 			Repository,
@@ -56,6 +59,8 @@ export default function Pagination(props) {
 			isDisabled = page === 1;
 		items.push(<IconButton
 						key="first"
+						parent={self}
+						reference="firstPageBtn"
 						{...iconButtonProps}
 						isDisabled={isDisabled}
 						icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -64,6 +69,8 @@ export default function Pagination(props) {
 					/>);
 		items.push(<IconButton
 						key="prev"
+						parent={self}
+						reference="prevPageBtn"
 						{...iconButtonProps}
 						isDisabled={isDisabled}
 						icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -79,6 +86,8 @@ export default function Pagination(props) {
 						>
 							<Text mr={2}>Page</Text>
 							<Input
+								parent={self}
+								reference="pageInput"
 								keyboardType="numeric"
 								value={page?.toString()}
 								onChangeValue={(value) => Repository.setPage(value)}
@@ -94,6 +103,8 @@ export default function Pagination(props) {
 		isDisabled = page === totalPages || totalPages <= 1;
 		items.push(<IconButton
 						key="next"
+						parent={self}
+						reference="nextPageBtn"
 						{...iconButtonProps}
 						isDisabled={isDisabled}
 						icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -102,6 +113,8 @@ export default function Pagination(props) {
 					/>);
 		items.push(<IconButton
 						key="last"
+						parent={self}
+						reference="lastPageBtn"
 						{...iconButtonProps}
 						isDisabled={isDisabled}
 						icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -111,6 +124,8 @@ export default function Pagination(props) {
 		if (!Repository.isLocal) {
 			items.push(<IconButton
 							key="reload"
+							parent={self}
+							reference="reloadPageBtn"
 							{...iconButtonProps}
 							icon={<Icon as={Rotate} {...iconProps} color="trueGray.600" />}
 							onPress={() => Repository.reload()}

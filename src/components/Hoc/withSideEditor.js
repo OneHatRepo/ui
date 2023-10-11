@@ -37,6 +37,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								borderLeftColor="#ccc"
 								{...editorProps}
 								parent={self}
+								reference="editor"
 							/>}
 				/>;
 	});
