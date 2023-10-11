@@ -145,6 +145,7 @@ function GridComponent(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
+		containerRef = useRef(),
 		gridRef = useRef(),
 		isAddingRef = useRef(),
 		[isReady, setIsReady] = useState(false),
@@ -775,7 +776,7 @@ function GridComponent(props) {
 	}, [selectorId, selectorSelected]);
 
 	if (self) {
-		self.ref = gridRef;
+		self.ref = containerRef;
 	}
 
 	isAddingRef.current = isAdding;
@@ -816,6 +817,7 @@ function GridComponent(props) {
 
 	return <Column
 				{...testProps('Grid')}
+				ref={containerRef}
 				w="100%"
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
