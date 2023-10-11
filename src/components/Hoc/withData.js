@@ -20,6 +20,7 @@ export default function withData(WrappedComponent) {
 				model,
 				autoLoad = false,
 				pageSize,
+				baseParams,
 
 				// For plain JS data
 				data,
@@ -57,6 +58,10 @@ export default function withData(WrappedComponent) {
 
 				if (pageSize) {
 					Repository.setPageSize(pageSize);
+				}
+
+				if (baseParams) {
+					Repository.setBaseParams(baseParams);
 				}
 
 				if (Repository && (autoLoad || Repository.autoLoad) && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
