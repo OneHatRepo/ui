@@ -307,8 +307,12 @@ function Form(props) {
 					type = 'Text';
 				}
 			}
-			if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
-				editorTypeProps.autoLoad = true;
+			if (item.hasOwnProperty('autoLoad')) {
+				editorTypeProps.autoLoad = item.autoLoad;
+			} else {
+				if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
+					editorTypeProps.autoLoad = true;
+				}
 			}
 			const Element = getComponentFromType(type);
 			let children;
