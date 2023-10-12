@@ -35,7 +35,7 @@ function Panel(props) {
 			onLayout = null,
 			
 			// Header
-			title = UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))),
+			title = props.model ? UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))) : '',
 			showHeader = true,
 			header = null,
 			isClosable = false,
