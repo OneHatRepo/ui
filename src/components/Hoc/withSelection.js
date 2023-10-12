@@ -281,7 +281,7 @@ export default function withSelection(WrappedComponent) {
 			(async () => {
 
 				if (usesWithValue && Repository?.isRemote 
-					&& !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading) {
+					&& !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading && (!_.isNil(value) || !_.isEmpty(selection)) || autoSelectFirstItem) {
 					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
 					// so first load repo, then conform to value
 					await Repository.load();
