@@ -38,6 +38,7 @@ export function ComboComponent(props) {
 			hideMenuOnSelection = true,
 			_input = {},
 			isEditor = false,
+			isDisabled = false,
 
 			// withValue
 			value,
@@ -408,6 +409,7 @@ export function ComboComponent(props) {
 										ref={inputRef}
 										value={textValue}
 										autoSubmit={true}
+										isDisabled={isDisabled}
 										onChangeValue={onInputChangeText}
 										onKeyPress={onInputKeyPress}
 										onBlur={onInputBlur}
@@ -453,6 +455,7 @@ export function ComboComponent(props) {
 										color: 'primary.800',
 										size: 'sm',
 									}}
+									isDisabled={isDisabled}
 									onPress={onTriggerPress}
 									onBlur={onTriggerBlur}
 									h="100%"
