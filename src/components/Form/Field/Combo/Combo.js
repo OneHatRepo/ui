@@ -259,6 +259,10 @@ export function ComboComponent(props) {
 		},
 		searchForMatches = async (value) => {
 
+			if (_.isEmpty(value)) {
+				return;
+			}
+
 			let found;
 			if (Repository) {
 				
@@ -276,9 +280,7 @@ export function ComboComponent(props) {
 						searchField = displayFieldName + ' LIKE';
 					}
 
-					if (!_.isEmpty(value)) {
-						value += '%';
-					}
+					value += '%';
 
 					await Repository.filter(searchField, value);
 					if (!this.isAutoLoad) {
