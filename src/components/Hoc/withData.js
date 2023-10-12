@@ -47,11 +47,14 @@ export default function withData(WrappedComponent) {
 				return () => {};
 			}
 
+			let repositoryId;
+
 			(async () => {
 				let Repository;
 				if (uniqueRepository) {
 					const schema = oneHatData.getSchema(model);
 					Repository = await oneHatData.createRepository({ schema });
+					repositoryId = Repository.id;
 				} else {
 					Repository = oneHatData.getRepository(model);
 				}
@@ -85,7 +88,13 @@ export default function withData(WrappedComponent) {
 				setIsReady(true);
 			})();
 
-		}, [LocalRepository]);
+			return () => {
+				if (repositoryId) {
+					oneHatData.deleteRepository(repositoryId);
+				}
+			}
+
+		}, []);
 
 		if (!isReady) {
 			return null;
