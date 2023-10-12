@@ -18,7 +18,7 @@ export default function withData(WrappedComponent) {
 				setRepository,
 				uniqueRepository = false,
 				model,
-				autoLoad = false,
+				autoLoad, // bool
 				pageSize,
 				baseParams,
 
@@ -64,8 +64,15 @@ export default function withData(WrappedComponent) {
 					Repository.setBaseParams(baseParams);
 				}
 
-				if (Repository && (autoLoad || Repository.autoLoad) && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
-					await Repository.load();
+
+				if (Repository && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
+					let doAutoLoad = Repository.autoLoad;
+					if (!_.isNil(autoLoad)) { // prop can override schema setting for autoLoad
+						doAutoLoad = autoLoad;
+					}
+					if (doAutoLoad) {
+						await Repository.load();
+					}
 				}
 	
 				setLocalRepository(Repository);
