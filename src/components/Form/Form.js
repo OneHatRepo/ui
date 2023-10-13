@@ -28,6 +28,7 @@ import withEditor from '../Hoc/withEditor.js';
 import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
@@ -267,9 +268,9 @@ function Form(props) {
 			return <Row>{elements}</Row>;
 		},
 		buildFromItems = () => {
-			return _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
-		buildNextLayer = (item, ix, defaults) => {
+		buildFromItem = (item, ix, defaults) => {
 			let {
 					type,
 					title,
@@ -323,7 +324,7 @@ function Form(props) {
 				}
 				const itemDefaults = item.defaults;
 				children = _.map(items, (item, ix) => {
-					return buildNextLayer(item, ix, itemDefaults);
+					return buildFromItem(item, ix, itemDefaults);
 				});
 				return <Element key={ix} title={title} {...itemDefaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
@@ -432,6 +433,14 @@ function Form(props) {
 
 								}
 							}
+
+							if (item.additionalEditButtons) {
+								element = <Row flex={1}>
+												{element}
+												{buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState })}
+											</Row>;
+							}
+
 							if (label && editorType !== EDITOR_TYPE__INLINE) {
 								const labelProps = {};
 								if (defaults?.labelWidth) {
@@ -484,43 +493,6 @@ function Form(props) {
 				});
 			}
 			return components;
-		},
-		buildAdditionalButtons = (configs) => {
-			const additionalButtons = [];
-			_.each(additionalEditButtons, (config) => {
-				const {
-						key,
-						text,
-						handler,
-						icon,
-						isDisabled,
-						color = '#fff',
-					} = config,
-					buttonProps = {};
-				if (key) {
-					buttonProps.key = key;
-					buttonProps.reference = key;
-				}
-				if (handler) {
-					buttonProps.onPress = handler;
-				}
-				if (icon) {
-					buttonProps.leftIcon = <Icon as={icon} color="#fff" size="sm" />;
-				}
-				if (isDisabled) {
-					buttonProps.isDisabled = isDisabled;
-				}
-				
-				const button = <Button
-									color={color}
-									ml={2}
-									parent={self}
-									reference={key}
-									{...buttonProps}
-								>{text}</Button>;
-				additionalButtons.push(button);
-			});
-			return additionalButtons;
 		},
 		onSubmitError = (errors, e) => {
 			debugger;

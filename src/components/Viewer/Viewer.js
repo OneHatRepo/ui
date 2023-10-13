@@ -14,6 +14,7 @@ import withComponent from '../Hoc/withComponent.js';
 import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
@@ -52,9 +53,9 @@ function Viewer(props) {
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
 		buildFromItems = () => {
-			return _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
-		buildNextLayer = (item, ix, defaults) => {
+		buildFromItem = (item, ix, defaults) => {
 			let {
 					type,
 					title,
@@ -92,7 +93,7 @@ function Viewer(props) {
 				}
 				const defaults = item.defaults;
 				children = _.map(items, (item, ix) => {
-					return buildNextLayer(item, ix, defaults);
+					return buildFromItem(item, ix, defaults);
 				});
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
@@ -121,6 +122,14 @@ function Viewer(props) {
 								{...propsToPass}
 								{...editorTypeProps}
 							/>;
+
+			if (item.additionalViewButtons) {
+				element = <Row>
+								{element}
+								{buildAdditionalButtons(item.additionalViewButtons, self)}
+							</Row>;
+			}
+
 			if (label) {
 				const labelProps = {};
 				if (defaults?.labelWidth) {
@@ -168,43 +177,6 @@ function Viewer(props) {
 				});
 			}
 			return components;
-		},
-		buildAdditionalButtons = (configs) => {
-			const additionalButtons = [];
-			_.each(additionalViewButtons, (config) => {
-				const {
-						key,
-						text,
-						handler,
-						icon,
-						isDisabled,
-						color = '#fff',
-					} = config,
-					buttonProps = {};
-				if (key) {
-					buttonProps.key = key;
-					buttonProps.reference = key;
-				}
-				if (handler) {
-					buttonProps.onPress = handler;
-				}
-				if (icon) {
-					buttonProps.leftIcon = <Icon as={icon} color="#fff" size="sm" />;
-				}
-				if (isDisabled) {
-					buttonProps.isDisabled = isDisabled;
-				}
-				
-				const button = <Button
-									color={color}
-									ml={2}
-									parent={self}
-									reference={key}
-									{...buttonProps}
-								>{text}</Button>;
-				additionalButtons.push(button);
-			});
-			return additionalButtons;
 		};
 
 	if (self) {
@@ -214,7 +186,7 @@ function Viewer(props) {
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
 		showCloseBtn = !isSideEditor,
-		additionalButtons = buildAdditionalButtons();
+		additionalButtons = buildAdditionalButtons(additionalViewButtons);
 
 	return <Column flex={flex} {...props}>
 				<ScrollView width="100%" _web={{ height: 1 }} ref={scrollViewRef}>
