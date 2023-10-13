@@ -124,7 +124,7 @@ function Viewer(props) {
 							/>;
 
 			if (item.additionalViewButtons) {
-				element = <Row>
+				element = <Row flexWrap="wrap">
 								{element}
 								{buildAdditionalButtons(item.additionalViewButtons, self)}
 							</Row>;
@@ -201,7 +201,7 @@ function Viewer(props) {
 										</Row>}
 						
 						{!_.isEmpty(additionalButtons) && 
-							<Row p={2} alignItems="center" justifyContent="flex-end">
+							<Row p={2} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
 								{additionalButtons}
 							</Row>}
 

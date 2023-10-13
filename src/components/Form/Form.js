@@ -435,7 +435,7 @@ function Form(props) {
 							}
 
 							if (item.additionalEditButtons) {
-								element = <Row flex={1}>
+								element = <Row flex={1} flexWrap="wrap">
 												{element}
 												{buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState })}
 											</Row>;
@@ -655,7 +655,7 @@ function Form(props) {
 						>To View</Button>}
 				</Row>
 				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons) && 
-					<Row p={4} alignItems="center" justifyContent="flex-end">
+					<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
 						{additionalButtons}
 					</Row>}
 				
