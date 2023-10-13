@@ -138,7 +138,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
-			onDelete = async (cb) => {
+			onDelete = async (args) => {
+				let cb = null;
+				if (_.isFunction(args)) {
+					cb = args;
+				}
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
 				}
