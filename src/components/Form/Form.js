@@ -74,6 +74,7 @@ function Form(props) {
 			submitBtnLabel,
 			onSubmit,
 			additionalEditButtons,
+			additionalFooterButtons,
 			
 			// sizing of outer container
 			h,
@@ -675,6 +676,13 @@ function Form(props) {
 							>Delete</Button>
 						</Row>}
 				
+					{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+						return <Button
+									{...props}
+									onPress={() => handleSubmit(props.onPress, onSubmitError)(e)}
+								>{props.text}</Button>;
+					})}
+
 					{!isEditorViewOnly && <IconButton
 										key="resetBtn"
 										onPress={() => {
