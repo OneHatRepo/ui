@@ -31,7 +31,6 @@ function Report(props) {
 			description,
 			reportId,
 			// icon,
-			items = [],
 			disablePdf = false,
 			disableExcel = false,
 			includePresets = false,
@@ -41,37 +40,36 @@ function Report(props) {
 		styles = UiGlobals.styles,
 		url = UiGlobals.baseURL + 'Reports/getReport',
 		buttons = [],
-		openWindowWithPostRequest = (params) => {
-			const
-				winName = 'ReportWindow',
-				opts = 'resizable=yes,height=600,width=800,location=0,menubar=0,scrollbars=1',
-				form = document.createElement('form');
-			form.setAttribute('method', 'post');
-			form.setAttribute('action', url);
-			form.setAttribute('target', winName);
-			_.each(params, (value, key) => {
-				const input = document.createElement('input');
-				input.type = 'hidden';
-				input.name = key;
-				input.value = value;
-				form.appendChild(input);
-			});
-			document.body.appendChild(form);
-			window.open('', winName, opts);
-			form.target = winName;
-			form.submit();
-			document.body.removeChild(form);
+		downloadWithFetch = (data) => {
+			const options = {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(data),
+			};
+			fetch(url, options)
+				.then( res => res.blob() )
+				.then( blob => {
+					const
+						winName = 'ReportWindow',
+						opts = 'resizable=yes,height=600,width=800,location=0,menubar=0,scrollbars=1',
+						externalWindow = window.open('', winName, opts),
+						file = externalWindow.URL.createObjectURL(blob);
+					externalWindow.location.assign(file);
+				});
 		},
 		getReport = (reportType, data) => {
 			const params = {
-				report_id: reportId,
-				outputFileType: reportType,
-				showReportHeaders,
-				// download_token, // not sure this is needed
-			};
+					report_id: reportId,
+					outputFileType: reportType,
+					showReportHeaders,
+					// download_token, // not sure this is needed
+					...data,
+				},
+				closeWindow = reportType === EXCEL;
 
-
-			openWindowWithPostRequest(params);
+			downloadWithFetch(params, closeWindow);
 		};
 
 	const propsIcon = props._icon || {};
@@ -107,7 +105,7 @@ function Report(props) {
 			ml: 1,
 		});
 	}
-	return <Column w="100%" borderWidth={1} borderColor="primary.300" pt={4}>
+	return <Column w="100%" borderWidth={1} borderColor="primary.300" pt={4} mb={3}>
 				<Row>
 					{icon && <Column>{icon}</Column>}
 					<Column>
@@ -116,9 +114,9 @@ function Report(props) {
 					</Column>
 				</Row>
 				<Form
-					items={items}
 					type={EDITOR_TYPE__PLAIN}
 					additionalFooterButtons={buttons}
+					{...props._form}
 				/>
 			</Column>;
 }
