@@ -528,7 +528,6 @@ export default function withFilters(WrappedComponent) {
 									editorType={EDITOR_TYPE__PLAIN}
 									flex={1}
 									startingValues={formStartingValues}
-									minHeight={minHeight}
 									items={[
 										{
 											type: 'Column',
