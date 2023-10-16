@@ -40,7 +40,7 @@ import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
 
-const CONTAINER_THRESHOLD = 2000; // should be something like 800. Set it high for now, so everything is in one column until gap works (probably with gluestack)
+const CONTAINER_THRESHOLD = 800;
 
 // TODO: memoize field Components
 
@@ -342,6 +342,7 @@ function Form(props) {
 						propsToPass.w = '100%';
 						propsToPass.mb = 1;
 					}
+					propsToPass.pl = 3;
 				}
 				const itemDefaults = item.defaults;
 				children = _.map(items, (item, ix) => {
@@ -633,7 +634,7 @@ function Form(props) {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
 			editor = <ScrollView _web={{ minHeight, }} width="100%" pb={1}>
-						{containerWidth >= CONTAINER_THRESHOLD ? <Row padding={4} justifyContent="space-between" gap={20}>{formComponents}</Row> : null}
+						{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{formComponents}</Row> : null}
 						{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
 						<Column m={2} pt={4}>{formAncillaryComponents}</Column>
 					</ScrollView>;

@@ -21,7 +21,7 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import _ from 'lodash';
 
-const CONTAINER_THRESHOLD = 2000; // should be something like 800. Set it high for now, so everything is in one column until gap works (probably with gluestack)
+const CONTAINER_THRESHOLD = 800;
 
 function Viewer(props) {
 	const {
@@ -109,6 +109,7 @@ function Viewer(props) {
 						propsToPass.w = '100%';
 						propsToPass.mb = 1;
 					}
+					propsToPass.pl = 3;
 				}
 				const defaults = item.defaults;
 				children = _.map(items, (item, ix) => {
@@ -221,26 +222,24 @@ function Viewer(props) {
 
 	return <Column flex={flex} {...props} onLayout={onLayout}>
 				{containerWidth && <>
-					<ScrollView width="100%" _web={{ height: 1 }} ref={scrollViewRef}>
-						<Column p={4}>
-							{onEditMode && <Row mb={4} justifyContent="flex-end">
-												<Button
-													key="editBtn"
-													onPress={onEditMode}
-													leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
-													color="#fff"
-												>To Edit</Button>
-											</Row>}
-							
-							{!_.isEmpty(additionalButtons) && 
-								<Row p={2} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
-									{additionalButtons}
-								</Row>}
-							{containerWidth >= CONTAINER_THRESHOLD ? <Row padding={4} justifyContent="space-between" gap={20}>{viewerComponents}</Row> : null}
+					{onEditMode && <Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
+										<Button
+											key="editBtn"
+											onPress={onEditMode}
+											leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+											color="#fff"
+										>To Edit</Button>
+									</Row>}
+					{!_.isEmpty(additionalButtons) && 
+						<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+							{additionalButtons}
+						</Row>}
+
+					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
+						<Column>
+							{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{viewerComponents}</Row> : null}
 							{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{viewerComponents}</Column> : null}
-
-							{ancillaryComponents}
-
+							<Column m={2} pt={4}>{ancillaryComponents}</Column>
 						</Column>
 					</ScrollView>
 					{(showDeleteBtn || showCloseBtn) && 
