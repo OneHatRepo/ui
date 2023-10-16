@@ -1,4 +1,4 @@
-import { useRef, } from 'react';
+import { useRef, useState, } from 'react';
 import {
 	Column,
 	Icon,
@@ -20,6 +20,8 @@ import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import _ from 'lodash';
+
+const CONTAINER_THRESHOLD = 2000; // should be something like 800. Set it high for now, so everything is in one column until gap works (probably with gluestack)
 
 function Viewer(props) {
 	const {
@@ -49,6 +51,7 @@ function Viewer(props) {
 		} = props,
 		scrollViewRef = useRef(),
 		isMultiple = _.isArray(record),
+		[containerWidth, setContainerWidth] = useState(),
 		isSideEditor = editorType === EDITOR_TYPE__SIDE,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
@@ -90,6 +93,22 @@ function Viewer(props) {
 			if (inArray(type, ['Column', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
+				}
+				if (type === 'Column') {
+					if (containerWidth < CONTAINER_THRESHOLD) {
+						// everything is in one column
+						if (propsToPass.hasOwnProperty('flex')) {
+							delete propsToPass.flex;
+						}
+						if (propsToPass.hasOwnProperty('width')) {
+							delete propsToPass.width;
+						}
+						if (propsToPass.hasOwnProperty('w')) {
+							delete propsToPass.w;
+						}
+						propsToPass.w = '100%';
+						propsToPass.mb = 1;
+					}
 				}
 				const defaults = item.defaults;
 				children = _.map(items, (item, ix) => {
@@ -177,6 +196,9 @@ function Viewer(props) {
 				});
 			}
 			return components;
+		},
+		onLayout = (e) => {
+			setContainerWidth(e.nativeEvent.layout.width);
 		};
 
 	if (self) {
@@ -185,52 +207,64 @@ function Viewer(props) {
 
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
-		showCloseBtn = !isSideEditor,
+		showCloseBtn = !isSideEditor;
+	let additionalButtons = null,
+		viewerComponents = null,
+		ancillaryComponents = null;
+	
+	
+	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 		additionalButtons = buildAdditionalButtons(additionalViewButtons);
+		viewerComponents = buildFromItems();
+		ancillaryComponents = buildAncillary();
+	}
 
-	return <Column flex={flex} {...props}>
-				<ScrollView width="100%" _web={{ height: 1 }} ref={scrollViewRef}>
-					<Column p={4}>
-						{onEditMode && <Row mb={4} justifyContent="flex-end">
-											<Button
-												key="editBtn"
-												onPress={onEditMode}
-												leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+	return <Column flex={flex} {...props} onLayout={onLayout}>
+				{containerWidth && <>
+					<ScrollView width="100%" _web={{ height: 1 }} ref={scrollViewRef}>
+						<Column p={4}>
+							{onEditMode && <Row mb={4} justifyContent="flex-end">
+												<Button
+													key="editBtn"
+													onPress={onEditMode}
+													leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+													color="#fff"
+												>To Edit</Button>
+											</Row>}
+							
+							{!_.isEmpty(additionalButtons) && 
+								<Row p={2} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+									{additionalButtons}
+								</Row>}
+							{containerWidth >= CONTAINER_THRESHOLD ? <Row padding={4} justifyContent="space-between" gap={20}>{viewerComponents}</Row> : null}
+							{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{viewerComponents}</Column> : null}
+
+							{ancillaryComponents}
+
+						</Column>
+					</ScrollView>
+					{(showDeleteBtn || showCloseBtn) && 
+						<Footer justifyContent="flex-end">
+							{showDeleteBtn && 
+								<Row flex={1} justifyContent="flex-start">
+									<Button
+										key="deleteBtn"
+										onPress={onDelete}
+										bg="warning"
+										_hover={{
+											bg: 'warningHover',
+										}}
+										color="#fff"
+									>Delete</Button>
+								</Row>}
+							{showCloseBtn && <Button
+												key="closeBtn"
+												onPress={onClose}
 												color="#fff"
-											>To Edit</Button>
-										</Row>}
-						
-						{!_.isEmpty(additionalButtons) && 
-							<Row p={2} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
-								{additionalButtons}
-							</Row>}
+											>Close</Button>}
+						</Footer>}
 
-						{buildFromItems()}
-
-						{buildAncillary()}
-
-					</Column>
-				</ScrollView>
-				{(showDeleteBtn || showCloseBtn) && 
-					<Footer justifyContent="flex-end">
-						{showDeleteBtn && 
-							<Row flex={1} justifyContent="flex-start">
-								<Button
-									key="deleteBtn"
-									onPress={onDelete}
-									bg="warning"
-									_hover={{
-										bg: 'warningHover',
-									}}
-									color="#fff"
-								>Delete</Button>
-							</Row>}
-						{showCloseBtn && <Button
-											key="closeBtn"
-											onPress={onClose}
-											color="#fff"
-										>Close</Button>}
-					</Footer>}
+				</>}
 			</Column>;
 }
 

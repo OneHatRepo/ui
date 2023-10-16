@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, isValidElement, } from 'react';
+import { View, } from 'react-native';
 import {
 	Box,
 	Column,
@@ -38,6 +39,8 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
+
+const CONTAINER_THRESHOLD = 2000; // should be something like 800. Set it high for now, so everything is in one column until gap works (probably with gluestack)
 
 // TODO: memoize field Components
 
@@ -115,6 +118,7 @@ function Form(props) {
 		isSingle = !isMultiple, // for convenience
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
+		[containerWidth, setContainerWidth] = useState(),
 		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		{
@@ -323,6 +327,22 @@ function Form(props) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
+				if (type === 'Column') {
+					if (containerWidth < CONTAINER_THRESHOLD) {
+						// everything is in one column
+						if (propsToPass.hasOwnProperty('flex')) {
+							delete propsToPass.flex;
+						}
+						if (propsToPass.hasOwnProperty('width')) {
+							delete propsToPass.width;
+						}
+						if (propsToPass.hasOwnProperty('w')) {
+							delete propsToPass.w;
+						}
+						propsToPass.w = '100%';
+						propsToPass.mb = 1;
+					}
+				}
 				const itemDefaults = item.defaults;
 				children = _.map(items, (item, ix) => {
 					return buildFromItem(item, ix, itemDefaults);
@@ -515,6 +535,13 @@ function Form(props) {
 				const values = record.submitValues;
 				reset(values);
 			}
+		},
+		onLayoutDecorated = (e) => {
+			if (onLayout) {
+				onLayout(e);
+			}
+
+			setContainerWidth(e.nativeEvent.layout.width);
 		};
 
 	useEffect(() => {
@@ -569,155 +596,166 @@ function Form(props) {
 		sizeProps.maxHeight = maxHeight;
 	}
 
-	const savingProps = {};
-	if (isSaving) {
-		savingProps.borderTopWidth = 2;
-		savingProps.borderTopColor = '#f00';
-	}
-
-
 	let formComponents,
-		editor;
-	if (editorType === EDITOR_TYPE__INLINE) {
-		formComponents = buildFromColumnsConfig();
-		editor = <ScrollView
-					horizontal={true}
-					flex={1}
-					bg="#fff"
-					py={1}
-					borderTopWidth={3}
-					borderBottomWidth={5}
-					borderTopColor="primary.100"
-					borderBottomColor="primary.100"
-				>{formComponents}</ScrollView>;
-	// } else if (editorType === EDITOR_TYPE__PLAIN) {
-	// 	formComponents = buildFromItems();
-	// 	const formAncillaryComponents = buildAncillary();
-	// 	editor = <>
-	// 				<Column p={4}>{formComponents}</Column>
-	// 				<Column pt={4}>{formAncillaryComponents}</Column>
-	// 			</>;
-	} else {
-		formComponents = buildFromItems();
-		const formAncillaryComponents = buildAncillary();
-		editor = <ScrollView _web={{ minHeight, }} width="100%" pb={1}>
-					<Column p={4}>{formComponents}</Column>
-					<Column m={2} pt={4}>{formAncillaryComponents}</Column>
-				</ScrollView>;
-	}
+		editor,
+		additionalButtons,
+		isSaveDisabled = false,
+		isSubmitDisabled = false,
+		savingProps = {};
 
-	let editorModeF;
-	switch(editorMode) {
-		case EDITOR_MODE__VIEW:
-			editorModeF = 'View';
-			break;
-		case EDITOR_MODE__ADD:
-			editorModeF = 'Add';
-			break;
-		case EDITOR_MODE__EDIT:
-			editorModeF = isMultiple ? 'Edit Multiple' : 'Edit';
-			break;
-	}
-
-	let isSaveDisabled = false,
-		isSubmitDisabled = false;
-	if (!_.isEmpty(formState.errors)) {
-		isSaveDisabled = true;
-		isSubmitDisabled = true;
-	}
-	if (_.isEmpty(formState.dirtyFields) && !record?.isRemotePhantom) {
-		isSaveDisabled = true;
-	}
-
-	if (editorType === EDITOR_TYPE__INLINE) {
-		buttonGroupProps.position = 'fixed';
-		buttonGroupProps.left = 10; // TODO: I would prefer to have this be centered, but it's a lot more complex than just making it stick to the left
-		footerProps.alignItems = 'flex-start';
-	}
-
-	const additionalButtons = buildAdditionalButtons(additionalEditButtons);
-	
-	return <Column {...sizeProps} onLayout={onLayout} ref={formRef}>
-
-				<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
-					{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
-						<Button
-							key="backBtn"
-							onPress={onBack}
-							leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
-							color="#fff"
-						>Back</Button>}
-					{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
-						<Button
-							key="viewBtn"
-							onPress={onViewMode}
-							leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
-							color="#fff"
-						>To View</Button>}
-				</Row>
-				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons) && 
-					<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
-						{additionalButtons}
-					</Row>}
-				
-				{editor}
-				
-				<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
-					{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
-						<Row flex={1} justifyContent="flex-start">
-							<Button
-								key="deleteBtn"
-								onPress={onDelete}
-								bg="warning"
-								_hover={{
-									bg: 'warningHover',
-								}}
-								color="#fff"
-							>Delete</Button>
-						</Row>}
-				
-					{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
-						return <Button
-									{...props}
-									onPress={() => handleSubmit(props.onPress, onSubmitError)(e)}
-								>{props.text}</Button>;
-					})}
-
-					{!isEditorViewOnly && <IconButton
-										key="resetBtn"
-										onPress={() => {
-											if (onReset) {
-												onReset();
-											}
-											reset();
-										}}
-										icon={<Rotate color="#fff" />}
-									/>}
-					{!isEditorViewOnly && isSingle && onCancel && <Button
-													key="cancelBtn"
-													variant="ghost"
-													onPress={onCancel}
-													color="#fff"
-												>Cancel</Button>}
-					{!isEditorViewOnly && onSave && <Button
-													key="saveBtn"
-													onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
-													isDisabled={isSaveDisabled}
-													color="#fff"
-												>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-					{onSubmit && <Button
-									key="submitBtn"
-									onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
-									isDisabled={isSubmitDisabled}
-									color="#fff"
-								>{submitBtnLabel || 'Submit'}</Button>}
+	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 		
-					{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
-													key="closeBtn"
-													onPress={onClose}
-													color="#fff"
-												>Close</Button>}
-				</Footer>
+		if (isSaving) {
+			savingProps.borderTopWidth = 2;
+			savingProps.borderTopColor = '#f00';
+		}
+
+		if (editorType === EDITOR_TYPE__INLINE) {
+			formComponents = buildFromColumnsConfig();
+			editor = <ScrollView
+						horizontal={true}
+						flex={1}
+						bg="#fff"
+						py={1}
+						borderTopWidth={3}
+						borderBottomWidth={5}
+						borderTopColor="primary.100"
+						borderBottomColor="primary.100"
+					>{formComponents}</ScrollView>;
+		// } else if (editorType === EDITOR_TYPE__PLAIN) {
+		// 	formComponents = buildFromItems();
+		// 	const formAncillaryComponents = buildAncillary();
+		// 	editor = <>
+		// 				<Column p={4}>{formComponents}</Column>
+		// 				<Column pt={4}>{formAncillaryComponents}</Column>
+		// 			</>;
+		} else {
+			formComponents = buildFromItems();
+			const formAncillaryComponents = buildAncillary();
+			editor = <ScrollView _web={{ minHeight, }} width="100%" pb={1}>
+						{containerWidth >= CONTAINER_THRESHOLD ? <Row padding={4} justifyContent="space-between" gap={20}>{formComponents}</Row> : null}
+						{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
+						<Column m={2} pt={4}>{formAncillaryComponents}</Column>
+					</ScrollView>;
+		}
+
+		let editorModeF;
+		switch(editorMode) {
+			case EDITOR_MODE__VIEW:
+				editorModeF = 'View';
+				break;
+			case EDITOR_MODE__ADD:
+				editorModeF = 'Add';
+				break;
+			case EDITOR_MODE__EDIT:
+				editorModeF = isMultiple ? 'Edit Multiple' : 'Edit';
+				break;
+		}
+
+		if (!_.isEmpty(formState.errors)) {
+			isSaveDisabled = true;
+			isSubmitDisabled = true;
+		}
+		if (_.isEmpty(formState.dirtyFields) && !record?.isRemotePhantom) {
+			isSaveDisabled = true;
+		}
+
+		if (editorType === EDITOR_TYPE__INLINE) {
+			buttonGroupProps.position = 'fixed';
+			buttonGroupProps.left = 10; // TODO: I would prefer to have this be centered, but it's a lot more complex than just making it stick to the left
+			footerProps.alignItems = 'flex-start';
+		}
+
+		additionalButtons = buildAdditionalButtons(additionalEditButtons);
+	}
+	
+	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
+				{containerWidth && <>
+					<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
+						{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
+							<Button
+								key="backBtn"
+								onPress={onBack}
+								leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
+								color="#fff"
+							>Back</Button>}
+						{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
+							<Button
+								key="viewBtn"
+								onPress={onViewMode}
+								leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
+								color="#fff"
+							>To View</Button>}
+					</Row>
+					{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons) && 
+						<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+							{additionalButtons}
+						</Row>}
+					
+					{editor}
+					
+					<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
+						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
+							<Row flex={1} justifyContent="flex-start">
+								<Button
+									key="deleteBtn"
+									onPress={onDelete}
+									bg="warning"
+									_hover={{
+										bg: 'warningHover',
+									}}
+									color="#fff"
+								>Delete</Button>
+							</Row>}
+
+						{!isEditorViewOnly && 
+							<IconButton
+								key="resetBtn"
+								onPress={() => {
+									if (onReset) {
+										onReset();
+									}
+									reset();
+								}}
+								icon={<Rotate color="#fff" />}
+							/>}
+						{!isEditorViewOnly && isSingle && onCancel &&
+							<Button
+								key="cancelBtn"
+								variant="ghost"
+								onPress={onCancel}
+								color="#fff"
+							>Cancel</Button>}
+						{!isEditorViewOnly && onSave && 
+							<Button
+								key="saveBtn"
+								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+								isDisabled={isSaveDisabled}
+								color="#fff"
+							>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
+						{onSubmit && 
+							<Button
+								key="submitBtn"
+								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
+								isDisabled={isSubmitDisabled}
+								color="#fff"
+							>{submitBtnLabel || 'Submit'}</Button>}
+			
+						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && 
+							<Button
+								key="closeBtn"
+								onPress={onClose}
+								color="#fff"
+							>Close</Button>}
+					
+						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+							return <Button
+										{...props}
+										onPress={() => handleSubmit(props.onPress, onSubmitError)(e)}
+									>{props.text}</Button>;
+						})}
+					</Footer>
+				</>}
 			</Column>;
 }
 
