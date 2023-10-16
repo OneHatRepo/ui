@@ -73,6 +73,7 @@ function GridComponent(props) {
 			},
 			flatListProps = {},
 			// enableEditors = false,
+			loadOnRender = true,
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
@@ -147,7 +148,9 @@ function GridComponent(props) {
 		forceUpdate = useForceUpdate(),
 		containerRef = useRef(),
 		gridRef = useRef(),
+		gridContainerRef = useRef(),
 		isAddingRef = useRef(),
+		[isRendered, setIsRendered] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -620,30 +623,46 @@ function GridComponent(props) {
 			setDragRowSlot(null);
 		},
 		onLayout = (e) => {
-			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current || isAddingRef.current) {
-				return;
+
+			let doLoad = false;
+			if (!isRendered) {
+				setIsRendered(true);
+				if (loadOnRender && Repository && !Repository.isLoaded && !Repository.isLoading && !Repository.isAutoLoad) {
+					doLoad = true; // first time in onLayout only!
+				}
 			}
 
-			const
-				gr = gridRef.current,
-				scrollableNode = gr.getScrollableNode(),
-				scrollableNodeBoundingBox = scrollableNode.getBoundingClientRect(),
-				scrollableNodeHeight = scrollableNodeBoundingBox.height,
-				firstRow = scrollableNode.children[0].children[showHeaders ? 1: 0];
-
-			if (!firstRow) {
-				return;
+			const adjustPageSizeToHeight = !!(disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current || isAddingRef.current);
+			if (adjustPageSizeToHeight) {
+				// this currently only works on web
+				const
+					gr = gridContainerRef.current,
+					// scrollableNode = gr.getScrollableNode(),
+					// scrollableNodeBoundingBox = scrollableNode.getBoundingClientRect(),
+					// scrollableNodeHeight = scrollableNodeBoundingBox.height,
+					// firstRow = scrollableNode.children[0].children[showHeaders ? 1: 0];
+					height = gr.getBoundingClientRect().height;
+// IDEALLY, we want the grid to load right away with appropriate limits.
+// Currently, it's been loading once, then doing layout then loading again with correct limit.
+// How do we get the right limit before it renders??
+// Estimate based on (container height -header -footer) / avg height? This won't work for rows that exceed the avg height.
+// Maybe we do that avg at first, and if it exceeds, then we do another query to lose the later ones, which are hidden anyway.
+// It'll only do that once. Better to hide the offscreen ones, than to show gap at first, and later fill it
+				// if (firstRow) { // TODO: this assumes there is a row there already, which is wrong!
+				// 	const
+				// 		rowHeight = firstRow.getBoundingClientRect().height,
+				// 		rowsPerContainer = Math.floor(scrollableNodeHeight / rowHeight);
+				// 	let pageSize = rowsPerContainer;
+				// 	if (showHeaders) {
+				// 		pageSize--;
+				// 	}
+				// 	if (pageSize !== Repository.pageSize) {
+				// 		Repository.setPageSize(pageSize);
+				// 	}
+				// }
 			}
-
-			const
-				rowHeight = firstRow.getBoundingClientRect().height,
-				rowsPerContainer = Math.floor(scrollableNodeHeight / rowHeight);
-			let pageSize = rowsPerContainer;
-			if (showHeaders) {
-				pageSize--;
-			}
-			if (pageSize !== Repository.pageSize) {
-				Repository.setPageSize(pageSize);
+			if (doLoad) {
+				Repository.load();
 			}
 		},
 		debouncedOnLayout = useCallback(_.debounce(onLayout, 500), []);
@@ -827,7 +846,7 @@ function GridComponent(props) {
 			>
 				{topToolbar}
 
-				<Column w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+				<Column ref={gridContainerRef} w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 					if (!isDragMode && !isInlineEditorShown) {
 						deselectAll();
 					}
