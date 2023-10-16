@@ -14,7 +14,7 @@ import Form from '../Form/Form.js';
 import withComponent from '../Hoc/withComponent.js';
 import ChartLine from '../Icons/ChartLine.js';
 import Pdf from '../Icons/Pdf.js';
-// import Excel from '../Icons/Excel.js'; // TODO: make this icon
+import Excel from '../Icons/Excel.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
@@ -91,7 +91,7 @@ function Report(props) {
 		buttons.push({
 			key: 'ExcelBtn',
 			text: 'Download Excel',
-			// leftIcon: <Icon as={Excel} size="xl" color="#fff" />,
+			leftIcon: <Icon as={Excel} size="md" color="#fff" />,
 			onPress: (data) => getReport(EXCEL, data),
 			ml: 1,
 		});
@@ -100,7 +100,7 @@ function Report(props) {
 		buttons.push({
 			key: 'pdfBtn',
 			text: 'Download PDF',
-			leftIcon: <Icon as={Pdf} size="sm" color="#fff" />,
+			leftIcon: <Icon as={Pdf} size="md" color="#fff" />,
 			onPress: (data) => getReport(PDF, data),
 			ml: 1,
 		});
