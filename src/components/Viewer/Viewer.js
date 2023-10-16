@@ -21,7 +21,7 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import _ from 'lodash';
 
-const CONTAINER_THRESHOLD = 800;
+const CONTAINER_THRESHOLD = 900;
 
 function Viewer(props) {
 	const {

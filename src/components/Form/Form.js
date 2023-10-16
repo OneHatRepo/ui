@@ -40,7 +40,7 @@ import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
 
-const CONTAINER_THRESHOLD = 800;
+const CONTAINER_THRESHOLD = 900;
 
 // TODO: memoize field Components
 
@@ -752,7 +752,7 @@ function Form(props) {
 						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
 							return <Button
 										{...props}
-										onPress={() => handleSubmit(props.onPress, onSubmitError)(e)}
+										onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
 									>{props.text}</Button>;
 						})}
 					</Footer>
