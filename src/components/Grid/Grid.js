@@ -632,7 +632,7 @@ function GridComponent(props) {
 			}
 
 			let adjustPageSizeToHeight = true;
-			if (!autoAdjustPageSizeToHeight || !Repository) {
+			if (!autoAdjustPageSizeToHeight || !Repository || !UiGlobals.autoAdjustPageSizeToHeight) {
 				adjustPageSizeToHeight = false;
 			}
 			if (adjustPageSizeToHeight) {
