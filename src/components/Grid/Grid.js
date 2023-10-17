@@ -820,8 +820,8 @@ function GridComponent(props) {
 	let listFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			let disablePageSize = autoAdjustPageSizeToHeight;
-			if (!UiGlobals.autoAdjustPageSizeToHeight) {
+			let disablePageSize = autoAdjustPageSizeToHeight; // component setting
+			if (!_.isNil(UiGlobals.autoAdjustPageSizeToHeight) && !UiGlobals.autoAdjustPageSizeToHeight) { // global setting
 				disablePageSize = false;
 			}
 			listFooterComponent = <PaginationToolbar Repository={Repository} self={self} toolbarItems={footerToolbarItemComponents} disablePageSize={disablePageSize} />;
