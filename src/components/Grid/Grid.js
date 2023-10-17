@@ -77,7 +77,7 @@ function GridComponent(props) {
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
-			disableAdjustingPageSizeToHeight = false,
+			autoAdjustPageSizeToHeight = true,
 			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
 			showRowExpander = false,
@@ -632,7 +632,7 @@ function GridComponent(props) {
 			}
 
 			let adjustPageSizeToHeight = true;
-			if (disableAdjustingPageSizeToHeight || !Repository) {
+			if (!autoAdjustPageSizeToHeight || !Repository) {
 				adjustPageSizeToHeight = false;
 			}
 			if (adjustPageSizeToHeight) {
@@ -820,7 +820,7 @@ function GridComponent(props) {
 	let listFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			listFooterComponent = <PaginationToolbar Repository={Repository} self={self} toolbarItems={footerToolbarItemComponents} disablePageSize={!disableAdjustingPageSizeToHeight} />;
+			listFooterComponent = <PaginationToolbar Repository={Repository} self={self} toolbarItems={footerToolbarItemComponents} disablePageSize={autoAdjustPageSizeToHeight} />;
 		} else if (footerToolbarItemComponents.length) {
 			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 		}

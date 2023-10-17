@@ -516,7 +516,7 @@ export function ComboComponent(props) {
 													};
 												}}
 												allowToggleSelection={true}
-												disableAdjustingPageSizeToHeight={true}
+												autoAdjustPageSizeToHeight={false}
 												{...props}
 												h={styles.FORM_COMBO_MENU_HEIGHT + 'px'}
 												disablePresetButtons={!isEditor}

@@ -253,7 +253,7 @@ export default function withFilters(WrappedComponent) {
 					const
 						filterProps = {
 							mx: 1,
-							disableAdjustingPageSizeToHeight: true,
+							autoAdjustPageSizeToHeight: false,
 							pageSize: 20,
 							uniqueRepository: true,
 						},
