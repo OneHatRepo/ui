@@ -150,7 +150,7 @@ function GridComponent(props) {
 		gridRef = useRef(),
 		gridContainerRef = useRef(),
 		isAddingRef = useRef(),
-		[isRendered, setIsRendered] = useState(false),
+		isRenderedRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -622,50 +622,49 @@ function GridComponent(props) {
 			}
 			setDragRowSlot(null);
 		},
-		onLayout = (e) => {
-
+		adjustPageSizeToHeight = (e) => {
 			let doLoad = false;
-			if (!isRendered) {
-				setIsRendered(true);
+			if (!isRenderedRef.current) {
+				isRenderedRef.current = true;
 				if (loadOnRender && Repository && !Repository.isLoaded && !Repository.isLoading && !Repository.isAutoLoad) {
 					doLoad = true; // first time in onLayout only!
 				}
 			}
 
-			const adjustPageSizeToHeight = !!(disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current || isAddingRef.current);
+			let adjustPageSizeToHeight = true;
+			if (disableAdjustingPageSizeToHeight || !Repository) {
+				adjustPageSizeToHeight = false;
+			}
 			if (adjustPageSizeToHeight) {
-				// this currently only works on web
 				const
-					gr = gridContainerRef.current,
-					// scrollableNode = gr.getScrollableNode(),
-					// scrollableNodeBoundingBox = scrollableNode.getBoundingClientRect(),
-					// scrollableNodeHeight = scrollableNodeBoundingBox.height,
-					// firstRow = scrollableNode.children[0].children[showHeaders ? 1: 0];
-					height = gr.getBoundingClientRect().height;
-// IDEALLY, we want the grid to load right away with appropriate limits.
-// Currently, it's been loading once, then doing layout then loading again with correct limit.
-// How do we get the right limit before it renders??
-// Estimate based on (container height -header -footer) / avg height? This won't work for rows that exceed the avg height.
-// Maybe we do that avg at first, and if it exceeds, then we do another query to lose the later ones, which are hidden anyway.
-// It'll only do that once. Better to hide the offscreen ones, than to show gap at first, and later fill it
-				// if (firstRow) { // TODO: this assumes there is a row there already, which is wrong!
-				// 	const
-				// 		rowHeight = firstRow.getBoundingClientRect().height,
-				// 		rowsPerContainer = Math.floor(scrollableNodeHeight / rowHeight);
-				// 	let pageSize = rowsPerContainer;
-				// 	if (showHeaders) {
-				// 		pageSize--;
-				// 	}
-				// 	if (pageSize !== Repository.pageSize) {
-				// 		Repository.setPageSize(pageSize);
-				// 	}
-				// }
+					containerHeight = e.nativeEvent.layout.height,
+					headerHeight = showHeaders ? 50 : 0,
+					footerHeight = !disablePagination ? 50 : 0,
+					height = containerHeight - headerHeight - footerHeight,
+					rowHeight = 48,
+					rowsPerContainer = Math.floor(height / rowHeight);
+				let pageSize = rowsPerContainer;
+				if (showHeaders) {
+					pageSize--;
+				}
+				if (pageSize !== Repository.pageSize) {
+					Repository.setPageSize(pageSize);
+				}
 			}
 			if (doLoad) {
 				Repository.load();
 			}
 		},
-		debouncedOnLayout = useCallback(_.debounce(onLayout, 500), []);
+		debouncedAdjustPageSizeToHeight = useCallback(_.debounce(adjustPageSizeToHeight, 200), []),
+		onLayout = (e) => {
+			if (!isRenderedRef.current) {
+				// first time, call this immediately
+				adjustPageSizeToHeight(e);
+			} else {
+				// debounce all subsequent calls
+				debouncedAdjustPageSizeToHeight(e);
+			}
+		};
 
 	useEffect(() => {
 
@@ -841,7 +840,7 @@ function GridComponent(props) {
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
 				borderColor={styles.GRID_BORDER_COLOR}
-				onLayout={debouncedOnLayout}
+				onLayout={onLayout}
 				{...sizeProps}
 			>
 				{topToolbar}
