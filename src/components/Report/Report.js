@@ -16,6 +16,7 @@ import ChartLine from '../Icons/ChartLine.js';
 import Pdf from '../Icons/Pdf.js';
 import Excel from '../Icons/Excel.js';
 import UiGlobals from '../../UiGlobals.js';
+import qs from 'qs';
 import _ from 'lodash';
 
 const
@@ -40,6 +41,14 @@ function Report(props) {
 		styles = UiGlobals.styles,
 		url = UiGlobals.baseURL + 'Reports/getReport',
 		buttons = [],
+		downloadInBackground = (data) => {
+			const a = document.createElement('A');
+			a.href = url + '?' + qs.stringify(data);
+			a.download = true;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		},
 		downloadWithFetch = (data) => {
 			const options = {
 				method: 'POST',
@@ -66,10 +75,14 @@ function Report(props) {
 					showReportHeaders,
 					// download_token, // not sure this is needed
 					...data,
-				},
-				closeWindow = reportType === EXCEL;
+				};
 
-			downloadWithFetch(params, closeWindow);
+			if (reportType === EXCEL) {
+				downloadInBackground(params);
+			} else {
+				// opens a new window
+				downloadWithFetch(params);
+			}
 		};
 
 	const propsIcon = props._icon || {};
