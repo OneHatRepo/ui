@@ -313,6 +313,7 @@ export default function withSelection(WrappedComponent) {
 		}, []);
 
 		if (self) {
+			self.selection = localSelection;
 			self.setSelection = setSelection;
 			self.selectNext = selectNext;
 			self.selectPrev = selectPrev;

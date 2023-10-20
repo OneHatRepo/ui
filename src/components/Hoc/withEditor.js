@@ -30,6 +30,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return 'record' + (selection[0].displayValue ? ' "' + selection[0].displayValue + '"' : '') + '?';
 				},
 				record,
+				onChange,
 
 				// withComponent
 				self,
@@ -123,6 +124,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (getListeners().onAfterAdd) {
 					await getListeners().onAfterAdd(entity);
 				}
+				if (onChange) {
+					onChange();
+				}
 			},
 			onEdit = async () => {
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
@@ -205,6 +209,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setSelection([]);
 				if (cb) {
 					cb();
+				}
+				if (onChange) {
+					onChange();
 				}
 			},
 			onView = async () => {
@@ -311,6 +318,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				
 				if (getListeners().onAfterEdit) {
 					await getListeners().onAfterEdit(what);
+				}
+				if (onChange) {
+					onChange();
 				}
 
 				return true;
