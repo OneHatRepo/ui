@@ -13,6 +13,7 @@ export default function SquareButton(props) {
 			activeColor,
 			invertColorWhenActive = false,
 			disableInteractions = false,
+			fontSize = '20px',
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -54,7 +55,7 @@ export default function SquareButton(props) {
 				// _pressed={pressedProps}
 			>
 				<Icon as={icon} color={color} size="xl" />
-				<Text fontSize={20} color={color}>{text}</Text>
+				<Text fontSize={fontSize} color={color}>{text}</Text>
 			</Pressable>;
 }
 
