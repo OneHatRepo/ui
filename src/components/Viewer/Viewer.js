@@ -222,20 +222,20 @@ function Viewer(props) {
 
 	return <Column flex={flex} {...props} onLayout={onLayout}>
 				{containerWidth && <>
-					{onEditMode && <Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
-										<Button
-											key="editBtn"
-											onPress={onEditMode}
-											leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
-											color="#fff"
-										>To Edit</Button>
-									</Row>}
-					{!_.isEmpty(additionalButtons) && 
-						<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
-							{additionalButtons}
-						</Row>}
 
 					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
+						{onEditMode && <Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
+											<Button
+												key="editBtn"
+												onPress={onEditMode}
+												leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+												color="#fff"
+											>To Edit</Button>
+										</Row>}
+						{!_.isEmpty(additionalButtons) && 
+							<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+								{additionalButtons}
+							</Row>}
 						<Column>
 							{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{viewerComponents}</Row> : null}
 							{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{viewerComponents}</Column> : null}

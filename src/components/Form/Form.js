@@ -601,6 +601,7 @@ function Form(props) {
 		sizeProps.maxHeight = maxHeight;
 	}
 
+	const formButtons = [];
 	let formComponents,
 		editor,
 		additionalButtons,
@@ -616,17 +617,7 @@ function Form(props) {
 		}
 
 		if (editorType === EDITOR_TYPE__INLINE) {
-			formComponents = buildFromColumnsConfig();
-			editor = <ScrollView
-						horizontal={true}
-						flex={1}
-						bg="#fff"
-						py={1}
-						borderTopWidth={3}
-						borderBottomWidth={5}
-						borderTopColor="primary.100"
-						borderBottomColor="primary.100"
-					>{formComponents}</ScrollView>;
+			editor = buildFromColumnsConfig();
 		// } else if (editorType === EDITOR_TYPE__PLAIN) {
 		// 	formComponents = buildFromItems();
 		// 	const formAncillaryComponents = buildAncillary();
@@ -637,24 +628,35 @@ function Form(props) {
 		} else {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
-			editor = <ScrollView _web={{ minHeight, }} width="100%" pb={1}>
+			editor = <>
 						{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{formComponents}</Row> : null}
 						{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
 						<Column m={2} pt={4}>{formAncillaryComponents}</Column>
-					</ScrollView>;
-		}
+					</>;
 
-		let editorModeF;
-		switch(editorMode) {
-			case EDITOR_MODE__VIEW:
-				editorModeF = 'View';
-				break;
-			case EDITOR_MODE__ADD:
-				editorModeF = 'Add';
-				break;
-			case EDITOR_MODE__EDIT:
-				editorModeF = isMultiple ? 'Edit Multiple' : 'Edit';
-				break;
+			additionalButtons = buildAdditionalButtons(additionalEditButtons);
+
+			formButtons.push(<Row key="buttonsRow" px={4} pt={4} alignItems="center" justifyContent="flex-end">
+								{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
+									<Button
+										key="backBtn"
+										onPress={onBack}
+										leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
+										color="#fff"
+									>Back</Button>}
+								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
+									<Button
+										key="viewBtn"
+										onPress={onViewMode}
+										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
+										color="#fff"
+									>To View</Button>}
+							</Row>);
+			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
+				formButtons.push(<Row key="additionalButtonsRow" p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+									{additionalButtons}
+								</Row>)
+			}
 		}
 
 		if (!_.isEmpty(formState.errors)) {
@@ -671,33 +673,27 @@ function Form(props) {
 			footerProps.alignItems = 'flex-start';
 		}
 
-		additionalButtons = buildAdditionalButtons(additionalEditButtons);
 	}
 	
 	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
 				{containerWidth && <>
-					<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
-						{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
-							<Button
-								key="backBtn"
-								onPress={onBack}
-								leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
-								color="#fff"
-							>Back</Button>}
-						{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
-							<Button
-								key="viewBtn"
-								onPress={onViewMode}
-								leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
-								color="#fff"
-							>To View</Button>}
-					</Row>
-					{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons) && 
-						<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
-							{additionalButtons}
-						</Row>}
-					
-					{editor}
+
+					{editorType === EDITOR_TYPE__INLINE &&
+						<ScrollView
+							horizontal={true}
+							flex={1}
+							bg="#fff"
+							py={1}
+							borderTopWidth={3}
+							borderBottomWidth={5}
+							borderTopColor="primary.100"
+							borderBottomColor="primary.100"
+						>{editor}</ScrollView>}
+					{editorType !== EDITOR_TYPE__INLINE &&
+						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
+							{formButtons}
+							{editor}
+						</ScrollView>}
 					
 					<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
 						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
