@@ -72,7 +72,7 @@ function ManagerScreen(props) {
 					<IconButton
 						icon={FullWidth}
 						_icon={{
-							size: '30px',
+							size: '25px',
 							color: mode === MODE_FULL ? 'primary.100' : '#000',
 						}}
 						disabled={mode === MODE_FULL}
@@ -82,7 +82,7 @@ function ManagerScreen(props) {
 					<IconButton
 						icon={SideBySide}
 						_icon={{
-							size: '30px',
+							size: '25px',
 							color: mode === MODE_SIDE ? 'primary.100' : '#000',
 						}}
 						disabled={mode === MODE_SIDE}
