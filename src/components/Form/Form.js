@@ -77,6 +77,7 @@ function Form(props) {
 			submitBtnLabel,
 			onSubmit,
 			additionalEditButtons,
+			useAdditionalEditButtons = true,
 			additionalFooterButtons,
 			
 			// sizing of outer container
@@ -290,6 +291,9 @@ function Form(props) {
 				editorTypeProps = {};
 
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
+			if (!useAdditionalEditButtons) {
+				item = _.omit(item, 'additionalEditButtons');
+			}
 			if (propertyDef?.isEditingDisabled && checkIsEditingDisabled) {
 				isEditable = false;
 			}
