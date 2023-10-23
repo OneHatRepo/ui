@@ -144,7 +144,7 @@ export default function withPdfButton(WrappedComponent) {
 				data.id = selection[0].id;
 
 				const
-					url = UiGlobals.baseURL + model + '/viewPdf?',
+					url = UiGlobals.baseURL + model + '/viewModelPdf?',
 					queryString = qs.stringify(data);
 
 				window.open(url + queryString, '_blank');
