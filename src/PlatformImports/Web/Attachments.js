@@ -16,6 +16,7 @@ import {
 	FILE_MODE_FILE,
 } from '../../Constants/File.js';
 import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
+import withAlert from '../../Components/Hoc/withAlert.js';
 import withData from '../../Components/Hoc/withData.js';
 import _ from 'lodash';
 
@@ -274,4 +275,4 @@ function withAdditionalProps(WrappedComponent) {
 	};
 }
 
-export default withAdditionalProps(withData(AttachmentsElement));
+export default withAdditionalProps(withAlert(withData(AttachmentsElement)));
