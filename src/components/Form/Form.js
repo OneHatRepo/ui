@@ -76,6 +76,7 @@ function Form(props) {
 			onViewMode,
 			submitBtnLabel,
 			onSubmit,
+			formSetup, // this fn will be executed after the form setup is complete
 			additionalEditButtons,
 			useAdditionalEditButtons = true,
 			additionalFooterButtons,
@@ -286,10 +287,14 @@ function Form(props) {
 					items,
 					onChange: onEditorChange,
 					useSelectorId = false,
+					isHidden = false,
 					...propsToPass
 				} = item,
 				editorTypeProps = {};
 
+			if (isHidden) {
+				return null;
+			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!useAdditionalEditButtons) {
 				item = _.omit(item, 'additionalEditButtons');
@@ -557,6 +562,9 @@ function Form(props) {
 		if (record !== previousRecord) {
 			setPreviousRecord(record);
 			reset(defaultValues);
+		}
+		if (formSetup) {
+			formSetup(formSetValue, formGetValues, formState)
 		}
 	}, [record]);
 
