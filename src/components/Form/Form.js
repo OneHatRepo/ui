@@ -449,9 +449,13 @@ function Form(props) {
 											/>;
 							if (error) {
 								if (editorType !== EDITOR_TYPE__INLINE) {
+									let message = error.message;
+									if (label) {
+										message = message.replace(error.ref.name, label);
+									}
 									element = <Column pt={1} flex={1}>
 												{element}
-												<Text color="#f00">{error.message}</Text>
+												<Text color="#f00">{message}</Text>
 											</Column>;
 								} else {
 									debugger;
