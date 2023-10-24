@@ -37,6 +37,7 @@ export function DateElement(props) {
 			mode = DATE,
 			tooltip = 'Choose a date.',
 			tooltipPlacement = 'bottom',
+			isDisabled = false,
 		} = props,
 		styles = UiGlobals.styles,
 		Datetime = getComponentFromType('Datetime'),
@@ -235,6 +236,7 @@ export function DateElement(props) {
 						onBlur={onTriggerBlur}
 						h={10}
 						w={10}
+						isDisabled={isDisabled}
 						borderTopLeftRadius={6}
 						borderBottomLeftRadius={6}
 						borderTopRightRadius={0}
@@ -266,6 +268,7 @@ export function DateElement(props) {
 						_focus={{
 							bg: styles.FORM_DATE_INPUT_FOCUS_BG,
 						}}
+						isDisabled={isDisabled}
 						numberOfLines={1}
 						ellipsizeMode="head"
 						onLayout={(e) => {
