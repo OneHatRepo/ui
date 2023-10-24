@@ -515,7 +515,6 @@ export function ComboComponent(props) {
 														w: '100%',
 													};
 												}}
-												allowToggleSelection={true}
 												autoAdjustPageSizeToHeight={false}
 												{...props}
 												h={styles.FORM_COMBO_MENU_HEIGHT + 'px'}
