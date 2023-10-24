@@ -40,12 +40,16 @@ function AttachmentsElement(props) {
 			maxFiles = null,
 			disabled = false,
 			clickable = true,
+			confirmBeforeDelete = false,
 
 			// parentContainer
 			selectorSelected,
 
 			// withData
 			Repository,
+
+			// withAlert
+			confirm,
 
 		} = props,
 		styles = UiGlobals.styles,
@@ -113,6 +117,13 @@ function AttachmentsElement(props) {
 			}
 		},
 		onFileDelete = (id) => {
+			if (confirmBeforeDelete) {
+				confirm('Are you sure you want to delete?', () => doDelete(id));
+			} else {
+				doDelete(id);
+			}
+		},
+		doDelete = (id) => {
 			Repository.deleteById(id);
 		};
 
