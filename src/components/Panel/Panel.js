@@ -38,8 +38,7 @@ function Panel(props) {
 			title = props.model ? UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))) : '',
 			showHeader = true,
 			header = null,
-			isClosable = false,
-			onClose = emptyFn,
+			onClose,
 			isCollapsible = true,
 			isCollapsed = false,
 			setIsCollapsed,
@@ -87,7 +86,6 @@ function Panel(props) {
 	if (showHeader && title) {
 		headerComponent = <Header
 								title={title + titleSuffix}
-								isClosable={isClosable}
 								onClose={onClose}
 								isCollapsible={isCollapsible}
 								isCollapsed={isCollapsed}

@@ -27,8 +27,7 @@ export default function Header(props) {
 	const {
 			testID = 'Header',
 			title = '',
-			isClosable = true,
-			onClose = emptyFn,
+			onClose,
 			isCollapsible = true,
 			collapseDirection = VERTICAL,
 			isCollapsed = false,
@@ -38,13 +37,15 @@ export default function Header(props) {
 
 	let closeBtn = null,
 		collapseBtn = null;
-	if (isClosable) {
+	if (onClose) {
 		closeBtn = <IconButton
 						icon={<Icon as={Xmark} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.PANEL_HEADER_ICON_COLOR} />}
 						onPress={onClose}
 						testID="closeBtn"
 						alignSelf="center"
-						mr={1}
+						mr={3}
+						borderWidth={1}
+						borderColor="trueGray.400"
 					/>;
 	}
 	if (isCollapsible) {
