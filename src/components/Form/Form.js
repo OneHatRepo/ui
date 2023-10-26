@@ -482,7 +482,7 @@ function Form(props) {
 									labelProps.w = defaults.labelWidth;
 								}
 								let requiredIndicator = null;
-								if (propertyDef.validator?.spec && !propertyDef.validator.spec.optional) {
+								if (propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) {
 									requiredIndicator = <Text color="#f00" pr={1}>*</Text>;
 								}
 								element = <Row w="100%" py={1}>
