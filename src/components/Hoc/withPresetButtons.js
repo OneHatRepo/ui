@@ -32,8 +32,8 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 
 		const {
 				// extract and pass
-				contextMenuItems,
-				additionalToolbarButtons,
+				contextMenuItems = [],
+				additionalToolbarButtons = [],
 				onChangeColumnsConfig,
 				verifyCanEdit,
 				verifyCanDelete,
@@ -291,26 +291,18 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 		if (!isReady) {
 			return null;
 		}
-	
-		const
-			contextMenuItemsToPass = [
-				...localContextMenuItems,
-			],
-			additionalToolbarButtonsToPass = [
-				...localAdditionalToolbarButtons,
-			];
-		if (contextMenuItems) {
-			contextMenuItemsToPass.concat(contextMenuItems);
-		}
-		if (additionalToolbarButtons) {
-			additionalToolbarButtonsToPass.concat(additionalToolbarButtons);
-		}
 
 		return <WrappedComponent
 					{...propsToPass}
 					disablePresetButtons={false}
-					contextMenuItems={contextMenuItemsToPass}
-					additionalToolbarButtons={additionalToolbarButtonsToPass}
+					contextMenuItems={[
+						...contextMenuItems,
+						...localContextMenuItems,
+					]}
+					additionalToolbarButtons={[
+						...additionalToolbarButtons,
+						...localAdditionalToolbarButtons,
+					]}
 					onChangeColumnsConfig={onChangeColumnsConfigDecorator}
 				/>;
 	};
