@@ -4,15 +4,13 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import {
-	SELECTION_MODE_MULTI,
-} from '../../../../Constants/Selection.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import Xmark from '../../../Icons/Xmark.js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
+import _ from 'lodash';
 
 
 function ValueBox(props) {
@@ -78,14 +76,15 @@ function TagComponent(props) {
 		});
 
 	return <Column w="100%" flex={1}>
-				<Row
-					w="100%"
-					borderWidth={1}
-					borderColor="trueGray.800"
-					borderRightRadius="md"
-					p={1}
-					mb={1}
-				>{valueBoxes}</Row>
+				{!_.isEmpty(valueBoxes) && 
+					<Row
+						w="100%"
+						borderWidth={1}
+						borderColor="trueGray.800"
+						borderRightRadius="md"
+						p={1}
+						mb={1}
+					>{valueBoxes}</Row>}
 				<Combo
 					{...props}
 					disableWithValue={true}
@@ -112,9 +111,7 @@ export const Tag = withAdditionalProps(
 						withComponent(
 							withData(
 								withValue(
-									withSelection(
-										TagComponent
-									)
+									TagComponent
 								)
 							)
 						)
