@@ -475,14 +475,18 @@ function Form(props) {
 												{buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState })}
 											</Row>;
 							}
-
+								
 							if (label && editorType !== EDITOR_TYPE__INLINE) {
 								const labelProps = {};
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
 								}
+								let requiredIndicator = null;
+								if (propertyDef.validator?.spec && !propertyDef.validator.spec.optional) {
+									requiredIndicator = <Text color="#f00" pr={1}>*</Text>;
+								}
 								element = <Row w="100%" py={1}>
-												<Label {...labelProps}>{label}</Label>
+												<Label {...labelProps}>{requiredIndicator}{label}</Label>
 												{element}
 											</Row>;
 							}
@@ -530,7 +534,6 @@ function Form(props) {
 			return components;
 		},
 		onSubmitError = (errors, e) => {
-			debugger;
 			if (editorType === EDITOR_TYPE__INLINE) {
 				alert(errors.message);
 			}
