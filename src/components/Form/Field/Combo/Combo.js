@@ -51,6 +51,7 @@ export function ComboComponent(props) {
 			displayIx,
 
 			// withSelection
+			disableWithSelection,
 			selection,
 			setSelection,
 			selectionMode,
@@ -186,7 +187,9 @@ export function ComboComponent(props) {
 
 			// If user focused on the trigger and text is blank, clear the selection and close the menu
 			if ((triggerRef.current === relatedTarget || triggerRef.current.contains(relatedTarget)) && (_.isEmpty(textValue) || _.isNil(textValue))) {
-				setSelection([]); // delete current selection
+				if (!disableWithSelection) {
+					setSelection([]); // delete current selection
+				}
 				hideMenu();
 				return;
 			}
@@ -209,18 +212,28 @@ export function ComboComponent(props) {
 				hideMenu();
 			}
 			if (_.isEmpty(textValue) || _.isNil(textValue)) {
-				setSelection([]); // delete current selection
+
+				if (!disableWithSelection) {
+					setSelection([]); // delete current selection
+				}
 
 			} else if (getIsManuallyEnteringText()) {
 				if (forceSelection) {
-					setSelection([]); // delete current selection
+					if (!disableWithSelection) {
+						setSelection([]); // delete current selection
+					} else {
+						setValue(textValue);
+					}
 					hideMenu();
 				} else {
 					setValue(textValue);
 				}
 			}
-			if (_.isEmpty(selection)) {
-				setTextValue('');
+			
+			if (!disableWithSelection) {
+				if (_.isEmpty(selection)) {
+					setTextValue('');
+				}
 			}
 		},
 		onInputClick = (e) => {
@@ -245,8 +258,10 @@ export function ComboComponent(props) {
 					relatedTarget
 				} = e;
 			
-			if (_.isEmpty(textValue) || _.isNil(textValue)) {
-				setSelection([]); // delete current selection
+			if (!disableWithSelection) {
+				if (_.isEmpty(textValue) || _.isNil(textValue)) {
+					setSelection([]); // delete current selection
+				}
 			}
 
 			if (!isMenuShown) {
@@ -301,13 +316,15 @@ export function ComboComponent(props) {
 				}
 
 				setSavedSearch(value);
-				const numResults = Repository.entities.length;
-				if (!numResults) {
-					setSelection([]);
-				} else if (numResults === 1) {
-					const selection = Repository.entities[0];
-					setSelection([selection]);
-					setSavedSearch(null);
+				if (!disableWithSelection) {
+					const numResults = Repository.entities.length;
+					if (!numResults) {
+						setSelection([]);
+					} else if (numResults === 1) {
+						const selection = Repository.entities[0];
+						setSelection([selection]);
+						setSavedSearch(null);
+					}
 				}
 			
 			} else {
@@ -324,18 +341,18 @@ export function ComboComponent(props) {
 						newTextValue = getDisplayValuesFromSelection(newSelection);
 
 					setTextValue(newTextValue);
-					setSelection(newSelection);
+					if (!disableWithSelection) {
+						setSelection(newSelection);
+					}
 				} else {
 					if (value === '') { // Text field was cleared, so clear selection
-						setSelection([]);
+						if (!disableWithSelection) {
+							setSelection([]);
+						}
 					}
 				}
 			}
 		};
-
-	if (_.isUndefined(selection)) {
-		throw new Error('Combo must be used with withSelection hook!');
-	}
 
 	useEffect(() => {
 		// on render, focus the input
@@ -348,18 +365,20 @@ export function ComboComponent(props) {
 
 	}, [isRendered]);
 
-	useEffect(() => {
-		if (getIsManuallyEnteringText() && getSavedSearch()) {
-			return
-		}
+	if (!disableWithSelection) {
+		useEffect(() => {
+			if (getIsManuallyEnteringText() && getSavedSearch()) {
+				return
+			}
 
-		// Adjust text input to match selection
-		let localTextValue = getDisplayValuesFromSelection(selection);
-		if (!_.isEqual(localTextValue, textValue)) {
-			setTextValue(localTextValue);
-		}
-		setIsManuallyEnteringText(false);
-	}, [selection]);
+			// Adjust text input to match selection
+			let localTextValue = getDisplayValuesFromSelection(selection);
+			if (!_.isEqual(localTextValue, textValue)) {
+				setTextValue(localTextValue);
+			}
+			setIsManuallyEnteringText(false);
+		}, [selection]);
+	}
 
 
 	const refProps = {};

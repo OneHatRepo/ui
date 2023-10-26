@@ -71,7 +71,9 @@ export default function GridHeaderRow(props) {
 			Repository.sort(currentSortField, isCurrentSortDirectionAsc ? SORT_ASCENDING : SORT_DESCENDING, sortFn);
 
 			// clear the selection
-			setSelection([]);
+			if (setSelection) {
+				setSelection([]);
+			}
 		},
 		onHeaderMouseEnter = (e, ix) => {
 			if (isDragging) {

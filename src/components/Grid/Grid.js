@@ -266,7 +266,7 @@ function GridComponent(props) {
 				} = row,
 				isHeaderRow = row.item.id === 'headerRow',
 				rowProps = getRowProps && !isHeaderRow ? getRowProps(item) : {},
-				isSelected = !isHeaderRow && isInSelection(item);
+				isSelected = !isHeaderRow && !disableWithSelection && isInSelection(item);
 
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
@@ -307,7 +307,9 @@ function GridComponent(props) {
 							
 							// context menu
 							const selection = [item];
-							setSelection(selection);
+							if (!disableWithSelection) {
+								setSelection(selection);
+							}
 							if (onEditorRowClick) { // e.g. inline editor
 								onEditorRowClick(item, index, e);
 							}
@@ -770,7 +772,9 @@ function GridComponent(props) {
 
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
-		Repository.ons(['changePage', 'changePageSize',], deselectAll);
+		if (!disableWithSelection) {
+			Repository.ons(['changePage', 'changePageSize',], deselectAll);
+		}
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
@@ -779,7 +783,9 @@ function GridComponent(props) {
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
-			Repository.offs(['changePage', 'changePageSize',], deselectAll);
+			if (!disableWithSelection) {
+				Repository.offs(['changePage', 'changePageSize',], deselectAll);
+			}
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
