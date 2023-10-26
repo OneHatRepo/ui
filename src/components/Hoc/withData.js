@@ -11,6 +11,11 @@ import _ from 'lodash';
 
 export default function withData(WrappedComponent) {
 	return (props) => {
+
+		if (props.disableWithData) {
+			return <WrappedComponent {...props} />;
+		}
+		
 		const
 			{
 				// For @onehat/data repositories
@@ -102,6 +107,7 @@ export default function withData(WrappedComponent) {
 
 		return <WrappedComponent
 					{...propsToPass}
+					disableWithData={false}
 					Repository={LocalRepository}
 					model={model}
 					data={data}

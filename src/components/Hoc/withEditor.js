@@ -12,6 +12,10 @@ import _ from 'lodash';
 export default function withEditor(WrappedComponent, isTree = false) {
 	return (props) => {
 
+		if (props.disableWithEditor) {
+			return <WrappedComponent {...props} />;
+		}
+
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
 				userCanEdit = true,
@@ -411,6 +415,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		return <WrappedComponent
 					{...props}
+					disableWithEditor={false}
 					currentRecord={currentRecord}
 					setCurrentRecord={setCurrentRecord}
 					isEditorShown={isEditorShown}

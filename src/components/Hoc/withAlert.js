@@ -20,6 +20,11 @@ import _ from 'lodash';
 
 export default function withAlert(WrappedComponent) {
 	return (props) => {
+
+		if (props.disableWithAlert) {
+			return <WrappedComponent {...props} />;
+		}
+
 		const
 			[isAlertShown, setIsAlertShown] = useState(false),
 			[title, setTitle] = useState(''),
@@ -146,6 +151,7 @@ export default function withAlert(WrappedComponent) {
 		return <>
 					<WrappedComponent
 						{...props}
+						disableWithAlert={false}
 						alert={onAlert}
 						confirm={onConfirm}
 						hideAlert={hideAlert}

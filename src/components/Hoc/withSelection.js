@@ -11,6 +11,10 @@ import _ from 'lodash';
 export default function withSelection(WrappedComponent) {
 	return (props) => {
 
+		if (props.disableWithSelection) {
+			return <WrappedComponent {...props} />;
+		}
+
 		if (props.setSelection) {
 			// bypass everything, since we're already using withSelection() in hierarchy.
 			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
@@ -352,6 +356,7 @@ export default function withSelection(WrappedComponent) {
 		
 		return <WrappedComponent
 					{...props}
+					disableWithSelection={false}
 					selection={localSelection}
 					setSelection={setSelection}
 					selectionMode={selectionMode}

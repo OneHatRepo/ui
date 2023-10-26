@@ -9,6 +9,10 @@ import _ from 'lodash';
 export default function withValue(WrappedComponent) {
 	return (props) => {
 
+		if (props.disableWithValue) {
+			return <WrappedComponent {...props} />;
+		}
+
 		if (props.setValue) {
 			// bypass everything, since we're already using withValue() in hierarchy.
 			// For example, Combo has withValue(), and intenally it uses Input which also has withValue(),
@@ -164,6 +168,7 @@ export default function withValue(WrappedComponent) {
 
 		return <WrappedComponent
 					{...props}
+					disableWithValue={false}
 					value={convertedValue}
 					setValue={setValue}
 					onChangeSelection={onChangeSelection}

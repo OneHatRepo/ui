@@ -308,6 +308,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 
 		return <WrappedComponent
 					{...propsToPass}
+					disablePresetButtons={false}
 					contextMenuItems={contextMenuItemsToPass}
 					additionalToolbarButtons={additionalToolbarButtonsToPass}
 					onChangeColumnsConfig={onChangeColumnsConfigDecorator}

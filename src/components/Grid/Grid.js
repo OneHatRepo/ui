@@ -72,6 +72,7 @@ function GridComponent(props) {
 				};
 			},
 			flatListProps = {},
+			onRowPress,
 			// enableEditors = false,
 			loadOnRender = true,
 			pullToRefresh = true,
@@ -124,6 +125,7 @@ function GridComponent(props) {
 			onChangeColumnsConfig,
 
 			// withSelection
+			disableWithSelection,
 			selection,
 			setSelection,
 			selectionMode,
@@ -165,6 +167,12 @@ function GridComponent(props) {
 		},
 		onRowClick = (item, e) => {
 			if (isInlineEditorShown) {
+				return;
+			}
+			if (onRowPress) {
+				onRowPress(item, e);
+			}
+			if (disableWithSelection) {
 				return;
 			}
 			const
