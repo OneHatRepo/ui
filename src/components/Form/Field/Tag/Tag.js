@@ -21,11 +21,12 @@ function ValueBox(props) {
 
 	return <Row
 				borderWidth={1}
-				borderColor="trueGray.800"
-				borderRightRadius="md"
-				p={1}
-				m={1}
+				borderColor="trueGray.400"
+				borderRadius="md"
+				pl={2}
+				mr={1}
 				bg="trueGray.200"
+				alignItems="center"
 			>
 				<Text color="trueGray.600">{text}</Text>
 				<IconButton
@@ -43,36 +44,39 @@ function ValueBox(props) {
 function TagComponent(props) {
 
 	const {
-			value,
-
-			// withComponent
-			self,
+			// withValue
+			value = [],
+			setValue,
 		} = props,
 		onAdd = (item, e) => {
-			// Add to value array
-
 			// make sure value doesn't already exist
+			let exists = false;
+			_.each(value, (val) => {
+				if (val.id === item.getId()) {
+					exists = true;
+					return false; // break
+				}
+			});
 
-
-
+			if (!exists) {
+				// add new value
+				const newValue = _.clone(value); // so we trigger a re-render
+				newValue.push({
+					id: item.getId(),
+					text: item.getDisplayValue(),
+				})
+				setValue(newValue);
+			}
 		},
-		onDelete = () => {
+		onDelete = (val) => {
 			// Remove from value array
-
+			const newValue = _.filter(value, (val1) => {
+				return val1.id !== val.id;
+			});			
+			setValue(newValue);
 		},
-		getValues = () => {
-			// value
-
-			return []
-		},
-		values = getValues(),
-		valueBoxes = _.map(values, (value, ix) => {
-
-			// determine text
-			const text = '';
-
-
-			return <ValueBox key={ix} text={text} onDelete={onDelete} />;
+		valueBoxes = _.map(value, (val, ix) => {
+			return <ValueBox key={ix} text={val.text} onDelete={() => onDelete(val)} />;
 		});
 
 	return <Column w="100%" flex={1}>
@@ -80,10 +84,12 @@ function TagComponent(props) {
 					<Row
 						w="100%"
 						borderWidth={1}
-						borderColor="trueGray.800"
-						borderRightRadius="md"
+						borderColor="trueGray.300"
+						borderRadius="md"
+						bg="trueGray.100"
 						p={1}
 						mb={1}
+						flexWrap="wrap"
 					>{valueBoxes}</Row>}
 				<Combo
 					{...props}
@@ -99,9 +105,8 @@ function TagComponent(props) {
 function withAdditionalProps(WrappedComponent) {
 	return (props) => {
 		return <WrappedComponent
-					valueIsAlwaysArray={true}
-					valueAsIdAndText={true}
-					valueAsStringifiedJson={true}
+					isValueAlwaysArray={true}
+					isValueAsStringifiedJson={true}
 					{...props}
 				/>;
 	};

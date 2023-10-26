@@ -25,9 +25,8 @@ export default function withValue(WrappedComponent) {
 				onChangeValue,
 				value,
 				startingValue = null,
-				valueIsAlwaysArray = false,
-				valueAsIdAndText = false,
-				valueAsStringifiedJson = false,
+				isValueAlwaysArray = false,
+				isValueAsStringifiedJson = false,
 
 				// withData
 				Repository,
@@ -50,36 +49,14 @@ export default function withValue(WrappedComponent) {
 			},
 			setValueRef = useRef((newValue) => {
 				// NOTE: We useRef so that this function stays current after renders
-				if (valueIsAlwaysArray && !_.isArray(newValue)) {
+				if (isValueAlwaysArray && !_.isArray(newValue)) {
 					newValue = _.isNil(newValue) ? [] : [newValue];
 				}
 				if (_.isArray(newValue)) {
 					// TODO: sort by the sortProperty, whatever that is, instead of just value
 					newValue.sort(natsort()); // Only sort if we're using id/text arrangement. Otherwise, keep sort order as specified in Repository.
 				}
-				if (valueAsIdAndText) {
-					if (_.isArray(newValue)) {
-						newValue = _.map(newValue, (id) => {
-							if (_.isNil(id)) {
-								return id;
-							}
-							const record = Repository.getById(id);
-							return {
-								id: record.getId(),
-								text: record.getDisplayValue(),
-							};
-						})
-					} else {
-						if (!_.isNil(id)) {
-							const record = Repository.getById(newValue);
-							newValue = {
-								id: record.getId(),
-								text: record.getDisplayValue(),
-							};
-						}
-					}
-				}
-				if (valueAsStringifiedJson) {
+				if (isValueAsStringifiedJson) {
 					newValue = JSON.stringify(newValue);
 				}
 
@@ -146,23 +123,12 @@ export default function withValue(WrappedComponent) {
 		
 		// Convert localValue to normal JS primitives for field components
 		let convertedValue = getLocalValue();
-		if (_.isString(convertedValue) && valueAsStringifiedJson && !_.isNil(convertedValue)) {
+		if (_.isString(convertedValue) && isValueAsStringifiedJson && !_.isNil(convertedValue)) {
 			convertedValue = JSON.parse(convertedValue);
 		}
-		if (valueIsAlwaysArray) {
+		if (isValueAlwaysArray) {
 			if (_.isEmpty(convertedValue) || _.isNil(convertedValue)) {
-				convertedValue = null;
-			} else if (convertedValue.length === 1) {
-				convertedValue = convertedValue[0];
-			}
-		}
-		if (valueAsIdAndText && !_.isNil(convertedValue)) {
-			if (_.isArray(convertedValue)) {
-				convertedValue = _.map(convertedValue, (value) => {
-					return value?.id;
-				});
-			} else {
-				convertedValue = convertedValue?.id;
+				convertedValue = [];
 			}
 		}
 
