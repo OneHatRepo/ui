@@ -31,7 +31,7 @@ function Editor(props) {
 	}
 
 	// Repository?.isRemotePhantomMode && selection.length === 1 && 
-	if (editorMode === EDITOR_MODE__VIEW) {
+	if (editorMode === EDITOR_MODE__VIEW || isEditorViewOnly) {
 		const record = selection[0];
 		if (record.isDestroyed) {
 			return null;
