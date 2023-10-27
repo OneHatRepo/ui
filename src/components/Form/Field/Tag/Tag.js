@@ -1,13 +1,19 @@
+import { useState, } from 'react';
 import {
 	Column,
-	Pressable,
+	Modal,
 	Row,
 	Text,
 } from 'native-base';
+import {
+	EDITOR_TYPE__WINDOWED,
+} from '@onehat/ui/src/Constants/Editor.js';
+import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import IconButton from '../../../Buttons/IconButton.js';
+import Eye from '../../../Icons/Eye.js';
 import Xmark from '../../../Icons/Xmark.js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
 import _ from 'lodash';
@@ -16,6 +22,7 @@ import _ from 'lodash';
 function ValueBox(props) {
 	const {
 			text,
+			onView,
 			onDelete,
 		} = props;
 
@@ -23,31 +30,72 @@ function ValueBox(props) {
 				borderWidth={1}
 				borderColor="trueGray.400"
 				borderRadius="md"
-				pl={2}
 				mr={1}
 				bg="trueGray.200"
 				alignItems="center"
 			>
-				<Text color="trueGray.600">{text}</Text>
 				<IconButton
 					_icon={{
-						as: Xmark,
+						as: Eye,
 						color: 'trueGray.600',
 						size: 'sm',
 					}}
-					onPress={onDelete}
+					onPress={onView}
 					h="100%"
 				/>
+				<Text color="trueGray.600">{text}</Text>
+				{onDelete &&
+					<IconButton
+						_icon={{
+							as: Xmark,
+							color: 'trueGray.600',
+							size: 'sm',
+						}}
+						onPress={onDelete}
+						h="100%"
+					/>}
 			</Row>;
 }
 
 function TagComponent(props) {
 
 	const {
+			isEditor = false,
+			isValueAlwaysArray,
+			isValueAsStringifiedJson,
+			Editor,
+
+			// parent Form
+			onChangeValue,
+
+			// withComponent
+			self,
+
 			// withValue
 			value = [],
 			setValue,
+			...propsToPass // break connection between Tag and Combo props
 		} = props,
+		[isViewerShown, setIsViewerShown] = useState(false),
+		[viewerSelection, setViewerSelection] = useState(false),
+		onViewerClose = () => setIsViewerShown(false),
+		onView = async (item, e) => {
+			const
+				id = item.id,
+				repository = propsToPass.Repository;
+			let record = repository.getById(id); // first try to get from entities in memory
+			if (!record && repository.getSingleEntityFromServer) {
+				record = repository.getSingleEntityFromServer(id); // TODO: Build this
+			}
+
+			if (!record) {
+				alert('Record could not be found!');
+				return;
+			}
+
+			setViewerSelection([record]);
+			setIsViewerShown(true);
+		},
 		onAdd = (item, e) => {
 			// make sure value doesn't already exist
 			let exists = false;
@@ -57,16 +105,18 @@ function TagComponent(props) {
 					return false; // break
 				}
 			});
-
-			if (!exists) {
-				// add new value
-				const newValue = _.clone(value); // so we trigger a re-render
-				newValue.push({
-					id: item.getId(),
-					text: item.getDisplayValue(),
-				})
-				setValue(newValue);
+			if (exists) {
+				alert('Value already exists!');
+				return;
 			}
+
+			// add new value
+			const newValue = _.clone(value); // so we trigger a re-render
+			newValue.push({
+				id: item.getId(),
+				text: item.getDisplayValue(),
+			})
+			setValue(newValue);
 		},
 		onDelete = (val) => {
 			// Remove from value array
@@ -76,29 +126,50 @@ function TagComponent(props) {
 			setValue(newValue);
 		},
 		valueBoxes = _.map(value, (val, ix) => {
-			return <ValueBox key={ix} text={val.text} onDelete={() => onDelete(val)} />;
-		});
+			return <ValueBox
+						key={ix}
+						text={val.text}
+						onView={() => onView(val)}
+						onDelete={isEditor ? () => onDelete(val) : null}
+					/>;
+		}),
+		WhichCombo = isEditor ? Combo : ComboEditor;
 
-	return <Column w="100%" flex={1}>
-				{!_.isEmpty(valueBoxes) && 
-					<Row
-						w="100%"
-						borderWidth={1}
-						borderColor="trueGray.300"
-						borderRadius="md"
-						bg="trueGray.100"
-						p={1}
-						mb={1}
-						flexWrap="wrap"
-					>{valueBoxes}</Row>}
-				<Combo
-					{...props}
-					disableWithValue={true}
-					disableWithSelection={true}
-					disableWithEditor={true}
-					onRowPress={onAdd}
-				/>
-			</Column>;
+	return <>
+				<Column w="100%" flex={1}>
+					{!_.isEmpty(valueBoxes) && 
+						<Row
+							w="100%"
+							borderWidth={1}
+							borderColor="trueGray.300"
+							borderRadius="md"
+							bg="trueGray.100"
+							p={1}
+							mb={1}
+							flexWrap="wrap"
+						>{valueBoxes}</Row>}
+					<WhichCombo
+						{...propsToPass}
+						onRowPress={onAdd}
+					/>
+				</Column>
+				{isViewerShown && 
+					<Modal
+						isOpen={true}
+						onClose={onViewerClose}
+					>
+						<Editor
+							editorType={EDITOR_TYPE__WINDOWED}
+							{...propsToPass}
+							parent={self}
+							reference="viewer"
+
+							isEditorViewOnly={true}
+							selection={viewerSelection}
+							onEditorClose={onViewerClose}
+						/>
+					</Modal>}
+			</>;
 	
 }
 
@@ -114,15 +185,37 @@ function withAdditionalProps(WrappedComponent) {
 
 export const Tag = withAdditionalProps(
 						withComponent(
-							withData(
-								withValue(
-									TagComponent
+							withAlert(
+								withData(
+									withValue(
+										TagComponent
+									)
 								)
 							)
 						)
 					);
 
-export const TagEditor = Tag;
-// export const TagEditor = withAdditionalProps(ComboEditor);
+function withAdditionalEditorProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					isEditor={true}
+					isValueAlwaysArray={true}
+					isValueAsStringifiedJson={true}
+					{...props}
+				/>;
+	};
+}
+
+export const TagEditor = withAdditionalEditorProps(
+							withComponent(
+								withAlert(
+									withData(
+										withValue(
+											TagComponent
+										)
+									)
+								)
+							)
+						);
 
 export default Tag;

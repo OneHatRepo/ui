@@ -256,11 +256,12 @@ function Viewer(props) {
 										color="#fff"
 									>Delete</Button>
 								</Row>}
-							{showCloseBtn && <Button
-												key="closeBtn"
-												onPress={onClose}
-												color="#fff"
-											>Close</Button>}
+							{onClose && showCloseBtn &&
+								<Button
+									key="closeBtn"
+									onPress={onClose}
+									color="#fff"
+								>Close</Button>}
 						</Footer>}
 
 				</>}
