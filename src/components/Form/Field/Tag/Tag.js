@@ -85,7 +85,7 @@ function TagComponent(props) {
 				repository = propsToPass.Repository;
 			let record = repository.getById(id); // first try to get from entities in memory
 			if (!record && repository.getSingleEntityFromServer) {
-				record = repository.getSingleEntityFromServer(id); // TODO: Build this
+				record = await repository.getSingleEntityFromServer(id); // TODO: Build this
 			}
 
 			if (!record) {
@@ -133,7 +133,7 @@ function TagComponent(props) {
 						onDelete={isEditor ? () => onDelete(val) : null}
 					/>;
 		}),
-		WhichCombo = isEditor ? Combo : ComboEditor;
+		WhichCombo = isEditor ? ComboEditor : Combo;
 
 	return <>
 				<Column w="100%" flex={1}>
@@ -149,7 +149,8 @@ function TagComponent(props) {
 							flexWrap="wrap"
 						>{valueBoxes}</Row>}
 					<WhichCombo
-						{...propsToPass}
+						Repository={props.Repository}
+						Editor={props.Editor}
 						onRowPress={onAdd}
 					/>
 				</Column>
