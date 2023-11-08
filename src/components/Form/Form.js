@@ -580,6 +580,9 @@ function Form(props) {
 
 		return () => {
 			Repository.offs(['changeData', 'change'], forceUpdate);
+			if (!_.isNil(editorStateRef)) {
+				editorStateRef.current = null; // clean up the editorStateRef on unmount
+			}
 		};
 	}, [Repository]);
 
@@ -689,6 +692,44 @@ function Form(props) {
 		}
 
 	}
+
+	let showDeleteBtn = false,
+		showResetBtn = false,
+		showCloseBtn = false,
+		showCancelBtn = false,
+		showSaveBtn = false,
+		showSubmitBtn = false;
+	if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
+		showDeleteBtn = true;
+	}
+	if (!isEditorViewOnly) {
+		showResetBtn = true;
+	}
+	if (editorType !== EDITOR_TYPE__SIDE) { // side editor won't show either close or cancel buttons!
+		// determine whether we should show the close or cancel button
+		if (isEditorViewOnly) {
+			showCloseBtn = true;
+		} else {
+			if (formState.isDirty) {
+				if (isSingle && onCancel) {
+					showCancelBtn = true;
+				}
+			} else {
+				if (onClose) {
+					showCloseBtn = true;
+				}
+			}
+		}
+	}
+	if (!isEditorViewOnly && onSave) {
+		showSaveBtn = true;
+	}
+	if (!!onSubmit) {
+		showSubmitBtn = true;
+	}
+	
+	
+
 	
 	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
 				{containerWidth && <>
@@ -710,8 +751,8 @@ function Form(props) {
 							{editor}
 						</ScrollView>}
 					
-					<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
-						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
+					<Footer justifyContent="flex-end" {...footerProps} space={2} {...savingProps}>
+						{showDeleteBtn &&
 							<Row flex={1} justifyContent="flex-start">
 								<Button
 									key="deleteBtn"
@@ -724,7 +765,7 @@ function Form(props) {
 								>Delete</Button>
 							</Row>}
 
-						{!isEditorViewOnly && 
+						{showResetBtn && 
 							<IconButton
 								key="resetBtn"
 								onPress={() => {
@@ -735,34 +776,38 @@ function Form(props) {
 								}}
 								icon={<Rotate color="#fff" />}
 							/>}
-						{!isEditorViewOnly && isSingle && onCancel &&
+
+						{showCancelBtn &&
 							<Button
 								key="cancelBtn"
 								variant="ghost"
 								onPress={onCancel}
 								color="#fff"
 							>Cancel</Button>}
-						{!isEditorViewOnly && onSave && 
+
+						{showCloseBtn && 
+							<Button
+								key="closeBtn"
+								variant="ghost"
+								onPress={onClose}
+								color="#fff"
+							>Close</Button>}
+
+						{showSaveBtn && 
 							<Button
 								key="saveBtn"
 								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 								isDisabled={isSaveDisabled}
 								color="#fff"
 							>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-						{onSubmit && 
+
+						{showSubmitBtn && 
 							<Button
 								key="submitBtn"
 								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
 								isDisabled={isSubmitDisabled}
 								color="#fff"
 							>{submitBtnLabel || 'Submit'}</Button>}
-			
-						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && 
-							<Button
-								key="closeBtn"
-								onPress={onClose}
-								color="#fff"
-							>Close</Button>}
 					
 						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
 							return <Button
