@@ -573,7 +573,11 @@ function Form(props) {
 
 	useEffect(() => {
 		if (!Repository) {
-			return () => {};
+			return () => {
+				if (!_.isNil(editorStateRef)) {
+					editorStateRef.current = null; // clean up the editorStateRef on unmount
+				}
+			};
 		}
 
 		Repository.ons(['changeData', 'change'], forceUpdate);
