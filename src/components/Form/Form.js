@@ -452,21 +452,21 @@ function Form(props) {
 												{...propsToPass}
 												{...editorTypeProps}
 											/>;
-							if (error) {
-								if (editorType !== EDITOR_TYPE__INLINE) {
-									let message = error.message;
+							if (editorType !== EDITOR_TYPE__INLINE) {
+								let message = null;
+								if (error) {
+									message = error.message;
 									if (label) {
 										message = message.replace(error.ref.name, label);
 									}
-									element = <Column pt={1} flex={1}>
-												{element}
-												<Text color="#f00">{message}</Text>
-											</Column>;
-								} else {
-									debugger;
-
-
 								}
+								if (message) {
+									message = <Text color="#f00">{message}</Text>;
+								}
+								element = <Column pt={1} flex={1}>
+											{element}
+											{message}
+										</Column>;
 							}
 
 							if (item.additionalEditButtons) {
@@ -573,20 +573,13 @@ function Form(props) {
 
 	useEffect(() => {
 		if (!Repository) {
-			return () => {
-				if (!_.isNil(editorStateRef)) {
-					editorStateRef.current = null; // clean up the editorStateRef on unmount
-				}
-			};
+			return () => {};
 		}
 
 		Repository.ons(['changeData', 'change'], forceUpdate);
 
 		return () => {
 			Repository.offs(['changeData', 'change'], forceUpdate);
-			if (!_.isNil(editorStateRef)) {
-				editorStateRef.current = null; // clean up the editorStateRef on unmount
-			}
 		};
 	}, [Repository]);
 
@@ -696,44 +689,6 @@ function Form(props) {
 		}
 
 	}
-
-	let showDeleteBtn = false,
-		showResetBtn = false,
-		showCloseBtn = false,
-		showCancelBtn = false,
-		showSaveBtn = false,
-		showSubmitBtn = false;
-	if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
-		showDeleteBtn = true;
-	}
-	if (!isEditorViewOnly) {
-		showResetBtn = true;
-	}
-	if (editorType !== EDITOR_TYPE__SIDE) { // side editor won't show either close or cancel buttons!
-		// determine whether we should show the close or cancel button
-		if (isEditorViewOnly) {
-			showCloseBtn = true;
-		} else {
-			if (formState.isDirty) {
-				if (isSingle && onCancel) {
-					showCancelBtn = true;
-				}
-			} else {
-				if (onClose) {
-					showCloseBtn = true;
-				}
-			}
-		}
-	}
-	if (!isEditorViewOnly && onSave) {
-		showSaveBtn = true;
-	}
-	if (!!onSubmit) {
-		showSubmitBtn = true;
-	}
-	
-	
-
 	
 	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
 				{containerWidth && <>
@@ -755,8 +710,8 @@ function Form(props) {
 							{editor}
 						</ScrollView>}
 					
-					<Footer justifyContent="flex-end" {...footerProps} space={2} {...savingProps}>
-						{showDeleteBtn &&
+					<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
+						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 							<Row flex={1} justifyContent="flex-start">
 								<Button
 									key="deleteBtn"
@@ -769,7 +724,7 @@ function Form(props) {
 								>Delete</Button>
 							</Row>}
 
-						{showResetBtn && 
+						{!isEditorViewOnly && 
 							<IconButton
 								key="resetBtn"
 								onPress={() => {
@@ -780,38 +735,34 @@ function Form(props) {
 								}}
 								icon={<Rotate color="#fff" />}
 							/>}
-
-						{showCancelBtn &&
+						{!isEditorViewOnly && isSingle && onCancel &&
 							<Button
 								key="cancelBtn"
 								variant="ghost"
 								onPress={onCancel}
 								color="#fff"
 							>Cancel</Button>}
-
-						{showCloseBtn && 
-							<Button
-								key="closeBtn"
-								variant="ghost"
-								onPress={onClose}
-								color="#fff"
-							>Close</Button>}
-
-						{showSaveBtn && 
+						{!isEditorViewOnly && onSave && 
 							<Button
 								key="saveBtn"
 								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 								isDisabled={isSaveDisabled}
 								color="#fff"
 							>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-
-						{showSubmitBtn && 
+						{onSubmit && 
 							<Button
 								key="submitBtn"
 								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
 								isDisabled={isSubmitDisabled}
 								color="#fff"
 							>{submitBtnLabel || 'Submit'}</Button>}
+			
+						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && 
+							<Button
+								key="closeBtn"
+								onPress={onClose}
+								color="#fff"
+							>Close</Button>}
 					
 						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
 							return <Button
