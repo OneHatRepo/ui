@@ -12,19 +12,15 @@ import {
 } from '../../../../Constants/UiModes.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
+import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
-import withSelection from '../../../Hoc/withSelection.js';
 import withValue from '../../../Hoc/withValue.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
 import _ from 'lodash';
-
-// Combo requires the use of HOC withSelection() whenever it's used.
-// The default export is *with* the HOC. A separate *raw* component is
-// exported which can be combined with many HOCs for various functionality.
 
 export function ComboComponent(props) {
 	const {
@@ -39,10 +35,13 @@ export function ComboComponent(props) {
 			_input = {},
 			isEditor = false,
 			isDisabled = false,
+			tooltipPlacement = 'bottom',
 
-			// withValue
-			value,
-			setValue,
+			// withComponent
+			self,
+
+			// withAlert
+			confirm,
 			
 			// withData
 			Repository,
@@ -50,32 +49,28 @@ export function ComboComponent(props) {
 			idIx,
 			displayIx,
 
-			// withSelection
-			disableWithSelection,
-			selection,
-			setSelection,
-			selectionMode,
-			selectNext,
-			selectPrev,
-			getDisplayValuesFromSelection,
-
-			tooltipPlacement = 'bottom',
+			// withValue
+			value,
+			setValue,
 		} = props,
 		styles = UiGlobals.styles,
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
-		isManuallyEnteringText = useRef(false),
+		displayValueRef = useRef(null),
 		savedSearch = useRef(null),
 		typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
-		[textValue, setTextValue] = useState(''),
+		[isReady, setIsReady] = useState(false),
+		[isSearchMode, setIsSearchMode] = useState(false),
+		[gridSelection, setGridSelection] = useState(null),
+		[textInputValue, setTextInputValue] = useState(''),
+		[newEntityDisplayValue, setNewEntityDisplayValue] = useState(null),
 		[width, setWidth] = useState(0),
-		[height, setHeight] = useState(null),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
-		showMenu = () => {
+		showMenu = async () => {
 			if (isMenuShown) {
 				return;
 			}
@@ -107,7 +102,7 @@ export function ComboComponent(props) {
 				}
 			}
 			if (Repository && !Repository.isLoaded) {
-				Repository.reload();
+				await Repository.load();
 			}
 			setIsMenuShown(true);
 		},
@@ -117,11 +112,8 @@ export function ComboComponent(props) {
 			}
 			setIsMenuShown(false);
 		},
-		getIsManuallyEnteringText = () => {
-			return isManuallyEnteringText.current;
-		},
-		setIsManuallyEnteringText = (bool) => {
-			isManuallyEnteringText.current = bool;
+		toggleMenu = () => {
+			setIsMenuShown(!isMenuShown);
 		},
 		getSavedSearch = () => {
 			return savedSearch.current;
@@ -129,8 +121,8 @@ export function ComboComponent(props) {
 		setSavedSearch = (val) => {
 			savedSearch.current = val;
 		},
-		toggleMenu = () => {
-			setIsMenuShown(!isMenuShown);
+		resetInputTextValue = () => {
+			setTextInputValue(getDisplayValue());
 		},
 		onInputKeyPress = (e, inputValue) => {
 			if (disableDirectEntry) {
@@ -138,6 +130,8 @@ export function ComboComponent(props) {
 			}
 			switch(e.key) {
 				case 'Escape':
+					setIsSearchMode(false);
+					resetInputTextValue();
 					hideMenu();
 					break;
 				case 'Enter':
@@ -145,24 +139,42 @@ export function ComboComponent(props) {
 					if (_.isEmpty(inputValue) && !_.isNull(value)) {
 						// User pressed Enter on an empty text field, but value is set to something
 						// This means the user cleared the input and pressed enter, meaning he wants to clear the value
-
-						// clear the value
 						setValue(null);
-						if (isMenuShown) {
-							hideMenu();
-						}
-					} else {
-						toggleMenu();
+						hideMenu();
+						return;
+					}
+					
+					if (_.isEmpty(gridSelection)) {
+						confirm('You have nothing selected in the dropdown menu. Clear value?', doIt, true);
+						return;
+					}
+
+					doIt();
+
+					function doIt() {
+						setValue(gridSelection?.id);
+						hideMenu();
 					}
 					break;
-				case 'ArrowDown':
-					e.preventDefault();
-					selectNext();
-					break;
-				case 'ArrowUp':
-					e.preventDefault();
-					selectPrev();
-					break;
+				// case 'ArrowDown':
+				// 	e.preventDefault();
+				// 	showMenu();
+				// 	selectNext();
+				// 	setTimeout(() => {
+				// 		if (!self.children?.dropdownGrid?.selectPrev) {
+				// 			debugger;
+				// 		}
+				// 		self.children.dropdownGrid.selectNext();
+				// 	}, 10);
+				// 	break;
+				// case 'ArrowUp':
+				// 	e.preventDefault();
+				// 	showMenu();
+				// 	selectPrev();
+				// 	setTimeout(() => {
+				// 		self.children.dropdownGrid.selectPrev();
+				// 	}, 10);
+				// 	break;
 				default:
 			}
 		},
@@ -170,140 +182,138 @@ export function ComboComponent(props) {
 			if (disableDirectEntry) {
 				return;
 			}
-			setTextValue(value);
 
-			setIsManuallyEnteringText(true);
+			if (_.isEmpty(value)) {
+				// text input is cleared
+				hideMenu();
+				return;
+			}
+
+			setTextInputValue(value);
+			showMenu();
+
 			clearTimeout(typingTimeout.current);
 			typingTimeout.current = setTimeout(() => {
 				searchForMatches(value);
 			}, 300);
 		},
-		onInputBlur = (e) => {
-			const {
-					relatedTarget
-				} = e;
-
-			setIsManuallyEnteringText(false);
-
-			// If user focused on the trigger and text is blank, clear the selection and close the menu
-			if ((triggerRef.current === relatedTarget || triggerRef.current.contains(relatedTarget)) && (_.isEmpty(textValue) || _.isNil(textValue))) {
-				if (!disableWithSelection) {
-					setSelection([]); // delete current selection
-				}
-				hideMenu();
-				return;
-			}
-			
-			// If user focused on the menu or trigger, ignore this blur
-			if (triggerRef.current === relatedTarget ||
-				triggerRef.current.contains(relatedTarget) || 
-				menuRef.current=== relatedTarget || 
-				menuRef.current?.contains(relatedTarget)) {
-				return;
-			}
-
-			if (!relatedTarget ||
-					(
-						!inputRef.current.contains(relatedTarget) && 
-						triggerRef.current !== relatedTarget && 
-						(!menuRef.current || !menuRef.current.contains(relatedTarget))
-					)
-				) {
-				hideMenu();
-			}
-			if (_.isEmpty(textValue) || _.isNil(textValue)) {
-
-				if (!disableWithSelection) {
-					setSelection([]); // delete current selection
-				}
-
-			} else if (getIsManuallyEnteringText()) {
-				if (forceSelection) {
-					if (!disableWithSelection) {
-						setSelection([]); // delete current selection
-					} else {
-						setValue(textValue);
-					}
-					hideMenu();
-				} else {
-					setValue(textValue);
-				}
-			}
-			
-			if (!disableWithSelection) {
-				if (_.isEmpty(selection)) {
-					setTextValue('');
-				}
-			}
+		onInputFocus = (e) => {
+			inputRef.current.select();
 		},
-		onInputClick = (e) => {
-			if (!isRendered) {
+		onInputBlur = (e) => {
+			if (isEventStillInComponent(e)) {
+				// ignore the blur
 				return;
 			}
-			showMenu();
+
+			setIsSearchMode(false);
+			resetInputTextValue();
+			hideMenu();
 		},
 		onTriggerPress = (e) => {
 			if (!isRendered) {
 				return;
 			}
-			if (isMenuShown) {
-				hideMenu();
-			} else {
-				showMenu();
-			}
-			inputRef.current.focus();
+			clearGridFilters();
+			showMenu();
 		},
 		onTriggerBlur = (e) => {
-			const {
-					relatedTarget
-				} = e;
-			
-			if (!disableWithSelection) {
-				if (_.isEmpty(textValue) || _.isNil(textValue)) {
-					setSelection([]); // delete current selection
-				}
-			}
-
 			if (!isMenuShown) {
 				return;
 			}
-			if (!relatedTarget || 
-					(!inputRef.current.contains(relatedTarget) && triggerRef.current !== relatedTarget && !menuRef.current.contains(relatedTarget))) {
-				hideMenu();
-			}
-		},
-		searchForMatches = async (value) => {
 
-			if (_.isEmpty(value)) {
+			if (isEventStillInComponent(e)) {
+				// ignore the blur
 				return;
 			}
 
-			let found;
+			setIsSearchMode(false);
+			resetInputTextValue();
+			hideMenu();
+		},
+		isEventStillInComponent = (e) => {
+			const {
+					relatedTarget
+				} = e;
+			return !relatedTarget ||
+					!menuRef.current ||
+					!triggerRef.current ||
+					triggerRef.current === relatedTarget ||
+					triggerRef.current.contains(relatedTarget) || 
+					menuRef.current === relatedTarget || 
+					menuRef.current?.contains(relatedTarget);
+		},
+		clearGridFilters = async () => {
 			if (Repository) {
+				if (Repository.isLoading) {
+					await Repository.waitUntilDoneLoading();
+				}
 				
-				// Set filter
-				let filter = {};
+				// clear filter
 				if (Repository.isRemote) {
 					let searchField = 'q';
+					const searchValue = null;
 
 					// Check to see if displayField is a real field
 					const
 						schema = Repository.getSchema(),
-						displayFieldName = schema.model.displayProperty;
+						displayFieldName = schema.model.displayProperty,
 						displayFieldDef = schema.getPropertyDefinition(displayFieldName);
 					if (!displayFieldDef.isVirtual) {
 						searchField = displayFieldName + ' LIKE';
 					}
 
-					value += '%';
-
-					await Repository.filter(searchField, value);
+					Repository.clear();
+					await Repository.filter(searchField, searchValue);
 					if (!this.isAutoLoad) {
 						await Repository.reload();
 					}
 
 				} else {
-					throw Error('Not sure if this works yet!');
+					throw Error('Not yet implemented');
+				}
+
+				setSavedSearch(null);
+			
+			} else {
+				throw Error('Not yet implemented');
+			}
+		},
+		searchForMatches = async (value) => {
+			if (!isMenuShown) {
+				showMenu();
+			}
+
+			setIsSearchMode(true);
+
+			let found;
+			if (Repository) {
+				if (Repository.isLoading) {
+					await Repository.waitUntilDoneLoading();
+				}
+				
+				// Set filter
+				let filter = {};
+				if (Repository.isRemote) {
+					let searchField = 'q';
+					const searchValue = _.isEmpty(value) ? null : value + '%';
+
+					// Check to see if displayField is a real field
+					const
+						schema = Repository.getSchema(),
+						displayFieldName = schema.model.displayProperty,
+						displayFieldDef = schema.getPropertyDefinition(displayFieldName);
+					if (!displayFieldDef.isVirtual) {
+						searchField = displayFieldName + ' LIKE';
+					}
+
+					await Repository.filter(searchField, searchValue);
+					if (!this.isAutoLoad) {
+						await Repository.reload();
+					}
+
+				} else {
+					throw Error('Not yet implemented');
 
 					// Fuzzy search with getBy filter function
 					filter = (entity) => {
@@ -316,18 +326,16 @@ export function ComboComponent(props) {
 				}
 
 				setSavedSearch(value);
-				if (!disableWithSelection) {
-					const numResults = Repository.entities.length;
-					if (!numResults) {
-						setSelection([]);
-					} else if (numResults === 1) {
-						const selection = Repository.entities[0];
-						setSelection([selection]);
-						setSavedSearch(null);
-					}
+				const numResults = Repository.entities.length;
+				if (!numResults) {
+					setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
+				} else {
+					setNewEntityDisplayValue(null);
 				}
 			
 			} else {
+				throw Error('Not yet implemented');
+
 				// Search through data
 				found = _.find(data, (item) => {
 					if (_.isString(item[displayIx]) && _.isString(value)) {
@@ -335,23 +343,64 @@ export function ComboComponent(props) {
 					}
 					return item[displayIx] === value;
 				});
-				if (found) {
-					const
-						newSelection = [found],
-						newTextValue = getDisplayValuesFromSelection(newSelection);
+				// if (found) {
+				// 	const
+				// 		newSelection = [found];
 
-					setTextValue(newTextValue);
-					if (!disableWithSelection) {
-						setSelection(newSelection);
+				// 	setTextInputValue(newTextValue);
+				// }
+			}
+		},
+		getDisplayValue = () => {
+			return displayValueRef.current;
+		},
+		setDisplayValue = async (value) => {
+			let displayValue = '';
+			if (_.isNil(value)) {
+				// do nothing
+			} else if (_.isArray(value)) {
+				displayValue = [];
+				if (Repository) {
+					if (!Repository.isLoaded) {
+						throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
 					}
-				} else {
-					if (value === '') { // Text field was cleared, so clear selection
-						if (!disableWithSelection) {
-							setSelection([]);
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
+					}
+					displayValue = _.each(value, (id) => {
+						const entity = Repository.getById(id);
+						if (entity) {
+							displayValue.push(entity.displayValue)
 						}
+					});
+				} else {
+					displayValue = _.each(value, (id) => {
+						const item = _.find(data, (datum) => datum[idIx] === id);
+						if (item) {
+							displayValue.push(item[displayIx]);
+						}
+					});
+				}
+				displayValue = displayValue.join(', ');
+			} else {
+				if (Repository) {
+					let entity;
+					if (!Repository.isLoaded) {
+						entity = await Repository.getSingleEntityFromServer(value);
+					} else {
+						if (Repository.isLoading) {
+							await Repository.waitUntilDoneLoading();
+						}
+						entity = Repository.getById(value);
 					}
+					displayValue = entity?.displayValue || '';
+				} else {
+					const item = _.find(data, (datum) => datum[idIx] === id);
+					displayValue = (item && item[displayIx]) || '';
 				}
 			}
+
+			displayValueRef.current = displayValue;
 		};
 
 	useEffect(() => {
@@ -365,26 +414,40 @@ export function ComboComponent(props) {
 
 	}, [isRendered]);
 
-	if (!disableWithSelection) {
-		useEffect(() => {
-			if (getIsManuallyEnteringText() && getSavedSearch()) {
-				return
+	useEffect(() => {
+		(async () => {
+			setIsSearchMode(false);
+			await setDisplayValue(value);
+			resetInputTextValue();
+			clearGridFilters();
+			if (!isReady) {
+				setIsReady(true);
 			}
+		})();
+	}, [value]);
 
-			// Adjust text input to match selection
-			let localTextValue = getDisplayValuesFromSelection(selection);
-			if (!_.isEqual(localTextValue, textValue)) {
-				setTextValue(localTextValue);
-			}
-			setIsManuallyEnteringText(false);
-		}, [selection]);
+	if (!isReady) {
+		return null;
 	}
-
 
 	const refProps = {};
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
+
+	const gridProps = _.pick(props, [
+		'Editor',
+		'model',
+		'Repository',
+		'data',
+		'idIx',
+		'displayIx',
+		'value',
+		'disableView',
+		'disableCopy',
+		'disableDuplicate',
+		'disablePrint',
+	]);
 
 	const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 	
@@ -424,17 +487,17 @@ export function ComboComponent(props) {
 											_focus={{
 												bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
 											}}
-										>{textValue}</Text>
+										>{textInputValue}</Text>
 									</Pressable> :
 									<Input
 										ref={inputRef}
-										value={textValue}
+										value={textInputValue}
 										autoSubmit={true}
 										isDisabled={isDisabled}
 										onChangeValue={onInputChangeText}
 										onKeyPress={onInputKeyPress}
+										onFocus={onInputFocus}
 										onBlur={onInputBlur}
-										onClick={onInputClick}
 										onLayout={(e) => {
 											// On web, this is not needed, but on RN it might be, so leave it in for now
 											const {
@@ -447,15 +510,6 @@ export function ComboComponent(props) {
 											setTop(top + height);
 											setLeft(left);
 										}}
-										// onFocus={(e) => {
-										// 	if (isBlocked.current) {
-										// 		return;
-										// 	}
-										// 	if (!isRendered) {
-										// 		return;
-										// 	}
-										// 	showMenu();
-										// }}
 										flex={1}
 										h="100%"
 										m={0}
@@ -535,20 +589,52 @@ export function ComboComponent(props) {
 													};
 												}}
 												autoAdjustPageSizeToHeight={false}
-												{...props}
+												{...gridProps}
+												reference="dropdownGrid"
+												parent={self}
 												h={styles.FORM_COMBO_MENU_HEIGHT + 'px'}
+												newEntityDisplayValue={newEntityDisplayValue}
 												disablePresetButtons={!isEditor}
-												setSelection={(selection) => {
-													// Decorator fn to add local functionality
-													// Close the menu when row is selected on grid
-													setSelection(selection);
-													if (hideMenuOnSelection) {
+												onChangeSelection={async (selection) => {
+													if (selection[0]?.isPhantom) {
+														// do nothing
+														return;
+													}
+
+													setGridSelection(selection);
+
+
+													// When we first open the menu, we try to match the selection to the value, ignore this
+													if (selection[0]?.displayValue === getDisplayValue()) {
+														return;
+													}
+
+													// when user selected the record matching the current value, kill search mode
+													if (selection[0]?.id === value) {
+														setIsSearchMode(false);
+														resetInputTextValue();
+														if (hideMenuOnSelection) {
+															hideMenu();
+														}
+														return;
+													}
+
+													setValue(selection[0]?.id);
+													if (_.isEmpty(selection)) {
+														return;
+													}
+
+													if (hideMenuOnSelection && !isEditor) {
 														hideMenu();
 													}
+
 												}}
-												selectionMode={selectionMode}
-												setValue={(value) => {
-													setValue(value);
+												onRowPress={(item) => {
+													const id = Repository ? item.id : item[idIx];
+													if (id === value) {
+														hideMenu();
+														onInputFocus();
+													}
 												}}
 											/>
 										</Popover.Body>
@@ -565,9 +651,9 @@ export function ComboComponent(props) {
 }
 
 export const Combo = withComponent(
-						withData(
-							withValue(
-								withSelection(
+						withAlert(
+							withData(
+								withValue(
 									ComboComponent
 								)
 							)
