@@ -228,6 +228,9 @@ export default function withSelection(WrappedComponent) {
 			conformSelectionToValue = async () => {
 				let newSelection = [];
 				if (Repository) {
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
+					}
 					// Get entity or entities that match value
 					if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
 						if (_.isArray(value)) {
@@ -236,16 +239,16 @@ export default function withSelection(WrappedComponent) {
 							let found = Repository.getById(value);
 							if (found) {
 								newSelection.push(found);
-							} else if (Repository?.isRemote && Repository?.entities.length) {
+							// } else if (Repository?.isRemote && Repository?.entities.length) {
 
-								// Value cannot be found in Repository, but actually exists on server
-								// Try to get this value from the server directly
-								Repository.filter(Repository.schema.model.idProperty, value);
-								await Repository.load();
-								found = Repository.getById(value);
-								if (found) {
-									newSelection.push(found);
-								}
+							// 	// Value cannot be found in Repository, but actually exists on server
+							// 	// Try to get this value from the server directly
+							// 	Repository.filter(Repository.schema.model.idProperty, value);
+							// 	await Repository.load();
+							// 	found = Repository.getById(value);
+							// 	if (found) {
+							// 		newSelection.push(found);
+							// 	}
 
 							}
 						}
@@ -278,9 +281,6 @@ export default function withSelection(WrappedComponent) {
 			};
 
 		useEffect(() => {
-			if (isReady) {
-				return () => {};
-			}
 
 			(async () => {
 
@@ -291,7 +291,7 @@ export default function withSelection(WrappedComponent) {
 					await Repository.load();
 				}
 
-				if (usesWithValue && !_.isNil(value)) {
+				if (!_.isNil(value)) {
 
 					await conformSelectionToValue();
 
@@ -314,7 +314,7 @@ export default function withSelection(WrappedComponent) {
 
 			})();
 
-		}, []);
+		}, [value]);
 
 		if (self) {
 			self.selection = localSelection;
