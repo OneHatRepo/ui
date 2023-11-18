@@ -35,6 +35,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				},
 				record,
 				onChange,
+				onSave,
+				newEntityDisplayValue,
 
 				// withComponent
 				self,
@@ -57,6 +59,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			} = props,
 			listeners = useRef({}),
 			editorStateRef = useRef(),
+			newEntityDisplayValueRef = useRef(),
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isAdding, setIsAdding] = useState(false),
 			[isSaving, setIsSaving] = useState(false),
@@ -81,12 +84,20 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				listeners.current = obj;
 				// forceUpdate(); // we don't want to get into an infinite loop of renders. Simply directly assign the listeners in every child render
 			},
+			getNewEntityDisplayValue = () => {
+				return newEntityDisplayValueRef.current;
+			},
 			onAdd = async () => {
 				const defaultValues = Repository.getSchema().getDefaultValues();
 				let addValues = _.clone(defaultValues);
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
 					addValues[selectorId] = selectorSelected.id;
+				}
+
+				if (getNewEntityDisplayValue()) {
+					const displayPropertyName = Repository.getSchema().model.displayProperty;
+					addValues[displayPropertyName] = getNewEntityDisplayValue();
 				}
 
 				if (getListeners().onBeforeAdd) {
@@ -115,6 +126,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				// Unmap the values, so we can input true originalData
 				addValues = Repository.unmapData(addValues);
+
 
 				setIsAdding(true);
 				setIsSaving(true);
@@ -260,6 +272,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					entity = selection[0],
 					id = entity.id;
 				const result = await Repository._send('POST', Model + '/duplicate', { id });
+				if (!result) {
+					return;
+				}
 				const {
 					root,
 					success,
@@ -326,6 +341,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (onChange) {
 					onChange();
 				}
+				if (onSave) {
+					onSave(what);
+				}
 
 				return true;
 			},
@@ -339,7 +357,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					}
 					
 					setIsAdding(false);
-					setEditorMode(EDITOR_MODE__VIEW);
 					setIsEditorShown(false);
 				}
 				const formState = editorStateRef.current;
@@ -350,6 +367,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			onEditorClose = () => {
+				if (isAdding) {
+					onEditorCancel();
+				}
 				setIsEditorShown(false);
 			},
 			onEditorDelete = async () => {
@@ -406,6 +426,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			self.deleteChildren = onDeleteChildren;
 			self.duplicate = onDuplicate;
 		}
+		newEntityDisplayValueRef.current = newEntityDisplayValue;
 
 		if (lastSelection !== selection) {
 			// NOTE: If I don't calculate this on the fly for selection changes,

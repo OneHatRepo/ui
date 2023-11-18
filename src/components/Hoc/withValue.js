@@ -109,7 +109,7 @@ export default function withValue(WrappedComponent) {
 				setLocalValue(value);
 			}
 		}, [value]);
-
+		
 		if (fieldSetRegisterChild) {
 			useEffect(() => {
 				fieldSetRegisterChild({

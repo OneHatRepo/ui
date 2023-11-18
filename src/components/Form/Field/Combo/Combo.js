@@ -26,7 +26,6 @@ export function ComboComponent(props) {
 	const {
 			additionalButtons,
 			autoFocus = false,
-			forceSelection = true,
 			tooltipRef = null,
 			tooltip = null,
 			menuMinWidth = 150,
@@ -326,12 +325,7 @@ export function ComboComponent(props) {
 				}
 
 				setSavedSearch(value);
-				const numResults = Repository.entities.length;
-				if (!numResults) {
-					setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
-				} else {
-					setNewEntityDisplayValue(null);
-				}
+				setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
 			
 			} else {
 				throw Error('Not yet implemented');
@@ -419,7 +413,6 @@ export function ComboComponent(props) {
 			setIsSearchMode(false);
 			await setDisplayValue(value);
 			resetInputTextValue();
-			clearGridFilters();
 			if (!isReady) {
 				setIsReady(true);
 			}
@@ -595,14 +588,13 @@ export function ComboComponent(props) {
 												h={styles.FORM_COMBO_MENU_HEIGHT + 'px'}
 												newEntityDisplayValue={newEntityDisplayValue}
 												disablePresetButtons={!isEditor}
-												onChangeSelection={async (selection) => {
+												onChangeSelection={(selection) => {
 													if (selection[0]?.isPhantom) {
 														// do nothing
 														return;
 													}
 
 													setGridSelection(selection);
-
 
 													// When we first open the menu, we try to match the selection to the value, ignore this
 													if (selection[0]?.displayValue === getDisplayValue()) {
@@ -620,6 +612,7 @@ export function ComboComponent(props) {
 													}
 
 													setValue(selection[0]?.id);
+
 													if (_.isEmpty(selection)) {
 														return;
 													}
@@ -628,6 +621,16 @@ export function ComboComponent(props) {
 														hideMenu();
 													}
 
+												}}
+												onSave={(selection) => {
+													const entity = selection[0];
+													if (entity?.id !== value) {
+														// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
+														// Select it and set the value of the combo.
+														setGridSelection([entity]);
+														const id = entity.id;
+														setValue(id);
+													}
 												}}
 												onRowPress={(item) => {
 													const id = Repository ? item.id : item[idIx];

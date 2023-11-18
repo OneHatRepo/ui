@@ -439,6 +439,9 @@ function Form(props) {
 												name={name}
 												value={value}
 												onChangeValue={(newValue) => {
+													if (newValue === undefined) {
+														newValue = null; // React Hook Form doesn't respond well when setting value to undefined
+													}
 													onChange(newValue);
 													if (onEditorChange) {
 														onEditorChange(newValue, formSetValue, formGetValues, formState);
@@ -590,7 +593,7 @@ function Form(props) {
 		};
 	}, [Repository]);
 
-	// if (Repository && (!record || _.isEmpty(record))) {
+	// if (Repository && (!record || _.isEmpty(record) || record.isDestroyed)) {
 	// 	return null;
 	// }
 
@@ -629,7 +632,14 @@ function Form(props) {
 		additionalButtons,
 		isSaveDisabled = false,
 		isSubmitDisabled = false,
-		savingProps = {};
+		savingProps = {},
+
+		showDeleteBtn = false,
+		showResetBtn = false,
+		showCloseBtn = false,
+		showCancelBtn = false,
+		showSaveBtn = false,
+		showSubmitBtn = false;
 
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 		
@@ -685,7 +695,7 @@ function Form(props) {
 			isSaveDisabled = true;
 			isSubmitDisabled = true;
 		}
-		if (_.isEmpty(formState.dirtyFields) && !record?.isRemotePhantom) {
+		if (_.isEmpty(formState.dirtyFields) && !record?.isPhantom) {
 			isSaveDisabled = true;
 		}
 
@@ -695,41 +705,34 @@ function Form(props) {
 			footerProps.alignItems = 'flex-start';
 		}
 
-	}
-
-	let showDeleteBtn = false,
-		showResetBtn = false,
-		showCloseBtn = false,
-		showCancelBtn = false,
-		showSaveBtn = false,
-		showSubmitBtn = false;
-	if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
-		showDeleteBtn = true;
-	}
-	if (!isEditorViewOnly) {
-		showResetBtn = true;
-	}
-	if (editorType !== EDITOR_TYPE__SIDE) { // side editor won't show either close or cancel buttons!
-		// determine whether we should show the close or cancel button
-		if (isEditorViewOnly) {
-			showCloseBtn = true;
-		} else {
-			if (formState.isDirty) {
-				if (isSingle && onCancel) {
-					showCancelBtn = true;
-				}
+		if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
+			showDeleteBtn = true;
+		}
+		if (!isEditorViewOnly) {
+			showResetBtn = true;
+		}
+		if (editorType !== EDITOR_TYPE__SIDE) { // side editor won't show either close or cancel buttons!
+			// determine whether we should show the close or cancel button
+			if (isEditorViewOnly) {
+				showCloseBtn = true;
 			} else {
-				if (onClose) {
-					showCloseBtn = true;
+				if (formState.isDirty || record?.isPhantom) {
+					if (isSingle && onCancel) {
+						showCancelBtn = true;
+					}
+				} else {
+					if (onClose) {
+						showCloseBtn = true;
+					}
 				}
 			}
 		}
-	}
-	if (!isEditorViewOnly && onSave) {
-		showSaveBtn = true;
-	}
-	if (!!onSubmit) {
-		showSubmitBtn = true;
+		if (!isEditorViewOnly && onSave) {
+			showSaveBtn = true;
+		}
+		if (!!onSubmit) {
+			showSubmitBtn = true;
+		}
 	}
 	
 	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
