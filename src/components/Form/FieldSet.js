@@ -29,7 +29,7 @@ export default function FieldSet(props) {
 		forceUpdate = useForceUpdate(),
 		childRefs = useRef([]),
 		isAllCheckedRef = useRef(false),
-		[localIsCollapsed, setLocalIsCollapsed] = useState(isCollapsed),
+		[isLocalCollapsed, setIsLocalCollapsed] = useState(isCollapsed),
 		getIsAllChecked = () => {
 			return isAllCheckedRef.current;
 		},
@@ -38,7 +38,7 @@ export default function FieldSet(props) {
 			forceUpdate();
 		},
 		onToggleCollapse = () => {
-			setLocalIsCollapsed(!localIsCollapsed);
+			setIsLocalCollapsed(!isLocalCollapsed);
 		},
 		onToggleAllChecked = () => {
 			const bool = !getIsAllChecked();
@@ -82,6 +82,7 @@ export default function FieldSet(props) {
 				bg={styles.FORM_FIELDSET_BG}
 				mb={4}
 				pb={1}
+				pr={4}
 				{...propsToPass}
 			>
 				{title &&
@@ -119,7 +120,7 @@ export default function FieldSet(props) {
 													</Row>}
 						{isCollapsible && <IconButton
 												_icon={{
-													as: localIsCollapsed ? <CaretDown /> : <CaretUp />,
+													as: isLocalCollapsed ? <CaretDown /> : <CaretUp />,
 													size: 'sm',
 													color: 'trueGray.300',
 												}}
@@ -127,7 +128,7 @@ export default function FieldSet(props) {
 											/>}
 					</Row>}
 				{helpText && <Text>{helpText}</Text>}
-				{!localIsCollapsed && <FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
+				{!isLocalCollapsed && <FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
 											{children}
 										</FieldSetContext.Provider>}
 			</Box>;
