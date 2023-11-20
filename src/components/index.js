@@ -41,7 +41,6 @@ import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
 import SquareButton from './Buttons/SquareButton.js';
 import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Tag/Tag.js';
-import TagViewer from './Viewer/TagViewer.js';
 import TextArea from './Form/Field/TextArea.js';
 import Text from './Form/Field/Text.js';
 import TimezonesCombo from './Form/Field/Combo/TimezonesCombo.js';
@@ -94,7 +93,6 @@ const components = {
 	SquareButton,
 	TabPanel,
 	Tag,
-	TagViewer,
 	Text,
 	TextArea,
 	TimezonesCombo,
