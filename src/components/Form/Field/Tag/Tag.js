@@ -25,7 +25,6 @@ function ValueBox(props) {
 			onView,
 			onDelete,
 		} = props;
-
 	return <Row
 				borderWidth={1}
 				borderColor="trueGray.400"
@@ -141,10 +140,22 @@ function TagComponent(props) {
 		}),
 		WhichCombo = isEditor ? ComboEditor : Combo;
 
+	const sizeProps = {};
+	if (!props.flex && !props.w) {
+		sizeProps.flex = 1;
+	} else {
+		if (props.w) {
+			sizeProps.w = props.w;
+		}
+		if (props.flex) {
+			sizeProps.flex = props.flex;
+		}
+	}
+
 	return <>
 				<Column
-					w="100%"
 					{...props}
+					{...sizeProps}
 					px={0}
 					py={0}
 				>
