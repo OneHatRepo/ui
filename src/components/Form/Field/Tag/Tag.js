@@ -157,6 +157,7 @@ function TagComponent(props) {
 						bg="trueGray.100"
 						p={1}
 						mb={1}
+						minHeight={10}
 						flexWrap="wrap"
 					>{valueBoxes}</Row>
 					{isEditor && 
