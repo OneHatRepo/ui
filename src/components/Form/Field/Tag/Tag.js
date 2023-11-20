@@ -43,7 +43,7 @@ function ValueBox(props) {
 					onPress={onView}
 					h="100%"
 				/>
-				<Text color="trueGray.600">{text}</Text>
+				<Text color="trueGray.600" mr={onDelete ? 0 : 2}>{text}</Text>
 				{onDelete &&
 					<IconButton
 						_icon={{
@@ -83,6 +83,12 @@ function TagComponent(props) {
 			const
 				id = item.id,
 				repository = propsToPass.Repository;
+			if (!repository.isLoaded) {
+				await repository.load();
+			}
+			if (repository.isLoading) {
+				await repository.waitUntilDoneLoading();
+			}
 			let record = repository.getById(id); // first try to get from entities in memory
 			if (!record && repository.getSingleEntityFromServer) {
 				record = await repository.getSingleEntityFromServer(id); // TODO: Build this
@@ -136,23 +142,29 @@ function TagComponent(props) {
 		WhichCombo = isEditor ? ComboEditor : Combo;
 
 	return <>
-				<Column w="100%" flex={1}>
-					{!_.isEmpty(valueBoxes) && 
-						<Row
-							w="100%"
-							borderWidth={1}
-							borderColor="trueGray.300"
-							borderRadius="md"
-							bg="trueGray.100"
-							p={1}
-							mb={1}
-							flexWrap="wrap"
-						>{valueBoxes}</Row>}
-					<WhichCombo
-						Repository={props.Repository}
-						Editor={props.Editor}
-						onRowPress={onAdd}
-					/>
+				<Column
+					w="100%"
+					flex={1}
+					{...props} 
+					px={0}
+					py={0}
+				>
+					<Row
+						w="100%"
+						borderWidth={1}
+						borderColor="trueGray.300"
+						borderRadius="md"
+						bg="trueGray.100"
+						p={1}
+						mb={1}
+						flexWrap="wrap"
+					>{valueBoxes}</Row>
+					{isEditor && 
+						<WhichCombo
+							Repository={props.Repository}
+							Editor={props.Editor}
+							onRowPress={onAdd}
+						/>}
 				</Column>
 				{isViewerShown && 
 					<Modal
@@ -162,6 +174,9 @@ function TagComponent(props) {
 						<Editor
 							editorType={EDITOR_TYPE__WINDOWED}
 							{...propsToPass}
+							px={0}
+							py={0}
+							w="100%"
 							parent={self}
 							reference="viewer"
 
