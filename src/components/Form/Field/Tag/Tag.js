@@ -90,7 +90,7 @@ function TagComponent(props) {
 			}
 			let record = repository.getById(id); // first try to get from entities in memory
 			if (!record && repository.getSingleEntityFromServer) {
-				record = await repository.getSingleEntityFromServer(id); // TODO: Build this
+				record = await repository.getSingleEntityFromServer(id);
 			}
 
 			if (!record) {

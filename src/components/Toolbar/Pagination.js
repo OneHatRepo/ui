@@ -69,6 +69,18 @@ export default function Pagination(props) {
 							isDisabled={isDisabled}
 							tooltip="Show More"
 						>Show More</Button>);
+			if (!Repository.isLocal) {
+				items.push(<IconButton
+								key="reload"
+								parent={self}
+								reference="reloadPageBtn"
+								{...iconButtonProps}
+								icon={<Icon as={Rotate} {...iconProps} color="trueGray.600" />}
+								onPress={() => Repository.reload()}
+								tooltip="Reload"
+								ml={2}
+							/>);
+			}
 		} else {
 			isDisabled = page === 1;
 			items.push(<IconButton
