@@ -35,6 +35,7 @@ export function ComboComponent(props) {
 			isEditor = false,
 			isDisabled = false,
 			tooltipPlacement = 'bottom',
+			onRowPress,
 
 			// withComponent
 			self,
@@ -632,7 +633,11 @@ export function ComboComponent(props) {
 														setValue(id);
 													}
 												}}
-												onRowPress={(item) => {
+												onRowPress={(item, e) => {
+													if (onRowPress) {
+														onRowPress(item, e);
+														return;
+													}
 													const id = Repository ? item.id : item[idIx];
 													if (id === value) {
 														hideMenu();
