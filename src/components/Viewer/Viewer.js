@@ -183,6 +183,7 @@ function Viewer(props) {
 										flex={1}
 										h={350}
 										canEditorViewOnly={true}
+										canCrud={false}
 										uniqueRepository={true}
 										parent={self}
 										{...propsToPass}
