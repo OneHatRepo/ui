@@ -144,8 +144,7 @@ function TagComponent(props) {
 	return <>
 				<Column
 					w="100%"
-					flex={1}
-					{...props} 
+					{...props}
 					px={0}
 					py={0}
 				>
