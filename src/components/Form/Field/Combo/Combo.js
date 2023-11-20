@@ -390,7 +390,7 @@ export function ComboComponent(props) {
 					}
 					displayValue = entity?.displayValue || '';
 				} else {
-					const item = _.find(data, (datum) => datum[idIx] === id);
+					const item = _.find(data, (datum) => datum[idIx] === value);
 					displayValue = (item && item[displayIx]) || '';
 				}
 			}
@@ -590,29 +590,53 @@ export function ComboComponent(props) {
 												newEntityDisplayValue={newEntityDisplayValue}
 												disablePresetButtons={!isEditor}
 												onChangeSelection={(selection) => {
-													if (selection[0]?.isPhantom) {
+
+													if (Repository && selection[0]?.isPhantom) {
 														// do nothing
 														return;
 													}
 
 													setGridSelection(selection);
 
-													// When we first open the menu, we try to match the selection to the value, ignore this
-													if (selection[0]?.displayValue === getDisplayValue()) {
-														return;
-													}
+													if (Repository) {
 
-													// when user selected the record matching the current value, kill search mode
-													if (selection[0]?.id === value) {
-														setIsSearchMode(false);
-														resetInputTextValue();
-														if (hideMenuOnSelection) {
-															hideMenu();
+														// When we first open the menu, we try to match the selection to the value, ignore this
+														if (selection[0]?.displayValue === getDisplayValue()) {
+															return;
 														}
-														return;
-													}
 
-													setValue(selection[0]?.id);
+														// when user selected the record matching the current value, kill search mode
+														if (selection[0]?.id === value) {
+															setIsSearchMode(false);
+															resetInputTextValue();
+															if (hideMenuOnSelection) {
+																hideMenu();
+															}
+															return;
+														}
+
+														setValue(selection[0] ? selection[0].id : null);
+
+													} else {
+
+														// When we first open the menu, we try to match the selection to the value, ignore this
+														if (selection[0] && selection[0][displayIx] === getDisplayValue()) {
+															return;
+														}
+
+														// when user selected the record matching the current value, kill search mode
+														if (selection[0] && selection[0][idIx] === value) {
+															setIsSearchMode(false);
+															resetInputTextValue();
+															if (hideMenuOnSelection) {
+																hideMenu();
+															}
+															return;
+														}
+
+														setValue(selection[0] ? selection[0][idIx] : null);
+
+													}
 
 													if (_.isEmpty(selection)) {
 														return;
