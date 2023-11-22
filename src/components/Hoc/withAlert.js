@@ -43,6 +43,8 @@ export default function withAlert(WrappedComponent) {
 					setTitle('Alert');
 					setMessage(arg1);
 					setOkCallback(() => okCallback);
+					setIncludeCancel(includeCancel);
+					setCanClose(canClose);
 				} else if (_.isPlainObject(arg1)) {
 					// custom
 					const {
@@ -50,14 +52,15 @@ export default function withAlert(WrappedComponent) {
 							message,
 							buttons,
 							includeCancel,
+							canClose,
 						} = arg1;
 					setMode(ALERT_MODE_CUSTOM);
 					setTitle(title);
 					setMessage(message);
 					setCustomButtons(buttons);
+					setIncludeCancel(includeCancel);
+					setCanClose(canClose);
 				}
-				setIncludeCancel(includeCancel);
-				setCanClose(canClose);
 				showAlert();
 			},
 			onConfirm = (message, callback, includeCancel = false) => {
