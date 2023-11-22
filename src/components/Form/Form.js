@@ -783,7 +783,12 @@ function Form(props) {
 									}
 									reset();
 								}}
-								icon={<Rotate color="#fff" />}
+								icon={Rotate}
+								_icon={{
+									color: !formState.isDirty ? 'trueGray.400' : '#000',
+								}}
+								isDisabled={!formState.isDirty}
+								mr={2}
 							/>}
 
 						{showCancelBtn &&
