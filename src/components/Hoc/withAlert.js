@@ -27,6 +27,7 @@ export default function withAlert(WrappedComponent) {
 			[isAlertShown, setIsAlertShown] = useState(false),
 			[title, setTitle] = useState(''),
 			[message, setMessage] = useState(''),
+			[canClose, setCanClose] = useState(true),
 			[includeCancel, setIncludeCancel] = useState(false),
 			[okCallback, setOkCallback] = useState(),
 			[yesCallback, setYesCallback] = useState(),
@@ -35,14 +36,13 @@ export default function withAlert(WrappedComponent) {
 			[mode, setMode] = useState(ALERT_MODE_OK),
 			autoFocusRef = useRef(null),
 			cancelRef = useRef(null),
-			onAlert = (arg1, okCallback, includeCancel = false) => {
+			onAlert = (arg1, okCallback, includeCancel = false, canClose = true) => {
 				clearAll();
 				if (_.isString(arg1)) {
 					setMode(ALERT_MODE_OK);
 					setTitle('Alert');
 					setMessage(arg1);
 					setOkCallback(() => okCallback);
-					setIncludeCancel(includeCancel);
 				} else if (_.isPlainObject(arg1)) {
 					// custom
 					const {
@@ -55,8 +55,9 @@ export default function withAlert(WrappedComponent) {
 					setTitle(title);
 					setMessage(message);
 					setCustomButtons(buttons);
-					setIncludeCancel(includeCancel);
 				}
+				setIncludeCancel(includeCancel);
+				setCanClose(canClose);
 				showAlert();
 			},
 			onConfirm = (message, callback, includeCancel = false) => {
@@ -161,7 +162,7 @@ export default function withAlert(WrappedComponent) {
 						onClose={() => setIsAlertShown(false)}
 					>
 						<AlertDialog.Content>
-							<AlertDialog.CloseButton />
+							{canClose && <AlertDialog.CloseButton />}
 							<AlertDialog.Header>{title}</AlertDialog.Header>
 							<AlertDialog.Body>
 								<Row>
