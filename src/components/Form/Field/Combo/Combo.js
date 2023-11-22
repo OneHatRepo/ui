@@ -20,6 +20,7 @@ import emptyFn from '../../../../Functions/emptyFn.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
+import Xmark from '../../../Icons/Xmark.js';
 import _ from 'lodash';
 
 export function ComboComponent(props) {
@@ -31,6 +32,7 @@ export function ComboComponent(props) {
 			menuMinWidth = 150,
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
+			showXButton = false,
 			_input = {},
 			isEditor = false,
 			isDisabled = false,
@@ -231,6 +233,10 @@ export function ComboComponent(props) {
 			resetInputTextValue();
 			hideMenu();
 		},
+		onClearBtn = () => {
+			setTextInputValue('');
+			setValue(null);
+		}
 		isEventStillInComponent = (e) => {
 			const {
 					relatedTarget
@@ -276,7 +282,7 @@ export function ComboComponent(props) {
 				setSavedSearch(null);
 			
 			} else {
-				throw Error('Not yet implemented');
+				// throw Error('Not yet implemented');
 			}
 		},
 		searchForMatches = async (value) => {
@@ -329,7 +335,8 @@ export function ComboComponent(props) {
 				setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
 			
 			} else {
-				throw Error('Not yet implemented');
+
+				throw Error('Not yet implemented'); // NOTE: When implementing this, also implement clearGridFilters
 
 				// Search through data
 				found = _.find(data, (item) => {
@@ -424,6 +431,10 @@ export function ComboComponent(props) {
 		return null;
 	}
 
+	if (self) {
+		self.clear = onClearBtn;
+	}
+
 	const refProps = {};
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
@@ -446,6 +457,21 @@ export function ComboComponent(props) {
 	const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 	
 	let comboComponent = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
+								{showXButton && !_.isNil(value) && 
+									<IconButton
+										_icon={{
+											as: Xmark,
+											color: 'trueGray.600',
+											size: 'sm',
+										}}
+										isDisabled={isDisabled}
+										onPress={onClearBtn}
+										h="100%"
+										bg={styles.FORM_COMBO_TRIGGER_BG}
+										_hover={{
+											bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
+										}}
+									/>}
 								{disableDirectEntry ?
 									<Pressable
 										onPress={toggleMenu}

@@ -28,6 +28,9 @@ export default function withValue(WrappedComponent) {
 				isValueAlwaysArray = false,
 				isValueAsStringifiedJson = false,
 
+				// withComponent
+				self,
+
 				// withData
 				Repository,
 				idIx,
@@ -118,6 +121,11 @@ export default function withValue(WrappedComponent) {
 					setValue: setValueRef.current,
 				});
 			}, []);
+		}
+
+		if (self) {
+			self.setValue = setValue;
+			self.value = getLocalValue();
 		}
 
 		

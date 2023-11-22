@@ -536,7 +536,9 @@ export default function withFilters(WrappedComponent) {
 										},
 									]}
 									onCancel={(e) => {
-										// Just close the modal
+										setIsFilterSelectorShown(false);
+									}}
+									onClose={(e) => {
 										setIsFilterSelectorShown(false);
 									}}
 									onSave={(data, e) => {

@@ -1,9 +1,8 @@
-import { useState, } from 'react';
+import { useState, useRef, } from 'react';
 import {
 	Column,
 	Modal,
 	Row,
-	Text,
 } from 'native-base';
 import {
 	EDITOR_TYPE__WINDOWED,
@@ -12,49 +11,11 @@ import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
-import IconButton from '../../../Buttons/IconButton.js';
-import Eye from '../../../Icons/Eye.js';
-import Xmark from '../../../Icons/Xmark.js';
+import ValueBox from './ValueBox.js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
 import _ from 'lodash';
 
 
-function ValueBox(props) {
-	const {
-			text,
-			onView,
-			onDelete,
-		} = props;
-	return <Row
-				borderWidth={1}
-				borderColor="trueGray.400"
-				borderRadius="md"
-				mr={1}
-				bg="trueGray.200"
-				alignItems="center"
-			>
-				<IconButton
-					_icon={{
-						as: Eye,
-						color: 'trueGray.600',
-						size: 'sm',
-					}}
-					onPress={onView}
-					h="100%"
-				/>
-				<Text color="trueGray.600" mr={onDelete ? 0 : 2}>{text}</Text>
-				{onDelete &&
-					<IconButton
-						_icon={{
-							as: Xmark,
-							color: 'trueGray.600',
-							size: 'sm',
-						}}
-						onPress={onDelete}
-						h="100%"
-					/>}
-			</Row>;
-}
 
 function TagComponent(props) {
 
@@ -67,6 +28,9 @@ function TagComponent(props) {
 			// parent Form
 			onChangeValue,
 
+			// withAlert
+			alert,
+
 			// withComponent
 			self,
 
@@ -75,8 +39,15 @@ function TagComponent(props) {
 			setValue,
 			...propsToPass // break connection between Tag and Combo props
 		} = props,
+		ignoreNextComboValueChangeRef = useRef(false),
 		[isViewerShown, setIsViewerShown] = useState(false),
 		[viewerSelection, setViewerSelection] = useState(false),
+		getIgnoreNextComboValueChange = () => {
+			return ignoreNextComboValueChangeRef.current;
+		},
+		setIgnoreNextComboValueChange = (bool) => {
+			ignoreNextComboValueChangeRef.current = bool;
+		},
 		onViewerClose = () => setIsViewerShown(false),
 		onView = async (item, e) => {
 			const
@@ -101,27 +72,63 @@ function TagComponent(props) {
 			setViewerSelection([record]);
 			setIsViewerShown(true);
 		},
-		onAdd = (item, e) => {
+		clearComboValue = () => {
+			setIgnoreNextComboValueChange(true); // we're clearing out the value of the underlying Combo, so ignore it when this combo submits the new value change
+			self.children.combo.clear();
+		},
+		onChangeComboValue = (comboValue) => {
+			if (getIgnoreNextComboValueChange()) {
+				setIgnoreNextComboValueChange(false);
+				return;
+			}
+
 			// make sure value doesn't already exist
 			let exists = false;
 			_.each(value, (val) => {
-				if (val.id === item.getId()) {
+				if (val.id === comboValue) {
 					exists = true;
 					return false; // break
 				}
 			});
 			if (exists) {
+				clearComboValue();
 				alert('Value already exists!');
 				return;
 			}
 
+			// The value we get from combo is a simple int
+			// Convert this to id and displayValue from either Repository or data array.
+			const
+				Repository = props.Repository,
+				data = props.data,
+				idIx = props.idIx,
+				displayIx = props.displayIx,
+				id = comboValue;
+			let item,
+				displayValue;
+			if (Repository) {
+				item = Repository.getById(id);
+				if (!item) {
+					throw Error('item not found');
+				}
+				displayValue = item.displayValue;
+			} else {
+				item = _.find(data, (datum) => datum[idIx] === id);
+				if (!item) {
+					throw Error('item not found');
+				}
+				displayValue = item[displayIx];
+			}
+
+
 			// add new value
 			const newValue = _.clone(value); // so we trigger a re-render
 			newValue.push({
-				id: item.getId(),
-				text: item.getDisplayValue(),
+				id,
+				text: displayValue,
 			})
 			setValue(newValue);
+			clearComboValue();
 		},
 		onDelete = (val) => {
 			// Remove from value array
@@ -174,7 +181,9 @@ function TagComponent(props) {
 						<WhichCombo
 							Repository={props.Repository}
 							Editor={props.Editor}
-							onRowPress={onAdd}
+							onChangeValue={onChangeComboValue}
+							parent={self}
+							reference="combo"
 						/>}
 				</Column>
 				{isViewerShown && 

@@ -322,12 +322,16 @@ function Form(props) {
 					type = 'Text';
 				}
 			}
+			const isCombo = type?.match && type.match(/Combo/);
 			if (item.hasOwnProperty('autoLoad')) {
 				editorTypeProps.autoLoad = item.autoLoad;
 			} else {
-				if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
+				if (isCombo && Repository?.isRemote && !Repository?.isLoaded) {
 					editorTypeProps.autoLoad = true;
 				}
+			}
+			if (isCombo) {
+				editorTypeProps.showXButton = true;
 			}
 			const Element = getComponentFromType(type);
 			let children;
