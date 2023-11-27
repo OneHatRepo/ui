@@ -146,11 +146,13 @@ export default function GridRow(props) {
 						if (_.isFunction(value)) {
 							return value(key);
 						}
-						
+						const elementProps = {};
+						if (UiGlobals.mode === UI_MODE_WEB) {
+							elementProps.textOverflow = 'ellipsis';
+						}
 						return <Text
 									key={key}
 									overflow="hidden"
-									textOverflow="ellipsis"
 									alignSelf="center"
 									style={{
 										userSelect: 'none',
@@ -160,6 +162,7 @@ export default function GridRow(props) {
 									py={styles.GRID_CELL_PY}
 									numberOfLines={1}
 									ellipsizeMode="head"
+									{...elementProps}
 									{...propsToPass}
 								>{value}</Text>;
 					});
