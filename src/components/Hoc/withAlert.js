@@ -10,6 +10,7 @@ import {
 } from 'native-base';
 import {
 	ALERT_MODE_OK,
+	ALERT_MODE_YES,
 	ALERT_MODE_YES_NO,
 	ALERT_MODE_CUSTOM,
 } from '../../Constants/Alert.js';
@@ -70,6 +71,7 @@ export default function withAlert(WrappedComponent) {
 				setMessage(message);
 				setIncludeCancel(includeCancel);
 				setYesCallback(() => callback);
+				setNoCallback(null);
 				showAlert();
 			},
 			onCancel = () => {
@@ -126,6 +128,15 @@ export default function withAlert(WrappedComponent) {
 								onPress={onOk}
 								color="#fff"
 							>OK</Button>);
+				break;
+			case ALERT_MODE_YES:
+				buttons.push(<Button
+								key="yesBtn"
+								ref={autoFocusRef}
+								onPress={onYes}
+								color="#fff"
+								colorScheme="danger"
+							>Yes</Button>);
 				break;
 			case ALERT_MODE_YES_NO:
 				buttons.push(<Button
