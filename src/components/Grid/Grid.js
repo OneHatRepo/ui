@@ -271,7 +271,6 @@ function GridComponent(props) {
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => {
-							console.log('press');
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
