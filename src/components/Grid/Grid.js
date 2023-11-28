@@ -177,8 +177,8 @@ function GridComponent(props) {
 			}
 			const
 				{
-					shiftKey,
-					metaKey,
+					shiftKey = false,
+					metaKey = false,
 				 } = e;
 			let allowToggle = allowToggleSelection;
 			if (metaKey) {
@@ -271,30 +271,38 @@ function GridComponent(props) {
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => {
+							console.log('press');
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
 							if (isHeaderRow || isDragMode) {
 								return
 							}
-							switch (e.detail) {
-								case 1: // single click
-									onRowClick(item, e); // sets selection
-									if (onEditorRowClick) {
-										onEditorRowClick(item, index, e);
-									}
-									break;
-								case 2: // double click
-									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
-										onRowClick(item, e); // so reselect it
-									}
-									if (onEdit) {
-										onEdit();
-									}
-									break;
-								case 3: // triple click
-									break;
-								default:
+							if (CURRENT_MODE === UI_MODE_WEB) {
+								switch (e.detail) {
+									case 1: // single click
+										onRowClick(item, e); // sets selection
+										if (onEditorRowClick) {
+											onEditorRowClick(item, index, e);
+										}
+										break;
+									case 2: // double click
+										if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
+											onRowClick(item, e); // so reselect it
+										}
+										if (onEdit) {
+											onEdit();
+										}
+										break;
+									case 3: // triple click
+										break;
+									default:
+								}
+							} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+								onRowClick(item, e); // sets selection
+								if (onEditorRowClick) {
+									onEditorRowClick(item, index, e);
+								}
 							}
 						}}
 						onLongPress={(e) => {
