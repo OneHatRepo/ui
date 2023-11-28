@@ -336,7 +336,7 @@ function Form(props) {
 			const Element = getComponentFromType(type);
 			let children;
 
-			if (inArray(type, ['Column', 'FieldSet'])) {
+			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
@@ -356,6 +356,9 @@ function Form(props) {
 						propsToPass.mb = 1;
 					}
 					propsToPass.pl = 3;
+				}
+				if (type === 'Row') {
+					propsToPass.w = '100%';
 				}
 				const itemDefaults = item.defaults;
 				children = _.map(items, (item, ix) => {
@@ -740,8 +743,7 @@ function Form(props) {
 	}
 	
 	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
-				{containerWidth && <>
-
+				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
 						<ScrollView
 							horizontal={true}
