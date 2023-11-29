@@ -97,7 +97,7 @@ function GridComponent(props) {
 			additionalToolbarButtons = [],
 			h,
 			flex,
-			bg,
+			bg = '#fff',
 
 			// withComponent
 			self,

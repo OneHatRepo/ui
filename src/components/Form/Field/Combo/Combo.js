@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
+	View,
+} from 'react-native';
+import {
 	Box,
+	Column,
+	Modal,
 	Popover,
 	Pressable,
 	Row,
@@ -8,6 +13,7 @@ import {
 	Tooltip,
 } from 'native-base';
 import {
+	UI_MODE_REACT_NATIVE,
 	UI_MODE_WEB,
 } from '../../../../Constants/UiModes.js';
 import UiGlobals from '../../../../UiGlobals.js';
@@ -60,7 +66,6 @@ export function ComboComponent(props) {
 		triggerRef = useRef(),
 		menuRef = useRef(),
 		displayValueRef = useRef(null),
-		savedSearch = useRef(null),
 		typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
@@ -116,12 +121,6 @@ export function ComboComponent(props) {
 		},
 		toggleMenu = () => {
 			setIsMenuShown(!isMenuShown);
-		},
-		getSavedSearch = () => {
-			return savedSearch.current;
-		},
-		setSavedSearch = (val) => {
-			savedSearch.current = val;
 		},
 		resetInputTextValue = () => {
 			setTextInputValue(getDisplayValue());
@@ -185,11 +184,11 @@ export function ComboComponent(props) {
 				return;
 			}
 
-			if (_.isEmpty(value)) {
-				// text input is cleared
-				hideMenu();
-				return;
-			}
+			// if (_.isEmpty(value)) {
+			// 	// text input is cleared
+			// 	hideMenu();
+			// 	return;
+			// }
 
 			setTextInputValue(value);
 			showMenu();
@@ -200,7 +199,9 @@ export function ComboComponent(props) {
 			}, 300);
 		},
 		onInputFocus = (e) => {
-			inputRef.current.select();
+			if (inputRef.current.select) {
+				inputRef.current.select();
+			}
 		},
 		onInputBlur = (e) => {
 			if (isEventStillInComponent(e)) {
@@ -278,8 +279,6 @@ export function ComboComponent(props) {
 				} else {
 					throw Error('Not yet implemented');
 				}
-
-				setSavedSearch(null);
 			
 			} else {
 				// throw Error('Not yet implemented');
@@ -331,7 +330,6 @@ export function ComboComponent(props) {
 					Repository.filter(filter);
 				}
 
-				setSavedSearch(value);
 				setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
 			
 			} else {

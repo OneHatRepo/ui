@@ -71,6 +71,7 @@ function Form(props) {
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
 			checkIsEditingDisabled = true,
+			disableLabels = false,
 			onBack,
 			onReset,
 			onViewMode,
@@ -295,6 +296,9 @@ function Form(props) {
 			if (isHidden) {
 				return null;
 			}
+			if (type === 'DisplayField') {
+				isEditable = false;
+			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!useAdditionalEditButtons) {
 				item = _.omit(item, 'additionalEditButtons');
@@ -330,12 +334,12 @@ function Form(props) {
 					editorTypeProps.autoLoad = true;
 				}
 			}
-			if (isCombo) {
+			if (isCombo && _.isNil(propsToPass.showXButton)) {
 				editorTypeProps.showXButton = true;
 			}
 			const Element = getComponentFromType(type);
 			let children;
-
+			
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
@@ -379,7 +383,7 @@ function Form(props) {
 									reference={name}
 									{...propsToPass}
 								/>;
-				if (label) {
+				if (!disableLabels && label) {
 					const labelProps = {};
 					if (defaults?.labelWidth) {
 						labelProps.w = defaults.labelWidth;
@@ -486,17 +490,22 @@ function Form(props) {
 											</Row>;
 							}
 								
-							if (label && editorType !== EDITOR_TYPE__INLINE) {
+							let requiredIndicator = null;
+							if (propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) {
+								requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
+							}
+							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
 								const labelProps = {};
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
 								}
-								let requiredIndicator = null;
-								if (propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) {
-									requiredIndicator = <Text color="#f00" pr={1}>*</Text>;
-								}
 								element = <Row w="100%" py={1}>
 												<Label {...labelProps}>{requiredIndicator}{label}</Label>
+												{element}
+											</Row>;
+							} else if (disableLabels && requiredIndicator) {
+								element = <Row w="100%" py={1}>
+												{requiredIndicator}
 												{element}
 											</Row>;
 							}
