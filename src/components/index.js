@@ -1,5 +1,6 @@
 import {
 	Column,
+	Row,
 } from 'native-base';
 // import AccordionGridPanel from '../Components/Panel/AccordionGridPanel.js';
 import ArrayCheckboxGroup from './Form/Field/Checkbox/ArrayCheckboxGroup.js';
@@ -90,6 +91,7 @@ const components = {
 	// Picker,
 	PlusMinusButton,
 	RadioGroup,
+	Row,
 	SquareButton,
 	TabPanel,
 	Tag,
