@@ -5,6 +5,7 @@ import {
 	Pressable,
 	Icon,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import {
@@ -884,43 +885,40 @@ function GridComponent(props) {
 						deselectAll();
 					}
 				}}>
-					{!entities?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
-						<FlatList
-							ref={gridRef}
-							// ListHeaderComponent={listHeaderComponent}
-							// ListFooterComponent={listFooterComponent}
-							scrollEnabled={true}
-							nestedScrollEnabled={true}
-							contentContainerStyle={{
-								overflow: 'auto',
-								borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
-								borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
-								borderStyle: styles.REORDER_BORDER_STYLE,
-								flex: 1,
-							}}
-							refreshing={isLoading}
-							onRefresh={pullToRefresh ? onRefresh : null}
-							progressViewOffset={100}
-							data={rowData}
-							keyExtractor={(item) => {
-								let id;
-								if (item.id) {
-									id = item.id;
-								} else if (fields) {
-									id = item[idIx];
-								}
-								return String(id);
-							}}
-							// getItemLayout={(data, index) => ( // an optional optimization that allows skipping the measurement of dynamic content if you know the size (height or width) of items ahead of time. getItemLayout is efficient if you have fixed size items
-							// 	{length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
-							// )}
-							// numColumns={1}
-							initialNumToRender={initialNumToRender}
-							initialScrollIndex={0}
-							renderItem={renderRow}
-							bg="trueGray.100"
-							{...flatListProps}
-						/>}
+					{!entities?.length ? 
+						<NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
+						<ScrollView flex={1} w="100%">
+							<FlatList
+								ref={gridRef}
+								scrollEnabled={false}
+								nestedScrollEnabled={true}
+								contentContainerStyle={{
+									overflow: 'auto',
+									borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
+									borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
+									borderStyle: styles.REORDER_BORDER_STYLE,
+									flex: 1,
+								}}
+								refreshing={isLoading}
+								onRefresh={pullToRefresh ? onRefresh : null}
+								progressViewOffset={100}
+								data={rowData}
+								keyExtractor={(item) => {
+									let id;
+									if (item.id) {
+										id = item.id;
+									} else if (fields) {
+										id = item[idIx];
+									}
+									return String(id);
+								}}
+								initialNumToRender={initialNumToRender}
+								initialScrollIndex={0}
+								renderItem={renderRow}
+								bg="trueGray.100"
+								{...flatListProps}
+							/>
+						</ScrollView>}
 				</Column>
 
 				{listFooterComponent}
