@@ -796,11 +796,13 @@ export function ComboComponent(props) {
 				</Row>;
 			dropdownMenu = <Modal
 								isOpen={true}
+								safeAreaTop={true}
 								onClose={() => setIsMenuShown(false)}
-								top="30%"
+								mt="auto"
+								mb="auto"
 								w="100%"
 								h={400}
-								px={5}
+								p={5}
 							>
 								{inputAndTriggerClone}
 								{grid}
