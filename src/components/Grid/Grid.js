@@ -868,6 +868,41 @@ function GridComponent(props) {
 		sizeProps.flex = flex ?? 1;
 	}
 
+	let grid = <FlatList
+					ref={gridRef}
+					scrollEnabled={CURRENT_MODE === UI_MODE_WEB}
+					nestedScrollEnabled={true}
+					contentContainerStyle={{
+						overflow: 'auto',
+						borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
+						borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
+						borderStyle: styles.REORDER_BORDER_STYLE,
+						flex: 1,
+					}}
+					refreshing={isLoading}
+					onRefresh={pullToRefresh ? onRefresh : null}
+					progressViewOffset={100}
+					data={rowData}
+					keyExtractor={(item) => {
+						let id;
+						if (item.id) {
+							id = item.id;
+						} else if (fields) {
+							id = item[idIx];
+						}
+						return String(id);
+					}}
+					initialNumToRender={initialNumToRender}
+					initialScrollIndex={0}
+					renderItem={renderRow}
+					bg="trueGray.100"
+					{...flatListProps}
+				/>
+	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
+	}
+
+
 	return <Column
 				{...testProps('Grid')}
 				ref={containerRef}
@@ -885,40 +920,7 @@ function GridComponent(props) {
 						deselectAll();
 					}
 				}}>
-					{!entities?.length ? 
-						<NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
-						<ScrollView flex={1} w="100%">
-							<FlatList
-								ref={gridRef}
-								scrollEnabled={false}
-								nestedScrollEnabled={true}
-								contentContainerStyle={{
-									overflow: 'auto',
-									borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
-									borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
-									borderStyle: styles.REORDER_BORDER_STYLE,
-									flex: 1,
-								}}
-								refreshing={isLoading}
-								onRefresh={pullToRefresh ? onRefresh : null}
-								progressViewOffset={100}
-								data={rowData}
-								keyExtractor={(item) => {
-									let id;
-									if (item.id) {
-										id = item.id;
-									} else if (fields) {
-										id = item[idIx];
-									}
-									return String(id);
-								}}
-								initialNumToRender={initialNumToRender}
-								initialScrollIndex={0}
-								renderItem={renderRow}
-								bg="trueGray.100"
-								{...flatListProps}
-							/>
-						</ScrollView>}
+					{!entities?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> : grid}
 				</Column>
 
 				{listFooterComponent}

@@ -717,8 +717,6 @@ export function ComboComponent(props) {
 									minWidth={menuMinWidth}
 									overflow="auto"
 									bg="#fff"
-
-									h={200}
 								>
 									<Popover.Body
 										ref={menuRef}
