@@ -65,6 +65,11 @@ function InputElement(props) {
 	if (localValue === null || typeof localValue === 'undefined') {
 		localValue = ''; // If the value is null or undefined, don't let this be an uncontrolled input
 	}
+
+	const sizeProps = {};
+	if (!props.flex && !props.w) {
+		sizeProps.flex = 1;
+	}
 	
 	let component = <Input
 						ref={props.outerRef}
@@ -72,12 +77,12 @@ function InputElement(props) {
 						_input={{
 							onKeyPress: onKeyPressLocal,
 						}}
-						flex={1}
 						fontSize={styles.FORM_INPUT_FONTSIZE}
 						bg={styles.FORM_INPUT_BG}
 						_focus={{
 							bg: styles.FORM_INPUT_FOCUS_BG,
 						}}
+						{...sizeProps}
 						{...props}
 						value={localValue}
 					/>;
