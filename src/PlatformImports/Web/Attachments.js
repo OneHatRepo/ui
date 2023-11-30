@@ -171,6 +171,7 @@ function AttachmentsElement(props) {
 		},
 		doDelete = (id) => {
 			Repository.deleteById(id);
+			Repository.save();
 		};
 
 	if (!_.isEqual(modelidCalc, modelid.current)) {
