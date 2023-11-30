@@ -66,7 +66,7 @@ export default function withAlert(WrappedComponent) {
 			},
 			onConfirm = (message, callback, includeCancel = false) => {
 				clearAll();
-				setMode(ALERT_MODE_YES_NO);
+				setMode(includeCancel ? ALERT_MODE_YES : ALERT_MODE_YES_NO);
 				setTitle('Confirm');
 				setMessage(message);
 				setIncludeCancel(includeCancel);
