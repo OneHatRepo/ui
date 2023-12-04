@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, isValidElement, } from 'react';
+import React, { useEffect, useState, useRef, isValidElement, } from 'react';
 import { View, } from 'react-native';
 import {
 	Box,
@@ -280,6 +280,9 @@ function Form(props) {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
 		buildFromItem = (item, ix, defaults) => {
+			if (React.isValidElement(item)) {
+				return item;
+			}
 			let {
 					type,
 					title,
