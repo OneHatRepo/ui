@@ -38,6 +38,7 @@ export function ComboComponent(props) {
 			isEditor = false,
 			isDisabled = false,
 			tooltipPlacement = 'bottom',
+			placeholder,
 			onRowPress,
 
 			// withComponent
@@ -470,11 +471,12 @@ export function ComboComponent(props) {
 										borderTopRightRadius={0}
 										borderBottomRightRadius={0}
 										fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
+										color={_.isEmpty(textInputValue) ? 'trueGray.400' : '#000'}
 										bg={styles.FORM_COMBO_INPUT_BG}
 										_focus={{
 											bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
 										}}
-									>{textInputValue}</Text>
+									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
 								</Pressable> :
 								<Input
 									ref={inputRef}
@@ -504,6 +506,7 @@ export function ComboComponent(props) {
 									_focus={{
 										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
 									}}
+									placeholder={placeholder}
 									{..._input}
 								/>}
 							<IconButton
@@ -549,12 +552,13 @@ export function ComboComponent(props) {
 									borderColor="trueGray.400"
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
+									color={_.isEmpty(textInputValue) ? 'trueGray.400' : '#000'}
 									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
 									bg={styles.FORM_COMBO_INPUT_BG}
 									_focus={{
 										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
 									}}
-								>{textInputValue}</Text>
+								>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
 							</Pressable>
 							<IconButton
 								ref={triggerRef}
@@ -772,6 +776,7 @@ export function ComboComponent(props) {
 							_focus={{
 								bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
 							}}
+							placeholder={placeholder}
 							{..._input}
 						/>}
 					<IconButton
