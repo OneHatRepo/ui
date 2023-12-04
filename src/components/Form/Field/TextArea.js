@@ -18,6 +18,9 @@ const
 					onChangeText={props.setValue}
 					flex={1}
 					bg={styles.FORM_TEXTAREA_BG}
+					_focus={{
+						bg: styles.FORM_TEXTAREA_BG,
+					}}
 					fontSize={styles.FORM_TEXTAREA_FONTSIZE}
 					h={styles.FORM_TEXTAREA_HEIGHT}
 					{...props}

@@ -72,6 +72,7 @@ function Form(props) {
 			buttonGroupProps = {}, // buttons in footer
 			checkIsEditingDisabled = true,
 			disableLabels = false,
+			disableDirtyIcon = false,
 			onBack,
 			onReset,
 			onViewMode,
@@ -267,7 +268,7 @@ function Form(props) {
 											// 			</Column>;
 											// }
 
-											const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
+											const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
 											return <Row key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</Row>;
 										}}
 									/>);
@@ -510,7 +511,7 @@ function Form(props) {
 											</Row>;
 							}
 
-							const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
+							const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
 							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : null}>{dirtyIcon}{element}</Row>;
 						}}
 					/>;
