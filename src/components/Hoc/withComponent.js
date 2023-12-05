@@ -17,7 +17,7 @@ export default function withComponent(WrappedComponent) {
 				componentMethods,
 				...propsToPass
 			} = props,
-			reference = _.isEmpty(props.reference) ? uuid() : props.reference,
+			reference = !_.isEmpty(props.reference) ? props.reference : uuid(),
 			childrenRef = useRef({}),
 			selfRef = useRef({
 				parent,
@@ -70,6 +70,7 @@ export default function withComponent(WrappedComponent) {
 					// parent={parent}
 					self={selfRef.current}
 					{...propsToPass}
+					reference={reference}
 				/>;
 
 	};
