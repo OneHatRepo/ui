@@ -187,7 +187,7 @@ export default function withPdfButton(WrappedComponent) {
 								startingValues={startingValues}
 								validator={validator}
 								checkIsEditingDisabled={false}
-								onCancel={(e) => {
+								onClose={(e) => {
 									setIsModalShown(false);
 								}}
 								onSubmit={(data, e) => {
