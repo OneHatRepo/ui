@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect, } from 'react';
+import {
+	v4 as uuid,
+} from 'uuid';
 import _ from 'lodash';
 
 // This HOC establishes a parent-child relationship between components.
@@ -7,13 +10,14 @@ import _ from 'lodash';
 
 export default function withComponent(WrappedComponent) {
 	return (props) => {
+
 		const {
 				// self: parent,
 				parent,
 				componentMethods,
 				...propsToPass
 			} = props,
-			{ reference } = props,
+			reference = _.isEmpty(props.reference) ? uuid() : props.reference,
 			childrenRef = useRef({}),
 			selfRef = useRef({
 				parent,

@@ -61,7 +61,7 @@ export function ComboComponent(props) {
 		inputRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
-		displayValueRef = useRef(null),
+		displayValueRef = useRef(),
 		typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
@@ -117,6 +117,58 @@ export function ComboComponent(props) {
 		},
 		toggleMenu = () => {
 			setIsMenuShown(!isMenuShown);
+		},
+		getDisplayValue = () => {
+			return displayValueRef.current;
+		},
+		setDisplayValue = async (value) => {
+			let displayValue = '';
+			if (_.isNil(value)) {
+				// do nothing
+			} else if (_.isArray(value)) {
+				displayValue = [];
+				if (Repository) {
+					if (!Repository.isLoaded) {
+						throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
+					}
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
+					}
+					displayValue = _.each(value, (id) => {
+						const entity = Repository.getById(id);
+						if (entity) {
+							displayValue.push(entity.displayValue)
+						}
+					});
+				} else {
+					displayValue = _.each(value, (id) => {
+						const item = _.find(data, (datum) => datum[idIx] === id);
+						if (item) {
+							displayValue.push(item[displayIx]);
+						}
+					});
+				}
+				displayValue = displayValue.join(', ');
+			} else {
+				if (Repository) {
+					let entity;
+					if (!Repository.isLoaded) {
+						entity = await Repository.getSingleEntityFromServer(value);
+					} else {
+						if (Repository.isLoading) {
+							await Repository.waitUntilDoneLoading();
+						}
+						entity = Repository.getById(value);
+					}
+					displayValue = entity?.displayValue || '';
+				} else {
+					const item = _.find(data, (datum) => datum[idIx] === value);
+					displayValue = (item && item[displayIx]) || '';
+				}
+			}
+
+			displayValueRef.current = displayValue;
+			resetInputTextValue();
 		},
 		resetInputTextValue = () => {
 			setTextInputValue(getDisplayValue());
@@ -344,57 +396,6 @@ export function ComboComponent(props) {
 				// 	setTextInputValue(newTextValue);
 				// }
 			}
-		},
-		getDisplayValue = () => {
-			return displayValueRef.current;
-		},
-		setDisplayValue = async (value) => {
-			let displayValue = '';
-			if (_.isNil(value)) {
-				// do nothing
-			} else if (_.isArray(value)) {
-				displayValue = [];
-				if (Repository) {
-					if (!Repository.isLoaded) {
-						throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
-					}
-					if (Repository.isLoading) {
-						await Repository.waitUntilDoneLoading();
-					}
-					displayValue = _.each(value, (id) => {
-						const entity = Repository.getById(id);
-						if (entity) {
-							displayValue.push(entity.displayValue)
-						}
-					});
-				} else {
-					displayValue = _.each(value, (id) => {
-						const item = _.find(data, (datum) => datum[idIx] === id);
-						if (item) {
-							displayValue.push(item[displayIx]);
-						}
-					});
-				}
-				displayValue = displayValue.join(', ');
-			} else {
-				if (Repository) {
-					let entity;
-					if (!Repository.isLoaded) {
-						entity = await Repository.getSingleEntityFromServer(value);
-					} else {
-						if (Repository.isLoading) {
-							await Repository.waitUntilDoneLoading();
-						}
-						entity = Repository.getById(value);
-					}
-					displayValue = entity?.displayValue || '';
-				} else {
-					const item = _.find(data, (datum) => datum[idIx] === value);
-					displayValue = (item && item[displayIx]) || '';
-				}
-			}
-
-			displayValueRef.current = displayValue;
 		};
 
 	useEffect(() => {
@@ -412,7 +413,6 @@ export function ComboComponent(props) {
 		(async () => {
 			setIsSearchMode(false);
 			await setDisplayValue(value);
-			resetInputTextValue();
 			if (!isReady) {
 				setIsReady(true);
 			}
