@@ -1,10 +1,10 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 
-export default async function processImage(uri) {
+export default async function processImage(uri, width = 1000) {
 	const file = await ImageManipulator.manipulateAsync(uri,
 		[{
 			resize: {
-				width: 1000
+				width,
 			}
 		}],
 		{
