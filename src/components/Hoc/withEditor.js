@@ -265,48 +265,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			onRemoteDuplicate = async () => {
-
-				// Call /duplicate on server
-				const 
-					Model = Repository.getSchema().name,
+				const
 					entity = selection[0],
-					id = entity.id;
-				const result = await Repository._send('POST', Model + '/duplicate', { id });
-				if (!result) {
-					return;
-				}
-				const {
-					root,
-					success,
-					total,
-					message
-				} = Repository._processServerResponse(result);
+					duplicateEntity = await Repository.remoteDuplicate(entity);
 
-				if (!success) {
-					throw Error(message);
-				}
-
-				const duplicateId = root.id;
-
-				// TODO: I don't like this.
-				// Currently, we filter the repository by only the new Entity, then select the entity for editing.
-				// There is a 2-second delay between filtering and being able to select, and this is unacceptable.
-				// Why do we filter for just the new entity? Because it's not guaranteed to show up in the grid based on sorting.
-				// Can't we just manually add this record to the repository at the top and then edit it?
-
-				// Filter the grid with only the duplicate's ID, and open it for editing.
-				self.filterById(duplicateId, () => { // because of the way useFilters is made, we have to use a callback, not await a Promise.
-
-					// Select the only node
-					const duplicateEntity = Repository.getById(duplicateId);
-					setTimeout(() => {
-						setSelection([duplicateEntity]);
-
-						onEdit();
-					}, 2000); // we need this delay!
-
-				});
-
+				setSelection([duplicateEntity]);
+				onEdit();
 			},
 			onEditorSave = async (data, e) => {
 				const
