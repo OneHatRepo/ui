@@ -570,6 +570,7 @@ export function DateElement(props) {
 								/> */}
 								<Box bg="#fff">
 									<Datetime
+										initialDate={moment(value).toDate()}
 										selectedStartDate={moment(value).toDate()}
 										onDateChange={onPickerChange}
 										todayBackgroundColor="#eee"
