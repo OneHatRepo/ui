@@ -4,6 +4,7 @@ import Attachments from '../PlatformImports/Web/Attachments.js';
 import Datetime from '../PlatformImports/Web/Datetime.js';
 import Draggable from '../PlatformImports/Web/Draggable.js';
 // import File from '../PlatformImports/Web/Attachments.js';
+import useWindowSize from '../PlatformImports/Web/useWindowSize.js';
 import _ from 'lodash';
 
 export default function registerWebComponents() {
@@ -13,5 +14,6 @@ export default function registerWebComponents() {
 		Datetime,
 		Draggable,
 		// File,
+		useWindowSize,
 	});
 }

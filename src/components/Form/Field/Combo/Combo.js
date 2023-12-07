@@ -70,6 +70,7 @@ export function ComboComponent(props) {
 		[gridSelection, setGridSelection] = useState(null),
 		[textInputValue, setTextInputValue] = useState(''),
 		[newEntityDisplayValue, setNewEntityDisplayValue] = useState(null),
+		[filteredData, setFilteredData] = useState(data),
 		[width, setWidth] = useState(0),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
@@ -129,6 +130,7 @@ export function ComboComponent(props) {
 				displayValue = [];
 				if (Repository) {
 					if (!Repository.isLoaded) {
+						debugger;
 						throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
 					}
 					if (Repository.isLoading) {
@@ -168,9 +170,9 @@ export function ComboComponent(props) {
 			}
 
 			displayValueRef.current = displayValue;
-			resetInputTextValue();
+			resetTextInputValue();
 		},
-		resetInputTextValue = () => {
+		resetTextInputValue = () => {
 			setTextInputValue(getDisplayValue());
 		},
 		onInputKeyPress = (e, inputValue) => {
@@ -180,7 +182,7 @@ export function ComboComponent(props) {
 			switch(e.key) {
 				case 'Escape':
 					setIsSearchMode(false);
-					resetInputTextValue();
+					resetTextInputValue();
 					hideMenu();
 					break;
 				case 'Enter':
@@ -245,8 +247,8 @@ export function ComboComponent(props) {
 			}, 300);
 		},
 		onInputFocus = (e) => {
-			if (inputRef.current.select) {
-				inputRef.current.select();
+			if (inputRef.current?.select) {
+				inputRef.current?.select();
 			}
 		},
 		onInputBlur = (e) => {
@@ -256,7 +258,7 @@ export function ComboComponent(props) {
 			}
 
 			setIsSearchMode(false);
-			resetInputTextValue();
+			resetTextInputValue();
 			hideMenu();
 		},
 		onTriggerPress = (e) => {
@@ -277,7 +279,7 @@ export function ComboComponent(props) {
 			}
 
 			setIsSearchMode(false);
-			resetInputTextValue();
+			resetTextInputValue();
 			hideMenu();
 		},
 		onClearBtn = () => {
@@ -303,7 +305,7 @@ export function ComboComponent(props) {
 				}
 				
 				// clear filter
-				if (Repository.isRemote) {
+				if (Repository.isRemote || Repository.remote) {
 					let searchField = 'q';
 					const searchValue = null;
 
@@ -316,10 +318,12 @@ export function ComboComponent(props) {
 						searchField = displayFieldName + ' LIKE';
 					}
 
-					Repository.clear();
-					await Repository.filter(searchField, searchValue);
-					if (!this.isAutoLoad) {
-						await Repository.reload();
+					if (Repository.hasFilter(searchField)) {
+						Repository.clear();
+						await Repository.filter(searchField, searchValue);
+						if (!this.isAutoLoad) {
+							await Repository.reload();
+						}
 					}
 
 				} else {
@@ -327,7 +331,7 @@ export function ComboComponent(props) {
 				}
 			
 			} else {
-				// throw Error('Not yet implemented');
+				setFilteredData(data);
 			}
 		},
 		searchForMatches = async (value) => {
@@ -339,21 +343,26 @@ export function ComboComponent(props) {
 
 			let found;
 			if (Repository) {
+
+				if (_.isEmpty(value) && Repository.hasFilters) {
+					Repository.clearFilters();
+					return;
+				}
+
 				if (Repository.isLoading) {
 					await Repository.waitUntilDoneLoading();
 				}
 				
 				// Set filter
-				let filter = {};
 				if (Repository.isRemote) {
-					let searchField = 'q';
-					const searchValue = _.isEmpty(value) ? null : value + '%';
-
-					// Check to see if displayField is a real field
 					const
 						schema = Repository.getSchema(),
 						displayFieldName = schema.model.displayProperty,
-						displayFieldDef = schema.getPropertyDefinition(displayFieldName);
+						displayFieldDef = schema.getPropertyDefinition(displayFieldName),
+						searchValue = _.isEmpty(value) ? null : value + '%';
+					let searchField = 'q';
+
+					// Verify displayField is a real field
 					if (!displayFieldDef.isVirtual) {
 						searchField = displayFieldName + ' LIKE';
 					}
@@ -362,39 +371,28 @@ export function ComboComponent(props) {
 					if (!this.isAutoLoad) {
 						await Repository.reload();
 					}
-
 				} else {
-					throw Error('Not yet implemented');
-
-					// Fuzzy search with getBy filter function
-					filter = (entity) => {
+					// local filter
+					Repository.filter((entity) => {
 						const
 							displayValue = entity.displayValue,
 							regex = new RegExp('^' + value);
 						return displayValue.match(regex);
-					};
-					Repository.filter(filter);
+					});
 				}
 
 				setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
 			
 			} else {
-
-				throw Error('Not yet implemented'); // NOTE: When implementing this, also implement clearGridFilters
-
 				// Search through data
-				found = _.find(data, (item) => {
+				const regex = new RegExp('^' + value);
+				found = _.filter(data, (item) => {
 					if (_.isString(item[displayIx]) && _.isString(value)) {
-						return item[displayIx].toLowerCase() === value.toLowerCase();
+						return item[displayIx].match(regex);
 					}
-					return item[displayIx] === value;
+					return item[displayIx] == value; // equality, not identity
 				});
-				// if (found) {
-				// 	const
-				// 		newSelection = [found];
-
-				// 	setTextInputValue(newTextValue);
-				// }
+				setFilteredData(found);
 			}
 		};
 
@@ -588,7 +586,7 @@ export function ComboComponent(props) {
 			'Editor',
 			'model',
 			'Repository',
-			'data',
+			// 'data',
 			'idIx',
 			'displayIx',
 			'value',
@@ -614,6 +612,7 @@ export function ComboComponent(props) {
 					}}
 					autoAdjustPageSizeToHeight={false}
 					{...gridProps}
+					data={filteredData}
 					reference="dropdownGrid"
 					parent={self}
 					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
@@ -638,7 +637,7 @@ export function ComboComponent(props) {
 							// when user selected the record matching the current value, kill search mode
 							if (selection[0]?.id === value) {
 								setIsSearchMode(false);
-								resetInputTextValue();
+								resetTextInputValue();
 								if (hideMenuOnSelection) {
 									hideMenu();
 								}
@@ -657,7 +656,7 @@ export function ComboComponent(props) {
 							// when user selected the record matching the current value, kill search mode
 							if (selection[0] && selection[0][idIx] === value) {
 								setIsSearchMode(false);
-								resetInputTextValue();
+								resetTextInputValue();
 								if (hideMenuOnSelection) {
 									hideMenu();
 								}

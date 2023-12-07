@@ -24,6 +24,7 @@ const
 			} = props,
 			[low, setLow] = useState(''),
 			[high, setHigh] = useState(''),
+			[isReady, setIsReady] = useState(false),
 			onChangeLow = (value) => {
 				setLow(value);
 				const newValue = {
@@ -59,9 +60,16 @@ const
 			if (value.high !== high) {
 				setHigh(value.high);
 			}
+			if (!isReady) {
+				setIsReady(true);
+			}
 
 		}, [value]);
 
+		if (!isReady) {
+			return null;
+		}
+		
 		return <Row
 					justifyContent="center"
 					alignItems="center"
@@ -72,7 +80,6 @@ const
 						value={low}
 						onChangeValue={onChangeLow}
 						mode={mode}
-						startingValue={null}
 						// minValue={minValue}
 						// maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'Low'}
@@ -82,7 +89,6 @@ const
 						value={high}
 						onChangeValue={onChangeHigh}
 						mode={mode}
-						startingValue={null}
 						// minValue={minValue}
 						// maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
