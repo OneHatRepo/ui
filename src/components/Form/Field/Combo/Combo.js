@@ -22,6 +22,7 @@ import emptyFn from '../../../../Functions/emptyFn.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
+import Check from '../../../Icons/Check.js';
 import Xmark from '../../../Icons/Xmark.js';
 import _ from 'lodash';
 
@@ -428,6 +429,7 @@ export function ComboComponent(props) {
 
 	let xButton = null,
 		inputAndTrigger = null,
+		checkBtn = null,
 		grid = null,
 		dropdownMenu = null,
 		assembledComponents = null;
@@ -735,6 +737,27 @@ export function ComboComponent(props) {
 							</Popover>;
 		}
 		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+			if (isEditor) {
+				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
+				const isCheckBtnDisabled = _.isEmpty(value);
+				checkBtn = <IconButton
+								_icon={{
+									as: Check,
+									color: isCheckBtnDisabled ? 'disabled' : 'trueGray.600',
+									size: 'sm',
+								}}
+								isDisabled={isCheckBtnDisabled}
+								onPress={acceptSelection}
+								h="100%"
+								borderWidth={1}
+								borderColor="#bbb"
+								borderRadius="md"
+								bg={styles.FORM_COMBO_TRIGGER_BG}
+								_hover={{
+									bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
+								}}
+							/>;
+			}
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
 				<Row h={10}>
 					{disableDirectEntry ?
@@ -798,6 +821,7 @@ export function ComboComponent(props) {
 							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
 						}}
 					/>
+					{checkBtn}
 				</Row>;
 			dropdownMenu = <Modal
 								isOpen={true}
