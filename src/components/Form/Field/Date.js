@@ -290,11 +290,11 @@ export function DateElement(props) {
 									color: styles.FORM_DATE_ICON_COLOR,
 									size: 'sm',
 								}}
-								isDisabled={isDisabled}
 								onPress={onTriggerPress}
 								onBlur={onTriggerBlur}
-								h="100%"
+								h={10}
 								w={10}
+								isDisabled={isDisabled}
 								borderWidth={1}
 								borderColor="#bbb"
 								borderLeftRadius="md"
@@ -334,20 +334,21 @@ export function DateElement(props) {
 								<Input
 									ref={inputRef}
 									value={textInputValue}
-									autoSubmit={true}
-									isDisabled={isDisabled}
+									// setValue={onInputSetValue}
 									onChangeValue={onInputChangeText}
 									onKeyPress={onInputKeyPress}
-									onFocus={onInputFocus}
 									onBlur={onInputBlur}
-									onLayout={(e) => {
-										const {
-												height,
-												width,
-											} = e.nativeEvent.layout;
-										setWidth(Math.round(width));
-										setTop(Math.round(height));
-									}}
+									onFocus={onInputFocus}
+									autoSubmit={true}
+									isDisabled={isDisabled}
+									// onLayout={(e) => {
+									// 	const {
+									// 			height,
+									// 			width,
+									// 		} = e.nativeEvent.layout;
+									// 	setWidth(Math.round(width));
+									// 	setTop(Math.round(height));
+									// }}
 									flex={1}
 									h="100%"
 									m={0}
@@ -455,6 +456,7 @@ export function DateElement(props) {
 									minWidth={menuMinWidth}
 									overflow="auto"
 									bg="#fff"
+									{...translateProps}
 								>
 									<Popover.Body
 										ref={pickerRef}
