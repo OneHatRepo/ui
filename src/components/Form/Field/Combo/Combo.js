@@ -529,7 +529,8 @@ export function ComboComponent(props) {
 
 	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 		// This input and trigger are for show
-		// The just show the current value and open the menu
+		// The just show the current getDisplayValue and open the menu
+		const displayValue = getDisplayValue();
 		inputAndTrigger = <>
 							<Pressable
 								onPress={showMenu}
@@ -546,13 +547,13 @@ export function ComboComponent(props) {
 									borderColor="trueGray.400"
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
-									color={_.isEmpty(textInputValue) ? 'trueGray.400' : '#000'}
+									color={_.isEmpty(displayValue) ? 'trueGray.400' : '#000'}
 									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
 									bg={styles.FORM_COMBO_INPUT_BG}
 									_focus={{
 										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
 									}}
-								>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
+								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
 							</Pressable>
 							<IconButton
 								ref={triggerRef}
