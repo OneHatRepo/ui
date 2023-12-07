@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
+	Button,
 	Modal,
 	Popover,
 	Pressable,
@@ -327,7 +328,7 @@ export function ComboComponent(props) {
 					}
 
 				} else {
-					throw Error('Not yet implemented');
+					Repository.clear();
 				}
 			
 			} else {
@@ -810,6 +811,7 @@ export function ComboComponent(props) {
 							>
 								{inputAndTriggerClone}
 								{grid}
+								<Button mt={2} onPress={() => setIsMenuShown(false)}>Close</Button>
 							</Modal>;
 		}
 	}
