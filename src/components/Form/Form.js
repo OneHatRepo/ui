@@ -107,6 +107,7 @@ function Form(props) {
 			onClose,
 			onDelete,
 			editorStateRef,
+			disableView,
 
 			// parent container
 			selectorId,
@@ -696,7 +697,7 @@ function Form(props) {
 										leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
 										color="#fff"
 									>Back</Button>}
-								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
+								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && !disableView &&
 									<Button
 										key="viewBtn"
 										onPress={onViewMode}
@@ -736,7 +737,12 @@ function Form(props) {
 			if (isEditorViewOnly) {
 				showCloseBtn = true;
 			} else {
-				if (formState.isDirty || record?.isPhantom) {
+				const
+					formIsDirty = formState.isDirty,
+					recordIsPhantom = record?.isPhantom;
+				// console.log('formIsDirty', formIsDirty);
+				// console.log('recordIsPhantom', recordIsPhantom);
+				if (formIsDirty || recordIsPhantom) {
 					if (isSingle && onCancel) {
 						showCancelBtn = true;
 					}

@@ -130,7 +130,6 @@ export default function Accordion(props) {
 						if (!containerInitialHeight) {
 							const { height } = e.nativeEvent.layout;
 							setContainerInitialHeight(height);
-							console.log('height', height);
 						}
 						if (onLayout) {
 							onLayout(e);

@@ -973,7 +973,7 @@ function TreeComponent(props) {
 				setHighlitedDatum(null);
 
 			} else {
-				console.log('setDropRowIx', newIx);
+				// console.log('setDropRowIx', newIx);
 				setDropRowIx(newIx);
 
 				// highlight the drop node

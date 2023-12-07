@@ -45,12 +45,6 @@ const
 							const value = editor.getData();
 							debouncedSetValueRef.current(value);
 						}}
-						// onBlur={(event, editor) => {
-						// 	console.log( 'Blur.', editor);
-						// }}
-						// onFocus={(event, editor) => {
-						// 	console.log( 'Focus.', editor);
-						// }}
 					/>
 				</Row>;
 	},

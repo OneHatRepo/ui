@@ -25,6 +25,8 @@ import Check from '../../../Icons/Check.js';
 import Xmark from '../../../Icons/Xmark.js';
 import _ from 'lodash';
 
+const FILTER_NAME = 'q';
+
 export function ComboComponent(props) {
 	const {
 			additionalButtons,
@@ -299,38 +301,38 @@ export function ComboComponent(props) {
 					menuRef.current === relatedTarget || 
 					menuRef.current?.contains(relatedTarget);
 		},
+		getFilterName = () => {
+			// Only used for remote repositories
+			// Gets the filter name of the query, which becomes the condition sent to server 
+			let filterName = FILTER_NAME;
+			if (Repository.isRemote) {
+				const
+					schema = Repository.getSchema(),
+					displayFieldName = schema.model.displayProperty,
+					displayFieldDef = schema.getPropertyDefinition(displayFieldName);
+	
+				// Verify displayField is a real field
+				if (!displayFieldDef.isVirtual) {
+					filterName = displayFieldName + ' LIKE';
+				}
+			}
+			return filterName;
+		},
 		clearGridFilters = async () => {
 			if (Repository) {
 				if (Repository.isLoading) {
 					await Repository.waitUntilDoneLoading();
 				}
-				
-				// clear filter
-				if (Repository.isRemote || Repository.remote) {
-					let searchField = 'q';
-					const searchValue = null;
-
-					// Check to see if displayField is a real field
-					const
-						schema = Repository.getSchema(),
-						displayFieldName = schema.model.displayProperty,
-						displayFieldDef = schema.getPropertyDefinition(displayFieldName);
-					if (!displayFieldDef.isVirtual) {
-						searchField = displayFieldName + ' LIKE';
-					}
-
-					if (Repository.hasFilter(searchField)) {
-						Repository.clear();
-						await Repository.filter(searchField, searchValue);
-						if (!this.isAutoLoad) {
-							await Repository.reload();
-						}
-					}
-
-				} else {
-					Repository.clear();
+				const filterName = getFilterName();
+				if (Repository.hasFilter(filterName)) {
+					Repository.clearFilters(filterName);
 				}
-			
+				
+				if (Repository.isRemote) {
+					if (!this.isAutoLoad) {
+						await Repository.reload();
+					}
+				}
 			} else {
 				setFilteredData(data);
 			}
@@ -344,41 +346,34 @@ export function ComboComponent(props) {
 
 			let found;
 			if (Repository) {
-
-				if (_.isEmpty(value) && Repository.hasFilters) {
-					Repository.clearFilters();
-					return;
-				}
-
 				if (Repository.isLoading) {
 					await Repository.waitUntilDoneLoading();
 				}
-				
+
+				if (_.isEmpty(value)) {
+					clearGridFilters();
+					return;
+				}
+
 				// Set filter
+				const filterName = getFilterName();
 				if (Repository.isRemote) {
-					const
-						schema = Repository.getSchema(),
-						displayFieldName = schema.model.displayProperty,
-						displayFieldDef = schema.getPropertyDefinition(displayFieldName),
-						searchValue = _.isEmpty(value) ? null : value + '%';
-					let searchField = 'q';
-
-					// Verify displayField is a real field
-					if (!displayFieldDef.isVirtual) {
-						searchField = displayFieldName + ' LIKE';
-					}
-
-					await Repository.filter(searchField, searchValue);
+					// remote
+					const filterValue = _.isEmpty(value) ? null : value + '%';
+					await Repository.filter(filterName, filterValue);
 					if (!this.isAutoLoad) {
 						await Repository.reload();
 					}
 				} else {
-					// local filter
-					Repository.filter((entity) => {
-						const
-							displayValue = entity.displayValue,
-							regex = new RegExp('^' + value);
-						return displayValue.match(regex);
+					// local
+					Repository.filter({
+						name: filterName,
+						fn: (entity) => {
+							const
+								displayValue = entity.displayValue,
+								regex = new RegExp('^' + value);
+							return displayValue.match(regex);
+						},
 					});
 				}
 
@@ -405,6 +400,12 @@ export function ComboComponent(props) {
 		if (autoFocus && !inputRef.current.isFocused()) {
 			inputRef.current.focus();
 		}
+
+		return () => {
+			if (Repository && !Repository.isUnique) {
+				clearGridFilters();
+			}
+		};
 
 	}, [isRendered]);
 
@@ -480,6 +481,7 @@ export function ComboComponent(props) {
 								</Pressable> :
 								<Input
 									ref={inputRef}
+									reference="ComboInput"
 									value={textInputValue}
 									autoSubmit={true}
 									isDisabled={isDisabled}
@@ -770,6 +772,7 @@ export function ComboComponent(props) {
 						>{textInputValue}</Text> :
 						<Input
 							ref={inputRef}
+							reference="ComboInput"
 							value={textInputValue}
 							autoSubmit={true}
 							isDisabled={isDisabled}
