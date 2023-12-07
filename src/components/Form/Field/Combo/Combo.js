@@ -289,6 +289,10 @@ export function ComboComponent(props) {
 			setTextInputValue('');
 			setValue(null);
 		},
+		onXBtnPress = () => {
+			hideMenu();
+			setValue(null);
+		},
 		isEventStillInComponent = (e) => {
 			const {
 					relatedTarget
@@ -442,7 +446,7 @@ export function ComboComponent(props) {
 							size: 'sm',
 						}}
 						isDisabled={isDisabled}
-						onPress={onClearBtn}
+						onPress={onXBtnPress}
 						h="100%"
 						bg={styles.FORM_COMBO_TRIGGER_BG}
 						_hover={{
@@ -739,7 +743,7 @@ export function ComboComponent(props) {
 									color: 'trueGray.600',
 									size: 'sm',
 								}}
-								onPress={hideMenu}
+								onPress={onXBtnPress}
 								h="100%"
 								borderWidth={1}
 								borderColor="#bbb"
@@ -752,6 +756,7 @@ export function ComboComponent(props) {
 			}
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
 				<Row h={10}>
+					{xButton}
 					{disableDirectEntry ?
 						<Text
 							ref={inputRef}
