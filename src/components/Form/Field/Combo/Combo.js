@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
-	Button,
 	Modal,
 	Popover,
 	Pressable,
@@ -287,7 +286,7 @@ export function ComboComponent(props) {
 		onClearBtn = () => {
 			setTextInputValue('');
 			setValue(null);
-		}
+		},
 		isEventStillInComponent = (e) => {
 			const {
 					relatedTarget
@@ -488,14 +487,6 @@ export function ComboComponent(props) {
 									onKeyPress={onInputKeyPress}
 									onFocus={onInputFocus}
 									onBlur={onInputBlur}
-									onLayout={(e) => {
-										const {
-												height,
-												width,
-											} = e.nativeEvent.layout;
-										setWidth(Math.round(width));
-										setTop(Math.round(height));
-									}}
 									flex={1}
 									h="100%"
 									m={0}
@@ -739,15 +730,13 @@ export function ComboComponent(props) {
 		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 			if (isEditor) {
 				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
-				const isCheckBtnDisabled = _.isEmpty(value);
 				checkBtn = <IconButton
 								_icon={{
 									as: Check,
-									color: isCheckBtnDisabled ? 'disabled' : 'trueGray.600',
+									color: 'trueGray.600',
 									size: 'sm',
 								}}
-								isDisabled={isCheckBtnDisabled}
-								onPress={acceptSelection}
+								onPress={hideMenu}
 								h="100%"
 								borderWidth={1}
 								borderColor="#bbb"
@@ -835,7 +824,6 @@ export function ComboComponent(props) {
 							>
 								{inputAndTriggerClone}
 								{grid}
-								<Button mt={2} onPress={() => setIsMenuShown(false)}>Close</Button>
 							</Modal>;
 		}
 	}
