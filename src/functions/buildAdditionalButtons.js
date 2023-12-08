@@ -32,7 +32,7 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 		const button = <Button
 							color={color}
 							ml={2}
-							mb={2}
+							// mb={2}
 							parent={self}
 							reference={key}
 							{...buttonProps}
