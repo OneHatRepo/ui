@@ -406,7 +406,7 @@ export function ComboComponent(props) {
 		}
 
 		return () => {
-			if (Repository && !Repository.isUnique) {
+			if (Repository && !Repository.isUnique && !Repository.isDestroyed) {
 				clearGridFilters();
 			}
 		};
