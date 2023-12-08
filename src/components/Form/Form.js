@@ -712,7 +712,7 @@ function Form(props) {
 			}
 		}
 
-		if (!_.isEmpty(formState.errors)) {
+		if (!_.isEmpty(formState.errors) || !formState.isValid) {
 			isSaveDisabled = true;
 			isSubmitDisabled = true;
 		}
