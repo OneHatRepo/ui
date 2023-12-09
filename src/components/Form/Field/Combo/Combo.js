@@ -215,10 +215,10 @@ export function ComboComponent(props) {
 				// 	showMenu();
 				// 	selectNext();
 				// 	setTimeout(() => {
-				// 		if (!self.children?.dropdownGrid?.selectPrev) {
+				// 		if (!self.children?.grid?.selectPrev) {
 				// 			debugger;
 				// 		}
-				// 		self.children.dropdownGrid.selectNext();
+				// 		self.children.grid.selectNext();
 				// 	}, 10);
 				// 	break;
 				// case 'ArrowUp':
@@ -226,7 +226,7 @@ export function ComboComponent(props) {
 				// 	showMenu();
 				// 	selectPrev();
 				// 	setTimeout(() => {
-				// 		self.children.dropdownGrid.selectPrev();
+				// 		self.children.grid.selectPrev();
 				// 	}, 10);
 				// 	break;
 				default:
@@ -285,13 +285,13 @@ export function ComboComponent(props) {
 			resetTextInputValue();
 			hideMenu();
 		},
-		onClearBtn = () => {
-			setTextInputValue('');
+		onXButtonPress = () => {
 			setValue(null);
+			clearGridFilters();
+			clearGridSelection();
 		},
-		onXBtnPress = () => {
+		onCheckButtonPress = () => {
 			hideMenu();
-			setValue(null);
 		},
 		isEventStillInComponent = (e) => {
 			const {
@@ -339,6 +339,11 @@ export function ComboComponent(props) {
 				}
 			} else {
 				setFilteredData(data);
+			}
+		},
+		clearGridSelection = () => {
+			if (self?.children.grid?.deselectAll) {
+				self?.children.grid?.deselectAll();
 			}
 		},
 		searchForMatches = async (value) => {
@@ -427,13 +432,9 @@ export function ComboComponent(props) {
 		return null;
 	}
 
-	if (self) {
-		self.clear = onClearBtn;
-	}
-
 	let xButton = null,
 		inputAndTrigger = null,
-		checkBtn = null,
+		checkButton = null,
 		grid = null,
 		dropdownMenu = null,
 		assembledComponents = null;
@@ -446,7 +447,7 @@ export function ComboComponent(props) {
 							size: 'sm',
 						}}
 						isDisabled={isDisabled}
-						onPress={onXBtnPress}
+						onPress={onXButtonPress}
 						h="100%"
 						bg={styles.FORM_COMBO_TRIGGER_BG}
 						_hover={{
@@ -614,7 +615,7 @@ export function ComboComponent(props) {
 					autoAdjustPageSizeToHeight={false}
 					{...gridProps}
 					data={filteredData}
-					reference="dropdownGrid"
+					reference="grid"
 					parent={self}
 					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
 					newEntityDisplayValue={newEntityDisplayValue}
@@ -737,13 +738,14 @@ export function ComboComponent(props) {
 		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 			if (isEditor) {
 				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
-				checkBtn = <IconButton
+				checkButton = <IconButton
 								_icon={{
 									as: Check,
 									color: 'trueGray.600',
 									size: 'sm',
 								}}
-								onPress={onXBtnPress}
+								onPress={onCheckButtonPress}
+								isDisabled={!value}
 								h="100%"
 								borderWidth={1}
 								borderColor="#bbb"
@@ -819,7 +821,7 @@ export function ComboComponent(props) {
 							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
 						}}
 					/>
-					{checkBtn}
+					{checkButton}
 				</Row>;
 			dropdownMenu = <Modal
 								isOpen={true}
