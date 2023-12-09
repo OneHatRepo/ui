@@ -393,7 +393,11 @@ function Form(props) {
 					if (defaults?.labelWidth) {
 						labelProps.w = defaults.labelWidth;
 					}
-					element = <><Label {...labelProps}>{label}</Label>{element}</>;
+					if (containerWidth > 400) {
+						element = <><Label {...labelProps}>{label}</Label>{element}</>;
+					} else {
+						element = <Column><Label {...labelProps}>{label}</Label>{element}</Column>;
+					}
 				}
 				return <Row key={ix} px={2} pb={1}>{element}</Row>;
 			}
@@ -504,10 +508,17 @@ function Form(props) {
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
 								}
-								element = <Row w="100%" py={1}>
-												<Label {...labelProps}>{requiredIndicator}{label}</Label>
-												{element}
-											</Row>;
+								if (containerWidth > 400) {
+									element = <Row w="100%" py={1}>
+													<Label {...labelProps}>{requiredIndicator}{label}</Label>
+													{element}
+												</Row>;
+								} else {
+									element = <Column w="100%" py={1} mt={3}>
+													<Label {...labelProps}>{requiredIndicator}{label}</Label>
+													{element}
+												</Column>;
+								}
 							} else if (disableLabels && requiredIndicator) {
 								element = <Row w="100%" py={1}>
 												{requiredIndicator}
