@@ -772,7 +772,7 @@ function Form(props) {
 		}
 	}
 	
-	return <Column {...sizeProps} pb={10} onLayout={onLayoutDecorated} ref={formRef}>
+	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
 						<ScrollView
