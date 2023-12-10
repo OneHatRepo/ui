@@ -17,6 +17,7 @@ function InputElement(props) {
 			setValue,
 			autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
 			autoSubmitDelay = AUTO_SUBMIT_DELAY,
+			autoCapitalize = 'none',
 			maxLength,
 			onKeyPress,
 			onChangeText,
@@ -82,6 +83,7 @@ function InputElement(props) {
 						_focus={{
 							bg: styles.FORM_INPUT_FOCUS_BG,
 						}}
+						autoCapitalize={autoCapitalize}
 						{...sizeProps}
 						{...props}
 						value={localValue}

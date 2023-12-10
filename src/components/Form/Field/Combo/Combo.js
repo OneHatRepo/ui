@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
+	Icon,
 	Modal,
 	Popover,
 	Pressable,
@@ -43,6 +44,7 @@ export function ComboComponent(props) {
 			tooltipPlacement = 'bottom',
 			placeholder,
 			onRowPress,
+			icon,
 
 			// withComponent
 			self,
@@ -432,6 +434,7 @@ export function ComboComponent(props) {
 		return null;
 	}
 
+	const inputIconElement = icon ? <Icon as={icon} color="trueGray.300" size="md" ml={2} mr={3} /> : null;
 	let xButton = null,
 		inputAndTrigger = null,
 		checkButton = null,
@@ -463,25 +466,24 @@ export function ComboComponent(props) {
 									onPress={toggleMenu}
 									flex={1}
 									h="100%"
+									flexDirection="row"
+									borderWidth={1}
+									borderColor="trueGray.400"
+									borderTopRightRadius={0}
+									borderBottomRightRadius={0}
+									bg={styles.FORM_COMBO_INPUT_BG}
+									m={0}
+									p={2}
 								>
+									{inputIconElement}
 									<Text
 										ref={inputRef}
 										flex={1}
 										h="100%"
 										numberOfLines={1}
 										ellipsizeMode="head"
-										m={0}
-										p={2}
-										borderWidth={1}
-										borderColor="trueGray.400"
-										borderTopRightRadius={0}
-										borderBottomRightRadius={0}
 										fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
 										color={_.isEmpty(textInputValue) ? 'trueGray.400' : '#000'}
-										bg={styles.FORM_COMBO_INPUT_BG}
-										_focus={{
-											bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-										}}
 									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
 								</Pressable> :
 								<Input
@@ -497,6 +499,7 @@ export function ComboComponent(props) {
 									flex={1}
 									h="100%"
 									m={0}
+									InputLeftElement={inputIconElement}
 									autoSubmitDelay={0}
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
@@ -540,24 +543,23 @@ export function ComboComponent(props) {
 							<Pressable
 								onPress={showMenu}
 								flex={1}
+								flexDirection="row"
+								borderWidth={1}
+								borderColor="trueGray.400"
+								borderTopRightRadius={0}
+								borderBottomRightRadius={0}
+								bg={styles.FORM_COMBO_INPUT_BG}
+								m={0}
+								p={2}
 							>
+								{inputIconElement}
 								<Text
 									flex={1}
 									h="100%"
 									numberOfLines={1}
 									ellipsizeMode="head"
-									m={0}
-									p={2}
-									borderWidth={1}
-									borderColor="trueGray.400"
-									borderTopRightRadius={0}
-									borderBottomRightRadius={0}
 									color={_.isEmpty(displayValue) ? 'trueGray.400' : '#000'}
 									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-									bg={styles.FORM_COMBO_INPUT_BG}
-									_focus={{
-										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-									}}
 								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
 							</Pressable>
 							<IconButton
@@ -791,6 +793,7 @@ export function ComboComponent(props) {
 							flex={1}
 							h="100%"
 							m={0}
+							InputLeftElement={inputIconElement}
 							autoSubmitDelay={0}
 							borderTopRightRadius={0}
 							borderBottomRightRadius={0}
