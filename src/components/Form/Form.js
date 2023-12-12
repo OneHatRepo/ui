@@ -499,8 +499,18 @@ function Form(props) {
 											</Row>;
 							}
 								
-							let requiredIndicator = null;
-							if (propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) {
+							let isRequired = false,
+								requiredIndicator = null;
+							if (editorType === EDITOR_TYPE__PLAIN) {
+								// submitted validator
+								if (validator?.fields && validator.fields[name]?.exclusiveTests?.required) {
+									isRequired = true;
+								}
+							} else if (propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) {
+								// property definition
+								isRequired = true;
+							}
+							if (isRequired) {
 								requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
 							}
 							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
