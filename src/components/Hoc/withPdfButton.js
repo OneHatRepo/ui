@@ -79,6 +79,7 @@ export default function withPdfButton(WrappedComponent) {
 						items,
 						showToggleAllCheckbox: true,
 						isCollapsible: false,
+						ml: 3, // since it's not in a column, which normally adds pl: 3
 					});
 				}
 	
