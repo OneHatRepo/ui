@@ -43,6 +43,7 @@ export default function withPdfButton(WrappedComponent) {
 			} = props,
 			[isModalShown, setIsModalShown] = useState(false),
 			[width, height] = useAdjustedWindowSize(500, 800),
+			propertyNames = [],
 			buildModalItems = () => {
 				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
 
@@ -61,6 +62,7 @@ export default function withPdfButton(WrappedComponent) {
 							return;
 						}
 						name = 'ancillary___' + name;
+						propertyNames.push(name); // for validator
 						items.push({
 							title: ancillaryItem.title,
 							label: ancillaryItem.title,
@@ -112,14 +114,18 @@ export default function withPdfButton(WrappedComponent) {
 						item.title = propertyDef.title;
 					}
 				}
+				if (name) {
+					propertyNames.push(name); // for validator
+				}
 				item.type = 'Checkbox';
 				return item;
 			},
-			buildValidator = (modalItems) => {
-
-				// TODO: Build a real validator that checks all modalItems as booleans
-
-				return yup.object();
+			buildValidator = () => {
+				const propertyValidatorDefs = {};
+				_.each(propertyNames, (name) => {
+					propertyValidatorDefs[name] = yup.boolean().required();
+				});
+				return yup.object(propertyValidatorDefs);
 			},
 			getStartingValues = (modalItems) => {
 				const startingValues = {};
@@ -171,7 +177,7 @@ export default function withPdfButton(WrappedComponent) {
 			const
 				modalItems = buildModalItems(),
 				startingValues = getStartingValues(modalItems),
-				validator = buildValidator(modalItems);
+				validator = buildValidator();
 			modal = <Modal
 						isOpen={true}
 						onClose={() => setIsModalShown(false)}
