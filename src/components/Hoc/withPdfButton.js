@@ -58,9 +58,6 @@ export default function withPdfButton(WrappedComponent) {
 						} else {
 							name = ancillaryItem.title;
 						}
-						if (!inArray(name, ['Photos', 'Videos', 'Files'])) {
-							return;
-						}
 						name = 'ancillary___' + name;
 						propertyNames.push(name); // for validator
 						items.push({
