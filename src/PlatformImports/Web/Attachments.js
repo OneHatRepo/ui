@@ -203,8 +203,13 @@ function AttachmentsElement(props) {
 					let name,
 						mimetypes;
 					if (_.isString(accept)) {
-						name = 'mimetype LIKE';
-						mimetypes = accept.replace('*', '%');
+						if (accept.match(/,/)) {
+							name = 'mimetype IN';
+							mimetypes = accept.split(',');
+						} else {
+							name = 'mimetype LIKE';
+							mimetypes = accept.replace('*', '%');
+						}
 					} else if (_.isArray(accept)) {
 						name = 'mimetype IN';
 						mimetypes = accept;
