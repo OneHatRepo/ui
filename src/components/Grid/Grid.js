@@ -640,6 +640,9 @@ function GridComponent(props) {
 			setDragRowSlot(null);
 		},
 		adjustPageSizeToHeight = (e) => {
+			if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+				return;
+			}
 			let doLoad = false;
 			if (!isRenderedRef.current) {
 				isRenderedRef.current = true;
