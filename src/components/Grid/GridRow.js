@@ -65,6 +65,9 @@ export default function GridRow(props) {
 						}
 
 						let value;
+						if (_.isFunction(config)) {
+							return config(item, key);
+						}
 						if (_.isPlainObject(config)) {
 							if (config.renderer) {
 								const extraProps = _.omit(config, [
@@ -139,9 +142,6 @@ export default function GridRow(props) {
 							} else {
 								value = item[config];
 							}
-						}
-						if (_.isFunction(config)) {
-							value = config(item);
 						}
 						if (_.isFunction(value)) {
 							return value(key);
