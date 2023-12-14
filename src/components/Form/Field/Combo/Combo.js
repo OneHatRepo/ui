@@ -332,11 +332,10 @@ export function ComboComponent(props) {
 				const filterName = getFilterName();
 				if (Repository.hasFilter(filterName)) {
 					Repository.clearFilters(filterName);
-				}
-				
-				if (Repository.isRemote) {
-					if (!this.isAutoLoad) {
-						await Repository.reload();
+					if (Repository.isRemote) {
+						if (!this.isAutoLoad) {
+							await Repository.reload();
+						}
 					}
 				}
 			} else {
