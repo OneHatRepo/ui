@@ -645,6 +645,7 @@ function Form(props) {
 
 	if (self) {
 		self.ref = formRef;
+		self.formState = formState;
 	}
 	
 	const sizeProps = {};
