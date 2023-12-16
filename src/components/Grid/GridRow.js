@@ -187,7 +187,7 @@ export default function GridRow(props) {
 												variant="ghost"
 												w={30}
 												alignSelf="center"
-												ml={3}
+												mx={3}
 											/>}
 					</Row>;
 		}, [
