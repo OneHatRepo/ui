@@ -74,7 +74,7 @@ function TagComponent(props) {
 		},
 		clearComboValue = () => {
 			setIgnoreNextComboValueChange(true); // we're clearing out the value of the underlying Combo, so ignore it when this combo submits the new value change
-			self.children.combo.clear();
+			self.children.combo.setValue(null);
 		},
 		onChangeComboValue = (comboValue) => {
 			if (getIgnoreNextComboValueChange()) {
