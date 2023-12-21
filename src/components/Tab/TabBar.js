@@ -28,7 +28,7 @@ function TabBar(props) {
 			content, // e.g. Expo Router slot
 			direction = HORIZONTAL,
 			tabWidth = 150, // used on VERTICAL mode only
-			tabHeight = '44px', // used on HORIZONTAL mode only
+			tabHeight = '47px', // used on HORIZONTAL mode only
 			additionalButtons,
 			initialTabIx = 0,
 			currentTabIx,
@@ -38,6 +38,7 @@ function TabBar(props) {
 			onChangeIsCollapsed,
 			onPressTab,
 			onTabClose,
+			self,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -205,20 +206,9 @@ function TabBar(props) {
 									_icon={{
 										color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
 										...iconProps,
-										// h: 1,
-										// w: '100%',
-										// p: 0,
-										// m: 0,
-										// flex: 1,
-										bg: '#ff0',
 									}}
 									tooltip="Close Tab"
-									bg="#f00"
-									h={0}
-									w={0}
 									p={0}
-									m={0}
-									flex={1}
 								/>;
 				}
 				if (useIconButton) {
@@ -238,12 +228,11 @@ function TabBar(props) {
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
 								tooltip={tab.title}
 							/>;
-					button = <Row
-								key={'tab' + ix}
-							>
-								{button}
-								{closeBtn}
-							</Row>;
+					// button = <Row
+					// 			key={'tab' + ix}
+					// 		>
+					// 			{button}
+					// 		</Row>;
 				} else {
 					button = <Button
 								key={'tabButton' + ix}
@@ -394,6 +383,12 @@ function TabBar(props) {
 
 	if (!isReady) {
 		return null;
+	}
+
+	if (self) {
+		self.getCurrentTab = getCurrentTab;
+		self.setCurrentTab = setCurrentTab;
+		self.setIsCollapsed = setIsCollapsed;
 	}
 
 	const
