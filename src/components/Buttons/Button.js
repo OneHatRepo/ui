@@ -1,4 +1,4 @@
-import { useEffect, useRef, } from 'react';
+import { useRef, } from 'react';
 import {
 	Button,
 } from 'native-base';
@@ -10,9 +10,9 @@ const ButtonComponent = function(props) {
 		} = props,
 		buttonRef = useRef();
 	
-	useEffect(() => {
+	if (self) {
 		self.ref = buttonRef.current;
-	}, []);
+	}
 
 	return <Button ref={buttonRef} {...props} />;
 }

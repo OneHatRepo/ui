@@ -62,7 +62,7 @@ export default function withFilters(WrappedComponent) {
 					defaultFilters: modelDefaultFilters,
 					ancillaryFilters: modelAncillaryFilters,
 				} = Repository.getSchema().model,
-				id = props.id || props.reference || useId(),
+				id = props.id || props.path || useId(),
 
 				// determine the starting filters
 				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters

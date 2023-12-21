@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, } from 'react';
+import React, { useRef, } from 'react';
 import {
 	Icon,
 	Pressable,
@@ -25,10 +25,9 @@ const
 		if (!ref) {
 			ref = useRef();
 		}
-
-		useEffect(() => {
+		if (self) {
 			self.ref = ref.current;
-		}, []);
+		}
 
 		const propsIcon = props._icon || {};
 		let icon = props.icon,

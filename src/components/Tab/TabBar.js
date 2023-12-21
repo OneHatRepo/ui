@@ -11,6 +11,7 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import withComponent from '../Hoc/withComponent.js';
 import IconButton from '../Buttons/IconButton.js';
 import Minimize from '../Icons/Minimize.js';
@@ -184,6 +185,13 @@ function TabBar(props) {
 				if (isCollapsed || !tab.title) {
 					useIconButton = true;
 				}
+				const tabIcon = _.clone(tab._icon);
+				if (tabIcon.as && _.isString(tabIcon.as)) {
+					Type = getComponentFromType(tabIcon.as);
+					if (Type) {
+						tabIcon.as = Type;
+					}
+				}
 				if (useIconButton) {
 					button = <IconButton
 								key={'tabIconButton' + ix}
@@ -193,7 +201,7 @@ function TabBar(props) {
 								_icon={{
 									color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
 									...iconProps,
-									...tab._icon,
+									...tabIcon,
 								}}
 								_hover={{
 									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
@@ -208,7 +216,7 @@ function TabBar(props) {
 								leftIcon={<Icon
 											color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
 											{...iconProps}
-											{...tab._icon}
+											{...tabIcon}
 										/>}
 								{...buttonProps}
 								{...thisButtonProps}

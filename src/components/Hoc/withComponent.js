@@ -1,33 +1,31 @@
-import React, { useState, useRef, useEffect, } from 'react';
-import {
-	v4 as uuid,
-} from 'uuid';
-import _ from 'lodash';
+import { useRef, useEffect, } from 'react';
 
 // This HOC establishes a parent-child relationship between components.
-// Basically anything wrapped in withComponent registers itself with a parent
-// and allows children to register.
+// Basically anything wrapped in withComponent that has a reference prop
+// registers itself with a parent and allows children to register.
 
 export default function withComponent(WrappedComponent) {
 	return (props) => {
 
+		if (!props.reference) {
+			return <WrappedComponent {...props} />;
+		}
+
 		const {
-				// self: parent,
 				parent,
-				componentMethods,
+				reference,
 				...propsToPass
 			} = props,
-			reference = !_.isEmpty(props.reference) ? props.reference : uuid(),
 			childrenRef = useRef({}),
 			selfRef = useRef({
 				parent,
 				reference,
+				path: (parent?.path || '' ) + '/' + reference,
 				hasChild: (childRef) => {
 					const {
 							reference,
-						} = childRef,
-						found = _.find(childrenRef.current, (ref, ix) => ix === reference);
-					return !!found;
+						} = childRef;
+					return typeof childrenRef.current[reference] !== 'undefined';
 				},
 				registerChild: (childRef) => {
 					const {
@@ -50,16 +48,11 @@ export default function withComponent(WrappedComponent) {
 			});
 
 		useEffect(() => {
-			if (componentMethods) {
-				_.each(componentMethods, (method, name) => {
-					selfRef.current[name] = method;
-				});
-			}
-			if (parent && reference && !parent.hasChild(selfRef.current)) {
+			if (parent && !parent.hasChild(selfRef.current)) {
 				parent.registerChild(selfRef.current);
 			}
 			return () => {
-				if (parent && reference) {
+				if (parent) {
 					parent.unregisterChild(selfRef.current);
 				}
 				childrenRef.current = {};
@@ -67,10 +60,8 @@ export default function withComponent(WrappedComponent) {
 		}, []);
 
 		return <WrappedComponent
-					// parent={parent}
 					self={selfRef.current}
 					{...propsToPass}
-					reference={reference}
 				/>;
 
 	};
