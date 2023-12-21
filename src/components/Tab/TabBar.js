@@ -36,6 +36,7 @@ function TabBar(props) {
 			startsCollapsed = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
+			onPressTab,
 			onTabClose,
 			...propsToPass
 		} = props,
@@ -60,6 +61,9 @@ function TabBar(props) {
 		},
 		setCurrentTab = (ix) => {
 			if ((useLocal && ix === currentTabIxLocal) || ix === currentTabIx) {
+				if (onPressTab) {
+					onPressTab(ix); // for when an already shown tab is pressed
+				}
 				return; // no change
 			}
 			if (useLocal) {
