@@ -61,6 +61,7 @@ const
 									bg: styles.ICON_BUTTON_BG_PRESSED,
 								}}
 								{...props}
+								size={null /* this prop was coming from above and messing things up! */}
 							>
 							{icon}
 							</Pressable>;
