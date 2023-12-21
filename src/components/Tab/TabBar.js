@@ -17,6 +17,7 @@ import Minimize from '../Icons/Minimize.js';
 import Maximize from '../Icons/Maximize.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
+import Xmark from '../Icons/Xmark.js';
 import _ from 'lodash';
 
 
@@ -30,9 +31,11 @@ function TabBar(props) {
 			additionalButtons,
 			initialTabIx = 0,
 			currentTabIx,
+			disableCollapse = false,
 			startsCollapsed = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
+			onTabClose,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -177,7 +180,11 @@ function TabBar(props) {
 				const
 					isCurrentTab = ix === getCurrentTab(),
 					thisButtonProps = {};
-				if (isCollapsed) {
+				let useIconButton = false;
+				if (isCollapsed || !tab.title) {
+					useIconButton = true;
+				}
+				if (useIconButton) {
 					button = <IconButton
 								key={'tab' + ix}
 								onPress={() => setCurrentTab(ix)}
@@ -219,6 +226,19 @@ function TabBar(props) {
 					 			>{tab.title}</Text>
 							</Button>;
 				}
+				if (onTabClose) {
+					button = <Row
+								key={'tab' + ix}
+							>
+								{button}
+								<IconButton
+									key={'tab' + ix}
+									onPress={() => onTabClose(ix)}
+									icon={Xmark}
+									tooltip="Close Tab"
+								/>
+							</Row>;
+				}
 				buttons.push(button);
 			});
 
@@ -241,7 +261,11 @@ function TabBar(props) {
 							default:
 						}
 					}
-					if (isCollapsed) {
+					let useIconButton = false;
+					if (isCollapsed || !additionalButton.text) {
+						useIconButton = true;
+					}
+					if (useIconButton) {
 						button = <IconButton
 									key={'additionalBtn' + ix}
 									onPress={additionalButton.onPress}
@@ -293,6 +317,12 @@ function TabBar(props) {
 			}
 
 			const currentTabIx = getCurrentTab();
+			if (!tabs[currentTabIx]) {
+				return null;
+			}
+			if (!tabs[currentTabIx].content && !tabs[currentTabIx].items) {
+				return null;
+			}
 			if (tabs[currentTabIx].content) {
 				return tabs[currentTabIx].content;
 			}
@@ -332,7 +362,7 @@ function TabBar(props) {
 	const
 		renderedTabs = renderTabs(),
 		renderedCurrentTabContent = renderCurrentTabContent(),
-		renderedToggleButton = renderToggleButton();
+		renderedToggleButton = !disableCollapse ? renderToggleButton() : null;
 
 
 	if (direction === VERTICAL) {
