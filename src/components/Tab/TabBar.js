@@ -196,6 +196,31 @@ function TabBar(props) {
 						tabIcon.as = Type;
 					}
 				}
+				let closeBtn;
+				if (onTabClose && !tab.disableCloseBox) {
+					closeBtn = <IconButton
+									key={'tabCloseButton' + ix}
+									onPress={() => onTabClose(ix)}
+									icon={Xmark}
+									_icon={{
+										color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
+										...iconProps,
+										// h: 1,
+										// w: '100%',
+										// p: 0,
+										// m: 0,
+										// flex: 1,
+										bg: '#ff0',
+									}}
+									tooltip="Close Tab"
+									bg="#f00"
+									h={0}
+									w={0}
+									p={0}
+									m={0}
+									flex={1}
+								/>;
+				}
 				if (useIconButton) {
 					button = <IconButton
 								key={'tabIconButton' + ix}
@@ -213,6 +238,12 @@ function TabBar(props) {
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
 								tooltip={tab.title}
 							/>;
+					button = <Row
+								key={'tab' + ix}
+							>
+								{button}
+								{closeBtn}
+							</Row>;
 				} else {
 					button = <Button
 								key={'tabButton' + ix}
@@ -222,12 +253,19 @@ function TabBar(props) {
 											{...iconProps}
 											{...tabIcon}
 										/>}
+								// endIcon={<Icon
+								// 			color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
+								// 			{...iconProps}
+								// 			{...tabIcon}
+								// 		/>}
+								endIcon={closeBtn}
 								{...buttonProps}
 								{...thisButtonProps}
 								_hover={{
 									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
 								}}
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
+								direction="row"
 							>
 								<Text
 									color={isCurrentTab ? styles.TAB_ACTIVE_COLOR : styles.TAB_COLOR}
@@ -237,19 +275,6 @@ function TabBar(props) {
 									{...textProps}
 					 			>{tab.title}</Text>
 							</Button>;
-				}
-				if (onTabClose) {
-					button = <Row
-								key={'tab' + ix}
-							>
-								{button}
-								<IconButton
-									key={'tabXButton' + ix}
-									onPress={() => onTabClose(ix)}
-									icon={Xmark}
-									tooltip="Close Tab"
-								/>
-							</Row>;
 				}
 				buttons.push(button);
 			});
