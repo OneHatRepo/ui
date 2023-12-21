@@ -186,7 +186,7 @@ function TabBar(props) {
 				}
 				if (useIconButton) {
 					button = <IconButton
-								key={'tab' + ix}
+								key={'tabIconButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								{...buttonProps}
 								// {...thisButtonProps}
@@ -203,7 +203,7 @@ function TabBar(props) {
 							/>;
 				} else {
 					button = <Button
-								key={'tab' + ix}
+								key={'tabButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								leftIcon={<Icon
 											color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
@@ -232,7 +232,7 @@ function TabBar(props) {
 							>
 								{button}
 								<IconButton
-									key={'tab' + ix}
+									key={'tabXButton' + ix}
 									onPress={() => onTabClose(ix)}
 									icon={Xmark}
 									tooltip="Close Tab"
