@@ -299,24 +299,33 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				setIsSaving(true);
-				await Repository.save();
+				let success;
+				try {
+					await Repository.save();
+					success = true;
+				} catch (e) {
+					success = false;
+				}
 				setIsSaving(false);
 
-				setIsAdding(false);
-				setEditorMode(EDITOR_MODE__EDIT);
-				// setIsEditorShown(false);
-				
-				if (getListeners().onAfterEdit) {
-					await getListeners().onAfterEdit(what);
-				}
-				if (onChange) {
-					onChange();
-				}
-				if (onSave) {
-					onSave(what);
+				if (success) {
+					setIsAdding(false);
+					
+					setEditorMode(EDITOR_MODE__EDIT);
+					// setIsEditorShown(false);
+					
+					if (getListeners().onAfterEdit) {
+						await getListeners().onAfterEdit(what);
+					}
+					if (onChange) {
+						onChange();
+					}
+					if (onSave) {
+						onSave(what);
+					}
 				}
 
-				return true;
+				return success;
 			},
 			onEditorCancel =  () => {
 				async function doIt() {
