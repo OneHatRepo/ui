@@ -121,6 +121,7 @@ function Form(props) {
 		record = props.record?.length === 1 ? props.record[0] : props.record,
 		isMultiple = _.isArray(record),
 		isSingle = !isMultiple, // for convenience
+		isPhantom = !!record?.isPhantom,
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
 		[containerWidth, setContainerWidth] = useState(),
@@ -157,6 +158,7 @@ function Form(props) {
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
 			resolver: yupResolver(validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object()),
+			context: { isPhantom },
 		}),
 		buildFromColumnsConfig = () => {
 			// For InlineEditor
@@ -738,7 +740,7 @@ function Form(props) {
 			isSaveDisabled = true;
 			isSubmitDisabled = true;
 		}
-		if (_.isEmpty(formState.dirtyFields) && !record?.isPhantom) {
+		if (_.isEmpty(formState.dirtyFields) && !isPhantom) {
 			isSaveDisabled = true;
 		}
 
@@ -759,12 +761,10 @@ function Form(props) {
 			if (isEditorViewOnly) {
 				showCloseBtn = true;
 			} else {
-				const
-					formIsDirty = formState.isDirty,
-					recordIsPhantom = record?.isPhantom;
+				const formIsDirty = formState.isDirty;
 				// console.log('formIsDirty', formIsDirty);
-				// console.log('recordIsPhantom', recordIsPhantom);
-				if (formIsDirty || recordIsPhantom) {
+				// console.log('isPhantom', isPhantom);
+				if (formIsDirty || isPhantom) {
 					if (isSingle && onCancel) {
 						showCancelBtn = true;
 					}
