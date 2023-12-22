@@ -1,4 +1,5 @@
 import {
+	Box,
 	Button,
 	Icon,
 	Modal,
@@ -6,13 +7,13 @@ import {
 } from 'native-base';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 
-export default function ErrorMsg(props) {
+export default function ErrorMessage(props) {
 	const {
 			text = 'Error',
 			color = 'red.500',
 			onOk,
 		} = props;
-console.log('render ErrorMessage text', text);
+
 	return <Modal isOpen={true} {...props} _backdrop={{ bg: "#000" }}>
 				<Modal.Content>
 					<Modal.Header>Alert</Modal.Header>
@@ -25,7 +26,9 @@ console.log('render ErrorMessage text', text);
 						borderRadius={5}
 						flexDirection="row"
 					>
-						<Icon as={TriangleExclamation} color="red.500" size="md" mr={1} />
+						<Box w="50px" mx={2}>
+							<Icon as={TriangleExclamation} color="red.500" size="10" />
+						</Box>
 						<Text color={color} fontSize="18px">{text}</Text>
 					</Modal.Body>
 					<Modal.Footer py={2} pr={4}>
