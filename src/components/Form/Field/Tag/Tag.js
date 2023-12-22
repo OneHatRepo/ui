@@ -24,6 +24,7 @@ function TagComponent(props) {
 			isValueAlwaysArray,
 			isValueAsStringifiedJson,
 			Editor,
+			_combo = {},
 
 			// parent Form
 			onChangeValue,
@@ -144,8 +145,12 @@ function TagComponent(props) {
 						onView={() => onView(val)}
 						onDelete={isEditor ? () => onDelete(val) : null}
 					/>;
-		}),
-		WhichCombo = isEditor ? ComboEditor : Combo;
+		});
+
+	let WhichCombo = ComboEditor;
+	if (!_.isNil(_combo.isEditor) && !_combo.isEditor) {
+		WhichCombo = Combo;
+	}
 
 	const sizeProps = {};
 	if (!props.flex && !props.w) {
@@ -184,6 +189,7 @@ function TagComponent(props) {
 							onChangeValue={onChangeComboValue}
 							parent={self}
 							reference="combo"
+							{..._combo}
 						/>}
 				</Column>
 				{isViewerShown && 
