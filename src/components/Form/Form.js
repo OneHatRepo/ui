@@ -512,6 +512,14 @@ function Form(props) {
 								// property definition
 								isRequired = true;
 							}
+							if (!isRequired) {
+								if (propsToPass.requiredIfPhantom && isPhantom) {
+									isRequired = true;
+								}
+								if (propsToPass.requiredIfNotPhantom && !isPhantom) {
+									isRequired = true;
+								}
+							}
 							if (isRequired) {
 								requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
 							}
