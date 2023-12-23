@@ -396,10 +396,9 @@ function TabBar(props) {
 		renderedCurrentTabContent = renderCurrentTabContent(),
 		renderedToggleButton = !disableCollapse ? renderToggleButton() : null;
 
-
+	let tabBar = null;
 	if (direction === VERTICAL) {
-		return <Row flex={1} w="100%" {...propsToPass}>
-					<Column
+		tabBar = <Column
 						alignItems="center"
 						justifyContent="flex-start"
 						py={2}
@@ -411,21 +410,22 @@ function TabBar(props) {
 						<Column flex={1} w="100%" justifyContent="flex-end">
 							{renderedToggleButton}
 						</Column>
-					</Column>
-					{renderedCurrentTabContent && 
+					</Column>;
+		if (renderedCurrentTabContent) {
+			tabBar = <Row flex={1} w="100%" {...propsToPass}>
+						{tabBar}
 						<Column
 							alignItems="center"
 							justifyContent="flex-start"
 							flex={1}
 						>
 							{renderedCurrentTabContent}
-						</Column>}
-				</Row>;
+						</Column>
+					</Row>;
+		}
 	}
-
-	// HORIZONTAL
-	return <Column flex={1} w="100%" {...propsToPass}>
-				<Row
+	if (direction === HORIZONTAL) {
+		tabBar = <Row
 					alignItems="center"
 					justifyContent="flex-start"
 					p={2}
@@ -439,16 +439,21 @@ function TabBar(props) {
 							{renderedToggleButton}
 						</Row>
 					</Row>
-				</Row>
-				{renderedCurrentTabContent && 
-					<Column
-						alignItems="center"
-						justifyContent="flex-start"
-						flex={1}
-					>
-						{renderedCurrentTabContent}
-					</Column>}
-			</Column>;
+				</Row>;
+		if (renderedCurrentTabContent) {
+			tabBar = <Column flex={1} w="100%" {...propsToPass}>
+						{tabBar}
+						<Column
+							alignItems="center"
+							justifyContent="flex-start"
+							flex={1}
+						>
+							{renderedCurrentTabContent}
+						</Column>
+					</Column>;
+		}
+	}
+	return tabBar;
 }
 
 export default withComponent(TabBar);
