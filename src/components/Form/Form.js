@@ -508,17 +508,11 @@ function Form(props) {
 								if (validator?.fields && validator.fields[name]?.exclusiveTests?.required) {
 									isRequired = true;
 								}
-							} else if (propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) {
+							} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
+								(propertyDef?.requiredIfPhantom && isPhantom) ||
+								(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
 								// property definition
 								isRequired = true;
-							}
-							if (!isRequired) {
-								if (propsToPass.requiredIfPhantom && isPhantom) {
-									isRequired = true;
-								}
-								if (propsToPass.requiredIfNotPhantom && !isPhantom) {
-									isRequired = true;
-								}
 							}
 							if (isRequired) {
 								requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
