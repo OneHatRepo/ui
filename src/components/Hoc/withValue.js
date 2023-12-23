@@ -56,8 +56,10 @@ export default function withValue(WrappedComponent) {
 					newValue = _.isNil(newValue) ? [] : [newValue];
 				}
 				if (_.isArray(newValue)) {
+					const sortFn = natsort.default || natsort; // was having trouble with webpack and this solves it
+
 					// TODO: sort by the sortProperty, whatever that is, instead of just value
-					newValue.sort(natsort()); // Only sort if we're using id/text arrangement. Otherwise, keep sort order as specified in Repository.
+					newValue.sort(sortFn()); // Only sort if we're using id/text arrangement. Otherwise, keep sort order as specified in Repository.
 				}
 				if (isValueAsStringifiedJson) {
 					newValue = JSON.stringify(newValue);
