@@ -192,7 +192,7 @@ function TabBar(props) {
 				}
 				const tabIcon = _.clone(tab._icon);
 				if (tabIcon.as && _.isString(tabIcon.as)) {
-					Type = getComponentFromType(tabIcon.as);
+					const Type = getComponentFromType(tabIcon.as);
 					if (Type) {
 						tabIcon.as = Type;
 					}
