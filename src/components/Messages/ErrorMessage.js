@@ -29,7 +29,7 @@ export default function ErrorMessage(props) {
 						<Box w="50px" mx={2}>
 							<Icon as={TriangleExclamation} color="red.500" size="10" />
 						</Box>
-						<Text color={color} fontSize="18px">{text}</Text>
+						<Text flex={1} color={color} fontSize="18px">{text}</Text>
 					</Modal.Body>
 					<Modal.Footer py={2} pr={4}>
 						<Button color="primary.800" onPress={onOk}>OK</Button>
