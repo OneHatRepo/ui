@@ -52,6 +52,7 @@ import ClockRotateLeft from '../Components/Icons/ClockRotateLeft.js';
 import Clone from '../Components/Icons/Clone.js';
 import Collapse from '../Components/Icons/Collapse.js';
 import Comment from '../Components/Icons/Comment.js';
+import CommentDots from '../Components/Icons/CommentDots.js';
 import CommentRegular from '../Components/Icons/CommentRegular.js';
 import Comments from '../Components/Icons/Comments.js';
 import CommentsRegular from '../Components/Icons/CommentsRegular.js';
@@ -276,6 +277,7 @@ const components = {
 	Clone,
 	Collapse,
 	Comment,
+	CommentDots,
 	CommentRegular,
 	Comments,
 	CommentsRegular,
