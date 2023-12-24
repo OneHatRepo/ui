@@ -4,6 +4,7 @@ import {
 	Column,
 	Icon,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import {
@@ -433,7 +434,12 @@ function TabBar(props) {
 					bg={styles.TAB_BAR_BG}
 					h={isCollapsed ? '30px' : tabHeight}
 				>
-					{renderedTabs}
+					<ScrollView
+						horizontal={true}
+						h={isCollapsed ? '30px' : tabHeight}
+					>
+						{renderedTabs}
+					</ScrollView>
 					<Row flex={1} h="100%" justifyContent="flex-end">
 						<Row h="100%">
 							{renderedToggleButton}
