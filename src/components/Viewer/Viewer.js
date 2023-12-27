@@ -187,6 +187,7 @@ function Viewer(props) {
 										uniqueRepository={true}
 										parent={self}
 										{...propsToPass}
+										canRowsReorder={false}
 									/>;
 					if (title) {
 						title = <Text
