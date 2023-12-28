@@ -554,6 +554,7 @@ function Form(props) {
 					let {
 						type,
 						title = null,
+						description = null,
 						selectorId,
 						...propsToPass
 					} = item;
@@ -579,7 +580,13 @@ function Form(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					components.push(<Column key={'ancillary-' + ix} mx={2} my={5}>{title}{element}</Column>);
+					if (description) {
+						description = <Text
+									fontSize={styles.FORM_ANCILLARY_DESCRIPTION_FONTSIZE}
+									fontStyle="italic"
+								>{description}</Text>;
+					}
+					components.push(<Column key={'ancillary-' + ix} mx={2} my={5}>{title}{description}{element}</Column>);
 				});
 			}
 			return components;

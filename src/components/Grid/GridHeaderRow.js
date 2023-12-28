@@ -396,7 +396,7 @@ export default function GridHeaderRow(props) {
 									{...textProps}
 								>{header}</Text>
 								
-								{isSorter && <Icon key="Icon" as={isSortDirectionAsc ? SortDown : SortUp} textAlign="center" size="sm" mt={3} mr={2} color="trueGray.500" />}
+								{isSorter && <Icon key="Icon" as={isSortDirectionAsc ? SortUp : SortDown} textAlign="center" size="sm" mt={3} mr={2} color="trueGray.500" />}
 								
 								{isResizable && showDragHandles && 
 										<HeaderResizeHandle

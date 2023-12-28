@@ -45,6 +45,7 @@ import withInlineEditor from '../Hoc/withInlineEditor.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
+import Loading from '../Messages/Loading.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { ReorderableGridRow } from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -56,15 +57,33 @@ import ReorderRows from '../Icons/ReorderRows.js';
 import _ from 'lodash';
 
 
-// Grid requires the use of HOC withSelection() whenever it's used.
-// The default export is *with* the HOC. A separate *raw* component is
-// exported which can be combined with many HOCs for various functionality.
+// This fn gets called many times per component
+// First call
+	// !isInited
+	// render a placeholder, to get container dimensions
+	// onInitialLayout()
+		// set initial pageSize
+		// setIsInited(true)
+// Second call
+	// !isReady
+	// set selectorSelected
+	// load Repo
+// Third call
+	// isReady
+	// render Grid,
+// subsequent calls due to changes of selectorSelected
+	// re-apply selectorSelected
+// subsequent calls due to changes changes in onLayout
+	// adjust pageSize if needed
+
+// TODO: account for various environments (mainly for optimization):
+// RN vs web
+// Repository vs data
 
 function GridComponent(props) {
 	const {
 
 			columnsConfig = [], // json configurations for each column
-
 			columnProps = {},
 			getRowProps = (item) => {
 				return {
@@ -153,7 +172,7 @@ function GridComponent(props) {
 		gridRef = useRef(),
 		gridContainerRef = useRef(),
 		isAddingRef = useRef(),
-		isRenderedRef = useRef(),
+		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -639,56 +658,68 @@ function GridComponent(props) {
 			}
 			setDragRowSlot(null);
 		},
+		calculatePageSize = (containerHeight) => {
+			const
+				headerHeight = showHeaders ? 50 : 0,
+				footerHeight = !disablePagination ? 50 : 0,
+				height = containerHeight - headerHeight - footerHeight,
+				rowHeight = 48,
+				rowsPerContainer = Math.floor(height / rowHeight);
+			let pageSize = rowsPerContainer;
+			if (showHeaders) {
+				pageSize--;
+			}
+			return pageSize;
+		},
 		adjustPageSizeToHeight = (e) => {
-			if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+			if (CURRENT_MODE !== UI_MODE_WEB) { // TODO: Remove this conditional, and don't even do the double render for RN
 				return;
 			}
-			let doLoad = false;
-			if (!isRenderedRef.current) {
-				isRenderedRef.current = true;
-				if (loadOnRender && Repository && !Repository.isLoaded && !Repository.isLoading && !Repository.isAutoLoad) {
-					doLoad = true; // first time in onLayout only!
-				}
+			if (!Repository) {
+				return;
 			}
 
-			let adjustPageSizeToHeight = autoAdjustPageSizeToHeight;
-			if (!Repository || (!_.isNil(UiGlobals.autoAdjustPageSizeToHeight) && !UiGlobals.autoAdjustPageSizeToHeight)) {
-				adjustPageSizeToHeight = false;
+			let doAdjustment = autoAdjustPageSizeToHeight;
+			if (!_.isNil(UiGlobals.autoAdjustPageSizeToHeight) && !UiGlobals.autoAdjustPageSizeToHeight) {
+				// allow global override to prevent this auto adjustment
+				doAdjustment = false;
 			}
-			if (adjustPageSizeToHeight) {
-				const
-					containerHeight = e.nativeEvent.layout.height,
-					headerHeight = showHeaders ? 50 : 0,
-					footerHeight = !disablePagination ? 50 : 0,
-					height = containerHeight - headerHeight - footerHeight,
-					rowHeight = 48,
-					rowsPerContainer = Math.floor(height / rowHeight);
-				let pageSize = rowsPerContainer;
-				if (showHeaders) {
-					pageSize--;
+			if (doAdjustment) {
+				const containerHeight = e.nativeEvent.layout.height;
+				if (containerHeight > 0) {
+					const pageSize = calculatePageSize(containerHeight);
+					if (pageSize !== Repository.pageSize) {
+						Repository.setPageSize(pageSize);
+					}
 				}
-				if (pageSize !== Repository.pageSize) {
-					Repository.setPageSize(pageSize);
-				}
-			}
-			if (doLoad) {
-				Repository.load();
 			}
 		},
 		debouncedAdjustPageSizeToHeight = useCallback(_.debounce(adjustPageSizeToHeight, 200), []),
-		onLayout = (e) => {
-			if (!isRenderedRef.current) {
-				// first time, call this immediately
-				adjustPageSizeToHeight(e);
-			} else {
-				// debounce all subsequent calls
-				debouncedAdjustPageSizeToHeight(e);
+		applySelectorSelected = () => {
+			if (disableSelectorSelected || !selectorId) {
+				return
 			}
+			let id = selectorSelected?.id;
+			if (_.isEmpty(selectorSelected)) {
+				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
+			}
+			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
 		};
 
 	useEffect(() => {
+		if (!isInited) {
+			// first call -- meant to render placeholder so we get container dimensions
+			if (Repository) {
+				if (Repository.isRemote) {
+					Repository.isAutoLoad = false;
+				}
+				Repository.pauseEvents();
+			}
+			return () => {};
+		}
 
-		const calculateLocalColumnsConfig = () => {
+		// second call -- do other necessary setup
+		function calculateLocalColumnsConfig() {
 			// convert json config into actual elements
 			const localColumnsConfig = [];
 			if (_.isEmpty(columnsConfig)) {
@@ -756,12 +787,11 @@ function GridComponent(props) {
 				});
 			}
 			return localColumnsConfig;
-		};
-
-		if (!isReady) {
-			setLocalColumnsConfig(calculateLocalColumnsConfig());
-			setIsReady(true);
 		}
+		setLocalColumnsConfig(calculateLocalColumnsConfig());
+
+		setIsReady(true);
+
 		if (!Repository) {
 			return () => {};
 		}
@@ -791,6 +821,13 @@ function GridComponent(props) {
 		Repository.on('changeSorters', onChangeSorters);
 
 
+		applySelectorSelected();
+		Repository.resumeEvents();
+
+		if (Repository.isRemote) {
+			Repository.load();
+		}
+
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
@@ -801,21 +838,16 @@ function GridComponent(props) {
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
 		};
-	}, []);
+	}, [isInited]);
 
 	useEffect(() => {
-		if (!Repository) {
+		if (!Repository || !isReady) {
 			return () => {};
 		}
-		if (!disableSelectorSelected && selectorId) {
-			let id = selectorSelected?.id;
-			if (_.isEmpty(selectorSelected)) {
-				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
-			}
-			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
-		}
 
-	}, [selectorId, selectorSelected]);
+		applySelectorSelected();
+
+	}, [selectorSelected]);
 
 	if (self) {
 		self.ref = containerRef;
@@ -825,7 +857,19 @@ function GridComponent(props) {
 
 	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode]);
 
+	if (!isInited) {
+		// first time through, render a placeholder so we can get container dimensions
+		return <Column
+					flex={1}
+					w="100%"
+					onLayout={(e) => {
+						adjustPageSizeToHeight(e);
+						setIsInited(true);
+					}}
+				/>;
+	}
 	if (!isReady) {
+		// second time through, render nothing, as we are still setting up the Repository
 		return null;
 	}
 
@@ -905,6 +949,14 @@ function GridComponent(props) {
 		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
 	}
 
+	// placeholders in case no entities yet
+	if (!entities?.length) {
+		if (Repository?.isLoading) {
+			grid = <Loading isScreen={true} />;
+		} else {
+			grid = <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} />;
+		}
+	}
 
 	return <Column
 				{...testProps('Grid')}
@@ -913,7 +965,7 @@ function GridComponent(props) {
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
 				borderColor={styles.GRID_BORDER_COLOR}
-				onLayout={onLayout}
+				onLayout={(e) => debouncedAdjustPageSizeToHeight(e)}
 				{...sizeProps}
 			>
 				{topToolbar}
@@ -923,7 +975,7 @@ function GridComponent(props) {
 						deselectAll();
 					}
 				}}>
-					{!entities?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> : grid}
+					{grid}
 				</Column>
 
 				{listFooterComponent}

@@ -332,10 +332,8 @@ export function ComboComponent(props) {
 				const filterName = getFilterName();
 				if (Repository.hasFilter(filterName)) {
 					Repository.clearFilters(filterName);
-					if (Repository.isRemote) {
-						if (!this.isAutoLoad) {
-							await Repository.reload();
-						}
+					if (Repository.isRemote && !Repository.isAutoLoad) {
+						await Repository.reload();
 					}
 				}
 			} else {
@@ -371,7 +369,7 @@ export function ComboComponent(props) {
 					// remote
 					const filterValue = _.isEmpty(value) ? null : value + '%';
 					await Repository.filter(filterName, filterValue);
-					if (!this.isAutoLoad) {
+					if (!Repository.isAutoLoad) {
 						await Repository.reload();
 					}
 				} else {
