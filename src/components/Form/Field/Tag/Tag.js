@@ -164,6 +164,11 @@ function TagComponent(props) {
 		}
 	}
 
+	if (isEditor && propsToPass.selectorId) {
+		_combo.selectorId = propsToPass.selectorId;
+		_combo.selectorSelected = propsToPass.selectorSelected;
+	}
+
 	return <>
 				<Column
 					{...props}

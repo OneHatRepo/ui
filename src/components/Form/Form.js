@@ -453,9 +453,11 @@ function Form(props) {
 								throw new Error('Should not yet be valid React element. Did you use <Element> instead of () => <Element> when defining it?')
 							}
 
-							if (useSelectorId) {
+							if (useSelectorId) { // This causes the whole form to use selectorId
 								editorTypeProps.selectorId = selectorId;
-								editorTypeProps.selectorSelected = editorProps;
+							}
+							if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
+								editorTypeProps.selectorSelected = record;
 							}
 							let element = <Element
 												name={name}

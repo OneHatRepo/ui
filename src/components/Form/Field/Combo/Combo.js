@@ -597,6 +597,8 @@ export function ComboComponent(props) {
 			'disableCopy',
 			'disableDuplicate',
 			'disablePrint',
+			'selectorId',
+			'selectorSelected',
 		]);
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 		grid = <WhichGrid
