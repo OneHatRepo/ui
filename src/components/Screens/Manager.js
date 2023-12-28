@@ -5,6 +5,7 @@ import {
 	Text,
 } from 'native-base';
 import withComponent from '../Hoc/withComponent.js';
+import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton';
 import FullWidth from '../Icons/FullWidth';
 import SideBySide from '../Icons/SideBySide';
@@ -23,6 +24,7 @@ function ManagerScreen(props) {
 			fullModeComponent,
 			id,
 		} = props,
+		styles = UiGlobals.styles,
 		[isReady, setIsReady] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
 		setMode = (newMode) => {
@@ -61,6 +63,13 @@ function ManagerScreen(props) {
 		whichComponent = sideModeComponent;
 	}
 
+	const textProps = {};
+	if (styles.MANAGER_SCREEN_TITLE) {
+		textProps.style = {
+			fontFamily: styles.MANAGER_SCREEN_TITLE,
+		};
+	}
+
 	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%">
 				<Row
 					h="80px"
@@ -68,7 +77,7 @@ function ManagerScreen(props) {
 					borderBottomWidth={2}
 					borderBottomColor="#ccc"
 				>
-					<Text p={4} fontSize="26" fontWeight={700}>{title}</Text>
+					<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
 					<IconButton
 						icon={FullWidth}
 						_icon={{
