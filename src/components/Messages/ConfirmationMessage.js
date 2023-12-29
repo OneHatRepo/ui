@@ -1,4 +1,4 @@
- import {
+import {
 	Button,
 	Modal,
 	Text,
@@ -19,7 +19,7 @@ export default function ConfirmationMessage(props) {
 						<Text color="#000">{textMessage}</Text>
 					</Modal.Body>
 					<Modal.Footer py={2} pr={4}>
-						<Button variant="ghost" color="primary.800" onPress={onCancel}>Cancel</Button>
+						<Button variant="ghost" color="trueGray.700" onPress={onCancel}>Cancel</Button>
 						<Button variant="ghost" color="primary.800" onPress={onOk}>OK</Button>
 					</Modal.Footer>
 				</Modal.Content>

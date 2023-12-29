@@ -139,11 +139,14 @@ export default function withAlert(WrappedComponent) {
 							>Yes</Button>);
 				break;
 			case ALERT_MODE_YES_NO:
+				// TODO: need to create a new colorScheme so this can be black with blank background
 				buttons.push(<Button
 								key="noBtn"
 								onPress={onNo}
-								color="#fff"
+								color="trueGray.800"
 								variant="ghost"
+								colorScheme="neutral"
+								mr={2}
 							>No</Button>);
 				buttons.push(<Button
 								key="yesBtn"
