@@ -824,7 +824,7 @@ function GridComponent(props) {
 		applySelectorSelected();
 		Repository.resumeEvents();
 
-		if (Repository.isRemote) {
+		if (Repository.isRemote && !Repository.isLoaded) {
 			Repository.load();
 		}
 
