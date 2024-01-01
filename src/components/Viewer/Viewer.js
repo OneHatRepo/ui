@@ -1,11 +1,11 @@
 import { useRef, useState, } from 'react';
 import {
-	Column,
+	VStack,
 	Icon,
 	ScrollView,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
@@ -144,10 +144,10 @@ function Viewer(props) {
 							/>;
 
 			if (item.additionalViewButtons) {
-				element = <Row flexWrap="wrap">
+				element = <HStack flexWrap="wrap">
 								{element}
 								{buildAdditionalButtons(item.additionalViewButtons, self)}
-							</Row>;
+							</HStack>;
 			}
 
 			if (label) {
@@ -157,7 +157,7 @@ function Viewer(props) {
 				}
 				element = <><Label {...labelProps}>{label}</Label>{element}</>;
 			}
-			return <Row key={ix}>{element}</Row>;
+			return <HStack key={ix}>{element}</HStack>;
 		},
 		buildAncillary = () => {
 			const components = [];
@@ -195,7 +195,7 @@ function Viewer(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					components.push(<Column key={'ancillary-' + ix} my={5}>{title}{element}</Column>);
+					components.push(<VStack key={'ancillary-' + ix} my={5}>{title}{element}</VStack>);
 				});
 			}
 			return components;
@@ -222,32 +222,32 @@ function Viewer(props) {
 		ancillaryComponents = buildAncillary();
 	}
 
-	return <Column flex={flex} {...props} onLayout={onLayout}>
+	return <VStack flex={flex} {...props} onLayout={onLayout}>
 				{containerWidth && <>
 
 					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
-						{onEditMode && <Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
+						{onEditMode && <HStack px={4} pt={4} alignItems="center" justifyContent="flex-end">
 											<Button
 												key="editBtn"
 												onPress={onEditMode}
 												leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
 												color="#fff"
 											>To Edit</Button>
-										</Row>}
+										</HStack>}
 						{!_.isEmpty(additionalButtons) && 
-							<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+							<HStack p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
 								{additionalButtons}
-							</Row>}
-						<Column>
-							{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{viewerComponents}</Row> : null}
-							{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{viewerComponents}</Column> : null}
-							<Column m={2} pt={4}>{ancillaryComponents}</Column>
-						</Column>
+							</HStack>}
+						<VStack>
+							{containerWidth >= CONTAINER_THRESHOLD ? <HStack p={4} pl={0}>{viewerComponents}</HStack> : null}
+							{containerWidth < CONTAINER_THRESHOLD ? <VStack p={4}>{viewerComponents}</VStack> : null}
+							<VStack m={2} pt={4}>{ancillaryComponents}</VStack>
+						</VStack>
 					</ScrollView>
 					{(showDeleteBtn || showCloseBtn) && 
 						<Footer justifyContent="flex-end">
 							{showDeleteBtn && 
-								<Row flex={1} justifyContent="flex-start">
+								<HStack flex={1} justifyContent="flex-start">
 									<Button
 										key="deleteBtn"
 										onPress={onDelete}
@@ -257,7 +257,7 @@ function Viewer(props) {
 										}}
 										color="#fff"
 									>Delete</Button>
-								</Row>}
+								</HStack>}
 							{onClose && showCloseBtn &&
 								<Button
 									key="closeBtn"
@@ -267,7 +267,7 @@ function Viewer(props) {
 						</Footer>}
 
 				</>}
-			</Column>;
+			</VStack>;
 }
 
 export default withComponent(withPdfButton(Viewer));

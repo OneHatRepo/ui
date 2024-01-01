@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	Icon,
-	Row,
+	HStack,
 	Text,
 	Tooltip,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
@@ -168,7 +168,7 @@ function FileElement(props) {
 		
 	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
 				<Tooltip label={tooltip} placement={tooltipPlacement}>
-					<Row flex={1} h={10} alignItems="center">
+					<HStack flex={1} h={10} alignItems="center">
 						{isDropping && <Box position="absolute" borderWidth={isDropping ? 2 : 0} borderColor="primary.800" top={0} left={0} w="100%" h="100%" bg="trueGray.200" zIndex={10000} justifyContent="center" alignItems="center">
 											<Text>Set File</Text>
 										</Box>}
@@ -215,7 +215,7 @@ function FileElement(props) {
 														borderWidth={1}
 													/>}
 						<input type="file" ref={fileInputRef} name={name} onChange={onChangeFile} style={{ position: 'absolute', opacity: 0, height: 0, width: 0, }} />
-					</Row>
+					</HStack>
 				</Tooltip>
 			</div>;
 }

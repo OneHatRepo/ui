@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 import {
 	AUTO_SUBMIT_DELAY,
 } from '../../../../Constants/Input.js';
@@ -33,7 +33,7 @@ const
 			debouncedSetValueRef.current = _.debounce(setValue, AUTO_SUBMIT_DELAY);
 		}, [setValue]);
 
-		return <Row h={h} flex={1} ref={props.outerRef} {...props}>
+		return <HStack h={h} flex={1} ref={props.outerRef} {...props}>
 					<CKEditor
 						editor={Editor}
 						config={config}
@@ -46,7 +46,7 @@ const
 							debouncedSetValueRef.current(value);
 						}}
 					/>
-				</Row>;
+				</HStack>;
 	},
 	CKEditorField = withComponent(withValue(CKEditorElement));
 	

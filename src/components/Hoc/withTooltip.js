@@ -1,7 +1,7 @@
 import React from 'react';
 import {
 	Tooltip,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 
 // NOTE: Can't seem to get this working for some elements like Combo or File
 

@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useRef, } from 'react';
+import React, { useState, useRef, } from 'react';
 import {
 	Box,
-	Column,
-	Modal,
-	Row,
-	Text,
-} from 'native-base';
+	VStack,
+} from '@gluestack-ui/themed';
 import {
 	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
@@ -99,7 +96,7 @@ export default function withInlineEditor(WrappedComponent) {
 														onEditorCancel();
 													}}
 												></Box>}
-								<Column
+								<VStack
 									ref={inlineEditorRef}
 									position="absolute"
 									zIndex={10}
@@ -136,7 +133,7 @@ export default function withInlineEditor(WrappedComponent) {
 															py={1}
 															px={0}
 														/>}
-								</Column>
+								</VStack>
 							</>;
 		}
 	

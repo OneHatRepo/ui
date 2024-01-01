@@ -1,12 +1,3 @@
-import { useState, useEffect, } from 'react';
-import {
-	Button,
-	Column,
-	Icon,
-	Row,
-	ScrollView,
-	Text,
-} from 'native-base';
 import Form from './Form.js';
 import _ from 'lodash';
 

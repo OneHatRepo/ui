@@ -2,11 +2,11 @@ import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	Button,
-	Column,
+	VStack,
 	Pressable,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
@@ -249,12 +249,12 @@ function AttachmentsElement(props) {
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
 	}
-	let content = <Column
+	let content = <VStack
 						w="100%"
 						p={2}
 						background={styles.ATTACHMENTS_BG}
 					>
-						<Row flexWrap="wrap">
+						<HStack flexWrap="wrap">
 							{files.map((file) => {
 								return <Box
 											key={file.id}
@@ -274,7 +274,7 @@ function AttachmentsElement(props) {
 												/>}
 										</Box>;
 							})}
-						</Row>
+						</HStack>
 						{Repository.total <= COLLAPSED_MAX ? null :
 							<Button
 								onPress={toggleShowAll}
@@ -287,7 +287,7 @@ function AttachmentsElement(props) {
 								}}
 								variant="ghost"
 							>{'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}</Button>}
-					</Column>;
+					</VStack>;
 	
 	if (canCrud) {
 		content = <Dropzone

@@ -4,10 +4,10 @@ import {
 	Modal,
 	Popover,
 	Pressable,
-	Row,
+	HStack,
 	Text,
 	Tooltip,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	UI_MODE_REACT_NATIVE,
 	UI_MODE_WEB,
@@ -758,7 +758,7 @@ export function ComboComponent(props) {
 							/>;
 			}
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
-				<Row h={10}>
+				<HStack h={10}>
 					{xButton}
 					{disableDirectEntry ?
 						<Text
@@ -824,7 +824,7 @@ export function ComboComponent(props) {
 						}}
 					/>
 					{checkButton}
-				</Row>;
+				</HStack>;
 			dropdownMenu = <Modal
 								isOpen={true}
 								safeAreaTop={true}
@@ -845,12 +845,12 @@ export function ComboComponent(props) {
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
-	assembledComponents = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
+	assembledComponents = <HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 							{xButton}
 							{inputAndTrigger}
 							{additionalButtons}
 							{dropdownMenu}
-						</Row>;
+						</HStack>;
 	
 	if (tooltip) {
 		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>

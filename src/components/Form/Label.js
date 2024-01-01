@@ -1,14 +1,14 @@
 import {
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import styles from '../../Constants/Styles.js';
 
 export default function Label(props) {
 	const {
 			w = styles.FORM_LABEL_WIDTH,
 		} = props;
-	return <Row
+	return <HStack
 				w={w}
 				minWidth="120px"
 				// maxWidth="50%"
@@ -21,5 +21,5 @@ export default function Label(props) {
 					numberOfLines={1}
 					ellipsizeMode="head"
 				>{props.children}</Text>
-			</Row>;
+			</HStack>;
 }

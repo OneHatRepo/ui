@@ -1,6 +1,6 @@
 import {
 	Box,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,

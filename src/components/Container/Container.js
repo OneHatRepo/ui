@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useId, } from 'react';
 import {
-	Column,
-	Row,
-} from 'native-base';
+	VStack,
+	HStack,
+} from '@gluestack-ui/themed';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -266,21 +266,21 @@ function Container(props) {
 		componentProps = {};
 	}
 	
-	return <Column w="100%" flex={1}>
+	return <VStack w="100%" flex={1}>
 				{northComponent}
 				{(!isNorthCollapsed && !localIsNorthCollapsed) && northSplitter}
-				<Row w="100%" flex={100}>
+				<HStack w="100%" flex={100}>
 					{westComponent}
 					{(!isWestCollapsed && !localIsWestCollapsed) && westSplitter}
-					<Column h="100%" flex={100}>
+					<VStack h="100%" flex={100}>
 						{centerComponent}
-					</Column>
+					</VStack>
 					{(!isEastCollapsed && !localIsEastCollapsed) && eastSplitter}
 					{eastComponent}
-				</Row>
+				</HStack>
 				{(!isSouthCollapsed && !localIsSouthCollapsed) && southSplitter}
 				{southComponent}
-			</Column>;
+			</VStack>;
 }
 
 export default withComponent(Container);

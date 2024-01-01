@@ -1,8 +1,6 @@
 import {
-	Column,
 	Modal,
-	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../Constants/Editor.js';

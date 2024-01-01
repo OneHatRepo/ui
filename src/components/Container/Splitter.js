@@ -1,8 +1,7 @@
 import {
-	Column,
-	Row,
-	Text,
-} from 'native-base';
+	VStack,
+	HStack,
+} from '@gluestack-ui/themed';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -21,7 +20,7 @@ function Splitter(props) {
 		} = props;
 
 	if (mode === VERTICAL) {
-		return <Row
+		return <HStack
 					testID="Splitter"
 					bg={isDragging ? 'secondary.600' : 'primary.600'}
 					h="3px"
@@ -29,10 +28,10 @@ function Splitter(props) {
 					alignItems="center"
 					justifyContent="center"
 				>
-					<Row testID="handle" h="2px" w="10%" bg="#ccc"></Row>
-				</Row>;
+					<HStack testID="handle" h="2px" w="10%" bg="#ccc"></HStack>
+				</HStack>;
 	}
-	return <Column
+	return <VStack
 				testID="Splitter"
 				bg={isDragging ? 'secondary.600' : 'primary.600'}
 				h="100%"
@@ -41,8 +40,8 @@ function Splitter(props) {
 				justifyContent="center"
 				style={styles.ewResize}
 			>
-				<Column testID="handle" w="2px" h="10%" bg="#ccc"></Column>
-			</Column>;
+				<VStack testID="handle" w="2px" h="10%" bg="#ccc"></VStack>
+			</VStack>;
 }
 
 // Need a hoc to specifically deliver the 'getParentNode' prop

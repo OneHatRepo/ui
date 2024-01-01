@@ -1,9 +1,7 @@
 import {
-	Button,
 	Modal,
-	Row,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import Loading from './Loading.js';
 
 export default function WaitMessage(props) {

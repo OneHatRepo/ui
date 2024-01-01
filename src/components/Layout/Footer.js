@@ -1,11 +1,11 @@
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 import UiGlobals from '../../UiGlobals.js';
 
 export default function Footer(props) {
 	const styles = UiGlobals.styles;
-	return <Row
+	return <HStack
 				alignItems="center"
 				justifyContent="center"
 				alignSelf="flex-end"
@@ -17,5 +17,5 @@ export default function Footer(props) {
 				{...props}
 			>
 				{props.children}
-			</Row>;
+			</HStack>;
 }

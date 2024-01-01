@@ -1,9 +1,9 @@
 import { useState, useRef, } from 'react';
 import {
-	Column,
+	VStack,
 	Modal,
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '@onehat/ui/src/Constants/Editor.js';
@@ -170,13 +170,13 @@ function TagComponent(props) {
 	}
 
 	return <>
-				<Column
+				<VStack
 					{...props}
 					{...sizeProps}
 					px={0}
 					py={0}
 				>
-					<Row
+					<HStack
 						w="100%"
 						borderWidth={1}
 						borderColor="trueGray.300"
@@ -186,7 +186,7 @@ function TagComponent(props) {
 						mb={1}
 						minHeight={10}
 						flexWrap="wrap"
-					>{valueBoxes}</Row>
+					>{valueBoxes}</HStack>
 					{isEditor && 
 						<WhichCombo
 							Repository={props.Repository}
@@ -196,7 +196,7 @@ function TagComponent(props) {
 							reference="combo"
 							{..._combo}
 						/>}
-				</Column>
+				</VStack>
 				{isViewerShown && 
 					<Modal
 						isOpen={true}

@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-	Column,
+	VStack,
 	Icon,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor';
 import {
 	UI_MODE_WEB,
@@ -118,20 +118,20 @@ function Report(props) {
 			ml: 1,
 		});
 	}
-	return <Column w="100%" borderWidth={1} borderColor="primary.300" pt={4} mb={3}>
-				<Row>
-					{icon && <Column>{icon}</Column>}
-					<Column>
+	return <VStack w="100%" borderWidth={1} borderColor="primary.300" pt={4} mb={3}>
+				<HStack>
+					{icon && <VStack>{icon}</VStack>}
+					<VStack>
 						<Text fontSize="2xl">{title}</Text>
 						<Text fontSize="sm">{description}</Text>
-					</Column>
-				</Row>
+					</VStack>
+				</HStack>
 				<Form
 					type={EDITOR_TYPE__PLAIN}
 					additionalFooterButtons={buttons}
 					{...props._form}
 				/>
-			</Column>;
+			</VStack>;
 }
 
 export default withComponent(Report);

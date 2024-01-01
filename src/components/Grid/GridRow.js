@@ -1,9 +1,9 @@
-import { useState, useMemo, } from 'react';
+import { useMemo, } from 'react';
 import {
 	Box,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
@@ -97,7 +97,7 @@ export default function GridRow(props) {
 									userSelect: 'none',
 								};
 
-								return <Row key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</Row>;
+								return <HStack key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</HStack>;
 							}
 							if (config.fieldName) {
 								if (item?.properties && item.properties[config.fieldName]) {
@@ -171,7 +171,7 @@ export default function GridRow(props) {
 					throw new Error('Non-array columnsConfig not yet supported');
 				}
 			};
-			return <Row
+			return <HStack
 						alignItems="center"
 						flexGrow={1}
 						{...rowProps}
@@ -189,7 +189,7 @@ export default function GridRow(props) {
 												alignSelf="center"
 												mx={3}
 											/>}
-					</Row>;
+					</HStack>;
 		}, [
 			columnsConfig,
 			columnProps,

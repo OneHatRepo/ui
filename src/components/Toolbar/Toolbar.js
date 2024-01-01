@@ -1,9 +1,9 @@
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 
 export default function Toolbar(props) {
-	return <Row
+	return <HStack
 				w="100%"
 				justifyContent="flex-start"
 				bg="trueGray.200"
@@ -14,5 +14,5 @@ export default function Toolbar(props) {
 				{...props}
 			>
 				{props.children}
-			</Row>;
+			</HStack>;
 };

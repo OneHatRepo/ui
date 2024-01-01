@@ -1,10 +1,8 @@
 import { useEffect, useState, } from 'react';
 import {
-	Column,
-	Row,
+	VStack,
 	ScrollView,
-	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -146,26 +144,26 @@ function Panel(props) {
 
 	if (isCollapsed) {
 		if (collapseDirection === HORIZONTAL) {
-			return <Column overflow="hidden" {...propsToPass} {...framePropsToUse} w="33px" h="100%">
+			return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse} w="33px" h="100%">
 						{isDisabled && <Mask />}
 						{headerComponent}
-					</Column>;
+					</VStack>;
 		}
-		return <Column overflow="hidden" {...propsToPass} {...framePropsToUse} h="33px" w="100%">
+		return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse} h="33px" w="100%">
 					{isDisabled && <Mask />}
 					{headerComponent}
-				</Column>;
+				</VStack>;
 	}
-	return <Column overflow="hidden" {...propsToPass} onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
+	return <VStack overflow="hidden" {...propsToPass} onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
 				{isDisabled && <Mask />}
 				{headerComponent}
 				{topToolbar}
-				<Column flex={1} w="100%" overflow="hidden">
+				<VStack flex={1} w="100%" overflow="hidden">
 					{isScrollable ? <ScrollView>{children}</ScrollView> : children}
-				</Column>
+				</VStack>
 				{bottomToolbar}
 				{footer}
-			</Column>;
+			</VStack>;
 
 }
 

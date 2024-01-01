@@ -1,15 +1,10 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Box,
-	Column,
-	FlatList,
-	Icon,
+	VStack,
 	Modal,
 	Pressable,
-	Row,
-	Spacer,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import _ from 'lodash';
 
 export default function withContextMenu(WrappedComponent) {
@@ -133,9 +128,9 @@ export default function withContextMenu(WrappedComponent) {
 						isOpen={isContextMenuShown && !disableContextMenu}
 						onClose={() => setIsContextMenuShown(false)}
 					>
-						<Column bg="#fff" w={180} position="absolute" top={contextMenuY} left={contextMenuX}>
+						<VStack bg="#fff" w={180} position="absolute" top={contextMenuY} left={contextMenuX}>
 							{contextMenuItemComponents}
-						</Column>
+						</VStack>
 					</Modal>
 				</>;
 	};

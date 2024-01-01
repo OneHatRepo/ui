@@ -1,7 +1,7 @@
 import { useMemo, } from 'react';
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 import ArrayCombo from './ArrayCombo.js';
 
 export default function PageSizeCombo(props) {
@@ -11,7 +11,7 @@ export default function PageSizeCombo(props) {
 		} = props;
 
 	return useMemo(() => {
-		return <Row
+		return <HStack
 					w="100px"
 					ml={2}
 				>
@@ -30,7 +30,7 @@ export default function PageSizeCombo(props) {
 						allowNull={false}
 						disableDirectEntry={true}
 					/>
-				</Row>;
+				</HStack>;
 	}, [
 		Repository,
 		pageSize,

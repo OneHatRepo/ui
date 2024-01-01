@@ -2,10 +2,10 @@ import React, { useRef, } from 'react';
 import {
 	Icon,
 	Pressable,
-	Row,
+	HStack,
 	Switch,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Na from '../../Icons/Na.js';
@@ -51,7 +51,7 @@ const
 					/>;
 		}
 
-		return <Row alignItems="center">
+		return <HStack alignItems="center">
 					<Pressable onPress={onNullify}>
 						<Switch
 							ref={props.outerRef}
@@ -71,7 +71,7 @@ const
 					<Pressable onPress={onToggle}>
 						<Text ml={2} fontSize={styles.FORM_TOGGLE_FONTSIZE}>{_.isNil(value) ? 'N/A' : (!!value ? 'Yes' : 'No')}</Text>
 					</Pressable>
-				</Row>;
+				</HStack>;
 	},
 	ToggleField = withComponent(withValue(ToggleElement));
 

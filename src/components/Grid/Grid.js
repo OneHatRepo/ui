@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react';
 import {
-	Column,
+	VStack,
 	FlatList,
 	Pressable,
 	Icon,
-	Row,
 	ScrollView,
-	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
@@ -859,7 +857,7 @@ function GridComponent(props) {
 
 	if (!isInited) {
 		// first time through, render a placeholder so we can get container dimensions
-		return <Column
+		return <VStack
 					flex={1}
 					w="100%"
 					onLayout={(e) => {
@@ -958,7 +956,7 @@ function GridComponent(props) {
 		}
 	}
 
-	return <Column
+	return <VStack
 				{...testProps('Grid')}
 				ref={containerRef}
 				w="100%"
@@ -970,17 +968,17 @@ function GridComponent(props) {
 			>
 				{topToolbar}
 
-				<Column ref={gridContainerRef} w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+				<VStack ref={gridContainerRef} w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 					if (!isDragMode && !isInlineEditorShown) {
 						deselectAll();
 					}
 				}}>
 					{grid}
-				</Column>
+				</VStack>
 
 				{listFooterComponent}
 
-			</Column>;
+			</VStack>;
 
 }
 

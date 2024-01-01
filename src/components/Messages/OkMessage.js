@@ -1,9 +1,8 @@
  import {
 	Button,
 	Modal,
-	Row,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 
 export default function OkMessage(props) {
 	const {

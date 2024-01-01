@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 import Pagination from './Pagination.js'
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
@@ -50,6 +50,6 @@ export default function PaginationToolbar(props) {
 				onLayout={(e) => onLayout(e)}
 			>
 				{showPagination && <Pagination {...propsToPass} w={toolbarItems.length ? null : '100%'} minimize={minimize} disablePageSize={disablePageSize} />}
-				{toolbarItems.length ? <Row flex={1} {...toolbarProps}>{toolbarItems}</Row> : null}
+				{toolbarItems.length ? <HStack flex={1} {...toolbarProps}>{toolbarItems}</HStack> : null}
 			</Toolbar>;
 };

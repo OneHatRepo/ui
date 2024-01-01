@@ -1,7 +1,7 @@
 import { useRef, } from 'react';
 import {
 	Button,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import withComponent from '../Hoc/withComponent.js';
 
 const ButtonComponent = function(props) {

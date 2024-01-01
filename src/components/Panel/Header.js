@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-	Column,
+	VStack,
 	Icon,
 	Pressable,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -80,12 +80,12 @@ export default function Header(props) {
 								}
 							}}
 						>
-							 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.PANEL_HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
+							 <VStack alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.PANEL_HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
 								{collapseBtn}
 								<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
 									<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
 								</div>
-							</Column>
+							</VStack>
 						</div>;
 			}
 		}
@@ -99,11 +99,11 @@ export default function Header(props) {
 						}
 					}}
 				>
-					<Row alignItems="center" justifyContent="flex-start" px={styles.PANEL_HEADER_PX} py={styles.PANEL_HEADER_PY} bg={styles.PANEL_HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
+					<HStack alignItems="center" justifyContent="flex-start" px={styles.PANEL_HEADER_PX} py={styles.PANEL_HEADER_PY} bg={styles.PANEL_HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
 						{closeBtn}
 						<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
 						{collapseBtn}
-					</Row>
+					</HStack>
 				</div>;
 
 	} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
@@ -122,7 +122,7 @@ export default function Header(props) {
 								}
 							}}
 						>
-							 <Column
+							 <VStack
 							 	alignItems="center"
 								justifyContent="flex-start"
 								h="100%" 
@@ -130,7 +130,7 @@ export default function Header(props) {
 								bg={styles.PANEL_HEADER_BG_VERTICAL}
 							>
 								{collapseBtn}
-								<Column
+								<VStack
 									alignItems="center"
 									justifyContent="center"
 									flex={1} 
@@ -145,8 +145,8 @@ export default function Header(props) {
 										w={200}
 										style={{ transform: [{ rotate: '-90deg'}] }}
 									>{title}</Text>
-								</Column>
-							</Column>
+								</VStack>
+							</VStack>
 						</Pressable>;
 			}
 		}
@@ -161,7 +161,7 @@ export default function Header(props) {
 						}
 					}}
 				>
-					<Row
+					<HStack
 						alignItems="center"
 						justifyContent="flex-start"
 						px={styles.PANEL_HEADER_PX}
@@ -177,7 +177,7 @@ export default function Header(props) {
 							ellipsizeMode="head"
 						>{title}</Text>
 						{collapseBtn}
-					</Row>
+					</HStack>
 				</Pressable>;
 
 	}

@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Icon,
 	Input,
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 import {
 	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input.js';
@@ -121,7 +121,7 @@ function NumberElement(props) {
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
 		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
 
-	return <Row flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6} {...props}>
+	return <HStack flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6} {...props}>
 				<IconButton
 					icon={<Icon as={Minus} color={(isDecrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
 					onPress={onDecrement}
@@ -165,7 +165,7 @@ function NumberElement(props) {
 					borderLeftRadius={0}
 					zIndex={10}
 				/>
-			</Row>;
+			</HStack>;
 }
 
 export default withComponent(withValue(NumberElement));

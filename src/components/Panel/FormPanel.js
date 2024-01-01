@@ -1,6 +1,6 @@
 import {
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import Panel from './Panel.js';
 import Form, { FormEditor } from '../Form/Form.js';
 import withData from '../Hoc/withData.js';

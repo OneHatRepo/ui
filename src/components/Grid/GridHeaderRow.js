@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo, } from 'react';
 import {
 	Icon,
 	Pressable,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	SORT_ASCENDING,
 	SORT_DESCENDING,
@@ -446,7 +446,7 @@ export default function GridHeaderRow(props) {
 				return headerColumns;
 			};
 
-		return <Row
+		return <HStack
 					w="100%"
 					bg="trueGray.200"
 					style={{
@@ -454,7 +454,7 @@ export default function GridHeaderRow(props) {
 					}}
 				> 
 					{renderHeaders()}
-				</Row>;
+				</HStack>;
 
 	}, [
 		Repository,

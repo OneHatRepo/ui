@@ -1,9 +1,9 @@
 import {
 	Icon,
-	Row,
+	HStack,
 	Select,
 	Tooltip,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import CaretDown from '../Icons/CaretDown.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
@@ -57,8 +57,8 @@ export default function Picker(props) {
 		//TODO: This doesn't yet work, but doesn't do anything harmful either!
 		select = <Tooltip label={tooltip} placement={tooltipPlacement}>{select}</Tooltip>;
 	}
-	return <Row {...props}>
+	return <HStack {...props}>
 				{select}
-			</Row>;
+			</HStack>;
 }
 

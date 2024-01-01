@@ -1,8 +1,8 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import Number from '../Form/Field/Number.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
@@ -61,7 +61,7 @@ import _ from 'lodash';
 	
 			}, [value]);
 
-			return <Row
+			return <HStack
 						justifyContent="center"
 						alignItems="center"
 						flex={1}
@@ -86,7 +86,7 @@ import _ from 'lodash';
 							tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
 							maxWidth={120}
 						/>
-					</Row>;
+					</HStack>;
 		},
 		NumberRangeField = withValue(NumberRange);
 

@@ -1,8 +1,8 @@
 import {
-	Column,
-	Row,
+	VStack,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import IconButton from '../Buttons/IconButton.js';
 import Rotate from '../Icons/Rotate.js';
 
@@ -18,7 +18,7 @@ export default function NoRecordsFound(props) {
 
 	let component = textComponent;
 	if (onRefresh) {
-		component = <Row justifyContent="center" alignItems="center" w="100%" flex={1}>
+		component = <HStack justifyContent="center" alignItems="center" w="100%" flex={1}>
 						<IconButton
 							_icon={{
 								as: Rotate,
@@ -35,11 +35,11 @@ export default function NoRecordsFound(props) {
 							ml={-4}
 						/>
 						{textComponent}
-					</Row>;
+					</HStack>;
 	} else {
-		component = <Column justifyContent="center" alignItems="center" w="100%" flex={1}>
+		component = <VStack justifyContent="center" alignItems="center" w="100%" flex={1}>
 						{textComponent}
-					</Column>;
+					</VStack>;
 	}
 	return component;
 }

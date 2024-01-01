@@ -1,7 +1,7 @@
 import {
-	Column,
-	Row,
-} from 'native-base';
+	HStack,
+	VStack,
+} from '@gluestack-ui/themed';
 import AddressBook from '../Components/Icons/AddressBook.js';
 import Alt from '../Components/Icons/Alt.js';
 import AngleLeft from '../Components/Icons/AngleLeft.js';
@@ -227,6 +227,8 @@ import YearsCombo from './Form/Field/Combo/YearsCombo.js';
 import _ from 'lodash';
 
 const components = {
+	Column: VStack,
+	Row: HStack,
 	AddressBook,
 	Alt,
 	AngleLeft,

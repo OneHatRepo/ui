@@ -1,9 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Column,
 	Radio,
-	Row,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';

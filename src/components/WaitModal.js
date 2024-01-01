@@ -1,8 +1,8 @@
 import {
 	Modal,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import withRedux from '../Data/hoc/withRedux';
 import Loading from './Loading';
 import _ from 'lodash';
@@ -16,11 +16,11 @@ export function WaitModal(props) {
 	return <Modal {...props} _backdrop={{ bg: "#000" }}>
 				<Modal.Content maxWidth="400px">
 					<Modal.Body>
-						<Row justifyContent="center" alignItems="center">
+						<HStack justifyContent="center" alignItems="center">
 							<Loading minHeight="auto" h={5} w={5} mr={2} />
 							<Text color="#000">{textMessage}</Text>
 							{/* {!!waitStack ? <Text color="#000">{_.keys(waitStack).join(', ')}</Text> : null} */}
-						</Row>
+						</HStack>
 					</Modal.Body>
 				</Modal.Content>
 			</Modal>;

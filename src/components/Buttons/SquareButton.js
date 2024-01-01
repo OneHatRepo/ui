@@ -3,7 +3,7 @@ import {
 	Icon,
 	Pressable,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import IconButton from './IconButton.js';
 import UiGlobals from '../../UiGlobals.js';
 

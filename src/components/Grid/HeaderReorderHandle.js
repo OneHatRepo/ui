@@ -1,9 +1,7 @@
 import {
-	Column,
+	VStack,
 	Icon,
-	Row,
-	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripVertical from '../Icons/GripVertical.js';
@@ -13,7 +11,7 @@ function HeaderReorderHandle(props) {
 			isDragging,
 		} = props;
 
-	return <Column
+	return <VStack
 				testID="HeaderReorderHandle"
 				bg={isDragging ? 'trueGray.300' : 'trueGray.100'}
 				h="100%"
@@ -23,7 +21,7 @@ function HeaderReorderHandle(props) {
 				style={styles.ewResize}
 			>
 				<Icon as={GripVertical} testID="handle" size="xs" w="100%" h="100%" color="#ccc" />
-			</Column>;
+			</VStack>;
 }
 
 export default withDraggable(HeaderReorderHandle);

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, } from 'react';
 import {
 	Button,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,

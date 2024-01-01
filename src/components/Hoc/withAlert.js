@@ -1,13 +1,12 @@
-import React, { useState, useRef, useEffect, } from 'react';
+import React, { useState, useRef, } from 'react';
 import {
 	AlertDialog,
 	Button,
-	Column,
+	VStack,
 	Icon,
-	Modal,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	ALERT_MODE_OK,
 	ALERT_MODE_YES,
@@ -182,12 +181,12 @@ export default function withAlert(WrappedComponent) {
 							{canClose && <AlertDialog.CloseButton />}
 							<AlertDialog.Header>{title}</AlertDialog.Header>
 							<AlertDialog.Body>
-								<Row>
-									<Column w="40px" p={0} mr={5}>
+								<HStack>
+									<VStack w="40px" p={0} mr={5}>
 										<Icon as={TriangleExclamation} size={10} color="#f00" />
-									</Column>
+									</VStack>
 									<Text flex={1}>{message}</Text>
-								</Row>
+								</HStack>
 							</AlertDialog.Body>
 							<AlertDialog.Footer>
 								{buttons}

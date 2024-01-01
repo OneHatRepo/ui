@@ -1,5 +1,3 @@
-import {
-} from 'native-base';
 import _ from 'lodash';
 
 export default function withBlank(WrappedComponent) {

@@ -2,10 +2,10 @@ import { useMemo, } from 'react';
 import {
 	Box,
 	Icon,
-	Row,
+	HStack,
 	Spinner,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -42,7 +42,7 @@ export default function TreeNode(props) {
 
 	return useMemo(() => {
 		
-		return <Row
+		return <HStack
 					alignItems="center"
 					flexGrow={1}
 					{...nodeProps}
@@ -68,7 +68,7 @@ export default function TreeNode(props) {
 						{...propsToPass}
 					>{text}</Text>
 
-				</Row>;
+				</HStack>;
 	}, [
 		nodeProps,
 		adjustedBg,

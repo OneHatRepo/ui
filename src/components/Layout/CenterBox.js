@@ -1,6 +1,6 @@
 import {
 	Box,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 
 export default function CenterBox(props) {
 	return <Box

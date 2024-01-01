@@ -4,10 +4,10 @@ import {
 	useWindowDimensions,
 } from 'react-native';
 import {
-	Column,
+	VStack,
 	ScrollView,
 	KeyboardAvoidingView,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import withComponent from '../Hoc/withComponent.js';
 // import { useHeaderHeight } from '@react-navigation/elements';
 // import testProps from '../OneHat/functions/testProps';
@@ -35,7 +35,7 @@ function ScreenContainer(props) {
 		safeAreaProps.safeArea = true;
 	}
 
-	const column = <Column
+	const column = <VStack
 						// {...testProps(screenName)}
 						alignItems="center"
 						justifyContent="flex-start"
@@ -48,7 +48,7 @@ function ScreenContainer(props) {
 						{...safeAreaProps}
 					>
 						{props.children}
-					</Column>;
+					</VStack>;
 	
 	if (scrollEnabled) {
 		const scrollViewProps = {};

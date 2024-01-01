@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Input,
 	Tooltip,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	AUTO_SUBMIT_DELAY,
 } from '../../../Constants/Input.js';

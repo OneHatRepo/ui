@@ -1,6 +1,6 @@
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@gluestack-ui/themed';
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
 
@@ -15,6 +15,6 @@ export default function FilterToolbar(props) {
 				borderTopColor="trueGray.400"
 				w="100%"
 			>
-				{toolbarItems.length ? <Row flex={1} borderLeftWidth={1} borderLeftColor="trueGray.100">{toolbarItems}</Row> : null}
+				{toolbarItems.length ? <HStack flex={1} borderLeftWidth={1} borderLeftColor="trueGray.100">{toolbarItems}</HStack> : null}
 			</Toolbar>;
 };

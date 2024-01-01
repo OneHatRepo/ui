@@ -4,7 +4,7 @@ import {
 	Icon,
 	Modal,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 
 export default function ErrorMessage(props) {

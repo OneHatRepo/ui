@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef, isValidElement, } from 'react';
-import { View, } from 'react-native';
 import {
 	Box,
-	Column,
 	Icon,
-	Row,
 	ScrollView,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
+import {
+	Column,
+	Row,
+} from '../index.js';
 import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,

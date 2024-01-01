@@ -1,13 +1,10 @@
 import { useState, useEffect, useRef, useMemo, } from 'react';
 import {
-	Column,
-	FlatList,
+	VStack,
 	Modal,
 	Pressable,
-	Icon,
 	Row,
-	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
@@ -1109,7 +1106,7 @@ function TreeComponent(props) {
 	}
 
 	return <>
-				<Column
+				<VStack
 					{...testProps('Tree')}
 					flex={1}
 					w="100%"
@@ -1117,7 +1114,7 @@ function TreeComponent(props) {
 					{topToolbar}
 					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
 
-					<Column
+					<VStack
 						ref={treeRef}
 						w="100%"
 						flex={1}
@@ -1131,16 +1128,16 @@ function TreeComponent(props) {
 					>
 						{!treeNodes?.length ? <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
 							treeNodes}
-					</Column>
+					</VStack>
 
 					{treeFooterComponent}
-				</Column>
+				</VStack>
 
 				<Modal
 					isOpen={isSearchModalShown}
 					onClose={() => setIsSearchModalShown(false)}
 				>
-					<Column bg="#fff" w={300}>
+					<VStack bg="#fff" w={300}>
 						<FormPanel
 							title="Choose Tree Node"
 							instructions="Multiple tree nodes matched your search. Please select which one to show."
@@ -1176,7 +1173,7 @@ function TreeComponent(props) {
 								setIsSearchModalShown(false);
 							}}
 						/>
-					</Column>
+					</VStack>
 				</Modal>
 			</>;
 

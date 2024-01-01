@@ -1,10 +1,9 @@
 import { useState, useRef, } from 'react';
 import {
 	Box,
-	Column,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -86,7 +85,7 @@ export default function FieldSet(props) {
 				{...propsToPass}
 			>
 				{title &&
-					<Row
+					<HStack
 						w="100%"
 						borderBottomWidth={1}
 						borderBottomColor="trueGray.200"
@@ -102,7 +101,7 @@ export default function FieldSet(props) {
 							numberOfLines={1}
 							ellipsizeMode="head"
 						>{title}</Text>
-						{showToggleAllCheckbox && <Row alignSelf="right">
+						{showToggleAllCheckbox && <HStack alignSelf="right">
 														<Text
 															fontSize={styles.FORM_FIELDSET_FONTSIZE}
 															py={1}
@@ -117,7 +116,7 @@ export default function FieldSet(props) {
 																size: 'lg',
 															}}
 														/>
-													</Row>}
+													</HStack>}
 						{isCollapsible && <IconButton
 												_icon={{
 													as: isLocalCollapsed ? <CaretDown /> : <CaretUp />,
@@ -126,7 +125,7 @@ export default function FieldSet(props) {
 												}}
 												onPress={onToggleCollapse}
 											/>}
-					</Row>}
+					</HStack>}
 				{helpText && <Text>{helpText}</Text>}
 				{!isLocalCollapsed && <FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
 											{children}

@@ -1,9 +1,7 @@
 import {
-	Column,
+	VStack,
 	Icon,
-	Row,
-	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripLinesVertical from '../Icons/GripLinesVertical.js';
@@ -13,7 +11,7 @@ function HeaderResizeHandle(props) {
 			isDragging,
 		} = props;
 
-	return <Column
+	return <VStack
 				testID="HeaderResizeHandle"
 				bg={isDragging ? 'trueGray.300' : 'trueGray.100'}
 				h="100%"
@@ -23,7 +21,7 @@ function HeaderResizeHandle(props) {
 				style={styles.ewResize}
 			>
 				<Icon as={GripLinesVertical} testID="handle" size="sm" color="#ccc" />
-			</Column>;
+			</VStack>;
 }
 
 export default withDraggable(HeaderResizeHandle);

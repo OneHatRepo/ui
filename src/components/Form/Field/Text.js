@@ -1,7 +1,7 @@
 import React from 'react';
 import {
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';

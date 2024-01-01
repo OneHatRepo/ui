@@ -1,10 +1,10 @@
 import { useState, useEffect, useId, useRef, } from 'react';
 import {
-	Column,
+	VStack,
 	Modal,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	EDITOR_TYPE__PLAIN,
 } from '../../Constants/Editor.js';
@@ -309,10 +309,10 @@ export default function withFilters(WrappedComponent) {
 												{...elementProps}
 											/>;
 						if (showLabels && field !== 'q') {
-							filterElement = <Row key={'label-' + ix} alignItems="center">
+							filterElement = <HStack key={'label-' + ix} alignItems="center">
 												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{title}</Text>
 												{filterElement}
-											</Row>;
+											</HStack>;
 						}
 						filterElements.push(filterElement);
 					});
@@ -413,7 +413,7 @@ export default function withFilters(WrappedComponent) {
 			topToolbar = <Toolbar justifyContent="space-between" alignItems="center">
 							<Text pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
 							{renderedFilters}
-							<Row flex={hasFilters ? null : 1} justifyContent="flex-end">
+							<HStack flex={hasFilters ? null : 1} justifyContent="flex-end">
 								<IconButton
 									key="clear"
 									_icon={{
@@ -438,7 +438,7 @@ export default function withFilters(WrappedComponent) {
 									}}
 									tooltip="Swap filters"
 								/>}
-							</Row>
+							</HStack>
 						</Toolbar>;
 
 			if (isFilterSelectorShown) { // this is always false when isUsingCustomFilters
@@ -521,7 +521,7 @@ export default function withFilters(WrappedComponent) {
 							isOpen={true}
 							onClose={() => setIsFilterSelectorShown(false)}
 						>
-							<Column bg="#fff" w={500}>
+							<VStack bg="#fff" w={500}>
 								<FormPanel
 									title="Filter Selector"
 									instructions="Please select which fields to filter by."
@@ -570,7 +570,7 @@ export default function withFilters(WrappedComponent) {
 										setModalSlots(slots);
 									}}
 								/>
-							</Column>
+							</VStack>
 						</Modal>;
 			}
 

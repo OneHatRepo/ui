@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef, } from 'react';
+import React, { useState, useRef, } from 'react';
 import {
 	Box,
-	Icon,
 	Modal,
 	Popover,
 	Pressable,
-	Row,
+	HStack,
 	Text,
 	Tooltip,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	DATE,
 	TIME,
@@ -480,7 +479,7 @@ export function DateElement(props) {
 		}
 		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
-				<Row h={10}>
+				<HStack h={10}>
 					<IconButton
 						_icon={{
 							as: Calendar,
@@ -546,7 +545,7 @@ export function DateElement(props) {
 							placeholder={placeholder}
 							{..._input}
 						/>}
-				</Row>;
+				</HStack>;
 			dropdownMenu = <Modal
 								isOpen={true}
 								safeAreaTop={true}
@@ -586,12 +585,12 @@ export function DateElement(props) {
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
-	assembledComponents = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
+	assembledComponents = <HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 							{xButton}
 							{inputAndTrigger}
 							{additionalButtons}
 							{dropdownMenu}
-						</Row>;
+						</HStack>;
 	
 	if (tooltip) {
 		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>

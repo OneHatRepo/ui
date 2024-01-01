@@ -1,9 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Column,
 	Checkbox,
-	Row,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import withTooltip from '../../../Hoc/withTooltip.js';

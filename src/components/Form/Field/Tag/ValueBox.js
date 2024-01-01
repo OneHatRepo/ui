@@ -1,7 +1,7 @@
 import {
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import IconButton from '../../../Buttons/IconButton.js';
 import Eye from '../../../Icons/Eye.js';
 import Xmark from '../../../Icons/Xmark.js';
@@ -13,7 +13,7 @@ export default function ValueBox(props) {
 			onView,
 			onDelete,
 		} = props;
-	return <Row
+	return <HStack
 				borderWidth={1}
 				borderColor="trueGray.400"
 				borderRadius="md"
@@ -41,5 +41,5 @@ export default function ValueBox(props) {
 						onPress={onDelete}
 						h="100%"
 					/>}
-			</Row>;
+			</HStack>;
 }

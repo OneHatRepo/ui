@@ -1,9 +1,8 @@
 import { useState, } from 'react';
 import {
-	Column,
-	Button,
+	VStack,
 	Modal,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
 import qs from 'qs';
@@ -180,7 +179,7 @@ export default function withPdfButton(WrappedComponent) {
 						isOpen={true}
 						onClose={() => setIsModalShown(false)}
 					>
-						<Column bg="#fff" w={width} h={height}>
+						<VStack bg="#fff" w={width} h={height}>
 							<FormPanel
 								title="PDF Fields to Show"
 								instructions="Please select which fields to show in the PDF."
@@ -201,7 +200,7 @@ export default function withPdfButton(WrappedComponent) {
 								submitBtnLabel="View PDF"
 								useAdditionalEditButtons={false}
 							/>
-						</Column>
+						</VStack>
 					</Modal>;
 		}
 		return <>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import Date from '../Form/Field/Date.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
@@ -70,7 +70,7 @@ const
 			return null;
 		}
 		
-		return <Row
+		return <HStack
 					justifyContent="center"
 					alignItems="center"
 					flex={1}
@@ -93,7 +93,7 @@ const
 						// maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
 					/>
-				</Row>;
+				</HStack>;
 	},
 	DateRangeField = withValue(DateRange);
 

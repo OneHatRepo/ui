@@ -1,6 +1,6 @@
 import {
 	Icon,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import Button from '../Components/Buttons/Button.js';
 import _ from 'lodash';
 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useId, } from 'react';
 import {
 	Button,
-	Column,
+	VStack,
 	Icon,
-	Row,
+	HStack,
 	ScrollView,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -229,11 +229,11 @@ function TabBar(props) {
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
 								tooltip={tab.title}
 							/>;
-					// button = <Row
+					// button = <HStack
 					// 			key={'tab' + ix}
 					// 		>
 					// 			{button}
-					// 		</Row>;
+					// 		</HStack>;
 				} else {
 					button = <Button
 								key={'tabButton' + ix}
@@ -399,7 +399,7 @@ function TabBar(props) {
 
 	let tabBar = null;
 	if (direction === VERTICAL) {
-		tabBar = <Column
+		tabBar = <VStack
 						alignItems="center"
 						justifyContent="flex-start"
 						py={2}
@@ -408,25 +408,25 @@ function TabBar(props) {
 						w={isCollapsed ? '50px' : tabWidth}
 					>
 						{renderedTabs}
-						<Column flex={1} w="100%" justifyContent="flex-end">
+						<VStack flex={1} w="100%" justifyContent="flex-end">
 							{renderedToggleButton}
-						</Column>
-					</Column>;
+						</VStack>
+					</VStack>;
 		if (renderedCurrentTabContent) {
-			tabBar = <Row flex={1} w="100%" {...propsToPass}>
+			tabBar = <HStack flex={1} w="100%" {...propsToPass}>
 						{tabBar}
-						<Column
+						<VStack
 							alignItems="center"
 							justifyContent="flex-start"
 							flex={1}
 						>
 							{renderedCurrentTabContent}
-						</Column>
-					</Row>;
+						</VStack>
+					</HStack>;
 		}
 	}
 	if (direction === HORIZONTAL) {
-		tabBar = <Row
+		tabBar = <HStack
 					alignItems="center"
 					justifyContent="flex-start"
 					p={2}
@@ -440,23 +440,23 @@ function TabBar(props) {
 					>
 						{renderedTabs}
 					</ScrollView>
-					<Row flex={1} h="100%" justifyContent="flex-end">
-						<Row h="100%">
+					<HStack flex={1} h="100%" justifyContent="flex-end">
+						<HStack h="100%">
 							{renderedToggleButton}
-						</Row>
-					</Row>
-				</Row>;
+						</HStack>
+					</HStack>
+				</HStack>;
 		if (renderedCurrentTabContent) {
-			tabBar = <Column flex={1} w="100%" {...propsToPass}>
+			tabBar = <VStack flex={1} w="100%" {...propsToPass}>
 						{tabBar}
-						<Column
+						<VStack
 							alignItems="center"
 							justifyContent="flex-start"
 							flex={1}
 						>
 							{renderedCurrentTabContent}
-						</Column>
-					</Column>;
+						</VStack>
+					</VStack>;
 		}
 	}
 	return tabBar;

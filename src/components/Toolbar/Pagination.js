@@ -1,9 +1,9 @@
 import { useEffect, useMemo, } from 'react';
 import {
 	Icon,
-	Row,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -104,7 +104,7 @@ export default function Pagination(props) {
 							tooltip="Previous Page"
 						/>);
 			if (!minimize) {
-				items.push(<Row
+				items.push(<HStack
 								key="pageSelector"
 								mx={3}
 								justifyContent="center"
@@ -123,7 +123,7 @@ export default function Pagination(props) {
 									tooltip="Set Page"
 								/>
 								<Text ml={2}>of {totalPages}</Text>
-							</Row>);
+							</HStack>);
 			}
 	
 			isDisabled = page === totalPages || totalPages <= 1;
@@ -170,7 +170,7 @@ export default function Pagination(props) {
 			}
 		}
 		
-		return <Row
+		return <HStack
 					justifyContent="flex-start"
 					alignItems="center"
 					px={2}
@@ -178,7 +178,7 @@ export default function Pagination(props) {
 					{...props}
 				>
 					{items}
-				</Row>;
+				</HStack>;
 	}, [
 		// Repository,
 		page,

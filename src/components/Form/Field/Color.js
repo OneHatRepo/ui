@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef, } from 'react';
+import React, { useState, useRef, } from 'react';
 import {
 	Popover,
 	Pressable,
-	Row,
-	Text,
+	HStack,
 	Tooltip,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import { SketchPicker } from 'react-color';
 import {
 	UI_MODE_WEB,
@@ -135,7 +134,7 @@ export function ColorElement(props) {
 
 	// Web version
 	return <Tooltip label={tooltip} placement={tooltipPlacement}>
-				<Row flex={1} h="100%" alignItems="center" onLayout={() => setIsRendered(true)}>
+				<HStack flex={1} h="100%" alignItems="center" onLayout={() => setIsRendered(true)}>
 					<Pressable
 						ref={triggerRef}
 						onPress={onTriggerPress}
@@ -214,7 +213,7 @@ export function ColorElement(props) {
 							</Popover.Body>
 						</Popover.Content>
 					</Popover>
-				</Row>
+				</HStack>
 			</Tooltip>;
 
 	// React Native v1

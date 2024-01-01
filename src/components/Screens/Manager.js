@@ -1,9 +1,9 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Column,
-	Row,
+	VStack,
+	HStack,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import withComponent from '../Hoc/withComponent.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton';
@@ -70,8 +70,8 @@ function ManagerScreen(props) {
 		};
 	}
 
-	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%">
-				<Row
+	return <VStack maxHeight="100vh" overflow="hidden" flex={1} w="100%">
+				<HStack
 					h="80px"
 					py={2}
 					borderBottomWidth={2}
@@ -98,11 +98,11 @@ function ManagerScreen(props) {
 						onPress={() => setMode(MODE_SIDE)}
 						tooltip="Side Editor"
 					/>
-				</Row>
+				</HStack>
 
 				{whichComponent}
 
-			</Column>;
+			</VStack>;
 }
 
 export default withComponent(ManagerScreen);

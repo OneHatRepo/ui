@@ -2,7 +2,7 @@ import {
 	Button,
 	Modal,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import emptyFn from '../../Functions/emptyFn.js';
 
 export default function ConfirmationMessage(props) {
