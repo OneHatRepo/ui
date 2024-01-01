@@ -1,7 +1,7 @@
 import IconButton from '../Components/Buttons/IconButton.js';
 import UiGlobals from '../UiGlobals.js';
 
-export default function getIconButtonFromConfig(config, ix) {
+export default function getIconButtonFromConfig(config, ix, parent) {
 	const
 		{
 			key,
@@ -27,6 +27,8 @@ export default function getIconButtonFromConfig(config, ix) {
 		};
 	return <IconButton
 				key={key || ix}
+				parent={parent}
+				reference={key || ix}
 				onPress={handler}
 				icon={icon}
 				_icon={_icon}

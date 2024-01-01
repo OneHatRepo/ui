@@ -10,6 +10,7 @@ import {
 } from '../../../Constants/Input.js';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import Plus from '../../Icons/Plus.js';
@@ -25,6 +26,7 @@ function NumberElement(props) {
 		minValue,
 		maxValue,
 		tooltip = null,
+		isDisabled = false,
 	} = props,
 	styles = UiGlobals.styles,
 	debouncedSetValueRef = useRef(),
@@ -121,9 +123,9 @@ function NumberElement(props) {
 
 	return <Row flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6} {...props}>
 				<IconButton
-					icon={<Icon as={Minus} color={isDecrementDisabled ? 'disabled' : 'trueGray.500'} />}
+					icon={<Icon as={Minus} color={(isDecrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
 					onPress={onDecrement}
-					isDisabled={isDecrementDisabled}
+					isDisabled={isDecrementDisabled || isDisabled}
 					h="100%"
 					flex={1}
 					maxWidth={10}
@@ -147,12 +149,13 @@ function NumberElement(props) {
 					textAlign="center"
 					borderRadius={0}
 					tooltip={tooltip}
+					isDisabled={isDisabled}
 					{...props._input}
 				/>
 				<IconButton
-					icon={<Icon as={Plus} color={isIncrementDisabled ? 'disabled' : 'trueGray.500'} />}
+					icon={<Icon as={Plus} color={(isIncrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
 					onPress={onIncrement}
-					isDisabled={isIncrementDisabled}
+					isDisabled={isIncrementDisabled || isDisabled}
 					h="100%"
 					flex={1}
 					maxWidth={10}
@@ -165,4 +168,4 @@ function NumberElement(props) {
 			</Row>;
 }
 
-export default withValue(NumberElement);
+export default withComponent(withValue(NumberElement));

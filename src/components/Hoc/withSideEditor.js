@@ -12,6 +12,15 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 				Editor,
 				editorProps = {},
 				sideFlex = 100,
+
+				// withComponent
+				self,
+				
+				// pull these out, as we don't want them going to the Editor
+				selectorId,
+				selectorSelected,
+				
+				...propsToPass
 			} = props;
 
 		if (!Editor) {
@@ -25,12 +34,14 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								{...props}
 							/>}
 					east={<Editor
-								{...props}
+								{...propsToPass}
 								editorType={EDITOR_TYPE__SIDE}
 								flex={sideFlex}
 								borderLeftWidth={1}
 								borderLeftColor="#ccc"
 								{...editorProps}
+								parent={self}
+								reference="editor"
 							/>}
 				/>;
 	});

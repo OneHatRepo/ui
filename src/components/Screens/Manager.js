@@ -4,6 +4,8 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import withComponent from '../Hoc/withComponent.js';
+import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton';
 import FullWidth from '../Icons/FullWidth';
 import SideBySide from '../Icons/SideBySide';
@@ -15,13 +17,14 @@ const
 	MODE_FULL = 'MODE_FULL',
 	MODE_SIDE = 'MODE_SIDE';
 
-export default function ManagerScreen(props) {
+function ManagerScreen(props) {
 	const {
 			title,
 			sideModeComponent,
 			fullModeComponent,
 			id,
 		} = props,
+		styles = UiGlobals.styles,
 		[isReady, setIsReady] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
 		setMode = (newMode) => {
@@ -60,6 +63,13 @@ export default function ManagerScreen(props) {
 		whichComponent = sideModeComponent;
 	}
 
+	const textProps = {};
+	if (styles.MANAGER_SCREEN_TITLE) {
+		textProps.style = {
+			fontFamily: styles.MANAGER_SCREEN_TITLE,
+		};
+	}
+
 	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%">
 				<Row
 					h="80px"
@@ -67,11 +77,11 @@ export default function ManagerScreen(props) {
 					borderBottomWidth={2}
 					borderBottomColor="#ccc"
 				>
-					<Text p={4} fontSize="26" fontWeight={700}>{title}</Text>
+					<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
 					<IconButton
 						icon={FullWidth}
 						_icon={{
-							size: '30px',
+							size: '25px',
 							color: mode === MODE_FULL ? 'primary.100' : '#000',
 						}}
 						disabled={mode === MODE_FULL}
@@ -81,7 +91,7 @@ export default function ManagerScreen(props) {
 					<IconButton
 						icon={SideBySide}
 						_icon={{
-							size: '30px',
+							size: '25px',
 							color: mode === MODE_SIDE ? 'primary.100' : '#000',
 						}}
 						disabled={mode === MODE_SIDE}
@@ -94,3 +104,5 @@ export default function ManagerScreen(props) {
 
 			</Column>;
 }
+
+export default withComponent(ManagerScreen);

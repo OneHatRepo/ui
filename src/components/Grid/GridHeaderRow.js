@@ -71,7 +71,9 @@ export default function GridHeaderRow(props) {
 			Repository.sort(currentSortField, isCurrentSortDirectionAsc ? SORT_ASCENDING : SORT_DESCENDING, sortFn);
 
 			// clear the selection
-			setSelection([]);
+			if (setSelection) {
+				setSelection([]);
+			}
 		},
 		onHeaderMouseEnter = (e, ix) => {
 			if (isDragging) {
@@ -327,6 +329,10 @@ export default function GridHeaderRow(props) {
 						propsToPass.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
 					}
 
+					const textProps = {};
+					if (UiGlobals.mode === UI_MODE_WEB) {
+						textProps.textOverflow = 'ellipsis';
+					}
 					return <Pressable
 								key={ix}
 								onPress={(e) => {
@@ -375,12 +381,10 @@ export default function GridHeaderRow(props) {
 													return proxy;
 												}}
 											/>}
-								
 								<Text
 									key="Text"
 									fontSize={styles.GRID_HEADER_FONTSIZE}
 									overflow="hidden"
-									textOverflow="ellipsis"
 									flex={1}
 									h="100%"
 									px={styles.GRID_HEADER_CELL_PX}
@@ -389,9 +393,10 @@ export default function GridHeaderRow(props) {
 									justifyContent="center"
 									numberOfLines={1}
 									ellipsizeMode="head"
+									{...textProps}
 								>{header}</Text>
 								
-								{isSorter && <Icon key="Icon" as={isSortDirectionAsc ? SortDown : SortUp} textAlign="center" size="sm" mt={3} mr={2} color="trueGray.500" />}
+								{isSorter && <Icon key="Icon" as={isSortDirectionAsc ? SortUp : SortDown} textAlign="center" size="sm" mt={3} mr={2} color="trueGray.500" />}
 								
 								{isResizable && showDragHandles && 
 										<HeaderResizeHandle

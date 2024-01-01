@@ -8,10 +8,11 @@ import {
 	ScrollView,
 	KeyboardAvoidingView,
 } from 'native-base';
-import { useHeaderHeight } from '@react-navigation/elements';
+import withComponent from '../Hoc/withComponent.js';
+// import { useHeaderHeight } from '@react-navigation/elements';
 // import testProps from '../OneHat/functions/testProps';
 
-export default function ScreenContainer(props) {
+function ScreenContainer(props) {
 	const {
 			screenName = 'ScreenContainer',
 			p = 0,
@@ -28,7 +29,7 @@ export default function ScreenContainer(props) {
 		{
 			height,
 		} = useWindowDimensions(),
-		headerHeight = subtractHeaderHeight ? useHeaderHeight() : 0,
+		headerHeight = 0,//subtractHeaderHeight ? useHeaderHeight() : 0,
 		safeAreaProps = {};
 	if (safeArea !== false) {
 		safeAreaProps.safeArea = true;
@@ -79,3 +80,5 @@ export default function ScreenContainer(props) {
 	}
 	return column;
 }
+
+export default withComponent(ScreenContainer);

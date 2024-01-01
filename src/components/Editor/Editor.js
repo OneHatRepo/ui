@@ -1,16 +1,13 @@
 import {
-	Box,
-} from 'native-base';
-import {
 	EDITOR_MODE__VIEW,
 } from '../../Constants/Editor.js';
+import withComponent from '../Hoc/withComponent.js';
+import Form from '../Form/Form.js';
+import Viewer from '../Viewer/Viewer.js';
 import _ from 'lodash';
 
-
-export default function Editor(props) {
+function Editor(props) {
 	const {
-			Form,
-			Viewer,
 			isEditorViewOnly,
 			onEditorCancel: onCancel,
 			onEditorSave: onSave,
@@ -18,9 +15,11 @@ export default function Editor(props) {
 			onEditorDelete: onDelete,
 			editorMode,
 			onEditMode,
+			_viewer = {},
+			_form = {},
 
-			// withData
-			Repository,
+			// withComponent
+			self,
 
 			// withSelection
 			selection,
@@ -32,7 +31,7 @@ export default function Editor(props) {
 	}
 
 	// Repository?.isRemotePhantomMode && selection.length === 1 && 
-	if (editorMode === EDITOR_MODE__VIEW) {
+	if (editorMode === EDITOR_MODE__VIEW || isEditorViewOnly) {
 		const record = selection[0];
 		if (record.isDestroyed) {
 			return null;
@@ -43,11 +42,11 @@ export default function Editor(props) {
 					onEditMode={isEditorViewOnly ? null : onEditMode}
 					onClose={onClose}
 					onDelete={onDelete}
+					parent={self}
+					reference="viewer"
+					{..._viewer}
 				/>;
 	}
-
-	// NOTE: Ideally, this form should use multiple columns when screen is wide enough,
-	// and only show in one column when it's not.
 
 	return <Form
 				{...props}
@@ -56,5 +55,10 @@ export default function Editor(props) {
 				onSave={onSave}
 				onClose={onClose}
 				onDelete={onDelete}
+				parent={self}
+				reference="form"
+				{..._form}
 			/>;
 }
+
+export default withComponent(Editor);

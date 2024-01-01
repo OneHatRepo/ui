@@ -13,7 +13,7 @@ export default function Footer(props) {
 				testID="footer"
 				w="100%"
 				p={2}
-				safeAreaBottom
+				// safeAreaBottom
 				{...props}
 			>
 				{props.children}

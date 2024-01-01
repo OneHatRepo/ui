@@ -11,6 +11,11 @@ import _ from 'lodash';
 
 export default function withData(WrappedComponent) {
 	return (props) => {
+
+		if (props.disableWithData) {
+			return <WrappedComponent {...props} />;
+		}
+		
 		const
 			{
 				// For @onehat/data repositories
@@ -18,8 +23,9 @@ export default function withData(WrappedComponent) {
 				setRepository,
 				uniqueRepository = false,
 				model,
-				autoLoad = false,
+				autoLoad, // bool
 				pageSize,
+				baseParams,
 
 				// For plain JS data
 				data,
@@ -28,6 +34,9 @@ export default function withData(WrappedComponent) {
 				displayField = 'value',
 				idIx,
 				displayIx,
+
+				// withComponent
+				self,
 			} = props,
 			propsToPass = _.omit(props, ['model']), // passing 'model' would mess things up if withData gets called twice (e.g. withData(...withData(...)) ), as we'd be trying to recreate Repository twice
 			localIdIx = idIx || (fields && idField ? fields.indexOf(idField) : null),
@@ -43,11 +52,14 @@ export default function withData(WrappedComponent) {
 				return () => {};
 			}
 
+			let repositoryId;
+
 			(async () => {
 				let Repository;
 				if (uniqueRepository) {
 					const schema = oneHatData.getSchema(model);
 					Repository = await oneHatData.createRepository({ schema });
+					repositoryId = Repository.id;
 				} else {
 					Repository = oneHatData.getRepository(model);
 				}
@@ -56,18 +68,38 @@ export default function withData(WrappedComponent) {
 					Repository.setPageSize(pageSize);
 				}
 
-				if (Repository && (autoLoad || Repository.autoLoad) && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
-					await Repository.load();
+				if (baseParams) {
+					Repository.setBaseParams(baseParams);
+				}
+
+
+				if (Repository && !Repository.isLoaded && Repository.isRemote && !Repository.isAutoLoad && !Repository.isLoading) {
+					let doAutoLoad = Repository.autoLoad;
+					if (!_.isNil(autoLoad)) { // prop can override schema setting for autoLoad
+						doAutoLoad = autoLoad;
+					}
+					if (doAutoLoad) {
+						await Repository.load();
+					}
 				}
 	
 				setLocalRepository(Repository);
 				if (setRepository) { // pass it on up to higher components
 					setRepository(Repository);
 				}
+				if (self) {
+					self.repository = Repository;
+				}
 				setIsReady(true);
 			})();
 
-		}, [LocalRepository]);
+			return () => {
+				if (repositoryId) {
+					oneHatData.deleteRepository(repositoryId);
+				}
+			}
+
+		}, []);
 
 		if (!isReady) {
 			return null;
@@ -75,6 +107,7 @@ export default function withData(WrappedComponent) {
 
 		return <WrappedComponent
 					{...propsToPass}
+					disableWithData={false}
 					Repository={LocalRepository}
 					model={model}
 					data={data}

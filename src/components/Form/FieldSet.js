@@ -1,36 +1,88 @@
-import { useState, } from 'react';
+import { useState, useRef, } from 'react';
 import {
 	Box,
 	Column,
 	Row,
 	Text,
 } from 'native-base';
+import FieldSetContext from '../../Contexts/FieldSetContext.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton.js';
+import CheckboxButton from '../Buttons/CheckboxButton.js';
 import CaretUp from '../Icons/CaretUp.js';
 import CaretDown from '../Icons/CaretDown.js';
+import _ from 'lodash';
 
 export default function FieldSet(props) {
 	const {
 			title,
 			helpText,
 			children,
+			isCollapsible = true,
 			isCollapsed,
 			hasErrors,
+			showToggleAllCheckbox = false,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
-		[localIsCollapsed, setLocalIsCollapsed] = useState(isCollapsed),
+		forceUpdate = useForceUpdate(),
+		childRefs = useRef([]),
+		isAllCheckedRef = useRef(false),
+		[isLocalCollapsed, setIsLocalCollapsed] = useState(isCollapsed),
+		getIsAllChecked = () => {
+			return isAllCheckedRef.current;
+		},
+		setIsAllChecked = (bool) => {
+			isAllCheckedRef.current = bool;
+			forceUpdate();
+		},
 		onToggleCollapse = () => {
-			setLocalIsCollapsed(!localIsCollapsed);
+			setIsLocalCollapsed(!isLocalCollapsed);
+		},
+		onToggleAllChecked = () => {
+			const bool = !getIsAllChecked();
+			setIsAllChecked(bool);
+
+			_.each(childRefs.current, (child) => {
+				if (child.value !== bool) {
+					child.value = bool;
+					child.setValue(bool);
+				}
+			});
+		},
+		registerChild = (child) => {
+			childRefs.current.push(child);
+			checkChildren();
+		},
+		onChangeValue = (value, childRef) => {
+			const child = _.find(childRefs.current, child => child.childRef === childRef);
+			if (child.value !== value) {
+				child.value = value;
+				checkChildren();
+			}
+		},
+		checkChildren = () => {
+			let isAllChecked = true;
+			_.each(childRefs.current, (child) => {
+				if (!child.value) {
+					isAllChecked = false;
+					return false; // break
+				}
+			});
+
+			if (isAllChecked !== getIsAllChecked()) {
+				setIsAllChecked(isAllChecked);
+			}
 		};
 		
 	return <Box
 				borderWidth={1}
 				borderColor="trueGray.400"
 				bg={styles.FORM_FIELDSET_BG}
-				m={2}
+				mb={4}
 				pb={1}
+				pr={4}
 				{...propsToPass}
 			>
 				{title &&
@@ -50,16 +102,34 @@ export default function FieldSet(props) {
 							numberOfLines={1}
 							ellipsizeMode="head"
 						>{title}</Text>
-						<IconButton
-							_icon={{
-								as: localIsCollapsed ? <CaretDown /> : <CaretUp />,
-								size: 'sm',
-								color: 'trueGray.300',
-							}}
-							onPress={onToggleCollapse}
-						/>
+						{showToggleAllCheckbox && <Row alignSelf="right">
+														<Text
+															fontSize={styles.FORM_FIELDSET_FONTSIZE}
+															py={1}
+															px={3}
+															flex={1}
+															numberOfLines={1}
+														>Toggle All?</Text>
+														<CheckboxButton
+															isChecked={getIsAllChecked()}
+															onPress={onToggleAllChecked}
+															_icon={{
+																size: 'lg',
+															}}
+														/>
+													</Row>}
+						{isCollapsible && <IconButton
+												_icon={{
+													as: isLocalCollapsed ? <CaretDown /> : <CaretUp />,
+													size: 'sm',
+													color: 'trueGray.300',
+												}}
+												onPress={onToggleCollapse}
+											/>}
 					</Row>}
 				{helpText && <Text>{helpText}</Text>}
-				{!localIsCollapsed && children}
+				{!isLocalCollapsed && <FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
+											{children}
+										</FieldSetContext.Provider>}
 			</Box>;
 }

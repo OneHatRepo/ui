@@ -3,7 +3,9 @@ import {
 	Box,
 	Button,
 	Column,
+	Pressable,
 	Row,
+	Text,
 } from 'native-base';
 import {
 	CURRENT_MODE,
@@ -16,12 +18,55 @@ import {
 	FILE_MODE_FILE,
 } from '../../Constants/File.js';
 import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
+import IconButton from '@onehat/ui/src/Components/Buttons/IconButton.js';
+import Xmark from '@onehat/ui/src/Components/Icons/Xmark.js'
+import withAlert from '../../Components/Hoc/withAlert.js';
 import withData from '../../Components/Hoc/withData.js';
 import _ from 'lodash';
 
 const
 	EXPANDED_MAX = 100,
 	COLLAPSED_MAX = 2;
+
+const downloadWithFetch = (url, options = {}) => {
+	fetch(url, options)
+		.then( res => res.blob() )
+		.then( blob => {
+			const
+				winName = 'ReportWindow',
+				opts = 'resizable=yes,height=600,width=800,location=0,menubar=0,scrollbars=1',
+				externalWindow = window.open('', winName, opts),
+				file = externalWindow.URL.createObjectURL(blob);
+			externalWindow.location.assign(file);
+		});
+};
+
+function FileCardCustom(props) {
+	const
+		{
+			id,
+			name: filename,
+			type: mimetype,
+			onDelete,
+			downloadUrl,
+		} = props;
+	return <Pressable
+				px={3}
+				py={1}
+				alignItems="center"
+				flexDirection="row"
+				borderRadius={5}
+				borderWidth={1}
+				borderColor="primary.700"
+				onPress={() => {
+					downloadWithFetch(downloadUrl);
+				}}
+			>
+				<Text>{filename}</Text>
+				<IconButton icon={Xmark} onPress={() => onDelete(id)} />
+			</Pressable>;
+}
+	
 
 // Note this component uploads only one file per server request---
 // it doesn't upload multiple files simultaneously.
@@ -36,16 +81,21 @@ function AttachmentsElement(props) {
 			canCrud = true,
 			_dropZone = {},
 			_fileMosaic = {},
+			useFileMosaic = true,
 			accept, // 'image/*'
 			maxFiles = null,
 			disabled = false,
 			clickable = true,
+			confirmBeforeDelete = false,
 
 			// parentContainer
 			selectorSelected,
 
 			// withData
 			Repository,
+
+			// withAlert
+			confirm,
 
 		} = props,
 		styles = UiGlobals.styles,
@@ -113,7 +163,15 @@ function AttachmentsElement(props) {
 			}
 		},
 		onFileDelete = (id) => {
+			if (confirmBeforeDelete) {
+				confirm('Are you sure you want to delete?', () => doDelete(id));
+			} else {
+				doDelete(id);
+			}
+		},
+		doDelete = (id) => {
 			Repository.deleteById(id);
+			Repository.save();
 		};
 
 	if (!_.isEqual(modelidCalc, modelid.current)) {
@@ -145,8 +203,13 @@ function AttachmentsElement(props) {
 					let name,
 						mimetypes;
 					if (_.isString(accept)) {
-						name = 'mimetype LIKE';
-						mimetypes = accept.replace('*', '%');
+						if (accept.match(/,/)) {
+							name = 'mimetype IN';
+							mimetypes = accept.split(',');
+						} else {
+							name = 'mimetype LIKE';
+							mimetypes = accept.replace('*', '%');
+						}
 					} else if (_.isArray(accept)) {
 						name = 'mimetype IN';
 						mimetypes = accept;
@@ -188,7 +251,6 @@ function AttachmentsElement(props) {
 	}
 	let content = <Column
 						w="100%"
-						// minHeight={50}
 						p={2}
 						background={styles.ATTACHMENTS_BG}
 					>
@@ -198,11 +260,18 @@ function AttachmentsElement(props) {
 											key={file.id}
 											marginRight={4}
 										>
-											<FileMosaic
-												{...file}
-												backgroundBlurImage={false}
-												{..._fileMosaic}
-											/>
+											{useFileMosaic &&
+												<FileMosaic
+													{...file}
+													backgroundBlurImage={false}
+													{..._fileMosaic}
+												/>}
+											{!useFileMosaic &&
+												<FileCardCustom
+													{...file}
+													backgroundBlurImage={false}
+													{..._fileMosaic}
+												/>}
 										</Box>;
 							})}
 						</Row>
@@ -263,4 +332,4 @@ function withAdditionalProps(WrappedComponent) {
 	};
 }
 
-export default withAdditionalProps(withData(AttachmentsElement));
+export default withAdditionalProps(withAlert(withData(AttachmentsElement)));

@@ -35,11 +35,10 @@ function Panel(props) {
 			onLayout = null,
 			
 			// Header
-			title = UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))),
+			title = props.model ? UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))) : '',
 			showHeader = true,
 			header = null,
-			isClosable = false,
-			onClose = emptyFn,
+			onClose,
 			isCollapsible = true,
 			isCollapsed = false,
 			setIsCollapsed,
@@ -66,14 +65,17 @@ function Panel(props) {
 
 		useEffect(() => {
 			let titleSuffix = '';
+			if (props.titleSuffix) {
+				titleSuffix += ' ' + props.titleSuffix;
+			}
 			if (selectorSelected?.[0]?.displayValue) {
-				titleSuffix = ' for ' + selectorSelected[0].displayValue;
+				titleSuffix += ' for ' + selectorSelected[0].displayValue;
 			} 
 			setTitleSuffix(titleSuffix);
 			if (!isReady) {
 				setIsReady(true);
 			}
-		}, [selectorSelected, disableTitleChange]);
+		}, [selectorSelected, props.titleSuffix]);
 	
 		if (!isReady) {
 			return null;
@@ -84,7 +86,6 @@ function Panel(props) {
 	if (showHeader && title) {
 		headerComponent = <Header
 								title={title + titleSuffix}
-								isClosable={isClosable}
 								onClose={onClose}
 								isCollapsible={isCollapsible}
 								isCollapsed={isCollapsed}

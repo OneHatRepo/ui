@@ -20,7 +20,7 @@ export default function PageSizeCombo(props) {
 							// [ 1, '1/pg', ],
 							[ 5, '5/pg', ],
 							[ 10, '10/pg', ],
-							[ 20, '20pg', ],
+							[ 20, '20/pg', ],
 							[ 50, '50/pg', ],
 							[ 100, '100/pg', ],
 						]}

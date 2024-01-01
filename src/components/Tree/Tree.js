@@ -25,6 +25,7 @@ import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
+import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
@@ -972,7 +973,7 @@ function TreeComponent(props) {
 				setHighlitedDatum(null);
 
 			} else {
-				console.log('setDropRowIx', newIx);
+				// console.log('setDropRowIx', newIx);
 				setDropRowIx(newIx);
 
 				// highlight the drop node
@@ -1181,60 +1182,66 @@ function TreeComponent(props) {
 
 }
 
-export const Tree = withAlert(
-						withEvents(
-							withData(
-								// withMultiSelection(
-									withSelection(
-										withFilters(
-											withContextMenu(
-												TreeComponent
+export const Tree = withComponent(
+						withAlert(
+							withEvents(
+								withData(
+									// withMultiSelection(
+										withSelection(
+											withFilters(
+												withContextMenu(
+													TreeComponent
+												)
 											)
 										)
-									)
-								// )
+									// )
+								)
 							)
 						)
 					);
 
-export const SideTreeEditor = withAlert(
-									withEvents(
-										withData(
-											// withMultiSelection(
-												withSelection(
-													withSideEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	TreeComponent
+export const SideTreeEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												// withMultiSelection(
+													withSelection(
+														withSideEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		TreeComponent
+																	)
 																)
-															)
-														),
-														true // isTree
+															),
+															true // isTree
+														)
 													)
-												)
-											// )
+												// )
+											)
 										)
 									)
 								);
 
-export const WindowedTreeEditor = withAlert(
-									withEvents(
-										withData(
-											// withMultiSelection(
-												withSelection(
-													withWindowedEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	TreeComponent
+export const WindowedTreeEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												// withMultiSelection(
+													withSelection(
+														withWindowedEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		TreeComponent
+																	)
 																)
-															)
-														),
-														true // isTree
+															),
+															true // isTree
+														)
 													)
-												)
-											// )
+												// )
+											)
 										)
 									)
 								);

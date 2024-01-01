@@ -3,6 +3,7 @@ import {
 	TextArea,
 } from 'native-base';
 import UiGlobals from '../../../UiGlobals.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
@@ -17,15 +18,18 @@ const
 					onChangeText={props.setValue}
 					flex={1}
 					bg={styles.FORM_TEXTAREA_BG}
+					_focus={{
+						bg: styles.FORM_TEXTAREA_BG,
+					}}
 					fontSize={styles.FORM_TEXTAREA_FONTSIZE}
 					h={styles.FORM_TEXTAREA_HEIGHT}
 					{...props}
 					value={value}
 				/>;
 	},
-	TextAreaField = withValue(TextAreaElement);
+	TextAreaField = withComponent(withValue(TextAreaElement));
 
-// Tooltip needs us to forwardRef
+// withTooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {
 	return <TextAreaField {...props} outerRef={ref} />;
 }));

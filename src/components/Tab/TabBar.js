@@ -4,6 +4,7 @@ import {
 	Column,
 	Icon,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import {
@@ -11,27 +12,34 @@ import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
+import withComponent from '../Hoc/withComponent.js';
 import IconButton from '../Buttons/IconButton.js';
 import Minimize from '../Icons/Minimize.js';
 import Maximize from '../Icons/Maximize.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
+import Xmark from '../Icons/Xmark.js';
 import _ from 'lodash';
 
 
-export default function TabBar(props) {
+function TabBar(props) {
 	const {
 			tabs = [], // { _icon, title, content, path, items, }
 			content, // e.g. Expo Router slot
 			direction = HORIZONTAL,
 			tabWidth = 150, // used on VERTICAL mode only
-			tabHeight = '44px', // used on HORIZONTAL mode only
+			tabHeight = '47px', // used on HORIZONTAL mode only
 			additionalButtons,
 			initialTabIx = 0,
 			currentTabIx,
+			disableCollapse = false,
 			startsCollapsed = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
+			onPressTab,
+			onTabClose,
+			self,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -55,6 +63,9 @@ export default function TabBar(props) {
 		},
 		setCurrentTab = (ix) => {
 			if ((useLocal && ix === currentTabIxLocal) || ix === currentTabIx) {
+				if (onPressTab) {
+					onPressTab(ix); // for when an already shown tab is pressed
+				}
 				return; // no change
 			}
 			if (useLocal) {
@@ -176,16 +187,41 @@ export default function TabBar(props) {
 				const
 					isCurrentTab = ix === getCurrentTab(),
 					thisButtonProps = {};
-				if (isCollapsed) {
+				let useIconButton = false;
+				if (isCollapsed || !tab.title) {
+					useIconButton = true;
+				}
+				const tabIcon = _.clone(tab._icon);
+				if (tabIcon.as && _.isString(tabIcon.as)) {
+					const Type = getComponentFromType(tabIcon.as);
+					if (Type) {
+						tabIcon.as = Type;
+					}
+				}
+				let closeBtn;
+				if (onTabClose && !tab.disableCloseBox) {
+					closeBtn = <IconButton
+									key={'tabCloseButton' + ix}
+									onPress={() => onTabClose(ix)}
+									icon={Xmark}
+									_icon={{
+										color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
+										...iconProps,
+									}}
+									tooltip="Close Tab"
+									p={0}
+								/>;
+				}
+				if (useIconButton) {
 					button = <IconButton
-								key={'tab' + ix}
+								key={'tabIconButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								{...buttonProps}
 								// {...thisButtonProps}
 								_icon={{
 									color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
 									...iconProps,
-									...tab._icon,
+									...tabIcon,
 								}}
 								_hover={{
 									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
@@ -193,21 +229,33 @@ export default function TabBar(props) {
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
 								tooltip={tab.title}
 							/>;
+					// button = <Row
+					// 			key={'tab' + ix}
+					// 		>
+					// 			{button}
+					// 		</Row>;
 				} else {
 					button = <Button
-								key={'tab' + ix}
+								key={'tabButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								leftIcon={<Icon
 											color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
 											{...iconProps}
-											{...tab._icon}
+											{...tabIcon}
 										/>}
+								// endIcon={<Icon
+								// 			color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
+								// 			{...iconProps}
+								// 			{...tabIcon}
+								// 		/>}
+								endIcon={closeBtn}
 								{...buttonProps}
 								{...thisButtonProps}
 								_hover={{
 									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
 								}}
 								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
+								direction="row"
 							>
 								<Text
 									color={isCurrentTab ? styles.TAB_ACTIVE_COLOR : styles.TAB_COLOR}
@@ -240,7 +288,11 @@ export default function TabBar(props) {
 							default:
 						}
 					}
-					if (isCollapsed) {
+					let useIconButton = false;
+					if (isCollapsed || !additionalButton.text) {
+						useIconButton = true;
+					}
+					if (useIconButton) {
 						button = <IconButton
 									key={'additionalBtn' + ix}
 									onPress={additionalButton.onPress}
@@ -292,6 +344,12 @@ export default function TabBar(props) {
 			}
 
 			const currentTabIx = getCurrentTab();
+			if (!tabs[currentTabIx]) {
+				return null;
+			}
+			if (!tabs[currentTabIx].content && !tabs[currentTabIx].items) {
+				return null;
+			}
 			if (tabs[currentTabIx].content) {
 				return tabs[currentTabIx].content;
 			}
@@ -328,15 +386,20 @@ export default function TabBar(props) {
 		return null;
 	}
 
+	if (self) {
+		self.getCurrentTab = getCurrentTab;
+		self.setCurrentTab = setCurrentTab;
+		self.setIsCollapsed = setIsCollapsed;
+	}
+
 	const
 		renderedTabs = renderTabs(),
 		renderedCurrentTabContent = renderCurrentTabContent(),
-		renderedToggleButton = renderToggleButton();
+		renderedToggleButton = !disableCollapse ? renderToggleButton() : null;
 
-
+	let tabBar = null;
 	if (direction === VERTICAL) {
-		return <Row flex={1} w="100%" {...propsToPass}>
-					<Column
+		tabBar = <Column
 						alignItems="center"
 						justifyContent="flex-start"
 						py={2}
@@ -348,21 +411,22 @@ export default function TabBar(props) {
 						<Column flex={1} w="100%" justifyContent="flex-end">
 							{renderedToggleButton}
 						</Column>
-					</Column>
-					{renderedCurrentTabContent && 
+					</Column>;
+		if (renderedCurrentTabContent) {
+			tabBar = <Row flex={1} w="100%" {...propsToPass}>
+						{tabBar}
 						<Column
 							alignItems="center"
 							justifyContent="flex-start"
 							flex={1}
 						>
 							{renderedCurrentTabContent}
-						</Column>}
-				</Row>;
+						</Column>
+					</Row>;
+		}
 	}
-
-	// HORIZONTAL
-	return <Column flex={1} w="100%" {...propsToPass}>
-				<Row
+	if (direction === HORIZONTAL) {
+		tabBar = <Row
 					alignItems="center"
 					justifyContent="flex-start"
 					p={2}
@@ -370,20 +434,32 @@ export default function TabBar(props) {
 					bg={styles.TAB_BAR_BG}
 					h={isCollapsed ? '30px' : tabHeight}
 				>
-					{renderedTabs}
+					<ScrollView
+						horizontal={true}
+						h={isCollapsed ? '30px' : tabHeight}
+					>
+						{renderedTabs}
+					</ScrollView>
 					<Row flex={1} h="100%" justifyContent="flex-end">
 						<Row h="100%">
 							{renderedToggleButton}
 						</Row>
 					</Row>
-				</Row>
-				{renderedCurrentTabContent && 
-					<Column
-						alignItems="center"
-						justifyContent="flex-start"
-						flex={1}
-					>
-						{renderedCurrentTabContent}
-					</Column>}
-			</Column>;
+				</Row>;
+		if (renderedCurrentTabContent) {
+			tabBar = <Column flex={1} w="100%" {...propsToPass}>
+						{tabBar}
+						<Column
+							alignItems="center"
+							justifyContent="flex-start"
+							flex={1}
+						>
+							{renderedCurrentTabContent}
+						</Column>
+					</Column>;
+		}
+	}
+	return tabBar;
 }
+
+export default withComponent(TabBar);

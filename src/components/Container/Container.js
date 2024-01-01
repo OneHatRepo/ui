@@ -12,12 +12,13 @@ import {
 	UI_MODE_REACT_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import withComponent from '../Hoc/withComponent.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import Splitter from './Splitter.js';
 import _ from 'lodash';
 
-export default function Container(props) {
+function Container(props) {
 	const {
 			center,
 			north,
@@ -281,3 +282,5 @@ export default function Container(props) {
 				{southComponent}
 			</Column>;
 }
+
+export default withComponent(Container);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useId, } from 'react';
+import { useState, useEffect, useId, useRef, } from 'react';
 import {
 	Column,
 	Modal,
@@ -46,6 +46,9 @@ export default function withFilters(WrappedComponent) {
 
 				// withData
 				Repository,
+
+				// withComponent
+				self,
 			} = props;
 
 		let modal = null,
@@ -59,7 +62,7 @@ export default function withFilters(WrappedComponent) {
 					defaultFilters: modelDefaultFilters,
 					ancillaryFilters: modelAncillaryFilters,
 				} = Repository.getSchema().model,
-				id = props.id || useId(),
+				id = props.id || props.path || useId(),
 
 				// determine the starting filters
 				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters
@@ -80,13 +83,12 @@ export default function withFilters(WrappedComponent) {
 						if (propertyDef) {
 							title = propertyDef.title;
 							type = propertyDef.filterType;
-						} else {
-							if (!modelFilterTypes[field]) {
-								throw Error('not a propertyDef, and not an ancillaryFilter!');
-							}
+						} else if (modelAncillaryFilters[field]) {
 							const ancillaryFilter = modelFilterTypes[field];
 							title = ancillaryFilter.title;
 							type = FILTER_TYPE_ANCILLARY;
+						} else {
+							throw Error('not a propertyDef, and not an ancillaryFilter!');
 						}
 						formatted = {
 							field,
@@ -125,6 +127,7 @@ export default function withFilters(WrappedComponent) {
 			}
 
 			const
+				filterCallbackRef = useRef(),
 				[filters, setFiltersRaw] = useState(formattedStartingFilters), // array of formatted filters
 				[slots, setSlots] = useState(startingSlots), // array of field names user is currently filtering on; blank slots have a null entry in array
 				[modalFilters, setModalFilters] = useState([]),
@@ -231,11 +234,26 @@ export default function withFilters(WrappedComponent) {
 					}
 					return inArray(filterType, ['NumberRange', 'DateRange']);
 				},
+				filterById = (id, cb) => {
+					onClearFilters();
+					filterCallbackRef.current = cb; // store the callback, so we can call it the next time this HOC renders with new filters
+					const newFilters = _.clone(filters);
+					_.remove(newFilters, (filter) => {
+						return filter.field === 'q';
+					});
+					newFilters.unshift({
+						field: 'q',
+						title: 'Search all text fields',
+						type: 'Input',
+						value: 'id:' + id,
+					});
+					setFilters(newFilters, false, false);
+				},
 				renderFilters = () => {
 					const
 						filterProps = {
 							mx: 1,
-							disableAdjustingPageSizeToHeight: true,
+							autoAdjustPageSizeToHeight: false,
 							pageSize: 20,
 							uniqueRepository: true,
 						},
@@ -330,6 +348,7 @@ export default function withFilters(WrappedComponent) {
 							const {
 									field,
 									value,
+									type,
 								} = filter,
 								isFilterRange = getIsFilterRange(filter);
 							if (isFilterRange) {
@@ -345,8 +364,11 @@ export default function withFilters(WrappedComponent) {
 									newRepoFilters.push({ name: lowField, value: lowValue, });
 								}
 							} else {
-								newFilterNames.push(field);
-								newRepoFilters.push({ name: field, value, });
+								const
+									isAncillary = type === FILTER_TYPE_ANCILLARY,
+									filterName = (isAncillary ? 'ancillary___' : '') + field;
+								newFilterNames.push(filterName);
+								newRepoFilters.push({ name: filterName, value, });
 							}
 						});
 
@@ -359,10 +381,15 @@ export default function withFilters(WrappedComponent) {
 						setPreviousFilterNames(newFilterNames);
 					}
 
-					Repository.filter(newRepoFilters, null, false); // false so other filters remain
-
 					if (searchAllText && Repository.searchAncillary && !Repository.hasBaseParam('searchAncillary')) {
 						Repository.setBaseParam('searchAncillary', true);
+					}
+
+					await Repository.filter(newRepoFilters, null, false); // false so other filters remain
+
+					if (filterCallbackRef.current) {
+						filterCallbackRef.current(); // call the callback
+						filterCallbackRef.current = null; // clear the callback
 					}
 
 					if (!isReady) {
@@ -373,6 +400,11 @@ export default function withFilters(WrappedComponent) {
 
 			if (!isReady) {
 				return null;
+			}
+
+			if (self) {
+				self.filterById = filterById;
+				self.setFilters = setFilters;
 			}
 
 			const
@@ -421,7 +453,7 @@ export default function withFilters(WrappedComponent) {
 				_.each(modalSlots, (field, ix) => {
 
 					// Create the data for the combobox. (i.e. List all the possible filters for this slot)
-					const data = [];
+					let data = [];
 					_.each(modelFilterTypes, (filterType, filterField) => {
 						if (inArray(filterField, usedFields) && field !== filterField) { // Show all filters not yet applied, but include the current filter
 							return; // skip, since it's already been used
@@ -430,7 +462,7 @@ export default function withFilters(WrappedComponent) {
 						// Is it an ancillary filter?
 						const isAncillary = _.isPlainObject(filterType) && filterType.isAncillary;
 						if (isAncillary) {
-							data.push([ filterField, filterType.title ]);
+							data.push([ filterField, filterType.title + ' •' ]);
 							return;
 						}
 
@@ -438,6 +470,9 @@ export default function withFilters(WrappedComponent) {
 						const propertyDef = Repository.getSchema().getPropertyDefinition(filterField);
 						data.push([ filterField, propertyDef.title ]);
 					});
+
+					// sort by title
+					data = _.sortBy(data, [function(datum) { return datum[1]; }]);
 
 					const
 						ixPlusOne = (ix +1),
@@ -501,7 +536,9 @@ export default function withFilters(WrappedComponent) {
 										},
 									]}
 									onCancel={(e) => {
-										// Just close the modal
+										setIsFilterSelectorShown(false);
+									}}
+									onClose={(e) => {
 										setIsFilterSelectorShown(false);
 									}}
 									onSave={(data, e) => {

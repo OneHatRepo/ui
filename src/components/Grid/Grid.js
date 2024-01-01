@@ -5,6 +5,7 @@ import {
 	Pressable,
 	Icon,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import {
@@ -31,6 +32,7 @@ import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
+import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
@@ -43,6 +45,7 @@ import withInlineEditor from '../Hoc/withInlineEditor.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
+import Loading from '../Messages/Loading.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { ReorderableGridRow } from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -54,15 +57,33 @@ import ReorderRows from '../Icons/ReorderRows.js';
 import _ from 'lodash';
 
 
-// Grid requires the use of HOC withSelection() whenever it's used.
-// The default export is *with* the HOC. A separate *raw* component is
-// exported which can be combined with many HOCs for various functionality.
+// This fn gets called many times per component
+// First call
+	// !isInited
+	// render a placeholder, to get container dimensions
+	// onInitialLayout()
+		// set initial pageSize
+		// setIsInited(true)
+// Second call
+	// !isReady
+	// set selectorSelected
+	// load Repo
+// Third call
+	// isReady
+	// render Grid,
+// subsequent calls due to changes of selectorSelected
+	// re-apply selectorSelected
+// subsequent calls due to changes changes in onLayout
+	// adjust pageSize if needed
+
+// TODO: account for various environments (mainly for optimization):
+// RN vs web
+// Repository vs data
 
 function GridComponent(props) {
 	const {
 
 			columnsConfig = [], // json configurations for each column
-
 			columnProps = {},
 			getRowProps = (item) => {
 				return {
@@ -71,11 +92,13 @@ function GridComponent(props) {
 				};
 			},
 			flatListProps = {},
+			onRowPress,
 			// enableEditors = false,
+			loadOnRender = true,
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
-			disableAdjustingPageSizeToHeight = false,
+			autoAdjustPageSizeToHeight = true,
 			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
 			showRowExpander = false,
@@ -94,7 +117,10 @@ function GridComponent(props) {
 			additionalToolbarButtons = [],
 			h,
 			flex,
-			bg,
+			bg = '#fff',
+
+			// withComponent
+			self,
 
 			// withEditor
 			onAdd,
@@ -119,6 +145,7 @@ function GridComponent(props) {
 			onChangeColumnsConfig,
 
 			// withSelection
+			disableWithSelection,
 			selection,
 			setSelection,
 			selectionMode,
@@ -141,8 +168,11 @@ function GridComponent(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
+		containerRef = useRef(),
 		gridRef = useRef(),
+		gridContainerRef = useRef(),
 		isAddingRef = useRef(),
+		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
@@ -159,10 +189,16 @@ function GridComponent(props) {
 			if (isInlineEditorShown) {
 				return;
 			}
+			if (onRowPress) {
+				onRowPress(item, e);
+			}
+			if (disableWithSelection) {
+				return;
+			}
 			const
 				{
-					shiftKey,
-					metaKey,
+					shiftKey = false,
+					metaKey = false,
 				 } = e;
 			let allowToggle = allowToggleSelection;
 			if (metaKey) {
@@ -223,11 +259,13 @@ function GridComponent(props) {
 			}
 		},
 		getFooterToolbarItems = () => {
-			const items = _.map(additionalToolbarButtons, getIconButtonFromConfig);
+			const items = _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 
 			if (canRowsReorder) {
 				items.unshift(<IconButton
 					key="reorderBtn"
+					parent={self}
+					reference="reorderBtn"
 					onPress={() => setIsDragMode(!isDragMode)}
 					icon={<Icon as={isDragMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
 				/>);
@@ -248,7 +286,7 @@ function GridComponent(props) {
 				} = row,
 				isHeaderRow = row.item.id === 'headerRow',
 				rowProps = getRowProps && !isHeaderRow ? getRowProps(item) : {},
-				isSelected = !isHeaderRow && isInSelection(item);
+				isSelected = !isHeaderRow && !disableWithSelection && isInSelection(item);
 
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
@@ -259,24 +297,31 @@ function GridComponent(props) {
 							if (isHeaderRow || isDragMode) {
 								return
 							}
-							switch (e.detail) {
-								case 1: // single click
-									onRowClick(item, e); // sets selection
-									if (onEditorRowClick) {
-										onEditorRowClick(item, index, e);
-									}
-									break;
-								case 2: // double click
-									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
-										onRowClick(item, e); // so reselect it
-									}
-									if (onEdit) {
-										onEdit();
-									}
-									break;
-								case 3: // triple click
-									break;
-								default:
+							if (CURRENT_MODE === UI_MODE_WEB) {
+								switch (e.detail) {
+									case 1: // single click
+										onRowClick(item, e); // sets selection
+										if (onEditorRowClick) {
+											onEditorRowClick(item, index, e);
+										}
+										break;
+									case 2: // double click
+										if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
+											onRowClick(item, e); // so reselect it
+										}
+										if (onEdit) {
+											onEdit();
+										}
+										break;
+									case 3: // triple click
+										break;
+									default:
+								}
+							} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+								onRowClick(item, e); // sets selection
+								if (onEditorRowClick) {
+									onEditorRowClick(item, index, e);
+								}
 							}
 						}}
 						onLongPress={(e) => {
@@ -289,7 +334,9 @@ function GridComponent(props) {
 							
 							// context menu
 							const selection = [item];
-							setSelection(selection);
+							if (!disableWithSelection) {
+								setSelection(selection);
+							}
 							if (onEditorRowClick) { // e.g. inline editor
 								onEditorRowClick(item, index, e);
 							}
@@ -611,38 +658,68 @@ function GridComponent(props) {
 			}
 			setDragRowSlot(null);
 		},
-		onLayout = (e) => {
-			if (disableAdjustingPageSizeToHeight || !Repository || CURRENT_MODE !== UI_MODE_WEB || !gridRef.current || isAddingRef.current) {
-				return;
-			}
-
+		calculatePageSize = (containerHeight) => {
 			const
-				gr = gridRef.current,
-				scrollableNode = gr.getScrollableNode(),
-				scrollableNodeBoundingBox = scrollableNode.getBoundingClientRect(),
-				scrollableNodeHeight = scrollableNodeBoundingBox.height,
-				firstRow = scrollableNode.children[0].children[showHeaders ? 1: 0];
-
-			if (!firstRow) {
-				return;
-			}
-
-			const
-				rowHeight = firstRow.getBoundingClientRect().height,
-				rowsPerContainer = Math.floor(scrollableNodeHeight / rowHeight);
+				headerHeight = showHeaders ? 50 : 0,
+				footerHeight = !disablePagination ? 50 : 0,
+				height = containerHeight - headerHeight - footerHeight,
+				rowHeight = 48,
+				rowsPerContainer = Math.floor(height / rowHeight);
 			let pageSize = rowsPerContainer;
 			if (showHeaders) {
 				pageSize--;
 			}
-			if (pageSize !== Repository.pageSize) {
-				Repository.setPageSize(pageSize);
+			return pageSize;
+		},
+		adjustPageSizeToHeight = (e) => {
+			if (CURRENT_MODE !== UI_MODE_WEB) { // TODO: Remove this conditional, and don't even do the double render for RN
+				return;
+			}
+			if (!Repository) {
+				return;
+			}
+
+			let doAdjustment = autoAdjustPageSizeToHeight;
+			if (!_.isNil(UiGlobals.autoAdjustPageSizeToHeight) && !UiGlobals.autoAdjustPageSizeToHeight) {
+				// allow global override to prevent this auto adjustment
+				doAdjustment = false;
+			}
+			if (doAdjustment) {
+				const containerHeight = e.nativeEvent.layout.height;
+				if (containerHeight > 0) {
+					const pageSize = calculatePageSize(containerHeight);
+					if (pageSize !== Repository.pageSize) {
+						Repository.setPageSize(pageSize);
+					}
+				}
 			}
 		},
-		debouncedOnLayout = useCallback(_.debounce(onLayout, 500), []);
+		debouncedAdjustPageSizeToHeight = useCallback(_.debounce(adjustPageSizeToHeight, 200), []),
+		applySelectorSelected = () => {
+			if (disableSelectorSelected || !selectorId) {
+				return
+			}
+			let id = selectorSelected?.id;
+			if (_.isEmpty(selectorSelected)) {
+				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
+			}
+			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
+		};
 
 	useEffect(() => {
+		if (!isInited) {
+			// first call -- meant to render placeholder so we get container dimensions
+			if (Repository) {
+				if (Repository.isRemote) {
+					Repository.isAutoLoad = false;
+				}
+				Repository.pauseEvents();
+			}
+			return () => {};
+		}
 
-		const calculateLocalColumnsConfig = () => {
+		// second call -- do other necessary setup
+		function calculateLocalColumnsConfig() {
 			// convert json config into actual elements
 			const localColumnsConfig = [];
 			if (_.isEmpty(columnsConfig)) {
@@ -710,12 +787,11 @@ function GridComponent(props) {
 				});
 			}
 			return localColumnsConfig;
-		};
-
-		if (!isReady) {
-			setLocalColumnsConfig(calculateLocalColumnsConfig());
-			setIsReady(true);
 		}
+		setLocalColumnsConfig(calculateLocalColumnsConfig());
+
+		setIsReady(true);
+
 		if (!Repository) {
 			return () => {};
 		}
@@ -737,42 +813,63 @@ function GridComponent(props) {
 
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
-		Repository.ons(['changePage', 'changePageSize',], deselectAll);
+		if (!disableWithSelection) {
+			Repository.ons(['changePage', 'changePageSize',], deselectAll);
+		}
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
 
 
+		applySelectorSelected();
+		Repository.resumeEvents();
+
+		if (Repository.isRemote && !Repository.isLoaded) {
+			Repository.load();
+		}
+
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
-			Repository.offs(['changePage', 'changePageSize',], deselectAll);
+			if (!disableWithSelection) {
+				Repository.offs(['changePage', 'changePageSize',], deselectAll);
+			}
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
 		};
-	}, []);
+	}, [isInited]);
 
 	useEffect(() => {
-		if (!Repository) {
+		if (!Repository || !isReady) {
 			return () => {};
 		}
-		if (!disableSelectorSelected && selectorId) {
-			let id = selectorSelected?.id;
-			if (_.isEmpty(selectorSelected)) {
-				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
-			}
-			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
-		}
 
-	}, [selectorId, selectorSelected]);
+		applySelectorSelected();
 
+	}, [selectorSelected]);
+
+	if (self) {
+		self.ref = containerRef;
+	}
 
 	isAddingRef.current = isAdding;
 
 	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode]);
 
+	if (!isInited) {
+		// first time through, render a placeholder so we can get container dimensions
+		return <Column
+					flex={1}
+					w="100%"
+					onLayout={(e) => {
+						adjustPageSizeToHeight(e);
+						setIsInited(true);
+					}}
+				/>;
+	}
 	if (!isReady) {
+		// second time through, render nothing, as we are still setting up the Repository
 		return null;
 	}
 
@@ -791,7 +888,21 @@ function GridComponent(props) {
 	let listFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			listFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} disablePageSize={!disableAdjustingPageSizeToHeight} />;
+			let disablePageSize = autoAdjustPageSizeToHeight; // component setting
+			if (!_.isNil(UiGlobals.autoAdjustPageSizeToHeight) && !UiGlobals.autoAdjustPageSizeToHeight) { // global setting
+				disablePageSize = false;
+			}
+			let showMoreOnly = false;
+			if (UiGlobals.paginationIsShowMoreOnly) { // global setting
+				showMoreOnly = true;
+			}
+			listFooterComponent = <PaginationToolbar
+										Repository={Repository}
+										self={self}
+										toolbarItems={footerToolbarItemComponents}
+										disablePageSize={disablePageSize}
+										showMoreOnly={showMoreOnly}
+									/>;
 		} else if (footerToolbarItemComponents.length) {
 			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
 		}
@@ -804,59 +915,67 @@ function GridComponent(props) {
 		sizeProps.flex = flex ?? 1;
 	}
 
+	let grid = <FlatList
+					ref={gridRef}
+					scrollEnabled={CURRENT_MODE === UI_MODE_WEB}
+					nestedScrollEnabled={true}
+					contentContainerStyle={{
+						overflow: 'auto',
+						borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
+						borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
+						borderStyle: styles.REORDER_BORDER_STYLE,
+						flex: 1,
+					}}
+					refreshing={isLoading}
+					onRefresh={pullToRefresh ? onRefresh : null}
+					progressViewOffset={100}
+					data={rowData}
+					keyExtractor={(item) => {
+						let id;
+						if (item.id) {
+							id = item.id;
+						} else if (fields) {
+							id = item[idIx];
+						}
+						return String(id);
+					}}
+					initialNumToRender={initialNumToRender}
+					initialScrollIndex={0}
+					renderItem={renderRow}
+					bg="trueGray.100"
+					{...flatListProps}
+				/>
+	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
+	}
+
+	// placeholders in case no entities yet
+	if (!entities?.length) {
+		if (Repository?.isLoading) {
+			grid = <Loading isScreen={true} />;
+		} else {
+			grid = <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} />;
+		}
+	}
+
 	return <Column
 				{...testProps('Grid')}
+				ref={containerRef}
 				w="100%"
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
 				borderColor={styles.GRID_BORDER_COLOR}
-				onLayout={debouncedOnLayout}
+				onLayout={(e) => debouncedAdjustPageSizeToHeight(e)}
 				{...sizeProps}
 			>
 				{topToolbar}
 
-				<Column w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
+				<Column ref={gridContainerRef} w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
 					if (!isDragMode && !isInlineEditorShown) {
 						deselectAll();
 					}
 				}}>
-					{!entities?.length ? <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} /> :
-						<FlatList
-							ref={gridRef}
-							// ListHeaderComponent={listHeaderComponent}
-							// ListFooterComponent={listFooterComponent}
-							scrollEnabled={true}
-							nestedScrollEnabled={true}
-							contentContainerStyle={{
-								overflow: 'auto',
-								borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
-								borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
-								borderStyle: styles.REORDER_BORDER_STYLE,
-								flex: 1,
-							}}
-							refreshing={isLoading}
-							onRefresh={pullToRefresh ? onRefresh : null}
-							progressViewOffset={100}
-							data={rowData}
-							keyExtractor={(item) => {
-								let id;
-								if (item.id) {
-									id = item.id;
-								} else if (fields) {
-									id = item[idIx];
-								}
-								return String(id);
-							}}
-							// getItemLayout={(data, index) => ( // an optional optimization that allows skipping the measurement of dynamic content if you know the size (height or width) of items ahead of time. getItemLayout is efficient if you have fixed size items
-							// 	{length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
-							// )}
-							// numColumns={1}
-							initialNumToRender={initialNumToRender}
-							initialScrollIndex={0}
-							renderItem={renderRow}
-							bg="trueGray.100"
-							{...flatListProps}
-						/>}
+					{grid}
 				</Column>
 
 				{listFooterComponent}
@@ -865,80 +984,88 @@ function GridComponent(props) {
 
 }
 
-export const Grid = withAlert(
-				withEvents(
-					withData(
-						withMultiSelection(
-							withSelection(
-								withFilters(
-									withPresetButtons(
-										withContextMenu(
-											GridComponent
-										),
-										true // isGrid
+export const Grid = withComponent(
+						withAlert(
+							withEvents(
+								withData(
+									withMultiSelection(
+										withSelection(
+											withFilters(
+												withPresetButtons(
+													withContextMenu(
+														GridComponent
+													),
+													true // isGrid
+												)
+											)
+										)
 									)
 								)
 							)
 						)
-					)
-				)
-			);
+					);
 
-export const SideGridEditor = withAlert(
-									withEvents(
-										withData(
-											withMultiSelection(
-												withSelection(
-													withSideEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	GridComponent
-																),
-																true // isGrid
-															)
-														)
-													)
-												)
-											)
-										)
-									)
-								);
-
-export const WindowedGridEditor = withAlert(
-									withEvents(
-										withData(
-											withMultiSelection(
-												withSelection(
-													withWindowedEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	GridComponent
-																),
-																true // isGrid
-															)
-														)
-													)
-												)
-											)
-										)
-									)
-								);
-
-export const InlineGridEditor = withAlert(
-									withEvents(
-										withData(
-											withMultiSelection(
-												withSelection(
-													withInlineEditor(
-														withFilters(
-															withPresetButtons(
-																withContextMenu(
-																	GridComponent
+export const SideGridEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												withMultiSelection(
+													withSelection(
+														withSideEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		GridComponent
+																	),
+																	true // isGrid
 																)
-															),
-															true // isGrid
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								);
+
+export const WindowedGridEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												withMultiSelection(
+													withSelection(
+														withWindowedEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		GridComponent
+																	),
+																	true // isGrid
+																)
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								);
+
+export const InlineGridEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												withMultiSelection(
+													withSelection(
+														withInlineEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		GridComponent
+																	)
+																),
+																true // isGrid
+															)
 														)
 													)
 												)

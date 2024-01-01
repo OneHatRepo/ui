@@ -9,6 +9,7 @@ import {
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Na from '../../Icons/Na.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
@@ -72,7 +73,7 @@ const
 					</Pressable>
 				</Row>;
 	},
-	ToggleField = withValue(ToggleElement);
+	ToggleField = withComponent(withValue(ToggleElement));
 
 // Tooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {

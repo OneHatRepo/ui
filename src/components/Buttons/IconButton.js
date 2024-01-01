@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, } from 'react';
 import {
 	Button,
 	ButtonText,
@@ -8,90 +8,75 @@ import {
 	Spinner,
 	Tooltip,
 } from '@gluestack-ui/themed';
-import SquareCheck from '../Icons/SquareCheck.js';
+import withComponent from '../Hoc/withComponent.js';
 import styles from '../../Constants/Styles.js';
 import _ from 'lodash';
 
-const IconButton = React.forwardRef((props, ref) => {
+const
+	IconButton = (props) => {
+		const {
+				// _icon, // props for the icon component
+				// icon, // The actual icon component to use
+				_spinner,
+				isLoading = false,
+				tooltip,
+				tooltipPlacement = 'bottom',
+				self,
+			} = props;
+		let ref = props.outerRef;
 
-	return <Button
-				size="md"
-				py={100}
-				// variant="solid"
-				// action="primary"
-				{...props}
-			>
-				<ButtonText>Add </ButtonText>
-				<ButtonIcon as={SquareCheck} />
-			</Button>;
-
-
-	const {
-			// _icon, // props for the icon component
-			// icon, // The actual icon component to use
-			_spinner,
-			isLoading = false,
-			tooltip,
-			tooltipPlacement = 'bottom',
-		} = props;
-	const propsIcon = props._icon || {};
-	let icon = props.icon,
-		ret;
-	if (isLoading) {
-		icon = <Spinner {..._spinner} />;
-	}
-	if (React.isValidElement(icon)) {
-		if (!_.isEmpty(propsIcon)) {
-			icon = React.cloneElement(icon, {...propsIcon});
+		if (!ref) {
+			ref = useRef();
 		}
-	} else {
-		icon = <Icon as={icon} {...propsIcon} />;
-	}
-	const button = <Button
-							ref={ref}
-							borderRadius="md"
-							action="primary"
-							// flexDirection="row"
-							// justifyContent="center"
-							// alignItems="center"
-							p={2}
-							// bg={styles.ICON_BUTTON_BG}
-							// sx={{
-							// 	_hover: {
-							// 		bg: styles.ICON_BUTTON_BG_HOVER,
-							// 	},
-							// 	_disabled: {
-							// 		bg: styles.ICON_BUTTON_BG_DISABLED,
-							// 	},
-							// 	_pressed: {
-							// 		bg: styles.ICON_BUTTON_BG_PRESSED,
-							// 	},
-							// }}
-							{...props}
-						>
-						{icon}
-						</Button>;
-	ret = button;
-	if (tooltip) {
-		// ret = <Tooltip
-		// 			placement={tooltipPlacement}
-		// 			trigger={(triggerProps) => {
+		if (self) {
+			self.ref = ref.current;
+		}
 
+		const propsIcon = props._icon || {};
+		let icon = props.icon,
+			ret;
+		if (isLoading) {
+			icon = <Spinner {..._spinner} />;
+		}
+		if (React.isValidElement(icon)) {
+			if (!_.isEmpty(propsIcon)) {
+				icon = React.cloneElement(icon, {...propsIcon});
+			}
+		} else {
+			icon = <Icon as={icon} {...propsIcon} />;
+		}
+		const pressable = <Pressable
+								ref={ref}
+								borderRadius="md"
+								colorScheme="primary"
+								flexDirection="row"
+								justifyContent="center"
+								alignItems="center"
+								p={2}
+								// bg={styles.ICON_BUTTON_BG}
+								_hover={{
+									bg: styles.ICON_BUTTON_BG_HOVER,
+								}}
+								_disabled={{
+									bg: styles.ICON_BUTTON_BG_DISABLED,
+								}}
+								_pressed={{
+									bg: styles.ICON_BUTTON_BG_PRESSED,
+								}}
+								{...props}
+								size={null /* this prop was coming from above and messing things up! */}
+							>
+							{icon}
+							</Pressable>;
+		ret = pressable;
+		if (tooltip) {
+			ret = <Tooltip label={tooltip} placement={tooltipPlacement}>{ret}</Tooltip>;
+		}
+		return ret;
+	},
+	IconButtonComponent = withComponent(IconButton);
 
-
-		// 				// ERROR: I'm getting infinite re-renders with gluestack here; not sure why.
-		
-		
-		
-		// 				return React.cloneElement(ret, {...triggerProps});
-		// 			}}
-		// 		>
-		// 			<Tooltip.Content>
-		// 				<Tooltip.Text>{tooltip}</Tooltip.Text>
-		// 			</Tooltip.Content>
-		// 		</Tooltip>;
-	}
-	return ret;
+// withComponent needs us to forwardRef
+export default React.forwardRef((props, ref) => {
+	return <IconButtonComponent {...props} outerRef={ref} />;
 });
-
-export default IconButton;

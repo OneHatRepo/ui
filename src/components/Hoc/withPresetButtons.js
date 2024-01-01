@@ -32,9 +32,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 
 		const {
 				// extract and pass
-				contextMenuItems,
-				additionalToolbarButtons,
+				contextMenuItems = [],
+				additionalToolbarButtons = [],
 				onChangeColumnsConfig,
+				verifyCanEdit,
+				verifyCanDelete,
+				verifyCanDuplicate,
 				...propsToPass
 			} = props,
 			{
@@ -50,6 +53,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				disableCopy = !isGrid,
 				disableDuplicate = !isEditor,
 				disablePrint = !isGrid,
+
+				// withComponent
+				self,
 
 				// withEditor
 				userCanEdit = true,
@@ -120,12 +126,14 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				return isDisabled;
 			},
 			getPresetButtonProps = (type) => {
-				let text,
+				let key,
+					text,
 					handler,
 					icon = null,
 					isDisabled = false;
 				switch(type) {
 					case 'add':
+						key = 'addBtn';
 						text = 'Add';
 						handler = onAdd;
 						icon = <Plus />;
@@ -137,28 +145,37 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'edit':
+						key = 'editBtn';
 						text = 'Edit';
 						handler = onEdit;
 						icon = <Edit />;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
 						}
-						if (_.isEmpty(selection)) {
+						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
+							isDisabled = true;
+						}
+						if (verifyCanEdit && !verifyCanEdit(selection)) {
 							isDisabled = true;
 						}
 						break;
 					case 'delete':
+						key = 'deleteBtn';
 						text = 'Delete';
 						handler = onDelete;
 						icon = <Trash />;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
 						}
-						if (_.isEmpty(selection) || selection.length > 1) {
+						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
+							isDisabled = true;
+						}
+						if (verifyCanDelete && !verifyCanDelete(selection)) {
 							isDisabled = true;
 						}
 						break;
 					case 'view':
+						key = 'viewBtn';
 						text = 'View';
 						handler = onView;
 						icon = <Eye />;
@@ -171,6 +188,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'copy':
+						key = 'copyBtn';
 						text = 'Copy to Clipboard';
 						handler = onCopyToClipboard;
 						icon = <Clipboard />;
@@ -183,6 +201,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						break;
 					case 'duplicate':
+						key = 'duplicateBtn';
 						text = 'Duplicate';
 						handler = onDuplicate;
 						icon = <Duplicate />;
@@ -191,6 +210,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							isDisabled = true;
 						}
 						if (_.isEmpty(selection) || selection.length > 1) {
+							isDisabled = true;
+						}
+						if (verifyCanDuplicate && !verifyCanDuplicate(selection)) {
 							isDisabled = true;
 						}
 						break;
@@ -202,10 +224,13 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					default:
 				}
 				return {
+					key,
 					text,
 					handler,
 					icon,
 					isDisabled,
+					parent: self,
+					reference: key,
 				};
 			},
 			generatePresetButtons = () => {
@@ -266,25 +291,18 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 		if (!isReady) {
 			return null;
 		}
-	
-		const
-			contextMenuItemsToPass = [
-				...localContextMenuItems,
-			],
-			additionalToolbarButtonsToPass = [
-				...localAdditionalToolbarButtons,
-			];
-		if (contextMenuItems) {
-			contextMenuItemsToPass.concat(contextMenuItems);
-		}
-		if (additionalToolbarButtons) {
-			additionalToolbarButtonsToPass.concat(additionalToolbarButtons);
-		}
 
 		return <WrappedComponent
 					{...propsToPass}
-					contextMenuItems={contextMenuItemsToPass}
-					additionalToolbarButtons={additionalToolbarButtonsToPass}
+					disablePresetButtons={false}
+					contextMenuItems={[
+						...contextMenuItems,
+						...localContextMenuItems,
+					]}
+					additionalToolbarButtons={[
+						...additionalToolbarButtons,
+						...localAdditionalToolbarButtons,
+					]}
 					onChangeColumnsConfig={onChangeColumnsConfigDecorator}
 				/>;
 	};

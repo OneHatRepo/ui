@@ -12,6 +12,7 @@ import {
 } from '../../../Constants/UiModes.js';
 import UiGlobals from '../../../UiGlobals.js';
 import Input from '../Field/Input.js';
+import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
 import _ from 'lodash';
@@ -223,4 +224,4 @@ export function ColorElement(props) {
 	
 }
 
-export default withValue(ColorElement);
+export default withComponent(withValue(ColorElement));

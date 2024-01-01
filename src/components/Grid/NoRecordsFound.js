@@ -26,6 +26,8 @@ export default function NoRecordsFound(props) {
 								style: {
 									fontSize: 16,
 								},
+								color: 'trueGray.400',
+								mr: 1,
 							}}
 							onPress={onRefresh}
 							variant="ghost"

@@ -1,7 +1,7 @@
-import { useEffect, useState, isValidElement, } from 'react';
+import React, { useEffect, useState, useRef, isValidElement, } from 'react';
+import { View, } from 'react-native';
 import {
 	Box,
-	Button,
 	Column,
 	Icon,
 	Row,
@@ -24,9 +24,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
+import withComponent from '../Hoc/withComponent.js';
 import withEditor from '../Hoc/withEditor.js';
+import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
+import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
@@ -35,6 +39,8 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
+
+const CONTAINER_THRESHOLD = 900;
 
 // TODO: memoize field Components
 
@@ -64,18 +70,30 @@ function Form(props) {
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
+			checkIsEditingDisabled = true,
+			disableLabels = false,
+			disableDirtyIcon = false,
 			onBack,
 			onReset,
 			onViewMode,
-			additionalEditButtons = [],
+			submitBtnLabel,
+			onSubmit,
+			formSetup, // this fn will be executed after the form setup is complete
+			additionalEditButtons,
+			useAdditionalEditButtons = true,
+			additionalFooterButtons,
 			
 			// sizing of outer container
 			h,
 			maxHeight,
+			minHeight = 0,
 			w,
 			maxWidth,
 			flex,
 			onLayout, // onLayout handler for main view
+
+			// withComponent
+			self,
 
 			// withData
 			Repository,
@@ -89,6 +107,7 @@ function Form(props) {
 			onClose,
 			onDelete,
 			editorStateRef,
+			disableView,
 
 			// parent container
 			selectorId,
@@ -96,14 +115,16 @@ function Form(props) {
 
 			// withAlert
 			alert,
-			confirm,
 		} = props,
+		formRef = useRef(),
 		styles = UiGlobals.styles,
 		record = props.record?.length === 1 ? props.record[0] : props.record,
 		isMultiple = _.isArray(record),
 		isSingle = !isMultiple, // for convenience
+		isPhantom = !!record?.isPhantom,
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
+		[containerWidth, setContainerWidth] = useState(),
 		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		{
@@ -137,6 +158,7 @@ function Form(props) {
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
 			resolver: yupResolver(validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object()),
+			context: { isPhantom },
 		}),
 		buildFromColumnsConfig = () => {
 			// For InlineEditor
@@ -203,7 +225,7 @@ function Form(props) {
 											let editorProps = {};
 											if (!editor) {
 												const propertyDef = fieldName && Repository?.getSchema().getPropertyDefinition(fieldName);
-												editor = propertyDef[fieldName].editoType;
+												editor = propertyDef[fieldName].editorType;
 												if (_.isPlainObject(editor)) {
 													const {
 															type,
@@ -233,6 +255,8 @@ function Form(props) {
 																onBlur={onBlur}
 																flex={1}
 																{...editorProps}
+																parent={self}
+																reference={fieldName}
 																// {...defaults}
 																// {...propsToPass}
 															/>;
@@ -247,7 +271,7 @@ function Form(props) {
 											// 			</Column>;
 											// }
 
-											const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
+											const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
 											return <Row key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</Row>;
 										}}
 									/>);
@@ -256,9 +280,12 @@ function Form(props) {
 			return <Row>{elements}</Row>;
 		},
 		buildFromItems = () => {
-			return _.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults));
+			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
-		buildNextLayer = (item, ix, defaults) => {
+		buildFromItem = (item, ix, defaults) => {
+			if (React.isValidElement(item)) {
+				return item;
+			}
 			let {
 					type,
 					title,
@@ -268,58 +295,111 @@ function Form(props) {
 					items,
 					onChange: onEditorChange,
 					useSelectorId = false,
+					isHidden = false,
 					...propsToPass
-				} = item;
-			let editorTypeProps = {};
+				} = item,
+				editorTypeProps = {};
 
-			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
-			if (propertyDef?.isEditingDisabled) {
+			if (isHidden) {
+				return null;
+			}
+			if (type === 'DisplayField') {
 				isEditable = false;
 			}
-			if (isEditable && !type && Repository) {
-				const
-					{
-						type: t,
-						...p
-					} =  propertyDef.editorType;
-				type = t;
-				editorTypeProps = p;
+			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
+			if (!useAdditionalEditButtons) {
+				item = _.omit(item, 'additionalEditButtons');
 			}
-			if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
-				editorTypeProps.autoLoad = true;
+			if (propertyDef?.isEditingDisabled && checkIsEditingDisabled) {
+				isEditable = false;
+			}
+			if (!type) {
+				if (isEditable) {
+					const
+						{
+							type: t,
+							...p
+						} =  propertyDef.editorType;
+					type = t;
+					editorTypeProps = p;
+				} else if (propertyDef.viewerType) {
+					const
+						{
+							type: t,
+							...p
+						} =  propertyDef.viewerType;
+					type = t;
+				} else {
+					type = 'Text';
+				}
+			}
+			const isCombo = type?.match && type.match(/Combo/);
+			if (item.hasOwnProperty('autoLoad')) {
+				editorTypeProps.autoLoad = item.autoLoad;
+			} else {
+				if (isCombo && Repository?.isRemote && !Repository?.isLoaded) {
+					editorTypeProps.autoLoad = true;
+				}
+			}
+			if (isCombo && _.isNil(propsToPass.showXButton)) {
+				editorTypeProps.showXButton = true;
 			}
 			const Element = getComponentFromType(type);
 			let children;
-
-			if (inArray(type, ['Column', 'FieldSet'])) {
+			
+			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
-				const defaults = item.defaults;
+				if (type === 'Column') {
+					if (containerWidth < CONTAINER_THRESHOLD) {
+						// everything is in one column
+						if (propsToPass.hasOwnProperty('flex')) {
+							delete propsToPass.flex;
+						}
+						if (propsToPass.hasOwnProperty('width')) {
+							delete propsToPass.width;
+						}
+						if (propsToPass.hasOwnProperty('w')) {
+							delete propsToPass.w;
+						}
+						propsToPass.w = '100%';
+						propsToPass.mb = 1;
+					}
+					propsToPass.pl = 3;
+				}
+				if (type === 'Row') {
+					propsToPass.w = '100%';
+				}
+				const itemDefaults = item.defaults;
 				children = _.map(items, (item, ix) => {
-					return buildNextLayer(item, ix, defaults);
+					return buildFromItem(item, ix, itemDefaults);
 				});
-				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
+				return <Element key={ix} title={title} {...itemDefaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
-			if (!label && Repository && propertyDef.title) {
+			if (!label && Repository && propertyDef?.title) {
 				label = propertyDef.title;
 			}
 
 			if (isEditorViewOnly || !isEditable) {
-				const
-					Text = getComponentFromType('Text'),
-					value = (record && record[name]) || (startingValues && startingValues[name]) || null;
-				let element = <Text
+				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
+				let element = <Element
 									value={value}
+									parent={self}
+									reference={name}
 									{...propsToPass}
 								/>;
-				if (label) {
+				if (!disableLabels && label) {
 					const labelProps = {};
 					if (defaults?.labelWidth) {
 						labelProps.w = defaults.labelWidth;
 					}
-					element = <><Label {...labelProps}>{label}</Label>{element}</>;
+					if (containerWidth > 400) {
+						element = <><Label {...labelProps}>{label}</Label>{element}</>;
+					} else {
+						element = <Column><Label {...labelProps}>{label}</Label>{element}</Column>;
+					}
 				}
 				return <Row key={ix} px={2} pb={1}>{element}</Row>;
 			}
@@ -373,14 +453,19 @@ function Form(props) {
 								throw new Error('Should not yet be valid React element. Did you use <Element> instead of () => <Element> when defining it?')
 							}
 
-							if (useSelectorId) {
+							if (useSelectorId) { // This causes the whole form to use selectorId
 								editorTypeProps.selectorId = selectorId;
-								editorTypeProps.selectorSelected = editorProps;
+							}
+							if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
+								editorTypeProps.selectorSelected = record;
 							}
 							let element = <Element
 												name={name}
 												value={value}
 												onChangeValue={(newValue) => {
+													if (newValue === undefined) {
+														newValue = null; // React Hook Form doesn't respond well when setting value to undefined
+													}
 													onChange(newValue);
 													if (onEditorChange) {
 														onEditorChange(newValue, formSetValue, formGetValues, formState);
@@ -388,34 +473,76 @@ function Form(props) {
 												}}
 												onBlur={onBlur}
 												flex={1}
+												parent={self}
+												reference={name}
 												{...defaults}
 												{...propsToPass}
 												{...editorTypeProps}
 											/>;
-							if (error) {
-								if (editorType !== EDITOR_TYPE__INLINE) {
-									element = <Column pt={1} flex={1}>
-												{element}
-												<Text color="#f00">{error.message}</Text>
-											</Column>;
-								} else {
-									debugger;
-
-
+							if (editorType !== EDITOR_TYPE__INLINE) {
+								let message = null;
+								if (error) {
+									message = error.message;
+									if (label) {
+										message = message.replace(error.ref.name, label);
+									}
 								}
+								if (message) {
+									message = <Text color="#f00">{message}</Text>;
+								}
+								element = <Column pt={1} flex={1}>
+											{element}
+											{message}
+										</Column>;
 							}
-							if (label && editorType !== EDITOR_TYPE__INLINE) {
+
+							if (item.additionalEditButtons) {
+								element = <Row flex={1} flexWrap="wrap">
+												{element}
+												{buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState })}
+											</Row>;
+							}
+								
+							let isRequired = false,
+								requiredIndicator = null;
+							if (editorType === EDITOR_TYPE__PLAIN) {
+								// submitted validator
+								if (validator?.fields && validator.fields[name]?.exclusiveTests?.required) {
+									isRequired = true;
+								}
+							} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
+								(propertyDef?.requiredIfPhantom && isPhantom) ||
+								(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
+								// property definition
+								isRequired = true;
+							}
+							if (isRequired) {
+								requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
+							}
+							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
 								const labelProps = {};
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
 								}
+								if (containerWidth > 400) {
+									element = <Row w="100%" py={1}>
+													<Label {...labelProps}>{requiredIndicator}{label}</Label>
+													{element}
+												</Row>;
+								} else {
+									element = <Column w="100%" py={1} mt={3}>
+													<Label {...labelProps}>{requiredIndicator}{label}</Label>
+													{element}
+												</Column>;
+								}
+							} else if (disableLabels && requiredIndicator) {
 								element = <Row w="100%" py={1}>
-												<Label {...labelProps}>{label}</Label>
+												{requiredIndicator}
 												{element}
 											</Row>;
 							}
 
-							const dirtyIcon = isDirty ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
+							const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
 							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : null}>{dirtyIcon}{element}</Row>;
 						}}
 					/>;
@@ -427,6 +554,7 @@ function Form(props) {
 					let {
 						type,
 						title = null,
+						description = null,
 						selectorId,
 						...propsToPass
 					} = item;
@@ -443,6 +571,7 @@ function Form(props) {
 										selectorSelected={selectorSelected || record}
 										flex={1}
 										uniqueRepository={true}
+										parent={self}
 										{...propsToPass}
 									/>;
 					if (title) {
@@ -451,13 +580,18 @@ function Form(props) {
 									fontWeight="bold"
 								>{title}</Text>;
 					}
-					components.push(<Column key={'ancillary-' + ix} mx={2} my={5}>{title}{element}</Column>);
+					if (description) {
+						description = <Text
+									fontSize={styles.FORM_ANCILLARY_DESCRIPTION_FONTSIZE}
+									fontStyle="italic"
+								>{description}</Text>;
+					}
+					components.push(<Column key={'ancillary-' + ix} mx={2} my={5}>{title}{description}{element}</Column>);
 				});
 			}
 			return components;
 		},
 		onSubmitError = (errors, e) => {
-			debugger;
 			if (editorType === EDITOR_TYPE__INLINE) {
 				alert(errors.message);
 			}
@@ -469,6 +603,20 @@ function Form(props) {
 				const values = record.submitValues;
 				reset(values);
 			}
+		},
+		onSubmitDecorated = async (data, e) => {
+			const result = await onSubmit(data, e);
+			if (result) {
+				const values = record.submitValues;
+				reset(values);
+			}
+		},
+		onLayoutDecorated = (e) => {
+			if (onLayout) {
+				onLayout(e);
+			}
+
+			setContainerWidth(e.nativeEvent.layout.width);
 		};
 
 	useEffect(() => {
@@ -476,26 +624,41 @@ function Form(props) {
 			setPreviousRecord(record);
 			reset(defaultValues);
 		}
+		if (formSetup) {
+			formSetup(formSetValue, formGetValues, formState)
+		}
 	}, [record]);
 
 	useEffect(() => {
 		if (!Repository) {
-			return () => {};
+			return () => {
+				if (!_.isNil(editorStateRef)) {
+					editorStateRef.current = null; // clean up the editorStateRef on unmount
+				}
+			};
 		}
 
 		Repository.ons(['changeData', 'change'], forceUpdate);
 
 		return () => {
 			Repository.offs(['changeData', 'change'], forceUpdate);
+			if (!_.isNil(editorStateRef)) {
+				editorStateRef.current = null; // clean up the editorStateRef on unmount
+			}
 		};
 	}, [Repository]);
 
-	// if (Repository && (!record || _.isEmpty(record))) {
+	// if (Repository && (!record || _.isEmpty(record) || record.isDestroyed)) {
 	// 	return null;
 	// }
 
 	if (!_.isNil(editorStateRef)) {
 		editorStateRef.current = formState; // Update state so HOC can know what's going on
+	}
+
+	if (self) {
+		self.ref = formRef;
+		self.formState = formState;
 	}
 	
 	const sizeProps = {};
@@ -519,140 +682,209 @@ function Form(props) {
 		sizeProps.maxHeight = maxHeight;
 	}
 
-	const savingProps = {};
-	if (isSaving) {
-		savingProps.borderTopWidth = 2;
-		savingProps.borderTopColor = '#f00';
-	}
-
-
+	const formButtons = [];
 	let formComponents,
-		editor;
-	if (editorType === EDITOR_TYPE__INLINE) {
-		formComponents = buildFromColumnsConfig();
-		editor = <ScrollView
-					horizontal={true}
-					flex={1}
-					bg="#fff"
-					py={1}
-					borderTopWidth={3}
-					borderBottomWidth={5}
-					borderTopColor="primary.100"
-					borderBottomColor="primary.100"
-				>{formComponents}</ScrollView>;
-	} else if (editorType === EDITOR_TYPE__PLAIN) {
-		formComponents = buildFromItems();
-		const formAncillaryComponents = buildAncillary();
-		editor = <>
-					<Row>{formComponents}</Row>
-					<Column pt={4}>{formAncillaryComponents}</Column>
-				</>;
-	} else {
-		formComponents = buildFromItems();
-		const formAncillaryComponents = buildAncillary();
-		editor = <ScrollView _web={{ height: 1 }} width="100%" pb={1}>
-					<Row>{formComponents}</Row>
-					<Column pt={4}>{formAncillaryComponents}</Column>
-				</ScrollView>;
-	}
+		editor,
+		additionalButtons,
+		isSaveDisabled = false,
+		isSubmitDisabled = false,
+		savingProps = {},
 
-	let editorModeF;
-	switch(editorMode) {
-		case EDITOR_MODE__VIEW:
-			editorModeF = 'View';
-			break;
-		case EDITOR_MODE__ADD:
-			editorModeF = 'Add';
-			break;
-		case EDITOR_MODE__EDIT:
-			editorModeF = isMultiple ? 'Edit Multiple' : 'Edit';
-			break;
-	}
+		showDeleteBtn = false,
+		showResetBtn = false,
+		showCloseBtn = false,
+		showCancelBtn = false,
+		showSaveBtn = false,
+		showSubmitBtn = false;
 
-	let isSaveDisabled = false;
-	if (!_.isEmpty(formState.errors)) {
-		isSaveDisabled = true;
-	}
-	if (_.isEmpty(formState.dirtyFields) && !record?.isRemotePhantom) {
-		isSaveDisabled = true;
-	}
+	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
+		
+		if (isSaving) {
+			savingProps.borderTopWidth = 2;
+			savingProps.borderTopColor = '#f00';
+		}
 
-	if (editorType === EDITOR_TYPE__INLINE) {
-		buttonGroupProps.position = 'fixed';
-		buttonGroupProps.left = 10; // TODO: I would prefer to have this be centered, but it's a lot more complex than just making it stick to the left
-		footerProps.alignItems = 'flex-start';
+		if (editorType === EDITOR_TYPE__INLINE) {
+			editor = buildFromColumnsConfig();
+		// } else if (editorType === EDITOR_TYPE__PLAIN) {
+		// 	formComponents = buildFromItems();
+		// 	const formAncillaryComponents = buildAncillary();
+		// 	editor = <>
+		// 				<Column p={4}>{formComponents}</Column>
+		// 				<Column pt={4}>{formAncillaryComponents}</Column>
+		// 			</>;
+		} else {
+			formComponents = buildFromItems();
+			const formAncillaryComponents = buildAncillary();
+			editor = <>
+						{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{formComponents}</Row> : null}
+						{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
+						<Column m={2} pt={4}>{formAncillaryComponents}</Column>
+					</>;
+
+			additionalButtons = buildAdditionalButtons(additionalEditButtons);
+
+			formButtons.push(<Row key="buttonsRow" px={4} pt={4} alignItems="center" justifyContent="flex-end">
+								{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
+									<Button
+										key="backBtn"
+										onPress={onBack}
+										leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
+										color="#fff"
+									>Back</Button>}
+								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && !disableView &&
+									<Button
+										key="viewBtn"
+										onPress={onViewMode}
+										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
+										color="#fff"
+									>To View</Button>}
+							</Row>);
+			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
+				formButtons.push(<Row key="additionalButtonsRow" p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+									{additionalButtons}
+								</Row>)
+			}
+		}
+
+		if (!_.isEmpty(formState.errors) || !formState.isValid) {
+			isSaveDisabled = true;
+			isSubmitDisabled = true;
+		}
+		if (_.isEmpty(formState.dirtyFields) && !isPhantom) {
+			isSaveDisabled = true;
+		}
+
+		if (editorType === EDITOR_TYPE__INLINE) {
+			buttonGroupProps.position = 'fixed';
+			buttonGroupProps.left = 10; // TODO: I would prefer to have this be centered, but it's a lot more complex than just making it stick to the left
+			footerProps.alignItems = 'flex-start';
+		}
+
+		if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
+			showDeleteBtn = true;
+		}
+		if (!isEditorViewOnly) {
+			showResetBtn = true;
+		}
+		if (editorType !== EDITOR_TYPE__SIDE) { // side editor won't show either close or cancel buttons!
+			// determine whether we should show the close or cancel button
+			if (isEditorViewOnly) {
+				showCloseBtn = true;
+			} else {
+				const formIsDirty = formState.isDirty;
+				// console.log('formIsDirty', formIsDirty);
+				// console.log('isPhantom', isPhantom);
+				if (formIsDirty || isPhantom) {
+					if (isSingle && onCancel) {
+						showCancelBtn = true;
+					}
+				} else {
+					if (onClose) {
+						showCloseBtn = true;
+					}
+				}
+			}
+		}
+		if (!isEditorViewOnly && onSave) {
+			showSaveBtn = true;
+		}
+		if (!!onSubmit) {
+			showSubmitBtn = true;
+		}
 	}
 	
-	return <Column {...sizeProps} onLayout={onLayout}>
+	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
+				{!!containerWidth && <>
+					{editorType === EDITOR_TYPE__INLINE &&
+						<ScrollView
+							horizontal={true}
+							flex={1}
+							bg="#fff"
+							py={1}
+							borderTopWidth={3}
+							borderBottomWidth={5}
+							borderTopColor="primary.100"
+							borderBottomColor="primary.100"
+						>{editor}</ScrollView>}
+					{editorType !== EDITOR_TYPE__INLINE &&
+						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
+							{formButtons}
+							{editor}
+						</ScrollView>}
+					
+					<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
+						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 
-				<Row p={2} alignItems="center" justifyContent="flex-end">
-					{/* <Text mr={2} fontSize={18}>{editorModeF} Mode</Text> */}
-					{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
-						<Button
-							key="backBtn"
-							onPress={onBack}
-							leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
-							color="#fff"
-						>Back</Button>}
-					{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && 
-						<Button
-							key="viewBtn"
-							onPress={onViewMode}
-							leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
-							color="#fff"
-						>To View</Button>}
-				</Row>
-				{editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalEditButtons) && 
-					<Row p={2} alignItems="center" justifyContent="flex-end">
-						{additionalEditButtons}
-					</Row>}
-				
-				{editor}
+							<Row flex={1} justifyContent="flex-start">
+								<Button
+									key="deleteBtn"
+									onPress={onDelete}
+									bg="warning"
+									_hover={{
+										bg: 'warningHover',
+									}}
+									color="#fff"
+								>Delete</Button>
+							</Row>}
 
-				<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
-					{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
-						<Row flex={1} justifyContent="flex-start">
-							<Button
-								key="deleteBtn"
-								onPress={onDelete}
-								bg="warning"
-								_hover={{
-									bg: 'warningHover',
+						{showResetBtn && 
+							<IconButton
+								key="resetBtn"
+								onPress={() => {
+									if (onReset) {
+										onReset();
+									}
+									reset();
 								}}
+								icon={Rotate}
+								_icon={{
+									color: !formState.isDirty ? 'trueGray.400' : '#000',
+								}}
+								isDisabled={!formState.isDirty}
+								mr={2}
+							/>}
+
+						{showCancelBtn &&
+							<Button
+								key="cancelBtn"
+								variant="ghost"
+								onPress={onCancel}
 								color="#fff"
-							>Delete</Button>
-						</Row>}
-					<Button.Group space={2} {...buttonGroupProps}>
-				
-						{!isEditorViewOnly && <IconButton
-											key="resetBtn"
-											onPress={() => {
-												if (onReset) {
-													onReset();
-												}
-												reset();
-											}}
-											icon={<Rotate color="#fff" />}
-										/>}
-						{!isEditorViewOnly && isSingle && onCancel && <Button
-														key="cancelBtn"
-														variant="ghost"
-														onPress={onCancel}
-														color="#fff"
-													>Cancel</Button>}
-						{!isEditorViewOnly && onSave && <Button
-														key="saveBtn"
-														onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
-														isDisabled={isSaveDisabled}
-														color="#fff"
-													>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
-						{isEditorViewOnly && onClose && editorType !== EDITOR_TYPE__SIDE && <Button
-														key="closeBtn"
-														onPress={onClose}
-														color="#fff"
-													>Close</Button>}
-					</Button.Group>
-				</Footer>
+							>Cancel</Button>}
+							
+						{showCloseBtn && 
+							<Button
+								key="closeBtn"
+								variant="ghost"
+								onPress={onClose}
+								color="#fff"
+							>Close</Button>}
+
+						{showSaveBtn && 
+							<Button
+								key="saveBtn"
+								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+								isDisabled={isSaveDisabled}
+								color="#fff"
+							>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
+						
+						{showSubmitBtn && 
+							<Button
+								key="submitBtn"
+								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
+								isDisabled={isSubmitDisabled}
+								color="#fff"
+							>{submitBtnLabel || 'Submit'}</Button>}
+					
+						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+							return <Button
+										{...props}
+										onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
+									>{props.text}</Button>;
+						})}
+					</Footer>
+				</>}
 			</Column>;
 }
 
@@ -700,6 +932,6 @@ function getNullFieldValues(initialValues, Repository) {
 	return ret;
 }
 
-export const FormEditor = withAlert(withEditor(Form));
+export const FormEditor = withComponent(withAlert(withEditor(withPdfButton(Form))));
 
-export default withAlert(Form);
+export default withComponent(withAlert(withPdfButton(Form)));

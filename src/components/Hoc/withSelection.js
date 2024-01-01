@@ -11,6 +11,10 @@ import _ from 'lodash';
 export default function withSelection(WrappedComponent) {
 	return (props) => {
 
+		if (props.disableWithSelection) {
+			return <WrappedComponent {...props} />;
+		}
+
 		if (props.setSelection) {
 			// bypass everything, since we're already using withSelection() in hierarchy.
 			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
@@ -26,6 +30,9 @@ export default function withSelection(WrappedComponent) {
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				autoSelectFirstItem = false,
 				fireEvent,
+
+				// withComponent
+				self,
 
 				// withValue
 				value,
@@ -221,6 +228,9 @@ export default function withSelection(WrappedComponent) {
 			conformSelectionToValue = async () => {
 				let newSelection = [];
 				if (Repository) {
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
+					}
 					// Get entity or entities that match value
 					if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
 						if (_.isArray(value)) {
@@ -229,16 +239,16 @@ export default function withSelection(WrappedComponent) {
 							let found = Repository.getById(value);
 							if (found) {
 								newSelection.push(found);
-							} else if (Repository?.isRemote && Repository?.entities.length) {
+							// } else if (Repository?.isRemote && Repository?.entities.length) {
 
-								// Value cannot be found in Repository, but actually exists on server
-								// Try to get this value from the server directly
-								Repository.filter(Repository.schema.model.idProperty, value);
-								await Repository.load();
-								found = Repository.getById(value);
-								if (found) {
-									newSelection.push(found);
-								}
+							// 	// Value cannot be found in Repository, but actually exists on server
+							// 	// Try to get this value from the server directly
+							// 	Repository.filter(Repository.schema.model.idProperty, value);
+							// 	await Repository.load();
+							// 	found = Repository.getById(value);
+							// 	if (found) {
+							// 		newSelection.push(found);
+							// 	}
 
 							}
 						}
@@ -271,20 +281,17 @@ export default function withSelection(WrappedComponent) {
 			};
 
 		useEffect(() => {
-			if (isReady) {
-				return () => {};
-			}
 
 			(async () => {
 
 				if (usesWithValue && Repository?.isRemote 
-					&& !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading) {
+					&& !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading && (!_.isNil(value) || !_.isEmpty(selection)) || autoSelectFirstItem) {
 					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
 					// so first load repo, then conform to value
 					await Repository.load();
 				}
 
-				if (usesWithValue && !_.isNil(value)) {
+				if (!_.isNil(value)) {
 
 					await conformSelectionToValue();
 
@@ -307,7 +314,21 @@ export default function withSelection(WrappedComponent) {
 
 			})();
 
-		}, []);
+		}, [value]);
+
+		if (self) {
+			self.selection = localSelection;
+			self.setSelection = setSelection;
+			self.selectNext = selectNext;
+			self.selectPrev = selectPrev;
+			self.addToSelection = addToSelection;
+			self.removeFromSelection = removeFromSelection;
+			self.deselectAll = deselectAll;
+			self.selectRangeTo = selectRangeTo;
+			self.isInSelection = isInSelection;
+			self.getIdsFromLocalSelection = getIdsFromLocalSelection;
+			self.getDisplayValuesFromSelection = getDisplayValuesFromLocalSelection;
+		}
 
 		if (usesWithValue) {
 			useEffect(() => {
@@ -335,6 +356,7 @@ export default function withSelection(WrappedComponent) {
 		
 		return <WrappedComponent
 					{...props}
+					disableWithSelection={false}
 					selection={localSelection}
 					setSelection={setSelection}
 					selectionMode={selectionMode}

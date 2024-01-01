@@ -6,7 +6,7 @@ export default async function setSecure(key, value) {
 	let isOneBuild = false,
 		isJson = false,
 		model = null;
-	if (typeof value !== 'string') {
+	if (value && typeof value !== 'string') {
 		if (value.getDataForNewEntity) {
 			model = value.repository.name;
 			value = value.getDataForNewEntity();
