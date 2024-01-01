@@ -3,7 +3,7 @@ import {
 	VStack,
 	Modal,
 	Pressable,
-	Row,
+	HStack,
 } from '@gluestack-ui/themed';
 import {
 	SELECTION_MODE_SINGLE,
@@ -1112,7 +1112,7 @@ function TreeComponent(props) {
 					w="100%"
 				>
 					{topToolbar}
-					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
+					{headerToolbarItemComponents?.length && <HStack>{headerToolbarItemComponents}</HStack>}
 
 					<VStack
 						ref={treeRef}

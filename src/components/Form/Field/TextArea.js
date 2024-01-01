@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-	TextArea,
+	Textarea,
 } from '@gluestack-ui/themed';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
@@ -9,11 +9,11 @@ import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
 const
-	TextAreaElement = (props) => {
+	TextareaElement = (props) => {
 		const
 			styles = UiGlobals.styles,
-			value = _.isNil(props.value) ? '' : props.value; // null value may not actually reset this TextArea, so set it explicitly to empty string
-		return <TextArea
+			value = _.isNil(props.value) ? '' : props.value; // null value may not actually reset this Textarea, so set it explicitly to empty string
+		return <Textarea
 					ref={props.outerRef}
 					onChangeText={props.setValue}
 					flex={1}
@@ -27,9 +27,9 @@ const
 					value={value}
 				/>;
 	},
-	TextAreaField = withComponent(withValue(TextAreaElement));
+	TextareaField = withComponent(withValue(TextareaElement));
 
 // withTooltip needs us to forwardRef
 export default withTooltip(React.forwardRef((props, ref) => {
-	return <TextAreaField {...props} outerRef={ref} />;
+	return <TextareaField {...props} outerRef={ref} />;
 }));

@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useRef, isValidElement, } from 'react';
 import {
 	Box,
+	VStack,
+	HStack,
 	Icon,
 	ScrollView,
 	Text,
 } from '@gluestack-ui/themed';
-import {
-	Column,
-	Row,
-} from '../index.js';
 import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,
@@ -266,19 +264,19 @@ function Form(props) {
 											// 				{element}
 											// 			</Tooltip>;
 											// if (error) {
-											// 	element = <Column pt={1} flex={1}>
+											// 	element = <VStack pt={1} flex={1}>
 											// 				{element}
 											// 				<Text color="#f00">{error.message}</Text>
-											// 			</Column>;
+											// 			</VStack>;
 											// }
 
 											const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
-											return <Row key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</Row>;
+											return <HStack key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</HStack>;
 										}}
 									/>);
 				}
 			});
-			return <Row>{elements}</Row>;
+			return <HStack>{elements}</HStack>;
 		},
 		buildFromItems = () => {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
@@ -399,10 +397,10 @@ function Form(props) {
 					if (containerWidth > 400) {
 						element = <><Label {...labelProps}>{label}</Label>{element}</>;
 					} else {
-						element = <Column><Label {...labelProps}>{label}</Label>{element}</Column>;
+						element = <VStack><Label {...labelProps}>{label}</Label>{element}</VStack>;
 					}
 				}
-				return <Row key={ix} px={2} pb={1}>{element}</Row>;
+				return <HStack key={ix} px={2} pb={1}>{element}</HStack>;
 			}
 
 
@@ -491,17 +489,17 @@ function Form(props) {
 								if (message) {
 									message = <Text color="#f00">{message}</Text>;
 								}
-								element = <Column pt={1} flex={1}>
+								element = <VStack pt={1} flex={1}>
 											{element}
 											{message}
-										</Column>;
+										</VStack>;
 							}
 
 							if (item.additionalEditButtons) {
-								element = <Row flex={1} flexWrap="wrap">
+								element = <HStack flex={1} flexWrap="wrap">
 												{element}
 												{buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState })}
-											</Row>;
+											</HStack>;
 							}
 								
 							let isRequired = false,
@@ -526,25 +524,25 @@ function Form(props) {
 									labelProps.w = defaults.labelWidth;
 								}
 								if (containerWidth > 400) {
-									element = <Row w="100%" py={1}>
+									element = <HStack w="100%" py={1}>
 													<Label {...labelProps}>{requiredIndicator}{label}</Label>
 													{element}
-												</Row>;
+												</HStack>;
 								} else {
-									element = <Column w="100%" py={1} mt={3}>
+									element = <VStack w="100%" py={1} mt={3}>
 													<Label {...labelProps}>{requiredIndicator}{label}</Label>
 													{element}
-												</Column>;
+												</VStack>;
 								}
 							} else if (disableLabels && requiredIndicator) {
-								element = <Row w="100%" py={1}>
+								element = <HStack w="100%" py={1}>
 												{requiredIndicator}
 												{element}
-											</Row>;
+											</HStack>;
 							}
 
 							const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
-							return <Row key={ix} px={2} pb={1} bg={error ? '#fdd' : null}>{dirtyIcon}{element}</Row>;
+							return <HStack key={ix} px={2} pb={1} bg={error ? '#fdd' : null}>{dirtyIcon}{element}</HStack>;
 						}}
 					/>;
 		},
@@ -587,7 +585,7 @@ function Form(props) {
 									fontStyle="italic"
 								>{description}</Text>;
 					}
-					components.push(<Column key={'ancillary-' + ix} mx={2} my={5}>{title}{description}{element}</Column>);
+					components.push(<VStack key={'ancillary-' + ix} mx={2} my={5}>{title}{description}{element}</VStack>);
 				});
 			}
 			return components;
@@ -711,21 +709,21 @@ function Form(props) {
 		// 	formComponents = buildFromItems();
 		// 	const formAncillaryComponents = buildAncillary();
 		// 	editor = <>
-		// 				<Column p={4}>{formComponents}</Column>
-		// 				<Column pt={4}>{formAncillaryComponents}</Column>
+		// 				<VStack p={4}>{formComponents}</VStack>
+		// 				<VStack pt={4}>{formAncillaryComponents}</VStack>
 		// 			</>;
 		} else {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
 			editor = <>
-						{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{formComponents}</Row> : null}
-						{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
-						<Column m={2} pt={4}>{formAncillaryComponents}</Column>
+						{containerWidth >= CONTAINER_THRESHOLD ? <HStack p={4} pl={0}>{formComponents}</HStack> : null}
+						{containerWidth < CONTAINER_THRESHOLD ? <VStack p={4}>{formComponents}</VStack> : null}
+						<VStack m={2} pt={4}>{formAncillaryComponents}</VStack>
 					</>;
 
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
 
-			formButtons.push(<Row key="buttonsRow" px={4} pt={4} alignItems="center" justifyContent="flex-end">
+			formButtons.push(<HStack key="buttonsRow" px={4} pt={4} alignItems="center" justifyContent="flex-end">
 								{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
 									<Button
 										key="backBtn"
@@ -740,11 +738,11 @@ function Form(props) {
 										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
 										color="#fff"
 									>To View</Button>}
-							</Row>);
+							</HStack>);
 			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
-				formButtons.push(<Row key="additionalButtonsRow" p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+				formButtons.push(<HStack key="additionalButtonsRow" p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
 									{additionalButtons}
-								</Row>)
+								</HStack>)
 			}
 		}
 
@@ -795,7 +793,7 @@ function Form(props) {
 		}
 	}
 	
-	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
+	return <VStack {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
 						<ScrollView
@@ -817,7 +815,7 @@ function Form(props) {
 					<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
 						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 
-							<Row flex={1} justifyContent="flex-start">
+							<HStack flex={1} justifyContent="flex-start">
 								<Button
 									key="deleteBtn"
 									onPress={onDelete}
@@ -827,7 +825,7 @@ function Form(props) {
 									}}
 									color="#fff"
 								>Delete</Button>
-							</Row>}
+							</HStack>}
 
 						{showResetBtn && 
 							<IconButton
@@ -886,7 +884,7 @@ function Form(props) {
 						})}
 					</Footer>
 				</>}
-			</Column>;
+			</VStack>;
 }
 
 // helper fns
