@@ -296,6 +296,7 @@ function Form(props) {
 					onChange: onEditorChange,
 					useSelectorId = false,
 					isHidden = false,
+					getDynamicProps,
 					...propsToPass
 				} = item,
 				editorTypeProps = {};
@@ -459,6 +460,10 @@ function Form(props) {
 							if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
 								editorTypeProps.selectorSelected = record;
 							}
+							let dynamicProps = {};
+							if (getDynamicProps) {
+								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
+							}
 							let element = <Element
 												name={name}
 												value={value}
@@ -478,6 +483,7 @@ function Form(props) {
 												{...defaults}
 												{...propsToPass}
 												{...editorTypeProps}
+												{...dynamicProps}
 											/>;
 							if (editorType !== EDITOR_TYPE__INLINE) {
 								let message = null;
