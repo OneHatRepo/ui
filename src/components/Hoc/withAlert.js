@@ -13,8 +13,10 @@ import {
 	ALERT_MODE_YES,
 	ALERT_MODE_YES_NO,
 	ALERT_MODE_CUSTOM,
+	ALERT_MODE_INFO,
 } from '../../Constants/Alert.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
+import Info from '../Icons/Info.js';
 import _ from 'lodash';
 
 export default function withAlert(WrappedComponent) {
@@ -76,6 +78,15 @@ export default function withAlert(WrappedComponent) {
 			},
 			onCancel = () => {
 				setIsAlertShown(false);
+			},
+			onInfo = (msg) => {
+				clearAll();
+				setMode(ALERT_MODE_INFO);
+				setTitle('Info');
+				setMessage(msg);
+				setIncludeCancel(false);
+				setCanClose(true);
+				showAlert();
 			},
 			onOk = () => {
 				if (okCallback) {
@@ -171,8 +182,8 @@ export default function withAlert(WrappedComponent) {
 						alert={onAlert}
 						confirm={onConfirm}
 						hideAlert={hideAlert}
+						showInfo={onInfo}
 					/>
-
 					<AlertDialog
 						leastDestructiveRef={cancelRef}
 						isOpen={isAlertShown}
@@ -184,7 +195,7 @@ export default function withAlert(WrappedComponent) {
 							<AlertDialog.Body>
 								<Row>
 									<Column w="40px" p={0} mr={5}>
-										<Icon as={TriangleExclamation} size={10} color="#f00" />
+										<Icon as={mode === ALERT_MODE_INFO ? Info : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
 									</Column>
 									<Text flex={1}>{message}</Text>
 								</Row>
