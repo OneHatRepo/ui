@@ -133,6 +133,7 @@ export default function withAlert(WrappedComponent) {
 		}
 		switch(mode) {
 			case ALERT_MODE_OK:
+			case ALERT_MODE_INFO:
 				buttons.push(<Button
 								key="okBtn"
 								ref={autoFocusRef}
@@ -193,7 +194,7 @@ export default function withAlert(WrappedComponent) {
 							{canClose && <AlertDialog.CloseButton />}
 							<AlertDialog.Header>{title}</AlertDialog.Header>
 							<AlertDialog.Body>
-								<Row>
+								<Row alignItems="center">
 									<Column w="40px" p={0} mr={5}>
 										<Icon as={mode === ALERT_MODE_INFO ? CircleInfo : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
 									</Column>
