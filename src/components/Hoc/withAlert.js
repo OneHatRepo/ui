@@ -16,7 +16,7 @@ import {
 	ALERT_MODE_INFO,
 } from '../../Constants/Alert.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
-import Info from '../Icons/Info.js';
+import CircleInfo from '../Icons/CircleInfo.js';
 import _ from 'lodash';
 
 export default function withAlert(WrappedComponent) {
@@ -195,7 +195,7 @@ export default function withAlert(WrappedComponent) {
 							<AlertDialog.Body>
 								<Row>
 									<Column w="40px" p={0} mr={5}>
-										<Icon as={mode === ALERT_MODE_INFO ? Info : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
+										<Icon as={mode === ALERT_MODE_INFO ? CircleInfo : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
 									</Column>
 									<Text flex={1}>{message}</Text>
 								</Row>
