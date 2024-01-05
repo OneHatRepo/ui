@@ -432,7 +432,7 @@ function TabBar(props) {
 					p={2}
 					pb={0}
 					bg={styles.TAB_BAR_BG}
-					h={isCollapsed ? '30px' : tabHeight}
+					h={isCollapsed ? '38px' : tabHeight}
 				>
 					<ScrollView
 						horizontal={true}
