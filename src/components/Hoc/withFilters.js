@@ -3,6 +3,7 @@ import {
 	Column,
 	Modal,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import {
@@ -411,8 +412,10 @@ export default function withFilters(WrappedComponent) {
 				hasFilters = !!renderedFilters.length;
 			topToolbar = <Toolbar>
 							<Row flex={1} alignItems="center">
-								<Text pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
-								{renderedFilters}
+								<ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+									<Text fontStyle="italic" pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
+									{renderedFilters}
+								</ScrollView>
 							</Row>
 							<Row flex={hasFilters ? null : 1} alignItems="center" alignSelf="flex-end">
 								<IconButton
