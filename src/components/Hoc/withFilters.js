@@ -410,11 +410,11 @@ export default function withFilters(WrappedComponent) {
 				renderedFilters = renderFilters(),
 				hasFilters = !!renderedFilters.length;
 			topToolbar = <Toolbar>
-							<Row flex={1}>
+							<Row flex={1} alignItems="center">
 								<Text pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
 								{renderedFilters}
 							</Row>
-							<Row flex={hasFilters ? null : 1} alignSelf="flex-end">
+							<Row flex={hasFilters ? null : 1} alignItems="center" alignSelf="flex-end">
 								<IconButton
 									key="clear"
 									_icon={{
