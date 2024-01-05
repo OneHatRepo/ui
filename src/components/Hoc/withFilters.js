@@ -265,11 +265,10 @@ export default function withFilters(WrappedComponent) {
 								field,
 								type: filterType,
 								title,
-							} = filter,
-
-							propertyDef = Repository.getSchema().getPropertyDefinition(field);
+							} = filter;
 						
 						if (!title) {
+							const propertyDef = Repository.getSchema().getPropertyDefinition(field);
 							title = propertyDef?.title;
 						}
 
@@ -328,7 +327,7 @@ export default function withFilters(WrappedComponent) {
 
 					if (!isReady) {
 						const savedFilters = await getSaved(id + '-filters');
-						if (!_.isEmpty(savedFilters)) {
+						if (!_.isEmpty(savedFilters) && !isUsingCustomFilters) {
 							// load saved filters
 							filtersToUse = savedFilters;
 							setFilters(savedFilters, true, false); // false to skip save
@@ -337,7 +336,7 @@ export default function withFilters(WrappedComponent) {
 
 					if (isUsingCustomFilters) {
 						_.each(filtersToUse, (filter) => {
-							const repoFiltersFromFilter = filter.getRepoFilters(value);
+							const repoFiltersFromFilter = filter.getRepoFilters(filter.value);
 							_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
 								newRepoFilters.push(repoFilter);
 							});
