@@ -1,4 +1,4 @@
-import { useState, useEffect, useId, useRef, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
 	Column,
 	Modal,
@@ -63,7 +63,7 @@ export default function withFilters(WrappedComponent) {
 					defaultFilters: modelDefaultFilters,
 					ancillaryFilters: modelAncillaryFilters,
 				} = Repository.getSchema().model,
-				id = props.id || props.path || useId(),
+				id = props.id || props.self?.path,
 
 				// determine the starting filters
 				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters
@@ -189,7 +189,7 @@ export default function withFilters(WrappedComponent) {
 						}
 						setSlots(newSlots);
 					}
-					if (save) {
+					if (save && id) {
 						setSaved(id + '-filters', filters);
 					}
 				},
@@ -326,9 +326,9 @@ export default function withFilters(WrappedComponent) {
 					const newRepoFilters = [];
 					let filtersToUse = filters
 
-					if (!isReady) {
+					if (!isReady && id && !isUsingCustomFilters) { // can't save custom filters bc we can't save JS fns in Repository (e.g. getRepoFilters)
 						const savedFilters = await getSaved(id + '-filters');
-						if (!_.isEmpty(savedFilters) && !isUsingCustomFilters) {
+						if (!_.isEmpty(savedFilters)) {
 							// load saved filters
 							filtersToUse = savedFilters;
 							setFilters(savedFilters, true, false); // false to skip save

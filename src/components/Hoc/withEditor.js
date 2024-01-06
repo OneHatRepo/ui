@@ -87,7 +87,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
 			},
-			onAdd = async (values) => {
+			onAdd = async (e, values) => {
 				const defaultValues = Repository.getSchema().getDefaultValues();
 				let addValues = values || _.clone(defaultValues);
 

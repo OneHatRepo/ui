@@ -20,7 +20,7 @@ export default function withComponent(WrappedComponent) {
 			selfRef = useRef({
 				parent,
 				reference,
-				path: (parent?.path || '' ) + '/' + reference,
+				path: reference ? (parent?.path || '' ) + '/' + reference : null,
 				hasChild: (childRef) => {
 					const {
 							reference,
