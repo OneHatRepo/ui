@@ -384,7 +384,17 @@ function Form(props) {
 			}
 
 			if (isEditorViewOnly || !isEditable) {
-				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
+				let value = null;
+				if (record?.properties && record.properties[name]) {
+					value = record.properties[name].displayValue;
+				}
+				if (_.isNil(value) && record && record[name]) {
+					value = record[name];
+				}
+				if (_.isNil(value) && startingValues && startingValues[name]) {
+					value = startingValues[name];
+				}
+		
 				let element = <Element
 									value={value}
 									parent={self}
