@@ -127,6 +127,7 @@ function Form(props) {
 		[containerWidth, setContainerWidth] = useState(),
 		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
+		validatorToUse = validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object(),
 		{
 			control,
 			formState,
@@ -157,7 +158,7 @@ function Form(props) {
 			// delayError: 0,
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
-			resolver: yupResolver(validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object()),
+			resolver: yupResolver(validatorToUse),
 			context: { isPhantom },
 		}),
 		buildFromColumnsConfig = () => {
@@ -297,6 +298,7 @@ function Form(props) {
 					useSelectorId = false,
 					isHidden = false,
 					getDynamicProps,
+					getIsRequired,
 					...propsToPass
 				} = item,
 				editorTypeProps = {};
@@ -521,11 +523,11 @@ function Form(props) {
 								
 							let isRequired = false,
 								requiredIndicator = null;
-							if (editorType === EDITOR_TYPE__PLAIN) {
+							if (getIsRequired) {
+								isRequired = getIsRequired(formGetValues, formState);
+							} else if (validatorToUse?.fields && validatorToUse.fields[name]?.exclusiveTests?.required) {
 								// submitted validator
-								if (validator?.fields && validator.fields[name]?.exclusiveTests?.required) {
-									isRequired = true;
-								}
+								isRequired = true;
 							} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
 								(propertyDef?.requiredIfPhantom && isPhantom) ||
 								(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
