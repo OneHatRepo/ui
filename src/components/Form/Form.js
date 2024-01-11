@@ -75,6 +75,7 @@ function Form(props) {
 			disableDirtyIcon = false,
 			onBack,
 			onReset,
+			onInit,
 			onViewMode,
 			submitBtnLabel,
 			onSubmit,
@@ -614,19 +615,25 @@ function Form(props) {
 				alert(errors.message);
 			}
 		},
+		doReset = (values) => {
+			reset(values);
+			if (onReset) {
+				onReset(values, formSetValue, formGetValues);
+			}
+		},
 		onSaveDecorated = async (data, e) => {
 			// reset the form after a save
 			const result = await onSave(data, e);
 			if (result) {
 				const values = record.submitValues;
-				reset(values);
+				doReset(values);
 			}
 		},
 		onSubmitDecorated = async (data, e) => {
 			const result = await onSubmit(data, e);
 			if (result) {
 				const values = record.submitValues;
-				reset(values);
+				doReset(values);
 			}
 		},
 		onLayoutDecorated = (e) => {
@@ -638,9 +645,13 @@ function Form(props) {
 		};
 
 	useEffect(() => {
-		if (record !== previousRecord) {
+		if (record === previousRecord) {
+			if (onInit) {
+				onInit(initialValues, formSetValue, formGetValues);
+			}
+		} else {
 			setPreviousRecord(record);
-			reset(defaultValues);
+			doReset(defaultValues);
 		}
 		if (formSetup) {
 			formSetup(formSetValue, formGetValues, formState)
@@ -849,12 +860,7 @@ function Form(props) {
 						{showResetBtn && 
 							<IconButton
 								key="resetBtn"
-								onPress={() => {
-									if (onReset) {
-										onReset();
-									}
-									reset();
-								}}
+								onPress={() => doReset()}
 								icon={Rotate}
 								_icon={{
 									color: !formState.isDirty ? 'trueGray.400' : '#000',
