@@ -142,7 +142,7 @@ function Form(props) {
 			// setFocus,
 			getValues: formGetValues,
 			// getFieldState,
-			// trigger,
+			trigger,
 		} = useForm({
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
@@ -483,7 +483,7 @@ function Form(props) {
 													}
 													onChange(newValue);
 													if (onEditorChange) {
-														onEditorChange(newValue, formSetValue, formGetValues, formState);
+														onEditorChange(newValue, formSetValue, formGetValues, formState, trigger);
 													}
 												}}
 												onBlur={onBlur}
