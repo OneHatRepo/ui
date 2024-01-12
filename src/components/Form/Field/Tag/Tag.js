@@ -20,7 +20,7 @@ import _ from 'lodash';
 function TagComponent(props) {
 
 	const {
-			isEditor = false,
+			isViewOnly = false,
 			isValueAlwaysArray,
 			isValueAsStringifiedJson,
 			Editor,
@@ -143,7 +143,7 @@ function TagComponent(props) {
 						key={ix}
 						text={val.text}
 						onView={() => onView(val)}
-						onDelete={() => onDelete(val)}
+						onDelete={!isViewOnly ? () => onDelete(val) : null}
 					/>;
 		});
 
@@ -187,14 +187,14 @@ function TagComponent(props) {
 						minHeight={10}
 						flexWrap="wrap"
 					>{valueBoxes}</Row>
-					<WhichCombo
-						Repository={props.Repository}
-						Editor={props.Editor}
-						onChangeValue={onChangeComboValue}
-						parent={self}
-						reference="combo"
-						{..._combo}
-					/>
+					{!isViewOnly && <WhichCombo
+										Repository={props.Repository}
+										Editor={props.Editor}
+										onChangeValue={onChangeComboValue}
+										parent={self}
+										reference="combo"
+										{..._combo}
+									/>}
 				</Column>
 				{isViewerShown && 
 					<Modal
