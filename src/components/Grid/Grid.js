@@ -42,6 +42,8 @@ import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import withInlineEditor from '../Hoc/withInlineEditor.js';
+import getSaved from '../../Functions/getSaved.js';
+import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
@@ -167,6 +169,8 @@ function GridComponent(props) {
 
 		} = props,
 		styles = UiGlobals.styles,
+		id = props.id || props.self?.path,
+		localColumnsConfigKey = id && id + '-localColumnsConfig',
 		forceUpdate = useForceUpdate(),
 		containerRef = useRef(),
 		gridRef = useRef(),
@@ -180,6 +184,10 @@ function GridComponent(props) {
 		[dragRowSlot, setDragRowSlot] = useState(null),
 		[dragRowIx, setDragRowIx] = useState(),
 		setLocalColumnsConfig = (config) => {
+			if (localColumnsConfigKey) {
+				setSaved(localColumnsConfigKey, config);
+			}
+
 			setLocalColumnsConfigRaw(config);
 			if (onChangeColumnsConfig) {
 				onChangeColumnsConfig(config);
@@ -718,79 +726,92 @@ function GridComponent(props) {
 			return () => {};
 		}
 
-		// second call -- do other necessary setup
-		function calculateLocalColumnsConfig() {
-			// convert json config into actual elements
-			const localColumnsConfig = [];
-			if (_.isEmpty(columnsConfig)) {
-				if (Repository) {
-					// create a column for the displayProperty
-					localColumnsConfig.push({
-						fieldName: Repository.schema.model.displayProperty,
-					});
+		(async () => {
+
+			// second call -- do other necessary setup
+
+			// calculate localColumnsConfig
+			let localColumnsConfig = [];
+			let savedLocalColumnsConfig;
+			if (localColumnsConfigKey) {
+				savedLocalColumnsConfig = await getSaved(localColumnsConfigKey);
+			}
+			if (savedLocalColumnsConfig) {
+				// use saved
+				localColumnsConfig = savedLocalColumnsConfig;
+			} else {
+				// calculate new
+
+				// convert json config into actual elements
+				if (_.isEmpty(columnsConfig)) {
+					if (Repository) {
+						// create a column for the displayProperty
+						localColumnsConfig.push({
+							fieldName: Repository.schema.model.displayProperty,
+						});
+					} else {
+						localColumnsConfig.push({
+							fieldName: displayField,
+						});
+					}
 				} else {
-					localColumnsConfig.push({
-						fieldName: displayField,
+					_.each(columnsConfig, (columnConfig) => {
+						if (!_.isPlainObject(columnConfig)) {
+							localColumnsConfig.push(columnConfig);
+							return;
+						}
+
+						// destructure so we can set defaults
+						const {
+								header,
+								fieldName, // from @onehat/data model
+								type, // specify which column type to use (custom or built-in)
+								isEditable = false,
+								editor,
+								format,
+								renderer, // React component will render the output
+								reorderable = true,
+								resizable = true,
+								sortable = true,
+								w,
+								flex,
+								...propsToPass
+							} = columnConfig,
+
+							config = {
+								columnId: uuid(),
+								header,
+								fieldName,
+								type,
+								isEditable,
+								editor,
+								format,
+								renderer,
+								reorderable,
+								resizable,
+								sortable,
+								w,
+								flex,
+								showDragHandles: false,
+								...propsToPass,
+							};
+
+						if (!(config.w || config.width) && !config.flex) {
+							// Neither is set
+							config.w = 100; // default
+						} else if (config.flex && (config.w || config.width)) {
+							// Both are set. Width overrules flex.
+							delete config.flex;
+						}
+
+						localColumnsConfig.push(config);
 					});
 				}
-			} else {
-				_.each(columnsConfig, (columnConfig) => {
-					if (!_.isPlainObject(columnConfig)) {
-						localColumnsConfig.push(columnConfig);
-						return;
-					}
-
-					// destructure so we can set defaults
-					const {
-							header,
-							fieldName, // from @onehat/data model
-							type, // specify which column type to use (custom or built-in)
-							isEditable = false,
-							editor,
-							format,
-							renderer, // React component will render the output
-							reorderable = true,
-							resizable = true,
-							sortable = true,
-							w,
-							flex,
-							...propsToPass
-						} = columnConfig,
-
-						config = {
-							columnId: uuid(),
-							header,
-							fieldName,
-							type,
-							isEditable,
-							editor,
-							format,
-							renderer,
-							reorderable,
-							resizable,
-							sortable,
-							w,
-							flex,
-							showDragHandles: false,
-							...propsToPass,
-						};
-
-					if (!(config.w || config.width) && !config.flex) {
-						// Neither is set
-						config.w = 100; // default
-					} else if (config.flex && (config.w || config.width)) {
-						// Both are set. Width overrules flex.
-						delete config.flex;
-					}
-
-					localColumnsConfig.push(config);
-				});
 			}
-			return localColumnsConfig;
-		}
-		setLocalColumnsConfig(calculateLocalColumnsConfig());
+			setLocalColumnsConfig(localColumnsConfig);
 
-		setIsReady(true);
+			setIsReady(true);
+		})();
 
 		if (!Repository) {
 			return () => {};
