@@ -171,6 +171,17 @@ function GridComponent(props) {
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
 		localColumnsConfigKey = id && id + '-localColumnsConfig',
+		[hasFunctionColumn, setHasActionColumns] = useState((() => {
+			// We can't save localColumnsConfig when there's a function column, so we need to determine if this is the case (only run once per Grid)
+			let ret = false;
+			_.each(columnsConfig, (column) => {
+				if (column.renderer || _.isFunction(column)) {
+					ret = true;
+					return false;
+				}
+			});
+			return ret;
+		})()),
 		forceUpdate = useForceUpdate(),
 		containerRef = useRef(),
 		gridRef = useRef(),
@@ -184,7 +195,7 @@ function GridComponent(props) {
 		[dragRowSlot, setDragRowSlot] = useState(null),
 		[dragRowIx, setDragRowIx] = useState(),
 		setLocalColumnsConfig = (config) => {
-			if (localColumnsConfigKey) {
+			if (localColumnsConfigKey && !hasFunctionColumn) {
 				setSaved(localColumnsConfigKey, config);
 			}
 
@@ -733,7 +744,7 @@ function GridComponent(props) {
 			// calculate localColumnsConfig
 			let localColumnsConfig = [];
 			let savedLocalColumnsConfig;
-			if (localColumnsConfigKey) {
+			if (localColumnsConfigKey && !hasFunctionColumn) {
 				savedLocalColumnsConfig = await getSaved(localColumnsConfigKey);
 			}
 			if (savedLocalColumnsConfig) {
