@@ -151,7 +151,9 @@ import Scroll from '../Components/Icons/Scroll.js';
 import Share from '../Components/Icons/Share.js';
 import Shop from '../Components/Icons/Shop.js';
 import SideBySide from '../Components/Icons/SideBySide.js';
+import SortDownAlt from '../Components/Icons/SortDownAlt.js';
 import SortDown from '../Components/Icons/SortDown.js';
+import SortUpAlt from '../Components/Icons/SortUpAlt.js';
 import SortUp from '../Components/Icons/SortUp.js';
 import Square from '../Components/Icons/Square.js';
 import SquareCheck from '../Components/Icons/SquareCheck.js';
@@ -376,7 +378,9 @@ const components = {
 	Share,
 	Shop,
 	SideBySide,
+	SortDownAlt,
 	SortDown,
+	SortUpAlt,
 	SortUp,
 	Square,
 	SquareCheck,
