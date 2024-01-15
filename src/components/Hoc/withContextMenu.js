@@ -74,7 +74,7 @@ export default function withContextMenu(WrappedComponent) {
 							key={ix}
 							onPress={() => {
 								setIsContextMenuShown(false);
-								handler();
+								handler(selection);
 							}}
 							flexDirection="row"
 							borderBottomWidth={1}
