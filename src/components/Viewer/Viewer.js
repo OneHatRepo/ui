@@ -87,6 +87,9 @@ function Viewer(props) {
 			if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
 				editorTypeProps.autoLoad = true;
 			}
+			if (type.match(/(Tag|TagEditor)$/)) {
+				editorTypeProps.isViewOnly = true;
+			}
 			const Element = getComponentFromType(type);
 			let children;
 
