@@ -11,7 +11,6 @@ const
 		const styles = UiGlobals.styles;
 		return <Text
 					ref={props.outerRef}
-					numberOfLines={1}
 					ellipsizeMode="head" 
 					flex={1}
 					fontSize={styles.FORM_TEXT_FONTSIZE}
