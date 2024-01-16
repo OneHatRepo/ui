@@ -42,7 +42,7 @@ function TagComponent(props) {
 		} = props,
 		ignoreNextComboValueChangeRef = useRef(false),
 		[isViewerShown, setIsViewerShown] = useState(false),
-		[viewerSelection, setViewerSelection] = useState(false),
+		[viewerSelection, setViewerSelection] = useState([]),
 		getIgnoreNextComboValueChange = () => {
 			return ignoreNextComboValueChangeRef.current;
 		},

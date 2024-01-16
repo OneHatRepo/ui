@@ -345,8 +345,11 @@ function Form(props) {
 					editorTypeProps.autoLoad = true;
 				}
 			}
-			if (isCombo && _.isNil(propsToPass.showXButton)) {
-				editorTypeProps.showXButton = true;
+			if (isCombo) {
+				editorTypeProps.showEyeButton = true;
+				if (_.isNil(propsToPass.showXButton)) {
+					editorTypeProps.showXButton = true;
+				}
 			}
 			const Element = getComponentFromType(type);
 			let children;

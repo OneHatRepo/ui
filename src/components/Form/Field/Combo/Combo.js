@@ -24,6 +24,7 @@ import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
 import Check from '../../../Icons/Check.js';
 import Xmark from '../../../Icons/Xmark.js';
+import Eye from '../../../Icons/Eye.js';
 import _ from 'lodash';
 
 const FILTER_NAME = 'q';
@@ -38,6 +39,7 @@ export function ComboComponent(props) {
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
 			showXButton = false,
+			showEyeButton = false,
 			_input = {},
 			isEditor = false,
 			isDisabled = false,
@@ -69,6 +71,8 @@ export function ComboComponent(props) {
 		displayValueRef = useRef(),
 		typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
+		[isViewerShown, setIsViewerShown] = useState(false),
+		[viewerSelection, setViewerSelection] = useState([]),
 		[isRendered, setIsRendered] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isSearchMode, setIsSearchMode] = useState(false),
@@ -292,6 +296,27 @@ export function ComboComponent(props) {
 			clearGridFilters();
 			clearGridSelection();
 		},
+		onEyeButtonPress = async () => {
+			const id = value;
+			if (!Repository.isLoaded) {
+				await Repository.load();
+			}
+			if (Repository.isLoading) {
+				await Repository.waitUntilDoneLoading();
+			}
+			let record = Repository.getById(id); // first try to get from entities in memory
+			if (!record && Repository.getSingleEntityFromServer) {
+				record = await Repository.getSingleEntityFromServer(id);
+			}
+
+			if (!record) {
+				alert('Record could not be found!');
+				return;
+			}
+
+			setViewerSelection([record]);
+			setIsViewerShown(true);
+		},
 		onCheckButtonPress = () => {
 			hideMenu();
 		},
@@ -433,6 +458,7 @@ export function ComboComponent(props) {
 
 	const inputIconElement = icon ? <Icon as={icon} color="trueGray.300" size="md" ml={2} mr={3} /> : null;
 	let xButton = null,
+		eyeButton = null,
 		inputAndTrigger = null,
 		checkButton = null,
 		grid = null,
@@ -448,6 +474,22 @@ export function ComboComponent(props) {
 						}}
 						isDisabled={isDisabled}
 						onPress={onXButtonPress}
+						h="100%"
+						bg={styles.FORM_COMBO_TRIGGER_BG}
+						_hover={{
+							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
+						}}
+					/>;
+	}
+	if (showEyeButton && !_.isNil(value)) {
+		eyeButton = <IconButton
+						_icon={{
+							as: Eye,
+							color: 'trueGray.600',
+							size: 'sm',
+						}}
+						isDisabled={isDisabled}
+						onPress={onEyeButtonPress}
 						h="100%"
 						bg={styles.FORM_COMBO_TRIGGER_BG}
 						_hover={{
@@ -760,6 +802,7 @@ export function ComboComponent(props) {
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
 				<Row h={10}>
 					{xButton}
+					{eyeButton}
 					{disableDirectEntry ?
 						<Text
 							ref={inputRef}
@@ -847,6 +890,7 @@ export function ComboComponent(props) {
 	}
 	assembledComponents = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 							{xButton}
+							{eyeButton}
 							{inputAndTrigger}
 							{additionalButtons}
 							{dropdownMenu}
