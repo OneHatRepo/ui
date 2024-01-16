@@ -479,6 +479,7 @@ export function ComboComponent(props) {
 						_hover={{
 							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
 						}}
+						mr={1}
 					/>;
 	}
 	if (showEyeButton && !_.isNil(value)) {
@@ -495,6 +496,7 @@ export function ComboComponent(props) {
 						_hover={{
 							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
 						}}
+						mr={1}
 					/>;
 	}
 
