@@ -44,6 +44,7 @@ export default function withFilters(WrappedComponent) {
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
 				minFilters = 3,
 				maxFilters = 6,
+				onFilterChange,
 
 				// withData
 				Repository,
@@ -191,6 +192,9 @@ export default function withFilters(WrappedComponent) {
 					}
 					if (save && id) {
 						setSaved(id + '-filters', filters);
+					}
+					if (onFilterChange) {
+						onFilterChange(filters);
 					}
 				},
 				onFilterChangeValue = (field, value) => {
