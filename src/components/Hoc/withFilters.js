@@ -340,11 +340,15 @@ export default function withFilters(WrappedComponent) {
 					}
 
 					if (isUsingCustomFilters) {
-						_.each(filtersToUse, (filter) => {
-							const repoFiltersFromFilter = filter.getRepoFilters(filter.value);
-							_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
-								newRepoFilters.push(repoFilter);
-							});
+						_.each(filtersToUse, ({ field, value, getRepoFilters }) => {
+							if (getRepoFilters) {
+								const repoFiltersFromFilter = getRepoFilters(value);
+								_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
+									newRepoFilters.push(repoFilter);
+								});
+							} else {
+								newRepoFilters.push({ name: field, value, });
+							}
 						});
 					} else {
 						const newFilterNames = [];
