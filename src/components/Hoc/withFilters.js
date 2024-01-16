@@ -342,7 +342,10 @@ export default function withFilters(WrappedComponent) {
 					if (isUsingCustomFilters) {
 						_.each(filtersToUse, ({ field, value, getRepoFilters }) => {
 							if (getRepoFilters) {
-								const repoFiltersFromFilter = getRepoFilters(value);
+								let repoFiltersFromFilter = getRepoFilters(value) || [];
+								if (!_.isArray(repoFiltersFromFilter)) {
+									repoFiltersFromFilter = [repoFiltersFromFilter];
+								}
 								_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
 									newRepoFilters.push(repoFilter);
 								});
