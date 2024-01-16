@@ -12,6 +12,9 @@ import {
 	UI_MODE_REACT_NATIVE,
 	UI_MODE_WEB,
 } from '../../../../Constants/UiModes.js';
+import {
+	EDITOR_TYPE__WINDOWED,
+} from '../../../../Constants/Editor.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
 import withAlert from '../../../Hoc/withAlert.js';
@@ -47,11 +50,13 @@ export function ComboComponent(props) {
 			placeholder,
 			onRowPress,
 			icon,
+			Editor, // only used for the eyeButton
 
 			// withComponent
 			self,
 
 			// withAlert
+			alert,
 			confirm,
 			
 			// withData
@@ -317,6 +322,7 @@ export function ComboComponent(props) {
 			setViewerSelection([record]);
 			setIsViewerShown(true);
 		},
+		onViewerClose = () => setIsViewerShown(false),
 		onCheckButtonPress = () => {
 			hideMenu();
 		},
@@ -482,7 +488,7 @@ export function ComboComponent(props) {
 						mr={1}
 					/>;
 	}
-	if (showEyeButton && !_.isNil(value)) {
+	if (showEyeButton && Editor && !_.isNil(value)) {
 		eyeButton = <IconButton
 						_icon={{
 							as: Eye,
@@ -898,10 +904,35 @@ export function ComboComponent(props) {
 							{dropdownMenu}
 						</Row>;
 	
+	if (isViewerShown && Editor) {
+		assembledComponents = 
+				<>
+					{assembledComponents}
+					<Modal
+						isOpen={true}
+						onClose={onViewerClose}
+					>
+						<Editor
+							{...props}
+							editorType={EDITOR_TYPE__WINDOWED}
+							px={0}
+							py={0}
+							w="100%"
+							parent={self}
+							reference="viewer"
+
+							isEditorViewOnly={true}
+							selection={viewerSelection}
+							onEditorClose={onViewerClose}
+						/>
+					</Modal>
+				</>;
+	}
+	
 	if (tooltip) {
 		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
-							{assembledComponents}
-						</Tooltip>;
+								{assembledComponents}
+							</Tooltip>;
 	}
 	
 	return assembledComponents;

@@ -346,7 +346,7 @@ function Form(props) {
 				}
 			}
 			if (isCombo) {
-				editorTypeProps.showEyeButton = true;
+				// editorTypeProps.showEyeButton = true;
 				if (_.isNil(propsToPass.showXButton)) {
 					editorTypeProps.showXButton = true;
 				}
