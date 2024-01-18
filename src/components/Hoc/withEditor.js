@@ -242,7 +242,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 
 				if (getListeners().onAfterView) {
-					await getListeners().onAfterView(entity);
+					await getListeners().onAfterView();
 				}
 			},
 			onDuplicate = async () => {
