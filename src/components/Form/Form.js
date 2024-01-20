@@ -474,7 +474,9 @@ function Form(props) {
 								editorTypeProps.selectorId = selectorId;
 							}
 							if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
-								editorTypeProps.selectorSelected = record;
+								if (_.isNil(propsToPass.selectorSelected)) {
+									editorTypeProps.selectorSelected = record;
+								}
 							}
 							let dynamicProps = {};
 							if (getDynamicProps) {
