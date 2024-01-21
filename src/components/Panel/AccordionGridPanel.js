@@ -2,7 +2,7 @@ import { useState, } from 'react';
 import {
 	Column,
 	ScrollView,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import Accordion from 'react-native-collapsible/Accordion'; // https://www.npmjs.com/package/react-native-collapsible
 import testProps from '../../Functions/testProps';
 import Footer from '../Layout/Footer.js';
