@@ -483,7 +483,7 @@ export default function withFilters(WrappedComponent) {
 
 						// basic property filter
 						const propertyDef = Repository.getSchema().getPropertyDefinition(filterField);
-						data.push([ filterField, propertyDef.title ]);
+						data.push([ filterField, propertyDef?.title ]);
 					});
 
 					// sort by title

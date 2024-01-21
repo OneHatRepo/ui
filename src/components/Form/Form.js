@@ -227,7 +227,7 @@ function Form(props) {
 											let editorProps = {};
 											if (!editor) {
 												const propertyDef = fieldName && Repository?.getSchema().getPropertyDefinition(fieldName);
-												editor = propertyDef[fieldName].editorType;
+												editor = propertyDef && propertyDef[fieldName].editorType;
 												if (_.isPlainObject(editor)) {
 													const {
 															type,
@@ -323,15 +323,15 @@ function Form(props) {
 						{
 							type: t,
 							...p
-						} =  propertyDef.editorType;
+						} = propertyDef?.editorType;
 					type = t;
 					editorTypeProps = p;
-				} else if (propertyDef.viewerType) {
+				} else if (propertyDef?.viewerType) {
 					const
 						{
 							type: t,
 							...p
-						} =  propertyDef.viewerType;
+						} =  propertyDef?.viewerType;
 					type = t;
 				} else {
 					type = 'Text';
