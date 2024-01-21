@@ -120,7 +120,7 @@ export function ComboComponent(props) {
 				}
 			}
 			if (Repository && !Repository.isLoaded) {
-				await Repository.load();
+				// await Repository.load(); // this breaks when the menu (Grid) has selectorSelected
 			}
 			setIsMenuShown(true);
 		},
