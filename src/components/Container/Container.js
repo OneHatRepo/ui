@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId, } from 'react';
+import React, { useState, useEffect, } from 'react';
 import {
 	VStack,
 	HStack,
@@ -35,7 +35,7 @@ function Container(props) {
 			isWestCollapsed,
 			setIsWestCollapsed,
 		} = props,
-		id = useId(),
+		id = props.id || props.self?.path,
 		canResize = CURRENT_MODE === UI_MODE_WEB,
 		[isReady, setIsReady] = useState(false),
 		[localIsNorthCollapsed, setLocalIsNorthCollapsedRaw] = useState(north ? north.props.startsCollapsed : false),
@@ -48,35 +48,52 @@ function Container(props) {
 		[westWidth, setWestWidthRaw] = useState(west ? west.props.w : 0),
 		setLocalIsNorthCollapsed = (bool) => {
 			setLocalIsNorthCollapsedRaw(bool);
-			setSaved(id + '-localIsNorthCollapsed', bool);
+
+			if (id) {
+				setSaved(id + '-localIsNorthCollapsed', bool);
+			}
 		},
 		setLocalIsSouthCollapsed = (bool) => {
 			setLocalIsSouthCollapsedRaw(bool);
-			setSaved(id + '-localIsSouthCollapsed', bool);
+			if (id) {
+				setSaved(id + '-localIsSouthCollapsed', bool);
+			}
 		},
 		setLocalIsEastCollapsed = (bool) => {
 			setLocalIsEastCollapsedRaw(bool);
-			setSaved(id + '-localIsEastCollapsed', bool);
+			if (id) {
+				setSaved(id + '-localIsEastCollapsed', bool);
+			}
 		},
 		setLocalIsWestCollapsed = (bool) => {
 			setLocalIsWestCollapsedRaw(bool);
-			setSaved(id + '-localIsWestCollapsed', bool);
+			if (id) {
+				setSaved(id + '-localIsWestCollapsed', bool);
+			}
 		},
 		setNorthHeight = (height) => {
 			setNorthHeightRaw(height);
-			setSaved(id + '-northHeight', height);
+			if (id) {
+				setSaved(id + '-northHeight', height);
+			}
 		},
 		setSouthHeight = (height) => {
 			setSouthHeightRaw(height);
-			setSaved(id + '-southHeight', height);
+			if (id) {
+				setSaved(id + '-southHeight', height);
+			}
 		},
 		setEastWidth = (width) => {
 			setEastWidthRaw(width);
-			setSaved(id + '-eastWidth', width);
+			if (id) {
+				setSaved(id + '-eastWidth', width);
+			}
 		},
 		setWestWidth = (width) => {
 			setWestWidthRaw(width);
-			setSaved(id + '-westWidth', width);
+			if (id) {
+				setSaved(id + '-westWidth', width);
+			}
 		},
 		onNorthResize = (delta) => {
 			const newHeight = northHeight + delta;
@@ -98,53 +115,56 @@ function Container(props) {
 	useEffect(() => {
 		// Restore saved settings
 		(async () => {
-			let key, val;
-			key = id + '-localIsNorthCollapsed';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setLocalIsNorthCollapsedRaw(val);
-			}
 
-			key = id + '-localIsSouthCollapsed';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setLocalIsSouthCollapsedRaw(val);
-			}
+			if (id) {
+				let key, val;
+				key = id + '-localIsNorthCollapsed';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setLocalIsNorthCollapsedRaw(val);
+				}
 
-			key = id + '-localIsEastCollapsed';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setLocalIsEastCollapsedRaw(val);
-			}
+				key = id + '-localIsSouthCollapsed';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setLocalIsSouthCollapsedRaw(val);
+				}
 
-			key = id + '-localIsWestCollapsed';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setLocalIsWestCollapsedRaw(val);
-			}
+				key = id + '-localIsEastCollapsed';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setLocalIsEastCollapsedRaw(val);
+				}
 
-			key = id + '-northHeight';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setNorthHeightRaw(val);
-			}
+				key = id + '-localIsWestCollapsed';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setLocalIsWestCollapsedRaw(val);
+				}
 
-			key = id + '-southHeight';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setSouthHeightRaw(val);
-			}
+				key = id + '-northHeight';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setNorthHeightRaw(val);
+				}
 
-			key = id + '-eastWidth';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setEastWidthRaw(val);
-			}
+				key = id + '-southHeight';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setSouthHeightRaw(val);
+				}
 
-			key = id + '-westWidth';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setWestWidthRaw(val);
+				key = id + '-eastWidth';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setEastWidthRaw(val);
+				}
+
+				key = id + '-westWidth';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setWestWidthRaw(val);
+				}
 			}
 
 			if (!isReady) {

@@ -87,15 +87,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
 			},
-			onAdd = async () => {
+			onAdd = async (e, values) => {
 				const defaultValues = Repository.getSchema().getDefaultValues();
-				let addValues = _.clone(defaultValues);
+				let addValues = values || _.clone(defaultValues);
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
 					addValues[selectorId] = selectorSelected.id;
 				}
 
-				if (getNewEntityDisplayValue()) {
+				if (!values && getNewEntityDisplayValue()) {
 					const displayPropertyName = Repository.getSchema().model.displayProperty;
 					addValues[displayPropertyName] = getNewEntityDisplayValue();
 				}
@@ -242,7 +242,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 
 				if (getListeners().onAfterView) {
-					await getListeners().onAfterView(entity);
+					await getListeners().onAfterView();
 				}
 			},
 			onDuplicate = async () => {

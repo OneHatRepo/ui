@@ -1,8 +1,9 @@
-import { useState, useEffect, useId, useRef, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
 	VStack,
 	Modal,
 	HStack,
+	ScrollView,
 	Text,
 } from '@gluestack-ui/themed';
 import {
@@ -43,6 +44,7 @@ export default function withFilters(WrappedComponent) {
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
 				minFilters = 3,
 				maxFilters = 6,
+				onFilterChange,
 
 				// withData
 				Repository,
@@ -62,7 +64,7 @@ export default function withFilters(WrappedComponent) {
 					defaultFilters: modelDefaultFilters,
 					ancillaryFilters: modelAncillaryFilters,
 				} = Repository.getSchema().model,
-				id = props.id || props.path || useId(),
+				id = props.id || props.self?.path,
 
 				// determine the starting filters
 				startingFilters = !_.isEmpty(customFilters) ? customFilters : // custom filters override component filters
@@ -188,8 +190,11 @@ export default function withFilters(WrappedComponent) {
 						}
 						setSlots(newSlots);
 					}
-					if (save) {
+					if (save && id) {
 						setSaved(id + '-filters', filters);
+					}
+					if (onFilterChange) {
+						onFilterChange(filters);
 					}
 				},
 				onFilterChangeValue = (field, value) => {
@@ -265,11 +270,10 @@ export default function withFilters(WrappedComponent) {
 								field,
 								type: filterType,
 								title,
-							} = filter,
-
-							propertyDef = Repository.getSchema().getPropertyDefinition(field);
+							} = filter;
 						
 						if (!title) {
+							const propertyDef = Repository.getSchema().getPropertyDefinition(field);
 							title = propertyDef?.title;
 						}
 
@@ -326,7 +330,7 @@ export default function withFilters(WrappedComponent) {
 					const newRepoFilters = [];
 					let filtersToUse = filters
 
-					if (!isReady) {
+					if (!isReady && id && !isUsingCustomFilters) { // can't save custom filters bc we can't save JS fns in Repository (e.g. getRepoFilters)
 						const savedFilters = await getSaved(id + '-filters');
 						if (!_.isEmpty(savedFilters)) {
 							// load saved filters
@@ -336,11 +340,18 @@ export default function withFilters(WrappedComponent) {
 					}
 
 					if (isUsingCustomFilters) {
-						_.each(filtersToUse, (filter) => {
-							const repoFiltersFromFilter = filter.getRepoFilters(value);
-							_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
-								newRepoFilters.push(repoFilter);
-							});
+						_.each(filtersToUse, ({ field, value, getRepoFilters }) => {
+							if (getRepoFilters) {
+								let repoFiltersFromFilter = getRepoFilters(value) || [];
+								if (!_.isArray(repoFiltersFromFilter)) {
+									repoFiltersFromFilter = [repoFiltersFromFilter];
+								}
+								_.each(repoFiltersFromFilter, (repoFilter) => { // one custom filter might generate multiple filters for the repository
+									newRepoFilters.push(repoFilter);
+								});
+							} else {
+								newRepoFilters.push({ name: field, value, });
+							}
 						});
 					} else {
 						const newFilterNames = [];
@@ -410,10 +421,14 @@ export default function withFilters(WrappedComponent) {
 			const
 				renderedFilters = renderFilters(),
 				hasFilters = !!renderedFilters.length;
-			topToolbar = <Toolbar justifyContent="space-between" alignItems="center">
-							<Text pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
-							{renderedFilters}
-							<HStack flex={hasFilters ? null : 1} justifyContent="flex-end">
+			topToolbar = <Toolbar>
+							<HStack flex={1} alignItems="center">
+								<ScrollView horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+									<Text fontStyle="italic" pr={2} userSelect="none">Filters:{hasFilters ? '' : ' None'}</Text>
+									{renderedFilters}
+								</ScrollView>
+							</HStack>
+							<HStack flex={hasFilters ? null : 1} alignItems="center" alignSelf="flex-end">
 								<IconButton
 									key="clear"
 									_icon={{

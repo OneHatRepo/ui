@@ -12,6 +12,9 @@ import {
 	UI_MODE_REACT_NATIVE,
 	UI_MODE_WEB,
 } from '../../../../Constants/UiModes.js';
+import {
+	EDITOR_TYPE__WINDOWED,
+} from '../../../../Constants/Editor.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
 import withAlert from '../../../Hoc/withAlert.js';
@@ -24,6 +27,7 @@ import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
 import Check from '../../../Icons/Check.js';
 import Xmark from '../../../Icons/Xmark.js';
+import Eye from '../../../Icons/Eye.js';
 import _ from 'lodash';
 
 const FILTER_NAME = 'q';
@@ -38,6 +42,7 @@ export function ComboComponent(props) {
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
 			showXButton = false,
+			showEyeButton = false,
 			_input = {},
 			isEditor = false,
 			isDisabled = false,
@@ -45,11 +50,13 @@ export function ComboComponent(props) {
 			placeholder,
 			onRowPress,
 			icon,
+			Editor, // only used for the eyeButton
 
 			// withComponent
 			self,
 
 			// withAlert
+			alert,
 			confirm,
 			
 			// withData
@@ -69,6 +76,8 @@ export function ComboComponent(props) {
 		displayValueRef = useRef(),
 		typingTimeout = useRef(),
 		[isMenuShown, setIsMenuShown] = useState(false),
+		[isViewerShown, setIsViewerShown] = useState(false),
+		[viewerSelection, setViewerSelection] = useState([]),
 		[isRendered, setIsRendered] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isSearchMode, setIsSearchMode] = useState(false),
@@ -292,6 +301,28 @@ export function ComboComponent(props) {
 			clearGridFilters();
 			clearGridSelection();
 		},
+		onEyeButtonPress = async () => {
+			const id = value;
+			if (!Repository.isLoaded) {
+				await Repository.load();
+			}
+			if (Repository.isLoading) {
+				await Repository.waitUntilDoneLoading();
+			}
+			let record = Repository.getById(id); // first try to get from entities in memory
+			if (!record && Repository.getSingleEntityFromServer) {
+				record = await Repository.getSingleEntityFromServer(id);
+			}
+
+			if (!record) {
+				alert('Record could not be found!');
+				return;
+			}
+
+			setViewerSelection([record]);
+			setIsViewerShown(true);
+		},
+		onViewerClose = () => setIsViewerShown(false),
 		onCheckButtonPress = () => {
 			hideMenu();
 		},
@@ -433,6 +464,7 @@ export function ComboComponent(props) {
 
 	const inputIconElement = icon ? <Icon as={icon} color="trueGray.300" size="md" ml={2} mr={3} /> : null;
 	let xButton = null,
+		eyeButton = null,
 		inputAndTrigger = null,
 		checkButton = null,
 		grid = null,
@@ -453,6 +485,24 @@ export function ComboComponent(props) {
 						_hover={{
 							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
 						}}
+						mr={1}
+					/>;
+	}
+	if (showEyeButton && Editor && !_.isNil(value)) {
+		eyeButton = <IconButton
+						_icon={{
+							as: Eye,
+							color: 'trueGray.600',
+							size: 'sm',
+						}}
+						isDisabled={isDisabled}
+						onPress={onEyeButtonPress}
+						h="100%"
+						bg={styles.FORM_COMBO_TRIGGER_BG}
+						_hover={{
+							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
+						}}
+						mr={1}
 					/>;
 	}
 
@@ -760,6 +810,7 @@ export function ComboComponent(props) {
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
 				<HStack h={10}>
 					{xButton}
+					{eyeButton}
 					{disableDirectEntry ?
 						<Text
 							ref={inputRef}
@@ -847,15 +898,41 @@ export function ComboComponent(props) {
 	}
 	assembledComponents = <HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 							{xButton}
+							{eyeButton}
 							{inputAndTrigger}
 							{additionalButtons}
 							{dropdownMenu}
 						</HStack>;
 	
+	if (isViewerShown && Editor) {
+		assembledComponents = 
+				<>
+					{assembledComponents}
+					<Modal
+						isOpen={true}
+						onClose={onViewerClose}
+					>
+						<Editor
+							{...props}
+							editorType={EDITOR_TYPE__WINDOWED}
+							px={0}
+							py={0}
+							w="100%"
+							parent={self}
+							reference="viewer"
+
+							isEditorViewOnly={true}
+							selection={viewerSelection}
+							onEditorClose={onViewerClose}
+						/>
+					</Modal>
+				</>;
+	}
+	
 	if (tooltip) {
 		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
-							{assembledComponents}
-						</Tooltip>;
+								{assembledComponents}
+							</Tooltip>;
 	}
 	
 	return assembledComponents;

@@ -342,7 +342,7 @@ export default function GridHeaderRow(props) {
 									if (isBlocked.current) { // withDraggable initiates block
 										return;
 									}
-									if (canColumnsSort) {
+									if (sortable && canColumnsSort) {
 										onSort(config, e);
 									}
 								}}

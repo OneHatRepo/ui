@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId, } from 'react';
+import React, { useState, useEffect, } from 'react';
 import {
 	Button,
 	VStack,
@@ -43,7 +43,7 @@ function TabBar(props) {
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
-		id = useId(),
+		id = props.id || props.self?.path,
 		useLocal = _.isNil(currentTabIx),
 		[isReady, setIsReady] = useState(false),
 		[currentTabIxLocal, setCurrentTabIxLocal] = useState(initialTabIx),
@@ -53,7 +53,9 @@ function TabBar(props) {
 			if (onChangeIsCollapsed) {
 				onChangeIsCollapsed(isCollapsed);
 			}
-			setSaved(id + '-isCollapsed', isCollapsed);
+			if (id) {
+				setSaved(id + '-isCollapsed', isCollapsed);
+			}
 		},
 		getCurrentTab = () => {
 			if (useLocal) {
@@ -70,7 +72,10 @@ function TabBar(props) {
 			}
 			if (useLocal) {
 				setCurrentTabIxLocal(ix);
-				setSaved(id + '-currentTabIx', ix);
+
+				if (id) {
+					setSaved(id + '-currentTabIx', ix);
+				}
 			}
 			if (onChangeCurrentTab) {
 				onChangeCurrentTab(ix);
@@ -361,18 +366,21 @@ function TabBar(props) {
 	useEffect(() => {
 		// Restore saved settings
 		(async () => {
-			let key, val;
-			key = id + '-isCollapsed';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setIsCollapsed(val);
-			}
 
-			if (useLocal) {
-				key = id + '-currentTabIx';
+			if (id) {
+				let key, val;
+				key = id + '-isCollapsed';
 				val = await getSaved(key);
 				if (!_.isNil(val)) {
-					setCurrentTab(val);
+					setIsCollapsed(val);
+				}
+
+				if (useLocal) {
+					key = id + '-currentTabIx';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setCurrentTab(val);
+					}
 				}
 			}
 
@@ -432,7 +440,7 @@ function TabBar(props) {
 					p={2}
 					pb={0}
 					bg={styles.TAB_BAR_BG}
-					h={isCollapsed ? '30px' : tabHeight}
+					h={isCollapsed ? '38px' : tabHeight}
 				>
 					<ScrollView
 						horizontal={true}

@@ -20,6 +20,7 @@ export default function Pagination(props) {
 			minimize = false,
 			disablePageSize = false,
 			showMoreOnly = false,
+			showPagination = true, // everything except reloadBtn
 
 			// withComponent
 			self,
@@ -61,14 +62,16 @@ export default function Pagination(props) {
 			isDisabled = false;
 		if (showMoreOnly) {
 			isDisabled = (pageEnd === total);
-			items.push(<Button
-							key="showMore"
-							parent={self}
-							reference="showMoreBtn"
-							onPress={() => Repository.showMore()}
-							isDisabled={isDisabled}
-							tooltip="Show More"
-						>Show More</Button>);
+			if (showPagination) {
+				items.push(<Button
+								key="showMore"
+								parent={self}
+								reference="showMoreBtn"
+								onPress={() => Repository.showMore()}
+								isDisabled={isDisabled}
+								tooltip="Show More"
+							>Show More</Button>);
+			}
 			if (!Repository.isLocal) {
 				items.push(<IconButton
 								key="reload"
@@ -83,70 +86,73 @@ export default function Pagination(props) {
 			}
 		} else {
 			isDisabled = page === 1;
-			items.push(<IconButton
-							key="first"
-							parent={self}
-							reference="firstPageBtn"
-							{...iconButtonProps}
-							isDisabled={isDisabled}
-							icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
-							onPress={() => Repository.setPage(1)}
-							tooltip="First Page"
-						/>);
-			items.push(<IconButton
-							key="prev"
-							parent={self}
-							reference="prevPageBtn"
-							{...iconButtonProps}
-							isDisabled={isDisabled}
-							icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
-							onPress={() => Repository.prevPage()}
-							tooltip="Previous Page"
-						/>);
-			if (!minimize) {
-				items.push(<HStack
-								key="pageSelector"
-								mx={3}
-								justifyContent="center"
-								alignItems="center"
-							>
-								<Text mr={2}>Page</Text>
-								<Input
-									parent={self}
-									reference="pageInput"
-									keyboardType="numeric"
-									value={page?.toString()}
-									onChangeValue={(value) => Repository.setPage(value)}
-									maxValue={totalPages}
-									isDisabled={totalPages === 1}
-									w={10}
-									tooltip="Set Page"
-								/>
-								<Text ml={2}>of {totalPages}</Text>
-							</HStack>);
+			if (showPagination) {
+				items.push(<IconButton
+								key="first"
+								parent={self}
+								reference="firstPageBtn"
+								{...iconButtonProps}
+								isDisabled={isDisabled}
+								icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								onPress={() => Repository.setPage(1)}
+								tooltip="First Page"
+							/>);
+				items.push(<IconButton
+								key="prev"
+								parent={self}
+								reference="prevPageBtn"
+								{...iconButtonProps}
+								isDisabled={isDisabled}
+								icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								onPress={() => Repository.prevPage()}
+								tooltip="Previous Page"
+							/>);
+				if (!minimize) {
+					items.push(<HStack
+									key="pageSelector"
+									mx={3}
+									justifyContent="center"
+									alignItems="center"
+								>
+									<Text mr={2}>Page</Text>
+									<Input
+										parent={self}
+										reference="pageInput"
+										keyboardType="numeric"
+										value={page?.toString()}
+										onChangeValue={(value) => Repository.setPage(value)}
+										maxValue={totalPages}
+										isDisabled={totalPages === 1}
+										w={10}
+										tooltip="Set Page"
+									/>
+									<Text ml={2}>of {totalPages}</Text>
+								</HStack>);
+				}
+
+				isDisabled = page === totalPages || totalPages <= 1;
+				items.push(<IconButton
+								key="next"
+								parent={self}
+								reference="nextPageBtn"
+								{...iconButtonProps}
+								isDisabled={isDisabled}
+								icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								onPress={() => Repository.nextPage()}
+								tooltip="Next Page"
+							/>);
+				items.push(<IconButton
+								key="last"
+								parent={self}
+								reference="lastPageBtn"
+								{...iconButtonProps}
+								isDisabled={isDisabled}
+								icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								onPress={() => Repository.setPage(totalPages)}
+								tooltip="Last Page"
+							/>);
 			}
-	
-			isDisabled = page === totalPages || totalPages <= 1;
-			items.push(<IconButton
-							key="next"
-							parent={self}
-							reference="nextPageBtn"
-							{...iconButtonProps}
-							isDisabled={isDisabled}
-							icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
-							onPress={() => Repository.nextPage()}
-							tooltip="Next Page"
-						/>);
-			items.push(<IconButton
-							key="last"
-							parent={self}
-							reference="lastPageBtn"
-							{...iconButtonProps}
-							isDisabled={isDisabled}
-							icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
-							onPress={() => Repository.setPage(totalPages)}
-							tooltip="Last Page"
-						/>);
+
 			if (!Repository.isLocal) {
 				items.push(<IconButton
 								key="reload"
@@ -158,10 +164,10 @@ export default function Pagination(props) {
 								tooltip="Reload"
 							/>);
 			}
-			if (!minimize && !disablePageSize) {
+			if (showPagination && !minimize && !disablePageSize) {
 				items.push(<PageSizeCombo key="pageSize" pageSize={pageSize} Repository={Repository} />);
 			}
-			if (!minimize) {
+			if (showPagination && !minimize) {
 				let pageSpan = `${pageStart} – ${pageEnd}`;
 				if (pageStart === pageEnd) {
 					pageSpan = pageStart;
@@ -181,6 +187,7 @@ export default function Pagination(props) {
 				</HStack>;
 	}, [
 		// Repository,
+		showPagination,
 		page,
 		pageSize,
 		total,

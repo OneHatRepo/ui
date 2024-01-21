@@ -60,6 +60,7 @@ import Copyright from '../Components/Icons/Copyright.js';
 import Dot from '../Components/Icons/Dot.js';
 import Duplicate from '../Components/Icons/Duplicate.js';
 import Edit from '../Components/Icons/Edit.js';
+import EllipsisHorizontal from '../Components/Icons/EllipsisHorizontal.js';
 import EllipsisVertical from '../Components/Icons/EllipsisVertical.js';
 import Envelope from '../Components/Icons/Envelope.js';
 import EnvelopeRegular from '../Components/Icons/EnvelopeRegular.js';
@@ -90,6 +91,7 @@ import House from '../Components/Icons/House.js';
 import Images from '../Components/Icons/Images.js';
 import Info from '../Components/Icons/Info.js';
 import ItunesNote from '../Components/Icons/ItunesNote.js';
+import Js from '../Components/Icons/Js.js';
 import Leaf from '../Components/Icons/Leaf.js';
 import List from '../Components/Icons/List.js';
 import ListCheck from '../Components/Icons/ListCheck.js';
@@ -151,7 +153,9 @@ import Scroll from '../Components/Icons/Scroll.js';
 import Share from '../Components/Icons/Share.js';
 import Shop from '../Components/Icons/Shop.js';
 import SideBySide from '../Components/Icons/SideBySide.js';
+import SortDownAlt from '../Components/Icons/SortDownAlt.js';
 import SortDown from '../Components/Icons/SortDown.js';
+import SortUpAlt from '../Components/Icons/SortUpAlt.js';
 import SortUp from '../Components/Icons/SortUp.js';
 import Square from '../Components/Icons/Square.js';
 import SquareCheck from '../Components/Icons/SquareCheck.js';
@@ -159,6 +163,7 @@ import SquareCheckRegular from '../Components/Icons/SquareCheckRegular.js';
 import SquareMinus from '../Components/Icons/SquareMinus.js';
 import SquareRegular from '../Components/Icons/SquareRegular.js';
 import Store from '../Components/Icons/Store.js';
+import Table from '../Components/Icons/Table.js';
 import ThumbsDown from '../Components/Icons/ThumbsDown.js';
 import ThumbsDownRegular from '../Components/Icons/ThumbsDownRegular.js';
 import ThumbsUp from '../Components/Icons/ThumbsUp.js';
@@ -287,6 +292,7 @@ const components = {
 	Dot,
 	Duplicate,
 	Edit,
+	EllipsisHorizontal,
 	EllipsisVertical,
 	Envelope,
 	EnvelopeRegular,
@@ -317,6 +323,7 @@ const components = {
 	Images,
 	Info,
 	ItunesNote,
+	Js,
 	Leaf,
 	List,
 	ListCheck,
@@ -378,7 +385,9 @@ const components = {
 	Share,
 	Shop,
 	SideBySide,
+	SortDownAlt,
 	SortDown,
+	SortUpAlt,
 	SortUp,
 	Square,
 	SquareCheck,
@@ -386,6 +395,7 @@ const components = {
 	SquareMinus,
 	SquareRegular,
 	Store,
+	Table,
 	ThumbsDown,
 	ThumbsDownRegular,
 	ThumbsUp,

@@ -12,8 +12,10 @@ import {
 	ALERT_MODE_YES,
 	ALERT_MODE_YES_NO,
 	ALERT_MODE_CUSTOM,
+	ALERT_MODE_INFO,
 } from '../../Constants/Alert.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
+import CircleInfo from '../Icons/CircleInfo.js';
 import _ from 'lodash';
 
 export default function withAlert(WrappedComponent) {
@@ -76,6 +78,15 @@ export default function withAlert(WrappedComponent) {
 			onCancel = () => {
 				setIsAlertShown(false);
 			},
+			onInfo = (msg) => {
+				clearAll();
+				setMode(ALERT_MODE_INFO);
+				setTitle('Info');
+				setMessage(msg);
+				setIncludeCancel(false);
+				setCanClose(true);
+				showAlert();
+			},
 			onOk = () => {
 				if (okCallback) {
 					okCallback();
@@ -121,6 +132,7 @@ export default function withAlert(WrappedComponent) {
 		}
 		switch(mode) {
 			case ALERT_MODE_OK:
+			case ALERT_MODE_INFO:
 				buttons.push(<Button
 								key="okBtn"
 								ref={autoFocusRef}
@@ -170,8 +182,8 @@ export default function withAlert(WrappedComponent) {
 						alert={onAlert}
 						confirm={onConfirm}
 						hideAlert={hideAlert}
+						showInfo={onInfo}
 					/>
-
 					<AlertDialog
 						leastDestructiveRef={cancelRef}
 						isOpen={isAlertShown}
@@ -181,9 +193,9 @@ export default function withAlert(WrappedComponent) {
 							{canClose && <AlertDialog.CloseButton />}
 							<AlertDialog.Header>{title}</AlertDialog.Header>
 							<AlertDialog.Body>
-								<HStack>
+								<HStack alignItems="center">
 									<VStack w="40px" p={0} mr={5}>
-										<Icon as={TriangleExclamation} size={10} color="#f00" />
+										<Icon as={mode === ALERT_MODE_INFO ? CircleInfo : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
 									</VStack>
 									<Text flex={1}>{message}</Text>
 								</HStack>

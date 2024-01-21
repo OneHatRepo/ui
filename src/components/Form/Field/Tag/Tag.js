@@ -20,7 +20,7 @@ import _ from 'lodash';
 function TagComponent(props) {
 
 	const {
-			isEditor = false,
+			isViewOnly = false,
 			isValueAlwaysArray,
 			isValueAsStringifiedJson,
 			Editor,
@@ -42,7 +42,7 @@ function TagComponent(props) {
 		} = props,
 		ignoreNextComboValueChangeRef = useRef(false),
 		[isViewerShown, setIsViewerShown] = useState(false),
-		[viewerSelection, setViewerSelection] = useState(false),
+		[viewerSelection, setViewerSelection] = useState([]),
 		getIgnoreNextComboValueChange = () => {
 			return ignoreNextComboValueChangeRef.current;
 		},
@@ -143,13 +143,13 @@ function TagComponent(props) {
 						key={ix}
 						text={val.text}
 						onView={() => onView(val)}
-						onDelete={isEditor ? () => onDelete(val) : null}
+						onDelete={!isViewOnly ? () => onDelete(val) : null}
 					/>;
 		});
 
-	let WhichCombo = ComboEditor;
-	if (!_.isNil(_combo.isEditor) && !_combo.isEditor) {
-		WhichCombo = Combo;
+	let WhichCombo = Combo;
+	if (_combo.isEditor) {
+		WhichCombo = ComboEditor;
 	}
 
 	const sizeProps = {};
@@ -164,7 +164,7 @@ function TagComponent(props) {
 		}
 	}
 
-	if (isEditor && propsToPass.selectorId) {
+	if (propsToPass.selectorId) {
 		_combo.selectorId = propsToPass.selectorId;
 		_combo.selectorSelected = propsToPass.selectorSelected;
 	}
@@ -187,15 +187,14 @@ function TagComponent(props) {
 						minHeight={10}
 						flexWrap="wrap"
 					>{valueBoxes}</HStack>
-					{isEditor && 
-						<WhichCombo
-							Repository={props.Repository}
-							Editor={props.Editor}
-							onChangeValue={onChangeComboValue}
-							parent={self}
-							reference="combo"
-							{..._combo}
-						/>}
+					{!isViewOnly && <WhichCombo
+										Repository={props.Repository}
+										Editor={props.Editor}
+										onChangeValue={onChangeComboValue}
+										parent={self}
+										reference="combo"
+										{..._combo}
+									/>}
 				</VStack>
 				{isViewerShown && 
 					<Modal
@@ -245,24 +244,12 @@ export const Tag = withAdditionalProps(
 function withAdditionalEditorProps(WrappedComponent) {
 	return (props) => {
 		return <WrappedComponent
-					isEditor={true}
-					isValueAlwaysArray={true}
-					isValueAsStringifiedJson={true}
+					_combo={{ isEditor: true }}
 					{...props}
 				/>;
 	};
 }
 
-export const TagEditor = withAdditionalEditorProps(
-							withComponent(
-								withAlert(
-									withData(
-										withValue(
-											TagComponent
-										)
-									)
-								)
-							)
-						);
+export const TagEditor = withAdditionalEditorProps(Tag);
 
 export default Tag;

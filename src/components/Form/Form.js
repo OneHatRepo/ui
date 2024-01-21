@@ -74,6 +74,7 @@ function Form(props) {
 			disableDirtyIcon = false,
 			onBack,
 			onReset,
+			onInit,
 			onViewMode,
 			submitBtnLabel,
 			onSubmit,
@@ -126,6 +127,7 @@ function Form(props) {
 		[containerWidth, setContainerWidth] = useState(),
 		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
+		validatorToUse = validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object(),
 		{
 			control,
 			formState,
@@ -141,7 +143,7 @@ function Form(props) {
 			// setFocus,
 			getValues: formGetValues,
 			// getFieldState,
-			// trigger,
+			trigger,
 		} = useForm({
 			mode: 'onChange', // onChange | onBlur | onSubmit | onTouched | all
 			// reValidateMode: 'onChange', // onChange | onBlur | onSubmit
@@ -156,7 +158,7 @@ function Form(props) {
 			// delayError: 0,
 			// shouldUnregister: false,
 			// shouldUseNativeValidation: false,
-			resolver: yupResolver(validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object()),
+			resolver: yupResolver(validatorToUse),
 			context: { isPhantom },
 		}),
 		buildFromColumnsConfig = () => {
@@ -295,6 +297,8 @@ function Form(props) {
 					onChange: onEditorChange,
 					useSelectorId = false,
 					isHidden = false,
+					getDynamicProps,
+					getIsRequired,
 					...propsToPass
 				} = item,
 				editorTypeProps = {};
@@ -340,8 +344,11 @@ function Form(props) {
 					editorTypeProps.autoLoad = true;
 				}
 			}
-			if (isCombo && _.isNil(propsToPass.showXButton)) {
-				editorTypeProps.showXButton = true;
+			if (isCombo) {
+				// editorTypeProps.showEyeButton = true;
+				if (_.isNil(propsToPass.showXButton)) {
+					editorTypeProps.showXButton = true;
+				}
 			}
 			const Element = getComponentFromType(type);
 			let children;
@@ -382,7 +389,17 @@ function Form(props) {
 			}
 
 			if (isEditorViewOnly || !isEditable) {
-				const value = (record && record[name]) || (startingValues && startingValues[name]) || null;
+				let value = null;
+				if (record?.properties && record.properties[name]) {
+					value = record.properties[name].displayValue;
+				}
+				if (_.isNil(value) && record && record[name]) {
+					value = record[name];
+				}
+				if (_.isNil(value) && startingValues && startingValues[name]) {
+					value = startingValues[name];
+				}
+		
 				let element = <Element
 									value={value}
 									parent={self}
@@ -456,7 +473,13 @@ function Form(props) {
 								editorTypeProps.selectorId = selectorId;
 							}
 							if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
-								editorTypeProps.selectorSelected = record;
+								if (_.isNil(propsToPass.selectorSelected)) {
+									editorTypeProps.selectorSelected = record;
+								}
+							}
+							let dynamicProps = {};
+							if (getDynamicProps) {
+								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 							}
 							let element = <Element
 												name={name}
@@ -467,7 +490,7 @@ function Form(props) {
 													}
 													onChange(newValue);
 													if (onEditorChange) {
-														onEditorChange(newValue, formSetValue, formGetValues, formState);
+														onEditorChange(newValue, formSetValue, formGetValues, formState, trigger);
 													}
 												}}
 												onBlur={onBlur}
@@ -477,6 +500,7 @@ function Form(props) {
 												{...defaults}
 												{...propsToPass}
 												{...editorTypeProps}
+												{...dynamicProps}
 											/>;
 							if (editorType !== EDITOR_TYPE__INLINE) {
 								let message = null;
@@ -504,11 +528,11 @@ function Form(props) {
 								
 							let isRequired = false,
 								requiredIndicator = null;
-							if (editorType === EDITOR_TYPE__PLAIN) {
+							if (getIsRequired) {
+								isRequired = getIsRequired(formGetValues, formState);
+							} else if (validatorToUse?.fields && validatorToUse.fields[name]?.exclusiveTests?.required) {
 								// submitted validator
-								if (validator?.fields && validator.fields[name]?.exclusiveTests?.required) {
-									isRequired = true;
-								}
+								isRequired = true;
 							} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
 								(propertyDef?.requiredIfPhantom && isPhantom) ||
 								(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
@@ -595,19 +619,25 @@ function Form(props) {
 				alert(errors.message);
 			}
 		},
+		doReset = (values) => {
+			reset(values);
+			if (onReset) {
+				onReset(values, formSetValue, formGetValues);
+			}
+		},
 		onSaveDecorated = async (data, e) => {
 			// reset the form after a save
 			const result = await onSave(data, e);
 			if (result) {
 				const values = record.submitValues;
-				reset(values);
+				doReset(values);
 			}
 		},
 		onSubmitDecorated = async (data, e) => {
 			const result = await onSubmit(data, e);
 			if (result) {
 				const values = record.submitValues;
-				reset(values);
+				doReset(values);
 			}
 		},
 		onLayoutDecorated = (e) => {
@@ -619,9 +649,13 @@ function Form(props) {
 		};
 
 	useEffect(() => {
-		if (record !== previousRecord) {
+		if (record === previousRecord) {
+			if (onInit) {
+				onInit(initialValues, formSetValue, formGetValues);
+			}
+		} else {
 			setPreviousRecord(record);
-			reset(defaultValues);
+			doReset(defaultValues);
 		}
 		if (formSetup) {
 			formSetup(formSetValue, formGetValues, formState)
@@ -830,12 +864,7 @@ function Form(props) {
 						{showResetBtn && 
 							<IconButton
 								key="resetBtn"
-								onPress={() => {
-									if (onReset) {
-										onReset();
-									}
-									reset();
-								}}
+								onPress={() => doReset()}
 								icon={Rotate}
 								_icon={{
 									color: !formState.isDirty ? 'trueGray.400' : '#000',

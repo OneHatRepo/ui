@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useId, } from 'react';
+import React, { useState, useEffect, useMemo, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -42,7 +42,7 @@ export default function DataMgt(props) {
 		} = props;
 
 	const
-		id = useId(),
+		id = props.id || props.self?.path,
 		// westRef = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isWestCollapsed, setIsWestCollapsedRaw] = useState(westStartsCollapsed),
@@ -52,15 +52,21 @@ export default function DataMgt(props) {
 		[centerSelected, setCenterSelected] = useState(),
 		setIsWestCollapsed = (bool) => {
 			setIsWestCollapsedRaw(bool);
-			setSaved(id + '-isWestCollapsed', bool);
+			if (id) {
+				setSaved(id + '-isWestCollapsed', bool);
+			}
 		},
 		setIsEastCollapsed = (bool) => {
 			setIsEastCollapsedRaw(bool);
-			setSaved(id + '-isEastCollapsed', bool);
+			if (id) {
+				setSaved(id + '-isEastCollapsed', bool);
+			}
 		},
 		setIsFullscreen = (bool) => {
 			setIsFullscreenRaw(bool);
-			setSaved(id + '-isFullscreen', isFullscreen);
+			if (id) {
+				setSaved(id + '-isFullscreen', isFullscreen);
+			}
 		},
 		setWestSelected = (selected) => {
 			setWestSelectedRaw(selected);
@@ -110,35 +116,37 @@ export default function DataMgt(props) {
 		// Restore saved settings
 		(async () => {
 
-			let key, val;
-			key = id + '-isWestCollapsed';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setIsWestCollapsedRaw(val);
-			}
+			if (id) {
+				let key, val;
+				key = id + '-isWestCollapsed';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setIsWestCollapsedRaw(val);
+				}
 
-			key = id + '-isEastCollapsed';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setIsEastCollapsedRaw(val);
-			}
+				key = id + '-isEastCollapsed';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setIsEastCollapsedRaw(val);
+				}
 
-			key = id + '-isFullscreen';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setIsFullscreenRaw(val);
-			}
+				key = id + '-isFullscreen';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setIsFullscreenRaw(val);
+				}
 
-			key = id + '-westSelected';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setWestSelectedRaw(val);
-			}
+				key = id + '-westSelected';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setWestSelectedRaw(val);
+				}
 
-			key = id + '-centerSelected';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setCenterSelectedRaw(val);
+				key = id + '-centerSelected';
+				val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setCenterSelectedRaw(val);
+				}
 			}
 
 			if (!isReady) {

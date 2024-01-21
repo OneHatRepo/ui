@@ -22,9 +22,9 @@ function ManagerScreen(props) {
 			title,
 			sideModeComponent,
 			fullModeComponent,
-			id,
 		} = props,
 		styles = UiGlobals.styles,
+		id = props.id || props.self?.path,
 		[isReady, setIsReady] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
 		setMode = (newMode) => {
@@ -32,18 +32,22 @@ function ManagerScreen(props) {
 				return; // no change
 			}
 			setModeRaw(newMode);
-			setSaved(id + '-mode', newMode);
+			if (id) {
+				setSaved(id + '-mode', newMode);
+			}
 		};
 
 	useEffect(() => {
 		// Restore saved settings
 		(async () => {
 
-			let key, val;
-			key = id + '-mode';
-			val = await getSaved(key);
-			if (!_.isNil(val)) {
-				setMode(val);
+			if (id) {
+				const
+					key = id + '-mode',
+					val = await getSaved(key);
+				if (!_.isNil(val)) {
+					setMode(val);
+				}
 			}
 
 			if (!isReady) {

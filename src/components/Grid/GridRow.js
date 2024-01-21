@@ -103,12 +103,16 @@ export default function GridRow(props) {
 								if (item?.properties && item.properties[config.fieldName]) {
 									const property = item.properties[config.fieldName];
 									value = property.displayValue;
+									const type = property?.viewerType?.type;
 
-									if (property?.viewerType?.type) {
-										const Element = getComponentFromType(property?.viewerType?.type);
+									if (type) {
+										const Element = getComponentFromType(type);
 										const elementProps = {};
 										if (UiGlobals.mode === UI_MODE_WEB) {
 											elementProps.textOverflow = 'ellipsis';
+										}
+										if (type.match(/(Tag|TagEditor)$/)) {
+											elementProps.isViewOnly = true; // TODO: this won't work for InlineGridEditor, bc that Grid can't use isViewOnly when actually editing
 										}
 										return <Element
 													value={value}
