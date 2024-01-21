@@ -73,7 +73,7 @@ function Viewer(props) {
 
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!type) {
-				if (propertyDef.viewerType) {
+				if (propertyDef?.viewerType) {
 					const
 						{
 							type: t,
@@ -121,7 +121,7 @@ function Viewer(props) {
 				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
-			if (!label && Repository && propertyDef.title) {
+			if (!label && Repository && propertyDef?.title) {
 				label = propertyDef.title;
 			}
 

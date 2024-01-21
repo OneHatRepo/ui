@@ -107,7 +107,7 @@ export default function withPdfButton(WrappedComponent) {
 
 				if (!item.title) {
 					const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
-					if (propertyDef.title) {
+					if (propertyDef?.title) {
 						item.title = propertyDef.title;
 					}
 				}
