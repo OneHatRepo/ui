@@ -144,6 +144,7 @@ import RectangleXmark from '../Components/Icons/RectangleXmark.js';
 import RectangleXmarkRegular from '../Components/Icons/RectangleXmarkRegular.js';
 import ReorderRows from '../Components/Icons/ReorderRows.js';
 import RightFromBracket from '../Components/Icons/RightFromBracket.js';
+import RightLeft from '../Components/Icons/RightLeft.js';
 import RightToBracket from '../Components/Icons/RightToBracket.js';
 import Rotate from '../Components/Icons/Rotate.js';
 import RotateLeft from '../Components/Icons/RotateLeft.js';
@@ -374,6 +375,7 @@ const components = {
 	RectangleXmarkRegular,
 	ReorderRows,
 	RightFromBracket,
+	RightLeft,
 	RightToBracket,
 	Rotate,
 	RotateLeft,
