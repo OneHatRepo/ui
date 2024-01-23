@@ -905,6 +905,22 @@ export function ComboComponent(props) {
 						</Row>;
 	
 	if (isViewerShown && Editor) {
+		const propsForViewer = _.pick(props, [
+			'disableCopy',
+			'disableDuplicate',
+			'disablePrint',
+			'disableView',
+			'value',
+			'Repository',
+			'data',
+			'displayField',
+			'displayIx',
+			'fields',
+			'idField',
+			'idIx',
+			'model',
+			'name',
+		]);
 		assembledComponents = 
 				<>
 					{assembledComponents}
@@ -913,7 +929,7 @@ export function ComboComponent(props) {
 						onClose={onViewerClose}
 					>
 						<Editor
-							{...props}
+							{...propsForViewer}
 							editorType={EDITOR_TYPE__WINDOWED}
 							px={0}
 							py={0}
