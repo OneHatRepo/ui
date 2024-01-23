@@ -30,6 +30,8 @@ function Editor(props) {
 		return null; // hide the editor when no selection
 	}
 
+	const propsToPass = _.omit(props, ['self', 'reference', 'parent']);
+
 	// Repository?.isRemotePhantomMode && selection.length === 1 && 
 	if (editorMode === EDITOR_MODE__VIEW || isEditorViewOnly) {
 		const record = selection[0];
@@ -37,19 +39,20 @@ function Editor(props) {
 			return null;
 		}
 		return <Viewer
-					{...props}
+					{...propsToPass}
+					{..._viewer}
 					record={record}
 					onEditMode={isEditorViewOnly ? null : onEditMode}
 					onClose={onClose}
 					onDelete={onDelete}
 					parent={self}
 					reference="viewer"
-					{..._viewer}
 				/>;
 	}
 
 	return <Form
-				{...props}
+				{...propsToPass}
+				{..._form}
 				record={selection}
 				onCancel={onCancel}
 				onSave={onSave}
@@ -57,7 +60,6 @@ function Editor(props) {
 				onDelete={onDelete}
 				parent={self}
 				reference="form"
-				{..._form}
 			/>;
 }
 

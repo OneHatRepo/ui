@@ -78,7 +78,7 @@ function Viewer(props) {
 						{
 							type: t,
 							...p
-						} =  propertyDef.viewerType;
+						} = propertyDef.viewerType;
 					type = t
 				} else {
 					type = 'Text';

@@ -322,7 +322,7 @@ function Form(props) {
 						{
 							type: t,
 							...p
-						} =  propertyDef?.editorType;
+						} = propertyDef?.editorType;
 					type = t;
 					editorTypeProps = p;
 				} else if (propertyDef?.viewerType) {
@@ -692,6 +692,8 @@ function Form(props) {
 	if (self) {
 		self.ref = formRef;
 		self.formState = formState;
+		self.formSetValue = formSetValue;
+		self.formGetValues = formGetValues;
 	}
 	
 	const sizeProps = {};
