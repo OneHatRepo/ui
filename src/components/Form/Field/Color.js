@@ -133,94 +133,101 @@ export function ColorElement(props) {
 
 
 	// Web version
-	return <Tooltip label={tooltip} placement={tooltipPlacement}>
-				<HStack flex={1} h="100%" alignItems="center" onLayout={() => setIsRendered(true)}>
-					<Pressable
-						ref={triggerRef}
-						onPress={onTriggerPress}
-						onBlur={onTriggerBlur}
-						h={10}
-						w={10}
-						bg={value}
-						borderTopLeftRadius={6}
-						borderBottomLeftRadius={6}
-						borderTopRightRadius={0}
-						borderBottomRightRadius={0}
-						borderWidth={1}
-						borderColor="trueGray.300"
-					/>
-					<Input
-						ref={inputRef}
-						value={value}
-						setValue={setValue}
-						maxLength={7}
-						onBlur={onInputBlur}
-						onClick={onInputClick}
-						flex={1}
-						h="100%"
-						p={2}
-						borderWidth={1}
-						borderColor="trueGray.300"
-						borderLeftWidth={0}
-						borderTopLeftRadius={0}
-						borderBottomLeftRadius={0}
-						borderTopRightRadius={6}
-						borderBottomRightRadius={6}
-						fontSize={styles.FORM_COLOR_READOUT_FONTSIZE}
-						bg={styles.FORM_COLOR_INPUT_BG}
-						_focus={{
-							bg: styles.FORM_COLOR_INPUT_FOCUS_BG,
-						}}
-						onLayout={(e) => {
-							// On web, this is not needed, but on RN it might be, so leave it in for now
-							const {
-									height,
-									top,
-									left,
-								} = e.nativeEvent.layout;
-							setTop(top + height);
-							setLeft(left);
-						}}
-					/>
-					<Popover
-						isOpen={isPickerShown}
-						onClose={() => {
-							hidePicker();
-						}}
-						trigger={emptyFn}
-						trapFocus={true}
-						placement={'auto'}
-						{...props}
+	let assembledComponents = null;
+	assembledComponents =
+		<HStack flex={1} h="100%" alignItems="center" onLayout={() => setIsRendered(true)}>
+			<Pressable
+				ref={triggerRef}
+				onPress={onTriggerPress}
+				onBlur={onTriggerBlur}
+				h={10}
+				w={10}
+				bg={value}
+				borderTopLeftRadius={6}
+				borderBottomLeftRadius={6}
+				borderTopRightRadius={0}
+				borderBottomRightRadius={0}
+				borderWidth={1}
+				borderColor="trueGray.300"
+			/>
+			<Input
+				ref={inputRef}
+				value={value}
+				setValue={setValue}
+				maxLength={7}
+				onBlur={onInputBlur}
+				onClick={onInputClick}
+				flex={1}
+				h="100%"
+				p={2}
+				borderWidth={1}
+				borderColor="trueGray.300"
+				borderLeftWidth={0}
+				borderTopLeftRadius={0}
+				borderBottomLeftRadius={0}
+				borderTopRightRadius={6}
+				borderBottomRightRadius={6}
+				fontSize={styles.FORM_COLOR_READOUT_FONTSIZE}
+				bg={styles.FORM_COLOR_INPUT_BG}
+				_focus={{
+					bg: styles.FORM_COLOR_INPUT_FOCUS_BG,
+				}}
+				onLayout={(e) => {
+					// On web, this is not needed, but on RN it might be, so leave it in for now
+					const {
+							height,
+							top,
+							left,
+						} = e.nativeEvent.layout;
+					setTop(top + height);
+					setLeft(left);
+				}}
+			/>
+			<Popover
+				isOpen={isPickerShown}
+				onClose={() => {
+					hidePicker();
+				}}
+				trigger={emptyFn}
+				trapFocus={true}
+				placement={'auto'}
+				{...props}
+			>
+				<Popover.Content
+					position="absolute"
+					top={top + 'px'}
+					left={left + 'px'}
+					w={220}
+					h={287}
+					{...translateProps}
+				>
+					<Popover.Body
+						ref={pickerRef}
+						p={0}
 					>
-						<Popover.Content
-							position="absolute"
-							top={top + 'px'}
-							left={left + 'px'}
-							w={220}
-							h={287}
-							{...translateProps}
-						>
-							<Popover.Body
-								ref={pickerRef}
-								p={0}
-							>
-								<SketchPicker
-									disableAlpha={true}
-									color={value}
-									onChange={(color) => setValue(color.hex)}
-									{...props}
-								/>
-							</Popover.Body>
-						</Popover.Content>
-					</Popover>
-				</HStack>
-			</Tooltip>;
+						<SketchPicker
+							disableAlpha={true}
+							color={value}
+							onChange={(color) => setValue(color.hex)}
+							{...props}
+						/>
+					</Popover.Body>
+				</Popover.Content>
+			</Popover>
+		</HStack>;
+
 
 	// React Native v1
 	
 	
 	// React Native v2
 	
+	if (tooltip) {
+		// assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
+		// 					{assembledComponents}
+		// 				</Tooltip>;
+	}
+	return assembledComponents;
 }
 
 export default withComponent(withValue(ColorElement));

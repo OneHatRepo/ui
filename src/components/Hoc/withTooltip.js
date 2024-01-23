@@ -11,9 +11,9 @@ export default function withTooltip(WrappedComponent) {
 				tooltip,
 				tooltipPlacement = 'bottom',
 			} = props;
-		if (!tooltip) {
+		// if (!tooltip) {
 			return <WrappedComponent {...props} />;
-		}
+		// }
 		return <Tooltip label={tooltip} placement={tooltipPlacement}>
 					<WrappedComponent {...props} />
 				</Tooltip>;

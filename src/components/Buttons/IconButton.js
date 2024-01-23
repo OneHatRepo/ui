@@ -70,7 +70,7 @@ const
 							</Pressable>;
 		ret = pressable;
 		if (tooltip) {
-			ret = <Tooltip label={tooltip} placement={tooltipPlacement}>{ret}</Tooltip>;
+			// ret = <Tooltip label={tooltip} placement={tooltipPlacement}>{ret}</Tooltip>;
 		}
 		return ret;
 	},

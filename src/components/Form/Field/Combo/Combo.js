@@ -946,9 +946,9 @@ export function ComboComponent(props) {
 	}
 	
 	if (tooltip) {
-		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
-								{assembledComponents}
-							</Tooltip>;
+		// assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
+		// 						{assembledComponents}
+		// 					</Tooltip>;
 	}
 	
 	return assembledComponents;

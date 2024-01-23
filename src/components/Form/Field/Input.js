@@ -89,9 +89,9 @@ function InputElement(props) {
 						value={localValue}
 					/>;
 	if (tooltip) {
-		component = <Tooltip label={tooltip} placement={tooltipPlacement}>
-						{component}
-					</Tooltip>;
+		// component = <Tooltip label={tooltip} placement={tooltipPlacement}>
+		// 				{component}
+		// 			</Tooltip>;
 	}
 	return component;
 }

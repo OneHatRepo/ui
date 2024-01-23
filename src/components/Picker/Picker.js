@@ -55,7 +55,7 @@ export default function Picker(props) {
 					>{items}</Select>;
 	if (tooltip) {
 		//TODO: This doesn't yet work, but doesn't do anything harmful either!
-		select = <Tooltip label={tooltip} placement={tooltipPlacement}>{select}</Tooltip>;
+		// select = <Tooltip label={tooltip} placement={tooltipPlacement}>{select}</Tooltip>;
 	}
 	return <HStack {...props}>
 				{select}
