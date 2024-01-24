@@ -102,4 +102,4 @@ const
 		return <InputField {...props} outerRef={ref} component="Input" />;
 	});
 
-export default InputField;
+export default InputForwardRef;

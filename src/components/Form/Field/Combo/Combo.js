@@ -92,7 +92,7 @@ export function ComboComponent(props) {
 			if (isMenuShown) {
 				return;
 			}
-			if (UiGlobals.mode === UI_MODE_WEB && inputRef.current.getBoundingClientRect) {
+			if (UiGlobals.mode === UI_MODE_WEB && inputRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const
 					rect = inputRef.current.getBoundingClientRect(),
