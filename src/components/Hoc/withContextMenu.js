@@ -10,7 +10,13 @@ import {
 	Spacer,
 	Text,
 } from 'native-base';
+import {
+	UI_MODE_WEB,
+	CURRENT_MODE,
+} from '../../Constants/UiModes.js';
 import _ from 'lodash';
+
+const CONTEXT_MENU_WIDTH = 180;
 
 export default function withContextMenu(WrappedComponent) {
 	return (props) => {
@@ -42,6 +48,29 @@ export default function withContextMenu(WrappedComponent) {
 				setIsContextMenuShown(true);
 				setContextMenuX(e.nativeEvent.pageX);
 				setContextMenuY(e.nativeEvent.pageY);
+			},
+			onLayout = (e) => {
+				if (CURRENT_MODE !== UI_MODE_WEB) {
+					return;
+				}
+
+				const
+					{
+						top,
+						left,
+						// width,
+						height,
+					} = e.nativeEvent.layout,
+					screenWidth = window.innerWidth,
+					screenHeight = window.innerHeight,
+					width = CONTEXT_MENU_WIDTH;
+
+				if (screenWidth - width < left) {
+					setContextMenuX(screenWidth - width);
+				}
+				if (screenHeight - height < top) {
+					setContextMenuY(screenHeight - height);
+				}
 			};
 
 		useEffect(() => {
@@ -133,7 +162,7 @@ export default function withContextMenu(WrappedComponent) {
 						isOpen={isContextMenuShown && !disableContextMenu}
 						onClose={() => setIsContextMenuShown(false)}
 					>
-						<Column bg="#fff" w={180} position="absolute" top={contextMenuY} left={contextMenuX}>
+						<Column bg="#fff" w={CONTEXT_MENU_WIDTH} position="absolute" top={contextMenuY} left={contextMenuX} onLayout={onLayout}>
 							{contextMenuItemComponents}
 						</Column>
 					</Modal>
