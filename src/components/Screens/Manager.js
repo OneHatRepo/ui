@@ -25,9 +25,13 @@ function ManagerScreen(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
-		[isReady, setIsReady] = useState(false),
+		[isRendered, setIsRendered] = useState(false),
+		[allowSideBySide, setAllowSideBySide] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
 		setMode = (newMode) => {
+			if (!allowSideBySide && newMode === MODE_SIDE) {
+				return;
+			}
 			if (newMode === mode) {
 				return; // no change
 			}
@@ -35,12 +39,22 @@ function ManagerScreen(props) {
 			if (id) {
 				setSaved(id + '-mode', newMode);
 			}
+		},
+		onLayout = (e) => {
+			const
+				containerWidth = e.nativeEvent.layout.width,
+				allowSideBySide = containerWidth > 600;
+			setAllowSideBySide(allowSideBySide);
+			setIsRendered(true);
 		};
 
 	useEffect(() => {
+		if (!isRendered) {
+			return;
+		}
+
 		// Restore saved settings
 		(async () => {
-
 			if (id) {
 				const
 					key = id + '-mode',
@@ -49,19 +63,11 @@ function ManagerScreen(props) {
 					setMode(val);
 				}
 			}
-
-			if (!isReady) {
-				setIsReady(true);
-			}
 		})();
-	}, []);
-
-	if (!isReady) {
-		return null;
-	}
+	}, [isRendered]);
 
 	let whichComponent;
-	if (mode === MODE_FULL) {
+	if (!allowSideBySide || mode === MODE_FULL) {
 		whichComponent = fullModeComponent;
 	} else if (mode === MODE_SIDE) {
 		whichComponent = sideModeComponent;
@@ -74,38 +80,42 @@ function ManagerScreen(props) {
 		};
 	}
 
-	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%">
-				<Row
-					h="80px"
-					py={2}
-					borderBottomWidth={2}
-					borderBottomColor="#ccc"
-				>
-					<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
-					<IconButton
-						icon={FullWidth}
-						_icon={{
-							size: '25px',
-							color: mode === MODE_FULL ? 'primary.100' : '#000',
-						}}
-						disabled={mode === MODE_FULL}
-						onPress={() => setMode(MODE_FULL)}
-						tooltip="Full Width"
-					/>
-					<IconButton
-						icon={SideBySide}
-						_icon={{
-							size: '25px',
-							color: mode === MODE_SIDE ? 'primary.100' : '#000',
-						}}
-						disabled={mode === MODE_SIDE}
-						onPress={() => setMode(MODE_SIDE)}
-						tooltip="Side Editor"
-					/>
-				</Row>
-
-				{whichComponent}
-
+	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
+				{isRendered && 
+					<>
+						<Row
+							h="80px"
+							py={2}
+							borderBottomWidth={2}
+							borderBottomColor="#ccc"
+						>
+							<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
+							{allowSideBySide &&
+								<>
+									<IconButton
+										icon={FullWidth}
+										_icon={{
+											size: '25px',
+											color: mode === MODE_FULL ? 'primary.100' : '#000',
+										}}
+										disabled={mode === MODE_FULL}
+										onPress={() => setMode(MODE_FULL)}
+										tooltip="Full Width"
+									/>
+									<IconButton
+										icon={SideBySide}
+										_icon={{
+											size: '25px',
+											color: mode === MODE_SIDE ? 'primary.100' : '#000',
+										}}
+										disabled={mode === MODE_SIDE}
+										onPress={() => setMode(MODE_SIDE)}
+										tooltip="Side Editor"
+									/>
+								</>}
+						</Row>
+						{whichComponent}
+					</>}
 			</Column>;
 }
 
