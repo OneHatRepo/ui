@@ -51,6 +51,7 @@ export function ComboComponent(props) {
 			onRowPress,
 			icon,
 			Editor, // only used for the eyeButton
+			onSave, // to hook into when menu saves (ComboEditor only)
 
 			// withComponent
 			self,
@@ -737,6 +738,9 @@ export function ComboComponent(props) {
 							setGridSelection([entity]);
 							const id = entity.id;
 							setValue(id);
+						}
+						if (onSave) {
+							onSave(selection);
 						}
 					}}
 					onRowPress={(item, e) => {
