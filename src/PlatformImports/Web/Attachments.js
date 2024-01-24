@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	Button,
+	ButtonText,
 	VStack,
 	Pressable,
 	HStack,
@@ -286,7 +287,9 @@ function AttachmentsElement(props) {
 									width: '100%',
 								}}
 								variant="ghost"
-							>{'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}</Button>}
+							>
+								<ButtonText>{'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}</ButtonText>
+							</Button>}
 					</VStack>;
 	
 	if (canCrud) {

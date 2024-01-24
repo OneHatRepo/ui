@@ -1,10 +1,12 @@
 import { useRef, useState, } from 'react';
 import {
-	VStack,
+	Button,
+	ButtonText,
+	HStack,
 	Icon,
 	ScrollView,
-	HStack,
 	Text,
+	VStack,
 } from '@gluestack-ui/themed';
 import {
 	EDITOR_TYPE__SIDE,
@@ -15,7 +17,7 @@ import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
-import Button from '../Buttons/Button.js';
+// import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
@@ -235,7 +237,9 @@ function Viewer(props) {
 												onPress={onEditMode}
 												leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
 												color="#fff"
-											>To Edit</Button>
+											>
+												<ButtonText>To Edit</ButtonText>
+											</Button>
 										</HStack>}
 						{!_.isEmpty(additionalButtons) && 
 							<HStack p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
@@ -259,14 +263,18 @@ function Viewer(props) {
 											bg: 'warningHover',
 										}}
 										color="#fff"
-									>Delete</Button>
+									>
+										<ButtonText>Delete</ButtonText>
+									</Button>
 								</HStack>}
 							{onClose && showCloseBtn &&
 								<Button
 									key="closeBtn"
 									onPress={onClose}
 									color="#fff"
-								>Close</Button>}
+								>
+									<ButtonText>Close</ButtonText>
+								</Button>}
 						</Footer>}
 
 				</>}

@@ -2,6 +2,7 @@ import React, { useState, useRef, } from 'react';
 import {
 	AlertDialog,
 	Button,
+	ButtonText,
 	VStack,
 	Icon,
 	HStack,
@@ -128,7 +129,9 @@ export default function withAlert(WrappedComponent) {
 								colorScheme="coolGray"
 								variant="ghost" // or unstyled
 								ref={cancelRef}
-							>Cancel</Button>);
+							>
+								<ButtonText>Cancel</ButtonText>
+							</Button>);
 		}
 		switch(mode) {
 			case ALERT_MODE_OK:
@@ -138,7 +141,9 @@ export default function withAlert(WrappedComponent) {
 								ref={autoFocusRef}
 								onPress={onOk}
 								color="#fff"
-							>OK</Button>);
+							>
+								<ButtonText>OK</ButtonText>
+							</Button>);
 				break;
 			case ALERT_MODE_YES:
 				buttons.push(<Button
@@ -147,7 +152,9 @@ export default function withAlert(WrappedComponent) {
 								onPress={onYes}
 								color="#fff"
 								colorScheme="danger"
-							>Yes</Button>);
+							>
+								<ButtonText>Yes</ButtonText>
+							</Button>);
 				break;
 			case ALERT_MODE_YES_NO:
 				// TODO: need to create a new colorScheme so this can be black with blank background
@@ -158,14 +165,18 @@ export default function withAlert(WrappedComponent) {
 								variant="ghost"
 								colorScheme="neutral"
 								mr={2}
-							>No</Button>);
+							>
+								<ButtonText>No</ButtonText>
+							</Button>);
 				buttons.push(<Button
 								key="yesBtn"
 								ref={autoFocusRef}
 								onPress={onYes}
 								color="#fff"
 								colorScheme="danger"
-							>Yes</Button>);
+							>
+								<ButtonText>Yes</ButtonText>
+							</Button>);
 				break;
 			case ALERT_MODE_CUSTOM:
 				_.each(customButtons, (button) => {

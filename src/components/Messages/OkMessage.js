@@ -16,7 +16,9 @@ export default function OkMessage(props) {
 						<Text color="#000">{textMessage}</Text>
 					</Modal.Body>
 					<Modal.Footer p={0} pr={4} borderTopWidth={0}>
-						<Button variant="ghost" color="primary.800" onPress={onClose}>OK</Button>
+						<Button variant="ghost" color="primary.800" onPress={onClose}>
+							<ButtonText>OK</ButtonText>
+						</Button>
 					</Modal.Footer>
 				</Modal.Content>
 			</Modal>;

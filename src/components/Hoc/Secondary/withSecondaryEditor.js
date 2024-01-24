@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, } from 'react';
 import {
 	Button,
+	ButtonText,
 } from '@gluestack-ui/themed';
 import {
 	EDITOR_MODE__VIEW,
@@ -188,11 +189,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
-							<Button colorScheme="danger" onPress={() => secondaryOnMoveChildren(cb)} key="moveBtn">
-								Move Children
+							<Button colorScheme="danger" onPress={() => onMoveChildren(cb)} key="moveBtn">
+								<ButtonText>Move Children</ButtonText>
 							</Button>,
-							<Button colorScheme="danger" onPress={() => secondaryOnDeleteChildren(cb)} key="deleteBtn">
-								Delete Children
+							<Button colorScheme="danger" onPress={() => onDeleteChildren(cb)} key="deleteBtn">
+								<ButtonText>Delete Children</ButtonText>
 							</Button>
 						],
 						includeCancel: true,

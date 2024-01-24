@@ -1,11 +1,13 @@
 import { useEffect, useMemo, } from 'react';
 import {
-	Icon,
+	Button,
+	ButtonText,
 	HStack,
+	Icon,
 	Text,
 } from '@gluestack-ui/themed';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
-import Button from '../Buttons/Button.js';
+// import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import AnglesLeft from '../Icons/AnglesLeft.js';
@@ -70,7 +72,9 @@ export default function Pagination(props) {
 								onPress={() => Repository.showMore()}
 								isDisabled={isDisabled}
 								tooltip="Show More"
-							>Show More</Button>);
+							>
+								<ButtonText>Show More</ButtonText>
+							</Button>);
 			}
 			if (!Repository.isLocal) {
 				items.push(<IconButton

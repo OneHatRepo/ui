@@ -1,7 +1,9 @@
 import {
+	Button,
+	ButtonText,
 	Icon,
 } from '@gluestack-ui/themed';
-import Button from '../Components/Buttons/Button.js';
+// import Button from '../Components/Buttons/Button.js';
 import _ from 'lodash';
 
 export default function buildAdditionalButtons(configs, self, handlerArgs = {}) {
@@ -36,7 +38,9 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 							parent={self}
 							reference={key}
 							{...buttonProps}
-						>{text}</Button>;
+						>
+							<ButtonText>{text}</ButtonText>
+						</Button>;
 		additionalButtons.push(button);
 	});
 	return additionalButtons;

@@ -1,5 +1,6 @@
 import {
 	Button,
+	ButtonText,
 	Modal,
 	Text,
 } from '@gluestack-ui/themed';
@@ -19,8 +20,12 @@ export default function ConfirmationMessage(props) {
 						<Text color="#000">{textMessage}</Text>
 					</Modal.Body>
 					<Modal.Footer py={2} pr={4}>
-						<Button variant="ghost" color="trueGray.700" onPress={onCancel}>Cancel</Button>
-						<Button variant="ghost" color="primary.800" onPress={onOk}>OK</Button>
+						<Button variant="ghost" color="trueGray.700" onPress={onCancel}>
+							<ButtonText>Cancel</ButtonText>
+						</Button>
+						<Button variant="ghost" color="primary.800" onPress={onOk}>
+							<ButtonText>OK</ButtonText>
+						</Button>
 					</Modal.Footer>
 				</Modal.Content>
 			</Modal>;

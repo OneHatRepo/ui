@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, isValidElement, } from 'react';
 import {
 	Box,
+	Button,
+	ButtonText,
 	VStack,
 	HStack,
 	Icon,
@@ -29,7 +31,7 @@ import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
-import Button from '../Buttons/Button.js';
+// import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
@@ -766,14 +768,18 @@ function Form(props) {
 										onPress={onBack}
 										leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
 										color="#fff"
-									>Back</Button>}
+									>
+										<ButtonText>Back</ButtonText>
+									</Button>}
 								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && !disableView &&
 									<Button
 										key="viewBtn"
 										onPress={onViewMode}
 										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
 										color="#fff"
-									>To View</Button>}
+									>
+										<ButtonText>To View</ButtonText>
+									</Button>}
 							</HStack>);
 			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
 				formButtons.push(<HStack key="additionalButtonsRow" p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
@@ -860,7 +866,9 @@ function Form(props) {
 										bg: 'warningHover',
 									}}
 									color="#fff"
-								>Delete</Button>
+								>
+									<ButtonText>Delete</ButtonText>
+								</Button>
 							</HStack>}
 
 						{showResetBtn && 
@@ -881,7 +889,9 @@ function Form(props) {
 								variant="ghost"
 								onPress={onCancel}
 								color="#fff"
-							>Cancel</Button>}
+							>
+								<ButtonText>Cancel</ButtonText>
+							</Button>}
 							
 						{showCloseBtn && 
 							<Button
@@ -889,7 +899,9 @@ function Form(props) {
 								variant="ghost"
 								onPress={onClose}
 								color="#fff"
-							>Close</Button>}
+							>
+								<ButtonText>Close</ButtonText>
+							</Button>}
 
 						{showSaveBtn && 
 							<Button
@@ -897,7 +909,9 @@ function Form(props) {
 								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 								isDisabled={isSaveDisabled}
 								color="#fff"
-							>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
+							>
+								<ButtonText>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</ButtonText>
+							</Button>}
 						
 						{showSubmitBtn && 
 							<Button
@@ -905,13 +919,17 @@ function Form(props) {
 								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
 								isDisabled={isSubmitDisabled}
 								color="#fff"
-							>{submitBtnLabel || 'Submit'}</Button>}
+							>
+								<ButtonText>{submitBtnLabel || 'Submit'}</ButtonText>
+							</Button>}
 					
 						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
 							return <Button
 										{...props}
 										onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
-									>{props.text}</Button>;
+									>
+										<ButtonText>{props.text}</ButtonText>
+									</Button>;
 						})}
 					</Footer>
 				</>}

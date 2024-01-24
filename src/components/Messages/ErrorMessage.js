@@ -1,6 +1,7 @@
 import {
 	Box,
 	Button,
+	ButtonText,
 	Icon,
 	Modal,
 	Text,
@@ -32,7 +33,9 @@ export default function ErrorMessage(props) {
 						<Text flex={1} color={color} fontSize="18px">{text}</Text>
 					</Modal.Body>
 					<Modal.Footer py={2} pr={4}>
-						<Button color="primary.800" onPress={onOk}>OK</Button>
+						<Button color="primary.800" onPress={onOk}>
+							<ButtonText>OK</ButtonText>
+						</Button>
 					</Modal.Footer>
 				</Modal.Content>
 			</Modal>;
