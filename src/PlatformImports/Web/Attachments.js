@@ -68,7 +68,7 @@ function FileCardCustom(props) {
 			>
 				{isDownloading && <Spinner mr={2} />}
 				<Text>{filename}</Text>
-				<IconButton icon={Xmark} onPress={() => onDelete(id)} />
+				{onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
 			</Pressable>;
 }
 	
@@ -283,7 +283,7 @@ function AttachmentsElement(props) {
 						{Repository.total <= COLLAPSED_MAX ? null :
 							<Button
 								onPress={toggleShowAll}
-								marginTop={4}
+								mt={4}
 								_text={{
 									color: 'trueGray.600',
 									fontStyle: 'italic',
