@@ -100,6 +100,7 @@ function AttachmentsElement(props) {
 			Repository,
 
 			// withAlert
+			alert,
 			confirm,
 
 		} = props,
@@ -141,6 +142,10 @@ function AttachmentsElement(props) {
 			setShowAll(!showAll);
 		},
 		onDropzoneChange = (files) => {
+			if (!files.length) {
+				alert('No files accepted. Perhaps they were too large or the wrong file type?');
+				return;
+			}
 			setFiles(files);
 			_.each(files, (file) => {
 				file.extraUploadData = {
@@ -153,7 +158,8 @@ function AttachmentsElement(props) {
 			setIsUploading(true);
 		},
 		onUploadFinish = (files) => {
-			let isDoneUploading = true;
+			let isDoneUploading = true,
+				isError = false;
 
 			_.each(files, (file) => {
 				if (!file.xhr || file.xhr.status !== 200) {
@@ -163,8 +169,18 @@ function AttachmentsElement(props) {
 			});
 
 			if (isDoneUploading) {
-				setIsUploading(false);
-				Repository.reload();
+				_.each(files, (file) => {
+					if (file.uploadStatus === 'error') {
+						isError = true;
+						const msg = file.serverResponse?.payload || 'An error occurred';
+						alert(msg);
+						return false;
+					}
+				});
+				if (!isError) {
+					setIsUploading(false);
+					Repository.reload();
+				}
 			}
 		},
 		onFileDelete = (id) => {
