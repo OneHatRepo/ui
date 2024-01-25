@@ -11,7 +11,7 @@ import FormPanel from '../Panel/FormPanel.js';
 import inArray from '../../Functions/inArray.js';
 import Pdf from '../Icons/Pdf.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
-import { EDITOR_TYPE__PLAIN } from '@onehat/ui/src/Constants/Editor.js';
+import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 

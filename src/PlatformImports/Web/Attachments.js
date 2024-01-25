@@ -5,6 +5,7 @@ import {
 	Column,
 	Pressable,
 	Row,
+	Spinner,
 	Text,
 } from 'native-base';
 import {
@@ -18,8 +19,9 @@ import {
 	FILE_MODE_FILE,
 } from '../../Constants/File.js';
 import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
-import IconButton from '@onehat/ui/src/Components/Buttons/IconButton.js';
-import Xmark from '@onehat/ui/src/Components/Icons/Xmark.js'
+import inArray from '../../Functions/inArray.js';
+import IconButton from '../../Components/Buttons/IconButton.js';
+import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withData from '../../Components/Hoc/withData.js';
 import _ from 'lodash';
@@ -49,7 +51,9 @@ function FileCardCustom(props) {
 			type: mimetype,
 			onDelete,
 			downloadUrl,
-		} = props;
+			uploadStatus,
+		} = props,
+		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']);
 	return <Pressable
 				px={3}
 				py={1}
@@ -62,6 +66,7 @@ function FileCardCustom(props) {
 					downloadWithFetch(downloadUrl);
 				}}
 			>
+				{isDownloading && <Spinner mr={2} />}
 				<Text>{filename}</Text>
 				<IconButton icon={Xmark} onPress={() => onDelete(id)} />
 			</Pressable>;
