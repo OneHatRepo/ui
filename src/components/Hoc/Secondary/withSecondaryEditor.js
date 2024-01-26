@@ -7,7 +7,7 @@ import {
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 } from '../../../Constants/Editor.js';
-import UiGlobals from '../../UiGlobals.js';
+import UiGlobals from '../../../UiGlobals.js';
 import _ from 'lodash';
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withEditor
