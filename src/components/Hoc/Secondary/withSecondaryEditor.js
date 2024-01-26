@@ -7,6 +7,7 @@ import {
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 } from '../../../Constants/Editor.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withEditor
@@ -408,8 +409,12 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 
 		useEffect(() => {
 			// When secondarySelection changes, set the mode appropriately
-			const mode = calculateEditorMode();
-			secondarySetEditorMode(mode);
+			if (UiGlobals.editorStaysInEditModeOnChangeSelection) {
+				const mode = calculateEditorMode();
+				secondarySetEditorMode(mode);
+			} else {
+				secondarySetEditorMode(EDITOR_MODE__VIEW);
+			}
 
 			setLastSelection(secondarySelection);
 		}, [secondarySelection]);

@@ -27,7 +27,7 @@ import {
 	UI_MODE_REACT_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
-import * as colourMixer from '@k-renwick/colour-mixer'
+import * as colourMixer from '@k-renwick/colour-mixer';
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';

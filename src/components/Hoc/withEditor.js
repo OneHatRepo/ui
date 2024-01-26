@@ -7,6 +7,7 @@ import {
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 } from '../../Constants/Editor.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 export default function withEditor(WrappedComponent, isTree = false) {
@@ -405,8 +406,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		useEffect(() => {
 			// When selection changes, set the mode appropriately
-			const mode = calculateEditorMode();
-			setEditorMode(mode);
+			if (UiGlobals.editorStaysInEditModeOnChangeSelection) {
+				const mode = calculateEditorMode();
+				setEditorMode(mode);
+			} else {
+				setEditorMode(EDITOR_MODE__VIEW);
+			}
 
 			setLastSelection(selection);
 		}, [selection]);
