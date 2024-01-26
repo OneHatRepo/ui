@@ -6,6 +6,7 @@ import {
 	VStack,
 	Pressable,
 	HStack,
+	Spinner,
 	Text,
 } from '@gluestack-ui/themed';
 import {
@@ -19,8 +20,9 @@ import {
 	FILE_MODE_FILE,
 } from '../../Constants/File.js';
 import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
-import IconButton from '@onehat/ui/src/Components/Buttons/IconButton.js';
-import Xmark from '@onehat/ui/src/Components/Icons/Xmark.js'
+import inArray from '../../Functions/inArray.js';
+import IconButton from '../../Components/Buttons/IconButton.js';
+import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withData from '../../Components/Hoc/withData.js';
 import _ from 'lodash';
@@ -50,7 +52,9 @@ function FileCardCustom(props) {
 			type: mimetype,
 			onDelete,
 			downloadUrl,
-		} = props;
+			uploadStatus,
+		} = props,
+		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']);
 	return <Pressable
 				px={3}
 				py={1}
@@ -63,8 +67,9 @@ function FileCardCustom(props) {
 					downloadWithFetch(downloadUrl);
 				}}
 			>
+				{isDownloading && <Spinner mr={2} />}
 				<Text>{filename}</Text>
-				<IconButton icon={Xmark} onPress={() => onDelete(id)} />
+				{onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
 			</Pressable>;
 }
 	
@@ -96,6 +101,7 @@ function AttachmentsElement(props) {
 			Repository,
 
 			// withAlert
+			alert,
 			confirm,
 
 		} = props,
@@ -137,6 +143,10 @@ function AttachmentsElement(props) {
 			setShowAll(!showAll);
 		},
 		onDropzoneChange = (files) => {
+			if (!files.length) {
+				alert('No files accepted. Perhaps they were too large or the wrong file type?');
+				return;
+			}
 			setFiles(files);
 			_.each(files, (file) => {
 				file.extraUploadData = {
@@ -149,7 +159,8 @@ function AttachmentsElement(props) {
 			setIsUploading(true);
 		},
 		onUploadFinish = (files) => {
-			let isDoneUploading = true;
+			let isDoneUploading = true,
+				isError = false;
 
 			_.each(files, (file) => {
 				if (!file.xhr || file.xhr.status !== 200) {
@@ -159,8 +170,18 @@ function AttachmentsElement(props) {
 			});
 
 			if (isDoneUploading) {
-				setIsUploading(false);
-				Repository.reload();
+				_.each(files, (file) => {
+					if (file.uploadStatus === 'error') {
+						isError = true;
+						const msg = file.serverResponse?.payload || 'An error occurred';
+						alert(msg);
+						return false;
+					}
+				});
+				if (!isError) {
+					setIsUploading(false);
+					Repository.reload();
+				}
 			}
 		},
 		onFileDelete = (id) => {
@@ -279,7 +300,7 @@ function AttachmentsElement(props) {
 						{Repository.total <= COLLAPSED_MAX ? null :
 							<Button
 								onPress={toggleShowAll}
-								marginTop={4}
+								mt={4}
 								_text={{
 									color: 'trueGray.600',
 									fontStyle: 'italic',

@@ -54,6 +54,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				disableDuplicate = !isEditor,
 				disablePrint = !isGrid,
 
+				// withAlert
+				showInfo,
+
 				// withComponent
 				self,
 
@@ -276,6 +279,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 	
 				// Send it to clipboard
 				navigator?.clipboard.writeText(text);
+				if (showInfo) {
+					showInfo('Copied to clipboard!');
+				}
 			};
 			// onPrint = () => {
 			// 	debugger;

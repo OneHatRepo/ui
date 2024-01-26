@@ -51,6 +51,7 @@ export function ComboComponent(props) {
 			onRowPress,
 			icon,
 			Editor, // only used for the eyeButton
+			onSave, // to hook into when menu saves (ComboEditor only)
 
 			// withComponent
 			self,
@@ -81,6 +82,7 @@ export function ComboComponent(props) {
 		[isRendered, setIsRendered] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isSearchMode, setIsSearchMode] = useState(false),
+		[containerWidth, setContainerWidth] = useState(),
 		[gridSelection, setGridSelection] = useState(null),
 		[textInputValue, setTextInputValue] = useState(''),
 		[newEntityDisplayValue, setNewEntityDisplayValue] = useState(null),
@@ -88,6 +90,10 @@ export function ComboComponent(props) {
 		[width, setWidth] = useState(0),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
+		onLayout = (e) => {
+			setIsRendered(true);
+			setContainerWidth(e.nativeEvent.layout.width);
+		},
 		showMenu = async () => {
 			if (isMenuShown) {
 				return;
@@ -738,6 +744,9 @@ export function ComboComponent(props) {
 							const id = entity.id;
 							setValue(id);
 						}
+						if (onSave) {
+							onSave(selection);
+						}
 					}}
 					onRowPress={(item, e) => {
 						if (onRowPress) {
@@ -896,13 +905,31 @@ export function ComboComponent(props) {
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
-	assembledComponents = <HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
-							{xButton}
-							{eyeButton}
-							{inputAndTrigger}
-							{additionalButtons}
-							{dropdownMenu}
-						</HStack>;
+
+	if (isRendered && additionalButtons?.length && containerWidth < 500) {
+		// be responsive for small screen sizes and bump additionalButtons to the next line
+		assembledComponents = 
+			<VStack>
+				<HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1}>
+					{xButton}
+					{eyeButton}
+					{inputAndTrigger}
+					{dropdownMenu}
+				</HStack>
+				<HStack mt={2}>
+					{additionalButtons}
+				</HStack>
+			</VStack>;
+	} else {
+		assembledComponents = 
+			<HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={onLayout}>
+				{xButton}
+				{eyeButton}
+				{inputAndTrigger}
+				{additionalButtons}
+				{dropdownMenu}
+			</HStack>;
+	}
 	
 	if (isViewerShown && Editor) {
 		const propsForViewer = _.pick(props, [

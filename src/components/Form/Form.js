@@ -522,10 +522,20 @@ function Form(props) {
 							}
 
 							if (item.additionalEditButtons) {
-								element = <HStack flex={1} flexWrap="wrap">
+								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
+								if (containerWidth > 400) {
+									element = <HStack flex={1} flexWrap="wrap">
+													{element}
+													{buttons}
+												</HStack>;
+								} else {
+									element = <VStack flex={1} w="100%">
 												{element}
-												{buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState })}
-											</HStack>;
+												<HStack flex={1} w="100%" mt={2} flexWrap="wrap">
+													{buttons}
+												</HStack>
+											</VStack>;
+								}
 							}
 								
 							let isRequired = false,

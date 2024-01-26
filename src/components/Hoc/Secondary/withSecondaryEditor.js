@@ -41,6 +41,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryOnChange,
 				secondaryOnSave,
 				secondaryNewEntityDisplayValue,
+				secondaryDefaultValues,
 
 				// withComponent
 				self,
@@ -92,8 +93,19 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				return secondaryNewEntityDisplayValueRef.current;
 			},
 			secondaryOnAdd = async (e, values) => {
-				const defaultValues = SecondaryRepository.getSchema().getDefaultValues();
-				let addValues = values || _.clone(defaultValues);
+				let addValues = values;
+
+				if (!values) {
+					// you can either:
+					// 1. directlty submit 'values' to use in onAdd(), or
+					// 2. Use the repository's default values (defined on each property as 'defaultValue'), or
+					// 3. Individually override the repository's default values with submitted 'defaultValues' (given as a prop to this HOC)
+					let defaultValuesToUse = Repository.getSchema().getDefaultValues();
+					if (secondaryDefaultValues) {
+						_.merge(defaultValuesToUse, secondaryDefaultValues);
+					}
+					addValues = _.clone(defaultValuesToUse);
+				}
 
 				if (secondarySelectorId && !_.isEmpty(secondarySelectorSelected)) {
 					addValues[secondarySelectorId] = secondarySelectorSelected.id;
@@ -308,6 +320,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					await SecondaryRepository.save();
 					success = true;
 				} catch (e) {
+					alert(e.context);
 					success = false;
 				}
 				setIsSaving(false);

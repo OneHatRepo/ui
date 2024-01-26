@@ -38,6 +38,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				onChange,
 				onSave,
 				newEntityDisplayValue,
+				defaultValues,
 
 				// withComponent
 				self,
@@ -89,8 +90,19 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return newEntityDisplayValueRef.current;
 			},
 			onAdd = async (e, values) => {
-				const defaultValues = Repository.getSchema().getDefaultValues();
-				let addValues = values || _.clone(defaultValues);
+				let addValues = values;
+
+				if (!values) {
+					// you can either:
+					// 1. directlty submit 'values' to use in onAdd(), or
+					// 2. Use the repository's default values (defined on each property as 'defaultValue'), or
+					// 3. Individually override the repository's default values with submitted 'defaultValues' (given as a prop to this HOC)
+					let defaultValuesToUse = Repository.getSchema().getDefaultValues();
+					if (defaultValues) {
+						_.merge(defaultValuesToUse, defaultValues);
+					}
+					addValues = _.clone(defaultValuesToUse);
+				}
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
 					addValues[selectorId] = selectorSelected.id;
@@ -305,6 +317,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await Repository.save();
 					success = true;
 				} catch (e) {
+					alert(e.context);
 					success = false;
 				}
 				setIsSaving(false);
