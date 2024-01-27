@@ -112,7 +112,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					addValues[secondarySelectorId] = secondarySelectorSelected.id;
 				}
 
-				if (!values && getNewEntityDisplayValue()) {
+				if (getNewEntityDisplayValue()) {
 					const displayPropertyName = SecondaryRepository.getSchema().model.displayProperty;
 					addValues[displayPropertyName] = getNewEntityDisplayValue();
 				}

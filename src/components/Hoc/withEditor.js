@@ -109,7 +109,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					addValues[selectorId] = selectorSelected.id;
 				}
 
-				if (!values && getNewEntityDisplayValue()) {
+				if (getNewEntityDisplayValue()) {
 					const displayPropertyName = Repository.getSchema().model.displayProperty;
 					addValues[displayPropertyName] = getNewEntityDisplayValue();
 				}
