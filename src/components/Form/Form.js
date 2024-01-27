@@ -765,7 +765,7 @@ function Form(props) {
 			editor = <>
 						{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{formComponents}</Row> : null}
 						{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
-						<Column m={2} pt={4}>{formAncillaryComponents}</Column>
+						<Column m={2} pt={4} px={2}>{formAncillaryComponents}</Column>
 					</>;
 
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
