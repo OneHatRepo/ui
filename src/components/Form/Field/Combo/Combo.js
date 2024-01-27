@@ -697,7 +697,7 @@ export function ComboComponent(props) {
 							if (selection[0]?.id === value) {
 								setIsSearchMode(false);
 								resetTextInputValue();
-								if (hideMenuOnSelection) {
+								if (hideMenuOnSelection && !isEditor) {
 									hideMenu();
 								}
 								return;
@@ -754,7 +754,7 @@ export function ComboComponent(props) {
 							return;
 						}
 						const id = Repository ? item.id : item[idIx];
-						if (id === value) {
+						if (id === value && !isEditor) {
 							hideMenu();
 							onInputFocus();
 						}
