@@ -70,6 +70,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			[secondaryIsSaving, setIsSaving] = useState(false),
 			[secondaryIsEditorShown, secondarySetIsEditorShown] = useState(false),
 			[secondaryIsEditorViewOnly, setIsEditorViewOnly] = useState(secondaryCanEditorViewOnly), // current state of whether editor is in view-only mode
+			[secondaryIsIgnoreNextSelectionChange, setSecondaryIsIgnoreNextSelectionChange] = useState(false),
 			[secondaryLastSelection, setLastSelection] = useState(),
 			secondarySetSelectionDecorated = (newSelection) => {
 				function doIt() {
@@ -148,6 +149,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				setIsSaving(true);
 				const entity = await SecondaryRepository.add(addValues, false, true);
 				setIsSaving(false);
+				setSecondaryIsIgnoreNextSelectionChange(true);
 				secondarySetSelection([entity]);
 				setIsEditorViewOnly(false);
 				secondarySetEditorMode(EDITOR_MODE__ADD);
@@ -276,6 +278,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					idProperty = SecondaryRepository.getSchema().model.idProperty,
 					rawValues = _.omit(entity.rawValues, idProperty),
 					duplicate = await SecondaryRepository.add(rawValues, false, true);
+				setSecondaryIsIgnoreNextSelectionChange(true);
 				secondarySetSelection([duplicate]);
 				secondarySetEditorMode(EDITOR_MODE__EDIT);
 				secondarySetIsEditorShown(true);
@@ -285,6 +288,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					entity = secondarySelection[0],
 					duplicateEntity = await SecondaryRepository.remoteDuplicate(entity);
 
+				setSecondaryIsIgnoreNextSelectionChange(true);
 				secondarySetSelection([duplicateEntity]);
 				secondaryOnEdit();
 			},
@@ -408,17 +412,21 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
-			// When secondarySelection changes, set the mode appropriately
-			if (UiGlobals.editorStaysInEditModeOnChangeSelection) {
-				const mode = calculateEditorMode();
-				secondarySetEditorMode(mode);
+			// When selection changes, set the mode appropriately
+			let mode;
+			if (secondaryIsIgnoreNextSelectionChange) {
+				// on selection change from onAdd/onDuplicate/etc, calculate whether to put Editor in "add" or "edit" mode
+				mode = calculateEditorMode();
 			} else {
-				secondarySetEditorMode(EDITOR_MODE__VIEW);
+				// Most of the time, if selection changed, put the Editor in "view" mode
+				mode = EDITOR_MODE__VIEW;
 			}
+			setEditorMode(mode);
 
-			setLastSelection(secondarySelection);
-		}, [secondarySelection]);
-
+			setSecondaryIsIgnoreNextSelectionChange(false);
+			setLastSelection(selection);
+		}, [selection]);
+	
 		if (self) {
 			self.secondaryAdd = secondaryOnAdd;
 			self.secondaryEdit = secondaryOnEdit;
@@ -430,9 +438,14 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 		secondaryNewEntityDisplayValueRef.current = secondaryNewEntityDisplayValue;
 
 		if (secondaryLastSelection !== secondarySelection) {
-			// NOTE: If I don't calculate this on the fly for secondarySelection changes,
+			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
-			secondaryEditorMode = calculateEditorMode();
+			// (basically redo what's in the useEffect, above)
+			if (secondaryIsIgnoreNextSelectionChange) {
+				editorMode = calculateEditorMode();
+			} else {
+				editorMode = EDITOR_MODE__VIEW;
+			}
 		}
 
 		return <WrappedComponent
