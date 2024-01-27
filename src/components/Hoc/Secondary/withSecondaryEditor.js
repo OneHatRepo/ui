@@ -412,20 +412,20 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
-			// When selection changes, set the mode appropriately
+			// When secondarySelection changes, set the mode appropriately
 			let mode;
 			if (secondaryIsIgnoreNextSelectionChange) {
-				// on selection change from onAdd/onDuplicate/etc, calculate whether to put Editor in "add" or "edit" mode
+				// on secondarySelection change from onAdd/onDuplicate/etc, calculate whether to put Editor in "add" or "edit" mode
 				mode = calculateEditorMode();
 			} else {
-				// Most of the time, if selection changed, put the Editor in "view" mode
+				// Most of the time, if secondarySelection changed, put the Editor in "view" mode
 				mode = EDITOR_MODE__VIEW;
 			}
 			setEditorMode(mode);
 
 			setSecondaryIsIgnoreNextSelectionChange(false);
-			setLastSelection(selection);
-		}, [selection]);
+			setLastSelection(secondarySelection);
+		}, [secondarySelection]);
 	
 		if (self) {
 			self.secondaryAdd = secondaryOnAdd;
@@ -438,7 +438,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 		secondaryNewEntityDisplayValueRef.current = secondaryNewEntityDisplayValue;
 
 		if (secondaryLastSelection !== secondarySelection) {
-			// NOTE: If I don't calculate this on the fly for selection changes,
+			// NOTE: If I don't calculate this on the fly for secondarySelection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
 			// (basically redo what's in the useEffect, above)
 			if (secondaryIsIgnoreNextSelectionChange) {
