@@ -421,7 +421,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				// Most of the time, if secondarySelection changed, put the Editor in "view" mode
 				mode = EDITOR_MODE__VIEW;
 			}
-			setEditorMode(mode);
+			secondarySetEditorMode(mode);
 
 			setSecondaryIsIgnoreNextSelectionChange(false);
 			setLastSelection(secondarySelection);
@@ -442,9 +442,9 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			// we see a flash of the previous state, since useEffect hasn't yet run.
 			// (basically redo what's in the useEffect, above)
 			if (secondaryIsIgnoreNextSelectionChange) {
-				editorMode = calculateEditorMode();
+				secondaryEditorMode = calculateEditorMode();
 			} else {
-				editorMode = EDITOR_MODE__VIEW;
+				secondaryEditorMode = EDITOR_MODE__VIEW;
 			}
 		}
 
