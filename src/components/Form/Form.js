@@ -512,7 +512,7 @@ function Form(props) {
 								let message = null;
 								if (error) {
 									message = error.message;
-									if (label) {
+									if (label && error.ref?.name) {
 										message = message.replace(error.ref.name, label);
 									}
 								}
