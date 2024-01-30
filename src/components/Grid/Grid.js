@@ -744,7 +744,7 @@ function GridComponent(props) {
 			// calculate localColumnsConfig
 			let localColumnsConfig = [];
 			let savedLocalColumnsConfig;
-			if (localColumnsConfigKey && !hasFunctionColumn) {
+			if (localColumnsConfigKey && !hasFunctionColumn && !UiGlobals.disableSavedColumnsConfig) {
 				savedLocalColumnsConfig = await getSaved(localColumnsConfigKey);
 			}
 			if (savedLocalColumnsConfig) {
