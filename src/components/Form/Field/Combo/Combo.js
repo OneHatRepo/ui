@@ -46,6 +46,7 @@ export function ComboComponent(props) {
 			_input = {},
 			isEditor = false,
 			isDisabled = false,
+			isInTag = false,
 			tooltipPlacement = 'bottom',
 			placeholder,
 			onRowPress,
@@ -737,7 +738,7 @@ export function ComboComponent(props) {
 					}}
 					onSave={(selection) => {
 						const entity = selection[0];
-						if (entity?.id !== value) {
+						if (entity?.id !== value && !isInTag) { // Tag doesn't use value, so don't do this comparison in the Tag
 							// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
 							// Select it and set the value of the combo.
 							setGridSelection([entity]);

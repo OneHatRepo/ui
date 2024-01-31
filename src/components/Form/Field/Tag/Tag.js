@@ -193,6 +193,7 @@ function TagComponent(props) {
 										onChangeValue={onChangeComboValue}
 										parent={self}
 										reference="combo"
+										isInTag={true}
 										{..._combo}
 									/>}
 				</Column>
