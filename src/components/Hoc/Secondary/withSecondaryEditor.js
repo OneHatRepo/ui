@@ -7,7 +7,6 @@ import {
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 } from '../../../Constants/Editor.js';
-import UiGlobals from '../../../UiGlobals.js';
 import _ from 'lodash';
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withEditor
@@ -40,6 +39,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryRecord,
 				secondaryOnChange,
 				secondaryOnSave,
+				secondaryOnDelete,
 				secondaryNewEntityDisplayValue,
 				secondaryDefaultValues,
 
@@ -93,12 +93,12 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			getNewEntityDisplayValue = () => {
 				return secondaryNewEntityDisplayValueRef.current;
 			},
-			secondaryOnAdd = async (e, values) => {
+			secondaryDoAdd = async (e, values) => {
 				let addValues = values;
 
 				if (!values) {
 					// you can either:
-					// 1. directlty submit 'values' to use in onAdd(), or
+					// 1. directlty submit 'values' to use in secondaryDoAdd(), or
 					// 2. Use the repository's default values (defined on each property as 'defaultValue'), or
 					// 3. Individually override the repository's default values with submitted 'defaultValues' (given as a prop to this HOC)
 					let defaultValuesToUse = Repository.getSchema().getDefaultValues();
@@ -162,7 +162,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondaryOnChange();
 				}
 			},
-			secondaryOnEdit = async () => {
+			secondaryDoEdit = async () => {
 				if (_.isEmpty(secondarySelection) || (_.isArray(secondarySelection) && (secondarySelection.length > 1 || secondarySelection[0]?.isDestroyed))) {
 					return;
 				}
@@ -176,7 +176,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondarySetEditorMode(EDITOR_MODE__EDIT);
 				secondarySetIsEditorShown(true);
 			},
-			secondaryOnDelete = async (args) => {
+			secondaryDoDelete = async (args) => {
 				let cb = null;
 				if (_.isFunction(args)) {
 					cb = args;
@@ -203,10 +203,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
-							<Button colorScheme="danger" onPress={() => secondaryOnMoveChildren(cb)} key="moveBtn">
+							<Button colorScheme="danger" onPress={() => secondaryDoMoveChildren(cb)} key="moveBtn">
 								Move Children
 							</Button>,
-							<Button colorScheme="danger" onPress={() => secondaryOnDeleteChildren(cb)} key="deleteBtn">
+							<Button colorScheme="danger" onPress={() => secondaryDoDeleteChildren(cb)} key="deleteBtn">
 								Delete Children
 							</Button>
 						],
@@ -220,11 +220,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					confirm('Are you sure you want to delete the ' + identifier, () => deleteRecord(null, cb));
 				}
 			},
-			secondaryOnMoveChildren = (cb) => {
+			secondaryDoMoveChildren = (cb) => {
 				hideAlert();
 				deleteRecord(true, cb);
 			},
-			secondaryOnDeleteChildren = (cb) => {
+			secondaryDoDeleteChildren = (cb) => {
 				hideAlert();
 				deleteRecord(false, cb);
 			},
@@ -247,8 +247,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				if (secondaryOnChange) {
 					secondaryOnChange();
 				}
+				if (secondaryOnDelete) {
+					secondaryOnDelete(secondarySelection);
+				}
 			},
-			secondaryOnView = async () => {
+			secondaryDoView = async () => {
 				if (!secondaryUserCanView) {
 					return;
 				}
@@ -263,7 +266,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					await getListeners().onAfterView();
 				}
 			},
-			secondaryOnDuplicate = async () => {
+			secondaryDoDuplicate = async () => {
 				if (!secondaryUserCanEdit || secondaryDisableDuplicate) {
 					return;
 				}
@@ -290,9 +293,9 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 
 				setSecondaryIsIgnoreNextSelectionChange(true);
 				secondarySetSelection([duplicateEntity]);
-				secondaryOnEdit();
+				secondaryDoEdit();
 			},
-			secondaryOnEditorSave = async (data, e) => {
+			secondaryDoEditorSave = async (data, e) => {
 				const
 					what = secondaryRecord || secondarySelection,
 					isSingle = what.length === 1;
@@ -348,7 +351,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 
 				return success;
 			},
-			secondaryOnEditorCancel =  () => {
+			secondaryDoEditorCancel =  () => {
 				async function doIt() {
 					const
 						isSingle = secondarySelection.length === 1,
@@ -367,14 +370,14 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					doIt();
 				}
 			},
-			secondaryOnEditorClose = () => {
+			secondaryDoEditorClose = () => {
 				if (secondaryIsAdding) {
-					secondaryOnEditorCancel();
+					secondaryDoEditorCancel();
 				}
 				secondarySetIsEditorShown(false);
 			},
-			secondaryOnEditorDelete = async () => {
-				secondaryOnDelete(() => {
+			secondaryDoEditorDelete = async () => {
+				secondaryDoDelete(() => {
 					secondarySetEditorMode(EDITOR_MODE__VIEW);
 					secondarySetIsEditorShown(false);
 				});
@@ -396,10 +399,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 				return mode;
 			},
-			secondaryOnEditMode = () => {
+			secondarySetEditMode = () => {
 				secondarySetEditorMode(EDITOR_MODE__EDIT);
 			},
-			secondaryOnViewMode = () => {
+			secondarySetViewMode = () => {
 				function doIt() {
 					secondarySetEditorMode(EDITOR_MODE__VIEW);
 				}
@@ -428,12 +431,12 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 		}, [secondarySelection]);
 	
 		if (self) {
-			self.secondaryAdd = secondaryOnAdd;
-			self.secondaryEdit = secondaryOnEdit;
-			self.secondaryDelete = secondaryOnDelete;
-			self.secondarnMoveChildren = secondaryOnMoveChildren;
-			self.secondaryDeleteChildren = secondaryOnDeleteChildren;
-			self.secondaryDuplicate = secondaryOnDuplicate;
+			self.secondaryAdd = secondaryDoAdd;
+			self.secondaryEdit = secondaryDoEdit;
+			self.secondaryDelete = secondaryDoDelete;
+			self.secondarnMoveChildren = secondaryDoMoveChildren;
+			self.secondaryDeleteChildren = secondaryDoDeleteChildren;
+			self.secondaryDuplicate = secondaryDoDuplicate;
 		}
 		secondaryNewEntityDisplayValueRef.current = secondaryNewEntityDisplayValue;
 
@@ -458,19 +461,19 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondaryIsAdding={secondaryIsAdding}
 					secondaryIsSaving={secondaryIsSaving}
 					secondaryEditorMode={secondaryEditorMode}
-					secondaryOnEditMode={secondaryOnEditMode}
-					secondaryOnViewMode={secondaryOnViewMode}
+					secondaryOnEditMode={secondarySetEditMode}
+					secondaryOnViewMode={secondarySetViewMode}
 					secondaryEditorStateRef={secondaryEditorStateRef}
 					secondarySetIsEditorShown={secondarySetIsEditorShown}
-					secondaryOnAdd={(!secondaryUserCanEdit || secondaryDisableAdd) ? null : secondaryOnAdd}
-					secondaryOnEdit={(!secondaryUserCanEdit || secondaryDisableEdit) ? null : secondaryOnEdit}
-					secondaryOnDelete={(!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryOnDelete}
-					secondaryOnView={secondaryOnView}
-					secondaryOnDuplicate={secondaryOnDuplicate}
-					secondaryOnEditorSave={secondaryOnEditorSave}
-					secondaryOnEditorCancel={secondaryOnEditorCancel}
-					secondaryOnEditorDelete={(!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryOnEditorDelete}
-					secondaryOnEditorClose={secondaryOnEditorClose}
+					secondaryOnAdd={(!secondaryUserCanEdit || secondaryDisableAdd) ? null : secondaryDoAdd}
+					secondaryOnEdit={(!secondaryUserCanEdit || secondaryDisableEdit) ? null : secondaryDoEdit}
+					secondaryOnDelete={(!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryDoDelete}
+					secondaryOnView={secondaryDoView}
+					secondaryOnDuplicate={secondaryDoDuplicate}
+					secondaryOnEditorSave={secondaryDoEditorSave}
+					secondaryOnEditorCancel={secondaryDoEditorCancel}
+					secondaryOnEditorDelete={(!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryDoEditorDelete}
+					secondaryOnEditorClose={secondaryDoEditorClose}
 					secondarySetWithEditListeners={setListeners}
 					secondaryIsEditor={true}
 					secondaryUserCanEdit={secondaryUserCanEdit}
