@@ -52,7 +52,9 @@ export function ComboComponent(props) {
 			onRowPress,
 			icon,
 			Editor, // only used for the eyeButton
-			onSave, // to hook into when menu saves (ComboEditor only)
+			onGridAdd, // to hook into when menu adds (ComboEditor only)
+			onGridSave, // to hook into when menu saves (ComboEditor only)
+			onGridDelete, // to hook into when menu deletes (ComboEditor only)
 
 			// withComponent
 			self,
@@ -736,6 +738,7 @@ export function ComboComponent(props) {
 						}
 
 					}}
+					onAdd={onGridAdd}
 					onSave={(selection) => {
 						const entity = selection[0];
 						if (entity?.id !== value && !isInTag) { // Tag doesn't use value, so don't do this comparison in the Tag
@@ -745,10 +748,11 @@ export function ComboComponent(props) {
 							const id = entity.id;
 							setValue(id);
 						}
-						if (onSave) {
-							onSave(selection);
+						if (onGridSave) {
+							onGridSave(selection);
 						}
 					}}
+					onDelete={onGridDelete}
 					onRowPress={(item, e) => {
 						if (onRowPress) {
 							onRowPress(item, e);

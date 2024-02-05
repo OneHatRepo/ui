@@ -186,7 +186,7 @@ export default function Pagination(props) {
 					{items}
 				</Row>;
 	}, [
-		// Repository,
+		Repository?.hash,
 		showPagination,
 		page,
 		pageSize,

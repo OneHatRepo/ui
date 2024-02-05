@@ -287,6 +287,7 @@ function GridComponent(props) {
 					reference="reorderBtn"
 					onPress={() => setIsDragMode(!isDragMode)}
 					icon={<Icon as={isDragMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
+					tooltip="Reorder Rows"
 				/>);
 			}
 			return items;
@@ -618,7 +619,7 @@ function GridComponent(props) {
 			}
 
 			setDragRowSlot({ ix: newIx, marker, useBottom, });
-			// console.log('onRowReorderDrag', newIx);
+			// console.log('onRowReorderDrag slot', newIx);
 
 		},
 		onRowReorderDragStop = (delta, e, config) => {
@@ -887,7 +888,7 @@ function GridComponent(props) {
 
 	isAddingRef.current = isAdding;
 
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode]);
+	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode]);
 
 	if (!isInited) {
 		// first time through, render a placeholder so we can get container dimensions

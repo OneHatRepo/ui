@@ -34,9 +34,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return 'record' + (selection[0].displayValue ? ' "' + selection[0].displayValue + '"' : '') + '?';
 				},
 				record,
-				onChange,
-				onSave,
+				onAdd,
+				onChange, // any kind of crud change
 				onDelete,
+				onSave, // this could also be called 'onEdit'
 				newEntityDisplayValue,
 				defaultValues,
 
@@ -153,16 +154,18 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsSaving(false);
 				setIsIgnoreNextSelectionChange(true);
 				setSelection([entity]);
+				if (Repository.isAutoSave) {
+					// for isAutoSave Repositories, submit the handers right away
+					if (getListeners().onAfterAdd) {
+						await getListeners().onAfterAdd(entity);
+					}
+					if (onAdd) {
+						await onAdd(entity);
+					}
+				}
 				setIsEditorViewOnly(false);
-				setEditorMode(EDITOR_MODE__ADD);
+				setEditorMode(Repository.isAutoSave ? EDITOR_MODE__EDIT : EDITOR_MODE__ADD);
 				setIsEditorShown(true);
-
-				if (getListeners().onAfterAdd) {
-					await getListeners().onAfterAdd(entity);
-				}
-				if (onChange) {
-					onChange();
-				}
 			},
 			doEdit = async () => {
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
@@ -231,8 +234,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				deleteRecord(false, cb);
 			},
 			deleteRecord = async (moveSubtreeUp, cb) => {
-				if (getListeners().onBeforeDeleteSave) {
-					await getListeners().onBeforeDeleteSave(selection);
+				if (getListeners().onBeforeDelete) {
+					const listenerResult = await getListeners().onBeforeDelete(selection);
+					if (listenerResult === false) {
+						return;
+					}
 				}
 
 				await Repository.delete(selection, moveSubtreeUp);
@@ -244,10 +250,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				setSelection([]);
 				if (cb) {
-					cb();
+					cb(selection);
 				}
 				if (onChange) {
-					onChange();
+					onChange(selection);
 				}
 				if (onDelete) {
 					onDelete(selection);
@@ -298,6 +304,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				doEdit();
 			},
 			doEditorSave = async (data, e) => {
+				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
 				const
 					what = record || selection,
 					isSingle = what.length === 1;
@@ -319,8 +326,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					});
 				}
 
-				if (getListeners().onBeforeEditSave) {
-					await getListeners().onBeforeEditSave(what);
+				if (getListeners().onBeforeSave) {
+					const listenerResult = await getListeners().onBeforeSave(what);
+					if (listenerResult === false) {
+						return;
+					}
 				}
 
 				setIsSaving(true);
@@ -335,20 +345,27 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsSaving(false);
 
 				if (success) {
-					setIsAdding(false);
-					
-					setEditorMode(EDITOR_MODE__EDIT);
-					// setIsEditorShown(false);
-					
-					if (getListeners().onAfterEdit) {
-						await getListeners().onAfterEdit(what);
-					}
 					if (onChange) {
-						onChange();
+						onChange(what);
 					}
-					if (onSave) {
-						onSave(what);
+					if (editorMode === EDITOR_MODE__ADD) {
+						if (onAdd) {
+							await onAdd(what);
+						}
+						if (getListeners().onAfterAdd) {
+							await getListeners().onAfterAdd(what);
+						}
+						setIsAdding(false);
+						setEditorMode(EDITOR_MODE__EDIT);
+					} else if (editorMode === EDITOR_MODE__EDIT) {
+						if (getListeners().onAfterEdit) {
+							await getListeners().onAfterEdit(what);
+						}
+						if (onSave) {
+							onSave(what);
+						}
 					}
+					// setIsEditorShown(false);
 				}
 
 				return success;

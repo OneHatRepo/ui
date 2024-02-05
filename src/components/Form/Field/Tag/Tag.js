@@ -138,6 +138,66 @@ function TagComponent(props) {
 			});			
 			setValue(newValue);
 		},
+		onGridAdd = (entity) => {
+			// underlying GridEditor added a record.
+			// add it to this Tag's value
+			const
+				id = entity.id,
+				newValue = _.clone(value);
+			newValue.push({
+				id,
+				text: entity.displayValue,
+			});
+			setValue(newValue);
+		},
+		onGridSave = (selection) => {
+			// underlying GridEditor has changed a record.
+			// Check if that value exists, and if so, update its displayValue
+			if (_.isEmpty(value)) {
+				return;
+			}
+
+			const
+				entity = selection[0],
+				id = entity.id,
+				ix = _.findIndex(value, (item) => {
+					return item.id === id;
+				}),
+				isFound = ix !== -1;
+			if (!isFound) {
+				return;
+			}
+			
+			const newValue = _.clone(value);
+			newValue[ix] = {
+				id,
+				text: entity.displayValue,
+			};
+			setValue(newValue);
+		},
+		onGridDelete = (selection) => {
+			// underlying GridEditor has deleted a value.
+			// Check if that value exists, and if so delete it
+			if (_.isEmpty(value)) {
+				return;
+			}
+
+			const
+				entity = selection[0],
+				id = entity.id,
+				ix = _.findIndex(value, (item) => {
+					return item.id === id;
+				}),
+				isFound = ix !== -1;
+			if (!isFound) {
+				return;
+			}
+
+			const newValue = _.filter(value, (item) => {
+				return item.id !== id;
+			});
+			setValue(newValue);
+		},
 		valueBoxes = _.map(value, (val, ix) => {
 			return <ValueBox
 						key={ix}
@@ -194,6 +254,9 @@ function TagComponent(props) {
 										parent={self}
 										reference="combo"
 										isInTag={true}
+										onGridAdd={onGridAdd}
+										onGridSave={onGridSave}
+										onGridDelete={onGridDelete}
 										{..._combo}
 									/>}
 				</Column>

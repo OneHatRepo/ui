@@ -1079,8 +1079,8 @@ function TreeComponent(props) {
 	});
 	
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [treeSearchValue, isDragMode, getTreeNodeData()]),
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode, getTreeNodeData()]);
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, getTreeNodeData()]),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, getTreeNodeData()]);
 
 	if (!isReady) {
 		return null;

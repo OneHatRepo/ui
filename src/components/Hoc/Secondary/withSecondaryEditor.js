@@ -37,9 +37,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					return 'record' + (secondarySelection[0].displayValue ? ' "' + secondarySelection[0].displayValue + '"' : '') + '?';
 				},
 				secondaryRecord,
-				secondaryOnChange,
-				secondaryOnSave,
+				secondaryOnAdd,
+				secondaryOnChange, // any kind of crud change
 				secondaryOnDelete,
+				secondaryOnSave, // this could also be called 'onEdit'
 				secondaryNewEntityDisplayValue,
 				secondaryDefaultValues,
 
@@ -151,16 +152,18 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				setIsSaving(false);
 				setSecondaryIsIgnoreNextSelectionChange(true);
 				secondarySetSelection([entity]);
+				if (SecondaryRepository.isAutoSave) {
+					// for isAutoSave Repositories, submit the handers right away
+					if (getListeners().onAfterAdd) {
+						await getListeners().onAfterAdd(entity);
+					}
+					if (onAdd) {
+						await secondaryOnAdd(entity);
+					}
+				}
 				setIsEditorViewOnly(false);
-				secondarySetEditorMode(EDITOR_MODE__ADD);
+				setEditorMode(SecondaryRepository.isAutoSave ? EDITOR_MODE__EDIT : EDITOR_MODE__ADD);
 				secondarySetIsEditorShown(true);
-
-				if (getListeners().onAfterAdd) {
-					await getListeners().onAfterAdd(entity);
-				}
-				if (secondaryOnChange) {
-					secondaryOnChange();
-				}
 			},
 			secondaryDoEdit = async () => {
 				if (_.isEmpty(secondarySelection) || (_.isArray(secondarySelection) && (secondarySelection.length > 1 || secondarySelection[0]?.isDestroyed))) {
@@ -229,8 +232,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				deleteRecord(false, cb);
 			},
 			deleteRecord = async (moveSubtreeUp, cb) => {
-				if (getListeners().onBeforeDeleteSave) {
-					await getListeners().onBeforeDeleteSave(secondarySelection);
+				if (getListeners().onBeforeDelete) {
+					const listenerResult = await getListeners().onBeforeDelete(secondarySelection);
+					if (listenerResult === false) {
+						return;
+					}
 				}
 
 				await SecondaryRepository.delete(secondarySelection, moveSubtreeUp);
@@ -242,10 +248,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 				secondarySetSelection([]);
 				if (cb) {
-					cb();
+					cb(secondarySelection);
 				}
 				if (secondaryOnChange) {
-					secondaryOnChange();
+					secondaryOnChange(secondarySelection);
 				}
 				if (secondaryOnDelete) {
 					secondaryOnDelete(secondarySelection);
@@ -296,6 +302,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryDoEdit();
 			},
 			secondaryDoEditorSave = async (data, e) => {
+				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
 				const
 					what = secondaryRecord || secondarySelection,
 					isSingle = what.length === 1;
@@ -317,8 +324,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					});
 				}
 
-				if (getListeners().onBeforeEditSave) {
-					await getListeners().onBeforeEditSave(what);
+				if (getListeners().onBeforeSave) {
+					const listenerResult = await getListeners().onBeforeSave(what);
+					if (listenerResult === false) {
+						return;
+					}
 				}
 
 				setIsSaving(true);
@@ -333,20 +343,27 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				setIsSaving(false);
 
 				if (success) {
-					setIsAdding(false);
-					
-					secondarySetEditorMode(EDITOR_MODE__EDIT);
-					// secondarySetIsEditorShown(false);
-					
-					if (getListeners().onAfterEdit) {
-						await getListeners().onAfterEdit(what);
-					}
 					if (secondaryOnChange) {
-						secondaryOnChange();
+						secondaryOnChange(what);
 					}
-					if (secondaryOnSave) {
-						secondaryOnSave(what);
+					if (editorMode === EDITOR_MODE__ADD) {
+						if (onAdd) {
+							await onAdd(what);
+						}
+						if (getListeners().onAfterAdd) {
+							await getListeners().onAfterAdd(what);
+						}
+						setIsAdding(false);
+						setEditorMode(EDITOR_MODE__EDIT);
+					} else if (editorMode === EDITOR_MODE__EDIT) {
+						if (getListeners().onAfterEdit) {
+							await getListeners().onAfterEdit(what);
+						}
+						if (secondaryOnSave) {
+							secondaryOnSave(what);
+						}
 					}
+					// secondarySetIsEditorShown(false);
 				}
 
 				return success;
