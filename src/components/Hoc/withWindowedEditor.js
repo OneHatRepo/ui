@@ -32,6 +32,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown,
 				Editor,
 				editorProps = {},
+				onEditorCancel,
 
 				// withComponent
 				self,
@@ -53,7 +54,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 					{isEditorShown && 
 						<Modal
 							isOpen={true}
-							onClose={() => setIsEditorShown(false)}
+							onClose={onEditorCancel}
 						>
 							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
