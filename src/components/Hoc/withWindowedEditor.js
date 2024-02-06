@@ -32,7 +32,6 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown,
 				Editor,
 				editorProps = {},
-				onEditorCancel,
 
 				// withComponent
 				self,
@@ -43,7 +42,8 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				h,
 
 				...propsToPass
-			} = props;
+			} = props,
+			onEditorCancel = props.onEditorCancel;
 
 		if (!Editor) {
 			throw Error('Editor is not defined');
