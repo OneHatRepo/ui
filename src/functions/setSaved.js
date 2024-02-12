@@ -3,9 +3,12 @@ import UiGlobals from '../UiGlobals.js';
 import _ from 'lodash';
 
 export default async function setSaved(key, value) {
-	const
-		Repo = oneHatData.getRepository(UiGlobals.uiSavesRepo),
-		entity = Repo?.getById(key);
+	const Repo = oneHatData.getRepository(UiGlobals.uiSavesRepo);
+	if (!Repo) {
+		return;
+	}
+	
+	const entity = Repo?.getById(key);
 	
 	let isOneBuild = false,
 		isJson = false,
