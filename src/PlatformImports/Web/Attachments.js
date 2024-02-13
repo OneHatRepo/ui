@@ -185,7 +185,7 @@ function AttachmentsElement(props) {
 		},
 		onFileDelete = (id) => {
 			if (confirmBeforeDelete) {
-				confirm('Are you sure you want to delete?', () => doDelete(id));
+				confirm('Are you sure you want to delete the file?', () => doDelete(id));
 			} else {
 				doDelete(id);
 			}
