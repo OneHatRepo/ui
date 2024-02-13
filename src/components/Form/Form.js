@@ -614,6 +614,9 @@ function Form(props) {
 										{...propsToPass}
 									/>;
 					if (title) {
+						if (record?.displayValue) {
+							title += ' for ' + record.displayValue;
+						}
 						title = <Text
 									fontSize={styles.FORM_ANCILLARY_TITLE_FONTSIZE}
 									fontWeight="bold"
