@@ -7,6 +7,7 @@ import withComponent from '../Hoc/withComponent.js';
 const ButtonComponent = function(props) {
 	const {
 			self,
+			text,
 		} = props,
 		buttonRef = useRef();
 	
@@ -14,7 +15,7 @@ const ButtonComponent = function(props) {
 		self.ref = buttonRef.current;
 	}
 
-	return <Button ref={buttonRef} {...props} />;
+	return <Button ref={buttonRef} {...props}>{text}</Button>;
 }
 
 export default withComponent(ButtonComponent);
