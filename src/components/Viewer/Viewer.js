@@ -67,10 +67,14 @@ function Viewer(props) {
 					items,
 					// onChange: onEditorChange,
 					useSelectorId = false,
+					isHiddenInViewMode = false,
 					...propsToPass
 				} = item,
 				editorTypeProps = {};
 
+			if (isHiddenInViewMode) {
+				return;
+			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!type) {
 				if (propertyDef?.viewerType) {
