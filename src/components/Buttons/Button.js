@@ -15,7 +15,11 @@ const ButtonComponent = function(props) {
 		self.ref = buttonRef.current;
 	}
 
-	return <Button ref={buttonRef} {...props}>{text}</Button>;
+	if (text) {
+		return <Button ref={buttonRef} {...props}>{text}</Button>;
+	}
+
+	return <Button ref={buttonRef} {...props} />;
 }
 
 export default withComponent(ButtonComponent);
