@@ -31,6 +31,7 @@ function Viewer(props) {
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			record,
 			additionalViewButtons,
+			verifyCanEdit,
 
 			// withComponent
 			self,
@@ -222,25 +223,30 @@ function Viewer(props) {
 		viewerComponents = null,
 		ancillaryComponents = null;
 	
-	
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 		additionalButtons = buildAdditionalButtons(additionalViewButtons);
 		viewerComponents = buildFromItems();
 		ancillaryComponents = buildAncillary();
 	}
 
+	let canEdit = true;
+	if (verifyCanEdit && !verifyCanEdit([record])) {
+		canEdit = false;
+	}
+
 	return <Column flex={flex} {...props} onLayout={onLayout}>
 				{containerWidth && <>
 
 					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
-						{onEditMode && <Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
-											<Button
-												key="editBtn"
-												onPress={onEditMode}
-												leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
-												color="#fff"
-											>To Edit</Button>
-										</Row>}
+						{canEdit && onEditMode &&
+							<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
+								<Button
+									key="editBtn"
+									onPress={onEditMode}
+									leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+									color="#fff"
+								>To Edit</Button>
+							</Row>}
 						{!_.isEmpty(additionalButtons) && 
 							<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
 								{additionalButtons}
