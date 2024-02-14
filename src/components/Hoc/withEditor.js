@@ -339,7 +339,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await Repository.save();
 					success = true;
 				} catch (e) {
-					alert(e.context);
+					// alert(e.context);
 					success = false;
 				}
 				setIsSaving(false);
