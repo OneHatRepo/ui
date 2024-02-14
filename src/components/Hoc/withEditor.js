@@ -259,14 +259,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onDelete(selection);
 				}
 			},
-			doView = async () => {
+			doView = async (allowEditing = false) => {
 				if (!userCanView) {
 					return;
 				}
 				if (selection.length !== 1) {
 					return;
 				}
-				setIsEditorViewOnly(true);
+				setIsEditorViewOnly(!allowEditing);
 				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(true);
 

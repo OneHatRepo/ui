@@ -329,8 +329,15 @@ function GridComponent(props) {
 										if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
 											onRowClick(item, e); // so reselect it
 										}
-										if (onEdit) {
-											onEdit();
+
+										if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
+											if (onView) {
+												onView(true);
+											}
+										} else {
+											if (onEdit) {
+												onEdit();
+											}
 										}
 										break;
 									case 3: // triple click
