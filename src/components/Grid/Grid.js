@@ -336,6 +336,9 @@ function GridComponent(props) {
 											}
 										} else {
 											if (onEdit) {
+												if (verifyCanEdit && !verifyCanEdit(selection)) {
+													return;
+												}
 												onEdit();
 											}
 										}
