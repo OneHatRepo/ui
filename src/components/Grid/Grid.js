@@ -120,6 +120,7 @@ function GridComponent(props) {
 			h,
 			flex,
 			bg = '#fff',
+			verifyCanEdit,
 
 			// withComponent
 			self,
