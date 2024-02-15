@@ -43,6 +43,7 @@ export function ComboComponent(props) {
 			hideMenuOnSelection = true,
 			showXButton = false,
 			showEyeButton = false,
+			viewerProps = {}, // popup for eyeButton
 			_input = {},
 			isEditor = false,
 			isDisabled = false,
@@ -963,13 +964,13 @@ export function ComboComponent(props) {
 						<Editor
 							{...propsForViewer}
 							editorType={EDITOR_TYPE__WINDOWED}
+							isEditorViewOnly={true}
+							{...viewerProps}
 							px={0}
 							py={0}
 							w="100%"
 							parent={self}
 							reference="viewer"
-
-							isEditorViewOnly={true}
 							selection={viewerSelection}
 							onEditorClose={onViewerClose}
 						/>
