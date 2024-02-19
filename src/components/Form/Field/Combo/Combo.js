@@ -606,6 +606,7 @@ export function ComboComponent(props) {
 								borderTopRightRadius={0}
 								borderBottomRightRadius={0}
 								bg={styles.FORM_COMBO_INPUT_BG}
+								m={0}
 								p={2}
 								h="100%"
 							>
@@ -916,7 +917,7 @@ export function ComboComponent(props) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<Column>
-				<Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1}>
+				<Row {...refProps} justifyContent="center" alignItems="center" flex={1}>
 					{xButton}
 					{eyeButton}
 					{inputAndTrigger}
@@ -928,7 +929,7 @@ export function ComboComponent(props) {
 			</Column>;
 	} else {
 		assembledComponents = 
-			<Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={onLayout}>
+			<Row {...refProps} justifyContent="center" alignItems="center" flex={1} onLayout={onLayout}>
 				{xButton}
 				{eyeButton}
 				{inputAndTrigger}
