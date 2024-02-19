@@ -594,7 +594,7 @@ export function ComboComponent(props) {
 
 	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 		// This input and trigger are for show
-		// The just show the current getDisplayValue and open the menu
+		// They just show the current getDisplayValue and open the menu
 		const displayValue = getDisplayValue();
 		inputAndTrigger = <>
 							<Pressable
@@ -740,7 +740,17 @@ export function ComboComponent(props) {
 						}
 
 					}}
-					onAdd={onGridAdd}
+					onAdd={(entity) => {
+						if (entity?.id !== value && !isInTag) {
+							// Select it and set the value of the combo.
+							setGridSelection([entity]);
+							const id = entity.id;
+							setValue(id);
+						}
+						if (onGridAdd) {
+							onGridAdd([entity]);
+						}
+					}}
 					onSave={(selection) => {
 						const entity = selection[0];
 						if (entity?.id !== value && !isInTag) { // Tag doesn't use value, so don't do this comparison in the Tag
