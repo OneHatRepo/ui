@@ -606,8 +606,8 @@ export function ComboComponent(props) {
 								borderTopRightRadius={0}
 								borderBottomRightRadius={0}
 								bg={styles.FORM_COMBO_INPUT_BG}
-								m={0}
 								p={2}
+								h="100%"
 							>
 								{inputIconElement}
 								<Text
