@@ -174,6 +174,7 @@ import TrashCan from '../Components/Icons/TrashCan.js';
 import TriangleExclamation from '../Components/Icons/TriangleExclamation.js';
 import Truck from '../Components/Icons/Truck.js';
 import TruckFast from '../Components/Icons/TruckFast.js';
+import UploadDownload from '../Components/Icons/UploadDownload.js';
 import User from '../Components/Icons/User.js';
 import UserGroup from '../Components/Icons/UserGroup.js';
 import UserPlus from '../Components/Icons/UserPlus.js';
@@ -405,6 +406,7 @@ const components = {
 	TriangleExclamation,
 	Truck,
 	TruckFast,
+	UploadDownload,
 	User,
 	UserGroup,
 	UserPlus,
