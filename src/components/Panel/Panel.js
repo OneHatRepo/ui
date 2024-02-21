@@ -146,17 +146,17 @@ function Panel(props) {
 
 	if (isCollapsed) {
 		if (collapseDirection === HORIZONTAL) {
-			return <Column overflow="hidden" {...propsToPass} {...framePropsToUse} w="33px" h="100%">
+			return <Column overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} w="33px">
 						{isDisabled && <Mask />}
 						{headerComponent}
 					</Column>;
 		}
-		return <Column overflow="hidden" {...propsToPass} {...framePropsToUse} h="33px" w="100%">
+		return <Column overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} h="33px">
 					{isDisabled && <Mask />}
 					{headerComponent}
 				</Column>;
 	}
-	return <Column overflow="hidden" {...propsToPass} onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
+	return <Column overflow="hidden" {...propsToPass} {...framePropsToUse} {...sizeProps} onLayout={onLayout}>
 				{isDisabled && <Mask />}
 				{headerComponent}
 				{topToolbar}

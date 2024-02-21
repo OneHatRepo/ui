@@ -9,7 +9,6 @@ const Globals = {
 	// global defaults
 	paginationIsShowMoreOnly: false,
 	autoAdjustPageSizeToHeight: true,
-	editorStaysInEditModeOnChangeSelection: false,
 };
 
 export default Globals;
