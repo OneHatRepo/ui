@@ -121,8 +121,8 @@ function Report(props) {
 	return <Column w="100%" borderWidth={1} borderColor="primary.300" pt={4} mb={3}>
 				<Row>
 					{icon && <Column>{icon}</Column>}
-					<Column>
-						<Text fontSize="2xl">{title}</Text>
+					<Column flex={1}>
+						<Text fontSize="2xl" maxWidth="100%">{title}</Text>
 						<Text fontSize="sm">{description}</Text>
 					</Column>
 				</Row>
