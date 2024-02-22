@@ -144,17 +144,17 @@ function Panel(props) {
 
 	if (isCollapsed) {
 		if (collapseDirection === HORIZONTAL) {
-			return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse} w="33px" h="100%">
+			return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} w="33px">
 						{isDisabled && <Mask />}
 						{headerComponent}
 					</VStack>;
 		}
-		return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse} h="33px" w="100%">
+		return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} h="33px">
 					{isDisabled && <Mask />}
 					{headerComponent}
 				</VStack>;
 	}
-	return <VStack overflow="hidden" {...propsToPass} onLayout={onLayout} {...framePropsToUse} {...sizeProps}>
+	return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse} {...sizeProps} onLayout={onLayout}>
 				{isDisabled && <Mask />}
 				{headerComponent}
 				{topToolbar}

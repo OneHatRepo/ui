@@ -60,11 +60,40 @@ export function DateElement(props) {
 		pickerRef = useRef(),
 		[isPickerShown, setIsPickerShown] = useState(false),
 		[isRendered, setIsRendered] = useState(false),
+		[localValue, setLocalValue] = useState(value),
 		[textInputValue, setTextInputValue] = useState(value),
 		[isTranslateX, setIsTranslateX] = useState(false),
 		[isTranslateY, setIsTranslateY] = useState(false),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
+		setBothValues = (value) => {
+			setLocalValue(value);
+			setValue(value);
+		},
+		formatByMode = (value) => {
+			switch(mode) {
+				case DATE:
+					if (!_.isNil(value)) {
+						value = Parsers.ParseDate(value);
+						value = Formatters.FormatDate(value, 'YYYY-MM-DD');
+					}
+					break;
+				case TIME:
+					if (!_.isNil(value)) {
+						value = Parsers.ParseTime(value);
+						value = Formatters.FormatTime(value);
+					}
+					break;
+				case DATETIME:
+					if (!_.isNil(value)) {
+						value = Parsers.ParseDate(value);
+						value = Formatters.FormatDate(value, 'YYYY-MM-DD HH:mm:ss');
+					}
+					break;
+				default:
+			}
+			return value;
+		},
 		showPicker = () => {
 			if (isPickerShown) {
 				return;
@@ -139,34 +168,14 @@ export function DateElement(props) {
 				return;
 			}
 			if (_.isEmpty(value)) {
-				setValue(null);
+				setBothValues(null);
 				setTextInputValue('');
 				return;
 			}
-			switch(mode) {
-				case DATE:
-					if (!_.isNil(value)) {
-						value = Parsers.ParseDate(value);
-						value = Formatters.FormatDate(value, 'YYYY-MM-DD');
-					}
-					break;
-				case TIME:
-					if (!_.isNil(value)) {
-						value = Parsers.ParseTime(value);
-						value = Formatters.FormatTime(value);
-					}
-					break;
-				case DATETIME:
-					if (!_.isNil(value)) {
-						value = Parsers.ParseDate(value);
-						value = Formatters.FormatDate(value, 'YYYY-MM-DD HH:mm:ss');
-					}
-					break;
-				default:
-			}
+			value = formatByMode(value);
 			
 			if (value !== 'Invalid date') {
-				setValue(value);
+				setBothValues(value);
 			}
 
 			setTextInputValue(value);
@@ -218,10 +227,23 @@ export function DateElement(props) {
 			}
 
 			if (moment && moment?.isValid()) {
-				setValue(value);
+				setBothValues(value);
 				setTextInputValue(value);
 			}
 		};
+
+
+	useEffect(() => {
+
+		// When value changes from outside, adjust text value
+		if (value !== localValue) {
+			setLocalValue(value);
+
+			const textValue = formatByMode(value);
+			setTextInputValue(textValue);
+		}
+
+	}, [value]);
 	
 	// Format the display date/time/datetime
 	let title = placeholder,

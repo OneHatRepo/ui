@@ -5,6 +5,10 @@ import _ from 'lodash';
 const Globals = {
 	mode: CURRENT_MODE,
 	customInflect: (str) => str,
+
+	// global defaults
+	paginationIsShowMoreOnly: false,
+	autoAdjustPageSizeToHeight: true,
 };
 
 export default Globals;

@@ -43,15 +43,19 @@ export function ComboComponent(props) {
 			hideMenuOnSelection = true,
 			showXButton = false,
 			showEyeButton = false,
+			viewerProps = {}, // popup for eyeButton
 			_input = {},
 			isEditor = false,
 			isDisabled = false,
+			isInTag = false,
 			tooltipPlacement = 'bottom',
 			placeholder,
 			onRowPress,
 			icon,
 			Editor, // only used for the eyeButton
-			onSave, // to hook into when menu saves (ComboEditor only)
+			onGridAdd, // to hook into when menu adds (ComboEditor only)
+			onGridSave, // to hook into when menu saves (ComboEditor only)
+			onGridDelete, // to hook into when menu deletes (ComboEditor only)
 
 			// withComponent
 			self,
@@ -590,7 +594,7 @@ export function ComboComponent(props) {
 
 	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
 		// This input and trigger are for show
-		// The just show the current getDisplayValue and open the menu
+		// They just show the current getDisplayValue and open the menu
 		const displayValue = getDisplayValue();
 		inputAndTrigger = <>
 							<Pressable
@@ -604,6 +608,7 @@ export function ComboComponent(props) {
 								bg={styles.FORM_COMBO_INPUT_BG}
 								m={0}
 								p={2}
+								h="100%"
 							>
 								{inputIconElement}
 								<Text
@@ -697,7 +702,7 @@ export function ComboComponent(props) {
 							if (selection[0]?.id === value) {
 								setIsSearchMode(false);
 								resetTextInputValue();
-								if (hideMenuOnSelection) {
+								if (hideMenuOnSelection && !isEditor) {
 									hideMenu();
 								}
 								return;
@@ -735,26 +740,38 @@ export function ComboComponent(props) {
 						}
 
 					}}
+					onAdd={(entity) => {
+						if (entity?.id !== value && !isInTag) {
+							// Select it and set the value of the combo.
+							setGridSelection([entity]);
+							const id = entity.id;
+							setValue(id);
+						}
+						if (onGridAdd) {
+							onGridAdd([entity]);
+						}
+					}}
 					onSave={(selection) => {
 						const entity = selection[0];
-						if (entity?.id !== value) {
+						if (entity?.id !== value && !isInTag) { // Tag doesn't use value, so don't do this comparison in the Tag
 							// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
 							// Select it and set the value of the combo.
 							setGridSelection([entity]);
 							const id = entity.id;
 							setValue(id);
 						}
-						if (onSave) {
-							onSave(selection);
+						if (onGridSave) {
+							onGridSave(selection);
 						}
 					}}
+					onDelete={onGridDelete}
 					onRowPress={(item, e) => {
 						if (onRowPress) {
 							onRowPress(item, e);
 							return;
 						}
 						const id = Repository ? item.id : item[idIx];
-						if (id === value) {
+						if (id === value && !isEditor) {
 							hideMenu();
 							onInputFocus();
 						}
@@ -910,7 +927,7 @@ export function ComboComponent(props) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<VStack>
-				<HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1}>
+				<HStack {...refProps} justifyContent="center" alignItems="center" flex={1}>
 					{xButton}
 					{eyeButton}
 					{inputAndTrigger}
@@ -922,7 +939,7 @@ export function ComboComponent(props) {
 			</VStack>;
 	} else {
 		assembledComponents = 
-			<HStack {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={onLayout}>
+			<HStack {...refProps} justifyContent="center" alignItems="center" flex={1} onLayout={onLayout}>
 				{xButton}
 				{eyeButton}
 				{inputAndTrigger}
@@ -958,13 +975,13 @@ export function ComboComponent(props) {
 						<Editor
 							{...propsForViewer}
 							editorType={EDITOR_TYPE__WINDOWED}
+							isEditorViewOnly={true}
+							{...viewerProps}
 							px={0}
 							py={0}
 							w="100%"
 							parent={self}
 							reference="viewer"
-
-							isEditorViewOnly={true}
 							selection={viewerSelection}
 							onEditorClose={onViewerClose}
 						/>

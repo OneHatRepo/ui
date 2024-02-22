@@ -25,7 +25,7 @@ import {
 	UI_MODE_REACT_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
-import * as colourMixer from '@k-renwick/colour-mixer'
+import * as colourMixer from '@k-renwick/colour-mixer';
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
@@ -118,6 +118,7 @@ function GridComponent(props) {
 			h,
 			flex,
 			bg = '#fff',
+			verifyCanEdit,
 
 			// withComponent
 			self,
@@ -285,6 +286,7 @@ function GridComponent(props) {
 					reference="reorderBtn"
 					onPress={() => setIsDragMode(!isDragMode)}
 					icon={<Icon as={isDragMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
+					tooltip="Reorder Rows"
 				/>);
 			}
 			return items;
@@ -326,8 +328,18 @@ function GridComponent(props) {
 										if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
 											onRowClick(item, e); // so reselect it
 										}
-										if (onEdit) {
-											onEdit();
+
+										if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
+											if (onView) {
+												onView(true);
+											}
+										} else {
+											if (onEdit) {
+												if (verifyCanEdit && !verifyCanEdit(selection)) {
+													return;
+												}
+												onEdit();
+											}
 										}
 										break;
 									case 3: // triple click
@@ -616,7 +628,7 @@ function GridComponent(props) {
 			}
 
 			setDragRowSlot({ ix: newIx, marker, useBottom, });
-			// console.log('onRowReorderDrag', newIx);
+			// console.log('onRowReorderDrag slot', newIx);
 
 		},
 		onRowReorderDragStop = (delta, e, config) => {
@@ -742,7 +754,7 @@ function GridComponent(props) {
 			// calculate localColumnsConfig
 			let localColumnsConfig = [];
 			let savedLocalColumnsConfig;
-			if (localColumnsConfigKey && !hasFunctionColumn) {
+			if (localColumnsConfigKey && !hasFunctionColumn && !UiGlobals.disableSavedColumnsConfig) {
 				savedLocalColumnsConfig = await getSaved(localColumnsConfigKey);
 			}
 			if (savedLocalColumnsConfig) {
@@ -885,7 +897,7 @@ function GridComponent(props) {
 
 	isAddingRef.current = isAdding;
 
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [additionalToolbarButtons, isDragMode]);
+	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode]);
 
 	if (!isInited) {
 		// first time through, render a placeholder so we can get container dimensions

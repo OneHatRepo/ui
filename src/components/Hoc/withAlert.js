@@ -163,7 +163,7 @@ export default function withAlert(WrappedComponent) {
 								onPress={onNo}
 								color="trueGray.800"
 								variant="ghost"
-								colorScheme="neutral"
+								// colorScheme="neutral"
 								mr={2}
 							>
 								<ButtonText>No</ButtonText>

@@ -40,6 +40,7 @@ function TagComponent(props) {
 			setValue,
 			...propsToPass // break connection between Tag and Combo props
 		} = props,
+		valueRef = useRef(value),
 		ignoreNextComboValueChangeRef = useRef(false),
 		[isViewerShown, setIsViewerShown] = useState(false),
 		[viewerSelection, setViewerSelection] = useState([]),
@@ -138,6 +139,67 @@ function TagComponent(props) {
 			});			
 			setValue(newValue);
 		},
+		onGridAdd = (selection) => {
+			// underlying GridEditor added a record.
+			// add it to this Tag's value
+			const
+				entity = selection[0],
+				id = entity.id,
+				newValue = _.clone(valueRef.current);
+			newValue.push({
+				id,
+				text: entity.displayValue,
+			});
+			setValue(newValue);
+		},
+		onGridSave = (selection) => {
+			// underlying GridEditor has changed a record.
+			// Check if that value exists, and if so, update its displayValue
+			if (_.isEmpty(valueRef.current)) {
+				return;
+			}
+
+			const
+				entity = selection[0],
+				id = entity.id,
+				ix = _.findIndex(valueRef.current, (item) => {
+					return item.id === id;
+				}),
+				isFound = ix !== -1;
+			if (!isFound) {
+				return;
+			}
+			
+			const newValue = _.clone(valueRef.current);
+			newValue[ix] = {
+				id,
+				text: entity.displayValue,
+			};
+			setValue(newValue);
+		},
+		onGridDelete = (selection) => {
+			// underlying GridEditor has deleted a value.
+			// Check if that value exists, and if so delete it
+			if (_.isEmpty(valueRef.current)) {
+				return;
+			}
+
+			const
+				entity = selection[0],
+				id = entity.id,
+				ix = _.findIndex(valueRef.current, (item) => {
+					return item.id === id;
+				}),
+				isFound = ix !== -1;
+			if (!isFound) {
+				return;
+			}
+
+			const newValue = _.filter(valueRef.current, (item) => {
+				return item.id !== id;
+			});
+			setValue(newValue);
+		},
 		valueBoxes = _.map(value, (val, ix) => {
 			return <ValueBox
 						key={ix}
@@ -146,6 +208,8 @@ function TagComponent(props) {
 						onDelete={!isViewOnly ? () => onDelete(val) : null}
 					/>;
 		});
+	
+	valueRef.current = value; // the onGrid* methods were dealing with stale data, so use a ref, and update it here
 
 	let WhichCombo = Combo;
 	if (_combo.isEditor) {
@@ -193,6 +257,10 @@ function TagComponent(props) {
 										onChangeValue={onChangeComboValue}
 										parent={self}
 										reference="combo"
+										isInTag={true}
+										onGridAdd={onGridAdd}
+										onGridSave={onGridSave}
+										onGridDelete={onGridDelete}
 										{..._combo}
 									/>}
 				</VStack>

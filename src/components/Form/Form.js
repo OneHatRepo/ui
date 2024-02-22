@@ -120,10 +120,15 @@ function Form(props) {
 		} = props,
 		formRef = useRef(),
 		styles = UiGlobals.styles,
-		record = props.record?.length === 1 ? props.record[0] : props.record,
+		record = props.record?.length === 1 ? props.record[0] : props.record;
+	let skipAll = false;
+	if (record?.isDestroyed) {
+		skipAll = true; // if record is destroyed, skip render, but allow hooks to still be called
+	}
+	const
 		isMultiple = _.isArray(record),
 		isSingle = !isMultiple, // for convenience
-		isPhantom = !!record?.isPhantom,
+		isPhantom = !skipAll && !!record?.isPhantom, //
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
 		[containerWidth, setContainerWidth] = useState(),
@@ -508,7 +513,7 @@ function Form(props) {
 								let message = null;
 								if (error) {
 									message = error.message;
-									if (label) {
+									if (label && error.ref?.name) {
 										message = message.replace(error.ref.name, label);
 									}
 								}
@@ -610,6 +615,9 @@ function Form(props) {
 										{...propsToPass}
 									/>;
 					if (title) {
+						if (record?.displayValue) {
+							title += ' for ' + record.displayValue;
+						}
 						title = <Text
 									fontSize={styles.FORM_ANCILLARY_TITLE_FONTSIZE}
 									fontWeight="bold"
@@ -661,6 +669,9 @@ function Form(props) {
 		};
 
 	useEffect(() => {
+		if (skipAll) {
+			return;
+		}
 		if (record === previousRecord) {
 			if (onInit) {
 				onInit(initialValues, formSetValue, formGetValues);
@@ -675,6 +686,9 @@ function Form(props) {
 	}, [record]);
 
 	useEffect(() => {
+		if (skipAll) {
+			return;
+		}
 		if (!Repository) {
 			return () => {
 				if (!_.isNil(editorStateRef)) {
@@ -692,6 +706,10 @@ function Form(props) {
 			}
 		};
 	}, [Repository]);
+
+	if (skipAll) {
+		return null;
+	}
 
 	// if (Repository && (!record || _.isEmpty(record) || record.isDestroyed)) {
 	// 	return null;
@@ -766,7 +784,7 @@ function Form(props) {
 			editor = <>
 						{containerWidth >= CONTAINER_THRESHOLD ? <HStack p={4} pl={0}>{formComponents}</HStack> : null}
 						{containerWidth < CONTAINER_THRESHOLD ? <VStack p={4}>{formComponents}</VStack> : null}
-						<VStack m={2} pt={4}>{formAncillaryComponents}</VStack>
+						<VStack m={2} pt={4} px={2}>{formAncillaryComponents}</VStack>
 					</>;
 
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);

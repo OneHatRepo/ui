@@ -35,8 +35,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return 'record' + (selection[0].displayValue ? ' "' + selection[0].displayValue + '"' : '') + '?';
 				},
 				record,
-				onChange,
-				onSave,
+				onAdd,
+				onChange, // any kind of crud change
+				onDelete,
+				onSave, // this could also be called 'onEdit'
 				newEntityDisplayValue,
 				defaultValues,
 
@@ -67,6 +69,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			[isSaving, setIsSaving] = useState(false),
 			[isEditorShown, setIsEditorShown] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly), // current state of whether editor is in view-only mode
+			[isIgnoreNextSelectionChange, setIsIgnoreNextSelectionChange] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
 			setSelectionDecorated = (newSelection) => {
 				function doIt() {
@@ -75,6 +78,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				const formState = editorStateRef.current;
 				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== selection && editorMode === EDITOR_MODE__EDIT) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
+				} else if (selection && (selection[0]?.isPhantom || selection[0]?.isRemotePhantom)) {
+					confirm('This new record is unsaved. Are you sure you want to cancel editing? Changes will be lost.', async () => {
+						await selection[0].delete();
+						doIt();
+					});
 				} else {
 					doIt();
 				}
@@ -89,12 +97,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
 			},
-			onAdd = async (e, values) => {
+			doAdd = async (e, values) => {
 				let addValues = values;
 
 				if (!values) {
 					// you can either:
-					// 1. directlty submit 'values' to use in onAdd(), or
+					// 1. directlty submit 'values' to use in doAdd(), or
 					// 2. Use the repository's default values (defined on each property as 'defaultValue'), or
 					// 3. Individually override the repository's default values with submitted 'defaultValues' (given as a prop to this HOC)
 					let defaultValuesToUse = Repository.getSchema().getDefaultValues();
@@ -108,7 +116,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					addValues[selectorId] = selectorSelected.id;
 				}
 
-				if (!values && getNewEntityDisplayValue()) {
+				if (getNewEntityDisplayValue()) {
 					const displayPropertyName = Repository.getSchema().model.displayProperty;
 					addValues[displayPropertyName] = getNewEntityDisplayValue();
 				}
@@ -145,19 +153,22 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsSaving(true);
 				const entity = await Repository.add(addValues, false, true);
 				setIsSaving(false);
+				setIsIgnoreNextSelectionChange(true);
 				setSelection([entity]);
+				if (Repository.isAutoSave) {
+					// for isAutoSave Repositories, submit the handers right away
+					if (getListeners().onAfterAdd) {
+						await getListeners().onAfterAdd(entity);
+					}
+					if (onAdd) {
+						await onAdd(entity);
+					}
+				}
 				setIsEditorViewOnly(false);
-				setEditorMode(EDITOR_MODE__ADD);
+				setEditorMode(Repository.isAutoSave ? EDITOR_MODE__EDIT : EDITOR_MODE__ADD);
 				setIsEditorShown(true);
-
-				if (getListeners().onAfterAdd) {
-					await getListeners().onAfterAdd(entity);
-				}
-				if (onChange) {
-					onChange();
-				}
 			},
-			onEdit = async () => {
+			doEdit = async () => {
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
 				}
@@ -171,7 +182,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
-			onDelete = async (args) => {
+			doDelete = async (args) => {
 				let cb = null;
 				if (_.isFunction(args)) {
 					cb = args;
@@ -198,11 +209,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
-							<Button colorScheme="danger" onPress={() => onMoveChildren(cb)} key="moveBtn">
-								<ButtonText>Move Children</ButtonText>
+							<Button colorScheme="danger" onPress={() => doMoveChildren(cb)} key="moveBtn">
+								Move Children
 							</Button>,
-							<Button colorScheme="danger" onPress={() => onDeleteChildren(cb)} key="deleteBtn">
-								<ButtonText>Delete Children</ButtonText>
+							<Button colorScheme="danger" onPress={() => doDeleteChildren(cb)} key="deleteBtn">
+								Delete Children
 							</Button>
 						],
 						includeCancel: true,
@@ -215,17 +226,20 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					confirm('Are you sure you want to delete the ' + identifier, () => deleteRecord(null, cb));
 				}
 			},
-			onMoveChildren = (cb) => {
+			doMoveChildren = (cb) => {
 				hideAlert();
 				deleteRecord(true, cb);
 			},
-			onDeleteChildren = (cb) => {
+			doDeleteChildren = (cb) => {
 				hideAlert();
 				deleteRecord(false, cb);
 			},
 			deleteRecord = async (moveSubtreeUp, cb) => {
-				if (getListeners().onBeforeDeleteSave) {
-					await getListeners().onBeforeDeleteSave(selection);
+				if (getListeners().onBeforeDelete) {
+					const listenerResult = await getListeners().onBeforeDelete(selection);
+					if (listenerResult === false) {
+						return;
+					}
 				}
 
 				await Repository.delete(selection, moveSubtreeUp);
@@ -237,20 +251,23 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				setSelection([]);
 				if (cb) {
-					cb();
+					cb(selection);
 				}
 				if (onChange) {
-					onChange();
+					onChange(selection);
+				}
+				if (onDelete) {
+					onDelete(selection);
 				}
 			},
-			onView = async () => {
+			doView = async (allowEditing = false) => {
 				if (!userCanView) {
 					return;
 				}
 				if (selection.length !== 1) {
 					return;
 				}
-				setIsEditorViewOnly(true);
+				setIsEditorViewOnly(!allowEditing);
 				setEditorMode(EDITOR_MODE__VIEW);
 				setIsEditorShown(true);
 
@@ -258,7 +275,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await getListeners().onAfterView();
 				}
 			},
-			onDuplicate = async () => {
+			doDuplicate = async () => {
 				if (!userCanEdit || disableDuplicate) {
 					return;
 				}
@@ -273,6 +290,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					idProperty = Repository.getSchema().model.idProperty,
 					rawValues = _.omit(entity.rawValues, idProperty),
 					duplicate = await Repository.add(rawValues, false, true);
+				setIsIgnoreNextSelectionChange(true);
 				setSelection([duplicate]);
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
@@ -282,10 +300,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					entity = selection[0],
 					duplicateEntity = await Repository.remoteDuplicate(entity);
 
+				setIsIgnoreNextSelectionChange(true);
 				setSelection([duplicateEntity]);
-				onEdit();
+				doEdit();
 			},
-			onEditorSave = async (data, e) => {
+			doEditorSave = async (data, e) => {
+				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
 				const
 					what = record || selection,
 					isSingle = what.length === 1;
@@ -307,8 +327,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					});
 				}
 
-				if (getListeners().onBeforeEditSave) {
-					await getListeners().onBeforeEditSave(what);
+				if (getListeners().onBeforeSave) {
+					const listenerResult = await getListeners().onBeforeSave(what);
+					if (listenerResult === false) {
+						return;
+					}
 				}
 
 				setIsSaving(true);
@@ -317,31 +340,38 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await Repository.save();
 					success = true;
 				} catch (e) {
-					alert(e.context);
+					// alert(e.context);
 					success = false;
 				}
 				setIsSaving(false);
 
 				if (success) {
-					setIsAdding(false);
-					
-					setEditorMode(EDITOR_MODE__EDIT);
-					// setIsEditorShown(false);
-					
-					if (getListeners().onAfterEdit) {
-						await getListeners().onAfterEdit(what);
-					}
 					if (onChange) {
-						onChange();
+						onChange(what);
 					}
-					if (onSave) {
-						onSave(what);
+					if (editorMode === EDITOR_MODE__ADD) {
+						if (onAdd) {
+							await onAdd(what);
+						}
+						if (getListeners().onAfterAdd) {
+							await getListeners().onAfterAdd(what);
+						}
+						setIsAdding(false);
+						setEditorMode(EDITOR_MODE__EDIT);
+					} else if (editorMode === EDITOR_MODE__EDIT) {
+						if (getListeners().onAfterEdit) {
+							await getListeners().onAfterEdit(what);
+						}
+						if (onSave) {
+							onSave(what);
+						}
 					}
+					// setIsEditorShown(false);
 				}
 
 				return success;
 			},
-			onEditorCancel =  () => {
+			doEditorCancel =  () => {
 				async function doIt() {
 					const
 						isSingle = selection.length === 1,
@@ -360,14 +390,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					doIt();
 				}
 			},
-			onEditorClose = () => {
+			doEditorClose = () => {
 				if (isAdding) {
-					onEditorCancel();
+					doEditorCancel();
 				}
 				setIsEditorShown(false);
 			},
-			onEditorDelete = async () => {
-				onDelete(() => {
+			doEditorDelete = async () => {
+				doDelete(() => {
 					setEditorMode(EDITOR_MODE__VIEW);
 					setIsEditorShown(false);
 				});
@@ -389,10 +419,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				return mode;
 			},
-			onEditMode = () => {
+			setEditMode = () => {
 				setEditorMode(EDITOR_MODE__EDIT);
 			},
-			onViewMode = () => {
+			setViewMode = () => {
 				function doIt() {
 					setEditorMode(EDITOR_MODE__VIEW);
 				}
@@ -406,26 +436,39 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		useEffect(() => {
 			// When selection changes, set the mode appropriately
-			const mode = calculateEditorMode();
+			let mode;
+			if (isIgnoreNextSelectionChange) {
+				// on selection change from doAdd/doDuplicate/etc, calculate whether to put Editor in "add" or "edit" mode
+				mode = calculateEditorMode();
+			} else {
+				// Most of the time, if selection changed, put the Editor in "view" mode
+				mode = EDITOR_MODE__VIEW;
+			}
 			setEditorMode(mode);
 
+			setIsIgnoreNextSelectionChange(false);
 			setLastSelection(selection);
 		}, [selection]);
 
 		if (self) {
-			self.add = onAdd;
-			self.edit = onEdit;
-			self.delete = onDelete;
-			self.moveChildren = onMoveChildren;
-			self.deleteChildren = onDeleteChildren;
-			self.duplicate = onDuplicate;
+			self.add = doAdd;
+			self.edit = doEdit;
+			self.delete = doDelete;
+			self.moveChildren = doMoveChildren;
+			self.deleteChildren = doDeleteChildren;
+			self.duplicate = doDuplicate;
 		}
 		newEntityDisplayValueRef.current = newEntityDisplayValue;
 
 		if (lastSelection !== selection) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
-			editorMode = calculateEditorMode();
+			// (basically redo what's in the useEffect, above)
+			if (isIgnoreNextSelectionChange) {
+				editorMode = calculateEditorMode();
+			} else {
+				editorMode = EDITOR_MODE__VIEW;
+			}
 		}
 
 		return <WrappedComponent
@@ -438,19 +481,19 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isAdding={isAdding}
 					isSaving={isSaving}
 					editorMode={editorMode}
-					onEditMode={onEditMode}
-					onViewMode={onViewMode}
+					onEditMode={setEditMode}
+					onViewMode={setViewMode}
 					editorStateRef={editorStateRef}
 					setIsEditorShown={setIsEditorShown}
-					onAdd={(!userCanEdit || disableAdd) ? null : onAdd}
-					onEdit={(!userCanEdit || disableEdit) ? null : onEdit}
-					onDelete={(!userCanEdit || disableDelete) ? null : onDelete}
-					onView={onView}
-					onDuplicate={onDuplicate}
-					onEditorSave={onEditorSave}
-					onEditorCancel={onEditorCancel}
-					onEditorDelete={(!userCanEdit || disableDelete) ? null : onEditorDelete}
-					onEditorClose={onEditorClose}
+					onAdd={(!userCanEdit || disableAdd) ? null : doAdd}
+					onEdit={(!userCanEdit || disableEdit) ? null : doEdit}
+					onDelete={(!userCanEdit || disableDelete) ? null : doDelete}
+					onView={doView}
+					onDuplicate={doDuplicate}
+					onEditorSave={doEditorSave}
+					onEditorCancel={doEditorCancel}
+					onEditorDelete={(!userCanEdit || disableDelete) ? null : doEditorDelete}
+					onEditorClose={doEditorClose}
 					setWithEditListeners={setListeners}
 					isEditor={true}
 					userCanEdit={userCanEdit}

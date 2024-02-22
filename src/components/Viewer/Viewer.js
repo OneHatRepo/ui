@@ -33,6 +33,7 @@ function Viewer(props) {
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			record,
 			additionalViewButtons,
+			verifyCanEdit,
 
 			// withComponent
 			self,
@@ -69,10 +70,14 @@ function Viewer(props) {
 					items,
 					// onChange: onEditorChange,
 					useSelectorId = false,
+					isHiddenInViewMode = false,
 					...propsToPass
 				} = item,
 				editorTypeProps = {};
 
+			if (isHiddenInViewMode) {
+				return;
+			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!type) {
 				if (propertyDef?.viewerType) {
@@ -220,27 +225,30 @@ function Viewer(props) {
 		viewerComponents = null,
 		ancillaryComponents = null;
 	
-	
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 		additionalButtons = buildAdditionalButtons(additionalViewButtons);
 		viewerComponents = buildFromItems();
 		ancillaryComponents = buildAncillary();
 	}
 
+	let canEdit = true;
+	if (verifyCanEdit && !verifyCanEdit([record])) {
+		canEdit = false;
+	}
+
 	return <VStack flex={flex} {...props} onLayout={onLayout}>
 				{containerWidth && <>
 
 					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
-						{onEditMode && <HStack px={4} pt={4} alignItems="center" justifyContent="flex-end">
-											<Button
-												key="editBtn"
-												onPress={onEditMode}
-												leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
-												color="#fff"
-											>
-												<ButtonText>To Edit</ButtonText>
-											</Button>
-										</HStack>}
+						{canEdit && onEditMode &&
+							<HStack px={4} pt={4} alignItems="center" justifyContent="flex-end">
+								<Button
+									key="editBtn"
+									onPress={onEditMode}
+									leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+									color="#fff"
+								>To Edit</Button>
+							</HStack>}
 						{!_.isEmpty(additionalButtons) && 
 							<HStack p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
 								{additionalButtons}

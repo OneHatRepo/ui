@@ -190,7 +190,7 @@ export default function Pagination(props) {
 					{items}
 				</HStack>;
 	}, [
-		// Repository,
+		Repository?.hash,
 		showPagination,
 		page,
 		pageSize,

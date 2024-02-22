@@ -121,8 +121,8 @@ function Report(props) {
 	return <VStack w="100%" borderWidth={1} borderColor="primary.300" pt={4} mb={3}>
 				<HStack>
 					{icon && <VStack>{icon}</VStack>}
-					<VStack>
-						<Text fontSize="2xl">{title}</Text>
+					<VStack flex={1}>
+						<Text fontSize="2xl" maxWidth="100%">{title}</Text>
 						<Text fontSize="sm">{description}</Text>
 					</VStack>
 				</HStack>

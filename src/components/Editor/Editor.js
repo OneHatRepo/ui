@@ -15,6 +15,7 @@ function Editor(props) {
 			onEditorDelete: onDelete,
 			editorMode,
 			onEditMode,
+			verifyCanEdit,
 			_viewer = {},
 			_form = {},
 
@@ -32,8 +33,13 @@ function Editor(props) {
 
 	const propsToPass = _.omit(props, ['self', 'reference', 'parent']);
 
+	let canEdit = true;
+	if (verifyCanEdit && !verifyCanEdit(selection)) {
+		canEdit = false;
+	}
+
 	// Repository?.isRemotePhantomMode && selection.length === 1 && 
-	if (editorMode === EDITOR_MODE__VIEW || isEditorViewOnly) {
+	if (editorMode === EDITOR_MODE__VIEW || isEditorViewOnly || !canEdit) {
 		const record = selection[0];
 		if (record.isDestroyed) {
 			return null;

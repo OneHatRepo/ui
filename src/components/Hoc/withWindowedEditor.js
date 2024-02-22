@@ -40,7 +40,8 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				h,
 
 				...propsToPass
-			} = props;
+			} = props,
+			onEditorCancel = props.onEditorCancel;
 
 		if (!Editor) {
 			throw Error('Editor is not defined');
@@ -51,7 +52,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 					{isEditorShown && 
 						<Modal
 							isOpen={true}
-							onClose={() => setIsEditorShown(false)}
+							onClose={onEditorCancel}
 						>
 							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
