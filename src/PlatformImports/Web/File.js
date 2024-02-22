@@ -23,7 +23,7 @@ import inArray from '../../Functions/inArray.js';
 import IconButton from '../../Components/Buttons/IconButton.js';
 import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
-import withData from '../../Components/Hoc/withData.js';
+import withValue from '../../Components/Hoc/withValue.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
 import _ from 'lodash';
 
@@ -59,12 +59,9 @@ function FileCardCustom(props) {
 				{onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
 			</Pressable>;
 }
-	
 
-// Note this component uploads only one file per server request---
-// it doesn't upload multiple files simultaneously.
 
-function AttachmentsElement(props) {
+function FileComponent(props) {
 
 	if (CURRENT_MODE !== UI_MODE_WEB) {
 		throw new Error('Not yet implemented except for web.');
@@ -84,8 +81,9 @@ function AttachmentsElement(props) {
 			// parentContainer
 			selectorSelected,
 
-			// withData
-			Repository,
+			// withValue
+			value,
+			setValue,
 
 			// withAlert
 			alert,
@@ -100,29 +98,29 @@ function AttachmentsElement(props) {
 		[isUploading, setIsUploading] = useState(false),
 		[showAll, setShowAll] = useState(false),
 		[files, setFiles] = useState([]),
-		buildFiles = () => {
-			const files = _.map(Repository.entities, (entity) => {
-				return {
-					id: entity.id, //	string | number	The identifier of the file
-					// file: null, //	File	The file object obtained from client drop or selection
-					name: entity.attachments__filename, // string	The name of the file
-					type: entity.attachments__mimetype, // string	The file mime type.
-					size: entity.attachments__size, //	number	The size of the file in bytes.
-					// valid: null, //	boolean	If present, it will show a valid or rejected message ("valid", "denied"). By default valid is undefined.
-					// errors: null, //	string[]	The list of errors according to the validation criteria or the result of the given custom validation function.
-					// uploadStatus: null, //	UPLOADSTATUS	The current upload status. (e.g. "uploading").
-					// uploadMessage: null, //	string	A message that shows the result of the upload process.
-					imageUrl: entity.attachments__uri, //	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
-					downloadUrl: entity.attachments__uri, //	string	The url to be used to perform a GET request in order to download the file. If defined, the download icon will be shown.
-					// progress: null, //	number	The current percentage of upload progress. This value will have a higher priority over the upload progress value calculated inside the component.
-					// extraUploadData: null, //	Record<string, any>	The additional data that will be sent to the server when files are uploaded individually
-					// extraData: null, //	Object	Any kind of extra data that could be needed.
-					// serverResponse: null, //	ServerResponse	The upload response from server.
-					// xhr: null, //	XMLHttpRequest	A reference to the XHR object that allows the upload, progress and abort events.
-				};
-			});
-			setFiles(files);
-		},
+		// buildFiles = () => {
+		// 	const files = _.map(Repository.entities, (entity) => {
+		// 		return {
+		// 			id: entity.id, //	string | number	The identifier of the file
+		// 			// file: null, //	File	The file object obtained from client drop or selection
+		// 			name: entity.attachments__filename, // string	The name of the file
+		// 			type: entity.attachments__mimetype, // string	The file mime type.
+		// 			size: entity.attachments__size, //	number	The size of the file in bytes.
+		// 			// valid: null, //	boolean	If present, it will show a valid or rejected message ("valid", "denied"). By default valid is undefined.
+		// 			// errors: null, //	string[]	The list of errors according to the validation criteria or the result of the given custom validation function.
+		// 			// uploadStatus: null, //	UPLOADSTATUS	The current upload status. (e.g. "uploading").
+		// 			// uploadMessage: null, //	string	A message that shows the result of the upload process.
+		// 			imageUrl: entity.attachments__uri, //	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
+		// 			downloadUrl: entity.attachments__uri, //	string	The url to be used to perform a GET request in order to download the file. If defined, the download icon will be shown.
+		// 			// progress: null, //	number	The current percentage of upload progress. This value will have a higher priority over the upload progress value calculated inside the component.
+		// 			// extraUploadData: null, //	Record<string, any>	The additional data that will be sent to the server when files are uploaded individually
+		// 			// extraData: null, //	Object	Any kind of extra data that could be needed.
+		// 			// serverResponse: null, //	ServerResponse	The upload response from server.
+		// 			// xhr: null, //	XMLHttpRequest	A reference to the XHR object that allows the upload, progress and abort events.
+		// 		};
+		// 	});
+		// 	setFiles(files);
+		// },
 		clearFiles = () => {
 			setFiles([]);
 		},
@@ -135,12 +133,6 @@ function AttachmentsElement(props) {
 				return;
 			}
 			setFiles(files);
-			_.each(files, (file) => {
-				file.extraUploadData = {
-					model,
-					modelid: modelid.current,
-				};
-			});
 		},
 		onUploadStart = (files) => {
 			setIsUploading(true);
@@ -167,7 +159,6 @@ function AttachmentsElement(props) {
 				});
 				if (!isError) {
 					setIsUploading(false);
-					Repository.reload();
 				}
 			}
 		},
@@ -179,81 +170,9 @@ function AttachmentsElement(props) {
 			}
 		},
 		doDelete = (id) => {
-			Repository.deleteById(id);
-			Repository.save();
+
+
 		};
-
-	if (!_.isEqual(modelidCalc, modelid.current)) {
-		modelid.current = modelidCalc;
-	}
-
-	useEffect(() => {
-
-		if (!model) {
-			return () => {};
-		}
-
-		(async () => {
-
-			if (!_.isArray(modelid.current)) {
-
-				// Load Repository
-				const filters = [
-					{
-						name: 'model',
-						value: model,
-					},
-					{
-						name: 'modelid',
-						value: modelid.current,
-					},
-				];
-				if (accept) {
-					let name,
-						mimetypes;
-					if (_.isString(accept)) {
-						if (accept.match(/,/)) {
-							name = 'mimetype IN';
-							mimetypes = accept.split(',');
-						} else {
-							name = 'mimetype LIKE';
-							mimetypes = accept.replace('*', '%');
-						}
-					} else if (_.isArray(accept)) {
-						name = 'mimetype IN';
-						mimetypes = accept;
-					}
-					filters.push({
-						name,
-						value: mimetypes,
-					});
-				}
-				Repository.filter(filters);
-				Repository.setPageSize(showAll ? EXPANDED_MAX : COLLAPSED_MAX);
-				await Repository.load();
-
-				buildFiles();
-			} else {
-				clearFiles();
-			}
-
-
-			if (!isReady) {
-				setIsReady(true);
-			}
-			
-		})();
-
-		Repository.on('load', buildFiles);
-		return () => {
-			Repository.off('load', buildFiles);
-		};
-	}, [model, modelid.current, showAll]);
-
-	if (!isReady) {
-		return null;
-	}
-	
 
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
@@ -331,14 +250,4 @@ function AttachmentsElement(props) {
 	return content;
 }
 
-function withAdditionalProps(WrappedComponent) {
-	return (props) => {
-		return <WrappedComponent
-					model="Attachments"
-					uniqueRepository={true}
-					{...props}
-				/>;
-	};
-}
-
-export default withAdditionalProps(withAlert(withData(AttachmentsElement)));
+export default withAlert(withValue(FileComponent));
