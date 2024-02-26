@@ -77,7 +77,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				const formState = editorStateRef.current;
 				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== selection && editorMode === EDITOR_MODE__EDIT) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
-				} else if (selection && (selection[0]?.isPhantom || selection[0]?.isRemotePhantom)) {
+				} else if (selection && selection[0] && !selection[0].isDestroyed && (selection[0]?.isPhantom || selection[0]?.isRemotePhantom)) {
 					confirm('This new record is unsaved. Are you sure you want to cancel editing? Changes will be lost.', async () => {
 						await selection[0].delete();
 						doIt();

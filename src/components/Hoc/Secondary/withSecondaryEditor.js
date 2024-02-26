@@ -80,6 +80,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				const formState = secondaryEditorStateRef.current;
 				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== secondarySelection && secondaryEditorMode === EDITOR_MODE__EDIT) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
+				} else if (secondarySelection && secondarySelection[0] && !secondarySelection[0].isDestroyed && (secondarySelection[0]?.isPhantom || secondarySelection[0]?.isRemotePhantom)) {
+					confirm('This new record is unsaved. Are you sure you want to cancel editing? Changes will be lost.', async () => {
+						await secondarySelection[0].delete();
+						doIt();
+					});
 				} else {
 					doIt();
 				}
