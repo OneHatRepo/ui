@@ -61,6 +61,8 @@ function NumberElement(props) {
 			value = null; // empty string makes value null
 		} else if (value.match(/\.$/)) { // value ends with a decimal point
 			// don't parseFloat, otherwise we'll lose the decimal point
+		} else if (value.match(/0$/)) { // value ends with a zero
+			// don't parseFloat, otherwise we'll lose the ability to do things like 1.03
 		} else {
 			value = parseFloat(value, 10);
 		}
