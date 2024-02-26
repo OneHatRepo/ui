@@ -606,8 +606,6 @@ export function ComboComponent(props) {
 								borderTopRightRadius={0}
 								borderBottomRightRadius={0}
 								bg={styles.FORM_COMBO_INPUT_BG}
-								m={0}
-								p={2}
 								h="100%"
 							>
 								{inputIconElement}
@@ -616,6 +614,8 @@ export function ComboComponent(props) {
 									h="100%"
 									numberOfLines={1}
 									ellipsizeMode="head"
+									m={0}
+									p={2}
 									color={_.isEmpty(displayValue) ? 'trueGray.400' : '#000'}
 									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
 								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
