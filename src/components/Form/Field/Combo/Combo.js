@@ -524,6 +524,8 @@ export function ComboComponent(props) {
 									flex={1}
 									h="100%"
 									flexDirection="row"
+									justifyContent="center"
+									alignItems="center"
 									borderWidth={1}
 									borderColor="trueGray.400"
 									borderTopRightRadius={0}
@@ -601,6 +603,8 @@ export function ComboComponent(props) {
 								onPress={showMenu}
 								flex={1}
 								flexDirection="row"
+								justifyContent="center"
+								alignItems="center"
 								borderWidth={1}
 								borderColor="trueGray.400"
 								borderTopRightRadius={0}
