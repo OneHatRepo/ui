@@ -80,7 +80,6 @@ function AttachmentsElement(props) {
 			disabled = false,
 			clickable = true,
 			confirmBeforeDelete = false,
-			// model, // this is used, but set below
 
 			// parentContainer
 			selectorSelected,
@@ -94,7 +93,7 @@ function AttachmentsElement(props) {
 
 		} = props,
 		styles = UiGlobals.styles,
-		model = props.model ? props.model : (_.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name),
+		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name,
 		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity.id) : selectorSelected?.id,
 		modelid = useRef(modelidCalc),
 		[isReady, setIsReady] = useState(false),
