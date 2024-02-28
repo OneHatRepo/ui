@@ -35,11 +35,9 @@ function NumberElement(props) {
 		const key = e.nativeEvent.key; // e.key works on web, but not mobile; so use e.nativeEvent.key which works on both
 		switch(key) {
 			case 'ArrowDown':
-			case 'ArrowLeft':
 				onDecrement();
 				break;
 			case 'ArrowUp':
-			case 'ArrowRight':
 				onIncrement();
 				break;
 			case 'Tab':
