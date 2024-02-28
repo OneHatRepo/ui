@@ -25,6 +25,7 @@ function TagComponent(props) {
 			isValueAsStringifiedJson,
 			Editor,
 			_combo = {},
+			tooltip,
 
 			// parent Form
 			onChangeValue,
@@ -261,6 +262,7 @@ function TagComponent(props) {
 										onGridAdd={onGridAdd}
 										onGridSave={onGridSave}
 										onGridDelete={onGridDelete}
+										tooltip={tooltip}
 										{..._combo}
 									/>}
 				</Column>
