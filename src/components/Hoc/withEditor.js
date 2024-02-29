@@ -135,7 +135,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				} else {
 					// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
 					const currentSorter = Repository.sorters[0];
-					if (currentSorter.name !== Repository.schema.model.idProperty || currentSorter.direction !== 'DESC') {
+					if (currentSorter.name.match(/__sort_order$/)) { // when it's using a sort column, keep using it
+						if (currentSorter.direction !== 'DESC') {
+							Repository.pauseEvents();
+							Repository.sort(currentSorter.name, 'DESC');
+							Repository.setPage(1);
+							Repository.resumeEvents();
+							await Repository.reload();
+						}
+					} else if (currentSorter.name !== Repository.schema.model.idProperty || currentSorter.direction !== 'DESC') {
 						Repository.pauseEvents();
 						Repository.sort(Repository.schema.model.idProperty, 'DESC');
 						Repository.setPage(1);
