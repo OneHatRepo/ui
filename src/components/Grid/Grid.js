@@ -121,6 +121,7 @@ function GridComponent(props) {
 			flex,
 			bg = '#fff',
 			verifyCanEdit,
+			alternatingInterval = 2,
 
 			// withComponent
 			self,
@@ -409,6 +410,8 @@ function GridComponent(props) {
 								}
 							} else if (showHovers && isHovered) {
 								mixWith = styles.GRID_ROW_HOVER_BG;
+							} else if (index % alternatingInterval === 0) { // i.e. every second line, or every third line
+								mixWith = styles.GRID_ROW_ALTERNATE_BG;
 							}
 							if (mixWith) {
 								const

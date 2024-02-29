@@ -72,6 +72,7 @@ const defaults = {
 	GRID_CELL_PX: 2,
 	GRID_CELL_PY: 3,
 	GRID_ROW_BG: WHITE,
+	GRID_ROW_ALTERNATE_BG: '#e5e5e5',
 	GRID_ROW_HOVER_BG: 'hover',
 	GRID_ROW_SELECTED_BG: 'selected',
 	GRID_ROW_SELECTED_HOVER_BG: 'selectedHover',
