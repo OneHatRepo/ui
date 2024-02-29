@@ -6,7 +6,7 @@ import {
 	Tooltip,
 } from 'native-base';
 import withComponent from '../Hoc/withComponent.js';
-import styles from '../../Constants/Styles.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 const
@@ -19,7 +19,8 @@ const
 				tooltip,
 				tooltipPlacement = 'bottom',
 				self,
-			} = props;
+			} = props,
+			styles = UiGlobals.styles;
 		let ref = props.outerRef;
 
 		if (!ref) {
@@ -49,7 +50,8 @@ const
 								flexDirection="row"
 								justifyContent="center"
 								alignItems="center"
-								p={2}
+								px={styles.ICON_BUTTON_PX}
+								py={styles.ICON_BUTTON_PY}
 								// bg={styles.ICON_BUTTON_BG}
 								_hover={{
 									bg: styles.ICON_BUTTON_BG_HOVER,

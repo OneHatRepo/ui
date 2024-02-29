@@ -313,7 +313,7 @@ export default function withFilters(WrappedComponent) {
 												{...elementProps}
 											/>;
 						if (showLabels && field !== 'q') {
-							filterElement = <Row key={'label-' + ix} alignItems="center">
+							filterElement = <Row key={'label-' + ix} alignItems="center" h="100%">
 												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{title}</Text>
 												{filterElement}
 											</Row>;

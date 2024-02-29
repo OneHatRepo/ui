@@ -13,6 +13,7 @@ import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import ValueBox from './ValueBox.js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
+import UiGlobals from '../../../../UiGlobals.js';
 import _ from 'lodash';
 
 
@@ -41,6 +42,7 @@ function TagComponent(props) {
 			setValue,
 			...propsToPass // break connection between Tag and Combo props
 		} = props,
+		styles = UiGlobals.styles,
 		valueRef = useRef(value),
 		ignoreNextComboValueChangeRef = useRef(false),
 		[isViewerShown, setIsViewerShown] = useState(false),
@@ -247,9 +249,9 @@ function TagComponent(props) {
 						borderColor="trueGray.300"
 						borderRadius="md"
 						bg="trueGray.100"
-						p={1}
-						mb={1}
-						minHeight={10}
+						p={styles.FORM_TAG_PADDING}
+						mb={styles.FORM_TAG_MB}
+						minHeight={styles.FORM_TAG_MIN_HEIGHT}
 						flexWrap="wrap"
 					>{valueBoxes}</Row>
 					{!isViewOnly && <WhichCombo

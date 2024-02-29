@@ -931,7 +931,7 @@ export function ComboComponent(props) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<Column>
-				<Row {...refProps} justifyContent="center" alignItems="center" flex={1}>
+				<Row {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%">
 					{xButton}
 					{eyeButton}
 					{inputAndTrigger}
@@ -943,7 +943,7 @@ export function ComboComponent(props) {
 			</Column>;
 	} else {
 		assembledComponents = 
-			<Row {...refProps} justifyContent="center" alignItems="center" flex={1} onLayout={onLayout}>
+			<Row {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
 				{xButton}
 				{eyeButton}
 				{inputAndTrigger}
@@ -994,7 +994,7 @@ export function ComboComponent(props) {
 	}
 	
 	if (tooltip) {
-		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
+		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement} h="100%">
 								{assembledComponents}
 							</Tooltip>;
 	}
