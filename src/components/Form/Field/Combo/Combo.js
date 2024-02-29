@@ -686,6 +686,7 @@ export function ComboComponent(props) {
 					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
 					newEntityDisplayValue={newEntityDisplayValue}
 					disablePresetButtons={!isEditor}
+					alternateRowBackgrounds={false}
 					onChangeSelection={(selection) => {
 
 						if (Repository && selection[0]?.isPhantom) {
