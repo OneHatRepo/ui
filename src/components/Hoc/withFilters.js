@@ -297,6 +297,10 @@ export default function withFilters(WrappedComponent) {
 								elementProps.autoSubmit = true;
 							}
 						}
+						if (!Element) {
+							debugger;
+							return; // to protect against errors
+						}
 						if (field === 'q') {
 							elementProps.flex = 1;
 							elementProps.minWidth = 100;
