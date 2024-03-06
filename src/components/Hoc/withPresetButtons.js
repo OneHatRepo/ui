@@ -342,6 +342,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							onClose={onModalClose}
 						>
 							<UploadsDownloadsWindow
+								reference="uploadsDownloads"
 								onClose={onModalClose}
 								Repository={Repository}
 								columnsConfig={props.columnsConfig}

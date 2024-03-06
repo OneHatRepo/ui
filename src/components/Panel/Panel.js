@@ -13,6 +13,7 @@ import Inflector from 'inflector-js';
 import Header from './Header.js';
 import Mask from './Mask.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
+import withComponent from '../Hoc/withComponent.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
@@ -169,4 +170,4 @@ function Panel(props) {
 
 }
 
-export default withCollapsible(Panel);
+export default withComponent(withCollapsible(Panel));

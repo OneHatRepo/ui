@@ -87,6 +87,12 @@ function FileComponent(props) {
 		}
 	}, [errors.length]);
 
+	useEffect(() => {
+		if (!value && filesContent.length) {
+			clear();
+		}
+	}, [value, filesContent.length]);
+
 	if (loading) {
 		return <Loading />;
 	}

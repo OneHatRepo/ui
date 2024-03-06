@@ -14,6 +14,7 @@ import Form from '../Form/Form.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
 import withAlert from '../Hoc/withAlert.js';
+import withComponent from '../Hoc/withComponent.js';
 import Cookies from 'js-cookie';
 import _ from 'lodash';
 
@@ -23,8 +24,12 @@ function UploadsDownloadsWindow(props) {
 			Repository,
 			columnsConfig = [],
 
+			// withComponent
+			self,
+
 			// withAlert
 			alert,
+			showInfo,
 		} = props,
 		[importFile, setImportFile] = useState(null),
 		[width, height] = useAdjustedWindowSize(400, 400),
@@ -89,24 +94,31 @@ function UploadsDownloadsWindow(props) {
 					success,
 					message,
 				} = parsed;
-			if (!success && message === 'Errors') {
-				// assemble the errors from the upload
+			if (!success) {
 				const msgElements = ['Could not upload.'];
-				_.each(data, (obj) => {
-					// {
-					// 	"2": "ID does not exist."
-					// }
-					const line = Object.entries(obj)
-										.map(([key, value]) => `Line ${key}: ${value}`)
-										.join("\n");
-					msgElements.push(line);
-				});
+				if (message === 'Errors') {
+					// assemble the errors from the upload
+					_.each(data, (obj) => {
+						// {
+						// 	"2": "ID does not exist."
+						// }
+						const line = Object.entries(obj)
+											.map(([key, value]) => `Line ${key}: ${value}`)
+											.join("\n");
+						msgElements.push(line);
+					});
+				}
 				alert(msgElements.join("\n"));
+			} else {
+				setImportFile(null);
+				self.formSetValue('file', null);
+				showInfo("Upload successful.\n");
 			}
 		};
 	
 	return <Panel
 				{...props}
+				parent={self}
 				reference="UploadsDownloadsWindow"
 				isCollapsible={false}
 				title="Uploads & Downloads"
@@ -117,6 +129,8 @@ function UploadsDownloadsWindow(props) {
 			>
 				<Form
 					{...props}
+					parent={self}
+					reference="form"
 					items={[
 						{
 							"type": "Column",
@@ -168,10 +182,8 @@ function UploadsDownloadsWindow(props) {
 					// onSave={onSave}
 					// onClose={onClose}
 					// onDelete={onDelete}
-					// parent={self}
-					reference="form"
 				/>
 			</Panel>;
 }
 
-export default withAlert(UploadsDownloadsWindow);
+export default withComponent(withAlert(UploadsDownloadsWindow));
