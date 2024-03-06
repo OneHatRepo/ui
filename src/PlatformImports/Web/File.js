@@ -35,6 +35,7 @@ function FileComponent(props) {
 	}
 
 	const {
+			encodeAsBase64 = true,
 			readAs = 'BinaryString', // 'DataURL', 'Text', 'BinaryString', 'ArrayBuffer'
 			accept, // ['.png', '.txt'], 'image/*', '.txt'
 			multiple = false,
@@ -67,7 +68,11 @@ function FileComponent(props) {
 			onFilesSelected,
 			onFilesRejected,
 			onFilesSuccessfullySelected: ({ filesContent, plainFiles }) => {
-				setValue(filesContent[0].content);
+				let value = filesContent[0].content;
+				if (readAs === 'BinaryString' && encodeAsBase64) {
+					value = btoa(value); // convert to base64 encoded string
+				}
+				setValue(value);
 			},
 			onFileRemoved,
 			onClear: () => setValue(null),
