@@ -13,31 +13,55 @@ import Panel from '../Panel/Panel.js';
 import Form from '../Form/Form.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import Cookies from 'js-cookie';
 import _ from 'lodash';
 
 export default function UploadsDownloadsWindow(props) {
 	const
 		{
 			Repository,
+			columnsConfig = [],
 		} = props,
 		[fileValue, setFileValue] = useState(null),
 		[width, height] = useAdjustedWindowSize(400, 400),
 		onDownload = () => {
 			const
 				baseURL = Repository.api.baseURL,
-				model = Repository.name,
-				filterData = Repository.filters.reduce((result, current) => {
+				filters = Repository.filters.reduce((result, current) => {
 					result[current.name] = current.value;
 					return result;
 				}, {}),
-				url = baseURL + model + '/downloadGridContents',
+				columns = columnsConfig.map((column) => {
+					return column.fieldName;
+				}),
+				order = Repository.getSortField() + ' ' + Repository.getSortDirection(),
+				model = Repository.name,
+				url = baseURL + 'Reports/getReport',
+				download_token = 'dl' + (new Date()).getTime(),
 				options = {
 					// method: 'GET',
 					method: 'POST',
-					body: JSON.stringify(filterData),
+					body: JSON.stringify({
+						download_token,
+						report_id: 1,
+						filters,
+						columns,
+						order,
+						model,
+					}),
 					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers),
-				};
-			downloadWithFetch(url, options);
+				},
+				fetchWindow = downloadWithFetch(url, options),
+				interval = setInterval(function() {
+					const cookie = Cookies.get(download_token);
+					console.log('cookie', cookie);
+					console.log('window', fetchWindow.window);
+					if (fetchWindow.window && cookie) {
+						clearInterval(interval);
+						Cookies.remove(download_token);
+						fetchWindow.window.close();
+					}
+				}, 1000);
 		},
 		onUpload = () => {
 			const r = Repository;

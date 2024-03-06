@@ -344,6 +344,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							<UploadsDownloadsWindow
 								onClose={onModalClose}
 								Repository={Repository}
+								columnsConfig={props.columnsConfig}
 							/>
 						</Modal>}
 				</>;
