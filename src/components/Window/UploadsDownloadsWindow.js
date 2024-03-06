@@ -13,18 +13,22 @@ import Panel from '../Panel/Panel.js';
 import Form from '../Form/Form.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import withAlert from '../Hoc/withAlert.js';
 import Cookies from 'js-cookie';
 import _ from 'lodash';
 
-export default function UploadsDownloadsWindow(props) {
+function UploadsDownloadsWindow(props) {
 	const
 		{
 			Repository,
 			columnsConfig = [],
+
+			// withAlert
+			alert,
 		} = props,
-		[fileValue, setFileValue] = useState(null),
+		[importFile, setImportFile] = useState(null),
 		[width, height] = useAdjustedWindowSize(400, 400),
-		onDownload = () => {
+		onDownload = (isTemplate = false) => {
 			const
 				baseURL = Repository.api.baseURL,
 				filters = Repository.filters.reduce((result, current) => {
@@ -48,14 +52,13 @@ export default function UploadsDownloadsWindow(props) {
 						columns,
 						order,
 						model,
+						isTemplate,
 					}),
 					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers),
 				},
 				fetchWindow = downloadWithFetch(url, options),
 				interval = setInterval(function() {
 					const cookie = Cookies.get(download_token);
-					console.log('cookie', cookie);
-					console.log('window', fetchWindow.window);
 					if (fetchWindow.window && cookie) {
 						clearInterval(interval);
 						Cookies.remove(download_token);
@@ -63,11 +66,43 @@ export default function UploadsDownloadsWindow(props) {
 					}
 				}, 1000);
 		},
-		onUpload = () => {
-			const r = Repository;
-			debugger;
-			// upload fileValue
-
+		onDownloadTemplate = () => {
+			onDownload(true);
+		},
+		onUpload = async () => {
+			const
+				url = Repository.api.baseURL + Repository.name + '/uploadBatch',
+				result = await Repository._send('POST', url, { importFile })
+										.catch(error => {
+											if (Repository.debugMode) {
+												console.log(url + ' error', error);
+												console.log('response:', error.response);
+											}
+										});
+			if (Repository.debugMode) {
+				console.log('Result ' + url, result);
+			}
+			const
+				parsed = JSON.parse(result.data),
+				{
+					data,
+					success,
+					message,
+				} = parsed;
+			if (!success && message === 'Errors') {
+				// assemble the errors from the upload
+				const msgElements = ['Could not upload.'];
+				_.each(data, (obj) => {
+					// {
+					// 	"2": "ID does not exist."
+					// }
+					const line = Object.entries(obj)
+										.map(([key, value]) => `Line ${key}: ${value}`)
+										.join("\n");
+					msgElements.push(line);
+				});
+				alert(msgElements.join("\n"));
+			}
 		};
 	
 	return <Panel
@@ -97,7 +132,7 @@ export default function UploadsDownloadsWindow(props) {
 									text: 'Download',
 									isEditable: false,
 									leftIcon: <Icon as={Excel} />,
-									onPress: onDownload,
+									onPress: () => onDownload(),
 								},
 								{
 									type: 'DisplayField',
@@ -107,7 +142,7 @@ export default function UploadsDownloadsWindow(props) {
 								{
 									type: 'File',
 									name: 'file',
-									onChangeValue: setFileValue,
+									onChangeValue: setImportFile,
 									accept: '.xlsx',
 								},
 								{
@@ -115,8 +150,15 @@ export default function UploadsDownloadsWindow(props) {
 									text: 'Upload',
 									isEditable: false,
 									leftIcon: <Icon as={Excel} />,
-									isDisabled: !fileValue,
+									isDisabled: !importFile,
 									onPress: onUpload,
+								},
+								{
+									type: 'Button',
+									text: 'Get Template',
+									isEditable: false,
+									onPress: onDownloadTemplate,
+									variant: 'ghost',
 								},
 							]
 						},
@@ -132,3 +174,4 @@ export default function UploadsDownloadsWindow(props) {
 			</Panel>;
 }
 
+export default withAlert(UploadsDownloadsWindow);
