@@ -57,15 +57,7 @@ function Viewer(props) {
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
 		buildFromItems = () => {
-			const builtItems = [];
-			_.each(items, (item, ix) => {
-				if (!item) {
-					return;
-				}
-				const builtItem = buildFromItem(item, ix, columnDefaults);
-				builtItems.push(builtItem);
-			});
-			return builtItems;
+			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
 		buildFromItem = (item, ix, defaults) => {
 			let {
