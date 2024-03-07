@@ -32,7 +32,7 @@ function UploadsDownloadsWindow(props) {
 			showInfo,
 		} = props,
 		[importFile, setImportFile] = useState(null),
-		[width, height] = useAdjustedWindowSize(400, 400),
+		[width, height] = useAdjustedWindowSize(400, 450),
 		onDownload = (isTemplate = false) => {
 			const
 				baseURL = Repository.api.baseURL,
