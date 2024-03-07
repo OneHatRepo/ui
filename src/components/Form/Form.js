@@ -287,7 +287,15 @@ function Form(props) {
 			return <Row>{elements}</Row>;
 		},
 		buildFromItems = () => {
-			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
+			const builtItems = [];
+			_.each(items, (item, ix) => {
+				if (!item) {
+					return;
+				}
+				const builtItem = buildFromItem(item, ix, columnDefaults);
+				builtItems.push(builtItem);
+			});
+			return builtItems;
 		},
 		buildFromItem = (item, ix, defaults) => {
 			if (React.isValidElement(item)) {
