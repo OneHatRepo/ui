@@ -290,6 +290,9 @@ function Form(props) {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
 		buildFromItem = (item, ix, defaults) => {
+			if (!item) {
+				return null;
+			}
 			if (React.isValidElement(item)) {
 				return item;
 			}

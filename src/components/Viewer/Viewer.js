@@ -60,6 +60,9 @@ function Viewer(props) {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
 		buildFromItem = (item, ix, defaults) => {
+			if (!item) {
+				return null;
+			}
 			let {
 					type,
 					title,
