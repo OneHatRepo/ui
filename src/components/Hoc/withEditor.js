@@ -33,7 +33,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					}
 					return 'record' + (selection[0].displayValue ? ' "' + selection[0].displayValue + '"' : '') + '?';
 				},
-				record,
 				onAdd,
 				onChange, // any kind of crud change
 				onDelete,
@@ -313,12 +312,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			},
 			doEditorSave = async (data, e) => {
 				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
-				const
-					what = record || selection,
-					isSingle = what.length === 1;
+				const isSingle = selection.length === 1;
 				if (isSingle) {
 					// just update this one entity
-					what[0].setValues(data);
+					selection[0].setValues(data);
 
 				} else if (selection.length > 1) {
 					// Edit multiple entities
@@ -327,7 +324,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					const propertyNames = Object.getOwnPropertyNames(data);
 					_.each(propertyNames, (propertyName) => {
 						if (!_.isNil(data[propertyName])) {
-							_.each(what, (rec) => {
+							_.each(selection, (rec) => {
 								rec[propertyName] = data[propertyName]
 							});
 						}
@@ -335,7 +332,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				if (getListeners().onBeforeSave) {
-					const listenerResult = await getListeners().onBeforeSave(what);
+					const listenerResult = await getListeners().onBeforeSave(selection);
 					if (listenerResult === false) {
 						return;
 					}
@@ -354,23 +351,23 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				if (success) {
 					if (onChange) {
-						onChange(what);
+						onChange(selection);
 					}
 					if (editorMode === EDITOR_MODE__ADD) {
 						if (onAdd) {
-							await onAdd(what);
+							await onAdd(selection);
 						}
 						if (getListeners().onAfterAdd) {
-							await getListeners().onAfterAdd(what);
+							await getListeners().onAfterAdd(selection);
 						}
 						setIsAdding(false);
 						setEditorMode(EDITOR_MODE__EDIT);
 					} else if (editorMode === EDITOR_MODE__EDIT) {
 						if (getListeners().onAfterEdit) {
-							await getListeners().onAfterEdit(what);
+							await getListeners().onAfterEdit(selection);
 						}
 						if (onSave) {
-							onSave(what);
+							onSave(selection);
 						}
 					}
 					// setIsEditorShown(false);
