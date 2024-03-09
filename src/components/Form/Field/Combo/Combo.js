@@ -745,15 +745,15 @@ export function ComboComponent(props) {
 						}
 
 					}}
-					onAdd={(entity) => {
-						if (entity?.id !== value && !isInTag) {
+					onAdd={(selection) => {
+						const entity = selection[0];
+						if (entity.id !== value && !isInTag) {
 							// Select it and set the value of the combo.
-							setGridSelection([entity]);
-							const id = entity.id;
-							setValue(id);
+							setGridSelection(selection);
+							setValue(entity.id);
 						}
 						if (onGridAdd) {
-							onGridAdd([entity]);
+							onGridAdd(selection);
 						}
 					}}
 					onSave={(selection) => {
@@ -761,9 +761,8 @@ export function ComboComponent(props) {
 						if (entity?.id !== value && !isInTag) { // Tag doesn't use value, so don't do this comparison in the Tag
 							// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
 							// Select it and set the value of the combo.
-							setGridSelection([entity]);
-							const id = entity.id;
-							setValue(id);
+							setGridSelection(selection);
+							setValue(entity.id);
 						}
 						if (onGridSave) {
 							onGridSave(selection);
