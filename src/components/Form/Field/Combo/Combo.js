@@ -763,6 +763,9 @@ export function ComboComponent(props) {
 							// Select it and set the value of the combo.
 							setGridSelection(selection);
 							setValue(entity.id);
+						} else {
+							// we're not changing the Combo's value, but we might still need to change its displayValue
+							setDisplayValue(entity.id);
 						}
 						if (onGridSave) {
 							onGridSave(selection);
