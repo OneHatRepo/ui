@@ -40,14 +40,15 @@ function NumberElement(props) {
 			case 'ArrowUp':
 				onIncrement();
 				break;
-			case 'Tab':
-			case 'Backspace':
-				return;
-				break;
 			case 'Enter':
 				setValue(value);
 				break;
-				default:
+			case 'ArrowLeft':
+			case 'ArrowRight':
+			case 'Tab':
+			case 'Backspace':
+				return;
+			default:
 		}
 		if (!key.match(/^[\-\d\.]*$/)) {
 			e.preventDefault(); // kill anything that's not a number
