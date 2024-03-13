@@ -121,6 +121,8 @@ function Viewer(props) {
 						propsToPass.mb = 1;
 					}
 					propsToPass.pl = 3;
+				} else if (type === 'FieldSet' && item.showToggleAllCheckbox) {
+					propsToPass.showToggleAllCheckbox = false; // don't allow it in view mode
 				}
 				const defaults = item.defaults;
 				children = _.map(items, (item, ix) => {
