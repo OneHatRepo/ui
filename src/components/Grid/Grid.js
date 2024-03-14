@@ -96,7 +96,7 @@ function GridComponent(props) {
 			flatListProps = {},
 			onRowPress,
 			// enableEditors = false,
-			loadOnRender = true,
+			forceLoadOnRender = false,
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
@@ -872,7 +872,7 @@ function GridComponent(props) {
 		applySelectorSelected();
 		Repository.resumeEvents();
 
-		if (Repository.isRemote && !Repository.isLoaded) {
+		if (Repository.isRemote && (!Repository.isLoaded || forceLoadOnRender)) {
 			Repository.load();
 		}
 
