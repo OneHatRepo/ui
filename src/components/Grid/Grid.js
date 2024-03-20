@@ -865,14 +865,14 @@ function GridComponent(props) {
 			Repository.ons(['changePage', 'changePageSize',], deselectAll);
 		}
 		Repository.ons(['changeData', 'change'], forceUpdate);
-		Repository.on('changeFilters', onChangeFilters);
-		Repository.on('changeSorters', onChangeSorters);
+		// Repository.on('changeFilters', onChangeFilters);
+		// Repository.on('changeSorters', onChangeSorters);
 
 
 		applySelectorSelected();
 		Repository.resumeEvents();
 
-		if (Repository.isRemote && (!Repository.isLoaded || forceLoadOnRender)) {
+		if ((Repository.isRemote && !Repository.isLoaded) || forceLoadOnRender) {
 			Repository.load();
 		}
 
@@ -883,8 +883,8 @@ function GridComponent(props) {
 				Repository.offs(['changePage', 'changePageSize',], deselectAll);
 			}
 			Repository.offs(['changeData', 'change'], forceUpdate);
-			Repository.off('changeFilters', onChangeFilters);
-			Repository.off('changeSorters', onChangeSorters);
+			// Repository.off('changeFilters', onChangeFilters);
+			// Repository.off('changeSorters', onChangeSorters);
 		};
 	}, [isInited]);
 
