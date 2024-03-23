@@ -22,6 +22,7 @@ export default function ValueBox(props) {
 				mr={1}
 				bg="trueGray.200"
 				alignItems="center"
+				maxWidth="100%"
 			>
 				<IconButton
 					_icon={{
