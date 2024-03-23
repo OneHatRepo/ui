@@ -40,6 +40,7 @@ export default function withFilters(WrappedComponent) {
 				searchAllText = true,
 				showLabels = true,
 				showFilterSelector = true,
+				showClearFiltersButton = true,
 				defaultFilters = [], // likely a list of field names, possibly could be of shape below
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
 				minFilters = 3,
@@ -433,15 +434,15 @@ export default function withFilters(WrappedComponent) {
 								</ScrollView>
 							</Row>
 							<Row flex={hasFilters ? null : 1} alignItems="center" alignSelf="flex-end">
-								<IconButton
-									key="clear"
+								{showClearFiltersButton && <IconButton
+									key="clearFiltersBtn"
 									_icon={{
 										as: Ban,
 									}}
 									ml={1}
 									onPress={onClearFilters}
 									tooltip="Clear all filters"
-								/>
+								/>}
 								{showFilterSelector && !isUsingCustomFilters && <IconButton
 									key="gear"
 									_icon={{
