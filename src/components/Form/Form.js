@@ -40,7 +40,9 @@ import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
 
-const CONTAINER_THRESHOLD = 900;
+const
+	ONE_COLUMN_THRESHOLD = 900, // only allow one column in form
+	STACK_ROW_THRESHOLD = 500; // stack field-row elements
 
 // TODO: memoize field Components
 
@@ -367,7 +369,7 @@ function Form(props) {
 					return null;
 				}
 				if (type === 'Column') {
-					if (containerWidth < CONTAINER_THRESHOLD) {
+					if (containerWidth < ONE_COLUMN_THRESHOLD) {
 						// everything is in one column
 						if (propsToPass.hasOwnProperty('flex')) {
 							delete propsToPass.flex;
@@ -420,7 +422,7 @@ function Form(props) {
 					if (defaults?.labelWidth) {
 						labelProps.w = defaults.labelWidth;
 					}
-					if (containerWidth > 400) {
+					if (containerWidth > STACK_ROW_THRESHOLD) {
 						element = <><Label {...labelProps}>{label}</Label>{element}</>;
 					} else {
 						element = <Column><Label {...labelProps}>{label}</Label>{element}</Column>;
@@ -530,7 +532,7 @@ function Form(props) {
 
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
-								if (containerWidth > 400) {
+								if (containerWidth > STACK_ROW_THRESHOLD) {
 									element = <Row flex={1} flexWrap="wrap">
 													{element}
 													{buttons}
@@ -566,7 +568,7 @@ function Form(props) {
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
 								}
-								if (containerWidth > 400) {
+								if (containerWidth > STACK_ROW_THRESHOLD) {
 									element = <Row w="100%" py={1}>
 													<Label {...labelProps}>{requiredIndicator}{label}</Label>
 													{element}
@@ -784,8 +786,8 @@ function Form(props) {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
 			editor = <>
-						{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{formComponents}</Row> : null}
-						{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
+						{containerWidth >= ONE_COLUMN_THRESHOLD ? <Row p={4} pl={0}>{formComponents}</Row> : null}
+						{containerWidth < ONE_COLUMN_THRESHOLD ? <Column p={4}>{formComponents}</Column> : null}
 						<Column m={2} pt={4} px={2}>{formAncillaryComponents}</Column>
 					</>;
 
