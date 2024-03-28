@@ -56,6 +56,7 @@ export function ComboComponent(props) {
 			onGridAdd, // to hook into when menu adds (ComboEditor only)
 			onGridSave, // to hook into when menu saves (ComboEditor only)
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
+			newEntityDisplayProperty,
 
 			// withComponent
 			self,
@@ -685,6 +686,7 @@ export function ComboComponent(props) {
 					parent={self}
 					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
 					newEntityDisplayValue={newEntityDisplayValue}
+					newEntityDisplayProperty={newEntityDisplayProperty}
 					disablePresetButtons={!isEditor}
 					alternateRowBackgrounds={false}
 					onChangeSelection={(selection) => {
