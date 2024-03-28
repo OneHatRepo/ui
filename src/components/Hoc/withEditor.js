@@ -440,6 +440,21 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
+			if (!Repository) {
+				return () => {};
+			}
+
+			function handleError(msg) {
+				alert(msg);
+			}
+
+			Repository.on('error', handleError);
+			return () => {
+				Repository.off('error', handleError);
+			};
+		}, []);
+
+		useEffect(() => {
 			// When selection changes, set the mode appropriately
 			let mode;
 			if (isIgnoreNextSelectionChange) {
