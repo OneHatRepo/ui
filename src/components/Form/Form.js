@@ -552,19 +552,21 @@ function Form(props) {
 								
 							let isRequired = false,
 								requiredIndicator = null;
-							if (getIsRequired) {
-								isRequired = getIsRequired(formGetValues, formState);
-							} else if (validatorToUse?.fields && validatorToUse.fields[name]?.exclusiveTests?.required) {
-								// submitted validator
-								isRequired = true;
-							} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
-								(propertyDef?.requiredIfPhantom && isPhantom) ||
-								(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
-								// property definition
-								isRequired = true;
-							}
-							if (isRequired) {
-								requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
+							if (!isMultiple) { // Don't require fields if editing multiple records
+								if (getIsRequired) {
+									isRequired = getIsRequired(formGetValues, formState);
+								} else if (validatorToUse?.fields && validatorToUse.fields[name]?.exclusiveTests?.required) {
+									// submitted validator
+									isRequired = true;
+								} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
+									(propertyDef?.requiredIfPhantom && isPhantom) ||
+									(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
+									// property definition
+									isRequired = true;
+								}
+								if (isRequired) {
+									requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
+								}
 							}
 							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
 								const labelProps = {};
