@@ -38,6 +38,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				onDelete,
 				onSave, // this could also be called 'onEdit'
 				newEntityDisplayValue,
+				newEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				defaultValues,
 
 				// withComponent
@@ -115,7 +116,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				if (getNewEntityDisplayValue()) {
-					const displayPropertyName = Repository.getSchema().model.displayProperty;
+					const displayPropertyName = newEntityDisplayProperty || Repository.getSchema().model.displayProperty;
 					addValues[displayPropertyName] = getNewEntityDisplayValue();
 				}
 
