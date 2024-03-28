@@ -477,6 +477,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			self.moveChildren = doMoveChildren;
 			self.deleteChildren = doDeleteChildren;
 			self.duplicate = doDuplicate;
+			self.setIsEditorShown = setIsEditorShown;
 		}
 		newEntityDisplayValueRef.current = newEntityDisplayValue;
 
