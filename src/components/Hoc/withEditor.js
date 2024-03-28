@@ -414,20 +414,26 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsEditorShown(false);
 				});
 			},
-			calculateEditorMode = () => {
-				let mode = editorMode;
-				if (!canEditorViewOnly && userCanEdit) {
-					if (selection.length > 1) {
-						if (!disableEdit) {
-							// For multiple entities selected, change it to edit multiple mode
-							mode = EDITOR_MODE__EDIT;
-						}
-					} else if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom) {
-						if (!disableAdd) {
-							// When a phantom entity is selected, change it to add mode.
-							mode = EDITOR_MODE__ADD;
+			calculateEditorMode = (isIgnoreNextSelectionChange = false) => {
+				// calculateEditorMode gets called only on selection changes
+				let mode;
+				if (isIgnoreNextSelectionChange) {
+					mode = editorMode;
+					if (!canEditorViewOnly && userCanEdit) {
+						if (selection.length > 1) {
+							if (!disableEdit) {
+								// For multiple entities selected, change it to edit multiple mode
+								mode = EDITOR_MODE__EDIT;
+							}
+						} else if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom) {
+							if (!disableAdd) {
+								// When a phantom entity is selected, change it to add mode.
+								mode = EDITOR_MODE__ADD;
+							}
 						}
 					}
+				} else {
+					mode = selection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 				}
 				return mode;
 			},
@@ -462,16 +468,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 		}, []);
 
 		useEffect(() => {
-			// When selection changes, set the mode appropriately
-			let mode;
-			if (isIgnoreNextSelectionChange) {
-				// on selection change from doAdd/doDuplicate/etc, calculate whether to put Editor in "add" or "edit" mode
-				mode = calculateEditorMode();
-			} else {
-				// Most of the time, if selection changed, put the Editor in "view" mode
-				mode = EDITOR_MODE__VIEW;
-			}
-			setEditorMode(mode);
+			setEditorMode(calculateEditorMode(isIgnoreNextSelectionChange));
 
 			setIsIgnoreNextSelectionChange(false);
 			setLastSelection(selection);
@@ -492,11 +489,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
 			// (basically redo what's in the useEffect, above)
-			if (isIgnoreNextSelectionChange) {
-				editorMode = calculateEditorMode();
-			} else {
-				editorMode = EDITOR_MODE__VIEW;
-			}
+			editorMode = calculateEditorMode(isIgnoreNextSelectionChange);
 		}
 
 		return <WrappedComponent
