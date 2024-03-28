@@ -37,6 +37,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				onChange, // any kind of crud change
 				onDelete,
 				onSave, // this could also be called 'onEdit'
+				onEditorClose,
 				newEntityDisplayValue,
 				newEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				defaultValues,
@@ -66,10 +67,16 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isAdding, setIsAdding] = useState(false),
 			[isSaving, setIsSaving] = useState(false),
-			[isEditorShown, setIsEditorShown] = useState(false),
+			[isEditorShown, setIsEditorShownRaw] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly), // current state of whether editor is in view-only mode
 			[isIgnoreNextSelectionChange, setIsIgnoreNextSelectionChange] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
+			setIsEditorShown = (bool) => {
+				setIsEditorShownRaw(bool);
+				if (!bool && onEditorClose) {
+					onEditorClose();
+				}
+			},
 			setSelectionDecorated = (newSelection) => {
 				function doIt() {
 					setSelection(newSelection);
