@@ -42,7 +42,7 @@ export default function withPdfButton(WrappedComponent) {
 
 			} = props,
 			[isModalShown, setIsModalShown] = useState(false),
-			[width, height] = useAdjustedWindowSize(500, 800),
+			[width, height] = useAdjustedWindowSize(510, 800), // 510 so it's over the stack threshold
 			propertyNames = [],
 			buildModalItems = () => {
 				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
