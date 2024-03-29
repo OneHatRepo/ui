@@ -1,13 +1,16 @@
-const downloadWithFetch = (url, options = {}) => {
+const downloadWithFetch = (url, options = {}, win = null) => {
 	let obj = {};
 	fetch(url, options)
 		.then( res => res.blob() )
 		.then( blob => {
-			const
-				winName = 'ReportWindow',
-				opts = 'resizable=yes,height=600,width=800,location=0,menubar=0,scrollbars=1',
-				win = window.open('', winName, opts),
-				file = win.URL.createObjectURL(blob);
+			if (!win) {
+				const
+					winName = 'Download',
+					opts = 'resizable=yes,height=100,width=50,location=0,menubar=0,scrollbars=0';
+				win = window.open('', winName, opts);
+			}
+
+			const file = win.URL.createObjectURL(blob);
 			obj.window = win;
 			win.location.assign(file);
 		});
