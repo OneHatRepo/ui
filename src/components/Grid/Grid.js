@@ -123,6 +123,7 @@ function GridComponent(props) {
 			verifyCanEdit,
 			alternateRowBackgrounds = true,
 			alternatingInterval = 2,
+			defaultRowHeight = 48,
 
 			// withComponent
 			self,
@@ -698,8 +699,7 @@ function GridComponent(props) {
 				headerHeight = showHeaders ? 50 : 0,
 				footerHeight = !disablePagination ? 50 : 0,
 				height = containerHeight - headerHeight - footerHeight,
-				rowHeight = 48,
-				rowsPerContainer = Math.floor(height / rowHeight);
+				rowsPerContainer = Math.floor(height / defaultRowHeight);
 			let pageSize = rowsPerContainer;
 			if (showHeaders) {
 				pageSize--;
