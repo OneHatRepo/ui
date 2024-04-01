@@ -327,12 +327,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						{...propsToPass}
 						disablePresetButtons={false}
 						contextMenuItems={[
-							...contextMenuItems,
 							...localContextMenuItems,
+							...contextMenuItems,
 						]}
 						additionalToolbarButtons={[
-							...additionalToolbarButtons,
 							...localAdditionalToolbarButtons,
+							...additionalToolbarButtons,
 						]}
 						onChangeColumnsConfig={onChangeColumnsConfigDecorator}
 					/>
