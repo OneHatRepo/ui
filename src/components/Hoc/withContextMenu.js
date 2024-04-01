@@ -91,7 +91,11 @@ export default function withContextMenu(WrappedComponent) {
 						w: 20,
 						mr: 2,
 					};
-					icon = React.cloneElement(icon, {...iconProps});
+					if (React.isValidElement(icon)) {
+						icon = React.cloneElement(icon, {...iconProps});
+					} else {
+						icon = <Icon as={icon} {...iconProps} />;
+					}
 				}
 
 				// <div style={{
