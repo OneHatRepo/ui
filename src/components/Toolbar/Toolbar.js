@@ -1,15 +1,18 @@
 import {
 	HStack,
 } from '@gluestack-ui/themed';
+import UiGlobals from '../../UiGlobals.js';
 
 export default function Toolbar(props) {
+	const styles = UiGlobals.styles;
 	return <HStack
 				w="100%"
 				justifyContent="flex-start"
 				bg="trueGray.200"
 				borderBottomWidth={1}
 				borderBottomColor="trueGray.400"
-				p={2}
+				px={styles.TOOLBAR_PX}
+				py={styles.TOOLBAR_PY}
 				overflow="auto"
 				{...props}
 			>

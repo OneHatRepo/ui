@@ -35,21 +35,20 @@ function NumberElement(props) {
 		const key = e.nativeEvent.key; // e.key works on web, but not mobile; so use e.nativeEvent.key which works on both
 		switch(key) {
 			case 'ArrowDown':
-			case 'ArrowLeft':
 				onDecrement();
 				break;
 			case 'ArrowUp':
-			case 'ArrowRight':
 				onIncrement();
-				break;
-			case 'Tab':
-			case 'Backspace':
-				return;
 				break;
 			case 'Enter':
 				setValue(value);
 				break;
-				default:
+			case 'ArrowLeft':
+			case 'ArrowRight':
+			case 'Tab':
+			case 'Backspace':
+				return;
+			default:
 		}
 		if (!key.match(/^[\-\d\.]*$/)) {
 			e.preventDefault(); // kill anything that's not a number
@@ -61,6 +60,8 @@ function NumberElement(props) {
 			value = null; // empty string makes value null
 		} else if (value.match(/\.$/)) { // value ends with a decimal point
 			// don't parseFloat, otherwise we'll lose the decimal point
+		} else if (value.match(/0$/)) { // value ends with a zero
+			// don't parseFloat, otherwise we'll lose the ability to do things like 1.03
 		} else {
 			value = parseFloat(value, 10);
 		}

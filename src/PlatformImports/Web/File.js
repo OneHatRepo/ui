@@ -1,65 +1,31 @@
-import { useState, useEffect, useRef, } from 'react';
+import { useEffect, } from 'react';
 import {
-	Box,
 	Button,
-	VStack,
-	Pressable,
 	HStack,
-	Spinner,
 	Text,
-} from 'native-base';
+} from '@gluestack-ui/themed';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
-import {
-	FILE_MODE_IMAGE,
-	FILE_MODE_FILE,
-} from '../../Constants/File.js';
-import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
-import inArray from '../../Functions/inArray.js';
+// import {
+// 	FileAmountLimitValidator,
+// 	FileTypeValidator,
+// 	FileSizeValidator,
+// 	ImageDimensionsValidator,
+// } from 'use-file-picker/validators';
+import { useFilePicker, useImperativeFilePicker } from 'use-file-picker'; // https://www.npmjs.com/package/use-file-picker
 import IconButton from '../../Components/Buttons/IconButton.js';
 import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withValue from '../../Components/Hoc/withValue.js';
-import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import Loading from '../../Components/Messages/Loading.js';
 import _ from 'lodash';
 
-const
-	EXPANDED_MAX = 100,
-	COLLAPSED_MAX = 2;
 
-function FileCardCustom(props) {
-	const
-		{
-			id,
-			name: filename,
-			type: mimetype,
-			onDelete,
-			downloadUrl,
-			uploadStatus,
-		} = props,
-		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']);
-	return <Pressable
-				px={3}
-				py={1}
-				alignItems="center"
-				flexDirection="row"
-				borderRadius={5}
-				borderWidth={1}
-				borderColor="primary.700"
-				onPress={() => {
-					downloadWithFetch(downloadUrl);
-				}}
-			>
-				{isDownloading && <Spinner mr={2} />}
-				<Text>{filename}</Text>
-				{onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
-			</Pressable>;
-}
-
+// This component is used to present a single file upload button
 
 function FileComponent(props) {
 
@@ -68,186 +34,99 @@ function FileComponent(props) {
 	}
 
 	const {
-			canCrud = true,
-			_dropZone = {},
-			_fileMosaic = {},
-			useFileMosaic = true,
-			accept, // 'image/*'
-			maxFiles = null,
-			disabled = false,
-			clickable = true,
-			confirmBeforeDelete = false,
-
-			// parentContainer
-			selectorSelected,
+			encodeAsBase64 = true,
+			readAs = 'BinaryString', // 'DataURL', 'Text', 'BinaryString', 'ArrayBuffer'
+			accept, // ['.png', '.txt'], 'image/*', '.txt'
+			multiple = false,
+			readFilesContent = true, // Ignores files content and omits reading process if set to false
+			validators, // [ new FileAmountLimitValidator({ max: 1 }), new FileTypeValidator(['jpg', 'png']), new FileSizeValidator({ maxFileSize: 50 * 1024 * 1024 /* 50 MB */ }), new ImageDimensionsValidator({maxHeight: 900,maxWidth: 1600,minHeight: 600,minWidth: 768,}),]
+			onFilesSelected, // always called, even if there are errors
+			onFilesRejected, // called when there were validation errors
+			onFilesSuccessfullySelected, // called when there were no validation errors
+			onFileRemoved, // called when a file is removed from the list of selected files
+			onClear, // called when the selection is cleared
 
 			// withValue
 			value,
 			setValue,
-
-			// withAlert
-			alert,
-			confirm,
-
 		} = props,
 		styles = UiGlobals.styles,
-		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name,
-		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity.id) : selectorSelected?.id,
-		modelid = useRef(modelidCalc),
-		[isReady, setIsReady] = useState(false),
-		[isUploading, setIsUploading] = useState(false),
-		[showAll, setShowAll] = useState(false),
-		[files, setFiles] = useState([]),
-		// buildFiles = () => {
-		// 	const files = _.map(Repository.entities, (entity) => {
-		// 		return {
-		// 			id: entity.id, //	string | number	The identifier of the file
-		// 			// file: null, //	File	The file object obtained from client drop or selection
-		// 			name: entity.attachments__filename, // string	The name of the file
-		// 			type: entity.attachments__mimetype, // string	The file mime type.
-		// 			size: entity.attachments__size, //	number	The size of the file in bytes.
-		// 			// valid: null, //	boolean	If present, it will show a valid or rejected message ("valid", "denied"). By default valid is undefined.
-		// 			// errors: null, //	string[]	The list of errors according to the validation criteria or the result of the given custom validation function.
-		// 			// uploadStatus: null, //	UPLOADSTATUS	The current upload status. (e.g. "uploading").
-		// 			// uploadMessage: null, //	string	A message that shows the result of the upload process.
-		// 			imageUrl: entity.attachments__uri, //	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
-		// 			downloadUrl: entity.attachments__uri, //	string	The url to be used to perform a GET request in order to download the file. If defined, the download icon will be shown.
-		// 			// progress: null, //	number	The current percentage of upload progress. This value will have a higher priority over the upload progress value calculated inside the component.
-		// 			// extraUploadData: null, //	Record<string, any>	The additional data that will be sent to the server when files are uploaded individually
-		// 			// extraData: null, //	Object	Any kind of extra data that could be needed.
-		// 			// serverResponse: null, //	ServerResponse	The upload response from server.
-		// 			// xhr: null, //	XMLHttpRequest	A reference to the XHR object that allows the upload, progress and abort events.
-		// 		};
-		// 	});
-		// 	setFiles(files);
-		// },
-		clearFiles = () => {
-			setFiles([]);
-		},
-		toggleShowAll = () => {
-			setShowAll(!showAll);
-		},
-		onDropzoneChange = (files) => {
-			if (!files.length) {
-				alert('No files accepted. Perhaps they were too large or the wrong file type?');
-				return;
-			}
-			setFiles(files);
-		},
-		onUploadStart = (files) => {
-			setIsUploading(true);
-		},
-		onUploadFinish = (files) => {
-			let isDoneUploading = true,
-				isError = false;
-
-			_.each(files, (file) => {
-				if (!file.xhr || file.xhr.status !== 200) {
-					isDoneUploading = false;
-					return false; // break
+		{
+			openFilePicker,
+			filesContent,
+			loading,
+			errors,
+			plainFiles,
+			clear,
+		} = useFilePicker({
+			readAs,
+			accept,
+			multiple,
+			readFilesContent,
+			validators,
+			onFilesSelected,
+			onFilesRejected,
+			onFilesSuccessfullySelected: ({ filesContent, plainFiles }) => {
+				let value = filesContent[0].content;
+				if (readAs === 'BinaryString' && encodeAsBase64) {
+					value = btoa(value); // convert to base64 encoded string
 				}
-			});
+				setValue(value);
+			},
+			onFileRemoved,
+			onClear: () => setValue(null),
+		});
 
-			if (isDoneUploading) {
-				_.each(files, (file) => {
-					if (file.uploadStatus === 'error') {
-						isError = true;
-						const msg = file.serverResponse?.payload || 'An error occurred';
-						alert(msg);
-						return false;
-					}
-				});
-				if (!isError) {
-					setIsUploading(false);
-				}
-			}
-		},
-		onFileDelete = (id) => {
-			if (confirmBeforeDelete) {
-				confirm('Are you sure you want to delete the file?', () => doDelete(id));
-			} else {
-				doDelete(id);
-			}
-		},
-		doDelete = (id) => {
+	useEffect(() => {
+		if (errors.length) {
+			const
+				errorStack = errors.map(err => err.name + ': ' + err.reason),
+				msg = errorStack.join("\n");
+			alert(msg);
+		}
+	}, [errors.length]);
 
+	useEffect(() => {
+		if (!value && filesContent.length) {
+			clear();
+		}
+	}, [value, filesContent.length]);
 
-		};
-
-	if (canCrud) {
-		_fileMosaic.onDelete = onFileDelete;
+	if (loading) {
+		return <Loading />;
 	}
-	let content = <VStack
-						w="100%"
-						p={2}
-						background={styles.ATTACHMENTS_BG}
-					>
-						<HStack flexWrap="wrap">
-							{files.map((file) => {
-								return <Box
-											key={file.id}
-											marginRight={4}
-										>
-											{useFileMosaic &&
-												<FileMosaic
-													{...file}
-													backgroundBlurImage={false}
-													{..._fileMosaic}
-												/>}
-											{!useFileMosaic &&
-												<FileCardCustom
-													{...file}
-													backgroundBlurImage={false}
-													{..._fileMosaic}
-												/>}
-										</Box>;
-							})}
-						</HStack>
-						{Repository.total <= COLLAPSED_MAX ? null :
-							<Button
-								onPress={toggleShowAll}
-								mt={4}
-								_text={{
-									color: 'trueGray.600',
-									fontStyle: 'italic',
-									textAlign: 'left',
-									width: '100%',
-								}}
-								variant="ghost"
-							>{'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}</Button>}
-					</VStack>;
-	
-	if (canCrud) {
-		content = <Dropzone
-						value={files}
-						onChange={onDropzoneChange}
-						accept={accept}
-						maxFiles={maxFiles}
-						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
-						autoClean={true}
-						uploadConfig={{
-							url: Repository.api.baseURL + Repository.name + '/uploadAttachment',
-							method: 'POST',
-							headers: Repository.headers,
-							autoUpload: true,
-						}}
-						headerConfig={{
-							deleteFiles: false,
-						}}
-						onUploadStart={onUploadStart}
-						onUploadFinish={onUploadFinish}
-						background={styles.ATTACHMENTS_BG}
-						color={styles.ATTACHMENTS_COLOR}
-						minHeight={150}
-						footer={false}
-						clickable={clickable}
-						{..._dropZone}
-					>
-						{content}
-					</Dropzone>;
 
+	let assembledComponents = null;
+	if (_.isEmpty(filesContent)) {
+		assembledComponents = <Button onPress={() => openFilePicker()}>Select File</Button>;
+	} else {
+		assembledComponents = <HStack
+									px={3}
+									py={1}
+									alignItems="center"
+									borderRadius={5}
+									borderWidth={1}
+									borderColor="primary.700"
+								>
+									<IconButton
+										_icon={{
+											as: Xmark,
+											color: 'trueGray.600',
+											size: 'sm',
+										}}
+										onPress={() => clear()}
+										h="100%"
+										bg={styles.FORM_COMBO_TRIGGER_BG}
+										_hover={{
+											bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
+										}}
+										mr={1}
+									/>
+									<Text>{plainFiles[0].name}</Text>
+								</HStack>;
 	}
-	return content;
+
+	return assembledComponents;
 }
 
 export default withAlert(withValue(FileComponent));

@@ -1,4 +1,7 @@
 import React, { useState, useEffect, } from 'react';
+import {
+	Modal,
+} from '@gluestack-ui/themed';
 import Clipboard from '../Icons/Clipboard.js';
 import Duplicate from '../Icons/Duplicate.js';
 import Edit from '../Icons/Edit.js';
@@ -6,7 +9,9 @@ import Eye from '../Icons/Eye.js';
 import Trash from '../Icons/Trash.js';
 import Plus from '../Icons/Plus.js';
 import Print from '../Icons/Print.js';
+import UploadDownload from '../Icons/UploadDownload.js';
 import inArray from '../../Functions/inArray.js';
+import UploadsDownloadsWindow from '../Window/UploadsDownloadsWindow.js';
 import _ from 'lodash';
 
 // Note: A 'present button' will create both a context menu item 
@@ -20,6 +25,7 @@ const presetButtons = [
 	'copy',
 	'duplicate',
 	// 'print',
+	'uploadDownload',
 ];
 
 export default function withPresetButtons(WrappedComponent, isGrid = false) {
@@ -34,6 +40,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				// extract and pass
 				contextMenuItems = [],
 				additionalToolbarButtons = [],
+				useUploadDownload = false,
 				onChangeColumnsConfig,
 				verifyCanEdit,
 				verifyCanDelete,
@@ -60,6 +67,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				// withComponent
 				self,
 
+				// withData
+				Repository,
+
 				// withEditor
 				userCanEdit = true,
 				userCanView = true,
@@ -77,6 +87,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				selectorSelected,
 			} = props,
 			[isReady, setIsReady] = useState(false),
+			[isModalShown, setIsModalShown] = useState(false),
 			[localContextMenuItems, setLocalContextMenuItems] = useState([]),
 			[localAdditionalToolbarButtons, setLocalAdditionalToolbarButtons] = useState([]),
 			[localColumnsConfig, setLocalColumnsConfig] = useState([]),
@@ -121,6 +132,11 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						break;
 					case 'print':
 						if (disablePrint) {
+							isDisabled = true;
+						}
+						break;
+					case 'uploadDownload':
+						if (!useUploadDownload) {
 							isDisabled = true;
 						}
 						break;
@@ -224,6 +240,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					// 	handler = onPrint;
 					// 	icon = <Print />;
 					// 	break;
+					case 'uploadDownload':
+						key = 'uploadDownloadBtn';
+						text = 'Upload/Download';
+						handler = onUploadDownload;
+						icon = <UploadDownload />;
+						break;
 					default:
 				}
 				return {
@@ -282,7 +304,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				if (showInfo) {
 					showInfo('Copied to clipboard!');
 				}
-			};
+			},
+			onUploadDownload = () => setIsModalShown(true),
+			onModalClose = () => setIsModalShown(false);
 			// onPrint = () => {
 			// 	debugger;
 			// };
@@ -298,18 +322,32 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 			return null;
 		}
 
-		return <WrappedComponent
-					{...propsToPass}
-					disablePresetButtons={false}
-					contextMenuItems={[
-						...contextMenuItems,
-						...localContextMenuItems,
-					]}
-					additionalToolbarButtons={[
-						...additionalToolbarButtons,
-						...localAdditionalToolbarButtons,
-					]}
-					onChangeColumnsConfig={onChangeColumnsConfigDecorator}
-				/>;
+		return <>
+					<WrappedComponent
+						{...propsToPass}
+						disablePresetButtons={false}
+						contextMenuItems={[
+							...localContextMenuItems,
+							...contextMenuItems,
+						]}
+						additionalToolbarButtons={[
+							...localAdditionalToolbarButtons,
+							...additionalToolbarButtons,
+						]}
+						onChangeColumnsConfig={onChangeColumnsConfigDecorator}
+					/>
+					{isModalShown && 
+						<Modal
+							isOpen={true}
+							onClose={onModalClose}
+						>
+							<UploadsDownloadsWindow
+								reference="uploadsDownloads"
+								onClose={onModalClose}
+								Repository={Repository}
+								columnsConfig={props.columnsConfig}
+							/>
+						</Modal>}
+				</>;
 	};
 }

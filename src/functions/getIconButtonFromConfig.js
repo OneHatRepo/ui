@@ -29,7 +29,7 @@ export default function getIconButtonFromConfig(config, ix, parent) {
 				key={key || ix}
 				parent={parent}
 				reference={key || ix}
-				onPress={handler}
+				onPress={() => handler(parent)}
 				icon={icon}
 				_icon={_icon}
 				isDisabled={isDisabled}

@@ -81,6 +81,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				const formState = secondaryEditorStateRef.current;
 				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== secondarySelection && secondaryEditorMode === EDITOR_MODE__EDIT) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
+				} else if (secondarySelection && secondarySelection[0] && !secondarySelection[0].isDestroyed && (secondarySelection[0]?.isPhantom || secondarySelection[0]?.isRemotePhantom)) {
+					confirm('This new record is unsaved. Are you sure you want to cancel editing? Changes will be lost.', async () => {
+						await secondarySelection[0].delete();
+						doIt();
+					});
 				} else {
 					doIt();
 				}
@@ -134,7 +139,15 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				} else {
 					// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
 					const currentSorter = SecondaryRepository.sorters[0];
-					if (currentSorter.name !== SecondaryRepository.schema.model.idProperty || currentSorter.direction !== 'DESC') {
+					if (currentSorter.name.match(/__sort_order$/)) { // when it's using a sort column, keep using it
+						if (currentSorter.direction !== 'DESC') {
+							SecondaryRepository.pauseEvents();
+							SecondaryRepository.sort(currentSorter.name, 'DESC');
+							SecondaryRepository.setPage(1);
+							SecondaryRepository.resumeEvents();
+							await SecondaryRepository.reload();
+						}
+					} else if (currentSorter.name !== SecondaryRepository.schema.model.idProperty || currentSorter.direction !== 'DESC') {
 						SecondaryRepository.pauseEvents();
 						SecondaryRepository.sort(SecondaryRepository.schema.model.idProperty, 'DESC');
 						SecondaryRepository.setPage(1);

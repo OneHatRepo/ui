@@ -94,7 +94,7 @@ function GridComponent(props) {
 			flatListProps = {},
 			onRowPress,
 			// enableEditors = false,
-			loadOnRender = true,
+			forceLoadOnRender = false,
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
@@ -119,6 +119,9 @@ function GridComponent(props) {
 			flex,
 			bg = '#fff',
 			verifyCanEdit,
+			alternateRowBackgrounds = true,
+			alternatingInterval = 2,
+			defaultRowHeight = 48,
 
 			// withComponent
 			self,
@@ -407,6 +410,8 @@ function GridComponent(props) {
 								}
 							} else if (showHovers && isHovered) {
 								mixWith = styles.GRID_ROW_HOVER_BG;
+							} else if (alternateRowBackgrounds && index % alternatingInterval === 0) { // i.e. every second line, or every third line
+								mixWith = styles.GRID_ROW_ALTERNATE_BG;
 							}
 							if (mixWith) {
 								const
@@ -692,8 +697,7 @@ function GridComponent(props) {
 				headerHeight = showHeaders ? 50 : 0,
 				footerHeight = !disablePagination ? 50 : 0,
 				height = containerHeight - headerHeight - footerHeight,
-				rowHeight = 48,
-				rowsPerContainer = Math.floor(height / rowHeight);
+				rowsPerContainer = Math.floor(height / defaultRowHeight);
 			let pageSize = rowsPerContainer;
 			if (showHeaders) {
 				pageSize--;
@@ -866,7 +870,7 @@ function GridComponent(props) {
 		applySelectorSelected();
 		Repository.resumeEvents();
 
-		if (Repository.isRemote && !Repository.isLoaded) {
+		if ((Repository.isRemote && !Repository.isLoaded) || forceLoadOnRender) {
 			Repository.load();
 		}
 

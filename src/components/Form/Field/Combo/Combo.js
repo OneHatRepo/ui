@@ -56,6 +56,7 @@ export function ComboComponent(props) {
 			onGridAdd, // to hook into when menu adds (ComboEditor only)
 			onGridSave, // to hook into when menu saves (ComboEditor only)
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
+			newEntityDisplayProperty,
 
 			// withComponent
 			self,
@@ -524,6 +525,8 @@ export function ComboComponent(props) {
 									flex={1}
 									h="100%"
 									flexDirection="row"
+									justifyContent="center"
+									alignItems="center"
 									borderWidth={1}
 									borderColor="trueGray.400"
 									borderTopRightRadius={0}
@@ -601,13 +604,13 @@ export function ComboComponent(props) {
 								onPress={showMenu}
 								flex={1}
 								flexDirection="row"
+								justifyContent="center"
+								alignItems="center"
 								borderWidth={1}
 								borderColor="trueGray.400"
 								borderTopRightRadius={0}
 								borderBottomRightRadius={0}
 								bg={styles.FORM_COMBO_INPUT_BG}
-								m={0}
-								p={2}
 								h="100%"
 							>
 								{inputIconElement}
@@ -616,6 +619,8 @@ export function ComboComponent(props) {
 									h="100%"
 									numberOfLines={1}
 									ellipsizeMode="head"
+									m={0}
+									p={2}
 									color={_.isEmpty(displayValue) ? 'trueGray.400' : '#000'}
 									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
 								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
@@ -681,7 +686,9 @@ export function ComboComponent(props) {
 					parent={self}
 					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
 					newEntityDisplayValue={newEntityDisplayValue}
+					newEntityDisplayProperty={newEntityDisplayProperty}
 					disablePresetButtons={!isEditor}
+					alternateRowBackgrounds={false}
 					onChangeSelection={(selection) => {
 
 						if (Repository && selection[0]?.isPhantom) {
@@ -740,25 +747,29 @@ export function ComboComponent(props) {
 						}
 
 					}}
-					onAdd={(entity) => {
-						if (entity?.id !== value && !isInTag) {
+					onAdd={(selection) => {
+						const entity = selection[0];
+						if (entity.id !== value && !isInTag) {
 							// Select it and set the value of the combo.
-							setGridSelection([entity]);
-							const id = entity.id;
-							setValue(id);
+							setGridSelection(selection);
+							setValue(entity.id);
 						}
 						if (onGridAdd) {
-							onGridAdd([entity]);
+							onGridAdd(selection);
 						}
 					}}
 					onSave={(selection) => {
 						const entity = selection[0];
-						if (entity?.id !== value && !isInTag) { // Tag doesn't use value, so don't do this comparison in the Tag
-							// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
-							// Select it and set the value of the combo.
-							setGridSelection([entity]);
-							const id = entity.id;
-							setValue(id);
+						if (!isInTag) {
+							if (entity?.id !== value) { // Tag doesn't use value, so don't do this comparison in the Tag
+								// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
+								// Select it and set the value of the combo.
+								setGridSelection(selection);
+								setValue(entity.id);
+							} else {
+								// we're not changing the Combo's value, but we might still need to change its displayValue
+								setDisplayValue(entity.id);
+							}
 						}
 						if (onGridSave) {
 							onGridSave(selection);
@@ -927,7 +938,7 @@ export function ComboComponent(props) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<VStack>
-				<HStack {...refProps} justifyContent="center" alignItems="center" flex={1}>
+				<HStack {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%">
 					{xButton}
 					{eyeButton}
 					{inputAndTrigger}
@@ -939,7 +950,7 @@ export function ComboComponent(props) {
 			</VStack>;
 	} else {
 		assembledComponents = 
-			<HStack {...refProps} justifyContent="center" alignItems="center" flex={1} onLayout={onLayout}>
+			<HStack {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
 				{xButton}
 				{eyeButton}
 				{inputAndTrigger}
@@ -990,9 +1001,9 @@ export function ComboComponent(props) {
 	}
 	
 	if (tooltip) {
-		// assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
-		// 						{assembledComponents}
-		// 					</Tooltip>;
+		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement} h="100%">
+								{assembledComponents}
+							</Tooltip>;
 	}
 	
 	return assembledComponents;

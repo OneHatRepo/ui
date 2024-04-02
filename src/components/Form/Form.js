@@ -41,7 +41,9 @@ import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
 
-const CONTAINER_THRESHOLD = 900;
+const
+	ONE_COLUMN_THRESHOLD = 900, // only allow one column in form
+	STACK_ROW_THRESHOLD = 500; // stack field-row elements
 
 // TODO: memoize field Components
 
@@ -124,6 +126,9 @@ function Form(props) {
 	let skipAll = false;
 	if (record?.isDestroyed) {
 		skipAll = true; // if record is destroyed, skip render, but allow hooks to still be called
+		if (self?.parent?.parent?.setIsEditorShown) {
+			self.parent.parent.setIsEditorShown(false); // close the editor
+		}
 	}
 	const
 		isMultiple = _.isArray(record),
@@ -291,6 +296,9 @@ function Form(props) {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
 		buildFromItem = (item, ix, defaults) => {
+			if (!item) {
+				return null;
+			}
 			if (React.isValidElement(item)) {
 				return item;
 			}
@@ -365,7 +373,7 @@ function Form(props) {
 					return null;
 				}
 				if (type === 'Column') {
-					if (containerWidth < CONTAINER_THRESHOLD) {
+					if (containerWidth < ONE_COLUMN_THRESHOLD) {
 						// everything is in one column
 						if (propsToPass.hasOwnProperty('flex')) {
 							delete propsToPass.flex;
@@ -418,7 +426,7 @@ function Form(props) {
 					if (defaults?.labelWidth) {
 						labelProps.w = defaults.labelWidth;
 					}
-					if (containerWidth > 400) {
+					if (containerWidth > STACK_ROW_THRESHOLD) {
 						element = <><Label {...labelProps}>{label}</Label>{element}</>;
 					} else {
 						element = <VStack><Label {...labelProps}>{label}</Label>{element}</VStack>;
@@ -528,7 +536,7 @@ function Form(props) {
 
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
-								if (containerWidth > 400) {
+								if (containerWidth > STACK_ROW_THRESHOLD) {
 									element = <HStack flex={1} flexWrap="wrap">
 													{element}
 													{buttons}
@@ -545,26 +553,28 @@ function Form(props) {
 								
 							let isRequired = false,
 								requiredIndicator = null;
-							if (getIsRequired) {
-								isRequired = getIsRequired(formGetValues, formState);
-							} else if (validatorToUse?.fields && validatorToUse.fields[name]?.exclusiveTests?.required) {
-								// submitted validator
-								isRequired = true;
-							} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
-								(propertyDef?.requiredIfPhantom && isPhantom) ||
-								(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
-								// property definition
-								isRequired = true;
-							}
-							if (isRequired) {
-								requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
+							if (!isMultiple) { // Don't require fields if editing multiple records
+								if (getIsRequired) {
+									isRequired = getIsRequired(formGetValues, formState);
+								} else if (validatorToUse?.fields && validatorToUse.fields[name]?.exclusiveTests?.required) {
+									// submitted validator
+									isRequired = true;
+								} else if ((propertyDef?.validator?.spec && !propertyDef.validator.spec.optional) ||
+									(propertyDef?.requiredIfPhantom && isPhantom) ||
+									(propertyDef?.requiredIfNotPhantom && !isPhantom)) {
+									// property definition
+									isRequired = true;
+								}
+								if (isRequired) {
+									requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
+								}
 							}
 							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
 								const labelProps = {};
 								if (defaults?.labelWidth) {
 									labelProps.w = defaults.labelWidth;
 								}
-								if (containerWidth > 400) {
+								if (containerWidth > STACK_ROW_THRESHOLD) {
 									element = <HStack w="100%" py={1}>
 													<Label {...labelProps}>{requiredIndicator}{label}</Label>
 													{element}
@@ -782,8 +792,8 @@ function Form(props) {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
 			editor = <>
-						{containerWidth >= CONTAINER_THRESHOLD ? <HStack p={4} pl={0}>{formComponents}</HStack> : null}
-						{containerWidth < CONTAINER_THRESHOLD ? <VStack p={4}>{formComponents}</VStack> : null}
+						{containerWidth >= ONE_COLUMN_THRESHOLD ? <HStack p={4} pl={0}>{formComponents}</HStack> : null}
+						{containerWidth < ONE_COLUMN_THRESHOLD ? <VStack p={4}>{formComponents}</VStack> : null}
 						<VStack m={2} pt={4} px={2}>{formAncillaryComponents}</VStack>
 					</>;
 
@@ -816,7 +826,7 @@ function Form(props) {
 			}
 		}
 
-		if (!_.isEmpty(formState.errors) || !formState.isValid) {
+		if (!formState.isValid) {
 			isSaveDisabled = true;
 			isSubmitDisabled = true;
 		}

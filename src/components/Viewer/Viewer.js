@@ -62,6 +62,9 @@ function Viewer(props) {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
 		buildFromItem = (item, ix, defaults) => {
+			if (!item) {
+				return null;
+			}
 			let {
 					type,
 					title,
@@ -120,6 +123,8 @@ function Viewer(props) {
 						propsToPass.mb = 1;
 					}
 					propsToPass.pl = 3;
+				} else if (type === 'FieldSet' && item.showToggleAllCheckbox) {
+					propsToPass.showToggleAllCheckbox = false; // don't allow it in view mode
 				}
 				const defaults = item.defaults;
 				children = _.map(items, (item, ix) => {

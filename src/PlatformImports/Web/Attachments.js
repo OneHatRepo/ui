@@ -81,6 +81,7 @@ function AttachmentsElement(props) {
 			disabled = false,
 			clickable = true,
 			confirmBeforeDelete = false,
+			extraUploadData = {},
 
 			// parentContainer
 			selectorSelected,
@@ -140,6 +141,7 @@ function AttachmentsElement(props) {
 				file.extraUploadData = {
 					model,
 					modelid: modelid.current,
+					...extraUploadData,
 				};
 			});
 		},

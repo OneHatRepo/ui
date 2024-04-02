@@ -40,6 +40,7 @@ export default function withFilters(WrappedComponent) {
 				searchAllText = true,
 				showLabels = true,
 				showFilterSelector = true,
+				showClearFiltersButton = true,
 				defaultFilters = [], // likely a list of field names, possibly could be of shape below
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
 				minFilters = 3,
@@ -297,6 +298,10 @@ export default function withFilters(WrappedComponent) {
 								elementProps.autoSubmit = true;
 							}
 						}
+						if (!Element) {
+							debugger;
+							return; // to protect against errors
+						}
 						if (field === 'q') {
 							elementProps.flex = 1;
 							elementProps.minWidth = 100;
@@ -313,7 +318,7 @@ export default function withFilters(WrappedComponent) {
 												{...elementProps}
 											/>;
 						if (showLabels && field !== 'q') {
-							filterElement = <HStack key={'label-' + ix} alignItems="center">
+							filterElement = <HStack key={'label-' + ix} alignItems="center" h="100%">
 												<Text ml={2} mr={1} fontSize={UiGlobals.styles.FILTER_LABEL_FONTSIZE}>{title}</Text>
 												{filterElement}
 											</HStack>;
@@ -429,15 +434,15 @@ export default function withFilters(WrappedComponent) {
 								</ScrollView>
 							</HStack>
 							<HStack flex={hasFilters ? null : 1} alignItems="center" alignSelf="flex-end">
-								<IconButton
-									key="clear"
+								{showClearFiltersButton && <IconButton
+									key="clearFiltersBtn"
 									_icon={{
 										as: Ban,
 									}}
 									ml={1}
 									onPress={onClearFilters}
 									tooltip="Clear all filters"
-								/>
+								/>}
 								{showFilterSelector && !isUsingCustomFilters && <IconButton
 									key="gear"
 									_icon={{
