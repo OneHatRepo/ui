@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react';
 import {
+	Box,
 	Column,
 	FlatList,
 	Pressable,
@@ -1048,7 +1049,8 @@ function GridComponent(props) {
 	if (isDropTarget) {
 		grid = <Box
 					ref={dropTargetRef}
-					bg={canDrop && isOver ? '#ff0' : null}
+					borderWidth={canDrop && isOver ? 4 : 0}
+					borderColor="#0ff"
 					w="100%"
 					{...sizeProps}
 				>{grid}</Box>
