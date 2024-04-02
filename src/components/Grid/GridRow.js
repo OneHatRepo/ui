@@ -1,24 +1,22 @@
-import { useState, useMemo, } from 'react';
+import { useMemo, } from 'react';
 import {
 	Box,
 	Row,
 	Text,
 } from 'native-base';
 import {
-	VERTICAL,
-} from '../../Constants/Directions.js';
-import {
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
+import { withDragSource } from '../Hoc/withDnd.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import AngleRight from '../Icons/AngleRight.js';
 import _ from 'lodash';
 
 // This was broken out from Grid simply so we can memoize it
 
-export default function GridRow(props) {
+function GridRow(props) {
 	const {
 			columnsConfig,
 			columnProps,
@@ -208,13 +206,4 @@ export default function GridRow(props) {
 		]);
 }
 
-function withAdditionalProps(WrappedComponent) {
-	return (props) => {
-		return <WrappedComponent
-					mode={VERTICAL}
-					{...props}
-				/>;
-	};
-}
-
-export const ReorderableGridRow = withAdditionalProps(withDraggable(GridRow));
+export default withDraggable(withDragSource(GridRow));

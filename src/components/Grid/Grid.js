@@ -34,6 +34,7 @@ import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
+import { withDropTarget } from '../Hoc/withDnd.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
@@ -49,7 +50,7 @@ import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import Loading from '../Messages/Loading.js';
 import GridHeaderRow from './GridHeaderRow.js';
-import GridRow, { ReorderableGridRow } from './GridRow.js';
+import GridRow from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from './NoRecordsFound.js';
@@ -111,6 +112,8 @@ function GridComponent(props) {
 			canColumnsReorder = true,
 			canColumnsResize = true,
 			canRowsReorder = false,
+			areRowsDragSource = false,
+			rowDragSourceType,
 			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
@@ -146,6 +149,12 @@ function GridComponent(props) {
 			displayField,
 			idIx,
 			displayIx,
+
+			// withDnd
+			isDropTarget,
+			canDrop,
+			isOver,
+			dropTargetRef,
 
 			// withPresetButtons
 			onChangeColumnsConfig,
@@ -421,11 +430,12 @@ function GridComponent(props) {
 									ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
 								bg = colourMixer.blend(bg, ratio, mixWithObj.color);
 							}
-							let WhichGridRow = GridRow,
-								rowReorderProps = {};
+							const
+								rowReorderProps = {},
+								rowDragProps = {};
 							if (canRowsReorder && isDragMode) {
-								WhichGridRow = ReorderableGridRow;
 								rowReorderProps = {
+									isDraggable: true,
 									mode: VERTICAL,
 									onDragStart: onRowReorderDragStart,
 									onDrag: onRowReorderDrag,
@@ -436,8 +446,12 @@ function GridComponent(props) {
 									getProxy: getReorderProxy,
 								};
 							}
-							
-							return <WhichGridRow
+							if (areRowsDragSource) {
+								rowDragProps.isDragSource = true;
+								rowDragProps.dragSourceType = rowDragSourceType;
+								rowDragProps.dragSourceItem = { id: item.id };
+							}
+							return <GridRow
 										columnsConfig={localColumnsConfig}
 										columnProps={columnProps}
 										fields={fields}
@@ -447,6 +461,7 @@ function GridComponent(props) {
 										item={item}
 										isInlineEditorShown={isInlineEditorShown}
 										{...rowReorderProps}
+										{...rowDragProps}
 									/>;
 						}}
 					</Pressable>;
@@ -1006,7 +1021,7 @@ function GridComponent(props) {
 		}
 	}
 
-	return <Column
+	grid = <Column
 				{...testProps('Grid')}
 				ref={containerRef}
 				w="100%"
@@ -1028,7 +1043,18 @@ function GridComponent(props) {
 
 				{listFooterComponent}
 
-			</Column>;
+			</Column>
+
+	if (isDropTarget) {
+		grid = <Box
+					ref={dropTargetRef}
+					bg={canDrop && isOver ? '#ff0' : null}
+					w="100%"
+					{...sizeProps}
+				>{grid}</Box>
+	}
+
+	return grid;
 
 }
 
@@ -1036,12 +1062,14 @@ export const Grid = withComponent(
 						withAlert(
 							withEvents(
 								withData(
-									withMultiSelection(
-										withSelection(
-											withFilters(
-												withPresetButtons(
-													withContextMenu(
-														GridComponent
+									withDropTarget(
+										withMultiSelection(
+											withSelection(
+												withFilters(
+													withPresetButtons(
+														withContextMenu(
+															GridComponent
+														)
 													),
 													true // isGrid
 												)
@@ -1057,13 +1085,15 @@ export const SideGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withMultiSelection(
-													withSelection(
-														withSideEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		GridComponent
+												withDropTarget(
+													withMultiSelection(
+														withSelection(
+															withSideEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			GridComponent
+																		)
 																	),
 																	true // isGrid
 																)
@@ -1080,15 +1110,17 @@ export const WindowedGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withMultiSelection(
-													withSelection(
-														withWindowedEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		GridComponent
-																	),
-																	true // isGrid
+												withDropTarget(
+													withMultiSelection(
+														withSelection(
+															withWindowedEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			GridComponent
+																		),
+																		true // isGrid
+																	)
 																)
 															)
 														)
@@ -1103,16 +1135,18 @@ export const InlineGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withMultiSelection(
-													withSelection(
-														withInlineEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		GridComponent
-																	)
-																),
-																true // isGrid
+												withDropTarget(
+													withMultiSelection(
+														withSelection(
+															withInlineEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			GridComponent
+																		)
+																	),
+																	true // isGrid
+																)
 															)
 														)
 													)

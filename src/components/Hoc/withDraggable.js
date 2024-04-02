@@ -23,6 +23,10 @@ import getComponentFromType from '../../Functions/getComponentFromType.js';
 export default function withDraggable(WrappedComponent) {
 	return (props) => {
 
+		if (!props.isDraggable) {
+			return <WrappedComponent {...props} />;
+		}
+
 		const {
 				// extract and pass
 				onDragStart,
