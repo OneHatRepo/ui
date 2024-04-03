@@ -12,6 +12,7 @@ import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import AngleRight from '../Icons/AngleRight.js';
+import RowDragHandle from './RowDragHandle.js';
 import _ from 'lodash';
 
 // This was broken out from Grid simply so we can memoize it
@@ -26,6 +27,7 @@ function GridRow(props) {
 			bg,
 			item,
 			isInlineEditorShown,
+			isDragSource = false,
 			isOver = false,
 		} = props,
 		styles = UiGlobals.styles;
@@ -193,6 +195,7 @@ function GridRow(props) {
 					bg={bg}
 					key={hash}
 				>
+					{isDragSource && <RowDragHandle />}
 					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
 					
 					{renderColumns(item)}

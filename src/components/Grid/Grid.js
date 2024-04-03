@@ -117,7 +117,7 @@ function GridComponent(props) {
 			rowDragSourceType,
 			areRowsDropTarget = false,
 			dropTargetAccept,
-			onDrop,
+			onRowDrop,
 			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
@@ -462,10 +462,9 @@ function GridComponent(props) {
 							if (areRowsDropTarget) {
 								rowDragProps.isDropTarget = true;
 								rowDragProps.dropTargetAccept = dropTargetAccept;
-								rowDragProps.onDrop = onDrop;
-								rowProps.isDropTarget = true;
-								rowProps.dropTargetAccept = dropTargetAccept;
-								rowProps.onDrop = onDrop;
+								rowDragProps.onDrop = (droppedItem) => {
+									onRowDrop(item, droppedItem);
+								};
 							}
 							return <GridRow
 										columnsConfig={localColumnsConfig}
