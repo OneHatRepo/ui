@@ -26,6 +26,7 @@ function GridRow(props) {
 			bg,
 			item,
 			isInlineEditorShown,
+			isOver = false,
 		} = props,
 		styles = UiGlobals.styles;
 
@@ -40,7 +41,9 @@ function GridRow(props) {
 	if (props.dragSourceRef) {
 		rowProps.ref = props.dragSourceRef;
 	}
-
+	if (props.dropTargetRef) {
+		rowProps.ref = props.dropTargetRef;
+	}
 	return useMemo(() => {
 		const renderColumns = (item) => {
 			if (_.isArray(columnsConfig)) {
@@ -176,6 +179,13 @@ function GridRow(props) {
 				throw new Error('Non-array columnsConfig not yet supported');
 			}
 		};
+		if (isOver) {
+			rowProps.borderWidth = 4;
+			rowProps.borderColor = '#0ff';
+		} else {
+			rowProps.borderWidth = 0;
+			rowProps.borderColor = null;
+		}
 		return <Row
 					alignItems="center"
 					flexGrow={1}
@@ -206,6 +216,7 @@ function GridRow(props) {
 		isPhantom,
 		hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
 		isInlineEditorShown,
+		isOver,
 	]);
 }
 
