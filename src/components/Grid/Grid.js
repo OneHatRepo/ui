@@ -115,6 +115,7 @@ function GridComponent(props) {
 			canRowsReorder = false,
 			areRowsDragSource = false,
 			rowDragSourceType,
+			rowDragSourceItem,
 			areRowsDropTarget = false,
 			dropTargetAccept,
 			onRowDrop,
@@ -457,7 +458,7 @@ function GridComponent(props) {
 							if (areRowsDragSource) {
 								rowDragProps.isDragSource = true;
 								rowDragProps.dragSourceType = rowDragSourceType;
-								rowDragProps.dragSourceItem = { id: item.id };
+								rowDragProps.dragSourceItem = rowDragSourceItem || { id: item.id };
 							}
 							if (areRowsDropTarget) {
 								rowDragProps.isDropTarget = true;
