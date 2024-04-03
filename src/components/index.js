@@ -203,6 +203,7 @@ import DataMgt from './Screens/DataMgt.js';
 import Date from './Form/Field/Date.js';
 import DateRange from './Filter/DateRange.js';
 import DisplayField from './Form/Field/DisplayField.js';
+import ExpandButton from './Buttons/ExpandButton.js';
 import FieldSet from './Form/FieldSet.js';
 import FiltersForm from './Form/FiltersForm.js';
 // import FiltersToolbar from '../Components/Toolbar/FiltersToolbar.js';
@@ -436,6 +437,7 @@ const components = {
 	Date,
 	DateRange,
 	DisplayField,
+	ExpandButton,
 	FieldSet,
 	FiltersForm,
 	// FiltersToolbar,

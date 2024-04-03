@@ -9,7 +9,7 @@ import {
 } from '../../Constants/UiModes.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
-import { withDragSource } from '../Hoc/withDnd.js';
+import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import AngleRight from '../Icons/AngleRight.js';
 import _ from 'lodash';
@@ -209,4 +209,4 @@ function GridRow(props) {
 	]);
 }
 
-export default withDraggable(withDragSource(GridRow));
+export default withDraggable(withDragSource(withDropTarget(GridRow)));

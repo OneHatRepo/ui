@@ -53,6 +53,7 @@ import Loading from '../Messages/Loading.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
+import ExpandButton from '../Buttons/ExpandButton.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from './NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
@@ -97,16 +98,15 @@ function GridComponent(props) {
 			},
 			flatListProps = {},
 			onRowPress,
-			// enableEditors = false,
+			onRender,
 			forceLoadOnRender = false,
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
 			autoAdjustPageSizeToHeight = true,
-			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
 			showRowExpander = false,
-			rowExpanderTpl = '',
+			getExpandedRowContent,
 			showHeaders = true,
 			showHovers = true,
 			canColumnsSort = true,
@@ -115,6 +115,9 @@ function GridComponent(props) {
 			canRowsReorder = false,
 			areRowsDragSource = false,
 			rowDragSourceType,
+			areRowsDropTarget = false,
+			dropTargetAccept,
+			onDrop,
 			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
@@ -137,8 +140,6 @@ function GridComponent(props) {
 			onEdit,
 			onDelete,
 			onView,
-			onDuplicate,
-			onReset,
 			onContextMenu,
 			isAdding,
 
@@ -201,6 +202,7 @@ function GridComponent(props) {
 		gridRef = useRef(),
 		gridContainerRef = useRef(),
 		isAddingRef = useRef(),
+		expandedRowsRef = useRef({}),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -208,6 +210,13 @@ function GridComponent(props) {
 		[isDragMode, setIsDragMode] = useState(false),
 		[dragRowSlot, setDragRowSlot] = useState(null),
 		[dragRowIx, setDragRowIx] = useState(),
+		getIsExpanded = (index) => {
+			return !!expandedRowsRef.current[index];
+		},
+		setIsExpanded = (index, isExpanded) => {
+			expandedRowsRef.current[index] = isExpanded;
+			forceUpdate();
+		},
 		setLocalColumnsConfig = (config) => {
 			if (localColumnsConfigKey && !hasFunctionColumn) {
 				setSaved(localColumnsConfigKey, config);
@@ -322,7 +331,7 @@ function GridComponent(props) {
 				rowProps = getRowProps && !isHeaderRow ? getRowProps(item) : {},
 				isSelected = !isHeaderRow && !disableWithSelection && isInSelection(item);
 
-			return <Pressable
+			let rowComponent = <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => {
 							if (e.preventDefault && e.cancelable) {
@@ -435,22 +444,28 @@ function GridComponent(props) {
 								rowReorderProps = {},
 								rowDragProps = {};
 							if (canRowsReorder && isDragMode) {
-								rowReorderProps = {
-									isDraggable: true,
-									mode: VERTICAL,
-									onDragStart: onRowReorderDragStart,
-									onDrag: onRowReorderDrag,
-									onDragStop: onRowReorderDragStop,
-									proxyParent: gridRef.current?.getScrollableNode().children[0],
-									proxyPositionRelativeToParent: true,
-									getParentNode: (node) => node.parentElement.parentElement.parentElement,
-									getProxy: getReorderProxy,
-								};
+								rowReorderProps.isDraggable = true;
+								rowReorderProps.mode = VERTICAL;
+								rowReorderProps.onDragStart = onRowReorderDragStart;
+								rowReorderProps.onDrag = onRowReorderDrag;
+								rowReorderProps.onDragStop = onRowReorderDragStop;
+								rowReorderProps.proxyParent = gridRef.current?.getScrollableNode().children[0];
+								rowReorderProps.proxyPositionRelativeToParent = true;
+								rowReorderProps.getParentNode = (node) => node.parentElement.parentElement.parentElement;
+								rowReorderProps.getProxy = getReorderProxy;
 							}
 							if (areRowsDragSource) {
 								rowDragProps.isDragSource = true;
 								rowDragProps.dragSourceType = rowDragSourceType;
 								rowDragProps.dragSourceItem = { id: item.id };
+							}
+							if (areRowsDropTarget) {
+								rowDragProps.isDropTarget = true;
+								rowDragProps.dropTargetAccept = dropTargetAccept;
+								rowDragProps.onDrop = onDrop;
+								rowProps.isDropTarget = true;
+								rowProps.dropTargetAccept = dropTargetAccept;
+								rowProps.onDrop = onDrop;
 							}
 							return <GridRow
 										columnsConfig={localColumnsConfig}
@@ -466,6 +481,25 @@ function GridComponent(props) {
 									/>;
 						}}
 					</Pressable>;
+
+			if (showRowExpander && !isHeaderRow) {
+				const isExpanded = getIsExpanded(index);
+				rowComponent = <Column>
+									<Row>
+										<ExpandButton
+											isExpanded={isExpanded}
+											onToggle={() => setIsExpanded(index, !isExpanded)}
+											_icon={{
+												size: 'sm',
+											}}
+											py={0}
+										/>
+										{rowComponent}
+									</Row>
+									{isExpanded ? getExpandedRowContent(row) : null}
+								</Column>
+			}
+			return rowComponent;
 		},
 		getReorderProxy = (node) => {
 			const
@@ -766,6 +800,9 @@ function GridComponent(props) {
 				}
 				Repository.pauseEvents();
 			}
+			if (onRender) {
+				onRender(self)
+			}
 			return () => {};
 		}
 
@@ -873,6 +910,11 @@ function GridComponent(props) {
 				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
+			},
+			onChangePage = () => {
+				if (showRowExpander) {
+					expandedRowsRef.current = {}; // clear expanded rows
+				}
 			};
 
 		Repository.on('beforeLoad', setTrue);
@@ -883,7 +925,7 @@ function GridComponent(props) {
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
-
+		Repository.on('changePage', onChangePage);
 
 		applySelectorSelected();
 		Repository.resumeEvents();
@@ -901,6 +943,7 @@ function GridComponent(props) {
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
+			Repository.off('changePage', onChangePage);
 		};
 	}, [isInited]);
 
@@ -1055,7 +1098,6 @@ function GridComponent(props) {
 					{...sizeProps}
 				>{grid}</Box>
 	}
-
 	return grid;
 
 }
