@@ -464,6 +464,8 @@ function GridComponent(props) {
 								rowDragProps.isDropTarget = true;
 								rowDragProps.dropTargetAccept = dropTargetAccept;
 								rowDragProps.onDrop = (droppedItem) => {
+									// TODO: the item is somehow getting stale
+									// might have something to do with memoization
 									onRowDrop(item, droppedItem);
 								};
 							}
