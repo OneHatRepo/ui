@@ -321,9 +321,16 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			doEditorSave = async (data, e) => {
 				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
 				const isSingle = selection.length === 1;
+				let useStaged = false;
 				if (isSingle) {
 					// just update this one entity
 					selection[0].setValues(data);
+
+					// If this is a remote phantom, and nothing is dirty, stage it so it actually gets saved to server and solidified
+					if (selection[0].isRemotePhantom && !selection[0].isDirty) {
+						selection[0].markStaged();
+						useStaged = true;
+					}
 
 				} else if (selection.length > 1) {
 					// Edit multiple entities
@@ -349,7 +356,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsSaving(true);
 				let success;
 				try {
-					await Repository.save();
+					await Repository.save(null, useStaged);
 					success = true;
 				} catch (e) {
 					// alert(e.context);
