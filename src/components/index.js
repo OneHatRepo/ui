@@ -93,6 +93,7 @@ import Info from '../Components/Icons/Info.js';
 import ItunesNote from '../Components/Icons/ItunesNote.js';
 import Js from '../Components/Icons/Js.js';
 import Leaf from '../Components/Icons/Leaf.js';
+import Link from '../Components/Icons/Link.js';
 import List from '../Components/Icons/List.js';
 import ListCheck from '../Components/Icons/ListCheck.js';
 import LocationDot from '../Components/Icons/LocationDot.js';
@@ -326,6 +327,7 @@ const components = {
 	ItunesNote,
 	Js,
 	Leaf,
+	Link,
 	List,
 	ListCheck,
 	LocationDot,
