@@ -302,7 +302,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				const
 					entity = selection[0],
 					idProperty = Repository.getSchema().model.idProperty,
-					rawValues = _.omit(entity.rawValues, idProperty),
+					rawValues = _.omit(entity.getOriginalData(), idProperty),
 					duplicate = await Repository.add(rawValues, false, true);
 				setIsIgnoreNextSelectionChange(true);
 				setSelection([duplicate]);

@@ -298,7 +298,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				const
 					entity = secondarySelection[0],
 					idProperty = SecondaryRepository.getSchema().model.idProperty,
-					rawValues = _.omit(entity.rawValues, idProperty),
+					rawValues = _.omit(entity.getOriginalData(), idProperty),
 					duplicate = await SecondaryRepository.add(rawValues, false, true);
 				setSecondaryIsIgnoreNextSelectionChange(true);
 				secondarySetSelection([duplicate]);
