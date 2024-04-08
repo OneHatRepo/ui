@@ -315,9 +315,13 @@ export const Tag = withAdditionalProps(
 
 function withAdditionalEditorProps(WrappedComponent) {
 	return (props) => {
+		const {
+				_combo = {},
+			} = props;
+		_combo.isEditor = true;
 		return <WrappedComponent
-					_combo={{ isEditor: true }}
 					{...props}
+					_combo={_combo}
 				/>;
 	};
 }
