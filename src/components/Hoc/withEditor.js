@@ -302,8 +302,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				const
 					entity = selection[0],
 					idProperty = Repository.getSchema().model.idProperty,
-					rawValues = _.omit(entity.getOriginalData(), idProperty),
-					duplicate = await Repository.add(rawValues, false, true);
+					rawValues = _.omit(entity.getOriginalData(), idProperty);
+				rawValues.id = null; // unset the id of the duplicate
+				const duplicate = await Repository.add(rawValues, false, true);
 				setIsIgnoreNextSelectionChange(true);
 				setSelection([duplicate]);
 				setEditorMode(EDITOR_MODE__EDIT);
