@@ -305,7 +305,7 @@ export default function GridHeaderRow(props) {
 						propsToPass = {
 							borderRightWidth: 2,
 							borderRightColor: '#fff',
-						}
+						};
 
 					if (all.length === 1) {
 						propsToPass.w = '100%';
