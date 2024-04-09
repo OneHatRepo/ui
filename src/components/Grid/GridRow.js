@@ -27,7 +27,8 @@ function GridRow(props) {
 			bg,
 			item,
 			isInlineEditorShown,
-			isDragSource = false,
+			isDraggable = false, // withDraggable
+			isDragSource = false, // withDnd
 			isOver = false,
 		} = props,
 		styles = UiGlobals.styles;
@@ -40,12 +41,6 @@ function GridRow(props) {
 		isPhantom = item.isPhantom,
 		hash = item?.hash || item;
 
-	if (props.dragSourceRef) {
-		rowProps.ref = props.dragSourceRef;
-	}
-	if (props.dropTargetRef) {
-		rowProps.ref = props.dropTargetRef;
-	}
 	return useMemo(() => {
 		const renderColumns = (item) => {
 			if (_.isArray(columnsConfig)) {
@@ -188,26 +183,36 @@ function GridRow(props) {
 			rowProps.borderWidth = 0;
 			rowProps.borderColor = null;
 		}
+
+		let rowContents = <>
+							{(isDragSource || isDraggable) && <RowDragHandle />}
+							{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
+							
+							{renderColumns(item)}
+
+							{!hideNavColumn && <AngleRight
+													color={styles.GRID_NAV_COLUMN_COLOR}
+													variant="ghost"
+													w={30}
+													alignSelf="center"
+													mx={3}
+												/>}
+						</>;
+
+		if (props.dragSourceRef) {
+			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dragSourceRef}>{rowContents}</Row>;
+		}
+		if (props.dropTargetRef) {
+			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dropTargetRef}>{rowContents}</Row>;
+		}
+
 		return <Row
 					alignItems="center"
 					flexGrow={1}
 					{...rowProps}
 					bg={bg}
 					key={hash}
-				>
-					{isDragSource && <RowDragHandle />}
-					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
-					
-					{renderColumns(item)}
-
-					{!hideNavColumn && <AngleRight
-											color={styles.GRID_NAV_COLUMN_COLOR}
-											variant="ghost"
-											w={30}
-											alignSelf="center"
-											mx={3}
-										/>}
-				</Row>;
+				>{rowContents}</Row>;
 	}, [
 		columnsConfig,
 		columnProps,

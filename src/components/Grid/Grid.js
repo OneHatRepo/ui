@@ -454,20 +454,22 @@ function GridComponent(props) {
 								rowReorderProps.proxyPositionRelativeToParent = true;
 								rowReorderProps.getParentNode = (node) => node.parentElement.parentElement.parentElement;
 								rowReorderProps.getProxy = getReorderProxy;
-							}
-							if (areRowsDragSource) {
-								rowDragProps.isDragSource = true;
-								rowDragProps.dragSourceType = rowDragSourceType;
-								rowDragProps.dragSourceItem = getRowDragSourceItem ? getRowDragSourceItem(item) : { id: item.id };
-							}
-							if (areRowsDropTarget) {
-								rowDragProps.isDropTarget = true;
-								rowDragProps.dropTargetAccept = dropTargetAccept;
-								rowDragProps.onDrop = (droppedItem) => {
-									// TODO: the item is somehow getting stale
-									// might have something to do with memoization
-									onRowDrop(item, droppedItem);
-								};
+							} else {
+								// Don't allow drag/drop from withDnd while reordering
+								if (areRowsDragSource) {
+									rowDragProps.isDragSource = true;
+									rowDragProps.dragSourceType = rowDragSourceType;
+									rowDragProps.dragSourceItem = getRowDragSourceItem ? getRowDragSourceItem(item) : { id: item.id };
+								}
+								if (areRowsDropTarget) {
+									rowDragProps.isDropTarget = true;
+									rowDragProps.dropTargetAccept = dropTargetAccept;
+									rowDragProps.onDrop = (droppedItem) => {
+										// TODO: the item is somehow getting stale
+										// might have something to do with memoization
+										onRowDrop(item, droppedItem);
+									};
+								}
 							}
 							return <GridRow
 										columnsConfig={localColumnsConfig}

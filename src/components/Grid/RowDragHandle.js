@@ -11,7 +11,7 @@ function RowDragHandle(props) {
 	return <Column
 				testID="HeaderReorderHandle"
 				bg="trueGray.100"
-				h="100%"
+				// h="100%"
 				w={3}
 				alignItems="center"
 				justifyContent="center"
