@@ -234,7 +234,7 @@ export default function withDraggable(WrappedComponent) {
 							// bounds={bounds}
 							{...draggableProps}
 						>
-							<div className="nsResize">
+							<div className="nsResize" style={{ width: '100%', }}>
 								<WrappedComponent {...propsToPass} />
 							</div>
 						</Draggable>;
