@@ -934,6 +934,7 @@ function GridComponent(props) {
 					nestedScrollEnabled={true}
 					contentContainerStyle={{
 						overflow: 'auto',
+						height: '100%',
 						// flex: 1,
 					}}
 					refreshing={isLoading}
