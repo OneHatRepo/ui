@@ -209,8 +209,8 @@ function GridComponent(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[isDragMode, setIsDragMode] = useState(false),
-		[dragRowSlot, setDragRowSlot] = useState(null),
-		[dragRowIx, setDragRowIx] = useState(),
+		[cachedDragElements, setCachedDragElements] = useState(null),
+		[dragRow, setDragRow] = useState(),
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
 		},
@@ -512,10 +512,9 @@ function GridComponent(props) {
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
 				proxy = row.cloneNode(true),
-				top = rowRect.top - parentRect.top,
-				dragRowIx = Array.from(parent.children).indexOf(row)
+				top = rowRect.top - parentRect.top;
 			
-			setDragRowIx(dragRowIx); // the ix of which record is being dragged
+			setDragRow(row);
 
 			proxy.style.top = top + 'px';
 			proxy.style.left = '20px';
@@ -527,212 +526,116 @@ function GridComponent(props) {
 			proxy.style.border = '1px solid #000';
 			return proxy;
 		},
-		onRowReorderDragStart = (info, e, proxy, node) => {
-			// console.log('onRowReorderDragStart', info, e, proxy, node);
-			const
-				proxyRect = proxy.getBoundingClientRect(),
-				row = node.parentElement.parentElement,
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(parent.children, (childNode) => {
-					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
-				}),
-				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
-				headerRowIx = showHeaders ? 0 : null,
-				firstActualRowIx = showHeaders ? 1 : 0;
-
-			// Figure out which index the user wants
-			let newIx = 0;
-			_.each(rows, (child, ix, all) => {
+		getOverState = (rows, currentY, mouseX) => {
+			// determines which row the mouse is over
+			// and whether the marker should be moved to the top or bottom of the row
+			let newIx = 0,
+				useBottom = false;
+			_.each(rows, (row, ix) => {
 				const
-					rect = child.getBoundingClientRect(), // rect of the row of this iteration
+					rect = row.getBoundingClientRect(),
 					{
 						top,
 						bottom,
 						height,
 					} = rect,
-					compensatedTop = top - parentRect.top,
-					compensatedBottom = bottom - parentRect.top,
-					halfHeight = height / 2;
-
-				if (ix === headerRowIx || child === proxy) {
-					return;
-				}
-				if (ix === firstActualRowIx) {
-					// first row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = firstActualRowIx;
-						return false;
-					} else if (currentY < compensatedBottom) {
-						newIx = firstActualRowIx + 1;
-						return false;
-					}
-					return;
-				} else if (ix === all.length -1) {
-					// last row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = ix;
-						return false;
-					}
-					newIx = ix +1;
-					return false;
-				}
-				
-				// all other rows
-				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
+					isOver = (
+						mouseX >= rect.left &&
+						mouseX <= rect.right &&
+						currentY >= rect.top &&
+						currentY <= rect.bottom
+					);
+				if (isOver) {
 					newIx = ix;
-					return false;
-				} else if (currentY < compensatedBottom) {
-					newIx = ix +1;
+
+					const
+						halfHeight = height / 2,
+						isOverTopHalf = currentY < top + halfHeight;
+
+					useBottom = !isOverTopHalf;
+
 					return false;
 				}
 			});
+			return {
+				ix: newIx,
+				useBottom,
+			};
+		},
+		onRowReorderDragStart = (info, e, proxy, node) => {
+			// console.log('onRowReorderDragStart', info, e, proxy, node);
 
-			let useBottom = false;
-			if (!rows[newIx] || rows[newIx] === proxy) {
-				newIx--;
-				useBottom = true;
-			}
+			const
+				proxyRect = proxy.getBoundingClientRect(),
+				row = node.parentElement.parentElement,
+				flatlist = row.parentElement,
+				flatlistRect = flatlist.getBoundingClientRect(),
+				rows = _.filter(flatlist.childNodes, (childNode, ix) => {
+					const
+						isZeroHeight = childNode.getBoundingClientRect().height === 0,
+						isProxy = childNode === proxy,
+						isHeader = showHeaders && ix === 0;
+					return !isZeroHeight && !isProxy && !isHeader;
+				}),
+				currentY = proxyRect.top - flatlistRect.top, // top position of pointer, relative to page
+				{ ix, useBottom } = getOverState(rows, currentY, e.clientX);
+
 
 			// Render marker showing destination location
 			const
-				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth), // get relative Y position
-				gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
-				gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
+				rowContainerRect = rows[ix].getBoundingClientRect(),
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
+						- flatlistRect.top 
+						- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0), // get relative Y position
 				marker = document.createElement('div');
-
 			marker.style.position = 'absolute';
-			marker.style.top = top -4 + 'px'; // -4 so it's always visible
+			marker.style.top = top + 'px';
 			marker.style.height = '4px';
-			marker.style.width = gridRowsContainerRect.width + 'px';
+			marker.style.width = flatlistRect.width + 'px';
 			marker.style.backgroundColor = '#f00';
+			flatlist.appendChild(marker);
 
-			gridRowsContainer.appendChild(marker);
-
-			setDragRowSlot({ ix: newIx, marker, useBottom, });
+			setCachedDragElements({ ix, useBottom, marker, rows, });
 		},
 		onRowReorderDrag = (info, e, proxy, node) => {
 			// console.log('onRowReorderDrag', info, e, proxy, node);
 			const
+				{ marker, rows, } = cachedDragElements,
 				proxyRect = proxy.getBoundingClientRect(),
 				row = node.parentElement.parentElement,
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(parent.children, (childNode) => {
-					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
-				}),
-				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
-				headerRowIx = showHeaders ? 0 : null,
-				firstActualRowIx = showHeaders ? 1 : 0;
+				flatlist = row.parentElement,
+				flatlistRect = flatlist.getBoundingClientRect(),
+				currentY = proxyRect.top - flatlistRect.top, // top position of pointer, relative to page
+				{ ix, useBottom } = getOverState(rows, currentY, e.clientX);
+			
 
-			// Figure out which index the user wants
-			let newIx = 0;
-			_.each(rows, (child, ix, all) => {
-				const
-					rect = child.getBoundingClientRect(), // rect of the row of this iteration
-					{
-						top,
-						bottom,
-						height,
-					} = rect,
-					compensatedTop = top - parentRect.top,
-					compensatedBottom = bottom - parentRect.top,
-					halfHeight = height / 2;
-
-				if (ix === headerRowIx || child === proxy) {
-					return;
-				}
-				if (ix === firstActualRowIx) {
-					// first row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = firstActualRowIx;
-						return false;
-					} else if (currentY < compensatedBottom) {
-						newIx = firstActualRowIx + 1;
-						return false;
-					}
-					return;
-				} else if (ix === all.length -1) {
-					// last row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = ix;
-						return false;
-					}
-					newIx = ix +1;
-					return false;
-				}
-				
-				// all other rows
-				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
-					newIx = ix;
-					return false;
-				} else if (currentY < compensatedBottom) {
-					newIx = ix +1;
-					return false;
-				}
-			});
-
-			let useBottom = false;
-			if (!rows[newIx] || rows[newIx] === proxy) {
-				newIx--;
-				useBottom = true;
-			}
-
-			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
+			// move marker to new location
 			const
-				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth); // get relative Y position
-			let marker = dragRowSlot?.marker;
-			if (marker) {
-				marker.style.top = top -4 + 'px'; // -4 so it's always visible
-			}
+				rowContainerRect = rows[ix].getBoundingClientRect(),
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
+						- flatlistRect.top 
+						- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0); // get relative Y position
+			marker.style.top = top + 'px';
 
-			setDragRowSlot({ ix: newIx, marker, useBottom, });
-			// console.log('onRowReorderDrag slot', newIx);
-
+			setCachedDragElements({ ix, useBottom, marker, rows, });
 		},
 		onRowReorderDragStop = (delta, e, config) => {
 			// console.log('onRowReorderDragStop', delta, e, config);
 			const
-				dropIx = dragRowSlot.ix,
-				compensatedDragIx = showHeaders ? dragRowIx -1 : dragRowIx, // ix, without taking header row into account
-				compensatedDropIx = showHeaders ? dropIx -1 : dropIx, // // ix, without taking header row into account
-				dropPosition = dragRowSlot.useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE;
+				{ ix: dropIx, useBottom, marker, rows, } = cachedDragElements,
+				dragIx = rows.indexOf(dragRow);
 
-			let shouldMove = true,
-				finalDropIx = compensatedDropIx;
-			
-			if (dropPosition === DROP_POSITION_BEFORE) {
-				if (dragRowIx === dropIx || dragRowIx === dropIx -1) { // basically before or after the drag row's origin
-					// Same as origin; don't do anything
-					shouldMove = false;
-				} else {
-					// Actually move it
-					if (!Repository) { // If we're just going to be switching rows, rather than telling server to reorder rows, so maybe adjust finalDropIx...
-						if (finalDropIx > compensatedDragIx) { // if we're dropping *before* the origin ix
-							finalDropIx = finalDropIx -1; // Because we're using BEFORE, we want to switch with the row *prior to* the ix we're dropping before
-						}
-					}
-				}
-			} else if (dropPosition === DROP_POSITION_AFTER) {
-				// Only happens on the very last row. Everything else is BEFORE...
-				if (dragRowIx === dropIx) {
-					// Same as origin; don't do anything
-					shouldMove = false;
-				}
-			}
-
+			const shouldMove = dropIx !== dragIx;
 			if (shouldMove) {
 				// Update the row with the new ix
 				let dragRecord,
 					dropRecord;
 				if (Repository) {
-					dragRecord = Repository.getByIx(compensatedDragIx);
-					dropRecord = Repository.getByIx(finalDropIx);
-					
-					Repository.reorder(dragRecord, dropRecord, dropPosition);
-
+					dragRecord = Repository.getByIx(dragIx);
+					dropRecord = Repository.getByIx(dropIx);
+					if (dropRecord) {
+						Repository.reorder(dragRecord, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
+					}
 				} else {
 					function arrayMove(arr, fromIndex, toIndex) {
 						var element = arr[fromIndex];
@@ -743,10 +646,8 @@ function GridComponent(props) {
 				}
 			}
 
-			if (dragRowSlot) {
-				dragRowSlot.marker.remove();
-			}
-			setDragRowSlot(null);
+			marker.remove();
+			setCachedDragElements(null);
 		},
 		calculatePageSize = (containerHeight) => {
 			const
@@ -1027,15 +928,13 @@ function GridComponent(props) {
 	}
 
 	let grid = <FlatList
+					testID="flatlist"
 					ref={gridRef}
 					scrollEnabled={CURRENT_MODE === UI_MODE_WEB}
 					nestedScrollEnabled={true}
 					contentContainerStyle={{
 						overflow: 'auto',
-						borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
-						borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
-						borderStyle: styles.REORDER_BORDER_STYLE,
-						flex: 1,
+						// flex: 1,
 					}}
 					refreshing={isLoading}
 					onRefresh={pullToRefresh ? onRefresh : null}
@@ -1056,6 +955,7 @@ function GridComponent(props) {
 					bg="trueGray.100"
 					{...flatListProps}
 				/>
+	
 	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
 	}
@@ -1069,8 +969,22 @@ function GridComponent(props) {
 		}
 	}
 
+	const gridContainerBorderProps = {};
+	if (isLoading) {
+		gridContainerBorderProps.borderTopWidth = 2;
+		gridContainerBorderProps.borderTopColor = '#f00';
+	} else if (isDragMode) {
+		gridContainerBorderProps.borderWidth = styles.REORDER_BORDER_WIDTH;
+		gridContainerBorderProps.borderColor = styles.REORDER_BORDER_COLOR;
+		gridContainerBorderProps.borderStyle = styles.REORDER_BORDER_STYLE;
+	} else {
+		gridContainerBorderProps.borderTopWidth = 1
+		gridContainerBorderProps.borderTopColor = 'trueGray.300';
+	}
+
 	grid = <Column
 				{...testProps('Grid')}
+				testID="outerContainer"
 				ref={containerRef}
 				w="100%"
 				bg={bg}
@@ -1081,11 +995,19 @@ function GridComponent(props) {
 			>
 				{topToolbar}
 
-				<Column ref={gridContainerRef} w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
-					if (!isDragMode && !isInlineEditorShown) {
-						deselectAll();
-					}
-				}}>
+				<Column
+					testID="gridContainer"
+					ref={gridContainerRef}
+					w="100%"
+					flex={1}
+					minHeight={40}
+					{...gridContainerBorderProps}
+					onClick={() => {
+						if (!isDragMode && !isInlineEditorShown) {
+							deselectAll();
+						}
+					}}
+				>
 					{grid}
 				</Column>
 
