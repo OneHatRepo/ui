@@ -44,6 +44,15 @@ function Splitter(props) {
 			</VStack>;
 }
 
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					isDraggable={true}
+					{...props}
+				/>;
+	};
+}
+
 // Need a hoc to specifically deliver the 'getParentNode' prop
 function withParentNode(WrappedComponent) {
 	return (props) => {
@@ -57,4 +66,4 @@ function withParentNode(WrappedComponent) {
 	};
 }
 
-export default withParentNode(withDraggable(Splitter));
+export default withParentNode(withAdditionalProps(withDraggable(Splitter)));

@@ -24,4 +24,13 @@ function HeaderReorderHandle(props) {
 			</VStack>;
 }
 
-export default withDraggable(HeaderReorderHandle);
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					isDraggable={true}
+					{...props}
+				/>;
+	};
+}
+
+export default withAdditionalProps(withDraggable(HeaderReorderHandle));

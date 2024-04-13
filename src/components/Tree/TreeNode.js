@@ -87,4 +87,13 @@ export default function TreeNode(props) {
 	]);
 }
 
-export const DraggableTreeNode = withDraggable(TreeNode);
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					isDraggable={true}
+					{...props}
+				/>;
+	};
+}
+
+export const DraggableTreeNode = withAdditionalProps(withDraggable(TreeNode));

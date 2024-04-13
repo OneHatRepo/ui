@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react';
 import {
-	VStack,
+	Box,
 	FlatList,
 	Pressable,
 	Icon,
 	ScrollView,
+	VStack,
 } from '@gluestack-ui/themed';
 import {
 	SELECTION_MODE_SINGLE,
@@ -32,6 +33,7 @@ import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
+import { withDropTarget } from '../Hoc/withDnd.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
@@ -47,8 +49,9 @@ import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import Loading from '../Messages/Loading.js';
 import GridHeaderRow from './GridHeaderRow.js';
-import GridRow, { ReorderableGridRow } from './GridRow.js';
+import GridRow from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
+import ExpandButton from '../Buttons/ExpandButton.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from './NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
@@ -93,22 +96,27 @@ function GridComponent(props) {
 			},
 			flatListProps = {},
 			onRowPress,
-			// enableEditors = false,
+			onRender,
 			forceLoadOnRender = false,
 			pullToRefresh = true,
 			hideNavColumn = true,
 			noneFoundText,
 			autoAdjustPageSizeToHeight = true,
-			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
 			showRowExpander = false,
-			rowExpanderTpl = '',
+			getExpandedRowContent,
 			showHeaders = true,
 			showHovers = true,
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
 			canRowsReorder = false,
+			areRowsDragSource = false,
+			rowDragSourceType,
+			getRowDragSourceItem,
+			areRowsDropTarget = false,
+			dropTargetAccept,
+			onRowDrop,
 			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
@@ -131,8 +139,6 @@ function GridComponent(props) {
 			onEdit,
 			onDelete,
 			onView,
-			onDuplicate,
-			onReset,
 			onContextMenu,
 			isAdding,
 
@@ -144,6 +150,12 @@ function GridComponent(props) {
 			displayField,
 			idIx,
 			displayIx,
+
+			// withDnd
+			isDropTarget,
+			canDrop,
+			isOver,
+			dropTargetRef,
 
 			// withPresetButtons
 			onChangeColumnsConfig,
@@ -189,13 +201,21 @@ function GridComponent(props) {
 		gridRef = useRef(),
 		gridContainerRef = useRef(),
 		isAddingRef = useRef(),
+		expandedRowsRef = useRef({}),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[isDragMode, setIsDragMode] = useState(false),
-		[dragRowSlot, setDragRowSlot] = useState(null),
-		[dragRowIx, setDragRowIx] = useState(),
+		[cachedDragElements, setCachedDragElements] = useState(null),
+		[dragRow, setDragRow] = useState(),
+		getIsExpanded = (index) => {
+			return !!expandedRowsRef.current[index];
+		},
+		setIsExpanded = (index, isExpanded) => {
+			expandedRowsRef.current[index] = isExpanded;
+			forceUpdate();
+		},
 		setLocalColumnsConfig = (config) => {
 			if (localColumnsConfigKey && !hasFunctionColumn) {
 				setSaved(localColumnsConfigKey, config);
@@ -310,7 +330,7 @@ function GridComponent(props) {
 				rowProps = getRowProps && !isHeaderRow ? getRowProps(item) : {},
 				isSelected = !isHeaderRow && !disableWithSelection && isInSelection(item);
 
-			return <Pressable
+			let rowComponent = <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						onPress={(e) => {
 							if (e.preventDefault && e.cancelable) {
@@ -419,23 +439,37 @@ function GridComponent(props) {
 									ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
 								bg = colourMixer.blend(bg, ratio, mixWithObj.color);
 							}
-							let WhichGridRow = GridRow,
-								rowReorderProps = {};
+							const
+								rowReorderProps = {},
+								rowDragProps = {};
 							if (canRowsReorder && isDragMode) {
-								WhichGridRow = ReorderableGridRow;
-								rowReorderProps = {
-									mode: VERTICAL,
-									onDragStart: onRowReorderDragStart,
-									onDrag: onRowReorderDrag,
-									onDragStop: onRowReorderDragStop,
-									proxyParent: gridRef.current?.getScrollableNode().children[0],
-									proxyPositionRelativeToParent: true,
-									getParentNode: (node) => node.parentElement.parentElement.parentElement,
-									getProxy: getReorderProxy,
-								};
+								rowReorderProps.isDraggable = true;
+								rowReorderProps.mode = VERTICAL;
+								rowReorderProps.onDragStart = onRowReorderDragStart;
+								rowReorderProps.onDrag = onRowReorderDrag;
+								rowReorderProps.onDragStop = onRowReorderDragStop;
+								rowReorderProps.proxyParent = gridRef.current?.getScrollableNode().children[0];
+								rowReorderProps.proxyPositionRelativeToParent = true;
+								rowReorderProps.getParentNode = (node) => node.parentElement.parentElement.parentElement;
+								rowReorderProps.getProxy = getReorderProxy;
+							} else {
+								// Don't allow drag/drop from withDnd while reordering
+								if (areRowsDragSource) {
+									rowDragProps.isDragSource = true;
+									rowDragProps.dragSourceType = rowDragSourceType;
+									rowDragProps.dragSourceItem = getRowDragSourceItem ? getRowDragSourceItem(item) : { id: item.id };
+								}
+								if (areRowsDropTarget) {
+									rowDragProps.isDropTarget = true;
+									rowDragProps.dropTargetAccept = dropTargetAccept;
+									rowDragProps.onDrop = (droppedItem) => {
+										// TODO: the item is somehow getting stale
+										// might have something to do with memoization
+										onRowDrop(item, droppedItem);
+									};
+								}
 							}
-							
-							return <WhichGridRow
+							return <GridRow
 										columnsConfig={localColumnsConfig}
 										columnProps={columnProps}
 										fields={fields}
@@ -445,9 +479,29 @@ function GridComponent(props) {
 										item={item}
 										isInlineEditorShown={isInlineEditorShown}
 										{...rowReorderProps}
+										{...rowDragProps}
 									/>;
 						}}
 					</Pressable>;
+
+			if (showRowExpander && !isHeaderRow) {
+				const isExpanded = getIsExpanded(index);
+				rowComponent = <VStack>
+									<Row>
+										<ExpandButton
+											isExpanded={isExpanded}
+											onToggle={() => setIsExpanded(index, !isExpanded)}
+											_icon={{
+												size: 'sm',
+											}}
+											py={0}
+										/>
+										{rowComponent}
+									</Row>
+									{isExpanded ? getExpandedRowContent(row) : null}
+								</VStack>
+			}
+			return rowComponent;
 		},
 		getReorderProxy = (node) => {
 			const
@@ -456,10 +510,9 @@ function GridComponent(props) {
 				parent = row.parentElement,
 				parentRect = parent.getBoundingClientRect(),
 				proxy = row.cloneNode(true),
-				top = rowRect.top - parentRect.top,
-				dragRowIx = Array.from(parent.children).indexOf(row)
+				top = rowRect.top - parentRect.top;
 			
-			setDragRowIx(dragRowIx); // the ix of which record is being dragged
+			setDragRow(row);
 
 			proxy.style.top = top + 'px';
 			proxy.style.left = '20px';
@@ -471,212 +524,116 @@ function GridComponent(props) {
 			proxy.style.border = '1px solid #000';
 			return proxy;
 		},
-		onRowReorderDragStart = (info, e, proxy, node) => {
-			// console.log('onRowReorderDragStart', info, e, proxy, node);
-			const
-				proxyRect = proxy.getBoundingClientRect(),
-				row = node.parentElement.parentElement,
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(parent.children, (childNode) => {
-					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
-				}),
-				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
-				headerRowIx = showHeaders ? 0 : null,
-				firstActualRowIx = showHeaders ? 1 : 0;
-
-			// Figure out which index the user wants
-			let newIx = 0;
-			_.each(rows, (child, ix, all) => {
+		getOverState = (rows, currentY, mouseX) => {
+			// determines which row the mouse is over
+			// and whether the marker should be moved to the top or bottom of the row
+			let newIx = 0,
+				useBottom = false;
+			_.each(rows, (row, ix) => {
 				const
-					rect = child.getBoundingClientRect(), // rect of the row of this iteration
+					rect = row.getBoundingClientRect(),
 					{
 						top,
 						bottom,
 						height,
 					} = rect,
-					compensatedTop = top - parentRect.top,
-					compensatedBottom = bottom - parentRect.top,
-					halfHeight = height / 2;
-
-				if (ix === headerRowIx || child === proxy) {
-					return;
-				}
-				if (ix === firstActualRowIx) {
-					// first row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = firstActualRowIx;
-						return false;
-					} else if (currentY < compensatedBottom) {
-						newIx = firstActualRowIx + 1;
-						return false;
-					}
-					return;
-				} else if (ix === all.length -1) {
-					// last row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = ix;
-						return false;
-					}
-					newIx = ix +1;
-					return false;
-				}
-				
-				// all other rows
-				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
+					isOver = (
+						mouseX >= rect.left &&
+						mouseX <= rect.right &&
+						currentY >= rect.top &&
+						currentY <= rect.bottom
+					);
+				if (isOver) {
 					newIx = ix;
-					return false;
-				} else if (currentY < compensatedBottom) {
-					newIx = ix +1;
+
+					const
+						halfHeight = height / 2,
+						isOverTopHalf = currentY < top + halfHeight;
+
+					useBottom = !isOverTopHalf;
+
 					return false;
 				}
 			});
+			return {
+				ix: newIx,
+				useBottom,
+			};
+		},
+		onRowReorderDragStart = (info, e, proxy, node) => {
+			// console.log('onRowReorderDragStart', info, e, proxy, node);
 
-			let useBottom = false;
-			if (!rows[newIx] || rows[newIx] === proxy) {
-				newIx--;
-				useBottom = true;
-			}
+			const
+				proxyRect = proxy.getBoundingClientRect(),
+				row = node.parentElement.parentElement,
+				flatlist = row.parentElement,
+				flatlistRect = flatlist.getBoundingClientRect(),
+				rows = _.filter(flatlist.childNodes, (childNode, ix) => {
+					const
+						isZeroHeight = childNode.getBoundingClientRect().height === 0,
+						isProxy = childNode === proxy,
+						isHeader = showHeaders && ix === 0;
+					return !isZeroHeight && !isProxy && !isHeader;
+				}),
+				currentY = proxyRect.top - flatlistRect.top, // top position of pointer, relative to page
+				{ ix, useBottom } = getOverState(rows, currentY, e.clientX);
+
 
 			// Render marker showing destination location
 			const
-				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth), // get relative Y position
-				gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
-				gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
+				rowContainerRect = rows[ix].getBoundingClientRect(),
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
+						- flatlistRect.top 
+						- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0), // get relative Y position
 				marker = document.createElement('div');
-
 			marker.style.position = 'absolute';
-			marker.style.top = top -4 + 'px'; // -4 so it's always visible
+			marker.style.top = top + 'px';
 			marker.style.height = '4px';
-			marker.style.width = gridRowsContainerRect.width + 'px';
+			marker.style.width = flatlistRect.width + 'px';
 			marker.style.backgroundColor = '#f00';
+			flatlist.appendChild(marker);
 
-			gridRowsContainer.appendChild(marker);
-
-			setDragRowSlot({ ix: newIx, marker, useBottom, });
+			setCachedDragElements({ ix, useBottom, marker, rows, });
 		},
 		onRowReorderDrag = (info, e, proxy, node) => {
 			// console.log('onRowReorderDrag', info, e, proxy, node);
 			const
+				{ marker, rows, } = cachedDragElements,
 				proxyRect = proxy.getBoundingClientRect(),
 				row = node.parentElement.parentElement,
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(parent.children, (childNode) => {
-					return childNode.getBoundingClientRect().height !== 0; // Skip zero-height children
-				}),
-				currentY = proxyRect.top - parentRect.top, // top position of pointer, relative to page
-				headerRowIx = showHeaders ? 0 : null,
-				firstActualRowIx = showHeaders ? 1 : 0;
+				flatlist = row.parentElement,
+				flatlistRect = flatlist.getBoundingClientRect(),
+				currentY = proxyRect.top - flatlistRect.top, // top position of pointer, relative to page
+				{ ix, useBottom } = getOverState(rows, currentY, e.clientX);
+			
 
-			// Figure out which index the user wants
-			let newIx = 0;
-			_.each(rows, (child, ix, all) => {
-				const
-					rect = child.getBoundingClientRect(), // rect of the row of this iteration
-					{
-						top,
-						bottom,
-						height,
-					} = rect,
-					compensatedTop = top - parentRect.top,
-					compensatedBottom = bottom - parentRect.top,
-					halfHeight = height / 2;
-
-				if (ix === headerRowIx || child === proxy) {
-					return;
-				}
-				if (ix === firstActualRowIx) {
-					// first row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = firstActualRowIx;
-						return false;
-					} else if (currentY < compensatedBottom) {
-						newIx = firstActualRowIx + 1;
-						return false;
-					}
-					return;
-				} else if (ix === all.length -1) {
-					// last row
-					if (currentY < compensatedTop + halfHeight) {
-						newIx = ix;
-						return false;
-					}
-					newIx = ix +1;
-					return false;
-				}
-				
-				// all other rows
-				if (compensatedTop <= currentY && currentY < compensatedTop + halfHeight) {
-					newIx = ix;
-					return false;
-				} else if (currentY < compensatedBottom) {
-					newIx = ix +1;
-					return false;
-				}
-			});
-
-			let useBottom = false;
-			if (!rows[newIx] || rows[newIx] === proxy) {
-				newIx--;
-				useBottom = true;
-			}
-
-			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
+			// move marker to new location
 			const
-				rowContainerRect = rows[newIx].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) - parentRect.top - parseInt(parent.style.borderWidth); // get relative Y position
-			let marker = dragRowSlot?.marker;
-			if (marker) {
-				marker.style.top = top -4 + 'px'; // -4 so it's always visible
-			}
+				rowContainerRect = rows[ix].getBoundingClientRect(),
+				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
+						- flatlistRect.top 
+						- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0); // get relative Y position
+			marker.style.top = top + 'px';
 
-			setDragRowSlot({ ix: newIx, marker, useBottom, });
-			// console.log('onRowReorderDrag slot', newIx);
-
+			setCachedDragElements({ ix, useBottom, marker, rows, });
 		},
 		onRowReorderDragStop = (delta, e, config) => {
 			// console.log('onRowReorderDragStop', delta, e, config);
 			const
-				dropIx = dragRowSlot.ix,
-				compensatedDragIx = showHeaders ? dragRowIx -1 : dragRowIx, // ix, without taking header row into account
-				compensatedDropIx = showHeaders ? dropIx -1 : dropIx, // // ix, without taking header row into account
-				dropPosition = dragRowSlot.useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE;
+				{ ix: dropIx, useBottom, marker, rows, } = cachedDragElements,
+				dragIx = rows.indexOf(dragRow);
 
-			let shouldMove = true,
-				finalDropIx = compensatedDropIx;
-			
-			if (dropPosition === DROP_POSITION_BEFORE) {
-				if (dragRowIx === dropIx || dragRowIx === dropIx -1) { // basically before or after the drag row's origin
-					// Same as origin; don't do anything
-					shouldMove = false;
-				} else {
-					// Actually move it
-					if (!Repository) { // If we're just going to be switching rows, rather than telling server to reorder rows, so maybe adjust finalDropIx...
-						if (finalDropIx > compensatedDragIx) { // if we're dropping *before* the origin ix
-							finalDropIx = finalDropIx -1; // Because we're using BEFORE, we want to switch with the row *prior to* the ix we're dropping before
-						}
-					}
-				}
-			} else if (dropPosition === DROP_POSITION_AFTER) {
-				// Only happens on the very last row. Everything else is BEFORE...
-				if (dragRowIx === dropIx) {
-					// Same as origin; don't do anything
-					shouldMove = false;
-				}
-			}
-
+			const shouldMove = dropIx !== dragIx;
 			if (shouldMove) {
 				// Update the row with the new ix
 				let dragRecord,
 					dropRecord;
 				if (Repository) {
-					dragRecord = Repository.getByIx(compensatedDragIx);
-					dropRecord = Repository.getByIx(finalDropIx);
-					
-					Repository.reorder(dragRecord, dropRecord, dropPosition);
-
+					dragRecord = Repository.getByIx(dragIx);
+					dropRecord = Repository.getByIx(dropIx);
+					if (dropRecord) {
+						Repository.reorder(dragRecord, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
+					}
 				} else {
 					function arrayMove(arr, fromIndex, toIndex) {
 						var element = arr[fromIndex];
@@ -687,10 +644,8 @@ function GridComponent(props) {
 				}
 			}
 
-			if (dragRowSlot) {
-				dragRowSlot.marker.remove();
-			}
-			setDragRowSlot(null);
+			marker.remove();
+			setCachedDragElements(null);
 		},
 		calculatePageSize = (containerHeight) => {
 			const
@@ -747,6 +702,9 @@ function GridComponent(props) {
 					Repository.isAutoLoad = false;
 				}
 				Repository.pauseEvents();
+			}
+			if (onRender) {
+				onRender(self)
 			}
 			return () => {};
 		}
@@ -855,6 +813,11 @@ function GridComponent(props) {
 				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
+			},
+			onChangePage = () => {
+				if (showRowExpander) {
+					expandedRowsRef.current = {}; // clear expanded rows
+				}
 			};
 
 		Repository.on('beforeLoad', setTrue);
@@ -865,7 +828,7 @@ function GridComponent(props) {
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
-
+		Repository.on('changePage', onChangePage);
 
 		applySelectorSelected();
 		Repository.resumeEvents();
@@ -883,6 +846,7 @@ function GridComponent(props) {
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
+			Repository.off('changePage', onChangePage);
 		};
 	}, [isInited]);
 
@@ -962,15 +926,14 @@ function GridComponent(props) {
 	}
 
 	let grid = <FlatList
+					testID="flatlist"
 					ref={gridRef}
 					scrollEnabled={CURRENT_MODE === UI_MODE_WEB}
 					nestedScrollEnabled={true}
 					contentContainerStyle={{
 						overflow: 'auto',
-						borderWidth: isDragMode ? styles.REORDER_BORDER_WIDTH : 0,
-						borderColor: isDragMode ? styles.REORDER_BORDER_COLOR : null,
-						borderStyle: styles.REORDER_BORDER_STYLE,
-						flex: 1,
+						height: '100%',
+						// flex: 1,
 					}}
 					refreshing={isLoading}
 					onRefresh={pullToRefresh ? onRefresh : null}
@@ -991,6 +954,7 @@ function GridComponent(props) {
 					bg="trueGray.100"
 					{...flatListProps}
 				/>
+	
 	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
 	}
@@ -1004,8 +968,22 @@ function GridComponent(props) {
 		}
 	}
 
-	return <VStack
+	const gridContainerBorderProps = {};
+	if (isLoading) {
+		gridContainerBorderProps.borderTopWidth = 2;
+		gridContainerBorderProps.borderTopColor = '#f00';
+	} else if (isDragMode) {
+		gridContainerBorderProps.borderWidth = styles.REORDER_BORDER_WIDTH;
+		gridContainerBorderProps.borderColor = styles.REORDER_BORDER_COLOR;
+		gridContainerBorderProps.borderStyle = styles.REORDER_BORDER_STYLE;
+	} else {
+		gridContainerBorderProps.borderTopWidth = 1
+		gridContainerBorderProps.borderTopColor = 'trueGray.300';
+	}
+
+	grid = <VStack
 				{...testProps('Grid')}
+				testID="outerContainer"
 				ref={containerRef}
 				w="100%"
 				bg={bg}
@@ -1016,17 +994,36 @@ function GridComponent(props) {
 			>
 				{topToolbar}
 
-				<VStack ref={gridContainerRef} w="100%" flex={1} minHeight={40} borderTopWidth={isLoading ? 2 : 1} borderTopColor={isLoading ? '#f00' : 'trueGray.300'} onClick={() => {
-					if (!isDragMode && !isInlineEditorShown) {
-						deselectAll();
-					}
-				}}>
+				<VStack
+					testID="gridContainer"
+					ref={gridContainerRef}
+					w="100%"
+					flex={1}
+					minHeight={40}
+					{...gridContainerBorderProps}
+					onClick={() => {
+						if (!isDragMode && !isInlineEditorShown) {
+							deselectAll();
+						}
+					}}
+				>
 					{grid}
 				</VStack>
 
 				{listFooterComponent}
 
-			</VStack>;
+			</VStack>
+
+	if (isDropTarget) {
+		grid = <Box
+					ref={dropTargetRef}
+					borderWidth={canDrop && isOver ? 4 : 0}
+					borderColor="#0ff"
+					w="100%"
+					{...sizeProps}
+				>{grid}</Box>
+	}
+	return grid;
 
 }
 
@@ -1034,12 +1031,14 @@ export const Grid = withComponent(
 						withAlert(
 							withEvents(
 								withData(
-									withMultiSelection(
-										withSelection(
-											withFilters(
-												withPresetButtons(
-													withContextMenu(
-														GridComponent
+									withDropTarget(
+										withMultiSelection(
+											withSelection(
+												withFilters(
+													withPresetButtons(
+														withContextMenu(
+															GridComponent
+														)
 													),
 													true // isGrid
 												)
@@ -1055,13 +1054,15 @@ export const SideGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withMultiSelection(
-													withSelection(
-														withSideEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		GridComponent
+												withDropTarget(
+													withMultiSelection(
+														withSelection(
+															withSideEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			GridComponent
+																		)
 																	),
 																	true // isGrid
 																)
@@ -1078,15 +1079,17 @@ export const WindowedGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withMultiSelection(
-													withSelection(
-														withWindowedEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		GridComponent
-																	),
-																	true // isGrid
+												withDropTarget(
+													withMultiSelection(
+														withSelection(
+															withWindowedEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			GridComponent
+																		),
+																		true // isGrid
+																	)
 																)
 															)
 														)
@@ -1101,16 +1104,18 @@ export const InlineGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withMultiSelection(
-													withSelection(
-														withInlineEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		GridComponent
-																	)
-																),
-																true // isGrid
+												withDropTarget(
+													withMultiSelection(
+														withSelection(
+															withInlineEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			GridComponent
+																		)
+																	),
+																	true // isGrid
+																)
 															)
 														)
 													)

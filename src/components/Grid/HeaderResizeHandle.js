@@ -24,4 +24,13 @@ function HeaderResizeHandle(props) {
 			</VStack>;
 }
 
-export default withDraggable(HeaderResizeHandle);
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					isDraggable={true}
+					{...props}
+				/>;
+	};
+}
+
+export default withAdditionalProps(withDraggable(HeaderResizeHandle));

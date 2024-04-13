@@ -93,6 +93,7 @@ import Info from '../Components/Icons/Info.js';
 import ItunesNote from '../Components/Icons/ItunesNote.js';
 import Js from '../Components/Icons/Js.js';
 import Leaf from '../Components/Icons/Leaf.js';
+import Link from '../Components/Icons/Link.js';
 import List from '../Components/Icons/List.js';
 import ListCheck from '../Components/Icons/ListCheck.js';
 import LocationDot from '../Components/Icons/LocationDot.js';
@@ -203,6 +204,7 @@ import DataMgt from './Screens/DataMgt.js';
 import Date from './Form/Field/Date.js';
 import DateRange from './Filter/DateRange.js';
 import DisplayField from './Form/Field/DisplayField.js';
+import ExpandButton from './Buttons/ExpandButton.js';
 import FieldSet from './Form/FieldSet.js';
 import FiltersForm from './Form/FiltersForm.js';
 // import FiltersToolbar from '../Components/Toolbar/FiltersToolbar.js';
@@ -327,6 +329,7 @@ const components = {
 	ItunesNote,
 	Js,
 	Leaf,
+	Link,
 	List,
 	ListCheck,
 	LocationDot,
@@ -437,6 +440,7 @@ const components = {
 	Date,
 	DateRange,
 	DisplayField,
+	ExpandButton,
 	FieldSet,
 	FiltersForm,
 	// FiltersToolbar,
