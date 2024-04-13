@@ -98,7 +98,7 @@ function GridRow(props) {
 								userSelect: 'none',
 							};
 
-							return <Row key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</Row>;
+							return <HStack key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</HStack>;
 						}
 						if (config.fieldName) {
 							if (item?.properties && item.properties[config.fieldName]) {
@@ -200,19 +200,19 @@ function GridRow(props) {
 						</>;
 
 		if (props.dragSourceRef) {
-			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dragSourceRef}>{rowContents}</Row>;
+			rowContents = <HStack flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dragSourceRef}>{rowContents}</HStack>;
 		}
 		if (props.dropTargetRef) {
-			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dropTargetRef}>{rowContents}</Row>;
+			rowContents = <HStack flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dropTargetRef}>{rowContents}</HStack>;
 		}
 
-		return <Row
+		return <HStack
 					alignItems="center"
 					flexGrow={1}
 					{...rowProps}
 					bg={bg}
 					key={hash}
-				>{rowContents}</Row>;
+				>{rowContents}</HStack>;
 	}, [
 		columnsConfig,
 		columnProps,
