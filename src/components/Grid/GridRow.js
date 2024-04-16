@@ -1,4 +1,4 @@
-import { useMemo, } from 'react';
+import { useEffect, useMemo, useRef, } from 'react';
 import {
 	Box,
 	Row,
@@ -10,7 +10,6 @@ import {
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
-import withDraggable from '../Hoc/withDraggable.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import _ from 'lodash';
@@ -30,6 +29,8 @@ function GridRow(props) {
 			isDraggable = false, // withDraggable
 			isDragSource = false, // withDnd
 			isOver = false,
+			dragSourceRef,
+			dropTargetRef,
 		} = props,
 		styles = UiGlobals.styles;
 
@@ -199,11 +200,11 @@ function GridRow(props) {
 												/>}
 						</>;
 
-		if (props.dragSourceRef) {
-			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dragSourceRef}>{rowContents}</Row>;
+		if (dragSourceRef) {
+			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={dragSourceRef}>{rowContents}</Row>;
 		}
-		if (props.dropTargetRef) {
-			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={props.dropTargetRef}>{rowContents}</Row>;
+		if (dropTargetRef) {
+			rowContents = <Row flexGrow={1} flex={1} w="100%" bg={bg} ref={dropTargetRef}>{rowContents}</Row>;
 		}
 
 		return <Row
@@ -225,7 +226,14 @@ function GridRow(props) {
 		hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
 		isInlineEditorShown,
 		isOver,
+		dragSourceRef,
+		dropTargetRef,
 	]);
 }
 
-export default withDraggable(withDragSource(withDropTarget(GridRow)));
+// export default withDraggable(withDragSource(withDropTarget(GridRow)));
+export default GridRow;
+
+export const DragSourceGridRow = withDragSource(GridRow);
+export const DropTargetGridRow = withDropTarget(GridRow);
+export const DragSourceDropTargetGridRow = withDragSource(withDropTarget(GridRow));
