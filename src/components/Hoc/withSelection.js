@@ -1,10 +1,11 @@
-import { useState, useEffect, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
 	SELECT_UP,
 	SELECT_DOWN,
 } from '../../Constants/Selection.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
@@ -46,20 +47,22 @@ export default function withSelection(WrappedComponent) {
 			} = props,
 			usesWithValue = !!setValue,
 			initialSelection = selection || defaultSelection || [],
-			[localSelection, setLocalSelection] = useState(initialSelection),
+			forceUpdate = useForceUpdate(),
+			localSelection = useRef(initialSelection),
 			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
 			setSelection = (selection) => {
-				if (_.isEqual(selection, localSelection)) {
+				if (_.isEqual(selection, localSelection.current)) {
 					return;
 				}
 
-				setLocalSelection(selection);
+				localSelection.current = selection;
 				if (onChangeSelection) {
 					onChangeSelection(selection);
 				}
 				if (fireEvent) {
 					fireEvent('changeSelection', selection);
 				}
+				forceUpdate();
 			},
 			selectNext = () => {
 				selectDirection(SELECT_DOWN);
@@ -91,23 +94,21 @@ export default function withSelection(WrappedComponent) {
 			},
 			addToSelection = (item) => {
 				let newSelection = [];
-				newSelection = _.clone(localSelection); // so we get a new object, so descendants rerender
+				newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				setSelection(newSelection);
 			},
 			removeFromSelection = (item) => {
 				let newSelection = [];
 				if (Repository) {
-					newSelection = _.remove(localSelection, (sel) => sel !== item);
+					newSelection = _.remove(localSelection.current, (sel) => sel !== item);
 				} else {
-					newSelection = _.remove(localSelection, (sel) => sel[idIx] !== item[idIx]);
+					newSelection = _.remove(localSelection.current, (sel) => sel[idIx] !== item[idIx]);
 				}
 				setSelection(newSelection);
 			},
 			deselectAll = () => {
-				if (!_.isEmpty(localSelection)) {
-					setSelection([]);
-				}
+				setSelection([]);
 			},
 			getMaxMinSelectionIndices = () => {
 				let items,
@@ -134,9 +135,9 @@ export default function withSelection(WrappedComponent) {
 			selectRangeTo = (item) => {
 				// Select above max or below min to this one
 				const
-					currentSelectionLength = localSelection.length,
+					currentSelectionLength = localSelection.current.length,
 					index = getIndexOfSelectedItem(item);
-				let newSelection = _.clone(localSelection); // so we get a new object, so descendants rerender
+				let newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
 
 				if (currentSelectionLength) {
 					const { items, max, min, } = getMaxMinSelectionIndices();
@@ -163,10 +164,10 @@ export default function withSelection(WrappedComponent) {
 			},
 			isInSelection = (item) => {
 				if (Repository) {
-					return inArray(item, localSelection);
+					return inArray(item, localSelection.current);
 				}
 
-				const found = _.find(localSelection, (selectedItem) => {
+				const found = _.find(localSelection.current, (selectedItem) => {
 						return selectedItem[idIx] === item[idIx];
 					});
 				return !!found;
@@ -188,10 +189,10 @@ export default function withSelection(WrappedComponent) {
 				return found;
 			},
 			getIdsFromLocalSelection = () => {
-				if (!localSelection[0]) {
+				if (!localSelection.current[0]) {
 					return null;
 				}
-				const values = _.map(localSelection, (item) => {
+				const values = _.map(localSelection.current, (item) => {
 					if (Repository) {
 						return item.id;
 					}
@@ -202,7 +203,7 @@ export default function withSelection(WrappedComponent) {
 				}
 				return values;
 			},
-			getDisplayValuesFromLocalSelection = (selection) => {
+			getDisplayValuesFromSelection = (selection) => {
 				if (!selection[0]) {
 					return '';
 				}
@@ -275,10 +276,20 @@ export default function withSelection(WrappedComponent) {
 					}
 				}
 
-				if (!_.isEqual(newSelection, localSelection)) {
+				if (!_.isEqual(newSelection, localSelection.current)) {
 					setSelection(newSelection);
 				}
 			};
+
+		if (Repository) {
+			useEffect(() => {
+				// clear the selection when Repository loads
+				Repository.on('load', deselectAll);
+				return () => {
+					Repository.off('load', deselectAll);
+				};
+			}, []);
+		}
 
 		useEffect(() => {
 
@@ -317,7 +328,7 @@ export default function withSelection(WrappedComponent) {
 		}, [value]);
 
 		if (self) {
-			self.selection = localSelection;
+			self.selection = localSelection.current;
 			self.setSelection = setSelection;
 			self.selectNext = selectNext;
 			self.selectPrev = selectPrev;
@@ -327,7 +338,7 @@ export default function withSelection(WrappedComponent) {
 			self.selectRangeTo = selectRangeTo;
 			self.isInSelection = isInSelection;
 			self.getIdsFromLocalSelection = getIdsFromLocalSelection;
-			self.getDisplayValuesFromSelection = getDisplayValuesFromLocalSelection;
+			self.getDisplayValuesFromSelection = getDisplayValuesFromSelection;
 		}
 
 		if (usesWithValue) {
@@ -357,7 +368,7 @@ export default function withSelection(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					disableWithSelection={false}
-					selection={localSelection}
+					selection={localSelection.current}
 					setSelection={setSelection}
 					selectionMode={selectionMode}
 					selectNext={selectNext}
@@ -368,7 +379,7 @@ export default function withSelection(WrappedComponent) {
 					selectRangeTo={selectRangeTo}
 					isInSelection={isInSelection}
 					getIdsFromSelection={getIdsFromLocalSelection}
-					getDisplayValuesFromSelection={getDisplayValuesFromLocalSelection}
+					getDisplayValuesFromSelection={getDisplayValuesFromSelection}
 				/>;
 	};
 }
