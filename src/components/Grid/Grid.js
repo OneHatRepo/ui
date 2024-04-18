@@ -420,6 +420,7 @@ function GridComponent(props) {
 										gridRef={gridRef}
 										isHovered={isHovered}
 										isInlineEditorShown={isInlineEditorShown}
+										areRowsDragSource={areRowsDragSource}
 									/>;
 						}
 

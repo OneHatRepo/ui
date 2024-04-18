@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, } from 'react';
 import {
+	Box,
 	Icon,
 	Pressable,
 	Row,
@@ -41,6 +42,7 @@ export default function GridHeaderRow(props) {
 			gridRef,
 			isHovered,
 			isInlineEditorShown,
+			areRowsDragSource,
 		} = props,
 		styles = UiGlobals.styles,
 		sortFn = Repository && Repository.getSortFn(),
@@ -333,114 +335,117 @@ export default function GridHeaderRow(props) {
 					if (UiGlobals.mode === UI_MODE_WEB) {
 						textProps.textOverflow = 'ellipsis';
 					}
-					return <Pressable
-								key={ix}
-								onPress={(e) => {
-									if (e.preventDefault) {
-										e.preventDefault();
-									}
-									if (isBlocked.current) { // withDraggable initiates block
-										return;
-									}
-									if (sortable && canColumnsSort) {
-										onSort(config, e);
-									}
-								}}
-								flexDirection="row"
-								h="100%"
-								bg={styles.GRID_HEADER_BG}
-								_hover={{
-									bg: styles.GRID_HEADER_HOVER_BG,
-								}}
-								p={0}
-								style={{ userSelect: 'none', }}
-								onMouseEnter={(e) => onHeaderMouseEnter(e, ix)}
-								onMouseLeave={(e) => onHeaderMouseLeave(e, ix)}
-								{...propsToPass}
-							>
-								{isReorderable && showDragHandles && 
-										<HeaderReorderHandle
-												key="HeaderReorderHandle"
-												mode={HORIZONTAL}
-												onDragStart={onColumnReorderDragStart}
-												onDrag={onColumnReorderDrag}
-												onDragStop={(delta, e) => onColumnReorderDragStop(delta, e, config)}
-												onChangeIsDragging={setIsDragging}
-												getProxy={(node) => {
-													const
-														columnHeader = node.parentElement,
-														columnHeaderRect = columnHeader.getBoundingClientRect(),
-														proxy = columnHeader.cloneNode(true);
-													
-													proxy.style.top = columnHeaderRect.top + 10 + 'px';
-													proxy.style.left = columnHeaderRect.left + 'px';
-													proxy.style.height = columnHeaderRect.height + 'px';
-													proxy.style.width = columnHeaderRect.width + 'px';
-													proxy.style.display = 'flex';
-													proxy.style.backgroundColor = '#ddd';
-													return proxy;
-												}}
-											/>}
-								<Text
-									key="Text"
-									fontSize={styles.GRID_HEADER_FONTSIZE}
-									overflow="hidden"
-									flex={1}
-									h="100%"
-									px={styles.GRID_HEADER_CELL_PX}
-									py={styles.GRID_HEADER_CELL_PY}
-									alignItems="center"
-									justifyContent="center"
-									numberOfLines={1}
-									ellipsizeMode="head"
-									{...textProps}
-								>{header}</Text>
-								
-								{isSorter && 
-									<Icon 
-										key="Icon" 
-										as={isSortDirectionAsc ? SortUp : SortDown} 
-										textAlign="center" 
-										size={styles.GRID_HEADER_ICON_SIZE}
-										mt={styles.GRID_HEADER_ICON_MT} 
-										mr={styles.GRID_HEADER_ICON_MR} 
-										color="trueGray.500"
-									/>}
-								
-								{isResizable && showDragHandles && 
-										<HeaderResizeHandle
-											key="HeaderResizeHandle"
+					return <>
+						{ix === 0 && areRowsDragSource && <Box w={3} />}
+						<Pressable
+							key={ix}
+							onPress={(e) => {
+								if (e.preventDefault) {
+									e.preventDefault();
+								}
+								if (isBlocked.current) { // withDraggable initiates block
+									return;
+								}
+								if (sortable && canColumnsSort) {
+									onSort(config, e);
+								}
+							}}
+							flexDirection="row"
+							h="100%"
+							bg={styles.GRID_HEADER_BG}
+							_hover={{
+								bg: styles.GRID_HEADER_HOVER_BG,
+							}}
+							p={0}
+							style={{ userSelect: 'none', }}
+							onMouseEnter={(e) => onHeaderMouseEnter(e, ix)}
+							onMouseLeave={(e) => onHeaderMouseLeave(e, ix)}
+							{...propsToPass}
+						>
+							{isReorderable && showDragHandles && 
+									<HeaderReorderHandle
+											key="HeaderReorderHandle"
 											mode={HORIZONTAL}
-											onDragStop={(delta, e, node) => onColumnResize(delta, e, node, config)}
+											onDragStart={onColumnReorderDragStart}
+											onDrag={onColumnReorderDrag}
+											onDragStop={(delta, e) => onColumnReorderDragStop(delta, e, config)}
 											onChangeIsDragging={setIsDragging}
 											getProxy={(node) => {
 												const
 													columnHeader = node.parentElement,
 													columnHeaderRect = columnHeader.getBoundingClientRect(),
-													nodeRect = node.getBoundingClientRect(),
-													gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
-													gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
-													proxy = node.cloneNode(true),
-													verticalLine = document.createElement('div');
+													proxy = columnHeader.cloneNode(true);
 												
-												verticalLine.style.position = 'absolute';
-												verticalLine.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
-												verticalLine.style.width = '1px';
-												verticalLine.style.top = 0;
-												verticalLine.style.right = 0;
-												verticalLine.style.backgroundColor = '#ddd';
-												proxy.appendChild(verticalLine);
-
-												proxy.style.top = nodeRect.top + 'px';
-												proxy.style.left = nodeRect.left + 'px';
-												proxy.style.height = nodeRect.height + 'px';
-												proxy.style.width = nodeRect.width + 'px';
+												proxy.style.top = columnHeaderRect.top + 10 + 'px';
+												proxy.style.left = columnHeaderRect.left + 'px';
+												proxy.style.height = columnHeaderRect.height + 'px';
+												proxy.style.width = columnHeaderRect.width + 'px';
 												proxy.style.display = 'flex';
-
+												proxy.style.backgroundColor = '#ddd';
 												return proxy;
 											}}
 										/>}
-							</Pressable>;
+							<Text
+								key="Text"
+								fontSize={styles.GRID_HEADER_FONTSIZE}
+								overflow="hidden"
+								flex={1}
+								h="100%"
+								px={styles.GRID_HEADER_CELL_PX}
+								py={styles.GRID_HEADER_CELL_PY}
+								alignItems="center"
+								justifyContent="center"
+								numberOfLines={1}
+								ellipsizeMode="head"
+								{...textProps}
+							>{header}</Text>
+							
+							{isSorter && 
+								<Icon 
+									key="Icon" 
+									as={isSortDirectionAsc ? SortUp : SortDown} 
+									textAlign="center" 
+									size={styles.GRID_HEADER_ICON_SIZE}
+									mt={styles.GRID_HEADER_ICON_MT} 
+									mr={styles.GRID_HEADER_ICON_MR} 
+									color="trueGray.500"
+								/>}
+							
+							{isResizable && showDragHandles && 
+									<HeaderResizeHandle
+										key="HeaderResizeHandle"
+										mode={HORIZONTAL}
+										onDragStop={(delta, e, node) => onColumnResize(delta, e, node, config)}
+										onChangeIsDragging={setIsDragging}
+										getProxy={(node) => {
+											const
+												columnHeader = node.parentElement,
+												columnHeaderRect = columnHeader.getBoundingClientRect(),
+												nodeRect = node.getBoundingClientRect(),
+												gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
+												gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
+												proxy = node.cloneNode(true),
+												verticalLine = document.createElement('div');
+											
+											verticalLine.style.position = 'absolute';
+											verticalLine.style.height = gridRowsContainerRect.height + columnHeaderRect.height + 'px';
+											verticalLine.style.width = '1px';
+											verticalLine.style.top = 0;
+											verticalLine.style.right = 0;
+											verticalLine.style.backgroundColor = '#ddd';
+											proxy.appendChild(verticalLine);
+
+											proxy.style.top = nodeRect.top + 'px';
+											proxy.style.left = nodeRect.left + 'px';
+											proxy.style.height = nodeRect.height + 'px';
+											proxy.style.width = nodeRect.width + 'px';
+											proxy.style.display = 'flex';
+
+											return proxy;
+										}}
+									/>}
+						</Pressable>
+					</>;
 				});
 				if (!hideNavColumn) {
 					headerColumns.push(<AngleRight
