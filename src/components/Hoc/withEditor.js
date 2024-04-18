@@ -7,6 +7,7 @@ import {
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 } from '../../Constants/Editor.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 export default function withEditor(WrappedComponent, isTree = false) {
@@ -41,6 +42,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				newEntityDisplayValue,
 				newEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				defaultValues,
+				stayInEditModeOnSelectionChange = false,
 
 				// withComponent
 				self,
@@ -423,6 +425,16 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				});
 			},
 			calculateEditorMode = (isIgnoreNextSelectionChange = false) => {
+
+				let doStayInEditModeOnSelectionChange = stayInEditModeOnSelectionChange;
+				if (!_.isNil(UiGlobals.stayInEditModeOnSelectionChange)) {
+					// allow global override to for this property
+					doStayInEditModeOnSelectionChange = UiGlobals.stayInEditModeOnSelectionChange;
+				}
+				if (doStayInEditModeOnSelectionChange) {
+					isIgnoreNextSelectionChange = true;
+				}
+
 				// calculateEditorMode gets called only on selection changes
 				let mode;
 				if (isIgnoreNextSelectionChange) {
