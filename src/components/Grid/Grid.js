@@ -474,11 +474,12 @@ function GridComponent(props) {
 									rowDragProps.isDragSource = true;
 									rowDragProps.dragSourceType = rowDragSourceType;
 									if (getRowDragSourceItem) {
-										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getIds);
+										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getIds, rowDragSourceType);
 									} else {
 										rowDragProps.dragSourceItem = {
 											id: item.id,
 											getIds,
+											type: rowDragSourceType,
 										};
 									}
 								}
