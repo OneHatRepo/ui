@@ -205,7 +205,7 @@ function GridComponent(props) {
 		isAddingRef = useRef(),
 		expandedRowsRef = useRef({}),
 		cachedDragElements = useRef(),
-		idsRef = useRef([]),
+		dragSelectionRef = useRef([]),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -449,9 +449,8 @@ function GridComponent(props) {
 						let WhichRow = GridRow;
 						if (CURRENT_MODE === UI_MODE_WEB) { // DND is currrently web-only  TODO: implement for RN
 							// Create a method that gets an always-current copy of the selection ids
-							const ids = _.map(selection, (item) => item.id);
-							idsRef.current = ids;
-							const getIds = () => idsRef.current;
+							dragSelectionRef.current = selection;
+							const getSelection = () => dragSelectionRef.current;
 
 							// assign event handlers
 							if (canRowsReorder && isDragMode) {
@@ -461,7 +460,7 @@ function GridComponent(props) {
 								const dragIx = showHeaders ? index - 1 : index;
 								rowReorderProps.dragSourceItem = {
 									id: item.id,
-									getIds,
+									getSelection,
 									onDrag: (dragState) => {
 										onRowReorderDrag(dragState, dragIx);
 									},
@@ -474,11 +473,11 @@ function GridComponent(props) {
 									rowDragProps.isDragSource = true;
 									rowDragProps.dragSourceType = rowDragSourceType;
 									if (getRowDragSourceItem) {
-										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getIds, rowDragSourceType);
+										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, rowDragSourceType);
 									} else {
 										rowDragProps.dragSourceItem = {
 											id: item.id,
-											getIds,
+											getSelection,
 											type: rowDragSourceType,
 										};
 									}
