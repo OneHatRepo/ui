@@ -6,8 +6,21 @@ import withEditor from './withEditor.js';
 import _ from 'lodash';
 
 
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		// provide the editorType to withEditor
+		return <WrappedComponent
+					editorType={EDITOR_TYPE__SIDE}
+					{...props}
+				/>;
+	};
+}
+
+// NOTE: Effectivtly, the HOC composition is:
+// withAdditionalProps(withEditor(withSideEditor))
+
 export default function withSideEditor(WrappedComponent, isTree = false) {
-	return withEditor((props) => {
+	return withAdditionalProps(withEditor((props) => {
 		const {
 				Editor,
 				editorProps = {},
@@ -44,5 +57,5 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								reference="editor"
 							/>}
 				/>;
-	});
+	}));
 }

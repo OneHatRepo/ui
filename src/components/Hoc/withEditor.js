@@ -6,6 +6,7 @@ import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
+	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
@@ -34,6 +35,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					}
 					return 'record' + (selection[0].displayValue ? ' "' + selection[0].displayValue + '"' : '') + '?';
 				},
+				editorType,
 				onAdd,
 				onChange, // any kind of crud change
 				onDelete,
@@ -437,23 +439,28 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				// calculateEditorMode gets called only on selection changes
 				let mode;
-				if (isIgnoreNextSelectionChange) {
-					mode = editorMode;
-					if (!canEditorViewOnly && userCanEdit) {
-						if (selection.length > 1) {
-							if (!disableEdit) {
-								// For multiple entities selected, change it to edit multiple mode
-								mode = EDITOR_MODE__EDIT;
-							}
-						} else if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom) {
-							if (!disableAdd) {
-								// When a phantom entity is selected, change it to add mode.
-								mode = EDITOR_MODE__ADD;
+				if (editorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
+					// special case: side editor is always edit mode
+					mode = EDITOR_MODE__EDIT;
+				} else {
+					if (isIgnoreNextSelectionChange) {
+						mode = editorMode;
+						if (!canEditorViewOnly && userCanEdit) {
+							if (selection.length > 1) {
+								if (!disableEdit) {
+									// For multiple entities selected, change it to edit multiple mode
+									mode = EDITOR_MODE__EDIT;
+								}
+							} else if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom) {
+								if (!disableAdd) {
+									// When a phantom entity is selected, change it to add mode.
+									mode = EDITOR_MODE__ADD;
+								}
 							}
 						}
+					} else {
+						mode = selection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 					}
-				} else {
-					mode = selection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 				}
 				return mode;
 			},

@@ -18,8 +18,23 @@ import Form from '../Form/Form.js';
 import withEditor from './withEditor.js';
 import _ from 'lodash';
 
+
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		// provide the editorType to withEditor
+		return <WrappedComponent
+					editorType={EDITOR_TYPE__INLINE}
+					{...props}
+				/>;
+	};
+}
+
+// NOTE: Effectivtly, the HOC composition is:
+// withAdditionalProps(withEditor(withWindowedEditor))
+
 export default function withInlineEditor(WrappedComponent) {
-	return withEditor((props) => {
+	return withAdditionalProps(withEditor((props) => {
 		const {
 				editorType,
 				isEditorShown = false,
@@ -147,5 +162,5 @@ export default function withInlineEditor(WrappedComponent) {
 					inlineEditor={inlineEditor}
 					isInlineEditorShown={isEditorShown}
 				/>;
-	});
+	}));
 }

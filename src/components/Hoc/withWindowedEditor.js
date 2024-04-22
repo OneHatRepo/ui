@@ -25,8 +25,24 @@ import _ from 'lodash';
 // then switch position to absolute, draggable area would be header of panel
 // const DraggableColumn = withAdditionalProps(withDraggable(Column));
 
+
+
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		// provide the editorType to withEditor
+		return <WrappedComponent
+					editorType={EDITOR_TYPE__WINDOWED}
+					{...props}
+				/>;
+	};
+}
+
+// NOTE: Effectivtly, the HOC composition is:
+// withAdditionalProps(withEditor(withWindowedEditor))
+
 export default function withWindowedEditor(WrappedComponent, isTree = false) {
-	return withEditor((props) => {
+	return withAdditionalProps(withEditor((props) => {
 		const {
 				isEditorShown = false,
 				setIsEditorShown,
@@ -65,5 +81,5 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 							/>
 						</Modal>}
 				</>;
-	}, isTree);
+	}, isTree));
 }
