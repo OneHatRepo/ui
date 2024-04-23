@@ -13,8 +13,22 @@ import _ from 'lodash';
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withWindowedEditor
 // This HOC will eventually get out of sync with that one, and may need to be updated.
 
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		// provide the editorType to withEditor
+		return <WrappedComponent
+					editorType={EDITOR_TYPE__WINDOWED}
+					{...props}
+				/>;
+	};
+}
+
+// NOTE: Effectivtly, the HOC composition is:
+// withAdditionalProps(withSecondaryEditor(withSecondaryWindowedEditor))
+
 export default function withSecondaryWindowedEditor(WrappedComponent, isTree = false) {
-	return withSecondaryEditor((props) => {
+	return withAdditionalProps(withSecondaryEditor((props) => {
 		const {
 				secondaryIsEditorShown = false,
 				secondarySetIsEditorShown,
@@ -67,5 +81,5 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 							/>
 						</Modal>}
 				</>;
-	}, isTree);
+	}, isTree));
 }
