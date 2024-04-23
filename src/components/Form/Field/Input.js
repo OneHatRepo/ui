@@ -3,9 +3,6 @@ import {
 	Input,
 	Tooltip,
 } from 'native-base';
-import {
-	AUTO_SUBMIT_DELAY,
-} from '../../../Constants/Input.js';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
@@ -16,7 +13,7 @@ function InputElement(props) {
 			value,
 			setValue,
 			autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
-			autoSubmitDelay = AUTO_SUBMIT_DELAY,
+			autoSubmitDelay = UiGlobals.autoSubmitDelay,
 			autoCapitalize = 'none',
 			maxLength,
 			onKeyPress,

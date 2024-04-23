@@ -5,9 +5,6 @@ import {
 	Input,
 	Row,
 } from 'native-base';
-import {
-	AUTO_SUBMIT_DELAY,
-} from '../../../Constants/Input.js';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import withComponent from '../../Hoc/withComponent.js';
@@ -25,6 +22,7 @@ function NumberElement(props) {
 		setValue,
 		minValue,
 		maxValue,
+		autoSubmitDelay = UiGlobals.autoSubmitDelay,
 		tooltip = null,
 		isDisabled = false,
 	} = props,
@@ -94,7 +92,7 @@ function NumberElement(props) {
 	useEffect(() => {
 		// Set up debounce fn
 		// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
-		debouncedSetValueRef.current = _.debounce(setValue, AUTO_SUBMIT_DELAY);
+		debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
 	}, [setValue]);
 	
 	useEffect(() => {

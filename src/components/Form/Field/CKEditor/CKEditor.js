@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Row,
 } from 'native-base';
-import {
-	AUTO_SUBMIT_DELAY,
-} from '../../../../Constants/Input.js';
+import UiGlobals from '../../../../UiGlobals.js';
 import { CKEditor } from '@ckeditor/ckeditor5-react'; // https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/react.html
 import './ckeditor.css';
 import Editor from '../../../../../ckeditor5/build/ckeditor.js'; // built using https://ckeditor.com/ckeditor-5/online-builder/
@@ -19,6 +17,7 @@ const
 		const {
 				value,
 				setValue,
+				autoSubmitDelay = UiGlobals.autoSubmitDelay,
 				h = 150,
 			} = props,
 			debouncedSetValueRef = useRef(),
@@ -30,7 +29,7 @@ const
 		useEffect(() => {
 			// Set up debounce fn
 			// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
-			debouncedSetValueRef.current = _.debounce(setValue, AUTO_SUBMIT_DELAY);
+			debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
 		}, [setValue]);
 
 		return <Row h={h} flex={1} ref={props.outerRef} {...props}>

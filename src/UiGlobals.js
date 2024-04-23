@@ -9,6 +9,9 @@ const Globals = {
 	// global defaults
 	paginationIsShowMoreOnly: false,
 	autoAdjustPageSizeToHeight: true,
+	doubleClickingGridRowOpensEditorInViewMode: false,
+	disableSavedColumnsConfig: false,
+	autoSubmitDelay: 500,
 };
 
 export default Globals;
