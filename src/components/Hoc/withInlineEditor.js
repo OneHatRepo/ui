@@ -82,7 +82,7 @@ export default function withInlineEditor(WrappedComponent) {
 					editorBounds = editor.parentElement.getBoundingClientRect(), // reference parentElement, because this doesn't change based on last moveEditor call
 					delta = editorBounds.top - rowBounds.top;
 
-				editorStyle.top = (-1 * delta) -20 + 'px';
+				editorStyle.top = (-1 * delta) + 'px';
 			};
 
 		if (isEditorShown && selection.length < 1) {
@@ -100,13 +100,14 @@ export default function withInlineEditor(WrappedComponent) {
 			inlineEditor = <>
 								{isEditorShown && <Box
 													ref={maskRef}
+													testID="mask"
 													position="fixed"
 													w="100vw"
 													h="100vh"
 													top="0"
 													left="0"
 													bg="#000"
-													opacity={0.35}
+													opacity={0.3}
 													zIndex={0}
 													onClick={(e) => {
 														e.preventDefault();
@@ -118,39 +119,34 @@ export default function withInlineEditor(WrappedComponent) {
 									ref={inlineEditorRef}
 									position="absolute"
 									zIndex={10}
+									testID="inline-editor"
+									h={isEditorShown ? '100px' : 0}
+									minWidth="100%"
+									display="inline-block"
+									whiteSpace="nowrap"
 								>
-									{isEditorShown && <Form
-															parent={self}
-															reference="form"
-															editorType={EDITOR_TYPE__INLINE}
-															editorStateRef={editorStateRef}
-															record={selection[0]}
-															Repository={Repository}
-															isMultiple={selection.length > 1}
-															isEditorViewOnly={isEditorViewOnly}
-															columnsConfig={localColumnsConfig}
-															onCancel={onEditorCancel}
-															onSave={onEditorSave}
-															onClose={onEditorClose}
-															footerProps={{
-																justifyContent: 'center',
-																bg: null, // make bg transparent
-																p: 0,
-															}}
-															buttonGroupProps={{
-																bg: 'primary.100',
-																borderBottomRadius: 5,
-																px: 4,
-																py: 2,
-															}}
-															bg="#fff"
-															borderTopWidth={4}
-															borderTopColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
-															borderBottomWidth={4}
-															borderBottomColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
-															py={1}
-															px={0}
-														/>}
+									{isEditorShown &&
+										<Form
+											parent={self}
+											reference="form"
+											editorType={EDITOR_TYPE__INLINE}
+											editorStateRef={editorStateRef}
+											record={selection[0]}
+											Repository={Repository}
+											isMultiple={selection.length > 1}
+											isEditorViewOnly={isEditorViewOnly}
+											columnsConfig={localColumnsConfig}
+											onCancel={onEditorCancel}
+											onSave={onEditorSave}
+											onClose={onEditorClose}
+											bg="#fff"
+											borderTopWidth={4}
+											borderTopColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
+											borderBottomWidth={4}
+											borderBottomColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
+											py={1}
+											px={0}
+										/>}
 								</Column>
 							</>;
 		}

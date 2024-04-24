@@ -237,7 +237,7 @@ function Form(props) {
 											let editorProps = {};
 											if (!editor) {
 												const propertyDef = fieldName && Repository?.getSchema().getPropertyDefinition(fieldName);
-												editor = propertyDef && propertyDef[fieldName].editorType;
+												editor = propertyDef?.editorType;
 												if (_.isPlainObject(editor)) {
 													const {
 															type,
@@ -248,6 +248,13 @@ function Form(props) {
 													editor = type;
 												}
 											}
+											if (!editor) {
+												editor = 'Text';
+											}
+											if (!editor.match(/Toggle/)) {
+												editorProps.h = '40px'; // Toggle height gets applied incorrectly; just skip it
+											}
+
 											const Element = getComponentFromType(editor);
 
 											if (useSelectorId) {
@@ -258,19 +265,20 @@ function Form(props) {
 											let element = <Element
 																name={name}
 																value={value}
-																setValue={(newValue) => {
+																onChangeValue={(newValue) => {
+																	if (newValue === undefined) {
+																		newValue = null; // React Hook Form doesn't respond well when setting value to undefined
+																	}
 																	onChange(newValue);
-																	if (onEditorChange) {
+																	if (typeof onEditorChange !== 'undefined' && onEditorChange) {
 																		onEditorChange(newValue, formSetValue, formGetValues, formState);
 																	}
 																}}
 																onBlur={onBlur}
 																flex={1}
-																{...editorProps}
 																parent={self}
 																reference={fieldName}
-																// {...defaults}
-																// {...propsToPass}
+																{...editorProps}
 															/>;
 
 											// element = <Tooltip key={ix} label={header} placement="bottom">
@@ -516,22 +524,20 @@ function Form(props) {
 												{...editorTypeProps}
 												{...dynamicProps}
 											/>;
-							if (editorType !== EDITOR_TYPE__INLINE) {
-								let message = null;
-								if (error) {
-									message = error.message;
-									if (label && error.ref?.name) {
-										message = message.replace(error.ref.name, label);
-									}
+							let message = null;
+							if (error) {
+								message = error.message;
+								if (label && error.ref?.name) {
+									message = message.replace(error.ref.name, label);
 								}
-								if (message) {
-									message = <Text color="#f00">{message}</Text>;
-								}
-								element = <Column pt={1} flex={1}>
-											{element}
-											{message}
-										</Column>;
 							}
+							if (message) {
+								message = <Text color="#f00">{message}</Text>;
+							}
+							element = <Column pt={1} flex={1}>
+										{element}
+										{message}
+									</Column>;
 
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
@@ -830,9 +836,17 @@ function Form(props) {
 		}
 
 		if (editorType === EDITOR_TYPE__INLINE) {
-			buttonGroupProps.position = 'fixed';
-			buttonGroupProps.left = 10; // TODO: I would prefer to have this be centered, but it's a lot more complex than just making it stick to the left
-			footerProps.alignItems = 'flex-start';
+			footerProps.position = 'sticky';
+			footerProps.alignSelf = 'flex-start';
+			footerProps.justifyContent = 'center';
+			footerProps.top = '100px';
+			footerProps.left = '20px';
+			footerProps.width = '200px';
+			footerProps.bg = 'primary.100';
+			footerProps.p = 0;
+			footerProps.px = 4;
+			footerProps.py = 2;
+			footerProps.borderBottomRadius = 5;
 		}
 
 		if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
@@ -868,11 +882,11 @@ function Form(props) {
 		}
 	}
 	
-	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef}>
+	return <Column {...sizeProps} onLayout={onLayoutDecorated} ref={formRef} testID="form">
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
-						<ScrollView
-							horizontal={true}
+						<Row
+							display="inline-block"
 							flex={1}
 							bg="#fff"
 							py={1}
@@ -880,7 +894,7 @@ function Form(props) {
 							borderBottomWidth={5}
 							borderTopColor="primary.100"
 							borderBottomColor="primary.100"
-						>{editor}</ScrollView>}
+						>{editor}</Row>}
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
 							{formButtons}
