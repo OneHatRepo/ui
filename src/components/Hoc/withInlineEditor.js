@@ -62,13 +62,6 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 			onChangeColumnsConfig = (columnsConfig) => {
 				setLocalColumnsConfig(columnsConfig);
 			},
-			onRowClick = (item, rowIndex, e) => {
-				// move the editor up to the appropriate row
-				const currentRow = e.currentTarget;
-				moveEditor(currentRow);
-
-				setCurrentRow(currentRow);
-			},
 			onScreenResize = () => {
 				// TODO: Attach a div with zIndex 0 to body to monitor resize events. THis is handler
 
@@ -83,11 +76,27 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 					delta = editorBounds.top - rowBounds.top;
 
 				editorStyle.top = (-1 * delta) + 'px';
+			},
+			onEditorShown = () => {
+				// determine which row to move the editor to
+				const
+					data = self.gridRef.current.props.data,
+					ix = data.indexOf(selection[0]),
+					gridRowsContainer = self.gridRef.current._listRef._scrollRef.childNodes[0],
+					currentRow = gridRowsContainer.childNodes[ix];
+
+				// TODO: verify it works if not using a Repository
+
+				moveEditor(currentRow);
+				setCurrentRow(currentRow);
 			};
 		
 		useEffect(() => {
 			if (maskRef.current) {
 				maskRef.current.focus();
+			}
+			if (isEditorShown) {
+				onEditorShown();
 			}
 		}, [isEditorShown]);
 

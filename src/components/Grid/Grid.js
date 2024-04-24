@@ -887,6 +887,7 @@ function GridComponent(props) {
 
 	if (self) {
 		self.ref = containerRef;
+		self.gridRef = gridRef;
 	}
 
 	isAddingRef.current = isAdding;
