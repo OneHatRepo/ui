@@ -80,7 +80,7 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 			onEditorShown = () => {
 				// determine which row to move the editor to
 				const
-					data = self.gridRef.current.props.data,
+					data = self.gridRef.current.props.data, // This is okay, because (for now) the inlineEditor is only for use with grids
 					ix = data.indexOf(selection[0]),
 					gridRowsContainer = self.gridRef.current._listRef._scrollRef.childNodes[0],
 					currentRow = gridRowsContainer.childNodes[ix];
