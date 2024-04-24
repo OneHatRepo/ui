@@ -194,6 +194,7 @@ function Form(props) {
 						renderer,
 						w,
 						flex,
+						onChange: onEditorChange,
 						useSelectorId = false,
 						getDynamicProps,
 						getIsRequired,
