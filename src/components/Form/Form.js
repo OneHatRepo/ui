@@ -173,134 +173,196 @@ function Form(props) {
 			context: { isPhantom },
 		}),
 		buildFromColumnsConfig = () => {
-			// For InlineEditor
+			// Only used in InlineEditor
 			// Build the fields that match the current columnsConfig in the grid
 			const
-				model = Repository.getSchema().model,
 				elements = [],
-				columnProps = {
+				columnProps = { // props applied to every column
 					justifyContent: 'center',
 					alignItems: 'center',
 					borderRightWidth: 1,
 					borderRightColor: 'trueGray.200',
 					px: 1,
+					minWidth: styles.INLINE_EDITOR_MIN_WIDTH,
 				};
-
-			if (editorType === EDITOR_TYPE__INLINE) {
-				columnProps.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
-			}
-
 			_.each(columnsConfig, (config, ix) => {
 				let {
 						fieldName,
+						isEditable = false,
+						editor = null,
 						editField,
-						isEditable,
-						editor,
 						renderer,
 						w,
 						flex,
 						useSelectorId = false,
-					} = config;
-
-				if (!isEditable) {
-					let renderedValue = renderer ? renderer(record) : record[fieldName];
-					if (_.isBoolean(renderedValue)) {
-						renderedValue = renderedValue.toString();
-					}
-					renderedValue += "\n(not editable)";
-					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>
-										<Text numberOfLines={1} ellipsizeMode="head">{renderedValue}</Text>
-									</Box>);
-				} else {
-					const fieldToEdit = editField || fieldName;
-					elements.push(<Controller
-										key={'controller-' + ix}
-										name={fieldToEdit}
-										// rules={rules}
-										control={control}
-										render={(args) => {
-											const {
-													field,
-													fieldState,
-													// formState,
-												} = args,
-												{
-													onChange,
-													onBlur,
-													name,
-													value,
-													// ref,
-												} = field,
-												{
-													isTouched,
-													isDirty,
-													error,
-												} = fieldState;
-											let editorProps = {};
-											if (!editor) {
-												const propertyDef = fieldToEdit && Repository?.getSchema().getPropertyDefinition(fieldToEdit);
-												editor = propertyDef?.editorType;
-												if (_.isPlainObject(editor)) {
-													const {
-															type,
-															onChange: onEditorChange,
-															...p
-														} = editor;
-													editorProps = p;
-													editor = type;
-												}
-											}
-											if (!editor) {
-												editor = 'Text';
-											}
-											if (!editor.match(/Toggle/)) {
-												editorProps.h = '40px'; // Toggle height gets applied incorrectly; just skip it
-											}
-
-											const Element = getComponentFromType(editor);
-
-											if (useSelectorId) {
-												editorProps.selectorId = selectorId;
-												editorProps.selectorSelected = editorProps;
-											}
-											
-											let element = <Element
-																name={name}
-																value={value}
-																onChangeValue={(newValue) => {
-																	if (newValue === undefined) {
-																		newValue = null; // React Hook Form doesn't respond well when setting value to undefined
-																	}
-																	onChange(newValue);
-																	if (typeof onEditorChange !== 'undefined' && onEditorChange) {
-																		onEditorChange(newValue, formSetValue, formGetValues, formState);
-																	}
-																}}
-																onBlur={onBlur}
-																flex={1}
-																parent={self}
-																reference={fieldToEdit}
-																{...editorProps}
-															/>;
-
-											if (editor.match(/Tag/)) {
-												columnProps.overflow = 'auto';
-											}
-											// element = <Tooltip key={ix} label={header} placement="bottom">
-											// 				{element}
-											// 			</Tooltip>;
-											// if (error) {
-											// 	element = <Column pt={1} flex={1}>
-											// 				{element}
-											// 				<Text color="#f00">{error.message}</Text>
-											// 			</Column>;
-											// }
-
-											const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
-											return <Row key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</Row>;
-										}}
-									/>);
+						getDynamicProps,
+						getIsRequired,
+						...propsToPass
+					} = config,
+					type,
+					editorTypeProps = {},
+					viewerTypeProps = {};
+				
+				if (editField) {
+					// Sometimes, columns will be configured to display one field
+					// and edit a different field
+					fieldName = editField;
 				}
+				const propertyDef = fieldName && Repository?.getSchema().getPropertyDefinition(fieldName);
+				if (propertyDef?.isEditingDisabled && checkIsEditingDisabled) {
+					isEditable = false;
+				}
+				if (!_.isNil(editor)) {
+					// if editor is defined on column, use it
+					if (_.isString(editor)) {
+						type = editor;
+					} else if (_.isPlainObject(editor)) {
+						const {
+								type: t,
+								...p
+							} = editor;
+						type = t;
+						editorTypeProps = p;
+					}
+				} else {
+					// editor is not defined, fall back to property definition
+					if (isEditable) {
+						const
+							{
+								type: t,
+								...p
+							} = propertyDef?.editorType;
+						type = t;
+						editorTypeProps = p;
+					} else if (propertyDef?.viewerType) {
+						const
+							{
+								type: t,
+								...p
+							} =  propertyDef?.viewerType;
+						type = t;
+						viewerTypeProps = p;
+					} else {
+						type = 'Text';
+					}
+				}
+				const isCombo = type?.match && type.match(/Combo/);
+				if (config.hasOwnProperty('autoLoad')) {
+					editorTypeProps.autoLoad = config.autoLoad;
+				} else {
+					if (isCombo && Repository?.isRemote && !Repository?.isLoaded) {
+						editorTypeProps.autoLoad = true;
+					}
+				}
+				if (isCombo) {
+					// editorTypeProps.showEyeButton = true;
+					if (_.isNil(propsToPass.showXButton)) {
+						editorTypeProps.showXButton = true;
+					}
+				}
+				const Element = getComponentFromType(type);
+
+				if (isEditorViewOnly || !isEditable) {
+					let value = null;
+					if (renderer) {
+						value = renderer(record);
+					} else {
+						if (record?.properties && record.properties[fieldName]) {
+							value = record.properties[fieldName].displayValue;
+						}
+						if (_.isNil(value) && record && record[fieldName]) {
+							value = record[fieldName];
+						}
+						if (_.isNil(value) && startingValues && startingValues[fieldName]) {
+							value = startingValues[fieldName];
+						}
+					}
+
+					let element = <Element
+										value={value}
+										parent={self}
+										reference={fieldName}
+										{...propsToPass}
+										{...viewerTypeProps}
+									/>;
+					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>{element}</Box>);
+					return;
+				}
+
+				elements.push(<Controller
+									key={'controller-' + ix}
+									name={fieldName}
+									// rules={rules}
+									control={control}
+									render={(args) => {
+										const {
+												field,
+												fieldState,
+												// formState,
+											} = args,
+											{
+												onChange,
+												onBlur,
+												name,
+												value,
+												// ref,
+											} = field,
+											{
+												isTouched,
+												isDirty,
+												error,
+											} = fieldState;
+
+										if (isValidElement(Element)) {
+											throw new Error('Should not yet be valid React element. Did you use <Element> instead of () => <Element> when defining it?')
+										}
+
+										if (useSelectorId) { // This causes the whole form to use selectorId
+											editorTypeProps.selectorId = selectorId;
+										}
+										if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
+											if (_.isNil(propsToPass.selectorSelected)) {
+												editorTypeProps.selectorSelected = record;
+											}
+										}
+										let dynamicProps = {};
+										if (getDynamicProps) {
+											dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
+										}
+
+										if (type.match(/Tag/)) {
+											editorTypeProps.overflow = 'auto';
+										}
+										if (!type.match(/Toggle/)) {
+											editorTypeProps.h = '40px';
+										}
+
+										let element = <Element
+															name={name}
+															value={value}
+															onChangeValue={(newValue) => {
+																if (newValue === undefined) {
+																	newValue = null; // React Hook Form doesn't respond well when setting value to undefined
+																}
+																onChange(newValue);
+																if (onEditorChange) {
+																	onEditorChange(newValue, formSetValue, formGetValues, formState, trigger);
+																}
+															}}
+															onBlur={onBlur}
+															flex={1}
+															parent={self}
+															reference={name}
+															{...propsToPass}
+															{...editorTypeProps}
+															{...dynamicProps}
+														/>;
+
+										const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
+										return <Row key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</Row>;
+									}}
+								/>);
+			
 			});
 			return <Row>{elements}</Row>;
 		},
@@ -328,7 +390,8 @@ function Form(props) {
 					getIsRequired,
 					...propsToPass
 				} = item,
-				editorTypeProps = {};
+				editorTypeProps = {},
+				viewerTypeProps = {};
 
 			if (isHidden) {
 				return null;
@@ -359,6 +422,7 @@ function Form(props) {
 							...p
 						} =  propertyDef?.viewerType;
 					type = t;
+					viewerTypeProps = p;
 				} else {
 					type = 'Text';
 				}
@@ -378,9 +442,9 @@ function Form(props) {
 				}
 			}
 			const Element = getComponentFromType(type);
-			let children;
 			
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
+				let children;
 				if (_.isEmpty(items)) {
 					return null;
 				}
@@ -432,6 +496,7 @@ function Form(props) {
 									parent={self}
 									reference={name}
 									{...propsToPass}
+									{...viewerTypeProps}
 								/>;
 				if (!disableLabels && label) {
 					const labelProps = {};
@@ -492,6 +557,7 @@ function Form(props) {
 									isDirty,
 									error,
 								} = fieldState;
+							
 							if (isValidElement(Element)) {
 								throw new Error('Should not yet be valid React element. Did you use <Element> instead of () => <Element> when defining it?')
 							}
