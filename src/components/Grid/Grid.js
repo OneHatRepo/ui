@@ -524,6 +524,7 @@ function GridComponent(props) {
 												size: 'sm',
 											}}
 											py={0}
+											tooltip="Expand/Contract Row"
 										/>
 										{rowComponent}
 									</Row>
