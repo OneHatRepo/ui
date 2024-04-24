@@ -246,7 +246,7 @@ export default function GridHeaderRow(props) {
 			setColumnsConfig(columnsConfig);
 
 			if (dragColumnSlot) {
-				dragColumnSlot.marker.remove();
+				dragColumnSlot.marker?.remove();
 			}
 			setDragColumnSlot(null);
 		},
