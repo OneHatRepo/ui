@@ -193,6 +193,7 @@ function Form(props) {
 			_.each(columnsConfig, (config, ix) => {
 				let {
 						fieldName,
+						editField,
 						isEditable,
 						editor,
 						renderer,
@@ -211,9 +212,10 @@ function Form(props) {
 										<Text numberOfLines={1} ellipsizeMode="head">{renderedValue}</Text>
 									</Box>);
 				} else {
+					const fieldToEdit = editField || fieldName;
 					elements.push(<Controller
 										key={'controller-' + ix}
-										name={fieldName}
+										name={fieldToEdit}
 										// rules={rules}
 										control={control}
 										render={(args) => {
@@ -236,7 +238,7 @@ function Form(props) {
 												} = fieldState;
 											let editorProps = {};
 											if (!editor) {
-												const propertyDef = fieldName && Repository?.getSchema().getPropertyDefinition(fieldName);
+												const propertyDef = fieldToEdit && Repository?.getSchema().getPropertyDefinition(fieldToEdit);
 												editor = propertyDef?.editorType;
 												if (_.isPlainObject(editor)) {
 													const {
@@ -277,7 +279,7 @@ function Form(props) {
 																onBlur={onBlur}
 																flex={1}
 																parent={self}
-																reference={fieldName}
+																reference={fieldToEdit}
 																{...editorProps}
 															/>;
 
