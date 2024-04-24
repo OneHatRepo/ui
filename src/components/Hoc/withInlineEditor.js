@@ -175,7 +175,6 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 		return <WrappedComponent
 					{...props}
 					onChangeColumnsConfig={onChangeColumnsConfig}
-					onEditorRowClick={onRowClick}
 					inlineEditor={inlineEditor}
 					isInlineEditorShown={isEditorShown}
 				/>;
