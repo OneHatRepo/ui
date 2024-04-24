@@ -901,7 +901,7 @@ function Form(props) {
 							{editor}
 						</ScrollView>}
 					
-					<Footer justifyContent="flex-end" {...footerProps}  {...savingProps}>
+					<Footer justifyContent="flex-end" {...footerProps} {...savingProps}>
 						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 
 							<Row flex={1} justifyContent="flex-start">

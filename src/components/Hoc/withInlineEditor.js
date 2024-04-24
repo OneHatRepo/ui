@@ -84,9 +84,15 @@ export default function withInlineEditor(WrappedComponent) {
 
 				editorStyle.top = (-1 * delta) + 'px';
 			};
+		
+		useEffect(() => {
+			if (maskRef.current) {
+				maskRef.current.focus();
+			}
+		}, [isEditorShown]);
 
 		if (isEditorShown && selection.length < 1) {
-			throw new Error('Lost the selection!');
+			return null; // phantom record may have just been deleted
 		}
 		if (isEditorShown && selection.length !== 1) {
 			throw new Error('Can only edit one at a time with inline editor!');
@@ -113,6 +119,12 @@ export default function withInlineEditor(WrappedComponent) {
 														e.preventDefault();
 														e.stopPropagation();
 														onEditorCancel();
+													}}
+													tabIndex={-1}
+													onKeyDown={(e) => {
+														if (e.key === 'Escape') {
+															onEditorCancel();
+														}
 													}}
 												></Box>}
 								<Column
