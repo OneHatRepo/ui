@@ -20,7 +20,7 @@ function withAdditionalProps(WrappedComponent) {
 // withAdditionalProps(withEditor(withSideEditor))
 
 export default function withSideEditor(WrappedComponent, isTree = false) {
-	return withAdditionalProps(withEditor((props) => {
+	const SideEditor = (props) => {
 		const {
 				Editor,
 				editorProps = {},
@@ -57,5 +57,6 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								reference="editor"
 							/>}
 				/>;
-	}));
+	};
+	return withAdditionalProps(withEditor(SideEditor));
 }

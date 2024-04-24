@@ -44,6 +44,7 @@ import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import withInlineEditor from '../Hoc/withInlineEditor.js';
+import withInlineSideEditor from '../Hoc/withInlineSideEditor.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
@@ -1138,6 +1139,31 @@ export const InlineGridEditor = withComponent(
 													withMultiSelection(
 														withSelection(
 															withInlineEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			GridComponent
+																		)
+																	),
+																	true // isGrid
+																)
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								);
+
+export const InlineSideGridEditor = withComponent(
+									withAlert(
+										withEvents(
+											withData(
+												withDropTarget(
+													withMultiSelection(
+														withSelection(
+															withInlineSideEditor(
 																withFilters(
 																	withPresetButtons(
 																		withContextMenu(

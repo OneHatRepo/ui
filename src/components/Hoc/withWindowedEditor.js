@@ -42,7 +42,7 @@ function withAdditionalProps(WrappedComponent) {
 // withAdditionalProps(withEditor(withWindowedEditor))
 
 export default function withWindowedEditor(WrappedComponent, isTree = false) {
-	return withAdditionalProps(withEditor((props) => {
+	const WindowedEditor = (props) => {
 		const {
 				isEditorShown = false,
 				setIsEditorShown,
@@ -81,5 +81,6 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 							/>
 						</Modal>}
 				</>;
-	}, isTree));
+	};
+	return withAdditionalProps(withEditor(WindowedEditor, isTree));
 }

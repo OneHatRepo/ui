@@ -31,10 +31,10 @@ function withAdditionalProps(WrappedComponent) {
 }
 
 // NOTE: Effectivtly, the HOC composition is:
-// withAdditionalProps(withEditor(withWindowedEditor))
+// withAdditionalProps(withEditor(withInlineEditor))
 
-export default function withInlineEditor(WrappedComponent) {
-	return withAdditionalProps(withEditor((props) => {
+export default function withInlineEditor(WrappedComponent, skipWrappers = false) {
+	const InlineEditor = (props) => {
 		const {
 				editorType,
 				isEditorShown = false,
@@ -170,5 +170,9 @@ export default function withInlineEditor(WrappedComponent) {
 					inlineEditor={inlineEditor}
 					isInlineEditorShown={isEditorShown}
 				/>;
-	}));
+	};
+	if (skipWrappers) {
+		return InlineEditor; // this is for InlineSideEditor, not yet implemented
+	}
+	return withAdditionalProps(withEditor(InlineEditor));
 }
