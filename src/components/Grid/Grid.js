@@ -1156,29 +1156,29 @@ export const InlineGridEditor = withComponent(
 									)
 								);
 
-export const InlineSideGridEditor = withComponent(
-									withAlert(
-										withEvents(
-											withData(
-												withDropTarget(
-													withMultiSelection(
-														withSelection(
-															withInlineSideEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			GridComponent
-																		)
-																	),
-																	true // isGrid
-																)
-															)
-														)
-													)
-												)
-											)
-										)
-									)
-								);
+// export const InlineSideGridEditor = withComponent(
+// 									withAlert(
+// 										withEvents(
+// 											withData(
+// 												withDropTarget(
+// 													withMultiSelection(
+// 														withSelection(
+// 															withInlineSideEditor(
+// 																withFilters(
+// 																	withPresetButtons(
+// 																		withContextMenu(
+// 																			GridComponent
+// 																		)
+// 																	),
+// 																	true // isGrid
+// 																)
+// 															)
+// 														)
+// 													)
+// 												)
+// 											)
+// 										)
+// 									)
+// 								);
 
 export default Grid;
