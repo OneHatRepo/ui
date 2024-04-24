@@ -281,6 +281,9 @@ function Form(props) {
 																{...editorProps}
 															/>;
 
+											if (editor.match(/Tag/)) {
+												columnProps.overflow = 'auto';
+											}
 											// element = <Tooltip key={ix} label={header} placement="bottom">
 											// 				{element}
 											// 			</Tooltip>;
