@@ -26,6 +26,7 @@ function ManagerScreen(props) {
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
 		[isRendered, setIsRendered] = useState(false),
+		[isModeSet, setIsModeSet] = useState(false),
 		[allowSideBySide, setAllowSideBySide] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
 		setMode = (newMode) => {
@@ -63,6 +64,7 @@ function ManagerScreen(props) {
 					setMode(val);
 				}
 			}
+			setIsModeSet(true);
 		})();
 	}, [isRendered]);
 
@@ -81,7 +83,7 @@ function ManagerScreen(props) {
 	}
 
 	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
-				{isRendered && 
+				{isRendered && isModeSet &&
 					<>
 						<Row
 							h="80px"
