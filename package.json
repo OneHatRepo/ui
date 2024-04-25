@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.3.245",
+	"version": "0.3.246",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
