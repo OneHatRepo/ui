@@ -46,6 +46,9 @@ function GridRow(props) {
 		const renderColumns = (item) => {
 			if (_.isArray(columnsConfig)) {
 				return _.map(columnsConfig, (config, key, all) => {
+					if (config.isHidden) {
+						return null;
+					}
 					const propsToPass = columnProps[key] || {};
 					if (all.length === 1) {
 						propsToPass.w = '100%';
@@ -86,7 +89,7 @@ function GridRow(props) {
 								'sortable',
 								'w',
 								'flex',
-								'showDragHandles',
+								'isOver',
 							]);
 
 							if (!extraProps._web) {

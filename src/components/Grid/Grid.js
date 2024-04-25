@@ -3,6 +3,7 @@ import {
 	Box,
 	Column,
 	FlatList,
+	Modal,
 	Pressable,
 	Icon,
 	Row,
@@ -16,9 +17,6 @@ import {
 import {
 	v4 as uuid,
 } from 'uuid';
-import {
-	VERTICAL,
-} from '../../Constants/Directions.js';
 import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
@@ -44,22 +42,22 @@ import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import withInlineEditor from '../Hoc/withInlineEditor.js';
-import withInlineSideEditor from '../Hoc/withInlineSideEditor.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import Loading from '../Messages/Loading.js';
-import GridHeaderRow from '../Grid/GridHeaderRow.js';
+import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
 import ExpandButton from '../Buttons/ExpandButton.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
-import NoRecordsFound from '../Grid/NoRecordsFound.js';
+import NoRecordsFound from './NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
+import ColumnSelectorWindow from './ColumnSelectorWindow.js';
 import _ from 'lodash';
 
 
@@ -213,6 +211,7 @@ function GridComponent(props) {
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[isDragMode, setIsDragMode] = useState(false),
 		[dragRow, setDragRow] = useState(),
+		[isColumnSelectorShown, setIsColumnSelectorShown] = useState(false),
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
 		},
@@ -422,6 +421,7 @@ function GridComponent(props) {
 										isHovered={isHovered}
 										isInlineEditorShown={isInlineEditorShown}
 										areRowsDragSource={areRowsDragSource}
+										showColumnsSelector={() => setIsColumnSelectorShown(true)}
 									/>;
 						}
 
@@ -785,7 +785,7 @@ function GridComponent(props) {
 								sortable = true,
 								w,
 								flex,
-								...propsToPass
+								isHidden = false,
 							} = columnConfig,
 
 							config = {
@@ -802,8 +802,8 @@ function GridComponent(props) {
 								sortable,
 								w,
 								flex,
-								showDragHandles: false,
-								...propsToPass,
+								isHidden,
+								isOver: false,
 							};
 
 						if (!(config.w || config.width) && !config.flex) {
@@ -1014,6 +1014,23 @@ function GridComponent(props) {
 		gridContainerBorderProps.borderTopColor = 'trueGray.300';
 	}
 
+	let columnSelector = null;
+	if (isColumnSelectorShown) {
+		const onCloseColumnSelector = () => {
+			setIsColumnSelectorShown(false);
+		};
+		columnSelector = <Modal
+							isOpen={true}
+							onClose={onCloseColumnSelector}
+						>
+							<ColumnSelectorWindow
+								onClose={onCloseColumnSelector}
+								columnsConfig={localColumnsConfig}
+								setColumnsConfig={setLocalColumnsConfig}
+							/>
+						</Modal>;
+	}
+
 	grid = <Column
 				{...testProps('Grid')}
 				testID="outerContainer"
@@ -1035,7 +1052,7 @@ function GridComponent(props) {
 					minHeight={40}
 					{...gridContainerBorderProps}
 					onClick={() => {
-						if (!isDragMode && !isInlineEditorShown) {
+						if (!isDragMode && !isInlineEditorShown && deselectAll) {
 							deselectAll();
 						}
 					}}
@@ -1044,6 +1061,8 @@ function GridComponent(props) {
 				</Column>
 
 				{listFooterComponent}
+
+				{columnSelector}
 
 			</Column>
 

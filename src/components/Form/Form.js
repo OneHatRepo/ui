@@ -136,7 +136,7 @@ function Form(props) {
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
 		[containerWidth, setContainerWidth] = useState(),
-		initialValues =  _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
+		initialValues = _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		validatorToUse = validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object(),
 		{
@@ -198,12 +198,16 @@ function Form(props) {
 						useSelectorId = false,
 						getDynamicProps,
 						getIsRequired,
+						isHidden = false,
 						...propsToPass
 					} = config,
 					type,
 					editorTypeProps = {},
 					viewerTypeProps = {};
 				
+				if (isHidden) {
+					return;
+				}
 				if (editField) {
 					// Sometimes, columns will be configured to display one field
 					// and edit a different field
