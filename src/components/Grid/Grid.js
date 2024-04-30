@@ -488,6 +488,7 @@ function GridComponent(props) {
 									rowDragProps.isDropTarget = true;
 									rowDragProps.dropTargetAccept = dropTargetAccept;
 									rowDragProps.onDrop = (droppedItem) => {
+										// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
 										onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
 									};
 								}
@@ -982,6 +983,9 @@ function GridComponent(props) {
 					{...flatListProps}
 				/>
 	
+	if (CURRENT_MODE === UI_MODE_WEB) {
+		grid = <ScrollView horizontal={false}>{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
+	} else
 	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
 	}
