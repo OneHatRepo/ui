@@ -302,7 +302,8 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 				if (secondaryUseRemoteDuplicate) {
-					return onRemoteDuplicate();
+					const results = await onRemoteDuplicate();
+					return results;
 				}
 				const
 					entity = secondarySelection[0],

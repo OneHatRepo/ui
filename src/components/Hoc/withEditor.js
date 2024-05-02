@@ -301,7 +301,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 				if (useRemoteDuplicate) {
-					return onRemoteDuplicate();
+					const results = await onRemoteDuplicate();
+					return results;
 				}
 				const
 					entity = selection[0],
