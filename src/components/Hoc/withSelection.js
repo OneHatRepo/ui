@@ -110,6 +110,22 @@ export default function withSelection(WrappedComponent) {
 			deselectAll = () => {
 				setSelection([]);
 			},
+			refreshSelection = () => {
+				// When Repository reloads, the entities get destroyed.
+				// Loop through these destroyed entities and see if new ones exist with same ids.
+				// If so, select these new ones.
+				// That way, after a load event, we'll keep the same selection, if possible.
+				const
+					newSelection = [],
+					ids = _.map(localSelection.current, (item) => item.id);
+				_.each(ids, (id) => {
+					const found = Repository.getById(id);
+					if (found) {
+						newSelection.push(found);
+					}
+				});
+				setSelection(newSelection);
+			},
 			getMaxMinSelectionIndices = () => {
 				let items,
 					currentlySelectedRowIndices = [];
@@ -283,10 +299,9 @@ export default function withSelection(WrappedComponent) {
 
 		if (Repository) {
 			useEffect(() => {
-				// clear the selection when Repository loads
-				Repository.on('load', deselectAll);
+				Repository.on('load', refreshSelection);
 				return () => {
-					Repository.off('load', deselectAll);
+					Repository.off('load', refreshSelection);
 				};
 			}, []);
 		}
