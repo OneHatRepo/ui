@@ -209,8 +209,7 @@ function GridComponent(props) {
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
-		[isDragMode, setIsDragMode] = useState(false),
-		[dragRow, setDragRow] = useState(),
+		[isReorderMode, setIsReorderMode] = useState(false),
 		[isColumnSelectorShown, setIsColumnSelectorShown] = useState(false),
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
@@ -309,8 +308,8 @@ function GridComponent(props) {
 					key="reorderBtn"
 					parent={self}
 					reference="reorderBtn"
-					onPress={() => setIsDragMode(!isDragMode)}
-					icon={<Icon as={isDragMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
+					onPress={() => setIsReorderMode(!isReorderMode)}
+					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
 					tooltip="Reorder Rows"
 				/>);
 			}
@@ -339,7 +338,7 @@ function GridComponent(props) {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
 						}
-						if (isHeaderRow || isDragMode) {
+						if (isHeaderRow || isReorderMode) {
 							return
 						}
 						if (CURRENT_MODE === UI_MODE_WEB) {
@@ -383,7 +382,7 @@ function GridComponent(props) {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
 						}
-						if (isHeaderRow || isDragMode) {
+						if (isHeaderRow || isReorderMode) {
 							return
 						}
 						
@@ -454,7 +453,7 @@ function GridComponent(props) {
 							const getSelection = () => dragSelectionRef.current;
 
 							// assign event handlers
-							if (canRowsReorder && isDragMode) {
+							if (canRowsReorder && isReorderMode) {
 								WhichRow = DragSourceGridRow;
 								rowReorderProps.isDragSource = true;
 								rowReorderProps.dragSourceType = 'row';
@@ -894,7 +893,7 @@ function GridComponent(props) {
 
 	isAddingRef.current = isAdding;
 
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode]);
+	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isReorderMode]);
 
 	if (!isInited) {
 		// first time through, render a placeholder so we can get container dimensions
@@ -1000,7 +999,7 @@ function GridComponent(props) {
 	}
 
 	const gridContainerBorderProps = {};
-	if (isDragMode) {
+	if (isReorderMode) {
 		gridContainerBorderProps.borderWidth = styles.REORDER_BORDER_WIDTH;
 		gridContainerBorderProps.borderColor = styles.REORDER_BORDER_COLOR;
 		gridContainerBorderProps.borderStyle = styles.REORDER_BORDER_STYLE;
@@ -1056,7 +1055,7 @@ function GridComponent(props) {
 					minHeight={40}
 					{...gridContainerBorderProps}
 					onClick={() => {
-						if (!isDragMode && !isInlineEditorShown && deselectAll) {
+						if (!isReorderMode && !isInlineEditorShown && deselectAll) {
 							deselectAll();
 						}
 					}}
