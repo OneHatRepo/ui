@@ -473,7 +473,7 @@ function Form(props) {
 				if (type === 'Row') {
 					propsToPass.w = '100%';
 				}
-				const itemDefaults = item.defaults;
+				const itemDefaults = item.defaults || {};
 				children = _.map(items, (item, ix) => {
 					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
