@@ -365,12 +365,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await Repository.save(null, useStaged);
 					success = true;
 				} catch (e) {
-					// alert(e.context);
-					success = false;
+					success = e;
 				}
 				setIsSaving(false);
 
-				if (success) {
+				if (_.isBoolean(success) && success) {
 					if (onChange) {
 						onChange(selection);
 					}
@@ -485,7 +484,24 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return () => {};
 			}
 
-			function handleError(msg) {
+			function handleError(msg, data = null) {
+				if (data) {
+					if (_.isPlainObject(data)) {
+						for (let key in data) { if (data.hasOwnProperty(key)) {
+							const val1 = data[key];
+							if (_.isPlainObject(val1)) {
+								for (let key2 in val1) { if (val1.hasOwnProperty(key2)) {
+									const val2 = val1[key2];
+									msg += "\n" + val2;
+								} }
+							} else if (_.isString(data)) {
+								msg += "\n" + data;
+							}
+						} }
+					} else {
+						// not sure what to do with data!
+					}
+				}
 				alert(msg);
 			}
 
