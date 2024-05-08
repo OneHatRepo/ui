@@ -690,7 +690,7 @@ function GridComponent(props) {
 			if (CURRENT_MODE !== UI_MODE_WEB) { // TODO: Remove this conditional, and don't even do the double render for RN
 				return;
 			}
-			if (!Repository) {
+			if (!Repository || Repository.isDestroyed) { // This method gets delayed, so it's possible for Repository to have been destroyed. Check for this
 				return;
 			}
 
