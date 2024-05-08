@@ -83,41 +83,38 @@ function ManagerScreen(props) {
 	}
 
 	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
-				{isRendered && isModeSet &&
-					<>
-						<Row
-							h="80px"
-							py={2}
-							borderBottomWidth={2}
-							borderBottomColor="#ccc"
-						>
-							<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
-							{allowSideBySide &&
-								<>
-									<IconButton
-										icon={FullWidth}
-										_icon={{
-											size: '25px',
-											color: mode === MODE_FULL ? 'primary.100' : '#000',
-										}}
-										disabled={mode === MODE_FULL}
-										onPress={() => setMode(MODE_FULL)}
-										tooltip="Full Width"
-									/>
-									<IconButton
-										icon={SideBySide}
-										_icon={{
-											size: '25px',
-											color: mode === MODE_SIDE ? 'primary.100' : '#000',
-										}}
-										disabled={mode === MODE_SIDE}
-										onPress={() => setMode(MODE_SIDE)}
-										tooltip="Side Editor"
-									/>
-								</>}
-						</Row>
-						{whichComponent}
-					</>}
+				<Row
+					h="80px"
+					py={2}
+					borderBottomWidth={2}
+					borderBottomColor="#ccc"
+				>
+					<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
+					{allowSideBySide &&
+						<>
+							<IconButton
+								icon={FullWidth}
+								_icon={{
+									size: '25px',
+									color: mode === MODE_FULL ? 'primary.100' : '#000',
+								}}
+								disabled={mode === MODE_FULL}
+								onPress={() => setMode(MODE_FULL)}
+								tooltip="Full Width"
+							/>
+							<IconButton
+								icon={SideBySide}
+								_icon={{
+									size: '25px',
+									color: mode === MODE_SIDE ? 'primary.100' : '#000',
+								}}
+								disabled={mode === MODE_SIDE}
+								onPress={() => setMode(MODE_SIDE)}
+								tooltip="Side Editor"
+							/>
+						</>}
+				</Row>
+				{isRendered && isModeSet && whichComponent}
 			</Column>;
 }
 
