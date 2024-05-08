@@ -492,7 +492,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							if (_.isPlainObject(val1)) {
 								for (let key2 in val1) { if (val1.hasOwnProperty(key2)) {
 									const val2 = val1[key2];
-									msg += "\n" + val2;
+									msg += "\n" + key2 + ': ' + val2;
 								} }
 							} else if (_.isString(data)) {
 								msg += "\n" + data;
