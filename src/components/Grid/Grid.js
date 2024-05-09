@@ -747,6 +747,16 @@ function GridComponent(props) {
 			} else {
 				// selectionMode is SELECTION_MODE_SINGLE
 				switch(e.key) {
+					case 'Enter':
+						// NOTE: This is never being reached.
+						// The event is getting captured somwhere else,
+						// but I can't find where.
+						// e.preventDefault();
+						
+						// launch inline or windowed editor
+						// const p = props;
+						// debugger;
+						break;
 					case 'ArrowDown':
 						e.preventDefault();
 						selectNext();
@@ -757,7 +767,6 @@ function GridComponent(props) {
 						break;
 				}
 			}
-
 		};
 
 	useEffect(() => {
