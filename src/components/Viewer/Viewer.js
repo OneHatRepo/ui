@@ -126,11 +126,11 @@ function Viewer(props) {
 				} else if (type === 'FieldSet' && item.showToggleAllCheckbox) {
 					propsToPass.showToggleAllCheckbox = false; // don't allow it in view mode
 				}
-				const defaults = item.defaults;
+				const itemDefaults = item.defaults || {};
 				children = _.map(items, (item, ix) => {
-					return buildFromItem(item, ix, defaults);
+					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
-				return <Element key={ix} title={title} {...defaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
+				return <Element key={ix} title={title} {...defaults} {...itemDefaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
 			}
 
 			if (!label && Repository && propertyDef?.title) {

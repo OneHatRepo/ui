@@ -7,7 +7,9 @@ import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
+	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 export default function withEditor(WrappedComponent, isTree = false) {
@@ -34,6 +36,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					}
 					return 'record' + (selection[0].displayValue ? ' "' + selection[0].displayValue + '"' : '') + '?';
 				},
+				editorType,
 				onAdd,
 				onChange, // any kind of crud change
 				onDelete,
@@ -42,6 +45,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				newEntityDisplayValue,
 				newEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				defaultValues,
+				stayInEditModeOnSelectionChange = false,
 
 				// withComponent
 				self,
@@ -298,7 +302,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 				if (useRemoteDuplicate) {
-					return onRemoteDuplicate();
+					const results = await onRemoteDuplicate();
+					return results;
 				}
 				const
 					entity = selection[0],
@@ -361,12 +366,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					await Repository.save(null, useStaged);
 					success = true;
 				} catch (e) {
-					// alert(e.context);
-					success = false;
+					success = e;
 				}
 				setIsSaving(false);
 
-				if (success) {
+				if (_.isBoolean(success) && success) {
 					if (onChange) {
 						onChange(selection);
 					}
@@ -424,25 +428,40 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				});
 			},
 			calculateEditorMode = (isIgnoreNextSelectionChange = false) => {
+
+				let doStayInEditModeOnSelectionChange = stayInEditModeOnSelectionChange;
+				if (!_.isNil(UiGlobals.stayInEditModeOnSelectionChange)) {
+					// allow global override to for this property
+					doStayInEditModeOnSelectionChange = UiGlobals.stayInEditModeOnSelectionChange;
+				}
+				if (doStayInEditModeOnSelectionChange) {
+					isIgnoreNextSelectionChange = true;
+				}
+
 				// calculateEditorMode gets called only on selection changes
 				let mode;
-				if (isIgnoreNextSelectionChange) {
-					mode = editorMode;
-					if (!canEditorViewOnly && userCanEdit) {
-						if (selection.length > 1) {
-							if (!disableEdit) {
-								// For multiple entities selected, change it to edit multiple mode
-								mode = EDITOR_MODE__EDIT;
-							}
-						} else if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom) {
-							if (!disableAdd) {
-								// When a phantom entity is selected, change it to add mode.
-								mode = EDITOR_MODE__ADD;
+				if (editorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
+					// special case: side editor is always edit mode
+					mode = EDITOR_MODE__EDIT;
+				} else {
+					if (isIgnoreNextSelectionChange) {
+						mode = editorMode;
+						if (!canEditorViewOnly && userCanEdit) {
+							if (selection.length > 1) {
+								if (!disableEdit) {
+									// For multiple entities selected, change it to edit multiple mode
+									mode = EDITOR_MODE__EDIT;
+								}
+							} else if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom) {
+								if (!disableAdd) {
+									// When a phantom entity is selected, change it to add mode.
+									mode = EDITOR_MODE__ADD;
+								}
 							}
 						}
+					} else {
+						mode = selection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 					}
-				} else {
-					mode = selection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 				}
 				return mode;
 			},
@@ -466,7 +485,24 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return () => {};
 			}
 
-			function handleError(msg) {
+			function handleError(msg, data = null) {
+				if (data) {
+					if (_.isPlainObject(data)) {
+						for (let key in data) { if (data.hasOwnProperty(key)) {
+							const val1 = data[key];
+							if (_.isPlainObject(val1)) {
+								for (let key2 in val1) { if (val1.hasOwnProperty(key2)) {
+									const val2 = val1[key2];
+									msg += "\n" + key + ': ' + val2;
+								} }
+							} else if (_.isString(data)) {
+								msg += "\n" + data;
+							}
+						} }
+					} else {
+						// not sure what to do with data!
+					}
+				}
 				alert(msg);
 			}
 

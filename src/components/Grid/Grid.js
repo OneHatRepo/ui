@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react
 import {
 	Box,
 	FlatList,
+	Modal,
 	Pressable,
 	Icon,
 	ScrollView,
@@ -14,9 +15,6 @@ import {
 import {
 	v4 as uuid,
 } from 'uuid';
-import {
-	VERTICAL,
-} from '../../Constants/Directions.js';
 import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
@@ -49,7 +47,7 @@ import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import Loading from '../Messages/Loading.js';
 import GridHeaderRow from './GridHeaderRow.js';
-import GridRow from './GridRow.js';
+import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
 import ExpandButton from '../Buttons/ExpandButton.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
@@ -57,6 +55,7 @@ import NoRecordsFound from './NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
+import ColumnSelectorWindow from './ColumnSelectorWindow.js';
 import _ from 'lodash';
 
 
@@ -202,13 +201,14 @@ function GridComponent(props) {
 		gridContainerRef = useRef(),
 		isAddingRef = useRef(),
 		expandedRowsRef = useRef({}),
+		cachedDragElements = useRef(),
+		dragSelectionRef = useRef([]),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
-		[isDragMode, setIsDragMode] = useState(false),
-		[cachedDragElements, setCachedDragElements] = useState(null),
-		[dragRow, setDragRow] = useState(),
+		[isReorderMode, setIsReorderMode] = useState(false),
+		[isColumnSelectorShown, setIsColumnSelectorShown] = useState(false),
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
 		},
@@ -301,14 +301,13 @@ function GridComponent(props) {
 		},
 		getFooterToolbarItems = () => {
 			const items = _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
-
-			if (canRowsReorder) {
+			if (canRowsReorder && CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
 				items.unshift(<IconButton
 					key="reorderBtn"
 					parent={self}
 					reference="reorderBtn"
-					onPress={() => setIsDragMode(!isDragMode)}
-					icon={<Icon as={isDragMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
+					onPress={() => setIsReorderMode(!isReorderMode)}
+					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
 					tooltip="Reorder Rows"
 				/>);
 			}
@@ -330,159 +329,187 @@ function GridComponent(props) {
 				rowProps = getRowProps && !isHeaderRow ? getRowProps(item) : {},
 				isSelected = !isHeaderRow && !disableWithSelection && isInSelection(item);
 
-			let rowComponent = <Pressable
-						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
-						onPress={(e) => {
-							if (e.preventDefault && e.cancelable) {
-								e.preventDefault();
-							}
-							if (isHeaderRow || isDragMode) {
-								return
-							}
-							if (CURRENT_MODE === UI_MODE_WEB) {
-								switch (e.detail) {
-									case 1: // single click
-										onRowClick(item, e); // sets selection
-										if (onEditorRowClick) {
-											onEditorRowClick(item, index, e);
-										}
-										break;
-									case 2: // double click
-										if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
-											onRowClick(item, e); // so reselect it
-										}
+			let rowComponent =
+				<Pressable
+					// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
+					onPress={(e) => {
+						if (e.preventDefault && e.cancelable) {
+							e.preventDefault();
+						}
+						if (isHeaderRow || isReorderMode) {
+							return
+						}
+						if (CURRENT_MODE === UI_MODE_WEB) {
+							switch (e.detail) {
+								case 1: // single click
+									onRowClick(item, e); // sets selection
+									if (onEditorRowClick) {
+										onEditorRowClick(item, index, e);
+									}
+									break;
+								case 2: // double click
+									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
+										onRowClick(item, e); // so reselect it
+									}
 
-										if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
-											if (onView) {
-												onView(true);
-											}
-										} else {
-											if (onEdit) {
-												if (verifyCanEdit && !verifyCanEdit(selection)) {
-													return;
-												}
-												onEdit();
-											}
+									if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
+										if (onView) {
+											onView(true);
 										}
-										break;
-									case 3: // triple click
-										break;
-									default:
-								}
-							} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
-								onRowClick(item, e); // sets selection
-								if (onEditorRowClick) {
-									onEditorRowClick(item, index, e);
-								}
+									} else {
+										if (onEdit) {
+											if (verifyCanEdit && !verifyCanEdit(selection)) {
+												return;
+											}
+											onEdit();
+										}
+									}
+									break;
+								case 3: // triple click
+									break;
+								default:
 							}
-						}}
-						onLongPress={(e) => {
-							if (e.preventDefault && e.cancelable) {
-								e.preventDefault();
-							}
-							if (isHeaderRow || isDragMode) {
-								return
-							}
-							
-							// context menu
-							const selection = [item];
-							if (!disableWithSelection) {
-								setSelection(selection);
-							}
-							if (onEditorRowClick) { // e.g. inline editor
+						} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+							onRowClick(item, e); // sets selection
+							if (onEditorRowClick) {
 								onEditorRowClick(item, index, e);
 							}
-							if (onContextMenu) {
-								onContextMenu(item, e, selection, setSelection);
-							}
-						}}
-						flexDirection="row"
-						flexGrow={1}
-					>
-						{({
-							isHovered,
-							isFocused,
-							isPressed,
-						}) => {
-							if (isHeaderRow) {
-								return <GridHeaderRow
-											Repository={Repository}
-											columnsConfig={localColumnsConfig}
-											setColumnsConfig={setLocalColumnsConfig}
-											hideNavColumn={hideNavColumn}
-											canColumnsSort={canColumnsSort}
-											canColumnsReorder={canColumnsReorder}
-											canColumnsResize={canColumnsResize}
-											setSelection={setSelection}
-											gridRef={gridRef}
-											isHovered={isHovered}
-											isInlineEditorShown={isInlineEditorShown}
-										/>;
-							}
+						}
+					}}
+					onLongPress={(e) => {
+						if (e.preventDefault && e.cancelable) {
+							e.preventDefault();
+						}
+						if (isHeaderRow || isReorderMode) {
+							return
+						}
+						
+						// context menu
+						const selection = [item];
+						if (!disableWithSelection) {
+							setSelection(selection);
+						}
+						if (onEditorRowClick) { // e.g. inline editor
+							onEditorRowClick(item, index, e);
+						}
+						if (onContextMenu) {
+							onContextMenu(item, e, selection, setSelection);
+						}
+					}}
+					flexDirection="row"
+					flexGrow={1}
+				>
+					{({
+						isHovered,
+						isFocused,
+						isPressed,
+					}) => {
+						if (isHeaderRow) {
+							return <GridHeaderRow
+										Repository={Repository}
+										columnsConfig={localColumnsConfig}
+										setColumnsConfig={setLocalColumnsConfig}
+										hideNavColumn={hideNavColumn}
+										canColumnsSort={canColumnsSort}
+										canColumnsReorder={canColumnsReorder}
+										canColumnsResize={canColumnsResize}
+										setSelection={setSelection}
+										gridRef={gridRef}
+										isHovered={isHovered}
+										isInlineEditorShown={isInlineEditorShown}
+										areRowsDragSource={areRowsDragSource}
+										showColumnsSelector={() => setIsColumnSelectorShown(true)}
+									/>;
+						}
 
-							let bg = rowProps.bg || styles.GRID_ROW_BG,
-								mixWith;
-							if (isSelected) {
-								if (showHovers && isHovered) {
-									mixWith = styles.GRID_ROW_SELECTED_HOVER_BG;
-								} else {
-									mixWith = styles.GRID_ROW_SELECTED_BG;
-								}
-							} else if (showHovers && isHovered) {
-								mixWith = styles.GRID_ROW_HOVER_BG;
-							} else if (alternateRowBackgrounds && index % alternatingInterval === 0) { // i.e. every second line, or every third line
-								mixWith = styles.GRID_ROW_ALTERNATE_BG;
+						let bg = rowProps.bg || styles.GRID_ROW_BG,
+							mixWith;
+						if (isSelected) {
+							if (showHovers && isHovered) {
+								mixWith = styles.GRID_ROW_SELECTED_HOVER_BG;
+							} else {
+								mixWith = styles.GRID_ROW_SELECTED_BG;
 							}
-							if (mixWith) {
-								const
-									mixWithObj = nbToRgb(mixWith),
-									ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
-								bg = colourMixer.blend(bg, ratio, mixWithObj.color);
-							}
+						} else if (showHovers && isHovered) {
+							mixWith = styles.GRID_ROW_HOVER_BG;
+						} else if (alternateRowBackgrounds && index % alternatingInterval === 0) { // i.e. every second line, or every third line
+							mixWith = styles.GRID_ROW_ALTERNATE_BG;
+						}
+						if (mixWith) {
 							const
-								rowReorderProps = {},
-								rowDragProps = {};
-							if (canRowsReorder && isDragMode) {
-								rowReorderProps.isDraggable = true;
-								rowReorderProps.mode = VERTICAL;
-								rowReorderProps.onDragStart = onRowReorderDragStart;
-								rowReorderProps.onDrag = onRowReorderDrag;
-								rowReorderProps.onDragStop = onRowReorderDragStop;
-								rowReorderProps.proxyParent = gridRef.current?.getScrollableNode().children[0];
-								rowReorderProps.proxyPositionRelativeToParent = true;
-								rowReorderProps.getParentNode = (node) => node.parentElement.parentElement.parentElement;
-								rowReorderProps.getProxy = getReorderProxy;
+								mixWithObj = nbToRgb(mixWith),
+								ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
+							bg = colourMixer.blend(bg, ratio, mixWithObj.color);
+						}
+						const
+							rowReorderProps = {},
+							rowDragProps = {};
+						let WhichRow = GridRow;
+						if (CURRENT_MODE === UI_MODE_WEB) { // DND is currrently web-only  TODO: implement for RN
+							// Create a method that gets an always-current copy of the selection ids
+							dragSelectionRef.current = selection;
+							const getSelection = () => dragSelectionRef.current;
+
+							// assign event handlers
+							if (canRowsReorder && isReorderMode) {
+								WhichRow = DragSourceGridRow;
+								rowReorderProps.isDragSource = true;
+								rowReorderProps.dragSourceType = 'row';
+								const dragIx = showHeaders ? index - 1 : index;
+								rowReorderProps.dragSourceItem = {
+									id: item.id,
+									getSelection,
+									onDrag: (dragState) => {
+										onRowReorderDrag(dragState, dragIx);
+									},
+								};
+								rowReorderProps.onDragEnd = onRowReorderEnd;
 							} else {
 								// Don't allow drag/drop from withDnd while reordering
 								if (areRowsDragSource) {
+									WhichRow = DragSourceGridRow;
 									rowDragProps.isDragSource = true;
 									rowDragProps.dragSourceType = rowDragSourceType;
-									rowDragProps.dragSourceItem = getRowDragSourceItem ? getRowDragSourceItem(item) : { id: item.id };
+									if (getRowDragSourceItem) {
+										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, rowDragSourceType);
+									} else {
+										rowDragProps.dragSourceItem = {
+											id: item.id,
+											getSelection,
+											type: rowDragSourceType,
+										};
+									}
 								}
 								if (areRowsDropTarget) {
+									WhichRow = DropTargetGridRow;
 									rowDragProps.isDropTarget = true;
 									rowDragProps.dropTargetAccept = dropTargetAccept;
 									rowDragProps.onDrop = (droppedItem) => {
-										// TODO: the item is somehow getting stale
-										// might have something to do with memoization
-										onRowDrop(item, droppedItem);
+										// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
+										onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
 									};
 								}
+								if (areRowsDragSource && areRowsDropTarget) {
+									WhichRow = DragSourceDropTargetGridRow;
+								}
 							}
-							return <GridRow
-										columnsConfig={localColumnsConfig}
-										columnProps={columnProps}
-										fields={fields}
-										rowProps={rowProps}
-										hideNavColumn={hideNavColumn}
-										bg={bg}
-										item={item}
-										isInlineEditorShown={isInlineEditorShown}
-										{...rowReorderProps}
-										{...rowDragProps}
-									/>;
-						}}
-					</Pressable>;
+						}
+						return <WhichRow
+									columnsConfig={localColumnsConfig}
+									columnProps={columnProps}
+									fields={fields}
+									rowProps={rowProps}
+									hideNavColumn={hideNavColumn}
+									bg={bg}
+									item={item}
+									isInlineEditorShown={isInlineEditorShown}
+									{...rowReorderProps}
+									{...rowDragProps}
+
+									key1={item.id}
+								/>;
+					}}
+				</Pressable>;
 
 			if (showRowExpander && !isHeaderRow) {
 				const isExpanded = getIsExpanded(index);
@@ -495,6 +522,7 @@ function GridComponent(props) {
 												size: 'sm',
 											}}
 											py={0}
+											tooltip="Expand/Contract Row"
 										/>
 										{rowComponent}
 									</Row>
@@ -503,31 +531,10 @@ function GridComponent(props) {
 			}
 			return rowComponent;
 		},
-		getReorderProxy = (node) => {
-			const
-				row = node.parentElement.parentElement,
-				rowRect = row.getBoundingClientRect(),
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				proxy = row.cloneNode(true),
-				top = rowRect.top - parentRect.top;
-			
-			setDragRow(row);
-
-			proxy.style.top = top + 'px';
-			proxy.style.left = '20px';
-			proxy.style.height = rowRect.height + 'px';
-			proxy.style.width = rowRect.width + 'px';
-			proxy.style.display = 'flex';
-			// proxy.style.backgroundColor = '#ccc';
-			proxy.style.position = 'absolute';
-			proxy.style.border = '1px solid #000';
-			return proxy;
-		},
 		getOverState = (rows, currentY, mouseX) => {
 			// determines which row the mouse is over
 			// and whether the marker should be moved to the top or bottom of the row
-			let newIx = 0,
+			let newIx = -1,
 				useBottom = false;
 			_.each(rows, (row, ix) => {
 				const
@@ -560,71 +567,89 @@ function GridComponent(props) {
 				useBottom,
 			};
 		},
-		onRowReorderDragStart = (info, e, proxy, node) => {
-			// console.log('onRowReorderDragStart', info, e, proxy, node);
-
+		buildCachedDragElements = (dragState) => {
 			const
-				proxyRect = proxy.getBoundingClientRect(),
-				row = node.parentElement.parentElement,
-				flatlist = row.parentElement,
+				{
+					canDrag,
+					isDragging,
+					clientOffset,
+					sourceClientOffset,
+				} = dragState,
+
+				scrollRef = gridRef.current._listRef._scrollRef,
+				isUsingScroll = scrollRef.childNodes[0].style.overflow === 'auto',
+				flatlist = isUsingScroll ? scrollRef.childNodes[0] : scrollRef,
 				flatlistRect = flatlist.getBoundingClientRect(),
 				rows = _.filter(flatlist.childNodes, (childNode, ix) => {
 					const
 						isZeroHeight = childNode.getBoundingClientRect().height === 0,
-						isProxy = childNode === proxy,
 						isHeader = showHeaders && ix === 0;
-					return !isZeroHeight && !isProxy && !isHeader;
+					return !isZeroHeight && !isHeader;
 				}),
-				currentY = proxyRect.top - flatlistRect.top, // top position of pointer, relative to page
-				{ ix, useBottom } = getOverState(rows, currentY, e.clientX);
+				{ ix, useBottom } = getOverState(rows, clientOffset.y, clientOffset.x);
 
 
 			// Render marker showing destination location
-			const
-				rowContainerRect = rows[ix].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
-						- flatlistRect.top 
-						- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0), // get relative Y position
-				marker = document.createElement('div');
+			const marker = document.createElement('div');
 			marker.style.position = 'absolute';
-			marker.style.top = top + 'px';
-			marker.style.height = '4px';
+			marker.style.top = '0px';
+			marker.style.height = '8px';
 			marker.style.width = flatlistRect.width + 'px';
-			marker.style.backgroundColor = '#f00';
+			marker.style.backgroundColor = '#ccc';
 			flatlist.appendChild(marker);
-
-			setCachedDragElements({ ix, useBottom, marker, rows, });
-		},
-		onRowReorderDrag = (info, e, proxy, node) => {
-			// console.log('onRowReorderDrag', info, e, proxy, node);
-			const
-				{ marker, rows, } = cachedDragElements,
-				proxyRect = proxy.getBoundingClientRect(),
-				row = node.parentElement.parentElement,
-				flatlist = row.parentElement,
-				flatlistRect = flatlist.getBoundingClientRect(),
-				currentY = proxyRect.top - flatlistRect.top, // top position of pointer, relative to page
-				{ ix, useBottom } = getOverState(rows, currentY, e.clientX);
 			
+			if (ix !== -1) {
+				marker.style.visibility = 'visible';
+				const
+					rowContainerRect = rows[ix].getBoundingClientRect(),
+					top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
+							- flatlistRect.top 
+							- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0); // get relative Y position
+				marker.style.top = top + 'px';
+			} else {
+				marker.style.visibility = 'hidden';
+			}
+
+			return { ix, useBottom, marker, rows };
+		},
+		onRowReorderDrag = (dragState, dragIx) => {
+			// initial setup
+			if (!cachedDragElements.current) {
+				cachedDragElements.current = buildCachedDragElements(dragState);
+			}
+
+			const
+				{
+					canDrag,
+					isDragging,
+					clientOffset,
+					sourceClientOffset,
+				} = dragState,
+				{ marker, rows, } = cachedDragElements.current,
+				flatlist = gridRef.current._listRef._scrollRef.childNodes[0],
+				flatlistRect = flatlist.getBoundingClientRect(),
+				{ ix, useBottom } = getOverState(rows, clientOffset.y, clientOffset.x);
 
 			// move marker to new location
-			const
-				rowContainerRect = rows[ix].getBoundingClientRect(),
-				top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
-						- flatlistRect.top 
-						- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0); // get relative Y position
-			marker.style.top = top + 'px';
+			if (ix !== -1) {
+				marker.style.visibility = 'visible';
+				const
+					rowContainerRect = rows[ix].getBoundingClientRect(),
+					top = (useBottom ? rowContainerRect.bottom : rowContainerRect.top) 
+							- flatlistRect.top 
+							- (flatlist.style.borderWidth ? parseInt(flatlist.style.borderWidth) : 0); // get relative Y position
+				marker.style.top = top + 'px';
+			} else {
+				marker.style.visibility = 'hidden';
+			}
 
-			setCachedDragElements({ ix, useBottom, marker, rows, });
+			cachedDragElements.current = { ix, useBottom, marker, rows, dragIx };
 		},
-		onRowReorderDragStop = (delta, e, config) => {
-			// console.log('onRowReorderDragStop', delta, e, config);
+		onRowReorderEnd = (item, monitor) => {
 			const
-				{ ix: dropIx, useBottom, marker, rows, } = cachedDragElements,
-				dragIx = rows.indexOf(dragRow);
-
-			const shouldMove = dropIx !== dragIx;
-			if (shouldMove) {
+				{ ix: dropIx, useBottom, marker, rows, dragIx } = cachedDragElements.current,
+				shouldMove = dropIx !== dragIx;
+			if (shouldMove && dropIx !== -1) {
 				// Update the row with the new ix
 				let dragRecord,
 					dropRecord;
@@ -645,7 +670,7 @@ function GridComponent(props) {
 			}
 
 			marker.remove();
-			setCachedDragElements(null);
+			cachedDragElements.current = null;
 		},
 		calculatePageSize = (containerHeight) => {
 			const
@@ -663,7 +688,7 @@ function GridComponent(props) {
 			if (CURRENT_MODE !== UI_MODE_WEB) { // TODO: Remove this conditional, and don't even do the double render for RN
 				return;
 			}
-			if (!Repository) {
+			if (!Repository || Repository.isDestroyed) { // This method gets delayed, so it's possible for Repository to have been destroyed. Check for this
 				return;
 			}
 
@@ -758,7 +783,7 @@ function GridComponent(props) {
 								sortable = true,
 								w,
 								flex,
-								...propsToPass
+								isHidden = false,
 							} = columnConfig,
 
 							config = {
@@ -775,8 +800,8 @@ function GridComponent(props) {
 								sortable,
 								w,
 								flex,
-								showDragHandles: false,
-								...propsToPass,
+								isHidden,
+								isOver: false,
 							};
 
 						if (!(config.w || config.width) && !config.flex) {
@@ -861,11 +886,12 @@ function GridComponent(props) {
 
 	if (self) {
 		self.ref = containerRef;
+		self.gridRef = gridRef;
 	}
 
 	isAddingRef.current = isAdding;
 
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode]);
+	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isReorderMode]);
 
 	if (!isInited) {
 		// first time through, render a placeholder so we can get container dimensions
@@ -933,7 +959,6 @@ function GridComponent(props) {
 					contentContainerStyle={{
 						overflow: 'auto',
 						height: '100%',
-						// flex: 1,
 					}}
 					refreshing={isLoading}
 					onRefresh={pullToRefresh ? onRefresh : null}
@@ -955,6 +980,9 @@ function GridComponent(props) {
 					{...flatListProps}
 				/>
 	
+	if (CURRENT_MODE === UI_MODE_WEB) {
+		grid = <ScrollView horizontal={false}>{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
+	} else
 	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
 	}
@@ -969,16 +997,39 @@ function GridComponent(props) {
 	}
 
 	const gridContainerBorderProps = {};
-	if (isLoading) {
-		gridContainerBorderProps.borderTopWidth = 2;
-		gridContainerBorderProps.borderTopColor = '#f00';
-	} else if (isDragMode) {
+	if (isReorderMode) {
 		gridContainerBorderProps.borderWidth = styles.REORDER_BORDER_WIDTH;
 		gridContainerBorderProps.borderColor = styles.REORDER_BORDER_COLOR;
 		gridContainerBorderProps.borderStyle = styles.REORDER_BORDER_STYLE;
+		gridContainerBorderProps.borderTopWidth = null;
+		if (isLoading) {
+			gridContainerBorderProps.borderTopColor = '#f00';
+		} else {
+			gridContainerBorderProps.borderTopColor = null;
+		}
+	} else if (isLoading) {
+		gridContainerBorderProps.borderTopWidth = 4;
+		gridContainerBorderProps.borderTopColor = '#f00';
 	} else {
-		gridContainerBorderProps.borderTopWidth = 1
+		gridContainerBorderProps.borderTopWidth = 1;
 		gridContainerBorderProps.borderTopColor = 'trueGray.300';
+	}
+
+	let columnSelector = null;
+	if (isColumnSelectorShown) {
+		const onCloseColumnSelector = () => {
+			setIsColumnSelectorShown(false);
+		};
+		columnSelector = <Modal
+							isOpen={true}
+							onClose={onCloseColumnSelector}
+						>
+							<ColumnSelectorWindow
+								onClose={onCloseColumnSelector}
+								columnsConfig={localColumnsConfig}
+								setColumnsConfig={setLocalColumnsConfig}
+							/>
+						</Modal>;
 	}
 
 	grid = <VStack
@@ -1002,7 +1053,7 @@ function GridComponent(props) {
 					minHeight={40}
 					{...gridContainerBorderProps}
 					onClick={() => {
-						if (!isDragMode && !isInlineEditorShown) {
+						if (!isReorderMode && !isInlineEditorShown && deselectAll) {
 							deselectAll();
 						}
 					}}
@@ -1011,6 +1062,8 @@ function GridComponent(props) {
 				</VStack>
 
 				{listFooterComponent}
+
+				{columnSelector}
 
 			</VStack>
 
@@ -1124,5 +1177,30 @@ export const InlineGridEditor = withComponent(
 										)
 									)
 								);
+
+// export const InlineSideGridEditor = withComponent(
+// 									withAlert(
+// 										withEvents(
+// 											withData(
+// 												withDropTarget(
+// 													withMultiSelection(
+// 														withSelection(
+// 															withInlineSideEditor(
+// 																withFilters(
+// 																	withPresetButtons(
+// 																		withContextMenu(
+// 																			GridComponent
+// 																		)
+// 																	),
+// 																	true // isGrid
+// 																)
+// 															)
+// 														)
+// 													)
+// 												)
+// 											)
+// 										)
+// 									)
+// 								);
 
 export default Grid;

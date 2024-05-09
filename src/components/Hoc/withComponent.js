@@ -48,7 +48,7 @@ export default function withComponent(WrappedComponent) {
 			});
 
 		useEffect(() => {
-			if (parent && !parent.hasChild(selfRef.current)) {
+			if (parent && !parent?.hasChild(selfRef.current)) {
 				parent.registerChild(selfRef.current);
 			}
 			return () => {

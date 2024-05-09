@@ -204,7 +204,7 @@ function Container(props) {
 			componentProps.setIsCollapsed = setIsNorthCollapsed || setLocalIsNorthCollapsed;
 			componentProps.onLayout = (e) => {
 				const height = parseFloat(e.nativeEvent.layout.height);
-				if (height !== northHeight) {
+				if (height && height !== northHeight) {
 					setNorthHeight(height);
 				}
 			};
@@ -228,7 +228,7 @@ function Container(props) {
 			componentProps.setIsCollapsed = setIsSouthCollapsed || setLocalIsSouthCollapsed;
 			componentProps.onLayout = (e) => {
 				const height = parseFloat(e.nativeEvent.layout.height);
-				if (height !== southHeight) {
+				if (height && height !== southHeight) {
 					setSouthHeight(height);
 				}
 			};
@@ -252,7 +252,7 @@ function Container(props) {
 			componentProps.setIsCollapsed = setIsEastCollapsed || setLocalIsEastCollapsed;
 			componentProps.onLayout = (e) => {
 				const width = parseFloat(e.nativeEvent.layout.width);
-				if (width !== eastWidth) {
+				if (width && width !== eastWidth) {
 					setEastWidth(width);
 				}
 			};
@@ -276,7 +276,7 @@ function Container(props) {
 			componentProps.setIsCollapsed = setIsWestCollapsed || setLocalIsWestCollapsed;
 			componentProps.onLayout = (e) => {
 				const width = parseFloat(e.nativeEvent.layout.width);
-				if (width !== westWidth) {
+				if (width && width !== westWidth) {
 					setWestWidth(width);
 				}
 			};

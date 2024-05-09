@@ -6,12 +6,26 @@ import withEditor from './withEditor.js';
 import _ from 'lodash';
 
 
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		// provide the editorType to withEditor
+		return <WrappedComponent
+					editorType={EDITOR_TYPE__SIDE}
+					{...props}
+				/>;
+	};
+}
+
+// NOTE: Effectivtly, the HOC composition is:
+// withAdditionalProps(withEditor(withSideEditor))
+
 export default function withSideEditor(WrappedComponent, isTree = false) {
-	return withEditor((props) => {
+	const SideEditor = (props) => {
 		const {
 				Editor,
 				editorProps = {},
 				sideFlex = 100,
+				isResizable = false,
 
 				// withComponent
 				self,
@@ -27,7 +41,16 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 			throw Error('Editor is not defined');
 		}
 
+		if (isResizable) {
+			editorProps.w = 500;
+			editorProps.isResizable = true;
+		} else {
+			editorProps.flex = sideFlex;
+		}
+
 		return <Container
+					parent={self}
+					reference="SideEditor"
 					center={<WrappedComponent
 								isTree={isTree}
 								isSideEditor={true}
@@ -36,7 +59,6 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 					east={<Editor
 								{...propsToPass}
 								editorType={EDITOR_TYPE__SIDE}
-								flex={sideFlex}
 								borderLeftWidth={1}
 								borderLeftColor="#ccc"
 								{...editorProps}
@@ -44,5 +66,6 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								reference="editor"
 							/>}
 				/>;
-	});
+	};
+	return withAdditionalProps(withEditor(SideEditor));
 }

@@ -70,6 +70,9 @@ function TabBar(props) {
 				}
 				return; // no change
 			}
+			if (tabs[currentTabIx].content) {
+				tabs[currentTabIx].content = null; // free up memory by clearing rendered content
+			}
 			if (useLocal) {
 				setCurrentTabIxLocal(ix);
 

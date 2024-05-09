@@ -7,6 +7,7 @@ import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
+	EDITOR_TYPE__SIDE,
 } from '../../../Constants/Editor.js';
 import _ from 'lodash';
 
@@ -37,6 +38,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					}
 					return 'record' + (secondarySelection[0].displayValue ? ' "' + secondarySelection[0].displayValue + '"' : '') + '?';
 				},
+				secondaryEditorType,
 				secondaryOnAdd,
 				secondaryOnChange, // any kind of crud change
 				secondaryOnDelete,
@@ -301,7 +303,8 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 				if (secondaryUseRemoteDuplicate) {
-					return onRemoteDuplicate();
+					const results = await onRemoteDuplicate();
+					return results;
 				}
 				const
 					entity = secondarySelection[0],
@@ -364,12 +367,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					await SecondaryRepository.save(null, useStaged);
 					success = true;
 				} catch (e) {
-					// alert(e.context);
-					success = false;
+					success = e;
 				}
 				setIsSaving(false);
 
-				if (success) {
+				if (_.isBoolean(success) && success) {
 					if (secondaryOnChange) {
 						secondaryOnChange(secondarySelection);
 					}
@@ -429,23 +431,28 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			calculateEditorMode = (secondaryIsIgnoreNextSelectionChange = false) => {
 				// calculateEditorMode gets called only on selection changes
 				let mode;
-				if (secondaryIsIgnoreNextSelectionChange) {
-					mode = secondaryEditorMode;
-					if (!secondaryCanEditorViewOnly && secondaryUserCanEdit) {
-						if (secondarySelection.length > 1) {
-							if (!secondaryDisableEdit) {
-								// For multiple entities selected, change it to edit multiple mode
-								mode = EDITOR_MODE__EDIT;
-							}
-						} else if (secondarySelection.length === 1 && !secondarySelection[0].isDestroyed && secondarySelection[0].isPhantom) {
-							if (!secondaryDisableAdd) {
-								// When a phantom entity is selected, change it to add mode.
-								mode = EDITOR_MODE__ADD;
+				if (secondaryEditorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
+					// special case: side editor is always edit mode
+					mode = EDITOR_MODE__EDIT;
+				} else {
+					if (secondaryIsIgnoreNextSelectionChange) {
+						mode = secondaryEditorMode;
+						if (!secondaryCanEditorViewOnly && secondaryUserCanEdit) {
+							if (secondarySelection.length > 1) {
+								if (!secondaryDisableEdit) {
+									// For multiple entities selected, change it to edit multiple mode
+									mode = EDITOR_MODE__EDIT;
+								}
+							} else if (secondarySelection.length === 1 && !secondarySelection[0].isDestroyed && secondarySelection[0].isPhantom) {
+								if (!secondaryDisableAdd) {
+									// When a phantom entity is selected, change it to add mode.
+									mode = EDITOR_MODE__ADD;
+								}
 							}
 						}
+					} else {
+						mode = secondarySelection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 					}
-				} else {
-					mode = secondarySelection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 				}
 				return mode;
 			},
@@ -469,7 +476,24 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				return () => {};
 			}
 
-			function handleError(msg) {
+			function handleError(msg, data = null) {
+				if (data) {
+					if (_.isPlainObject(data)) {
+						for (let key in data) { if (data.hasOwnProperty(key)) {
+							const val1 = data[key];
+							if (_.isPlainObject(val1)) {
+								for (let key2 in val1) { if (val1.hasOwnProperty(key2)) {
+									const val2 = val1[key2];
+									msg += "\n" + key + ': ' + val2;
+								} }
+							} else if (_.isString(data)) {
+								msg += "\n" + data;
+							}
+						} }
+					} else {
+						// not sure what to do with data!
+					}
+				}
 				alert(msg);
 			}
 

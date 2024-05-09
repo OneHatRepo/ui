@@ -15,8 +15,23 @@ import Form from '../Form/Form.js';
 import withEditor from './withEditor.js';
 import _ from 'lodash';
 
-export default function withInlineEditor(WrappedComponent) {
-	return withEditor((props) => {
+
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		// provide the editorType to withEditor
+		return <WrappedComponent
+					editorType={EDITOR_TYPE__INLINE}
+					{...props}
+				/>;
+	};
+}
+
+// NOTE: Effectivtly, the HOC composition is:
+// withAdditionalProps(withEditor(withInlineEditor))
+
+export default function withInlineEditor(WrappedComponent, skipWrappers = false) {
+	const InlineEditor = (props) => {
 		const {
 				editorType,
 				isEditorShown = false,
@@ -44,13 +59,6 @@ export default function withInlineEditor(WrappedComponent) {
 			onChangeColumnsConfig = (columnsConfig) => {
 				setLocalColumnsConfig(columnsConfig);
 			},
-			onRowClick = (item, rowIndex, e) => {
-				// move the editor up to the appropriate row
-				const currentRow = e.currentTarget;
-				moveEditor(currentRow);
-
-				setCurrentRow(currentRow);
-			},
 			onScreenResize = () => {
 				// TODO: Attach a div with zIndex 0 to body to monitor resize events. THis is handler
 
@@ -64,11 +72,33 @@ export default function withInlineEditor(WrappedComponent) {
 					editorBounds = editor.parentElement.getBoundingClientRect(), // reference parentElement, because this doesn't change based on last moveEditor call
 					delta = editorBounds.top - rowBounds.top;
 
-				editorStyle.top = (-1 * delta) -20 + 'px';
+				editorStyle.top = (-1 * delta) + 'px';
+			},
+			onEditorShown = () => {
+				// determine which row to move the editor to
+				const
+					data = self.gridRef.current.props.data, // This is okay, because (for now) the inlineEditor is only for use with grids
+					ix = data.indexOf(selection[0]),
+					gridRowsContainer = self.gridRef.current._listRef._scrollRef.childNodes[0],
+					currentRow = gridRowsContainer.childNodes[ix];
+
+				// TODO: verify it works if not using a Repository
+
+				moveEditor(currentRow);
+				setCurrentRow(currentRow);
 			};
+		
+		useEffect(() => {
+			if (maskRef.current) {
+				maskRef.current.focus();
+			}
+			if (isEditorShown) {
+				onEditorShown();
+			}
+		}, [isEditorShown]);
 
 		if (isEditorShown && selection.length < 1) {
-			throw new Error('Lost the selection!');
+			return null; // phantom record may have just been deleted
 		}
 		if (isEditorShown && selection.length !== 1) {
 			throw new Error('Can only edit one at a time with inline editor!');
@@ -82,57 +112,59 @@ export default function withInlineEditor(WrappedComponent) {
 			inlineEditor = <>
 								{isEditorShown && <Box
 													ref={maskRef}
+													testID="mask"
 													position="fixed"
 													w="100vw"
 													h="100vh"
 													top="0"
 													left="0"
 													bg="#000"
-													opacity={0.35}
+													opacity={0.3}
 													zIndex={0}
 													onClick={(e) => {
 														e.preventDefault();
 														e.stopPropagation();
 														onEditorCancel();
 													}}
+													tabIndex={-1}
+													onKeyDown={(e) => {
+														if (e.key === 'Escape') {
+															onEditorCancel();
+														}
+													}}
 												></Box>}
 								<VStack
 									ref={inlineEditorRef}
 									position="absolute"
 									zIndex={10}
+									testID="inline-editor"
+									h={isEditorShown ? '100px' : 0}
+									minWidth="100%"
+									display="inline-block"
+									whiteSpace="nowrap"
 								>
-									{isEditorShown && <Form
-															parent={self}
-															reference="form"
-															editorType={EDITOR_TYPE__INLINE}
-															editorStateRef={editorStateRef}
-															record={selection[0]}
-															Repository={Repository}
-															isMultiple={selection.length > 1}
-															isEditorViewOnly={isEditorViewOnly}
-															columnsConfig={localColumnsConfig}
-															onCancel={onEditorCancel}
-															onSave={onEditorSave}
-															onClose={onEditorClose}
-															footerProps={{
-																justifyContent: 'center',
-																bg: null, // make bg transparent
-																p: 0,
-															}}
-															buttonGroupProps={{
-																bg: 'primary.100',
-																borderBottomRadius: 5,
-																px: 4,
-																py: 2,
-															}}
-															bg="#fff"
-															borderTopWidth={4}
-															borderTopColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
-															borderBottomWidth={4}
-															borderBottomColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
-															py={1}
-															px={0}
-														/>}
+									{isEditorShown &&
+										<Form
+											parent={self}
+											reference="form"
+											editorType={EDITOR_TYPE__INLINE}
+											editorStateRef={editorStateRef}
+											record={selection[0]}
+											Repository={Repository}
+											isMultiple={selection.length > 1}
+											isEditorViewOnly={isEditorViewOnly}
+											columnsConfig={localColumnsConfig}
+											onCancel={onEditorCancel}
+											onSave={onEditorSave}
+											onClose={onEditorClose}
+											bg="#fff"
+											borderTopWidth={4}
+											borderTopColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
+											borderBottomWidth={4}
+											borderBottomColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
+											py={1}
+											px={0}
+										/>}
 								</VStack>
 							</>;
 		}
@@ -140,9 +172,12 @@ export default function withInlineEditor(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					onChangeColumnsConfig={onChangeColumnsConfig}
-					onEditorRowClick={onRowClick}
 					inlineEditor={inlineEditor}
 					isInlineEditorShown={isEditorShown}
 				/>;
-	});
+	};
+	if (skipWrappers) {
+		return InlineEditor; // this is for InlineSideEditor, not yet implemented
+	}
+	return withAdditionalProps(withEditor(InlineEditor));
 }

@@ -18,12 +18,12 @@ import _ from 'lodash';
 // and a toolbar button that match in text label, icon, and handler.
 
 const presetButtons = [
+	'view',
 	'add',
 	'edit',
 	'delete',
-	'view',
-	'copy',
 	'duplicate',
+	'copy',
 	// 'print',
 	'uploadDownload',
 ];

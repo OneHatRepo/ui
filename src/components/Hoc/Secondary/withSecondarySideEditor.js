@@ -8,8 +8,22 @@ import _ from 'lodash';
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withSideEditor
 // This HOC will eventually get out of sync with that one, and may need to be updated.
 
-export default function withSideEditor(WrappedComponent, isTree = false) {
-	return withSecondaryEditor((props) => {
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		// provide the editorType to withEditor
+		return <WrappedComponent
+					editorType={EDITOR_TYPE__SIDE}
+					{...props}
+				/>;
+	};
+}
+
+// NOTE: Effectivtly, the HOC composition is:
+// withAdditionalProps(withSecondaryEditor(withSecondarySideEditor))
+
+export default function withSecondarySideEditor(WrappedComponent, isTree = false) {
+	return withAdditionalProps(withSecondaryEditor((props) => {
 		const {
 				SecondaryEditor,
 				secondaryEditorProps = {},
@@ -46,5 +60,5 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								reference="secondaryEditor"
 							/>}
 				/>;
-	});
+	}));
 }

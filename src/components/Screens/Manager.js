@@ -26,6 +26,7 @@ function ManagerScreen(props) {
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
 		[isRendered, setIsRendered] = useState(false),
+		[isModeSet, setIsModeSet] = useState(false),
 		[allowSideBySide, setAllowSideBySide] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
 		setMode = (newMode) => {
@@ -63,6 +64,7 @@ function ManagerScreen(props) {
 					setMode(val);
 				}
 			}
+			setIsModeSet(true);
 		})();
 	}, [isRendered]);
 
@@ -81,41 +83,38 @@ function ManagerScreen(props) {
 	}
 
 	return <VStack maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
-				{isRendered && 
-					<>
-						<HStack
-							h="80px"
-							py={2}
-							borderBottomWidth={2}
-							borderBottomColor="#ccc"
-						>
-							<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
-							{allowSideBySide &&
-								<>
-									<IconButton
-										icon={FullWidth}
-										_icon={{
-											size: '25px',
-											color: mode === MODE_FULL ? 'primary.100' : '#000',
-										}}
-										disabled={mode === MODE_FULL}
-										onPress={() => setMode(MODE_FULL)}
-										tooltip="Full Width"
-									/>
-									<IconButton
-										icon={SideBySide}
-										_icon={{
-											size: '25px',
-											color: mode === MODE_SIDE ? 'primary.100' : '#000',
-										}}
-										disabled={mode === MODE_SIDE}
-										onPress={() => setMode(MODE_SIDE)}
-										tooltip="Side Editor"
-									/>
-								</>}
-						</HStack>
-						{whichComponent}
-					</>}
+				<HStack
+					h="80px"
+					py={2}
+					borderBottomWidth={2}
+					borderBottomColor="#ccc"
+				>
+					<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
+					{allowSideBySide &&
+						<>
+							<IconButton
+								icon={FullWidth}
+								_icon={{
+									size: '25px',
+									color: mode === MODE_FULL ? 'primary.100' : '#000',
+								}}
+								disabled={mode === MODE_FULL}
+								onPress={() => setMode(MODE_FULL)}
+								tooltip="Full Width"
+							/>
+							<IconButton
+								icon={SideBySide}
+								_icon={{
+									size: '25px',
+									color: mode === MODE_SIDE ? 'primary.100' : '#000',
+								}}
+								disabled={mode === MODE_SIDE}
+								onPress={() => setMode(MODE_SIDE)}
+								tooltip="Side Editor"
+							/>
+						</>}
+				</HStack>
+				{isRendered && isModeSet && whichComponent}
 			</VStack>;
 }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, } from 'react';
 import {
+	Box,
 	Icon,
 	Pressable,
 	HStack,
@@ -20,6 +21,7 @@ import useBlocking from '../../Hooks/useBlocking.js';
 import AngleRight from '../Icons/AngleRight.js';
 import HeaderReorderHandle from './HeaderReorderHandle.js';
 import HeaderResizeHandle from './HeaderResizeHandle.js';
+import HeaderColumnSelectorHandle from './HeaderColumnSelectorHandle.js';
 import SortDown from '../Icons/SortDown.js';
 import SortUp from '../Icons/SortUp.js';
 import _ from 'lodash';
@@ -41,6 +43,8 @@ export default function GridHeaderRow(props) {
 			gridRef,
 			isHovered,
 			isInlineEditorShown,
+			areRowsDragSource,
+			showColumnsSelector,
 		} = props,
 		styles = UiGlobals.styles,
 		sortFn = Repository && Repository.getSortFn(),
@@ -80,7 +84,7 @@ export default function GridHeaderRow(props) {
 				return;
 			}
 			const columnsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
-			columnsConfig[ix].showDragHandles = true;
+			columnsConfig[ix].isOver = true;
 			setLocalColumnsConfig(columnsConfig);
 		},
 		onHeaderMouseLeave = (e, ix) => {
@@ -88,7 +92,7 @@ export default function GridHeaderRow(props) {
 				return;
 			}
 			const columnsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
-			columnsConfig[ix].showDragHandles = false;
+			columnsConfig[ix].isOver = false;
 			setLocalColumnsConfig(columnsConfig);
 		},
 		onColumnReorderDragStart = (info, e, proxy, node) => {
@@ -244,7 +248,7 @@ export default function GridHeaderRow(props) {
 			setColumnsConfig(columnsConfig);
 
 			if (dragColumnSlot) {
-				dragColumnSlot.marker.remove();
+				dragColumnSlot.marker?.remove();
 			}
 			setDragColumnSlot(null);
 		},
@@ -297,7 +301,8 @@ export default function GridHeaderRow(props) {
 							sortable,
 							w,
 							flex,
-							showDragHandles,
+							isOver = false,
+							isHidden = false,
 						} = config,
 						isSorter = sortable && canColumnsSort && sortField === fieldName,
 						isReorderable = canColumnsReorder && reorderable,
@@ -306,6 +311,9 @@ export default function GridHeaderRow(props) {
 							borderRightWidth: 2,
 							borderRightColor: '#fff',
 						};
+					if (isHidden) {
+						return null;
+					}
 
 					if (all.length === 1) {
 						propsToPass.w = '100%';
@@ -358,7 +366,7 @@ export default function GridHeaderRow(props) {
 								onMouseLeave={(e) => onHeaderMouseLeave(e, ix)}
 								{...propsToPass}
 							>
-								{isReorderable && showDragHandles && 
+								{isReorderable && isOver && 
 										<HeaderReorderHandle
 												key="HeaderReorderHandle"
 												mode={HORIZONTAL}
@@ -407,7 +415,13 @@ export default function GridHeaderRow(props) {
 										color="trueGray.500"
 									/>}
 								
-								{isResizable && showDragHandles && 
+								{isOver && UiGlobals.mode === UI_MODE_WEB && // only works for web for now 
+										<HeaderColumnSelectorHandle
+											key="HeaderColumnSelectorHandle"
+											showColumnsSelector={showColumnsSelector}
+										/>}
+								
+								{isResizable && isOver && 
 										<HeaderResizeHandle
 											key="HeaderResizeHandle"
 											mode={HORIZONTAL}
@@ -442,6 +456,12 @@ export default function GridHeaderRow(props) {
 										/>}
 							</Pressable>;
 				});
+				if (areRowsDragSource) {
+					headerColumns.unshift(<Box
+						key="spacer"
+						w={3}
+					/>);
+				}
 				if (!hideNavColumn) {
 					headerColumns.push(<AngleRight
 											key="AngleRight"

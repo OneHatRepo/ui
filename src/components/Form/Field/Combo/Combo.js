@@ -38,7 +38,7 @@ export function ComboComponent(props) {
 			autoFocus = false,
 			tooltipRef = null,
 			tooltip = null,
-			menuMinWidth = 150,
+			menuMinWidth,
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
 			showXButton = false,
@@ -126,8 +126,14 @@ export function ComboComponent(props) {
 				if (rect.left !== left) {
 					setLeft(rect.left);
 				}
-				if (rect.width !== width) {
-					setWidth(rect.width);
+
+				let widthToSet = rect.width,
+					minWidthToUse = menuMinWidth || styles.FORM_COMBO_MENU_MIN_WIDTH;
+				if (widthToSet < minWidthToUse) {
+					widthToSet = minWidthToUse;
+				}
+				if (widthToSet !== width) {
+					setWidth(widthToSet);
 				}
 			}
 			if (Repository && !Repository.isLoaded) {
@@ -807,7 +813,6 @@ export function ComboComponent(props) {
 									top={top + 'px'}
 									left={left + 'px'}
 									w={width + 'px'}
-									minWidth={menuMinWidth}
 									overflow="auto"
 									bg="#fff"
 								>
