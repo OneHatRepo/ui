@@ -64,13 +64,19 @@ export default function withSelection(WrappedComponent) {
 					fireEvent('secondaryChangeSelection', secondarySelection);
 				}
 			},
-			secondarySelectNext = () => {
-				secondarySelectDirection(SELECT_DOWN);
-			},
 			secondarySelectPrev = () => {
 				secondarySelectDirection(SELECT_UP);
 			},
-			secondarySelectDirection = (which) => {
+			secondarySelectNext = () => {
+				secondarySelectDirection(SELECT_DOWN);
+			},
+			secondaryAddPrevToSelection = () => {
+				secondarySelectDirection(SELECT_UP, true);
+			},
+			secondaryAddNextToSelection = () => {
+				secondarySelectDirection(SELECT_DOWN, true);
+			},
+			secondarySelectDirection = (which, isAdd = false) => {
 				const { items, max, min, noSelection, } = getMaxMinSelectionIndices();
 				let newIx;
 				if (which === SELECT_DOWN) {
@@ -89,12 +95,15 @@ export default function withSelection(WrappedComponent) {
 					}
 				}
 				if (items[newIx]) {
-					secondarySetSelection([items[newIx]]);
+					if (isAdd) {
+						secondaryAddToSelection(items[newIx]);
+					} else {
+						secondarySetSelection([items[newIx]]);
+					}
 				}
 			},
 			secondaryAddToSelection = (item) => {
-				let newSelection = [];
-				newSelection = _.clone(secondaryLocalSelection); // so we get a new object, so descendants rerender
+				const newSelection = _.clone(secondaryLocalSelection); // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				secondarySetSelection(newSelection);
 			},
@@ -347,8 +356,10 @@ export default function withSelection(WrappedComponent) {
 		if (self) {
 			self.secondarySelection = secondaryLocalSelection;
 			self.secondarySetSelection = secondarySetSelection;
-			self.secondarySelectNext = secondarySelectNext;
 			self.secondarySelectPrev = secondarySelectPrev;
+			self.secondarySelectNext = secondarySelectNext;
+			self.secondaryAddPrevToSelection = secondaryAddPrevToSelection;
+			self.secondaryAddNextToSelection = secondaryAddNextToSelection;
 			self.secondaryAddToSelection = secondaryAddToSelection;
 			self.secondaryRemoveFromSelection = secondaryRemoveFromSelection;
 			self.secondaryDeselectAll = secondaryDeselectAll;
@@ -388,8 +399,10 @@ export default function withSelection(WrappedComponent) {
 					secondarySelection={secondaryLocalSelection}
 					secondarySetSelection={secondarySetSelection}
 					secondarySelectionMode={secondarySelectionMode}
-					secondarySelectNext={secondarySelectNext}
 					secondarySelectPrev={secondarySelectPrev}
+					secondarySelectNext={secondarySelectNext}
+					secondaryAddNextToSelection={secondaryAddNextToSelection}
+					secondaryAddPrevToSelection={secondaryAddPrevToSelection}
 					secondaryRemoveFromSelection={secondaryRemoveFromSelection}
 					secondaryAddToSelection={secondaryAddToSelection}
 					secondaryDeselectAll={secondaryDeselectAll}

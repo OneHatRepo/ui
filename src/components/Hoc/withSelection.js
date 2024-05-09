@@ -64,13 +64,19 @@ export default function withSelection(WrappedComponent) {
 				}
 				forceUpdate();
 			},
-			selectNext = () => {
-				selectDirection(SELECT_DOWN);
-			},
 			selectPrev = () => {
 				selectDirection(SELECT_UP);
 			},
-			selectDirection = (which) => {
+			selectNext = () => {
+				selectDirection(SELECT_DOWN);
+			},
+			addPrevToSelection = () => {
+				selectDirection(SELECT_UP, true);
+			},
+			addNextToSelection = () => {
+				selectDirection(SELECT_DOWN, true);
+			},
+			selectDirection = (which, isAdd = false) => {
 				const { items, max, min, noSelection, } = getMaxMinSelectionIndices();
 				let newIx;
 				if (which === SELECT_DOWN) {
@@ -89,12 +95,15 @@ export default function withSelection(WrappedComponent) {
 					}
 				}
 				if (items[newIx]) {
-					setSelection([items[newIx]]);
+					if (isAdd) {
+						addToSelection(items[newIx]);
+					} else {
+						setSelection([items[newIx]]);
+					}
 				}
 			},
 			addToSelection = (item) => {
-				let newSelection = [];
-				newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
+				const newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				setSelection(newSelection);
 			},
@@ -345,8 +354,10 @@ export default function withSelection(WrappedComponent) {
 		if (self) {
 			self.selection = localSelection.current;
 			self.setSelection = setSelection;
-			self.selectNext = selectNext;
 			self.selectPrev = selectPrev;
+			self.selectNext = selectNext;
+			self.addPrevToSelection = addPrevToSelection;
+			self.addNextToSelection = addNextToSelection;
 			self.addToSelection = addToSelection;
 			self.removeFromSelection = removeFromSelection;
 			self.deselectAll = deselectAll;
@@ -386,8 +397,10 @@ export default function withSelection(WrappedComponent) {
 					selection={localSelection.current}
 					setSelection={setSelection}
 					selectionMode={selectionMode}
-					selectNext={selectNext}
 					selectPrev={selectPrev}
+					selectNext={selectNext}
+					addNextToSelection={addNextToSelection}
+					addPrevToSelection={addPrevToSelection}
 					removeFromSelection={removeFromSelection}
 					addToSelection={addToSelection}
 					deselectAll={deselectAll}
