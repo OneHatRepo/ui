@@ -819,41 +819,18 @@ function GridComponent(props) {
 							return;
 						}
 
-						// destructure so we can set defaults
-						const {
-								header,
-								fieldName, // from @onehat/data model
-								type, // specify which column type to use (custom or built-in)
-								isEditable = false,
-								editor,
-								format,
-								renderer, // React component will render the output
-								reorderable = true,
-								resizable = true,
-								sortable = true,
-								w,
-								flex,
-								isHidden = false,
-							} = columnConfig,
-
-							config = {
+						const
+							defaults = {
 								columnId: uuid(),
-								header,
-								fieldName,
-								type,
-								isEditable,
-								editor,
-								format,
-								renderer,
-								reorderable,
-								resizable,
-								sortable,
-								w,
-								flex,
-								isHidden,
+								isEditable: false,
+								reorderable: true,
+								resizable: true,
+								sortable: true,
+								isHidden: false,
 								isOver: false,
-							};
-
+							},
+							config = _.assign({}, defaults, columnConfig);
+						
 						if (!(config.w || config.width) && !config.flex) {
 							// Neither is set
 							config.w = 100; // default
