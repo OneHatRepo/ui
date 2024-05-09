@@ -172,6 +172,10 @@ function GridComponent(props) {
 			selectRangeTo,
 			isInSelection,
 			noSelectorMeansNoResults = false,
+			selectNext,
+			selectPrev,
+			addNextToSelection,
+			addPrevToSelection,
 
 			// DataMgt
 			selectorId,
@@ -238,8 +242,7 @@ function GridComponent(props) {
 			if (disableWithSelection) {
 				return;
 			}
-			const
-				{
+			const {
 					shiftKey = false,
 					metaKey = false,
 				 } = e;
@@ -719,6 +722,42 @@ function GridComponent(props) {
 				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
 			}
 			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
+		},
+		onGridKeyDown = (e) => {
+			if (isInlineEditorShown) {
+				return;
+			}
+			if (disableWithSelection) {
+				return;
+			}
+			const {
+					shiftKey = false,
+				} = e;
+			if (selectionMode === SELECTION_MODE_MULTI && shiftKey) {
+				switch(e.key) {
+					case 'ArrowDown':
+						e.preventDefault();
+						addNextToSelection();
+						break;
+					case 'ArrowUp':
+						e.preventDefault();
+						addPrevToSelection();
+						break;
+				}
+			} else {
+				// selectionMode is SELECTION_MODE_SINGLE
+				switch(e.key) {
+					case 'ArrowDown':
+						e.preventDefault();
+						selectNext();
+						break;
+					case 'ArrowUp':
+						e.preventDefault();
+						selectPrev();
+						break;
+				}
+			}
+
 		};
 
 	useEffect(() => {
@@ -1038,6 +1077,8 @@ function GridComponent(props) {
 				{...testProps('Grid')}
 				testID="outerContainer"
 				ref={containerRef}
+				tabIndex={0}
+				onKeyDown={onGridKeyDown}
 				w="100%"
 				bg={bg}
 				borderWidth={styles.GRID_BORDER_WIDTH}
