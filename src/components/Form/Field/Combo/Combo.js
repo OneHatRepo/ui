@@ -87,6 +87,7 @@ export function ComboComponent(props) {
 		[isRendered, setIsRendered] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isSearchMode, setIsSearchMode] = useState(false),
+		[isNavigatingViaKeyboard, setIsNavigatingViaKeyboard] = useState(false),
 		[containerWidth, setContainerWidth] = useState(),
 		[gridSelection, setGridSelection] = useState(null),
 		[textInputValue, setTextInputValue] = useState(''),
@@ -150,6 +151,12 @@ export function ComboComponent(props) {
 		toggleMenu = () => {
 			setIsMenuShown(!isMenuShown);
 		},
+		temporarilySetIsNavigatingViaKeyboard = () => {
+			setIsNavigatingViaKeyboard(true);
+			setTimeout(() => {
+				setIsNavigatingViaKeyboard(false);
+			}, 1000);
+		},
 		getDisplayValue = () => {
 			return displayValueRef.current;
 		},
@@ -212,6 +219,7 @@ export function ComboComponent(props) {
 			}
 			switch(e.key) {
 				case 'Escape':
+					e.preventDefault();
 					setIsSearchMode(false);
 					resetTextInputValue();
 					hideMenu();
@@ -231,32 +239,29 @@ export function ComboComponent(props) {
 						return;
 					}
 
-					doIt();
-
-					function doIt() {
-						setValue(gridSelection?.id);
-						hideMenu();
+					let id = null;
+					if (gridSelection.length && gridSelection[0].id) {
+						id = gridSelection[0].id;
 					}
+					setValue(id);
+					hideMenu();
 					break;
-				// case 'ArrowDown':
-				// 	e.preventDefault();
-				// 	showMenu();
-				// 	selectNext();
-				// 	setTimeout(() => {
-				// 		if (!self.children?.grid?.selectPrev) {
-				// 			debugger;
-				// 		}
-				// 		self.children.grid.selectNext();
-				// 	}, 10);
-				// 	break;
-				// case 'ArrowUp':
-				// 	e.preventDefault();
-				// 	showMenu();
-				// 	selectPrev();
-				// 	setTimeout(() => {
-				// 		self.children.grid.selectPrev();
-				// 	}, 10);
-				// 	break;
+				case 'ArrowDown':
+					e.preventDefault();
+					showMenu();
+					temporarilySetIsNavigatingViaKeyboard();
+					setTimeout(() => {
+						self.children.grid.selectNext();
+					}, 10);
+					break;
+				case 'ArrowUp':
+					e.preventDefault();
+					showMenu();
+					temporarilySetIsNavigatingViaKeyboard();
+					setTimeout(() => {
+						self.children.grid.selectPrev();
+					}, 10);
+					break;
 				default:
 			}
 		},
@@ -715,7 +720,7 @@ export function ComboComponent(props) {
 							if (selection[0]?.id === value) {
 								setIsSearchMode(false);
 								resetTextInputValue();
-								if (hideMenuOnSelection && !isEditor) {
+								if (hideMenuOnSelection && !isNavigatingViaKeyboard && !isEditor) {
 									hideMenu();
 								}
 								return;
@@ -734,7 +739,7 @@ export function ComboComponent(props) {
 							if (selection[0] && selection[0][idIx] === value) {
 								setIsSearchMode(false);
 								resetTextInputValue();
-								if (hideMenuOnSelection) {
+								if (hideMenuOnSelection && !isNavigatingViaKeyboard) {
 									hideMenu();
 								}
 								return;
@@ -748,7 +753,7 @@ export function ComboComponent(props) {
 							return;
 						}
 
-						if (hideMenuOnSelection && !isEditor) {
+						if (hideMenuOnSelection && !isNavigatingViaKeyboard && !isEditor) {
 							hideMenu();
 						}
 
