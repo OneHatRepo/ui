@@ -24,7 +24,7 @@ import IconButton from '../../Components/Buttons/IconButton.js';
 import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withData from '../../Components/Hoc/withData.js';
-import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import downloadInBackground from '../../Functions/downloadInBackground.js';
 import _ from 'lodash';
 
 const
@@ -51,7 +51,7 @@ function FileCardCustom(props) {
 				borderWidth={1}
 				borderColor="primary.700"
 				onPress={() => {
-					downloadWithFetch(downloadUrl);
+					downloadInBackground(downloadUrl);
 				}}
 			>
 				{isDownloading && <Spinner mr={2} />}
