@@ -203,6 +203,9 @@ function Viewer(props) {
 										canRowsReorder={false}
 									/>;
 					if (title) {
+						if (record?.displayValue) {
+							title += ' for ' + record.displayValue;
+						}
 						title = <Text
 									fontSize={styles.VIEWER_ANCILLARY_FONTSIZE}
 									fontWeight="bold"
