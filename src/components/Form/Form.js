@@ -71,6 +71,7 @@ function Form(props) {
 			columnsConfig, // Which columns are shown in Grid, so the inline editor can match. Used only for EDITOR_TYPE__INLINE
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
 			formHeader = null,
+			containerProps = {},
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
 			checkIsEditingDisabled = true,
@@ -959,7 +960,7 @@ function Form(props) {
 		}
 	}
 	
-	return <Column {...sizeProps} {...props} onLayout={onLayoutDecorated} ref={formRef} testID="form">
+	return <Column {...sizeProps} {...containerProps} onLayout={onLayoutDecorated} ref={formRef} testID="form">
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
 						<Row
