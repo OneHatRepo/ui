@@ -71,6 +71,7 @@ function Form(props) {
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			columnsConfig, // Which columns are shown in Grid, so the inline editor can match. Used only for EDITOR_TYPE__INLINE
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
+			formHeader = null,
 			footerProps = {},
 			buttonGroupProps = {}, // buttons in footer
 			checkIsEditingDisabled = true,
@@ -963,7 +964,7 @@ function Form(props) {
 		}
 	}
 	
-	return <VStack {...sizeProps} onLayout={onLayoutDecorated} ref={formRef} testID="form">
+	return <VStack {...sizeProps} {...props} onLayout={onLayoutDecorated} ref={formRef} testID="form">
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
 						<HStack
@@ -978,6 +979,7 @@ function Form(props) {
 						>{editor}</HStack>}
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
+							{formheader}
 							{formButtons}
 							{editor}
 						</ScrollView>}
