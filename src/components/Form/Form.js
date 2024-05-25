@@ -365,7 +365,7 @@ function Form(props) {
 														/>;
 
 										const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
-										return <Row key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</Row>;
+										return <HStack key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</HStack>;
 									}}
 								/>);
 			
@@ -966,7 +966,7 @@ function Form(props) {
 	return <VStack {...sizeProps} onLayout={onLayoutDecorated} ref={formRef} testID="form">
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
-						<Row
+						<HStack
 							display="inline-block"
 							flex={1}
 							bg="#fff"
@@ -975,7 +975,7 @@ function Form(props) {
 							borderBottomWidth={5}
 							borderTopColor="primary.100"
 							borderBottomColor="primary.100"
-						>{editor}</Row>}
+						>{editor}</HStack>}
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
 							{formButtons}

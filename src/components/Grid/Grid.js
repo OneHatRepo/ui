@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react
 import {
 	Box,
 	FlatList,
+	HStack,
 	Modal,
 	Pressable,
 	Icon,
@@ -517,7 +518,7 @@ function GridComponent(props) {
 			if (showRowExpander && !isHeaderRow) {
 				const isExpanded = getIsExpanded(index);
 				rowComponent = <VStack>
-									<Row>
+									<HStack>
 										<ExpandButton
 											isExpanded={isExpanded}
 											onToggle={() => setIsExpanded(index, !isExpanded)}
@@ -528,7 +529,7 @@ function GridComponent(props) {
 											tooltip="Expand/Contract Row"
 										/>
 										{rowComponent}
-									</Row>
+									</HStack>
 									{isExpanded ? getExpandedRowContent(row) : null}
 								</VStack>
 			}
