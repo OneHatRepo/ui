@@ -42,10 +42,12 @@ function ManagerScreen(props) {
 			}
 		},
 		onLayout = (e) => {
-			const
-				containerWidth = e.nativeEvent.layout.width,
-				allowSideBySide = containerWidth > 600;
-			setAllowSideBySide(allowSideBySide);
+			if (sideModeComponent) {
+				const
+					containerWidth = e.nativeEvent.layout.width,
+					allowSideBySide = containerWidth > 600;
+				setAllowSideBySide(allowSideBySide);
+			}
 			setIsRendered(true);
 		};
 
