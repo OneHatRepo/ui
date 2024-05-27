@@ -975,7 +975,7 @@ function Form(props) {
 						>{editor}</Row>}
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
-							{formheader}
+							{formHeader}
 							{formButtons}
 							{editor}
 						</ScrollView>}
