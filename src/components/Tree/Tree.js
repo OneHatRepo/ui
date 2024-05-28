@@ -96,6 +96,9 @@ function TreeComponent(props) {
 			additionalToolbarButtons = [],
 			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
 			parentIdIx,
+
+			// withComponent
+			self,
 		
 			// withEditor
 			onAdd,
@@ -710,7 +713,7 @@ function TreeComponent(props) {
 					isDisabled: false,
 				});
 			}
-			const items = _.map(buttons, getIconButtonFromConfig);
+			const items = _.map(buttons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 
 			items.unshift(<Input // Add text input to beginning of header items
 				key="searchNodes"
@@ -729,7 +732,7 @@ function TreeComponent(props) {
 			return items;
 		},
 		getFooterToolbarItems = () => {
-			return _.map(additionalToolbarButtons, getIconButtonFromConfig);
+			return _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 		},
 		renderTreeNode = (datum) => {
 			if (!datum.isVisible) {
@@ -1115,6 +1118,7 @@ function TreeComponent(props) {
 					w="100%"
 				>
 					{topToolbar}
+
 					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
 
 					<Column
@@ -1134,6 +1138,7 @@ function TreeComponent(props) {
 					</Column>
 
 					{treeFooterComponent}
+
 				</Column>
 
 				<Modal
