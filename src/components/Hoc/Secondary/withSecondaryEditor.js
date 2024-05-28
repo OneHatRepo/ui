@@ -17,7 +17,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 	return (props) => {
 
 		if (props.secondaryDisableWithEditor) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} isTree={isTree} />;
 		}
 
 		let [secondaryEditorMode, secondarySetEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
@@ -560,6 +560,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondaryDisableDuplicate={secondaryDisableDuplicate}
 					secondaryDisableView ={secondaryDisableView}
 					secondarySetSelection={secondarySetSelectionDecorated}
+					isTree={isTree}
 				/>;
 	};
 }

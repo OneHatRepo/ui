@@ -99,6 +99,11 @@ function TreeComponent(props) {
 
 			// withComponent
 			self,
+
+			// withAlert
+			alert,
+			confirm,
+			showInfo,
 		
 			// withEditor
 			onAdd,
@@ -225,6 +230,10 @@ function TreeComponent(props) {
 		},
 		onBeforeAdd = async () => {
 			// Load children before adding the new node
+			if (_.isEmpty(selection)) {
+				alert('Please select a parent node first.')
+				return;
+			}
 			const
 				parent = selection[0],
 				parentDatum = getNodeData(parent.id);

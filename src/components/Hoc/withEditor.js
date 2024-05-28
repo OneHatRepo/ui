@@ -15,7 +15,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 	return (props) => {
 
 		if (props.disableWithEditor) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} isTree={isTree} />;
 		}
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
@@ -569,6 +569,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					disableDuplicate={disableDuplicate}
 					disableView ={disableView}
 					setSelection={setSelectionDecorated}
+					isTree={isTree}
 				/>;
 	};
 }
