@@ -242,16 +242,17 @@ function TreeComponent(props) {
 			if (parent.hasChildren && !parent.areChildrenLoaded) {
 				await loadChildren(parentDatum);
 			}
-		},
-		onAfterAdd = async (entity) => {
-			// Expand the parent before showing the new node
-			const
-				parent = entity.parent,
-				parentDatum = getNodeData(parent.id);
-
 			if (!parentDatum.isExpanded) {
 				parentDatum.isExpanded = true;
 			}
+			forceUpdate();
+		},
+		onAfterAdd = async (entities) => {
+			// Expand the parent before showing the new node
+			const
+				entity = entities[0],
+				parentDatum = getNodeData(entity.parentId);
+
 
 			// Add the entity to the tree
 			const entityDatum = buildTreeNodeDatum(entity);
@@ -751,15 +752,6 @@ function TreeComponent(props) {
 					},
 				];
 			if (canNodesReorder) {
-				buttons.unshift({
-					key: 'xBtn',
-					handler: () => {
-						clearSearch();
-					},
-					icon: Xmark,
-				});
-			}
-			if (canNodesReorder) {
 				buttons.push({
 					key: 'reorderBtn',
 					text: (isDragMode ? 'Exit' : 'Enter') + ' reorder mode',
@@ -785,6 +777,18 @@ function TreeComponent(props) {
 				value={treeSearchValue}
 				autoSubmit={false}
 			/>);
+
+			if (treeSearchValue.length) {
+				// Add 'X' button to clear search
+				items.unshift(getIconButtonFromConfig({
+					key: 'xBtn',
+					handler: () => {
+						setHighlitedDatum(null);
+						setTreeSearchValue('');
+					},
+					icon: Xmark,
+				}, 0, self));
+			}
 
 			return items;
 		},
@@ -1138,15 +1142,14 @@ function TreeComponent(props) {
 	});
 	
 	const
-		tnd = getTreeNodeData(),
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, tnd]),
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, tnd]);
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, getTreeNodeData()]),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, getTreeNodeData()]);
 
 	if (!isReady) {
 		return null;
 	}
 	
-	const treeNodes = renderTreeNodes(tnd);
+	const treeNodes = renderTreeNodes(getTreeNodeData());
 
 	// headers & footers
 	let treeFooterComponent = null;

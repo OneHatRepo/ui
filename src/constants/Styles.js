@@ -116,7 +116,7 @@ const defaults = {
 	TREE_NODE_HOVER_BG: 'hover',
 	TREE_NODE_SELECTED_BG: 'selected',
 	TREE_NODE_SELECTED_HOVER_BG: 'selectedHover',
-	TREE_NODE_HIGHLIGHTED_BG: '#ffa',
+	TREE_NODE_HIGHLIGHTED_BG: 'highlighted',
 	TOOLBAR_ITEMS_COLOR: 'trueGray.800',
 	TOOLBAR_ITEMS_DISABLED_COLOR: 'trueGray.400',
 	TOOLBAR_ITEMS_ICON_SIZE: 'sm',
