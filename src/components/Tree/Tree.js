@@ -53,7 +53,7 @@ import NoRecordsFound from '../Grid/NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
-const DEPTH_INDENT_PX = 20;
+const DEPTH_INDENT_PX = 25;
 
 function TreeComponent(props) {
 	const {
@@ -334,19 +334,31 @@ function TreeComponent(props) {
 			buildRowToDatumMap();
 			return newTreeNodeData;
 		},
-		onSearchTree = async (value) => {
+		onSearchTree = async (q) => {
 			let found = [];
+			if (q === '') {
+				alert('Please enter a search query.');
+				return;
+			}
+
 			if (Repository?.isRemote) {
 				// Search tree on server
-				found = await Repository.searchNodes(value);
+				found = await Repository.searchNodes(q);
 			} else {
 				// Search local tree data
-				found = findTreeNodesByText(value);
+				found = findTreeNodesByText(q);
+			}
+
+			if (_.isEmpty(found)) {
+				deselectAll();
+				setHighlitedDatum(null);
+				alert('No matches found.');
+				return;
 			}
 
 			const isMultipleHits = found.length > 1;
 			if (!isMultipleHits) {
-				expandPath(found[0].path);
+				expandPath(found[0].path); // highlights and selects the last node in the path
 				return;
 			}
 
@@ -699,7 +711,7 @@ function TreeComponent(props) {
 					{
 						key: 'searchBtn',
 						text: 'Search tree',
-						handler: onSearchTree,
+						handler: () => onSearchTree(treeSearchValue),
 						icon: MagnifyingGlass,
 						isDisabled: !treeSearchValue.length,
 					},
@@ -729,9 +741,9 @@ function TreeComponent(props) {
 				flex={1}
 				placeholder="Find tree node"
 				onChangeText={(val) => setTreeSearchValue(val)}
-				onKeyPress={(e, value) => {
+				onKeyPress={(e) => {
 					if (e.key === 'Enter') {
-						onSearchTree(value);
+						onSearchTree(treeSearchValue);
 					}
 				}}
 				value={treeSearchValue}
@@ -755,7 +767,6 @@ function TreeComponent(props) {
 
 			let nodeProps = getNodeProps ? getNodeProps(item) : {},
 				isSelected = isInSelection(item);
-
 			return <Pressable
 						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
 						key={item.hash}
@@ -1098,7 +1109,9 @@ function TreeComponent(props) {
 		return null;
 	}
 	
-	const treeNodes = renderTreeNodes(getTreeNodeData());
+	const
+		tnd = getTreeNodeData(),
+		treeNodes = renderTreeNodes(tnd);
 
 	// headers & footers
 	let treeFooterComponent = null;
@@ -1142,7 +1155,8 @@ function TreeComponent(props) {
 							}
 						}}
 					>
-						{!treeNodes?.length ? <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
+						{!treeNodes?.length ? 
+							<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
 							treeNodes}
 					</Column>
 
