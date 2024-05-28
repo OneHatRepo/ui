@@ -51,6 +51,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				// for local use
 				isEditor = false,
 				isTree = false,
+				canDeleteRootNode = false,
 				isSideEditor = false,
 				canEditorViewOnly = false,
 				disableAdd = !isEditor,
@@ -191,6 +192,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						}
 						if (verifyCanDelete && !verifyCanDelete(selection)) {
 							isDisabled = true;
+						}
+						if (isTree) {
+							const isRootNode = !!_.find(selection, { isRoot: true, });
+							if (isRootNode && !canDeleteRootNode) {
+								isDisabled = true;
+							}
 						}
 						break;
 					case 'view':
