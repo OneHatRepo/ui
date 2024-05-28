@@ -41,6 +41,7 @@ import nbToRgb from '../../Functions/nbToRgb.js';
 import TreeNode, { DraggableTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
+import Xmark from '../Icons/Xmark.js';
 import Dot from '../Icons/Dot.js';
 import Collapse from '../Icons/Collapse.js';
 import FolderClosed from '../Icons/FolderClosed.js';
@@ -146,7 +147,7 @@ function TreeComponent(props) {
 		treeNodeData = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[isSearchModalShown, setIsSearchModalShown] = useState(false),
+		[isModalShown, setIsModalShown] = useState(false),
 		[rowToDatumMap, setRowToDatumMap] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
@@ -337,6 +338,7 @@ function TreeComponent(props) {
 		onSearchTree = async (q) => {
 			let found = [];
 			if (q === '') {
+				setHighlitedDatum(null);
 				alert('Please enter a search query.');
 				return;
 			}
@@ -362,13 +364,14 @@ function TreeComponent(props) {
 				return;
 			}
 
+			// Show modal so user can select which node to go to
 			const searchFormData = [];
 			_.each(found, (item) => {
 				searchFormData.push([item.id, getNodeText(item)]);
 			});
 			setSearchFormData(searchFormData);
 			setSearchResults(found);
-			setIsSearchModalShown(true);
+			setIsModalShown(true);
 		},
 
 		// utilities
@@ -701,7 +704,31 @@ function TreeComponent(props) {
 
 			// TODO: This will probably need different methods in web and mobile
 
+			// From Github Copliot:
+			// In React, if you want to scroll individual DOM nodes into view, you would typically assign a ref to each of them. However, managing a large number of refs can be cumbersome and may lead to performance issues.
+			// An alternative approach is to assign a unique id to each DOM node and use the document.getElementById(id).scrollIntoView() method to scroll to a specific node. This way, you don't need to manage a large number of refs.
+			// Here's an example:
+			// const MyComponent = () => {
+			// 	const scrollTo = (id) => {
+			// 	  document.getElementById(id).scrollIntoView();
+			// 	};
+			// 	return (
+			// 	  <div>
+			// 		{Array.from({ length: 100 }).map((_, index) => (
+			// 		  <div id={`item-${index}`} key={index}>
+			// 			Item {index}
+			// 		  </div>
+			// 		))}
+			// 		<button onClick={() => scrollTo('item-50')}>Scroll to item 50</button>
+			// 	  </div>
+			// 	);
+			// };
+			// In this example, we're creating 100 divs each with a unique id. We also have a button that, when clicked, scrolls to the div with the id 'item-50'.
+			// Please note that this approach uses the DOM API directly, which is generally discouraged in React. It's recommended to use refs when you need to interact with DOM nodes directly. However, in cases where you need to manage a large number of DOM nodes, using ids can be a more practical solution.
+			// Also, keep in mind that document.getElementById(id).scrollIntoView() might not work as expected in all situations, especially in complex layouts or when using certain CSS properties. Always test your code thoroughly to make sure it works as expected.
 
+			// ... Not sure how to do this with NativeBase, as I've had trouble assigning IDs
+			// Maybe I first collapse the tree, then expand just the path?
 		},
 
 		// render
@@ -724,11 +751,20 @@ function TreeComponent(props) {
 					},
 				];
 			if (canNodesReorder) {
+				buttons.unshift({
+					key: 'xBtn',
+					handler: () => {
+						clearSearch();
+					},
+					icon: Xmark,
+				});
+			}
+			if (canNodesReorder) {
 				buttons.push({
 					key: 'reorderBtn',
 					text: (isDragMode ? 'Exit' : 'Enter') + ' reorder mode',
 					handler: () => {
-						setIsDragMode(!isDragMode)
+						setIsDragMode(!isDragMode);
 					},
 					icon: isDragMode ? NoReorderRows : ReorderRows,
 					isDisabled: false,
@@ -1102,16 +1138,15 @@ function TreeComponent(props) {
 	});
 	
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, getTreeNodeData()]),
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, getTreeNodeData()]);
+		tnd = getTreeNodeData(),
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, tnd]),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, tnd]);
 
 	if (!isReady) {
 		return null;
 	}
 	
-	const
-		tnd = getTreeNodeData(),
-		treeNodes = renderTreeNodes(tnd);
+	const treeNodes = renderTreeNodes(tnd);
 
 	// headers & footers
 	let treeFooterComponent = null;
@@ -1165,8 +1200,8 @@ function TreeComponent(props) {
 				</Column>
 
 				<Modal
-					isOpen={isSearchModalShown}
-					onClose={() => setIsSearchModalShown(false)}
+					isOpen={isModalShown}
+					onClose={() => setIsModalShown(false)}
 				>
 					<Column bg="#fff" w={300}>
 						<FormPanel
@@ -1189,8 +1224,8 @@ function TreeComponent(props) {
 								},
 							]}
 							onCancel={(e) => {
-								// Just close the modal
-								setIsSearchModalShown(false);
+								setHighlitedDatum(null);
+								setIsModalShown(false);
 							}}
 							onSave={(data, e) => {
 								const
@@ -1201,7 +1236,7 @@ function TreeComponent(props) {
 								expandPath(path);
 
 								// Close the modal
-								setIsSearchModalShown(false);
+								setIsModalShown(false);
 							}}
 						/>
 					</Column>
