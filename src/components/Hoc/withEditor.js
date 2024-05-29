@@ -408,6 +408,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsEditorShown(false);
 				}
 				const formState = editorStateRef.current;
+				if (!formState) {
+					setIsAdding(false);
+					setIsEditorShown(false);
+					return;
+				}
 				if (!_.isEmpty(formState.dirtyFields)) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
 				} else {

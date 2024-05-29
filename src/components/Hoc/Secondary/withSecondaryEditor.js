@@ -409,6 +409,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondarySetIsEditorShown(false);
 				}
 				const formState = secondaryEditorStateRef.current;
+				if (!formState) {
+					setIsAdding(false);
+					secondarySetIsEditorShown(false);
+					return;
+				}
 				if (!_.isEmpty(formState.dirtyFields)) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
 				} else {
