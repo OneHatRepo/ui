@@ -1132,14 +1132,16 @@ function TreeComponent(props) {
 		}
 	}, [selectorId, selectorSelected]);
 
-	setWithEditListeners({ // Update withEdit's listeners on every render
-		onBeforeAdd,
-		onAfterAdd,
-		onBeforeEditSave,
-		onAfterEdit,
-		onBeforeDeleteSave,
-		onAfterDelete,
-	});
+	if (setWithEditListeners) {
+		setWithEditListeners({ // Update withEdit's listeners on every render
+			onBeforeAdd,
+			onAfterAdd,
+			onBeforeEditSave,
+			onAfterEdit,
+			onBeforeDeleteSave,
+			onAfterDelete,
+		});
+	}
 	
 	const
 		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, getTreeNodeData()]),
@@ -1186,6 +1188,7 @@ function TreeComponent(props) {
 						w="100%"
 						flex={1}
 						p={2}
+						bg="#fff"
 						{...borderProps}
 						onClick={() => {
 							if (!isDragMode) {
