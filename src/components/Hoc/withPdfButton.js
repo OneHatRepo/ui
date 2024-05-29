@@ -53,7 +53,9 @@ export default function withPdfButton(WrappedComponent) {
 						items = [];
 					_.each(ancillaryItemsClone, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
 						let name;
-						if (ancillaryItem.model) {
+						if (ancillaryItem.pdfModel) {
+							name = ancillaryItem.pdfModel;
+						} else if (ancillaryItem.model) {
 							name = Inflector.underscore(ancillaryItem.model);
 						} else {
 							name = ancillaryItem.title;
