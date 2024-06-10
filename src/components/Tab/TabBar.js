@@ -13,6 +13,7 @@ import {
 } from '../../Constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import testProps from '../../Functions/testProps.js';
 import withComponent from '../Hoc/withComponent.js';
 import IconButton from '../Buttons/IconButton.js';
 import Minimize from '../Icons/Minimize.js';
@@ -97,6 +98,7 @@ function TabBar(props) {
 			let button;
 			if (isCollapsed) {
 				button = <IconButton
+							{...testProps('toggleBtn')}
 							key="toggleBtn"
 							onPress={onToggleCollapse}
 							{...buttonProps}
@@ -112,6 +114,7 @@ function TabBar(props) {
 						/>;
 			} else {
 				button = <Button
+							{...testProps('toggleBtn')}
 							key="toggleBtn"
 							onPress={onToggleCollapse}
 							leftIcon={<Icon
@@ -209,6 +212,7 @@ function TabBar(props) {
 				let closeBtn;
 				if (onTabClose && !tab.disableCloseBox) {
 					closeBtn = <IconButton
+									{...testProps('tabCloseButton-' + ix)}
 									key={'tabCloseButton' + ix}
 									onPress={() => onTabClose(ix)}
 									icon={Xmark}
@@ -222,6 +226,7 @@ function TabBar(props) {
 				}
 				if (useIconButton) {
 					button = <IconButton
+								{...testProps('tabIconButton-' + ix)}
 								key={'tabIconButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								{...buttonProps}
@@ -244,6 +249,7 @@ function TabBar(props) {
 					// 		</Row>;
 				} else {
 					button = <Button
+								{...testProps('tabButton-' + ix)}
 								key={'tabButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								leftIcon={<Icon
@@ -411,6 +417,7 @@ function TabBar(props) {
 	let tabBar = null;
 	if (direction === VERTICAL) {
 		tabBar = <Column
+						{...testProps('TabBar')}
 						alignItems="center"
 						justifyContent="flex-start"
 						py={2}
@@ -438,6 +445,7 @@ function TabBar(props) {
 	}
 	if (direction === HORIZONTAL) {
 		tabBar = <Row
+					{...testProps('TabBar')}
 					alignItems="center"
 					justifyContent="flex-start"
 					p={2}
