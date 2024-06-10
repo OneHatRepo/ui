@@ -308,6 +308,7 @@ function GridComponent(props) {
 			const items = _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 			if (canRowsReorder && CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
 				items.unshift(<IconButton
+					{...testProps('reorderBtn')}
 					key="reorderBtn"
 					parent={self}
 					reference="reorderBtn"

@@ -1,4 +1,5 @@
 import IconButton from '../Components/Buttons/IconButton.js';
+import testProps from './testProps.js';
 import UiGlobals from '../UiGlobals.js';
 
 export default function getIconButtonFromConfig(config, ix, parent) {
@@ -26,6 +27,7 @@ export default function getIconButtonFromConfig(config, ix, parent) {
 			color: isDisabled ? styles.TOOLBAR_ITEMS_DISABLED_COLOR : styles.TOOLBAR_ITEMS_COLOR,
 		};
 	return <IconButton
+				{...testProps(key || 'btn-' + ix)}
 				key={key || ix}
 				parent={parent}
 				reference={key || ix}

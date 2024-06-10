@@ -5,6 +5,7 @@ import {
 	Text,
 } from 'native-base';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
@@ -64,6 +65,7 @@ export default function Pagination(props) {
 			isDisabled = (pageEnd === total);
 			if (showPagination) {
 				items.push(<Button
+								{...testProps('showMoreBtn')}
 								key="showMore"
 								parent={self}
 								reference="showMoreBtn"
@@ -74,6 +76,7 @@ export default function Pagination(props) {
 			}
 			if (!Repository.isLocal) {
 				items.push(<IconButton
+								{...testProps('reloadPageBtn')}
 								key="reload"
 								parent={self}
 								reference="reloadPageBtn"
@@ -88,6 +91,7 @@ export default function Pagination(props) {
 			isDisabled = page === 1;
 			if (showPagination) {
 				items.push(<IconButton
+								{...testProps('firstPageBtn')}
 								key="first"
 								parent={self}
 								reference="firstPageBtn"
@@ -98,6 +102,7 @@ export default function Pagination(props) {
 								tooltip="First Page"
 							/>);
 				items.push(<IconButton
+								{...testProps('prevPageBtn')}
 								key="prev"
 								parent={self}
 								reference="prevPageBtn"
@@ -116,6 +121,7 @@ export default function Pagination(props) {
 								>
 									<Text mr={2}>Page</Text>
 									<Input
+										{...testProps('pageInput')}
 										parent={self}
 										reference="pageInput"
 										keyboardType="numeric"
@@ -132,6 +138,7 @@ export default function Pagination(props) {
 
 				isDisabled = page === totalPages || totalPages <= 1;
 				items.push(<IconButton
+								{...testProps('nextPageBtn')}
 								key="next"
 								parent={self}
 								reference="nextPageBtn"
@@ -142,6 +149,7 @@ export default function Pagination(props) {
 								tooltip="Next Page"
 							/>);
 				items.push(<IconButton
+								{...testProps('lastPageBtn')}
 								key="last"
 								parent={self}
 								reference="lastPageBtn"
@@ -155,6 +163,7 @@ export default function Pagination(props) {
 
 			if (!Repository.isLocal) {
 				items.push(<IconButton
+								{...testProps('reloadPageBtn')}
 								key="reload"
 								parent={self}
 								reference="reloadPageBtn"
@@ -165,7 +174,12 @@ export default function Pagination(props) {
 							/>);
 			}
 			if (showPagination && !minimize && !disablePageSize) {
-				items.push(<PageSizeCombo key="pageSize" pageSize={pageSize} Repository={Repository} />);
+				items.push(<PageSizeCombo
+								{...testProps('pageSize')}
+								key="pageSize"
+								pageSize={pageSize}
+								Repository={Repository}
+							/>);
 			}
 			if (showPagination && !minimize) {
 				let pageSpan = `${pageStart} – ${pageEnd}`;
