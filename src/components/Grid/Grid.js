@@ -45,7 +45,6 @@ import withInlineEditor from '../Hoc/withInlineEditor.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
-import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import testProps from '../../Functions/testProps.js';
 import Loading from '../Messages/Loading.js';
