@@ -27,8 +27,9 @@ import Xmark from '../../Icons/Xmark.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
-import Calendar from '../../Icons/Calendar.js';
+import testProps from '../../../Functions/testProps.js';
 import getComponentFromType from '../../../Functions/getComponentFromType.js';
+import Calendar from '../../Icons/Calendar.js';
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -288,6 +289,7 @@ export function DateElement(props) {
 
 	if (showXButton && !_.isNil(value)) {
 		xButton = <IconButton
+						{...testProps('xBtn')}
 						_icon={{
 							as: Xmark,
 							color: 'trueGray.600',
@@ -306,6 +308,7 @@ export function DateElement(props) {
 	if (UiGlobals.mode === UI_MODE_WEB) {
 		inputAndTrigger = <>
 							<IconButton
+								{...testProps('trigger')}
 								ref={triggerRef}
 								_icon={{
 									as: Calendar,
@@ -328,6 +331,7 @@ export function DateElement(props) {
 							/>
 							{disableDirectEntry ?
 								<Pressable
+									{...testProps('togglePickerBtn')}
 									onPress={togglePicker}
 									flex={1}
 									h="100%"
@@ -354,6 +358,7 @@ export function DateElement(props) {
 									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
 								</Pressable> :
 								<Input
+									{...testProps('input')}
 									ref={inputRef}
 									value={textInputValue}
 									// setValue={onInputSetValue}
@@ -394,6 +399,7 @@ export function DateElement(props) {
 		// The just show the current value and open the menu
 		inputAndTrigger = <>
 							<IconButton
+								{...testProps('trigger')}
 								ref={triggerRef}
 								_icon={{
 									as: Calendar,
@@ -416,6 +422,7 @@ export function DateElement(props) {
 								}}
 							/>
 							<Pressable
+								{...testProps('togglePickerBtn')}
 								onPress={togglePicker}
 								flex={1}
 							>
@@ -488,6 +495,7 @@ export function DateElement(props) {
 										p={0}
 									>
 										<Datetime
+											{...testProps('picker')}
 											open={true}
 											input={false}
 											closeOnClickOutside={false}
@@ -504,6 +512,7 @@ export function DateElement(props) {
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
 				<Row h={10}>
 					<IconButton
+						{...testProps('hidePickerBtn')}
 						_icon={{
 							as: Calendar,
 							color: styles.FORM_DATE_ICON_COLOR,
@@ -545,6 +554,7 @@ export function DateElement(props) {
 							}}
 						>{textInputValue}</Text> :
 						<Input
+							{...testProps('input')}
 							ref={inputRef}
 							value={textInputValue}
 							autoSubmit={true}
@@ -592,6 +602,7 @@ export function DateElement(props) {
 								/> */}
 								<Box bg="#fff">
 									<Datetime
+										{...testProps('picker')}
 										initialDate={moment(value).toDate()}
 										selectedStartDate={moment(value).toDate()}
 										onDateChange={onPickerChange}

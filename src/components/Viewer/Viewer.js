@@ -15,6 +15,7 @@ import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
+import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
@@ -152,6 +153,7 @@ function Viewer(props) {
 			}
 			
 			let element = <Element
+								{...testProps('field-' + name)}
 								value={value}
 								isEditable={false}
 								parent={self}
@@ -195,6 +197,7 @@ function Viewer(props) {
 					const
 						Element = getComponentFromType(type),
 						element = <Element
+										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
@@ -253,6 +256,7 @@ function Viewer(props) {
 						{canEdit && onEditMode &&
 							<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
 								<Button
+									{...testProps('editBtn')}
 									key="editBtn"
 									onPress={onEditMode}
 									leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
@@ -274,6 +278,7 @@ function Viewer(props) {
 							{showDeleteBtn && 
 								<Row flex={1} justifyContent="flex-start">
 									<Button
+										{...testProps('deleteBtn')}
 										key="deleteBtn"
 										onPress={onDelete}
 										bg="warning"
@@ -285,6 +290,7 @@ function Viewer(props) {
 								</Row>}
 							{onClose && showCloseBtn &&
 								<Button
+									{...testProps('closeBtn')}
 									key="closeBtn"
 									onPress={onClose}
 									color="#fff"

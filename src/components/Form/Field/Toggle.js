@@ -9,6 +9,7 @@ import {
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Na from '../../Icons/Na.js';
+import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
@@ -43,6 +44,7 @@ const
 
 		if (_.isNil(value)) {
 			return <IconButton
+						{...testProps('naBtn')}
 						ref={props.outerRef}
 						icon={<Icon as={Na} color="trueGray.400" />}
 						onPress={onToggle}
@@ -52,7 +54,10 @@ const
 		}
 
 		return <Row alignItems="center">
-					<Pressable onPress={onNullify}>
+					<Pressable
+						{...testProps('nullifyBtn')}
+						onPress={onNullify}
+					>
 						<Switch
 							ref={props.outerRef}
 							onToggle={onToggle}
@@ -68,8 +73,15 @@ const
 							{...propsToPass}
 						/>
 					</Pressable>
-					<Pressable onPress={onToggle}>
-						<Text ml={2} fontSize={styles.FORM_TOGGLE_FONTSIZE}>{_.isNil(value) ? 'N/A' : (!!value ? 'Yes' : 'No')}</Text>
+					<Pressable
+						{...testProps('readoutBtn')}
+						onPress={onToggle}
+					>
+						<Text
+							{...testProps('readout')}
+							ml={2}
+							fontSize={styles.FORM_TOGGLE_FONTSIZE}
+						>{_.isNil(value) ? 'N/A' : (!!value ? 'Yes' : 'No')}</Text>
 					</Pressable>
 				</Row>;
 	},

@@ -6,6 +6,7 @@ import {
 import Number from '../Form/Field/Number.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
+import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
 	const
@@ -20,6 +21,7 @@ import _ from 'lodash';
 
 					minValue = 0,
 					maxValue,
+					...propsToPass
 				} = props,
 				[low, setLow] = useState(''),
 				[high, setHigh] = useState(''),
@@ -66,8 +68,10 @@ import _ from 'lodash';
 						alignItems="center"
 						flex={1}
 						px={1}
+						{...propsToPass}
 					>
 						<Number
+							{...testProps('low')}
 							value={low}
 							onChangeValue={onChangeLow}
 							startingValue={null}
@@ -78,6 +82,7 @@ import _ from 'lodash';
 						/>
 						<Text px={2} userSelect="none">to</Text>
 						<Number
+							{...testProps('high')}
 							value={high}
 							onChangeValue={onChangeHigh}
 							startingValue={null}
