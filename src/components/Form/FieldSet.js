@@ -7,6 +7,7 @@ import {
 } from 'native-base';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import testProps from '../../Functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton.js';
 import CheckboxButton from '../Buttons/CheckboxButton.js';
@@ -111,6 +112,7 @@ export default function FieldSet(props) {
 															numberOfLines={1}
 														>Toggle All?</Text>
 														<CheckboxButton
+															{...testProps('toggleAllBtn')}
 															isChecked={getIsAllChecked()}
 															onPress={onToggleAllChecked}
 															_icon={{
@@ -119,6 +121,7 @@ export default function FieldSet(props) {
 														/>
 													</Row>}
 						{isCollapsible && <IconButton
+												{...testProps('toggleCollapseBtn')}
 												_icon={{
 													as: isLocalCollapsed ? <CaretDown /> : <CaretUp />,
 													size: 'sm',

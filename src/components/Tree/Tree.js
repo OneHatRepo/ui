@@ -808,7 +808,7 @@ function TreeComponent(props) {
 			let nodeProps = getNodeProps ? getNodeProps(item) : {},
 				isSelected = isInSelection(item);
 			return <Pressable
-						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
+						{...testProps((Repository ? Repository.schema.name : 'TreeNode') + '-' + item?.id)}
 						key={item.hash}
 						onPress={(e) => {
 							if (e.preventDefault && e.cancelable) {
@@ -818,6 +818,7 @@ function TreeComponent(props) {
 								return
 							}
 							switch (e.detail) {
+								case 0: // simulated click
 								case 1: // single click
 									onNodeClick(item, e); // sets selection
 									break;
@@ -1175,7 +1176,7 @@ function TreeComponent(props) {
 
 	return <>
 				<Column
-					{...testProps('Tree')}
+					{...testProps(self)}
 					flex={1}
 					w="100%"
 				>

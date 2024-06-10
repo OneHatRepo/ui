@@ -22,6 +22,7 @@ import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
+import testProps from '../../../../Functions/testProps.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
@@ -495,6 +496,7 @@ export function ComboComponent(props) {
 	
 	if (showXButton && !_.isNil(value)) {
 		xButton = <IconButton
+						{...testProps('xBtn')}
 						_icon={{
 							as: Xmark,
 							color: 'trueGray.600',
@@ -512,6 +514,7 @@ export function ComboComponent(props) {
 	}
 	if (showEyeButton && Editor && !_.isNil(value)) {
 		eyeButton = <IconButton
+						{...testProps('eyeBtn')}
 						_icon={{
 							as: Eye,
 							color: 'trueGray.600',
@@ -532,6 +535,7 @@ export function ComboComponent(props) {
 		inputAndTrigger = <>
 							{disableDirectEntry ?
 								<Pressable
+									{...testProps('toggleMenuBtn')}
 									onPress={toggleMenu}
 									flex={1}
 									h="100%"
@@ -558,6 +562,7 @@ export function ComboComponent(props) {
 									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
 								</Pressable> :
 								<Input
+									{...testProps('input')}
 									ref={inputRef}
 									reference="ComboInput"
 									value={textInputValue}
@@ -583,6 +588,7 @@ export function ComboComponent(props) {
 									{..._input}
 								/>}
 							<IconButton
+								{...testProps('trigger')}
 								ref={triggerRef}
 								_icon={{
 									as: CaretDown,
@@ -612,6 +618,7 @@ export function ComboComponent(props) {
 		const displayValue = getDisplayValue();
 		inputAndTrigger = <>
 							<Pressable
+								{...testProps('showMenuBtn')}
 								onPress={showMenu}
 								flex={1}
 								flexDirection="row"
@@ -637,6 +644,7 @@ export function ComboComponent(props) {
 								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
 							</Pressable>
 							<IconButton
+								{...testProps('trigger')}
 								ref={triggerRef}
 								_icon={{
 									as: CaretDown,
@@ -837,6 +845,7 @@ export function ComboComponent(props) {
 			if (isEditor) {
 				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
 				checkButton = <IconButton
+								{...testProps('checkBtn')}
 								_icon={{
 									as: Check,
 									color: 'trueGray.600',
@@ -878,6 +887,7 @@ export function ComboComponent(props) {
 							}}
 						>{textInputValue}</Text> :
 						<Input
+							{...testProps('input')}
 							ref={inputRef}
 							reference="ComboInput"
 							value={textInputValue}
@@ -903,6 +913,7 @@ export function ComboComponent(props) {
 							{..._input}
 						/>}
 					<IconButton
+						{...testProps('hideMenuBtn')}
 						_icon={{
 							as: CaretDown,
 							color: 'primary.800',

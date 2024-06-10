@@ -10,6 +10,7 @@ import {
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
+import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import _ from 'lodash';
@@ -102,7 +103,12 @@ function GridRow(props) {
 								userSelect: 'none',
 							};
 
-							return <Row key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</Row>;
+							return <Row
+										key={key}
+										{...testProps('rendererCol-' + key)}
+										{...propsToPass}
+										{...extraProps}
+									>{config.renderer(item)}</Row>;
 						}
 						if (config.fieldName) {
 							if (item?.properties && item.properties[config.fieldName]) {
@@ -120,6 +126,7 @@ function GridRow(props) {
 										elementProps.isViewOnly = true; // TODO: this won't work for InlineGridEditor, bc that Grid can't use isViewOnly when actually editing
 									}
 									return <Element
+												{...testProps('fieldname-' + config.fieldName)}
 												value={value}
 												key={key}
 												overflow="hidden"
@@ -160,6 +167,7 @@ function GridRow(props) {
 						elementProps.textOverflow = 'ellipsis';
 					}
 					return <Text
+								{...testProps('fieldname-' + config.fieldName)}
 								key={key}
 								overflow="hidden"
 								alignSelf="center"

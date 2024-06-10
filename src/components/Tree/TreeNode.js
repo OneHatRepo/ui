@@ -9,6 +9,7 @@ import {
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
+import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
 // This was broken out from Tree simply so we can memoize it
@@ -53,7 +54,7 @@ export default function TreeNode(props) {
 					
 					{isLoading ? 
 						<Spinner px={2} /> : 
-						(hasChildren && !isDragMode ? <IconButton icon={icon} onPress={() => onToggle(datum)} /> : <Icon as={icon} px={2} />)}
+						(hasChildren && !isDragMode ? <IconButton icon={icon} onPress={() => onToggle(datum)} {...testProps('TreeNodeExpandBtn-' + item?.id)} /> : <Icon as={icon} px={2} />)}
 
 					<Text
 						overflow="hidden"

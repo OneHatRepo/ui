@@ -47,6 +47,7 @@ import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
+import testProps from '../../Functions/testProps.js';
 import Loading from '../Messages/Loading.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';
@@ -336,7 +337,7 @@ function GridComponent(props) {
 
 			let rowComponent =
 				<Pressable
-					// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
+					{...testProps((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id)}
 					onPress={(e) => {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
@@ -979,7 +980,7 @@ function GridComponent(props) {
 	}
 
 	let grid = <FlatList
-					testID="flatlist"
+					{...testProps('flatlist')}
 					ref={gridRef}
 					scrollEnabled={CURRENT_MODE === UI_MODE_WEB}
 					nestedScrollEnabled={true}
@@ -1019,7 +1020,7 @@ function GridComponent(props) {
 		if (Repository?.isLoading) {
 			grid = <Loading isScreen={true} />;
 		} else {
-			grid = <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} />;
+			grid = <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} testID="NoRecordsFound" />;
 		}
 	}
 
@@ -1060,8 +1061,8 @@ function GridComponent(props) {
 	}
 
 	grid = <Column
-				{...testProps('Grid')}
-				testID="outerContainer"
+				{...testProps(self)}
+				// testID="outerContainer"
 				ref={containerRef}
 				tabIndex={0}
 				onKeyDown={onGridKeyDown}
@@ -1075,7 +1076,7 @@ function GridComponent(props) {
 				{topToolbar}
 
 				<Column
-					testID="gridContainer"
+					{...testProps('gridContainer')}
 					ref={gridContainerRef}
 					w="100%"
 					flex={1}
@@ -1098,6 +1099,7 @@ function GridComponent(props) {
 
 	if (isDropTarget) {
 		grid = <Box
+					{...testProps('dropTarget')}
 					ref={dropTargetRef}
 					borderWidth={canDrop && isOver ? 4 : 0}
 					borderColor="#0ff"

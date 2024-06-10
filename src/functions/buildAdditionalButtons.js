@@ -2,6 +2,7 @@ import {
 	Icon,
 } from 'native-base';
 import Button from '../Components/Buttons/Button.js';
+import testProps from './testProps.js';
 import _ from 'lodash';
 
 export default function buildAdditionalButtons(configs, self, handlerArgs = {}) {
@@ -30,6 +31,7 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 		}
 		
 		const button = <Button
+							{...testProps('btn-' + key)}
 							color={color}
 							ml={2}
 							// mb={2}

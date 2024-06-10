@@ -14,6 +14,7 @@ import {
 	UI_MODE_REACT_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
+import testProps from '../../Functions/testProps.js';
 import Form from '../Form/Form.js';
 import withEditor from './withEditor.js';
 import _ from 'lodash';
@@ -115,7 +116,6 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 			inlineEditor = <>
 								{isEditorShown && <Box
 													ref={maskRef}
-													testID="mask"
 													position="fixed"
 													w="100vw"
 													h="100vh"
@@ -140,7 +140,7 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 									ref={inlineEditorRef}
 									position="absolute"
 									zIndex={10}
-									testID="inline-editor"
+									{...testProps('inlineEditor')}
 									h={isEditorShown ? '100px' : 0}
 									minWidth="100%"
 									display="inline-block"

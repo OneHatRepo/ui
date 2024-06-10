@@ -7,6 +7,7 @@ import {
 } from 'native-base';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
+import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
@@ -120,6 +121,7 @@ function NumberElement(props) {
 
 	return <Row flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6} {...props}>
 				<IconButton
+					{...testProps('decrementBtn')}
 					icon={<Icon as={Minus} color={(isDecrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
 					onPress={onDecrement}
 					isDisabled={isDecrementDisabled || isDisabled}
@@ -133,6 +135,7 @@ function NumberElement(props) {
 					zIndex={10}
 				/>
 				<InputWithTooltip
+					{...testProps('input')}
 					value={inputValue}
 					onChangeText={onChangeText}
 					onKeyPress={onInputKeyPress}
@@ -150,6 +153,7 @@ function NumberElement(props) {
 					{...props._input}
 				/>
 				<IconButton
+					{...testProps('incrementBtn')}
 					icon={<Icon as={Plus} color={(isIncrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
 					onPress={onIncrement}
 					isDisabled={isIncrementDisabled || isDisabled}

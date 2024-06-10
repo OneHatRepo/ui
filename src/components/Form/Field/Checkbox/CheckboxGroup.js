@@ -4,6 +4,7 @@ import {
 	Checkbox,
 	Row,
 } from 'native-base';
+import testProps from '../../../../Functions/testProps.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import withTooltip from '../../../Hoc/withTooltip.js';
@@ -32,6 +33,7 @@ const
 				const entities = Repository.getEntitiesOnPage();
 				checkboxes = _.map(entities, (entity, ix) => {
 					return <Checkbox
+								{...testProps('checkbox-' + entity.id)}
 								key={ix}
 								value={entity.id}
 								{...checkboxProps}
@@ -40,6 +42,7 @@ const
 			} else {
 				checkboxes = _.map(data, (datum, ix) => {
 					return <Checkbox
+								{...testProps('checkbox-' + datum[idIx])}
 								key={ix}
 								value={datum[idIx]}
 								{...checkboxProps}

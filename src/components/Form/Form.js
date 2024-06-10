@@ -30,6 +30,7 @@ import withPdfButton from '../Hoc/withPdfButton.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
+import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
@@ -286,6 +287,7 @@ function Form(props) {
 					}
 
 					let element = <Element
+										{...testProps('field-' + fieldName)}
 										value={value}
 										parent={self}
 										reference={fieldName}
@@ -345,6 +347,7 @@ function Form(props) {
 										}
 
 										let element = <Element
+															{...testProps('field-' + name)}
 															name={name}
 															value={value}
 															onChangeValue={(newValue) => {
@@ -499,6 +502,7 @@ function Form(props) {
 				}
 		
 				let element = <Element
+									{...testProps('field-' + name)}
 									value={value}
 									parent={self}
 									reference={name}
@@ -582,6 +586,7 @@ function Form(props) {
 								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 							}
 							let element = <Element
+												{...testProps('field-' + name)}
 												name={name}
 												value={value}
 												onChangeValue={(newValue) => {
@@ -700,6 +705,7 @@ function Form(props) {
 					const
 						Element = getComponentFromType(type),
 						element = <Element
+										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
@@ -885,6 +891,7 @@ function Form(props) {
 			formButtons.push(<Row key="buttonsRow" px={4} pt={4} alignItems="center" justifyContent="flex-end">
 								{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
 									<Button
+										{...testProps('backBtn')}
 										key="backBtn"
 										onPress={onBack}
 										leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
@@ -892,6 +899,7 @@ function Form(props) {
 									>Back</Button>}
 								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && !disableView &&
 									<Button
+										{...testProps('viewBtn')}
 										key="viewBtn"
 										onPress={onViewMode}
 										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
@@ -985,6 +993,7 @@ function Form(props) {
 
 							<Row flex={1} justifyContent="flex-start">
 								<Button
+									{...testProps('deleteBtn')}
 									key="deleteBtn"
 									onPress={onDelete}
 									bg="warning"
@@ -997,6 +1006,7 @@ function Form(props) {
 
 						{showResetBtn && 
 							<IconButton
+								{...testProps('resetBtn')}
 								key="resetBtn"
 								onPress={() => doReset()}
 								icon={Rotate}
@@ -1009,6 +1019,7 @@ function Form(props) {
 
 						{showCancelBtn &&
 							<Button
+								{...testProps('cancelBtn')}
 								key="cancelBtn"
 								variant="ghost"
 								onPress={onCancel}
@@ -1017,6 +1028,7 @@ function Form(props) {
 							
 						{showCloseBtn && 
 							<Button
+								{...testProps('closeBtn')}
 								key="closeBtn"
 								variant="ghost"
 								onPress={onClose}
@@ -1025,6 +1037,7 @@ function Form(props) {
 
 						{showSaveBtn && 
 							<Button
+								{...testProps('saveBtn')}
 								key="saveBtn"
 								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 								isDisabled={isSaveDisabled}
@@ -1033,6 +1046,7 @@ function Form(props) {
 						
 						{showSubmitBtn && 
 							<Button
+								{...testProps('submitBtn')}
 								key="submitBtn"
 								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
 								isDisabled={isSubmitDisabled}
@@ -1041,6 +1055,7 @@ function Form(props) {
 					
 						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
 							return <Button
+										{...testProps('additionalFooterBtn-' + props.key)}
 										{...props}
 										onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
 									>{props.text}</Button>;

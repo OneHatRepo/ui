@@ -16,8 +16,6 @@ import Combo, { ComboEditor } from '../Combo/Combo.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import _ from 'lodash';
 
-
-
 function TagComponent(props) {
 
 	const {

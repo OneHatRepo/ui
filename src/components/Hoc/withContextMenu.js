@@ -14,6 +14,7 @@ import {
 	UI_MODE_WEB,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
 const CONTEXT_MENU_WIDTH = 180;
@@ -104,6 +105,7 @@ export default function withContextMenu(WrappedComponent) {
 				// </div>
 
 				return <Pressable
+							{...testProps('contextMenuBtn-' + text)}
 							key={ix}
 							onPress={() => {
 								setIsContextMenuShown(false);

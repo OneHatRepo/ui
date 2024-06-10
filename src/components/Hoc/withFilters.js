@@ -14,6 +14,7 @@ import {
 } from '../../Constants/Filters.js';
 import Inflector from 'inflector-js';
 import inArray from '../../Functions/inArray.js';
+import testProps from '../../Functions/testProps.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
 import FormPanel from '../Panel/FormPanel.js';
@@ -299,7 +300,6 @@ export default function withFilters(WrappedComponent) {
 							}
 						}
 						if (!Element) {
-							debugger;
 							return; // to protect against errors
 						}
 						if (field === 'q') {
@@ -309,6 +309,7 @@ export default function withFilters(WrappedComponent) {
 
 						const tooltip = filter.tooltip || title;
 						let filterElement = <Element
+												{...testProps('filter-' + field)}
 												key={'filter-' + field}
 												tooltip={tooltip}
 												placeholder={tooltip}
@@ -434,30 +435,34 @@ export default function withFilters(WrappedComponent) {
 								</ScrollView>
 							</Row>
 							<Row flex={hasFilters ? null : 1} alignItems="center" alignSelf="flex-end">
-								{showClearFiltersButton && <IconButton
-									key="clearFiltersBtn"
-									_icon={{
-										as: Ban,
-									}}
-									ml={1}
-									onPress={onClearFilters}
-									tooltip="Clear all filters"
-								/>}
-								{showFilterSelector && !isUsingCustomFilters && <IconButton
-									key="gear"
-									_icon={{
-										as: Gear,
-									}}
-									ml={1}
-									onPress={() => {
-										const f = filters;
-										const s = slots;
-										setModalFilters(filters);
-										setModalSlots(slots);
-										setIsFilterSelectorShown(true);
-									}}
-									tooltip="Swap filters"
-								/>}
+								{showClearFiltersButton && 
+									<IconButton
+										{...testProps('clearFiltersBtn')}
+										key="clearFiltersBtn"
+										_icon={{
+											as: Ban,
+										}}
+										ml={1}
+										onPress={onClearFilters}
+										tooltip="Clear all filters"
+									/>}
+								{showFilterSelector && !isUsingCustomFilters && 
+									<IconButton
+										{...testProps('swapFiltersBtn')}
+										key="swapFiltersBtn"
+										_icon={{
+											as: Gear,
+										}}
+										ml={1}
+										onPress={() => {
+											const f = filters;
+											const s = slots;
+											setModalFilters(filters);
+											setModalSlots(slots);
+											setIsFilterSelectorShown(true);
+										}}
+										tooltip="Swap filters"
+									/>}
 							</Row>
 						</Toolbar>;
 

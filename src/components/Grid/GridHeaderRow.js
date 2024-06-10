@@ -18,6 +18,7 @@ import {
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import useBlocking from '../../Hooks/useBlocking.js';
+import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import HeaderReorderHandle from './HeaderReorderHandle.js';
 import HeaderResizeHandle from './HeaderResizeHandle.js';
@@ -342,6 +343,7 @@ export default function GridHeaderRow(props) {
 						textProps.textOverflow = 'ellipsis';
 					}
 					return <Pressable
+								{...testProps('Header-' + fieldName)}
 								key={ix}
 								onPress={(e) => {
 									if (e.preventDefault) {
