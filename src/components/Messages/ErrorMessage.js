@@ -5,6 +5,7 @@ import {
 	Modal,
 	Text,
 } from 'native-base';
+import testProps from '../../Functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 
 export default function ErrorMessage(props) {
@@ -14,7 +15,7 @@ export default function ErrorMessage(props) {
 			onOk,
 		} = props;
 
-	return <Modal isOpen={true} {...props} _backdrop={{ bg: "#000" }}>
+	return <Modal isOpen={true} {...props} _backdrop={{ bg: "#000" }} {...testProps('ErrorMessage')}>
 				<Modal.Content>
 					<Modal.Header>Alert</Modal.Header>
 					<Modal.Body

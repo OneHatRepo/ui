@@ -15,6 +15,7 @@ import {
 	ALERT_MODE_CUSTOM,
 	ALERT_MODE_INFO,
 } from '../../Constants/Alert.js';
+import testProps from '../../Functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import CircleInfo from '../Icons/CircleInfo.js';
 import _ from 'lodash';
@@ -194,7 +195,7 @@ export default function withAlert(WrappedComponent) {
 							{canClose && <AlertDialog.CloseButton />}
 							<AlertDialog.Header>{title}</AlertDialog.Header>
 							<AlertDialog.Body>
-								<Row alignItems="center">
+								<Row alignItems="center" {...testProps('AlertDialog')}>
 									<Column w="40px" p={0} mr={5}>
 										<Icon as={mode === ALERT_MODE_INFO ? CircleInfo : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
 									</Column>

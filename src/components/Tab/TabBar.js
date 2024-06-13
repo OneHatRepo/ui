@@ -226,7 +226,7 @@ function TabBar(props) {
 				}
 				if (useIconButton) {
 					button = <IconButton
-								{...testProps('tabIconButton-' + ix)}
+								{...testProps(tab.path)}
 								key={'tabIconButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								{...buttonProps}
@@ -249,7 +249,7 @@ function TabBar(props) {
 					// 		</Row>;
 				} else {
 					button = <Button
-								{...testProps('tabButton-' + ix)}
+								{...testProps(tab.path)}
 								key={'tabButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								leftIcon={<Icon
@@ -424,6 +424,7 @@ function TabBar(props) {
 						pl={isCollapsed ? 1 : 4}
 						bg={styles.TAB_BAR_BG}
 						w={isCollapsed ? '50px' : tabWidth}
+						{...propsToPass}
 					>
 						{renderedTabs}
 						<Column flex={1} w="100%" justifyContent="flex-end">
