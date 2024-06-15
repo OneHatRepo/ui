@@ -193,7 +193,7 @@ export default function withPdfButton(WrappedComponent) {
 						<Column bg="#fff" w={width} h={height}>
 							<FormPanel
 								title="PDF Fields to Show"
-								instructions="Please select which fields to show in the PDF."
+								instructions="Please select which parts to show in the PDF."
 								editorType={EDITOR_TYPE__PLAIN}
 								flex={1}
 								Repository={Repository}
