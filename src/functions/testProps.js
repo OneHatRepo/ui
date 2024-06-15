@@ -11,7 +11,7 @@ export default function testProps(id) {
 		// id is actually 'self' object
 		id = id.reference;
 	}
-	if (id.match(/\s/g)) {
+	if (id?.match(/\s/g)) {
 		id = id.replace(/\s/g, '_'); // convert any spaces to underscores
 	}
 	if (!window && Platform.OS === 'android') {
