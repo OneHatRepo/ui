@@ -101,11 +101,16 @@ export default function withPdfButton(WrappedComponent) {
 					item.defaults.labelWidth = '90%';
 					if (!_.isEmpty(items)) {
 						const defaults = item.defaults;
-						item.children = _.map(items, (item, ix) => {
+						item.items = _.map(items, (item, ix) => {
 							return buildNextLayer(item, ix, defaults);
 						});
 					}
 					return item;
+				}
+
+
+				if (item.isHiddenInViewMode || type === 'Button') {
+					return null;
 				}
 
 				if (!item.title) {
@@ -130,6 +135,9 @@ export default function withPdfButton(WrappedComponent) {
 			getStartingValues = (modalItems) => {
 				const startingValues = {};
 				function walkTree(item) {
+					if (!item) {
+						return;
+					}
 					let {
 							name,
 							items,
