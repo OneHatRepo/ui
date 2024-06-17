@@ -7,11 +7,15 @@ export default function testProps(id) {
 	if (typeof __DEV__ === 'undefined' || !__DEV__) {
 		return {}; // don't add test props in production
 	}
-	if (id?.reference) {
-		// id is actually 'self' object
+	if (id?.path) { // id is actually 'self' object
+		id = id.path;
+	} else if (id?.reference) { // id is actually 'self' object
 		id = id.reference;
 	}
-	if (id?.match(/\s/g)) {
+	if (!id) {
+		return {};
+	}
+	if (id.match(/\s/g)) {
 		id = id.replace(/\s/g, '_'); // convert any spaces to underscores
 	}
 	if (!window && Platform.OS === 'android') {

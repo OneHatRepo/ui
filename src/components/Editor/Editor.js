@@ -18,7 +18,9 @@ function Editor(props) {
 			onEditMode,
 			verifyCanEdit,
 			_viewer = {},
-			_form = {},
+			_form = {
+				containerProps: {}
+			},
 
 			// withComponent
 			self,
@@ -46,7 +48,6 @@ function Editor(props) {
 			return null;
 		}
 		return <Viewer
-					{...testProps(self)}
 					{...propsToPass}
 					{..._viewer}
 					record={record}
@@ -59,7 +60,6 @@ function Editor(props) {
 	}
 
 	return <Form
-				{...testProps(self)}
 				{...propsToPass}
 				{..._form}
 				record={selection}

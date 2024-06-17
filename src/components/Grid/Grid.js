@@ -506,6 +506,7 @@ function GridComponent(props) {
 									fields={fields}
 									rowProps={rowProps}
 									hideNavColumn={hideNavColumn}
+									isSelected={isSelected}
 									bg={bg}
 									item={item}
 									isInlineEditorShown={isInlineEditorShown}

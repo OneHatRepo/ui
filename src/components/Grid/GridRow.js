@@ -24,6 +24,7 @@ function GridRow(props) {
 			fields,
 			rowProps,
 			hideNavColumn,
+			isSelected,
 			bg,
 			item,
 			isInlineEditorShown,
@@ -126,7 +127,7 @@ function GridRow(props) {
 										elementProps.isViewOnly = true; // TODO: this won't work for InlineGridEditor, bc that Grid can't use isViewOnly when actually editing
 									}
 									return <Element
-												{...testProps('fieldname-' + config.fieldName)}
+												{...testProps('cell-' + config.fieldName)}
 												value={value}
 												key={key}
 												overflow="hidden"
@@ -167,7 +168,7 @@ function GridRow(props) {
 						elementProps.textOverflow = 'ellipsis';
 					}
 					return <Text
-								{...testProps('fieldname-' + config.fieldName)}
+								{...testProps('cell-' + config.fieldName)}
 								key={key}
 								overflow="hidden"
 								alignSelf="center"
@@ -219,6 +220,7 @@ function GridRow(props) {
 		}
 
 		return <Row
+					{...testProps('row' + (isSelected ? '-selected' : ''))}
 					alignItems="center"
 					flexGrow={1}
 					{...rowProps}

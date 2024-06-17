@@ -899,7 +899,7 @@ function Form(props) {
 									>Back</Button>}
 								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && !disableView &&
 									<Button
-										{...testProps('viewBtn')}
+										{...testProps('toViewBtn')}
 										key="viewBtn"
 										onPress={onViewMode}
 										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
@@ -968,7 +968,7 @@ function Form(props) {
 		}
 	}
 	
-	return <Column {...sizeProps} {...containerProps} onLayout={onLayoutDecorated} ref={formRef} testID="form">
+	return <Column {...testProps(self)} {...sizeProps} {...containerProps} onLayout={onLayoutDecorated} ref={formRef}>
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
 						<Row

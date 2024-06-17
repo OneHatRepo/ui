@@ -124,6 +124,7 @@ export default function withAlert(WrappedComponent) {
 		let buttons = [];
 		if (includeCancel) {
 			buttons.push(<Button
+								{...testProps('cancelBtn')}
 								key="cancelBtn"
 								onPress={onCancel}
 								color="#fff"
@@ -136,6 +137,7 @@ export default function withAlert(WrappedComponent) {
 			case ALERT_MODE_OK:
 			case ALERT_MODE_INFO:
 				buttons.push(<Button
+								{...testProps('okBtn')}
 								key="okBtn"
 								ref={autoFocusRef}
 								onPress={onOk}
@@ -144,6 +146,7 @@ export default function withAlert(WrappedComponent) {
 				break;
 			case ALERT_MODE_YES:
 				buttons.push(<Button
+								{...testProps('yesBtn')}
 								key="yesBtn"
 								ref={autoFocusRef}
 								onPress={onYes}
@@ -154,6 +157,7 @@ export default function withAlert(WrappedComponent) {
 			case ALERT_MODE_YES_NO:
 				// TODO: need to create a new colorScheme so this can be black with blank background
 				buttons.push(<Button
+								{...testProps('noBtn')}
 								key="noBtn"
 								onPress={onNo}
 								color="trueGray.800"
@@ -162,6 +166,7 @@ export default function withAlert(WrappedComponent) {
 								mr={2}
 							>No</Button>);
 				buttons.push(<Button
+								{...testProps('yesBtn')}
 								key="yesBtn"
 								ref={autoFocusRef}
 								onPress={onYes}
@@ -191,11 +196,13 @@ export default function withAlert(WrappedComponent) {
 						isOpen={isAlertShown}
 						onClose={() => setIsAlertShown(false)}
 					>
-						<AlertDialog.Content>
+						<AlertDialog.Content
+							{...testProps('AlertDialog')}
+						>
 							{canClose && <AlertDialog.CloseButton />}
 							<AlertDialog.Header>{title}</AlertDialog.Header>
 							<AlertDialog.Body>
-								<Row alignItems="center" {...testProps('AlertDialog')}>
+								<Row alignItems="center">
 									<Column w="40px" p={0} mr={5}>
 										<Icon as={mode === ALERT_MODE_INFO ? CircleInfo : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
 									</Column>

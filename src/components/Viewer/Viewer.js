@@ -249,14 +249,14 @@ function Viewer(props) {
 		canEdit = false;
 	}
 
-	return <Column flex={flex} {...props} onLayout={onLayout}>
+	return <Column flex={flex} {...testProps(self)} {...props} onLayout={onLayout}>
 				{containerWidth && <>
 
 					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
 						{canEdit && onEditMode &&
 							<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
 								<Button
-									{...testProps('editBtn')}
+									{...testProps('toEditBtn')}
 									key="editBtn"
 									onPress={onEditMode}
 									leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
