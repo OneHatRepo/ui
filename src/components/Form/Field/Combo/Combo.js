@@ -58,6 +58,7 @@ export function ComboComponent(props) {
 			onGridSave, // to hook into when menu saves (ComboEditor only)
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
 			newEntityDisplayProperty,
+			testID,
 
 			// withComponent
 			self,
@@ -361,7 +362,7 @@ export function ComboComponent(props) {
 					menuRef.current === relatedTarget || 
 					menuRef.current?.contains(relatedTarget);
 		},
-		getFilterName = () => {
+		getFilterName = (isId) => {
 			// Only used for remote repositories
 			// Gets the filter name of the query, which becomes the condition sent to server 
 			let filterName = FILTER_NAME;
@@ -372,7 +373,10 @@ export function ComboComponent(props) {
 					displayFieldDef = schema.getPropertyDefinition(displayFieldName);
 	
 				// Verify displayField is a real field
-				if (!displayFieldDef.isVirtual) {
+				if (isId) {
+					const idFieldName = schema.model.idProperty;
+					filterName = idFieldName;
+				} else if (!displayFieldDef.isVirtual) {
 					filterName = displayFieldName + ' LIKE';
 				}
 			}
@@ -418,10 +422,13 @@ export function ComboComponent(props) {
 				}
 
 				// Set filter
-				const filterName = getFilterName();
+				const
+					idRegex = /^id:(.*)$/,
+					isId = _.isString(value) && !!value.match(idRegex),
+					filterName = getFilterName(isId);
 				if (Repository.isRemote) {
 					// remote
-					const filterValue = _.isEmpty(value) ? null : value + '%';
+					const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : value + '%');
 					await Repository.filter(filterName, filterValue);
 					if (!Repository.isAutoLoad) {
 						await Repository.reload();
@@ -958,7 +965,7 @@ export function ComboComponent(props) {
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
-			<Column>
+			<Column testID={testID}>
 				<Row {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%">
 					{xButton}
 					{eyeButton}
@@ -971,7 +978,7 @@ export function ComboComponent(props) {
 			</Column>;
 	} else {
 		assembledComponents = 
-			<Row {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
+			<Row testID={testID} {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
 				{xButton}
 				{eyeButton}
 				{inputAndTrigger}
