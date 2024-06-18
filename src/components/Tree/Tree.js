@@ -6,6 +6,7 @@ import {
 	Pressable,
 	Icon,
 	Row,
+	ScrollView,
 	Text,
 } from 'native-base';
 import {
@@ -1197,9 +1198,11 @@ function TreeComponent(props) {
 							}
 						}}
 					>
-						{!treeNodes?.length ? 
-							<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
-							treeNodes}
+						<ScrollView flex={1} w="100%">
+							{!treeNodes?.length ? 
+								<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
+								treeNodes}
+						</ScrollView>
 					</Column>
 
 					{treeFooterComponent}
