@@ -304,7 +304,11 @@ export function ComboComponent(props) {
 				return;
 			}
 			clearGridFilters();
-			showMenu();
+			if (isMenuShown) {
+				hideMenu();
+			} else {
+				showMenu();
+			}
 		},
 		onTriggerBlur = (e) => {
 			if (!isMenuShown) {
