@@ -26,6 +26,8 @@ function NumberElement(props) {
 		autoSubmitDelay = UiGlobals.autoSubmitDelay,
 		tooltip = null,
 		isDisabled = false,
+		testID,
+		...propsToPass
 	} = props,
 	styles = UiGlobals.styles,
 	debouncedSetValueRef = useRef(),
@@ -119,7 +121,15 @@ function NumberElement(props) {
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
 		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
 
-	return <Row flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6} {...props}>
+	return <Row
+				flex={1}
+				h="100%"
+				p={0}
+				borderWidth={1}
+				borderColor="trueGray.400"
+				borderRadius={6}
+				{...propsToPass}
+			>
 				<IconButton
 					{...testProps('decrementBtn')}
 					icon={<Icon as={Minus} color={(isDecrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
@@ -135,7 +145,7 @@ function NumberElement(props) {
 					zIndex={10}
 				/>
 				<InputWithTooltip
-					{...testProps('input')}
+					testID={testID}
 					value={inputValue}
 					onChangeText={onChangeText}
 					onKeyPress={onInputKeyPress}

@@ -54,6 +54,8 @@ export function DateElement(props) {
 			// withValue
 			value,
 			setValue,
+			testID,
+			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
 		Datetime = getComponentFromType('Datetime'),
@@ -124,9 +126,9 @@ export function DateElement(props) {
 			setIsPickerShown(true);
 		},
 		hidePicker = () => {
-			if (!isPickerShown) {
-				return;
-			}
+			// if (!isPickerShown) {
+			// 	return;
+			// }
 			setIsPickerShown(false);
 		},
 		togglePicker = () => {
@@ -358,7 +360,7 @@ export function DateElement(props) {
 									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
 								</Pressable> :
 								<Input
-									{...testProps('input')}
+									testID={testID}
 									ref={inputRef}
 									value={textInputValue}
 									// setValue={onInputSetValue}
@@ -619,7 +621,7 @@ export function DateElement(props) {
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
-	assembledComponents = <Row {...refProps} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
+	assembledComponents = <Row {...refProps} {...propsToPass} justifyContent="center" alignItems="center" h={styles.FORM_COMBO_HEIGHT} flex={1} onLayout={() => setIsRendered(true)}>
 							{xButton}
 							{inputAndTrigger}
 							{additionalButtons}

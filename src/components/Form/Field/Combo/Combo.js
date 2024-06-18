@@ -237,7 +237,7 @@ export function ComboComponent(props) {
 					}
 					
 					if (_.isEmpty(gridSelection)) {
-						confirm('You have nothing selected in the dropdown menu. Clear value?', doIt, true);
+						hideMenu();
 						return;
 					}
 
