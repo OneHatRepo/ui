@@ -50,11 +50,14 @@ export function DateElement(props) {
 			isDisabled = false,
 			tooltipPlacement = 'bottom',
 			placeholder = 'Choose a date.',
+			testID,
+
+			// withComponent
+			self,
 
 			// withValue
 			value,
 			setValue,
-			testID,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -99,9 +102,6 @@ export function DateElement(props) {
 			return value;
 		},
 		showPicker = () => {
-			if (isPickerShown) {
-				return;
-			}
 			if (UiGlobals.mode === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const 
@@ -126,9 +126,6 @@ export function DateElement(props) {
 			setIsPickerShown(true);
 		},
 		hidePicker = () => {
-			// if (!isPickerShown) {
-			// 	return;
-			// }
 			setIsPickerShown(false);
 		},
 		togglePicker = () => {
@@ -167,7 +164,7 @@ export function DateElement(props) {
 			}
 			showPicker();
 		},
-		onInputChangeText = (value) => {
+		onInputChangeValue = (value) => {
 			if (disableDirectEntry) {
 				return;
 			}
@@ -176,6 +173,7 @@ export function DateElement(props) {
 				setTextInputValue('');
 				return;
 			}
+
 			value = formatByMode(value);
 			
 			if (value !== 'Invalid date') {
@@ -364,7 +362,7 @@ export function DateElement(props) {
 									ref={inputRef}
 									value={textInputValue}
 									// setValue={onInputSetValue}
-									onChangeValue={onInputChangeText}
+									onChangeValue={onInputChangeValue}
 									onKeyPress={onInputKeyPress}
 									onBlur={onInputBlur}
 									onFocus={onInputFocus}
@@ -561,7 +559,7 @@ export function DateElement(props) {
 							value={textInputValue}
 							autoSubmit={true}
 							isDisabled={isDisabled}
-							onChangeValue={onInputChangeText}
+							onChangeValue={onInputChangeValue}
 							onKeyPress={onInputKeyPress}
 							onFocus={onInputFocus}
 							onBlur={onInputBlur}
