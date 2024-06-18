@@ -20,12 +20,14 @@ function InputElement(props) {
 			onChangeText,
 			tooltip = null,
 			tooltipPlacement = 'bottom',
+			self,
 		} = props,
 		styles = UiGlobals.styles,
 		debouncedSetValueRef = useRef(),
 		[localValue, setLocalValue] = useState(value),
 		onKeyPressLocal = (e) => {
 			if (e.key === 'Enter') {
+				debouncedSetValueRef.current?.cancel();
 				setValue(localValue);
 			}
 			if (onKeyPress) {
@@ -48,15 +50,20 @@ function InputElement(props) {
 		};
 		
 	useEffect(() => {
+
 		// Set up debounce fn
 		// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
+		debouncedSetValueRef.current?.cancel(); // Cancel any previous debounced fn
 		debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
+
 	}, [setValue]);
 		
 	useEffect(() => {
 
-		// Make local value conform to externally changed value
-		setLocalValue(value);
+		if (value !== localValue) {
+			// Make local value conform to externally changed value
+			setLocalValue(value);
+		}
 
 	}, [value]);
 

@@ -42,6 +42,7 @@ function NumberElement(props) {
 				onIncrement();
 				break;
 			case 'Enter':
+				debouncedSetValueRef.current?.cancel();
 				setValue(value);
 				break;
 			case 'ArrowLeft':
@@ -95,6 +96,7 @@ function NumberElement(props) {
 	useEffect(() => {
 		// Set up debounce fn
 		// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
+		debouncedSetValueRef.current?.cancel(); // Cancel any previous debounced fn
 		debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
 	}, [setValue]);
 	
