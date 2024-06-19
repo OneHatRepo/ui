@@ -362,7 +362,7 @@ function TreeComponent(props) {
 
 			const isMultipleHits = found.length > 1;
 			if (!isMultipleHits) {
-				expandPath(found[0].path); // highlights and selects the last node in the path
+				expandPath(found[0].cPath); // highlights and selects the last node in the cPath
 				return;
 			}
 
@@ -651,23 +651,23 @@ function TreeComponent(props) {
 				}
 			});
 		},
-		expandPath = async (path) => {
+		expandPath = async (cPath) => {
 			// First, close thw whole tree.
 			let newTreeNodeData = _.clone(getTreeNodeData());
 			collapseNodes(newTreeNodeData);
 
 			// As it navigates down, it will expand the appropriate branches,
 			// and then finally highlight & select the node in question
-			let pathParts,
+			let cPathParts,
 				id,
 				currentLevelData = newTreeNodeData,
 				currentDatum,
 				parentDatum,
 				currentNode;
 			
-			while(path.length) {
-				pathParts = path.split('/');
-				id = parseInt(pathParts[0], 10); // grab the first part of the path
+			while(cPath.length) {
+				cPathParts = cPath.split('/');
+				id = parseInt(cPathParts[0], 10); // grab the first part of the cPath
 				
 				// find match in current level
 				currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
@@ -688,7 +688,7 @@ function TreeComponent(props) {
 				// THE MAGIC!
 				currentDatum.isExpanded = true;
 				
-				path = pathParts.slice(1).join('/'); // put the rest of it back together
+				cPath = cPathParts.slice(1).join('/'); // put the rest of it back together
 				currentLevelData = currentDatum.children;
 				parentDatum = currentDatum;
 			}
@@ -730,7 +730,7 @@ function TreeComponent(props) {
 			// Also, keep in mind that document.getElementById(id).scrollIntoView() might not work as expected in all situations, especially in complex layouts or when using certain CSS properties. Always test your code thoroughly to make sure it works as expected.
 
 			// ... Not sure how to do this with NativeBase, as I've had trouble assigning IDs
-			// Maybe I first collapse the tree, then expand just the path?
+			// Maybe I first collapse the tree, then expand just the cPath?
 		},
 
 		// render
@@ -1242,8 +1242,8 @@ function TreeComponent(props) {
 									treeNode = _.find(searchResults, (item) => {
 										return item.id === data.node_id;
 									}),
-									path = treeNode.path;
-								expandPath(path);
+									cPath = treeNode.cPath;
+								expandPath(cPath);
 
 								// Close the modal
 								setIsModalShown(false);
