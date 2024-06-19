@@ -53,6 +53,7 @@ import ReorderRows from '../Icons/ReorderRows.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from '../Grid/NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
+import Loading from '../Messages/Loading.js';
 import _ from 'lodash';
 
 const DEPTH_INDENT_PX = 25;
@@ -1089,18 +1090,22 @@ function TreeComponent(props) {
 		
 	useEffect(() => {
 
-		if (!isReady) {
-			if (Repository) {
-				Repository.setBaseParams(extraParams);
-			}
+		if (!Repository) {
 			(async () => {
 				await buildAndSetTreeNodeData();
 				setIsReady(true);
 			})();
+			return () => {};
 		}
 
-		if (!Repository) {
-			return () => {};
+		if (!_.isEmpty(extraParams)) {
+			Repository.setBaseParams(extraParams);
+		}
+
+		async function rebuildTree() {
+			setIsReady(false);
+			await buildAndSetTreeNodeData();
+			setIsReady(true);
 		}
 		
 		// set up @onehat/data repository
@@ -1110,12 +1115,14 @@ function TreeComponent(props) {
 		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
+		Repository.on('loadRootNodes', rebuildTree);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
+			Repository.off('loadRootNodes', rebuildTree);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
 		};
@@ -1150,7 +1157,7 @@ function TreeComponent(props) {
 		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, getTreeNodeData()]);
 
 	if (!isReady) {
-		return null;
+		return <Loading />;
 	}
 	
 	const treeNodes = renderTreeNodes(getTreeNodeData());
