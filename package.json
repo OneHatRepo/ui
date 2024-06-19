@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.3.275",
+	"version": "0.3.276",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -30,7 +30,7 @@
 		"@gluestack-ui/themed": "^1.1.26",
 		"@hookform/resolvers": "^3.3.1",
 		"@k-renwick/colour-mixer": "^1.2.1",
-		"@onehat/data": "^1.20.0",
+		"@onehat/data": "^1.21.0",
 		"@reduxjs/toolkit": "^1.9.5",
 		"inflector-js": "^1.0.1",
 		"js-cookie": "^3.0.5",
