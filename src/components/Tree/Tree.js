@@ -1115,6 +1115,7 @@ function TreeComponent(props) {
 		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
+		Repository.on('loadRootNodes', setFalse);
 		Repository.on('loadRootNodes', rebuildTree);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
@@ -1122,6 +1123,7 @@ function TreeComponent(props) {
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
+			Repository.off('loadRootNodes', setFalse);
 			Repository.off('loadRootNodes', rebuildTree);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);

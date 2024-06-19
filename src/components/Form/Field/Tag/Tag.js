@@ -109,7 +109,10 @@ function TagComponent(props) {
 				id = comboValue;
 			let item,
 				displayValue;
-			if (Repository) {
+				
+			if (!id) {
+				displayValue = '';
+			} else if (Repository) {
 				item = Repository.getById(id);
 				if (!item) {
 					throw Error('item not found');
