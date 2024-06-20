@@ -12,6 +12,7 @@ import {
 } from '../../Constants/UiModes.js';
 import Form from '../Form/Form.js';
 import withComponent from '../Hoc/withComponent.js';
+import testProps from '../../Functions/testProps.js';
 import ChartLine from '../Icons/ChartLine.js';
 import Pdf from '../Icons/Pdf.js';
 import Excel from '../Icons/Excel.js';
@@ -86,7 +87,8 @@ function Report(props) {
 
 	if (!disableExcel) {
 		buttons.push({
-			key: 'ExcelBtn',
+			...testProps('excelBtn'),
+			key: 'excelBtn',
 			text: 'Download Excel',
 			leftIcon: <Icon as={Excel} size="md" color="#fff" />,
 			onPress: (data) => getReport(EXCEL, data),
@@ -95,6 +97,7 @@ function Report(props) {
 	}
 	if (!disablePdf) {
 		buttons.push({
+			...testProps('pdfBtn'),
 			key: 'pdfBtn',
 			text: 'Download PDF',
 			leftIcon: <Icon as={Pdf} size="md" color="#fff" />,
@@ -102,7 +105,7 @@ function Report(props) {
 			ml: 1,
 		});
 	}
-	return <Column w="100%" borderWidth={1} borderColor="primary.300" pt={4} mb={3}>
+	return <Column {...testProps('Report-' + reportId)} w="100%" borderWidth={1} borderColor="primary.300" pt={4} mb={3}>
 				<Row>
 					{icon && <Column>{icon}</Column>}
 					<Column flex={1}>
