@@ -23,6 +23,9 @@ function ManagerScreen(props) {
 			title,
 			sideModeComponent,
 			fullModeComponent,
+
+			// withComponent
+			self,
 		} = props,
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
@@ -85,7 +88,7 @@ function ManagerScreen(props) {
 		};
 	}
 
-	return <Column maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
+	return <Column {...testProps(self)} maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
 				<Row
 					h="80px"
 					py={2}
