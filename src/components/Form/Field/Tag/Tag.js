@@ -95,7 +95,7 @@ function TagComponent(props) {
 			});
 			if (exists) {
 				clearComboValue();
-				alert('Value already exists!');
+				// alert('Value already exists!'); // This screws up testing! alerts should be for error conditions, not standard operating conditions
 				return;
 			}
 
