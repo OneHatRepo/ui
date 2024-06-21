@@ -8,6 +8,7 @@ import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
+import ReloadPageButton from '../Buttons/ReloadPageButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import AnglesLeft from '../Icons/AnglesLeft.js';
 import AngleRight from '../Icons/AngleRight.js';
@@ -66,35 +67,25 @@ export default function Pagination(props) {
 			if (showPagination) {
 				items.push(<Button
 								{...testProps('showMoreBtn')}
-								key="showMore"
-								parent={self}
+								key="showMoreBtn"
 								reference="showMoreBtn"
+								parent={self}
 								onPress={() => Repository.showMore()}
 								isDisabled={isDisabled}
 								tooltip="Show More"
 							>Show More</Button>);
 			}
 			if (!Repository.isLocal) {
-				items.push(<IconButton
-								{...testProps('reloadPageBtn')}
-								key="reload"
-								parent={self}
-								reference="reloadPageBtn"
-								{...iconButtonProps}
-								icon={<Icon as={Rotate} {...iconProps} color="trueGray.600" />}
-								onPress={() => Repository.reload()}
-								tooltip="Reload"
-								ml={2}
-							/>);
+				items.push(<ReloadPageButton key="reloadPageBtn" {...iconButtonProps} iconProps={iconProps} Repository={Repository} self={self} />);
 			}
 		} else {
 			isDisabled = page === 1;
 			if (showPagination) {
 				items.push(<IconButton
 								{...testProps('firstPageBtn')}
-								key="first"
-								parent={self}
+								key="firstPageBtn"
 								reference="firstPageBtn"
+								parent={self}
 								{...iconButtonProps}
 								isDisabled={isDisabled}
 								icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -103,9 +94,9 @@ export default function Pagination(props) {
 							/>);
 				items.push(<IconButton
 								{...testProps('prevPageBtn')}
-								key="prev"
-								parent={self}
+								key="prevPageBtn"
 								reference="prevPageBtn"
+								parent={self}
 								{...iconButtonProps}
 								isDisabled={isDisabled}
 								icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -122,8 +113,8 @@ export default function Pagination(props) {
 									<Text mr={2}>Page</Text>
 									<Input
 										{...testProps('pageInput')}
-										parent={self}
 										reference="pageInput"
+										parent={self}
 										keyboardType="numeric"
 										value={page?.toString()}
 										onChangeValue={(value) => Repository.setPage(value)}
@@ -139,9 +130,9 @@ export default function Pagination(props) {
 				isDisabled = page === totalPages || totalPages <= 1;
 				items.push(<IconButton
 								{...testProps('nextPageBtn')}
-								key="next"
-								parent={self}
+								key="nextPageBtn"
 								reference="nextPageBtn"
+								parent={self}
 								{...iconButtonProps}
 								isDisabled={isDisabled}
 								icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -150,9 +141,9 @@ export default function Pagination(props) {
 							/>);
 				items.push(<IconButton
 								{...testProps('lastPageBtn')}
-								key="last"
-								parent={self}
+								key="lastPageBtn"
 								reference="lastPageBtn"
+								parent={self}
 								{...iconButtonProps}
 								isDisabled={isDisabled}
 								icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
@@ -162,21 +153,14 @@ export default function Pagination(props) {
 			}
 
 			if (!Repository.isLocal) {
-				items.push(<IconButton
-								{...testProps('reloadPageBtn')}
-								key="reload"
-								parent={self}
-								reference="reloadPageBtn"
-								{...iconButtonProps}
-								icon={<Icon as={Rotate} {...iconProps} color="trueGray.600" />}
-								onPress={() => Repository.reload()}
-								tooltip="Reload"
-							/>);
+				items.push(<ReloadPageButton key="reloadPageBtn" {...iconButtonProps} iconProps={iconProps} Repository={Repository} self={self} />);
 			}
 			if (showPagination && !minimize && !disablePageSize) {
 				items.push(<PageSizeCombo
 								{...testProps('pageSize')}
 								key="pageSize"
+								reference="pageSize"
+								parent={self}
 								pageSize={pageSize}
 								Repository={Repository}
 							/>);

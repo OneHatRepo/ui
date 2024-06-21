@@ -48,6 +48,7 @@ import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js'
 import nbToRgb from '../../Functions/nbToRgb.js';
 import testProps from '../../Functions/testProps.js';
 import Loading from '../Messages/Loading.js';
+import ReloadPageButton from '../Buttons/ReloadPageButton.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -969,7 +970,10 @@ function GridComponent(props) {
 										showMoreOnly={showMoreOnly}
 									/>;
 		} else if (footerToolbarItemComponents.length) {
-			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
+			listFooterComponent = <Toolbar>
+										<ReloadPageButton Repository={Repository} self={self} />
+										{footerToolbarItemComponents}
+									</Toolbar>;
 		}
 	}
 	
