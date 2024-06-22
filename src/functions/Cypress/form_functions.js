@@ -1,20 +1,16 @@
 import {
 	getPropertyDefinitionFromSchema,
 	getLastPartOfPath,
-} from './utilities';
+} from './utilities.js';
 import {
 	getDomNode,
 	getDomNodes,
 	getTestIdSelectors,
-} from './dom_functions';
+} from './dom_functions.js';
 import {
 	crudCombo,
 	crudTag,
-} from './crud_functions';
-import {
-	getCustomEditorGetFn,
-	getCustomEditorSetFn,
-} from './custom_form_functions'
+} from './crud_functions.js';
 import natsort from 'natsort';
 import _ from 'lodash';
 const $ = Cypress.$;

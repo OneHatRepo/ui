@@ -1,7 +1,7 @@
 import {
 	getDomNode,
 	getDomNodes,
-} from './dom_functions';
+} from './dom_functions.js';
 
 
 export function markForPageReload() {

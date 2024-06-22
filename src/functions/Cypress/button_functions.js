@@ -2,7 +2,7 @@
 import {
 	getDomNode,
 	getDomNodes,
-} from './dom_functions';
+} from './dom_functions.js';
 import _ from 'lodash';
 const $ = Cypress.$;
 

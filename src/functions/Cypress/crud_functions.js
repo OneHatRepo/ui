@@ -1,16 +1,16 @@
 import {
 	fixInflector,
 	getLastPartOfPath,
-} from './utilities';
+} from './utilities.js';
 import {
 	loginAsSuper,
 	logout,
 	navigateViaTabOrHomeButtonTo,
-} from './navigation_functions';
+} from './navigation_functions.js';
 import {
 	getDomNode,
 	getDomNodes,
-} from './dom_functions';
+} from './dom_functions.js';
 import {
 	hasRowWithFieldValue,
 	getRowWithFieldValue,
@@ -24,14 +24,14 @@ import {
 	getModelFromGridName,
 	getModelFromGridSelector,
 	getGridRowSelectorById,
-} from './grid_functions';
+} from './grid_functions.js';
 import {
 	verifyNoErrorBox,
-} from './common_functions';
+} from './common_functions.js';
 import {
 	fillForm,
 	getFormValues,
-} from './form_functions';
+} from './form_functions.js';
 import {
 	clickAddButton,
 	clickSaveButton,
@@ -53,7 +53,7 @@ import {
 	clickButtonIfExists,
 	toFullMode,
 	toSideMode,
-} from './button_functions';
+} from './button_functions.js';
 import Inflector from 'inflector-js';
 import _ from 'lodash';
 const $ = Cypress.$;

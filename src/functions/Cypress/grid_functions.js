@@ -1,11 +1,11 @@
 import {
 	fixInflector,
 	getLastPartOfPath,
-} from './utilities';
+} from './utilities.js';
 import {
 	getDomNode,
 	getDomNodes,
-} from './dom_functions';
+} from './dom_functions.js';
 import Inflector from 'inflector-js';
 import _ from 'lodash';
 const $ = Cypress.$;

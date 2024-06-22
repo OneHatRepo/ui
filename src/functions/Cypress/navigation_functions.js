@@ -1,14 +1,7 @@
 import {
-	DOMAIN,
-	LOGIN_ID_FIELD,
-	SUPER_USER,
-	SUPER_EMAIL,
-	SUPER_PASSWORD,
-} from './constants';
-import {
 	getDomNode,
 	getDomNodes,
-} from './dom_functions';
+} from './dom_functions.js';
 
 
 //     __                _
@@ -18,11 +11,11 @@ import {
 // /_____/\____/\__, /_/_/ /_/
 //             /____/
 
-export function login(user, password) {
+export function login(loginIdField, user, password) {
 	cy.visit(Cypress.env('baseUrl') + 'login')
 		.then(() => {
-			getDomNode(LOGIN_ID_FIELD).clear();
-			getDomNode(LOGIN_ID_FIELD).type(user);
+			getDomNode(loginIdField).clear();
+			getDomNode(loginIdField).type(user);
 
 			getDomNode('password').clear();
 			getDomNode('password').type(password);
@@ -32,7 +25,7 @@ export function login(user, password) {
 		});
 }
 export function loginAsSuper() {
-	return login(LOGIN_ID_FIELD === 'username' ? SUPER_USER : SUPER_EMAIL, SUPER_PASSWORD);
+	return login(loginIdField === 'username' ? SUPER_USER : SUPER_EMAIL, SUPER_PASSWORD);
 }
 export function logout() {
 	getDomNode('/logout').click({ force: true });
@@ -56,10 +49,10 @@ export function navigateToHome() {
 	navigateToScreen('/home');
 }
 export function navigateToScreen(path) {
-	cy.visit(DOMAIN + path)
-	.then(() => {
-		cy.url().should('include', path);
-	});
+	cy.visit(Cypress.env('baseUrl') + path)
+		.then(() => {
+			cy.url().should('include', path);
+		});
 }
 // export function selectMainTab(name) {
 // 	cy.get('.mainTabPanel .x-tab')
