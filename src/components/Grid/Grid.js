@@ -1014,7 +1014,7 @@ function GridComponent(props) {
 				/>
 	
 	if (CURRENT_MODE === UI_MODE_WEB) {
-		grid = <ScrollView horizontal={false}>{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
+		grid = <ScrollView horizontal={false} testID="ScrollView">{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
 	} else
 	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
@@ -1067,7 +1067,6 @@ function GridComponent(props) {
 
 	grid = <Column
 				{...testProps(self)}
-				// testID="outerContainer"
 				ref={containerRef}
 				tabIndex={0}
 				onKeyDown={onGridKeyDown}
@@ -1081,7 +1080,7 @@ function GridComponent(props) {
 				{topToolbar}
 
 				<Column
-					{...testProps('gridContainer')}
+					testID="gridContainer"
 					ref={gridContainerRef}
 					w="100%"
 					flex={1}
