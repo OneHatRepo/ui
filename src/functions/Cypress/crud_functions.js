@@ -3,7 +3,7 @@ import {
 	getLastPartOfPath,
 } from './utilities.js';
 import {
-	loginAsSuper,
+	login,
 	logout,
 	navigateViaTabOrHomeButtonTo,
 } from './navigation_functions.js';
@@ -394,7 +394,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
-			loginAsSuper();
+			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
@@ -483,7 +483,7 @@ export function runClosureTreeManagerScreenCrudTests(model, schema, newData, edi
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
-			loginAsSuper();
+			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
@@ -545,7 +545,7 @@ export function runInlineManagerScreenCrudTests(model, schema, newData, editData
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
-			loginAsSuper();
+			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
@@ -597,7 +597,7 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
-			loginAsSuper();
+			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
@@ -647,7 +647,7 @@ export function runReportsManagerTests(reportData) {
 	describe('ReportsManager', () => {
 
 		beforeEach(function () {
-			loginAsSuper();
+			login();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
 					navigateViaTabOrHomeButtonTo(url);

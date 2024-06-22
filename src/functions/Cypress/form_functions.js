@@ -15,7 +15,8 @@ import natsort from 'natsort';
 import _ from 'lodash';
 const $ = Cypress.$;
 
-let customFormFunctions = {};
+
+export const customFormFunctions = {};
 export function setCustomFormFunctions(fns) {
 	_.merge(customFormFunctions, fns);
 }

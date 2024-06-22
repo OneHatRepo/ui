@@ -11,11 +11,17 @@ import {
 // /_____/\____/\__, /_/_/ /_/
 //             /____/
 
-export function login(loginIdField, user, password) {
+export function login(loginId = null, password = null) {
+	if (!user) {
+		loginId = Cypress.env('loginId');
+	}
+	if (!password) {
+		user = Cypress.env('password');
+	}
 	cy.visit(Cypress.env('baseUrl') + 'login')
 		.then(() => {
-			getDomNode(loginIdField).clear();
-			getDomNode(loginIdField).type(user);
+			getDomNode('loginId').clear();
+			getDomNode('loginId').type(loginId);
 
 			getDomNode('password').clear();
 			getDomNode('password').type(password);
@@ -23,9 +29,6 @@ export function login(loginIdField, user, password) {
 			getDomNode('loginBtn').click();
 			cy.url().should('include', 'home');
 		});
-}
-export function loginAsSuper() {
-	return login(loginIdField === 'username' ? SUPER_USER : SUPER_EMAIL, SUPER_PASSWORD);
 }
 export function logout() {
 	getDomNode('/logout').click({ force: true });
