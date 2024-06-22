@@ -1,7 +1,6 @@
 import {
 	EDITOR_MODE__VIEW,
 } from '../../Constants/Editor.js';
-import testProps from '../../Functions/testProps.js';
 import withComponent from '../Hoc/withComponent.js';
 import Form from '../Form/Form.js';
 import Viewer from '../Viewer/Viewer.js';
