@@ -324,7 +324,7 @@ function GridComponent(props) {
 			if (row.item.isDestroyed) {
 				return null;
 			}
-			if (row.item.id === 'inlineEditor') {
+			if (row.item.id === 'editor') {
 				return inlineEditor;
 			}
 
@@ -946,7 +946,7 @@ function GridComponent(props) {
 		rowData.unshift({ id: 'headerRow' });
 	}
 	if (inlineEditor) {
-		rowData.push({ id: 'inlineEditor' }); // make editor the last row so it can scroll with all other rows
+		rowData.push({ id: 'editor' }); // make editor the last row so it can scroll with all other rows
 	}
 	const initialNumToRender = rowData?.length || 10;
 
