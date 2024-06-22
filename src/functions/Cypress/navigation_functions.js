@@ -12,11 +12,11 @@ import {
 //             /____/
 
 export function login(loginId = null, password = null) {
-	if (!user) {
+	if (!loginId) {
 		loginId = Cypress.env('loginId');
 	}
 	if (!password) {
-		user = Cypress.env('password');
+		password = Cypress.env('password');
 	}
 	cy.visit(Cypress.env('baseUrl') + 'login')
 		.then(() => {
