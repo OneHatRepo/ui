@@ -134,8 +134,8 @@ function Form(props) {
 	}
 	const
 		isMultiple = _.isArray(record),
-		isSingle = !isMultiple, // for convenience
-		isPhantom = !skipAll && !!record?.isPhantom, //
+		isSingle = _.isNil(record) || !_.isArray(record),
+		isPhantom = !skipAll && !!record?.isPhantom,
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
 		[containerWidth, setContainerWidth] = useState(),
@@ -949,6 +949,9 @@ function Form(props) {
 				const formIsDirty = formState.isDirty;
 				// console.log('formIsDirty', formIsDirty);
 				// console.log('isPhantom', isPhantom);
+				if (editorType === EDITOR_TYPE__WINDOWED && onCancel) {
+					showCancelBtn = true;
+				}
 				if (formIsDirty || isPhantom) {
 					if (isSingle && onCancel) {
 						showCancelBtn = true;

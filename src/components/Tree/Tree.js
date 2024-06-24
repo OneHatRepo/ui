@@ -70,6 +70,9 @@ function TreeComponent(props) {
 				}
 				return item[displayIx];
 			},
+			getDisplayTextFromSearchResults = (item) => {
+				return item.id
+			},
 			getNodeIcon = (which, item) => { // decides what icon to show for this node
 				// TODO: Allow for dynamic props on the icon (e.g. special color for some icons)
 				let icon;
@@ -383,7 +386,7 @@ function TreeComponent(props) {
 			// Show modal so user can select which node to go to
 			const searchFormData = [];
 			_.each(found, (item) => {
-				searchFormData.push([item.id, getNodeText(item)]);
+				searchFormData.push([item.id, getDisplayTextFromSearchResults(item)]);
 			});
 			setSearchFormData(searchFormData);
 			setSearchResults(found);
@@ -699,8 +702,9 @@ function TreeComponent(props) {
 				
 				currentNode = currentDatum.item;
 				
-				// THE MAGIC!
-				currentDatum.isExpanded = true;
+				if (!currentDatum.isExpanded) {
+					await loadChildren(currentDatum, 1);
+				}
 				
 				cPath = cPathParts.slice(1).join('/'); // put the rest of it back together
 				currentLevelData = currentDatum.children;
@@ -1252,38 +1256,42 @@ function TreeComponent(props) {
 				>
 					<Column bg="#fff" w={300}>
 						<FormPanel
-							title="Choose Tree Node"
-							instructions="Multiple tree nodes matched your search. Please select which one to show."
-							flex={1}
-							items={[
-								{
-									type: 'Column',
-									flex: 1,
-									items: [
-										{
-											key: 'node_id',
-											name: 'node_id',
-											type: 'Combo',
-											label: 'Tree Node',
-											data: searchFormData,
-										}
-									],
-								},
-							]}
-							onCancel={(e) => {
-								setHighlitedDatum(null);
-								setIsModalShown(false);
+							_panel={{ 
+								title: 'Choose Tree Node',
 							}}
-							onSave={(data, e) => {
-								const
-									treeNode = _.find(searchResults, (item) => {
-										return item.id === data.node_id;
-									}),
-									cPath = treeNode.cPath;
-								expandPath(cPath);
-
-								// Close the modal
-								setIsModalShown(false);
+							instructions="Multiple tree nodes matched your search. Please select which one to show."
+							_form={{ 
+								flex: 1,
+								items: [
+									{
+										type: 'Column',
+										flex: 1,
+										items: [
+											{
+												key: 'node_id',
+												name: 'node_id',
+												type: 'Combo',
+												label: 'Tree Node',
+												data: searchFormData,
+											}
+										],
+									},
+								],
+								onCancel: (e) => {
+									setHighlitedDatum(null);
+									setIsModalShown(false);
+								},
+								onSave: (data, e) => {
+									const
+										treeNode = _.find(searchResults, (item) => {
+											return item.id === data.node_id;
+										}),
+										cPath = treeNode.cPath;
+									expandPath(cPath);
+	
+									// Close the modal
+									setIsModalShown(false);
+								},
 							}}
 						/>
 					</Column>
