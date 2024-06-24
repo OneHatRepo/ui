@@ -22,6 +22,7 @@ export default function TreeNode(props) {
 			onToggle,
 			isDragMode,
 			isHighlighted,
+			isSelected,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -44,6 +45,7 @@ export default function TreeNode(props) {
 	return useMemo(() => {
 		
 		return <Row
+					{...testProps('node' + (isSelected ? '-selected' : ''))}
 					alignItems="center"
 					flexGrow={1}
 					{...nodeProps}
@@ -54,7 +56,7 @@ export default function TreeNode(props) {
 					
 					{isLoading ? 
 						<Spinner px={2} /> : 
-						(hasChildren && !isDragMode ? <IconButton icon={icon} onPress={() => onToggle(datum)} {...testProps('TreeNodeExpandBtn-' + item?.id)} /> : <Icon as={icon} px={2} />)}
+						(hasChildren && !isDragMode ? <IconButton icon={icon} onPress={() => onToggle(datum)} {...testProps('expandBtn')} /> : <Icon as={icon} px={2} />)}
 
 					<Text
 						overflow="hidden"

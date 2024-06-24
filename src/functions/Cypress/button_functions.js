@@ -23,7 +23,7 @@ export function clickDuplicateButton(parentSelectors) {
 	return clickButton(parentSelectors, 'duplicateBtn');
 }
 export function clickReloadButton(parentSelectors) {
-	return clickButton(parentSelectors, 'reloadPageBtn');
+	return clickButton(parentSelectors, 'reloadBtn');
 }
 export function clickCloseButton(parentSelectors) {
 	return clickButton(parentSelectors, 'closeBtn');
@@ -39,6 +39,9 @@ export function clickYesButton(parentSelectors) {
 }
 export function clickNoButton(parentSelectors) {
 	return clickButton(parentSelectors, 'noBtn');
+}
+export function clickExpandButton(parentSelectors) {
+	return clickButton(parentSelectors, 'expandBtn');
 }
 export function clickXButton(parentSelectors) {
 	return clickButton(parentSelectors, 'xBtn');

@@ -67,5 +67,5 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 							/>}
 				/>;
 	};
-	return withAdditionalProps(withEditor(SideEditor));
+	return withAdditionalProps(withEditor(SideEditor, isTree));
 }

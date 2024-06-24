@@ -39,6 +39,7 @@ import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js'
 import inArray from '../../Functions/inArray.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
+import ReloadTreeButton from '../Buttons/ReloadTreeButton.js';
 import TreeNode, { DraggableTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
@@ -61,6 +62,7 @@ const DEPTH_INDENT_PX = 25;
 function TreeComponent(props) {
 	const {
 			areRootsVisible = true,
+			autoLoadRootNodes = true,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
 				if (Repository) {
@@ -232,6 +234,9 @@ function TreeComponent(props) {
 			}
 		},
 		onBeforeAdd = async () => {
+			// called during withEditor::doAdd, before the add operation is called
+			// returning false will cancel the add operation
+
 			// Load children before adding the new node
 			if (_.isEmpty(selection)) {
 				alert('Please select a parent node first.')
@@ -244,24 +249,32 @@ function TreeComponent(props) {
 			if (parent.hasChildren && !parent.areChildrenLoaded) {
 				await loadChildren(parentDatum);
 			}
+
+			// forceUpdate();
+		},
+		onAfterAdd = (entity) => {
+			// called during withEditor::doAdd, after the add operation is called
+
+			// Add the entity to the tree, show parent as hasChildren and expanded
+			const
+				parent = selection[0],
+				parentDatum = getNodeData(parent.id);
+			if (!parent.hasChildren) {
+				parent.hasChildren = true; // since we're adding a new child
+			}
 			if (!parentDatum.isExpanded) {
 				parentDatum.isExpanded = true;
 			}
+
+			buildRowToDatumMap();
 			forceUpdate();
 		},
-		onAfterAdd = async (entities) => {
-			// Expand the parent before showing the new node
-			const
-				entity = entities[0],
-				parentDatum = getNodeData(entity.parentId);
+		onAfterAddSave = (entities) => {
 
-
-			// Add the entity to the tree
-			const entityDatum = buildTreeNodeDatum(entity);
-			parentDatum.children.unshift(entityDatum);
-			forceUpdate();
+			// Update the datum with the new entity
+			return onAfterEdit(entities);
 			
-			buildRowToDatumMap();
+
 		},
 		onBeforeEditSave = (entities) => {
 			onBeforeSave(entities);
@@ -910,6 +923,7 @@ function TreeComponent(props) {
 										onToggle={onToggle}
 										isDragMode={isDragMode}
 										isHighlighted={highlitedDatum === datum}
+										isSelected={isSelected}
 
 										// fields={fields}
 									/>;
@@ -1102,6 +1116,10 @@ function TreeComponent(props) {
 			Repository.setBaseParams(extraParams);
 		}
 
+		if (autoLoadRootNodes) {
+			Repository.loadRootNodes(1);
+		}
+
 		async function rebuildTree() {
 			setIsReady(false);
 			await buildAndSetTreeNodeData();
@@ -1117,6 +1135,7 @@ function TreeComponent(props) {
 		Repository.on('load', setFalse);
 		Repository.on('loadRootNodes', setFalse);
 		Repository.on('loadRootNodes', rebuildTree);
+		Repository.on('add', rebuildTree);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
 
@@ -1125,6 +1144,7 @@ function TreeComponent(props) {
 			Repository.off('load', setFalse);
 			Repository.off('loadRootNodes', setFalse);
 			Repository.off('loadRootNodes', rebuildTree);
+			Repository.off('add', rebuildTree);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
 		};
@@ -1147,6 +1167,7 @@ function TreeComponent(props) {
 		setWithEditListeners({ // Update withEdit's listeners on every render
 			onBeforeAdd,
 			onAfterAdd,
+			onAfterAddSave,
 			onBeforeEditSave,
 			onAfterEdit,
 			onBeforeDeleteSave,
@@ -1168,9 +1189,16 @@ function TreeComponent(props) {
 	let treeFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			treeFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
+			treeFooterComponent = <PaginationToolbar
+										Repository={Repository}
+										self={self}
+										toolbarItems={footerToolbarItemComponents}
+									/>;
 		} else if (footerToolbarItemComponents.length) {
-			treeFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
+			treeFooterComponent = <Toolbar>
+										<ReloadTreeButton Repository={Repository} self={self} />
+										{footerToolbarItemComponents}
+									</Toolbar>;
 		}
 	}
 
@@ -1207,7 +1235,7 @@ function TreeComponent(props) {
 							}
 						}}
 					>
-						<ScrollView flex={1} w="100%">
+						<ScrollView {...testProps('ScrollView')} flex={1} w="100%">
 							{!treeNodes?.length ? 
 								<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
 								treeNodes}

@@ -142,7 +142,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (!selection[0]) {
 						throw Error('Must select a parent node.');
 					}
-					addValues.parentId = selection[0].id;
+					const parent = selection[0];
+					addValues.parentId = parent.id;
+					addValues.depth = parent.depth +1;
 				} else {
 					// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
 					const currentSorter = Repository.sorters[0];
@@ -173,10 +175,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsSaving(false);
 				setIsIgnoreNextSelectionChange(true);
 				setSelection([entity]);
+				if (getListeners().onAfterAdd) {
+					await getListeners().onAfterAdd(entity);
+				}
 				if (Repository.isAutoSave) {
 					// for isAutoSave Repositories, submit the handers right away
-					if (getListeners().onAfterAdd) {
-						await getListeners().onAfterAdd(entity);
+					if (getListeners().onAfterAddSave) {
+						await getListeners().onAfterAddSave(selection);
 					}
 					if (onAdd) {
 						await onAdd(entity);
@@ -377,8 +382,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						if (onAdd) {
 							await onAdd(selection);
 						}
-						if (getListeners().onAfterAdd) {
-							await getListeners().onAfterAdd(selection);
+						if (getListeners().onAfterAddSave) {
+							await getListeners().onAfterAddSave(selection);
 						}
 						setIsAdding(false);
 						setEditorMode(EDITOR_MODE__EDIT);

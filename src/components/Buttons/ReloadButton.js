@@ -1,0 +1,37 @@
+import {
+	Icon,
+} from 'native-base';
+import testProps from '../../Functions/testProps.js';
+import IconButton from './IconButton.js';
+import Rotate from '../Icons/Rotate.js';
+
+export default function ReloadButton(props, isTree = false) {
+	const {
+			iconProps ={},
+			self,
+			Repository,
+		} = props,
+		onPress = () => {
+			if (isTree) {
+				Repository.loadRootNodes(1);
+			} else {
+				Repository.reload();
+			}
+		};
+
+	if (!Repository || Repository.isLocal) {
+		return null;
+	}
+
+	return <IconButton
+				{...testProps('reloadBtn')}
+				{...props}
+				reference="reloadBtn"
+				parent={self}
+				icon={<Icon as={Rotate} {...iconProps} color="trueGray.600" />}
+				onPress={onPress}
+				tooltip="Reload"
+				ml={2}
+			/>;
+}
+

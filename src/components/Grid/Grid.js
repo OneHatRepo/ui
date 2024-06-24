@@ -976,13 +976,6 @@ function GridComponent(props) {
 									</Toolbar>;
 		}
 	}
-	
-	const sizeProps = {};
-	if (!_.isNil(h)) {
-		sizeProps.h = h;
-	} else {
-		sizeProps.flex = flex ?? 1;
-	}
 
 	let grid = <FlatList
 					{...testProps('flatlist')}
@@ -1063,6 +1056,13 @@ function GridComponent(props) {
 								setColumnsConfig={setLocalColumnsConfig}
 							/>
 						</Modal>;
+	}
+	
+	const sizeProps = {};
+	if (!_.isNil(h)) {
+		sizeProps.h = h;
+	} else {
+		sizeProps.flex = flex ?? 1;
 	}
 
 	grid = <Column
