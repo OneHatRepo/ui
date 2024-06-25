@@ -734,7 +734,7 @@ export function runClosureTreeManagerScreenCrudTests(model, schema, newData, edi
 
 			const
 				managerSelector = '/' + Models + 'Manager',
-				treeSelector = '/' + Models + 'FilteredTreeEditor';
+				treeSelector = '/' + Models + 'TreeEditor';
 
 			toFullMode(managerSelector);
 			cy.wait(500); // wait for grid to load
@@ -747,7 +747,7 @@ export function runClosureTreeManagerScreenCrudTests(model, schema, newData, edi
 
 			const
 				managerSelector = '/' + Models + 'Manager',
-				treeSelector = '/' + Models + 'FilteredSideTreeEditor';
+				treeSelector = '/' + Models + 'SideTreeEditor';
 
 			toSideMode(managerSelector);
 			cy.wait(1000); // wait for grid to load
