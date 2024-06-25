@@ -104,6 +104,7 @@ function TreeComponent(props) {
 			additionalToolbarButtons = [],
 			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
 			parentIdIx,
+			initialSelection,
 
 			// withComponent
 			self,
@@ -466,6 +467,7 @@ function TreeComponent(props) {
 			setTreeNodeData(treeNodeData);
 
 			buildRowToDatumMap();
+			return treeNodeData;
 		},
 		buildRowToDatumMap = () => {
 			const rowToDatumMap = {};
@@ -668,7 +670,7 @@ function TreeComponent(props) {
 				}
 			});
 		},
-		expandPath = async (cPath) => {
+		expandPath = async (cPath, highlight = true) => {
 			// First, close thw whole tree.
 			let newTreeNodeData = _.clone(getTreeNodeData());
 			collapseNodes(newTreeNodeData);
@@ -713,7 +715,9 @@ function TreeComponent(props) {
 
 			setSelection([currentNode]);
 			scrollToNode(currentNode);
-			setHighlitedDatum(currentDatum);
+			if (highlight) {
+				setHighlitedDatum(currentDatum);
+			}
 
 			setTreeNodeData(newTreeNodeData);
 			buildRowToDatumMap();
@@ -1116,19 +1120,50 @@ function TreeComponent(props) {
 			return () => {};
 		}
 
-		if (!_.isEmpty(extraParams)) {
-			Repository.setBaseParams(extraParams);
-		}
+		let rebuildTree = () => {};
 
-		if (autoLoadRootNodes) {
-			Repository.loadRootNodes(1);
-		}
+		(async () => {
 
-		async function rebuildTree() {
-			setIsReady(false);
-			await buildAndSetTreeNodeData();
-			setIsReady(true);
-		}
+			if (!_.isEmpty(extraParams)) {
+				Repository.setBaseParams(extraParams);
+			}
+	
+			if (autoLoadRootNodes) {
+				await Repository.loadRootNodes(1);
+			}
+	
+			rebuildTree = async () => {
+				// setIsReady(false);
+				const treeNodeData = await buildAndSetTreeNodeData();
+				
+				if (!isReady) {
+					// first time loading tree
+					let selection = null;
+					if (!_.isEmpty(initialSelection) && !initialSelection[0].isDestroyed) {
+						// select the initialSelection, first expanding the path to it
+						const cPath = initialSelection[0].getPath();
+						await expandPath(cPath, false);
+						selection = initialSelection;
+					} else {
+						// select first root node
+						const rootNodes = Repository.getRootNodes();
+						if (!_.isEmpty(rootNodes)) {
+							selection = [ rootNodes[0] ];
+						}
+					}
+					setSelection(selection);
+				}
+
+				setIsReady(true);
+			}
+	
+	
+			if (Repository.areRootNodesLoaded) {
+				rebuildTree();
+			}
+			
+		})();
+
 		
 		// set up @onehat/data repository
 		const
