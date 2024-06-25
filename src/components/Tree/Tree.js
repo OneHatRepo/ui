@@ -105,6 +105,7 @@ function TreeComponent(props) {
 			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
 			parentIdIx,
 			initialSelection,
+			onTreeLoad,
 
 			// withComponent
 			self,
@@ -467,6 +468,10 @@ function TreeComponent(props) {
 			setTreeNodeData(treeNodeData);
 
 			buildRowToDatumMap();
+
+			if (onTreeLoad) {
+				onTreeLoad();
+			}
 			return treeNodeData;
 		},
 		buildRowToDatumMap = () => {
@@ -634,6 +639,7 @@ function TreeComponent(props) {
 			buildRowToDatumMap();
 		},
 		loadChildren = async (datum, depth = 1) => {
+
 			// Show loading indicator (spinner underneath current node?)
 			datum.isLoading = true;
 			forceUpdate();
@@ -671,7 +677,7 @@ function TreeComponent(props) {
 			});
 		},
 		expandPath = async (cPath, highlight = true) => {
-			// First, close thw whole tree.
+			// First, close the whole tree.
 			let newTreeNodeData = _.clone(getTreeNodeData());
 			collapseNodes(newTreeNodeData);
 
@@ -694,9 +700,16 @@ function TreeComponent(props) {
 				});
 
 				if (!currentDatum) {
-					// datum is not currently loaded, so load it
-					await loadChildren(parentDatum, 1);
-					currentLevelData = parentDatum.children;
+					if (!parentDatum) {
+						currentDatum = currentLevelData[0]; // this is essentially the root node (currentLevelData can contain more than one node, so just set it to the first)
+						// currentLevelData = currentDatum;
+					} else {
+						if (!parentDatum.isLoaded) {
+							await loadChildren(parentDatum, 1);
+						}
+						currentLevelData = parentDatum.children;
+					}
+
 					currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
 						return treeNodeDatum.item.id === id; 
 					});
@@ -1120,48 +1133,9 @@ function TreeComponent(props) {
 			return () => {};
 		}
 
-		let rebuildTree = () => {};
-
 		(async () => {
-
-			if (!_.isEmpty(extraParams)) {
-				Repository.setBaseParams(extraParams);
-			}
-	
-			if (autoLoadRootNodes) {
-				await Repository.loadRootNodes(1);
-			}
-	
-			rebuildTree = async () => {
-				// setIsReady(false);
-				const treeNodeData = await buildAndSetTreeNodeData();
-				
-				if (!isReady) {
-					// first time loading tree
-					let selection = null;
-					if (!_.isEmpty(initialSelection) && !initialSelection[0].isDestroyed) {
-						// select the initialSelection, first expanding the path to it
-						const cPath = initialSelection[0].getPath();
-						await expandPath(cPath, false);
-						selection = initialSelection;
-					} else {
-						// select first root node
-						const rootNodes = Repository.getRootNodes();
-						if (!_.isEmpty(rootNodes)) {
-							selection = [ rootNodes[0] ];
-						}
-					}
-					setSelection(selection);
-				}
-
-				setIsReady(true);
-			}
-	
-	
-			if (Repository.areRootNodesLoaded) {
-				rebuildTree();
-			}
-			
+			await reloadTree();
+			setIsReady(true);
 		})();
 
 		
@@ -1173,8 +1147,8 @@ function TreeComponent(props) {
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
 		Repository.on('loadRootNodes', setFalse);
-		Repository.on('loadRootNodes', rebuildTree);
-		Repository.on('add', rebuildTree);
+		Repository.on('loadRootNodes', buildAndSetTreeNodeData);
+		Repository.on('add', buildAndSetTreeNodeData);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
 
@@ -1182,8 +1156,8 @@ function TreeComponent(props) {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
 			Repository.off('loadRootNodes', setFalse);
-			Repository.off('loadRootNodes', rebuildTree);
-			Repository.off('add', rebuildTree);
+			Repository.off('loadRootNodes', buildAndSetTreeNodeData);
+			Repository.off('add', buildAndSetTreeNodeData);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
 		};
@@ -1212,6 +1186,13 @@ function TreeComponent(props) {
 			onBeforeDeleteSave,
 			onAfterDelete,
 		});
+	}
+
+	// update self with methods
+	if (self) {
+		self.reloadTree = reloadTree;
+		self.expandPath = expandPath;
+		self.scrollToNode = scrollToNode;
 	}
 	
 	const
