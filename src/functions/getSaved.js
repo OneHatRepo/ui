@@ -17,10 +17,11 @@ export default async function getSaved(key) {
 
 	if (entity.isJson) {
 		value = JSON.parse(value);
+		const model = entity.model;
 		if (entity.isOneBuild) {
 			// Convert the data to an actual entity (or entities) of the correct type
 			const
-				Repository = oneHatData.getRepository(entity.model),
+				Repository = oneHatData.getRepository(model),
 				entities = [];
 			let i, data, entity;
 			if (_.isArray(value)) {

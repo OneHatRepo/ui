@@ -847,7 +847,7 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 
 		});
 
-		it.skip('CRUD in side mode', function() {
+		it('CRUD in side mode', function() {
 
 			const
 				managerSelector = '/' + Models + 'Manager',
