@@ -81,6 +81,8 @@ function AttachmentsElement(props) {
 			clickable = true,
 			confirmBeforeDelete = false,
 			extraUploadData = {},
+			expandedMax = EXPANDED_MAX,
+			collapsedMax = COLLAPSED_MAX,
 
 			// parentContainer
 			selectorSelected,
@@ -231,7 +233,7 @@ function AttachmentsElement(props) {
 					});
 				}
 				Repository.filter(filters);
-				Repository.setPageSize(showAll ? EXPANDED_MAX : COLLAPSED_MAX);
+				Repository.setPageSize(showAll ? expandedMax : collapsedMax);
 				await Repository.load();
 
 				buildFiles();
@@ -286,7 +288,7 @@ function AttachmentsElement(props) {
 										</Box>;
 							})}
 						</Row>
-						{Repository.total <= COLLAPSED_MAX ? null :
+						{Repository.total <= collapsedMax ? null :
 							<Button
 								onPress={toggleShowAll}
 								mt={4}
