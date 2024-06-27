@@ -222,6 +222,7 @@ import Panel from './Panel/Panel.js';
 // import Picker from '../Components/Panel/Picker.js';
 import PlusMinusButton from './Buttons/PlusMinusButton.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
+import Slider from './Form/Field/Slider.js';
 import SquareButton from './Buttons/SquareButton.js';
 import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Tag/Tag.js';
@@ -457,6 +458,7 @@ const components = {
 	// Picker,
 	PlusMinusButton,
 	RadioGroup,
+	Slider,
 	Row,
 	SquareButton,
 	TabPanel,
