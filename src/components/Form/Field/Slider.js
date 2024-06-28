@@ -13,6 +13,11 @@ import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
+// TODO: Might want to replace this with @react-native-community/slider,
+// because this element cannot programmatically set its value. 
+// i.e. When in a Form, hitting the reset button will change 
+// the display value (and the field's value), but not the thumb position.
+
 const
 	SliderElement = (props) => {
 		const {
@@ -36,7 +41,7 @@ const
 			sizeProps.flex = 1;
 		}
 
-		return <Row alignItems="center">
+		return <Row alignItems="center" w="100%">
 					<Text
 						{...testProps('readout')}
 						h={10}
