@@ -1,22 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, } from 'react';
 import {
-	Icon,
-	Pressable,
 	Row,
-	Slider,
 	Text,
 } from 'native-base';
+import Slider from '@react-native-community/slider'; // https://www.npmjs.com/package/@react-native-community/slider
 import UiGlobals from '../../../UiGlobals.js';
 import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
-
-// TODO: Might want to replace this with @react-native-community/slider,
-// because this element cannot programmatically set its value. 
-// i.e. When in a Form, hitting the reset button will change 
-// the display value (and the field's value), but not the thumb position.
 
 const
 	SliderElement = (props) => {
@@ -28,20 +21,24 @@ const
 				step = 10,
 				...propsToPass
 			} = props,
-			styles = UiGlobals.styles,
-			onSlide = (value, e) => {
-				setValue(value);
-			},
-			onSlideEnd = (value, e) => {
-				setValue(value);
-			};
+			[localValue, setLocalValue] = useState(value),
+			styles = UiGlobals.styles;
+
+		useEffect(() => {
+
+			// When value changes from outside, adjust text value
+			if (value !== localValue) {
+				setLocalValue(value);
+			}
+	
+		}, [value]);
 
 		const sizeProps = {};
 		if (!props.flex && !props.w) {
 			sizeProps.flex = 1;
 		}
 
-		return <Row alignItems="center" w="100%">
+		return <Row alignItems="center" w="100%" {...propsToPass}>
 					<Text
 						{...testProps('readout')}
 						h={10}
@@ -54,25 +51,29 @@ const
 						borderWidth={1}
 						borderColor="#bbb"
 						borderRadius="md"
-					>{value}</Text>
-					<Slider
-						ref={props.outerRef}
-						w="100%"
-						maxW="300"
-						defaultValue={value}
-						minValue={minValue}
-						maxValue={maxValue}
-						step={step}
-						colorScheme={styles.SLIDER_COLOR_SCHEME}
-						onChange={onSlide}
-						onChangeEnd={onSlideEnd}
-						{...propsToPass}
-					>
-						<Slider.Track>
-							<Slider.FilledTrack />
-						</Slider.Track>
-						<Slider.Thumb />
-					</Slider>
+					>{localValue}</Text>
+					<Row flex={1}>
+						<Slider
+							{...testProps('slider')}
+							ref={props.outerRef}
+
+							style={{
+								width: '100%', 
+								height: 40,
+							}}
+							minimumTrackTintColor={styles.SLIDER_MIN_TRACK_COLOR}
+							maximumTrackTintColor={styles.SLIDER_MAX_TRACK_COLOR}
+							thumbTintColor={styles.SLIDER_THUMB_COLOR}
+							minimumValue={minValue}
+							maximumValue={maxValue}
+							step={step}
+							value={value}
+							onValueChange={(value) => setLocalValue(value)}
+							onSlidingComplete={(value) => {
+								setValue(value);
+							}}
+						/>
+					</Row>
 				</Row>;
 	},
 	SliderField = withComponent(withValue(SliderElement));
