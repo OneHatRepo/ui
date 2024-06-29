@@ -170,6 +170,7 @@ export default function withModal(WrappedComponent) {
 								h={height}
 								flex={null}
 							>
+								{canClose && <Modal.CloseButton />}
 								{title && <Modal.Header>{title}</Modal.Header>}
 								<Modal.Body
 									borderTopWidth={0}
