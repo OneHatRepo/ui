@@ -88,6 +88,7 @@ function Form(props) {
 			additionalEditButtons,
 			useAdditionalEditButtons = true,
 			additionalFooterButtons,
+			disableFooter = false,
 			
 			// sizing of outer container
 			h,
@@ -991,79 +992,80 @@ function Form(props) {
 							{editor}
 						</ScrollView>}
 					
-					<Footer justifyContent="flex-end" {...footerProps} {...savingProps}>
-						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
+					{!disableFooter && 
+						<Footer justifyContent="flex-end" {...footerProps} {...savingProps}>
+							{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 
-							<Row flex={1} justifyContent="flex-start">
-								<Button
-									{...testProps('deleteBtn')}
-									key="deleteBtn"
-									onPress={onDelete}
-									bg="warning"
-									_hover={{
-										bg: 'warningHover',
+								<Row flex={1} justifyContent="flex-start">
+									<Button
+										{...testProps('deleteBtn')}
+										key="deleteBtn"
+										onPress={onDelete}
+										bg="warning"
+										_hover={{
+											bg: 'warningHover',
+										}}
+										color="#fff"
+									>Delete</Button>
+								</Row>}
+
+							{showResetBtn && 
+								<IconButton
+									{...testProps('resetBtn')}
+									key="resetBtn"
+									onPress={() => doReset()}
+									icon={Rotate}
+									_icon={{
+										color: !formState.isDirty ? 'trueGray.400' : '#000',
 									}}
+									isDisabled={!formState.isDirty}
+									mr={2}
+								/>}
+
+							{showCancelBtn &&
+								<Button
+									{...testProps('cancelBtn')}
+									key="cancelBtn"
+									variant="ghost"
+									onPress={onCancel}
 									color="#fff"
-								>Delete</Button>
-							</Row>}
+								>Cancel</Button>}
+								
+							{showCloseBtn && 
+								<Button
+									{...testProps('closeBtn')}
+									key="closeBtn"
+									variant="ghost"
+									onPress={onClose}
+									color="#fff"
+								>Close</Button>}
 
-						{showResetBtn && 
-							<IconButton
-								{...testProps('resetBtn')}
-								key="resetBtn"
-								onPress={() => doReset()}
-								icon={Rotate}
-								_icon={{
-									color: !formState.isDirty ? 'trueGray.400' : '#000',
-								}}
-								isDisabled={!formState.isDirty}
-								mr={2}
-							/>}
-
-						{showCancelBtn &&
-							<Button
-								{...testProps('cancelBtn')}
-								key="cancelBtn"
-								variant="ghost"
-								onPress={onCancel}
-								color="#fff"
-							>Cancel</Button>}
+							{showSaveBtn && 
+								<Button
+									{...testProps('saveBtn')}
+									key="saveBtn"
+									onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+									isDisabled={isSaveDisabled}
+									color="#fff"
+								>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
 							
-						{showCloseBtn && 
-							<Button
-								{...testProps('closeBtn')}
-								key="closeBtn"
-								variant="ghost"
-								onPress={onClose}
-								color="#fff"
-							>Close</Button>}
-
-						{showSaveBtn && 
-							<Button
-								{...testProps('saveBtn')}
-								key="saveBtn"
-								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
-								isDisabled={isSaveDisabled}
-								color="#fff"
-							>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</Button>}
+							{showSubmitBtn && 
+								<Button
+									{...testProps('submitBtn')}
+									key="submitBtn"
+									onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
+									isDisabled={isSubmitDisabled}
+									color="#fff"
+								>{submitBtnLabel || 'Submit'}</Button>}
 						
-						{showSubmitBtn && 
-							<Button
-								{...testProps('submitBtn')}
-								key="submitBtn"
-								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
-								isDisabled={isSubmitDisabled}
-								color="#fff"
-							>{submitBtnLabel || 'Submit'}</Button>}
-					
-						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
-							return <Button
-										{...testProps('additionalFooterBtn-' + props.key)}
-										{...props}
-										onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
-									>{props.text}</Button>;
-						})}
-					</Footer>
+							{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+								return <Button
+											{...testProps('additionalFooterBtn-' + props.key)}
+											{...props}
+											onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
+										>{props.text}</Button>;
+							})}
+						</Footer>}
 				</>}
 			</Column>;
 }
