@@ -63,13 +63,16 @@ export default function withModal(WrappedComponent) {
 					w,
 				} = args;
 
+				if (!message && !body) {
+					throw new Error('Either message or body is required for showModal');
+				}
+
 				if (title) {
 					setTitle(title);
 				}
-				if (!message) {
-					throw new Error('Message is required for showModal');
+				if (message) {
+					setMessage(message);
 				}
-				setMessage(message);
 				setCanClose(canClose);
 				setIncludeCancel(includeCancel);
 				if (onNo) {
