@@ -14,6 +14,11 @@ import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
+// This HOC enables easy usage of more complex dialogs in the wrapped component.
+// Add en embedded Form, 
+
+// Use withAlert for simple alerts, confirmations, and custom dialogs.
+
 export default function withModal(WrappedComponent) {
 	return (props) => {
 
@@ -27,14 +32,17 @@ export default function withModal(WrappedComponent) {
 			[canClose, setCanClose] = useState(true),
 			[includeCancel, setIncludeCancel] = useState(false),
 			[isModalShown, setIsModalShown] = useState(false),
+			[h, setHeight] = useState(250),
+			[w, setWidth] = useState(400),
 			[onOk, setOnOk] = useState(),
 			[onYes, setOnYes] = useState(),
 			[onNo, setOnNo] = useState(),
 			[customButtons, setCustomButtons] = useState(),
 			[color, setColor] = useState('#000'),
+			[body, setBody]	= useState(), 
 			autoFocusRef = useRef(null),
 			cancelRef = useRef(null),
-			[width, height] = useAdjustedWindowSize(400, 250),
+			[width, height] = useAdjustedWindowSize(w, h),
 			onCancel = () => {
 				setIsModalShown(false);
 			},
@@ -49,6 +57,10 @@ export default function withModal(WrappedComponent) {
 					onNo,
 					customButtons,
 					color,
+					// formItems = {},
+					body,
+					h,
+					w,
 				} = args;
 
 				if (title) {
@@ -60,14 +72,14 @@ export default function withModal(WrappedComponent) {
 				setMessage(message);
 				setCanClose(canClose);
 				setIncludeCancel(includeCancel);
+				if (onNo) {
+					setOnNo(() => onNo);
+				}
 				if (onOk) {
 					setOnOk(() => onOk);
 				}
 				if (onYes) {
 					setOnYes(() => onYes);
-				}
-				if (onNo) {
-					setOnNo(() => onNo);
 				}
 				if (customButtons) {
 					setCustomButtons(customButtons);
@@ -75,31 +87,31 @@ export default function withModal(WrappedComponent) {
 				if (color) {
 					setColor(color);
 				}
+				if (body) {
+					setBody(body);
+				}
+				if (h) {
+					setHeight(h);
+				}
+				if (w) {
+					setWidth(w);
+				}
 
 				setIsModalShown(true);
 			};
 
 		let buttons = [];
 		if (isModalShown) {
+			// assemble buttons
 			if (includeCancel) {
 				buttons.push(<Button
 									{...testProps('cancelBtn')}
 									key="cancelBtn"
 									onPress={onCancel}
-									color="#fff"
 									colorScheme="coolGray"
 									variant="ghost" // or unstyled
 									ref={cancelRef}
 								>Cancel</Button>);
-			}
-			if (onOk) {
-				buttons.push(<Button
-								{...testProps('okBtn')}
-								key="okBtn"
-								ref={autoFocusRef}
-								onPress={onOk}
-								color="#fff"
-							>OK</Button>);
 			}
 			if (onNo) {
 				buttons.push(<Button
@@ -108,9 +120,16 @@ export default function withModal(WrappedComponent) {
 								onPress={onNo}
 								color="trueGray.800"
 								variant="ghost"
-								// colorScheme="neutral"
 								mr={2}
 							>No</Button>);
+			}
+			if (onOk) {
+				buttons.push(<Button
+								{...testProps('okBtn')}
+								key="okBtn"
+								ref={autoFocusRef}
+								onPress={onOk}
+							>OK</Button>);
 			}
 			if (onYes) {
 				buttons.push(<Button
@@ -118,8 +137,6 @@ export default function withModal(WrappedComponent) {
 								key="yesBtn"
 								ref={autoFocusRef}
 								onPress={onYes}
-								color="#fff"
-								// colorScheme="danger"
 							>Yes</Button>);
 			}
 			if (customButtons) {
@@ -150,21 +167,23 @@ export default function withModal(WrappedComponent) {
 								h={height}
 								flex={null}
 							>
-
 								{title && <Modal.Header>{title}</Modal.Header>}
 								<Modal.Body
 									borderTopWidth={0}
 									bg="#fff"
 									p={3}
-									justifyContent="center"
+									justifyContent=" center"
 									alignItems="center"
 									borderRadius={5}
 									flexDirection="row"
 								>
-									<Box w="50px" mx={2}>
-										<Icon as={TriangleExclamation} color={color} size="10" />
-									</Box>
-									<Text flex={1} color={color} fontSize="18px">{message}</Text>
+									{body || 
+										<>
+											<Box w="50px" mx={2}>
+												<Icon as={TriangleExclamation} color={color} size="10" />
+											</Box>
+											<Text flex={1} color={color} fontSize="18px">{message}</Text>
+										</>}
 								</Modal.Body>
 								<Modal.Footer py={2} pr={4} justifyContent="flex-end">
 									{buttons}

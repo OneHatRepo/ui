@@ -20,6 +20,9 @@ import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import CircleInfo from '../Icons/CircleInfo.js';
 import _ from 'lodash';
 
+// This HOC enables easy usage of alert dialogs in the wrapped component.
+// It can be used for simple alerts, confirmations, and custom dialogs. 
+
 export default function withAlert(WrappedComponent) {
 	return (props) => {
 
