@@ -958,11 +958,9 @@ function Form(props) {
 				showCloseBtn = true;
 			} else {
 				const formIsDirty = formState.isDirty;
-				// console.log('formIsDirty', formIsDirty);
-				// console.log('isPhantom', isPhantom);
-				if (editorType === EDITOR_TYPE__WINDOWED && onCancel) {
-					showCancelBtn = true;
-				}
+				// if (editorType === EDITOR_TYPE__WINDOWED && onCancel) {
+				// 	showCancelBtn = true;
+				// }
 				if (formIsDirty || isPhantom) {
 					if (isSingle && onCancel) {
 						showCancelBtn = true;
