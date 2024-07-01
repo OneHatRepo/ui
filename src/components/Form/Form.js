@@ -31,6 +31,7 @@ import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import testProps from '../../Functions/testProps.js';
+import Toolbar from '../Toolbar/Toolbar.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
@@ -848,7 +849,8 @@ function Form(props) {
 	}
 
 	const formButtons = [];
-	let formComponents,
+	let modeHeader = null,
+		formComponents,
 		editor,
 		additionalButtons,
 		isSaveDisabled = false,
@@ -889,16 +891,23 @@ function Form(props) {
 
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
 
-			formButtons.push(<Row key="buttonsRow" px={4} pt={4} alignItems="center" justifyContent="flex-end">
-								{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
-									<Button
-										{...testProps('backBtn')}
-										key="backBtn"
-										onPress={onBack}
-										leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
-										color="#fff"
-									>Back</Button>}
-								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && !disableView &&
+			if (inArray(editorType, [EDITOR_TYPE__SIDE, EDITOR_TYPE__SMART, EDITOR_TYPE__WINDOWED]) && 
+				isSingle && editorMode === EDITOR_MODE__EDIT && 
+				(onBack || (onViewMode && !disableView))) {
+				modeHeader = <Toolbar>
+								<Row flex={1} alignItems="center">
+									{onBack &&
+										<Button
+											{...testProps('backBtn')}
+											key="backBtn"
+											onPress={onBack}
+											leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
+											color="#fff"
+											mr={4}
+										>Back</Button>}
+									<Text fontSize={20} ml={2} color="trueGray.500">Edit Mode</Text>
+								</Row>
+								{onViewMode && !disableView &&
 									<Button
 										{...testProps('toViewBtn')}
 										key="viewBtn"
@@ -906,11 +915,12 @@ function Form(props) {
 										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
 										color="#fff"
 									>To View</Button>}
-							</Row>);
+							</Toolbar>;
+			}
 			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
-				formButtons.push(<Row key="additionalButtonsRow" p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+				formButtons.push(<Toolbar justifyContent="flex-end" flexWrap="wrap">
 									{additionalButtons}
-								</Row>)
+								</Toolbar>)
 			}
 		}
 
@@ -987,6 +997,7 @@ function Form(props) {
 						>{editor}</Row>}
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
+							{modeHeader}
 							{formHeader}
 							{formButtons}
 							{editor}

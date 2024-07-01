@@ -16,6 +16,7 @@ import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import testProps from '../../Functions/testProps.js';
+import Toolbar from '../Toolbar/Toolbar.js';
 import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
@@ -254,7 +255,10 @@ function Viewer(props) {
 
 					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
 						{canEdit && onEditMode &&
-							<Row px={4} pt={4} alignItems="center" justifyContent="flex-end">
+							<Toolbar justifyContent="flex-end">
+								<Row flex={1} alignItems="center">
+									<Text fontSize={20} ml={2} color="trueGray.500">View Mode</Text>
+								</Row>
 								<Button
 									{...testProps('toEditBtn')}
 									key="editBtn"
@@ -262,11 +266,11 @@ function Viewer(props) {
 									leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
 									color="#fff"
 								>To Edit</Button>
-							</Row>}
+							</Toolbar>}
 						{!_.isEmpty(additionalButtons) && 
-							<Row p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+							<Toolbar justifyContent="flex-end" flexWrap="wrap">
 								{additionalButtons}
-							</Row>}
+							</Toolbar>}
 						<Column>
 							{containerWidth >= CONTAINER_THRESHOLD ? <Row p={4} pl={0}>{viewerComponents}</Row> : null}
 							{containerWidth < CONTAINER_THRESHOLD ? <Column p={4}>{viewerComponents}</Column> : null}
