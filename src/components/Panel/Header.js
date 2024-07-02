@@ -147,6 +147,8 @@ export default function Header(props) {
 								h="100%" 
 								w="100%"
 								bg={styles.PANEL_HEADER_BG_VERTICAL}
+								borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
+								borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
 							>
 								{collapseBtn}
 								<Column
@@ -186,6 +188,8 @@ export default function Header(props) {
 						px={styles.PANEL_HEADER_PX}
 						py={styles.PANEL_HEADER_PY}
 						bg={styles.PANEL_HEADER_BG}
+						borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
+						borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
 					>
 						{closeBtn}
 						<Text
