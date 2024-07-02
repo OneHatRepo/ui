@@ -80,7 +80,17 @@ export default function Header(props) {
 								}
 							}}
 						>
-							 <Column alignItems="center" justifyContent="flex-start" h="100%" w="100%" bg={styles.PANEL_HEADER_BG_VERTICAL} style={{ userSelect: 'none', }} testID={testID}>
+							 <Column
+							 	alignItems="center"
+								justifyContent="flex-start"
+								h="100%"
+								w="100%"
+								bg={styles.PANEL_HEADER_BG_VERTICAL}
+								borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
+								borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
+								style={{ userSelect: 'none', }}
+								testID={testID}
+							>
 								{collapseBtn}
 								<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
 									<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
@@ -99,7 +109,16 @@ export default function Header(props) {
 						}
 					}}
 				>
-					<Row alignItems="center" justifyContent="flex-start" px={styles.PANEL_HEADER_PX} py={styles.PANEL_HEADER_PY} bg={styles.PANEL_HEADER_BG} style={{ userSelect: 'none', }} testID={testID}>
+					<Row
+						alignItems="center"
+						justifyContent="flex-start"
+						px={styles.PANEL_HEADER_PX}
+						py={styles.PANEL_HEADER_PY}
+						bg={styles.PANEL_HEADER_BG}
+						borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
+						borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
+						style={{ userSelect: 'none', }}
+						testID={testID}>
 						{closeBtn}
 						<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
 						{collapseBtn}
