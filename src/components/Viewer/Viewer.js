@@ -87,7 +87,7 @@ function Viewer(props) {
 			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!type) {
-				if (propertyDef?.viewerType) {
+				if (propertyDef?.viewerType?.type) {
 					const
 						{
 							type: t,
