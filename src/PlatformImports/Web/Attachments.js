@@ -29,7 +29,7 @@ import _ from 'lodash';
 
 const
 	EXPANDED_MAX = 100,
-	COLLAPSED_MAX = 2;
+	COLLAPSED_MAX = 4;
 
 function FileCardCustom(props) {
 	const
@@ -83,6 +83,8 @@ function AttachmentsElement(props) {
 			extraUploadData = {},
 			expandedMax = EXPANDED_MAX,
 			collapsedMax = COLLAPSED_MAX,
+			autoUpload = true,
+			onBeforeDropzoneChange,
 
 			// parentContainer
 			selectorSelected,
@@ -145,6 +147,9 @@ function AttachmentsElement(props) {
 					...extraUploadData,
 				};
 			});
+			if (onBeforeDropzoneChange) {
+				onBeforeDropzoneChange(files);
+			}
 		},
 		onUploadStart = (files) => {
 			setIsUploading(true);
