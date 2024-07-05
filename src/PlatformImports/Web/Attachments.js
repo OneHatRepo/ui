@@ -319,7 +319,7 @@ function AttachmentsElement(props) {
 							url: Repository.api.baseURL + Repository.name + '/uploadAttachment',
 							method: 'POST',
 							headers: Repository.headers,
-							autoUpload: true,
+							autoUpload,
 						}}
 						headerConfig={{
 							deleteFiles: false,
