@@ -18,7 +18,10 @@ export function login(loginId = null, password = null) {
 	if (!password) {
 		password = Cypress.env('password');
 	}
-	cy.visit(Cypress.env('baseUrl') + 'login')
+	const
+		baseUrl = Cypress.env('baseUrl'),
+		baseDir = Cypress.env('baseDir');
+	cy.visit(baseUrl + baseDir + 'login')
 		.then(() => {
 			getDomNode('loginId').clear();
 			getDomNode('loginId').type(loginId);
@@ -31,7 +34,10 @@ export function login(loginId = null, password = null) {
 		});
 }
 export function logout() {
-	getDomNode('/logout').click({ force: true });
+	const
+		baseUrl = Cypress.env('baseUrl'),
+		baseDir = Cypress.env('baseDir');
+	getDomNode(baseUrl + baseDir + 'logout').click({ force: true });
 }
 
 
@@ -52,7 +58,10 @@ export function navigateToHome() {
 	navigateToScreen('/home');
 }
 export function navigateToScreen(path) {
-	cy.visit(Cypress.env('baseUrl') + path)
+	const
+		baseUrl = Cypress.env('baseUrl'),
+		baseDir = Cypress.env('baseDir');
+	cy.visit(baseUrl + baseDir + path)
 		.then(() => {
 			cy.url().should('include', path);
 		});
