@@ -1,11 +1,12 @@
 import { Platform } from "react-native";
+import UiGlobals from '../UiGlobals.js';
 
 // This adds a data-testid attribute to the DOM node,
 // which can be quried in Cypress by: document.querySelector(`[data-testid='MyTestId']`);
 
 export default function testProps(id) {
-	if (typeof __DEV__ === 'undefined' || !__DEV__) {
-		return {}; // don't add test props in production
+	if (!UiGlobals.debugMode) {
+		return {};
 	}
 	if (id?.path) { // id is actually 'self' object
 		id = id.path;
