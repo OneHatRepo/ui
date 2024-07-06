@@ -55,7 +55,7 @@ export function navigateViaTabOrHomeButtonTo(url) {
 	cy.url().should('include', url);
 }
 export function navigateToHome() {
-	navigateToScreen('/home');
+	navigateToScreen('home');
 }
 export function navigateToScreen(path) {
 	const
