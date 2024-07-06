@@ -7,8 +7,8 @@
  * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
  * @return Cypress chainer
  */
-export function getDomNode(selectors) {
-	return cy.get(getTestIdSelectors(selectors, true));
+export function getDomNode(selectors, options = {}) {
+	return cy.get(getTestIdSelectors(selectors, true), options);
 }
 
 /**
@@ -18,8 +18,8 @@ export function getDomNode(selectors) {
  * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
  * @return Cypress chainer
  */
-export function getDomNodes(selectors) {
-	return cy.get(getTestIdSelectors(selectors));
+export function getDomNodes(selectors, options = {}) {
+	return cy.get(getTestIdSelectors(selectors), options);
 }
 
 /**
