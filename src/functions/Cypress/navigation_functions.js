@@ -49,7 +49,8 @@ export function logout() {
 export function navigateViaTabOrHomeButtonTo(url) {
 	// i.e. If we're on home screen, press the button.
 	// If we have a tab navigation, press the tab's button
-	getDomNode(url).click(); // i.e. the DomNode's data-testid is the url
+	const baseDir = Cypress.env('baseDir');
+	getDomNode(baseDir + url).click(); // i.e. the DomNode's data-testid is the url
 	cy.url().should('include', url);
 }
 export function navigateToHome() {

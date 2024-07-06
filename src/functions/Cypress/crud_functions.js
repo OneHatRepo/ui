@@ -622,7 +622,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 
 	const
 		Models = Inflector.camelize(Inflector.pluralize(model)),
-		url = '/' + Inflector.dasherize(Inflector.underscore(Models));
+		url = Inflector.dasherize(Inflector.underscore(Models));
 
 	describe(Models + 'Manager', () => {
 
@@ -711,7 +711,7 @@ export function runClosureTreeManagerScreenCrudTests(model, schema, newData, edi
 
 	const
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-		url = '/' + fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
+		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
 
 	describe(Models + 'Manager', () => {
 
@@ -763,7 +763,7 @@ export function runInlineManagerScreenCrudTests(model, schema, newData, editData
 
 	const
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-		url = '/' + fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
+		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
 
 	describe(Models + 'Manager', () => {
 
@@ -815,7 +815,7 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 
 	const
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-		url = '/' + fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
+		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
 
 	describe(Models + 'Manager', () => {
 
@@ -865,7 +865,7 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 }
 export function runReportsManagerTests(reportData) {
 
-	const url = '/reports';
+	const url = 'reports';
 
 	describe('ReportsManager', () => {
 
