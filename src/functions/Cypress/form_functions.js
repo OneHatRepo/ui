@@ -134,9 +134,9 @@ export function setComboValue(selectors, value) {
 				.wait('@getWaiter'); // allow dropdown to load
 				
 			cy.get(field)
-				.wait(1000) // render
+				.wait(1500) // render
 				.type('{downarrow}')
-				.wait(250) // allow time for selection
+				.wait(1000) // allow time for selection
 
 				.type('{enter}')
 				.wait(250); // allow time to register enter key
@@ -175,9 +175,9 @@ export function setTagValue(selectors, value) {
 					.wait('@getWaiter'); // allow dropdown to load
 					
 				cy.get(field)
-					.wait(1000) // render
+					.wait(1500) // render
 					.type('{downarrow}')
-					.wait(500); // allow time for selection
+					.wait(1000); // allow time for selection
 			});
 
 			// press trigger to hide dropdown
