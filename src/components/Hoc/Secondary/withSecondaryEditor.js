@@ -111,6 +111,15 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			secondaryDoAdd = async (e, values) => {
 				let addValues = values;
 
+				if (SecondaryRepository?.isLoading) {
+					// NOTE: This is a hack to prevent adding a new record while the repository is still loading.
+					// This can happen when the repository is still loading, and the user clicks the 'Add' button.
+					setTimeout(() => {
+						doAdd(e, values);
+					}, 500);
+					return;
+				}
+
 				if (!values) {
 					// you can either:
 					// 1. directlty submit 'values' to use in secondaryDoAdd(), or
