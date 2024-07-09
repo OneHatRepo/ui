@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, isValidElement, } from 'react';
-import { View, } from 'react-native';
 import {
 	Box,
 	Column,
