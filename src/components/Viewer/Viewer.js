@@ -11,7 +11,7 @@ import {
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
-import withPdfButton from '../Hoc/withPdfButton.js';
+import withPdfButtons from '../Hoc/withPdfButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
@@ -305,4 +305,4 @@ function Viewer(props) {
 			</Column>;
 }
 
-export default withComponent(withPdfButton(Viewer));
+export default withComponent(withPdfButtons(Viewer));
