@@ -35,6 +35,7 @@ export default function withModal(WrappedComponent) {
 			[h, setHeight] = useState(250),
 			[w, setWidth] = useState(400),
 			[onOk, setOnOk] = useState(),
+			[okBtnLabel, setOkBtnLabel] = useState('OK'),
 			[onYes, setOnYes] = useState(),
 			[onNo, setOnNo] = useState(),
 			[customButtons, setCustomButtons] = useState(),
@@ -53,6 +54,7 @@ export default function withModal(WrappedComponent) {
 					canClose = true,
 					includeCancel = false,
 					onOk,
+					okBtnLabel,
 					onYes,
 					onNo,
 					customButtons,
@@ -80,6 +82,9 @@ export default function withModal(WrappedComponent) {
 				}
 				if (onOk) {
 					setOnOk(() => onOk);
+				}
+				if (okBtnLabel) {
+					setOkBtnLabel(okBtnLabel);
 				}
 				if (onYes) {
 					setOnYes(() => onYes);
@@ -132,7 +137,7 @@ export default function withModal(WrappedComponent) {
 								key="okBtn"
 								ref={autoFocusRef}
 								onPress={onOk}
-							>OK</Button>);
+							>{okBtnLabel}</Button>);
 			}
 			if (onYes) {
 				buttons.push(<Button

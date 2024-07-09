@@ -26,7 +26,7 @@ import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import withEditor from '../Hoc/withEditor.js';
-import withPdfButton from '../Hoc/withPdfButton.js';
+import withPdfButtons from '../Hoc/withPdfButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
@@ -1123,6 +1123,6 @@ function getNullFieldValues(initialValues, Repository) {
 	return ret;
 }
 
-export const FormEditor = withComponent(withAlert(withEditor(withPdfButton(Form))));
+export const FormEditor = withComponent(withAlert(withEditor(withPdfButtons(Form))));
 
-export default withComponent(withAlert(withPdfButton(Form)));
+export default withComponent(withAlert(withPdfButtons(Form)));

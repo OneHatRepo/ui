@@ -1,24 +1,25 @@
-import { useState, } from 'react';
 import {
 	Column,
-	Button,
-	Modal,
+	Icon,
+	Row,
+	Text,
 } from 'native-base';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
 import qs from 'qs';
-import FormPanel from '../Panel/FormPanel.js';
+import Form from '../Form/Form.js';
 import inArray from '../../Functions/inArray.js';
 import Pdf from '../Icons/Pdf.js';
-import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
+import TriangleExclamation from '../Icons/TriangleExclamation.js';
+import withModal from './withModal.js';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
-export default function withPdfButton(WrappedComponent) {
-	return (props) => {
+export default function withPdfButtons(WrappedComponent) {
+	return withModal((props) => {
 
-		if (!props.showViewPdfBtn) {
+		if (!props.showPdfBtns) {
 			// bypass everything.
 			// If we don't do this, we get an infinite recursion with Form
 			// because this HOC wraps Form and uses Form itself.
@@ -33,6 +34,9 @@ export default function withPdfButton(WrappedComponent) {
 				ancillaryItems = [],
 				columnDefaults = {},
 
+				// withComponent
+				self,
+
 				// withData
 				Repository,
 				model,
@@ -40,9 +44,15 @@ export default function withPdfButton(WrappedComponent) {
 				// withSelection
 				selection,
 
+				// withAlert
+				alert,
+				showInfo,
+
+				// withModal
+				showModal,
+				hideModal,
+
 			} = props,
-			[isModalShown, setIsModalShown] = useState(false),
-			[width, height] = useAdjustedWindowSize(510, 800), // 510 so it's over the stack threshold
 			propertyNames = [],
 			buildModalItems = () => {
 				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
@@ -108,7 +118,6 @@ export default function withPdfButton(WrappedComponent) {
 					return item;
 				}
 
-
 				if (item.isHiddenInViewMode || type === 'Button') {
 					return null;
 				}
@@ -138,6 +147,7 @@ export default function withPdfButton(WrappedComponent) {
 					if (!item) {
 						return;
 					}
+
 					let {
 							name,
 							items,
@@ -154,6 +164,107 @@ export default function withPdfButton(WrappedComponent) {
 				_.each(modalItems, walkTree);
 				return startingValues;
 			},
+			onChooseFields = (userWantsToEmail = false) => {
+				const
+					modalItems = buildModalItems(),
+					startingValues = getStartingValues(modalItems),
+					validator = buildValidator();
+
+				showModal({
+					title: 'PDF Fields to Show',
+					message: 'Please select which fields to show in the PDF. (1)',
+					includeCancel: true,
+					onOk: () => {
+						hideModal();
+
+						const
+							form = self.children.ModalForm,
+							data = form.formGetValues();
+
+						if (userWantsToEmail) {
+							onChooseEmailAddress(data);
+						} else {
+							getPdf(data);
+						}
+					},
+					okBtnLabel: userWantsToEmail ? 'Choose Email' : 'Get PDF',
+					w: 530, // 510 so it's over the stack threshold
+					h: 800,
+					body: <Column w="100%">
+							<Row px={10}>
+								<Column w="40px" mr={5} justifyContent="flex-start">
+									<Icon as={TriangleExclamation} size={10} color="#000" />
+								</Column>
+								<Text flex={1}>Please select which fields to show in the PDF. (2)</Text>
+							</Row>
+							<Form
+								parent={self}
+								reference="ModalForm"
+								editorType={EDITOR_TYPE__PLAIN}
+								flex={1}
+								Repository={Repository}
+								items={modalItems}
+								startingValues={startingValues}
+								validator={validator}
+								checkIsEditingDisabled={false}
+								disableFooter={true}
+								columnDefaults={{
+									labelWidth: '100%',
+								}}
+							/>
+						</Column>,
+				});
+			},
+			onChooseEmailAddress = (data) => {
+				showModal({
+					title: 'Email To',
+					message: 'Please enter an email address to send the PDF to. (1)',
+					includeCancel: true,
+					onOk: () => {
+						hideModal();
+
+						const
+							fv = self.children.ModalForm.formGetValues(),
+							email = fv.email;
+
+						sendEmail({
+							...data,
+							email,
+						});
+					},
+					okBtnLabel: 'Email PDF',
+					w: 510, // 510 so it's over the stack threshold
+					h: 300,
+					body: <Column w="100%">
+							<Row>
+								<Column w="40px" mr={5} justifyContent="flex-start">
+									<Icon as={TriangleExclamation} size={10} color="#000" />
+								</Column>
+								<Text flex={1}>Please enter an email address to send the PDF to. (2)</Text>
+							</Row>
+							<Form
+								parent={self}
+								reference="ModalForm"
+								editorType={EDITOR_TYPE__PLAIN}
+								disableFooter={true}
+								columnDefaults={{
+									labelWidth: '100%',
+								}}
+								items={[
+									{
+										name: 'email',
+										label: 'Email Address',
+										type: 'Input',
+										required: true,
+									},
+								]}
+								validator={yup.object({
+									email: yup.string().email().required(),
+								})}
+							/>
+						</Column>,
+				});
+			},
 			getPdf = (data) => {
 				data.id = selection[0].id;
 
@@ -162,65 +273,58 @@ export default function withPdfButton(WrappedComponent) {
 					queryString = qs.stringify(data);
 
 				window.open(url + queryString, '_blank');
+			},
+			sendEmail = async (data) => {
+
+				data.id = selection[0].id;
+				
+				const result = await Repository._send('POST', model + '/emailModelPdf', data);
+
+				const {
+					root,
+					success,
+					total,
+					message
+				} = Repository._processServerResponse(result);
+
+				if (!success) {
+					alert('Email could not be sent.');
+					return;
+				}
+
+				showInfo('Email sent successfully.');
+
 			};
 
-		const button = {
-			key: 'viewPdfBtn',
-			text: 'View PDF',
-			icon: Pdf,
-			isDisabled: selection.length !== 1,
-			handler: () => {
-				setIsModalShown(true);
+		const buttons = [
+			{
+				key: 'emailPdfBtn',
+				text: 'Email PDF',
+				icon: Pdf,
+				isDisabled: selection.length !== 1,
+				handler: () => onChooseFields(true),
 			},
-		};
-		if (!_.find(additionalEditButtons, btn => button.key === btn.key)) { 
-			additionalEditButtons.push(button);
-		}
-		if (!_.find(additionalViewButtons, btn => button.key === btn.key)) { 
-			additionalViewButtons.push(button);
-		}
+			{
+				key: 'viewPdfBtn',
+				text: 'View PDF',
+				icon: Pdf,
+				isDisabled: selection.length !== 1,
+				handler: () => onChooseFields(),
+			},
+		];
+		_.each(buttons, (button) => {
+			if (!_.find(additionalEditButtons, btn => button.key === btn.key)) { 
+				additionalEditButtons.push(button);
+			}
+			if (!_.find(additionalViewButtons, btn => button.key === btn.key)) { 
+				additionalViewButtons.push(button);
+			}
+		});
 	
-		let modal = null;
-		if (isModalShown) {
-			const
-				modalItems = buildModalItems(),
-				startingValues = getStartingValues(modalItems),
-				validator = buildValidator();
-			modal = <Modal
-						isOpen={true}
-						onClose={() => setIsModalShown(false)}
-					>
-						<Column bg="#fff" w={width} h={height}>
-							<FormPanel
-								title="PDF Fields to Show"
-								instructions="Please select which parts to show in the PDF."
-								editorType={EDITOR_TYPE__PLAIN}
-								flex={1}
-								Repository={Repository}
-								items={modalItems}
-								startingValues={startingValues}
-								validator={validator}
-								checkIsEditingDisabled={false}
-								onClose={(e) => {
-									setIsModalShown(false);
-								}}
-								onSubmit={(data, e) => {
-									getPdf(data);
-									setIsModalShown(false);
-								}}
-								submitBtnLabel="View PDF"
-								useAdditionalEditButtons={false}
-							/>
-						</Column>
-					</Modal>;
-		}
-		return <>
-				<WrappedComponent
+		return <WrappedComponent
 					{...props}
 					additionalEditButtons={additionalEditButtons}
 					additionalViewButtons={additionalViewButtons}
-				/>
-				{modal}
-			</>;
-	};
+				/>;
+	});
 }
