@@ -167,7 +167,6 @@ export default function withModal(WrappedComponent) {
 							onClose={onCancel}
 						>
 							<Panel
-								{...props}
 								reference="modal"
 								isCollapsible={false}
 								bg="#fff"
