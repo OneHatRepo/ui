@@ -225,7 +225,7 @@ function GridComponent(props) {
 					const usedIds = [];
 					_.each(localConfig, (column, ix) => {
 						if (!column.id || inArray(column.id, usedIds)) {
-							throw Error('When using unserializable columns, each column must have a unique id. First invalid column: ' + JSON.stringify(column));
+							throw Error('When using unserializable columns, each column must have a unique id. ' + localColumnsConfigKey);
 						}
 						usedIds.push(column.id);
 						localConfig[ix] = {
