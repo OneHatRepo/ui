@@ -78,7 +78,6 @@ function GridRow(props) {
 					if (_.isPlainObject(config)) {
 						if (config.renderer) {
 							const extraProps = _.omit(config, [
-								'columnId',
 								'header',
 								'fieldName',
 								'type',

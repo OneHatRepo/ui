@@ -294,7 +294,6 @@ export default function GridHeaderRow(props) {
 				// so we can drag/drop them to control the columns.
 				const headerColumns = _.map(localColumnsConfig, (config, ix, all) => {
 					let {
-							columnId,
 							fieldName,
 							header = _.upperFirst(fieldName),
 							reorderable,

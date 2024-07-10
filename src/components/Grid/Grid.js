@@ -48,6 +48,8 @@ import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js'
 import nbToRgb from '../../Functions/nbToRgb.js';
 import testProps from '../../Functions/testProps.js';
 import Loading from '../Messages/Loading.js';
+import isSerializable from '../../Functions/isSerializable.js';
+import inArray from '../../Functions/inArray.js';
 import ReloadPageButton from '../Buttons/ReloadPageButton.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';
@@ -191,17 +193,9 @@ function GridComponent(props) {
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
 		localColumnsConfigKey = id && id + '-localColumnsConfig',
-		[hasFunctionColumn, setHasActionColumns] = useState((() => {
-			// We can't save localColumnsConfig when there's a function column, so we need to determine if this is the case (only run once per Grid)
-			let ret = false;
-			_.each(columnsConfig, (column) => {
-				if (column.renderer || _.isFunction(column)) {
-					ret = true;
-					return false;
-				}
-			});
-			return ret;
-		})()),
+		[hasUnserializableColumns] = useState(() => {
+			return !isSerializable(columnsConfig); // (runs only once, when the component is first created)
+		}),
 		forceUpdate = useForceUpdate(),
 		containerRef = useRef(),
 		gridRef = useRef(),
@@ -224,8 +218,23 @@ function GridComponent(props) {
 			forceUpdate();
 		},
 		setLocalColumnsConfig = (config) => {
-			if (localColumnsConfigKey && !hasFunctionColumn) {
-				setSaved(localColumnsConfigKey, config);
+			if (localColumnsConfigKey) {
+				const localConfig = _.clone(config); // clone it so we don't alter the original
+				if (hasUnserializableColumns) {
+					// just save the data needed to later reconstruct the columns
+					const usedIds = [];
+					_.each(localConfig, (column, ix) => {
+						if (!column.id || inArray(column.id, usedIds)) {
+							throw Error('When using unserializable columns, each column must have a unique id');
+						}
+						usedIds.push(column.id);
+						localConfig[ix] = {
+							id: column.id,
+							isHidden: !!column.isHidden,
+						};
+					});
+				}
+				setSaved(localColumnsConfigKey, localConfig);
 			}
 
 			setLocalColumnsConfigRaw(config);
@@ -791,19 +800,18 @@ function GridComponent(props) {
 
 			// second call -- do other necessary setup
 
-			// calculate localColumnsConfig
-			let localColumnsConfig = [];
-			let savedLocalColumnsConfig;
-			if (localColumnsConfigKey && !hasFunctionColumn && !UiGlobals.disableSavedColumnsConfig) {
+			
+			let localColumnsConfig = [],
+				savedLocalColumnsConfig,
+				calculateLocalColumnsConfig = false;
+			if (localColumnsConfigKey && !UiGlobals.disableSavedColumnsConfig) {
 				savedLocalColumnsConfig = await getSaved(localColumnsConfigKey);
 			}
-			if (savedLocalColumnsConfig) {
-				// use saved
-				localColumnsConfig = savedLocalColumnsConfig;
-			} else {
-				// calculate new
 
-				// convert json config into actual elements
+			if (!savedLocalColumnsConfig || hasUnserializableColumns) {
+				calculateLocalColumnsConfig = true;
+			}
+			if (calculateLocalColumnsConfig) {
 				if (_.isEmpty(columnsConfig)) {
 					if (Repository) {
 						// create a column for the displayProperty
@@ -821,10 +829,9 @@ function GridComponent(props) {
 							localColumnsConfig.push(columnConfig);
 							return;
 						}
-
+	
 						const
 							defaults = {
-								columnId: uuid(),
 								isEditable: false,
 								reorderable: true,
 								resizable: true,
@@ -841,11 +848,29 @@ function GridComponent(props) {
 							// Both are set. Width overrules flex.
 							delete config.flex;
 						}
-
+	
 						localColumnsConfig.push(config);
 					});
 				}
 			}
+
+			if (savedLocalColumnsConfig) {
+				if (!hasUnserializableColumns) {
+					// just use the saved config without any further processing
+					localColumnsConfig = savedLocalColumnsConfig;
+
+				} else {
+					// Conform the calculated localColumnsConfig to the saved config.
+					// This should allow us to continue using non-serializable configurations after a refresh
+					const reconstructedLocalColumnsConfig = savedLocalColumnsConfig.map((savedConfig) => { // foreach saved column, in the order it was saved...
+						const columnConfig = localColumnsConfig.find(localConfig => localConfig.id === savedConfig.id); // find the corresponding column in localColumnsConfig
+						columnConfig.isHidden = savedConfig.isHidden;
+						return columnConfig;
+					});
+					localColumnsConfig = reconstructedLocalColumnsConfig;
+				}
+			}
+
 			setLocalColumnsConfig(localColumnsConfig);
 
 			setIsReady(true);
