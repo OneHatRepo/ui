@@ -214,6 +214,7 @@ import GridPanel from './Panel/GridPanel.js';
 import IconButton from './Buttons/IconButton.js';
 import Input from './Form/Field/Input.js';
 import IntervalsCombo from './Form/Field/Combo/IntervalsCombo.js';
+import Json from './Form/Field/Json.js';
 import Label from './Form/Label.js';
 import MonthsCombo from './Form/Field/Combo/MonthsCombo.js';
 import Number from './Form/Field/Number.js';
@@ -450,6 +451,7 @@ const components = {
 	IconButton,
 	Input,
 	IntervalsCombo,
+	Json,
 	Label,
 	MonthsCombo,
 	Number,
