@@ -5,7 +5,6 @@ import Datetime from '../PlatformImports/Web/Datetime.js';
 import Draggable from '../PlatformImports/Web/Draggable.js';
 import File from '../PlatformImports/Web/File.js';
 import JsonEditor from '../PlatformImports/Web/JsonEditor.js';
-import JsonViewer from '../PlatformImports/Web/JsonViewer.js';
 import useWindowSize from '../PlatformImports/Web/useWindowSize.js';
 import _ from 'lodash';
 
@@ -17,7 +16,6 @@ export default function registerWebComponents() {
 		Draggable,
 		File,
 		JsonEditor,
-		JsonViewer,
 		useWindowSize,
 	});
 }

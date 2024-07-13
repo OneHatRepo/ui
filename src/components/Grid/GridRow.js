@@ -122,7 +122,7 @@ function GridRow(props) {
 									if (UiGlobals.mode === UI_MODE_WEB) {
 										elementProps.textOverflow = 'ellipsis';
 									}
-									if (type.match(/(Tag|TagEditor)$/)) {
+									if (type.match(/(Tag|TagEditor|Json)$/)) {
 										elementProps.isViewOnly = true; // TODO: this won't work for InlineGridEditor, bc that Grid can't use isViewOnly when actually editing
 									}
 									if (config.getCellProps) {

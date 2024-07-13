@@ -21,7 +21,7 @@ export function JsonElement(props) {
 			tooltipRef = null,
 			tooltip = null,
 			isDisabled = false,
-			isEditable = true,
+			isViewOnly = false,
 			tooltipPlacement = 'bottom',
 			testID,
 
@@ -34,34 +34,29 @@ export function JsonElement(props) {
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
-		JsonEditor = getComponentFromType('JsonEditor'),
-		JsonViewer = getComponentFromType('JsonViewer');
-		
+		JsonEditor = getComponentFromType('JsonEditor');
+
 	let assembledComponents = null;
 	
 	if (UiGlobals.mode === UI_MODE_WEB) {
 		const src = JSON.parse(value);
-
-		if (isEditable) {
-			assembledComponents = 
+		assembledComponents = 
+			<Row
+				flex={1}
+				{...propsToPass}
+				justifyContent="flex-start"
+			>
 				<JsonEditor
-					// {...propsToPass}
+					width="100%"
+					editable={!isViewOnly}
 					src={src}
 					enableClipboard={false}
 					collapsed={true}
-					editable={isEditable}
 					onEdit={(obj) => {
 						setValue(JSON.stringify(obj.updated_src));
 					}}
-					isDisabled={isDisabled}
-				/>;
-		} else {
-			assembledComponents = 
-				<JsonViewer
-					// {...propsToPass}
-					data={src}
-				/>;
-		}
+				/>
+			</Row>;
 
 	}
 	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {

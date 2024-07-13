@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.3.317",
+	"version": "0.3.318",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -52,11 +52,10 @@
 		"react-dnd-html5-backend": "^16.0.1",
 		"react-dnd-touch-backend":"16.0.1",
 		"react-draggable": "^4.4.5",
-		"react-json-view": "^1.21.3",
-		"react-json-view-lite": "^1.4.0",
 		"react-native": "*",
 		"react-native-draggable": "^3.3.0",
 		"react-native-svg": "*",
+		"react18-json-view": "^0.2.8",
 		"use-file-picker": "^2.1.1"
 	},
 	"devDependencies": {
