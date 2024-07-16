@@ -46,6 +46,7 @@ export function ComboComponent(props) {
 			showEyeButton = false,
 			viewerProps = {}, // popup for eyeButton
 			_input = {},
+			_editor = {},
 			isEditor = false,
 			isDisabled = false,
 			isInTag = false,
@@ -817,6 +818,7 @@ export function ComboComponent(props) {
 							onInputFocus();
 						}
 					}}
+					{..._editor}
 				/>;
 		if (UiGlobals.mode === UI_MODE_WEB) {
 			dropdownMenu = <Popover
