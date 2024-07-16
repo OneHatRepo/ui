@@ -7,12 +7,12 @@ import {
 import {
 	UI_MODE_REACT_NATIVE,
 	UI_MODE_WEB,
-} from '../../../constants/UiModes.js';
+} from '../../../Constants/UiModes.js';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
-import testProps from '../../../functions/testProps.js';
-import getComponentFromType from '../../../functions/getComponentFromType.js';
+import testProps from '../../../Functions/testProps.js';
+import getComponentFromType from '../../../Functions/getComponentFromType.js';
 import _ from 'lodash';
 
 
