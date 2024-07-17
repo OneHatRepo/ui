@@ -273,7 +273,7 @@ export default function withFilters(WrappedComponent) {
 								type: filterType,
 								title,
 							} = filter;
-						
+							
 						if (!title) {
 							const propertyDef = Repository.getSchema().getPropertyDefinition(field);
 							title = propertyDef?.title;
@@ -282,7 +282,8 @@ export default function withFilters(WrappedComponent) {
 						if (_.isString(filterType)) {
 							if (filterType === FILTER_TYPE_ANCILLARY) {
 								title = modelFilterTypes[field].title;
-								filterType = Inflector.camelize(Inflector.pluralize(field)) + 'Combo'; // Convert field to PluralCamelCombo
+								const tagOrCombo = Repository.schema.model.ancillaryFiltersThatUseTags && inArray(field, Repository.schema.model.ancillaryFiltersThatUseTags) ? 'Tag' : 'Combo';
+								filterType = Inflector.camelize(Inflector.pluralize(field)) + tagOrCombo; // Convert field to PluralCamelCombo
 							}
 							Element = getComponentFromType(filterType);
 							if (filterType === 'Input') {
