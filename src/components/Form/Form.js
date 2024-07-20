@@ -82,6 +82,8 @@ function Form(props) {
 			onReset,
 			onInit,
 			onViewMode,
+			onValidityChange,
+			onDirtyChange,
 			submitBtnLabel,
 			onSubmit,
 			formSetup, // this fn will be executed after the form setup is complete
@@ -807,6 +809,18 @@ function Form(props) {
 		};
 	}, [Repository]);
 
+	if (onValidityChange) {
+		useEffect(() => {
+			onValidityChange(formState.isValid);
+		}, [formState.isValid]);
+	}
+
+	if (onDirtyChange) {
+		useEffect(() => {
+			onDirtyChange(formState.isDirty);
+		}, [formState.isDirty]);
+	}
+
 	if (skipAll) {
 		return null;
 	}
@@ -821,6 +835,8 @@ function Form(props) {
 
 	if (self) {
 		self.ref = formRef;
+		self.reset = doReset;
+		self.submit = handleSubmit;
 		self.formState = formState;
 		self.formSetValue = formSetValue;
 		self.formGetValues = formGetValues;
