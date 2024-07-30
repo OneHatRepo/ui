@@ -485,38 +485,6 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
-			if (!SecondaryRepository) {
-				return () => {};
-			}
-
-			function handleError(msg, data = null) {
-				if (data) {
-					if (_.isPlainObject(data)) {
-						for (let key in data) { if (data.hasOwnProperty(key)) {
-							const val1 = data[key];
-							if (_.isPlainObject(val1)) {
-								for (let key2 in val1) { if (val1.hasOwnProperty(key2)) {
-									const val2 = val1[key2];
-									msg += "\n" + key + ': ' + val2;
-								} }
-							} else if (_.isString(data)) {
-								msg += "\n" + data;
-							}
-						} }
-					} else {
-						// not sure what to do with data!
-					}
-				}
-				alert(msg);
-			}
-
-			SecondaryRepository.on('error', handleError);
-			return () => {
-				SecondaryRepository.off('error', handleError);
-			};
-		}, []);
-
-		useEffect(() => {
 			secondarySetEditorMode(calculateEditorMode(secondaryIsIgnoreNextSelectionChange));
 
 			setSecondaryIsIgnoreNextSelectionChange(false);
