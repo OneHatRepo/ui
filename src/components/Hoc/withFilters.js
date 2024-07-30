@@ -44,6 +44,7 @@ export default function withFilters(WrappedComponent) {
 				showClearFiltersButton = true,
 				defaultFilters = [], // likely a list of field names, possibly could be of shape below
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
+				clearExceptions = [], // list of fields that should not be cleared when clearFilters button is pressed
 				minFilters = 3,
 				maxFilters = 6,
 				onFilterChange,
@@ -214,7 +215,9 @@ export default function withFilters(WrappedComponent) {
 					// Clears values for all active filters
 					const newFilters = [];
 					_.each(filters, (filter) => {
-						filter.value = null;
+						if (!inArray(filter.field, clearExceptions)) {
+							filter.value = null;
+						}
 						newFilters.push(filter);
 					});
 					setFilters(newFilters, false);
