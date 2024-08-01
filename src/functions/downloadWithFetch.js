@@ -6,7 +6,7 @@ const downloadWithFetch = (url, options = {}, win = null) => {
 			if (!win) {
 				const
 					winName = 'Download',
-					opts = 'resizable=yes,height=100,width=50,location=0,menubar=0,scrollbars=0';
+					opts = 'location=0,menubar=0,scrollbars=0';
 				win = window.open('', winName, opts);
 			}
 

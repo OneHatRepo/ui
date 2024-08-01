@@ -25,11 +25,13 @@ import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withData from '../../Components/Hoc/withData.js';
 import downloadInBackground from '../../Functions/downloadInBackground.js';
+import downloadWithFetch from '../../Functions/downloadWithFetch.js';
 import _ from 'lodash';
 
 const
 	EXPANDED_MAX = 100,
-	COLLAPSED_MAX = 4;
+	COLLAPSED_MAX = 4,
+	isPwa = !!window?.navigator?.standalone;
 
 function FileCardCustom(props) {
 	const
@@ -187,6 +189,13 @@ function AttachmentsElement(props) {
 				doDelete(id);
 			}
 		},
+		onDownload = (id, url) => {
+			if (isPwa) {
+				downloadWithFetch(url);
+			} else {
+				downloadInBackground(url);
+			}
+		},
 		doDelete = (id) => {
 			Repository.deleteById(id);
 			Repository.save();
@@ -282,6 +291,7 @@ function AttachmentsElement(props) {
 												<FileMosaic
 													{...file}
 													backgroundBlurImage={false}
+													onDownload={onDownload}
 													{..._fileMosaic}
 												/>}
 											{!useFileMosaic &&
