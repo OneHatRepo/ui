@@ -191,7 +191,10 @@ function AttachmentsElement(props) {
 		},
 		onDownload = (id, url) => {
 			if (isPwa) {
-				downloadWithFetch(url);
+				// This doesn't work because iOS doesn't allow you to open another window within a PWA.
+				// downloadWithFetch(url);
+				
+				alert('Files cannot be downloaded and viewed within an iOS PWA. Please use the Safari browser instead.');
 			} else {
 				downloadInBackground(url);
 			}
