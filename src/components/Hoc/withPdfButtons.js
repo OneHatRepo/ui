@@ -201,6 +201,7 @@ export default function withPdfButtons(WrappedComponent) {
 								parent={self}
 								reference="ModalForm"
 								editorType={EDITOR_TYPE__PLAIN}
+								useAdditionalEditButtons={false}
 								flex={1}
 								Repository={Repository}
 								items={modalItems}
