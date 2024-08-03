@@ -232,6 +232,9 @@ function GridComponent(props) {
 							id: column.id,
 							isHidden: !!column.isHidden,
 						};
+						if (column.w) {
+							localConfig[ix].w = column.w;
+						}
 					});
 				}
 				setSaved(localColumnsConfigKey, localConfig);
@@ -864,7 +867,7 @@ function GridComponent(props) {
 					// This should allow us to continue using non-serializable configurations after a refresh
 					const reconstructedLocalColumnsConfig = savedLocalColumnsConfig.map((savedConfig) => { // foreach saved column, in the order it was saved...
 						const columnConfig = localColumnsConfig.find(localConfig => localConfig.id === savedConfig.id); // find the corresponding column in localColumnsConfig
-						columnConfig.isHidden = savedConfig.isHidden;
+						_.assign(columnConfig, savedConfig);
 						return columnConfig;
 					});
 					localColumnsConfig = reconstructedLocalColumnsConfig;
