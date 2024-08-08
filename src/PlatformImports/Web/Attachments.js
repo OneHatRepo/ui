@@ -23,6 +23,7 @@ import inArray from '../../Functions/inArray.js';
 import IconButton from '../../Components/Buttons/IconButton.js';
 import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
+import withComponent from '../../Components/Hoc/withComponent.js';
 import withData from '../../Components/Hoc/withData.js';
 import downloadInBackground from '../../Functions/downloadInBackground.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
@@ -87,6 +88,9 @@ function AttachmentsElement(props) {
 			collapsedMax = COLLAPSED_MAX,
 			autoUpload = true,
 			onBeforeDropzoneChange,
+
+			// withComponent
+			self,
 
 			// parentContainer
 			selectorSelected,
@@ -274,7 +278,10 @@ function AttachmentsElement(props) {
 	if (!isReady) {
 		return null;
 	}
-	
+
+	if (self) {
+		self.files = files;
+	}
 
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
@@ -363,4 +370,4 @@ function withAdditionalProps(WrappedComponent) {
 	};
 }
 
-export default withAdditionalProps(withAlert(withData(AttachmentsElement)));
+export default withComponent(withAdditionalProps(withAlert(withData(AttachmentsElement))));
