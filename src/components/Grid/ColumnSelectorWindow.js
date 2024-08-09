@@ -70,10 +70,10 @@ export default function ColumnSelectorWindow(props) {
 						{
 							header: 'Show',
 							fieldName: 'is_shown',
-							sortable: false,
+							isSortable: false,
 							isEditable: false,
-							reorderable: false,
-							resizable: false,
+							isReorderable: false,
+							isResizable: false,
 							w: '50px',
 							renderer: (datum) => {
 								const
@@ -95,10 +95,10 @@ export default function ColumnSelectorWindow(props) {
 						{
 							header: 'Column',
 							fieldName: 1, // ix
-							sortable: false,
+							isSortable: false,
 							isEditable: false,
-							reorderable: false,
-							resizable: false,
+							isReorderable: false,
+							isResizable: false,
 							flex: 3,
 						}
 					]}

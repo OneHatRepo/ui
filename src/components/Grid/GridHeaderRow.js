@@ -147,7 +147,7 @@ export default function GridHeaderRow(props) {
 			});
 
 			// Verify index can actually be used
-			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].reorderable) {
+			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].isReorderable) {
 				return;
 			}
 
@@ -222,7 +222,7 @@ export default function GridHeaderRow(props) {
 			});
 
 			// Verify index can actually be used
-			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].reorderable) {
+			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].isReorderable) {
 				return;
 			}
 
@@ -296,17 +296,17 @@ export default function GridHeaderRow(props) {
 					let {
 							fieldName,
 							header = _.upperFirst(fieldName),
-							reorderable,
-							resizable,
-							sortable,
+							isReorderable,
+							isResizable,
+							isSortable,
 							w,
 							flex,
 							isOver = false,
 							isHidden = false,
 						} = config,
-						isSorter = sortable && canColumnsSort && sortField === fieldName,
-						isReorderable = canColumnsReorder && reorderable,
-						isResizable = canColumnsResize && resizable,
+						isSorter = isSortable && canColumnsSort && sortField === fieldName,
+						isReorderable = canColumnsReorder && isReorderable,
+						isResizable = canColumnsResize && isResizable,
 						propsToPass = {
 							borderRightWidth: 2,
 							borderRightColor: '#fff',
@@ -351,7 +351,7 @@ export default function GridHeaderRow(props) {
 									if (isBlocked.current) { // withDraggable initiates block
 										return;
 									}
-									if (sortable && canColumnsSort) {
+									if (isSortable && canColumnsSort) {
 										onSort(config, e);
 									}
 								}}

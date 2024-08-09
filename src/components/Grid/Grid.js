@@ -92,6 +92,7 @@ function GridComponent(props) {
 
 			columnsConfig = [], // json configurations for each column
 			columnProps = {},
+			defaultHiddenColumns = [],
 			getRowProps = (item) => {
 				return {
 					borderBottomWidth: 1,
@@ -836,10 +837,10 @@ function GridComponent(props) {
 						const
 							defaults = {
 								isEditable: false,
-								reorderable: true,
-								resizable: true,
-								sortable: true,
-								isHidden: false,
+								isReorderable: true,
+								isResizable: true,
+								isSortable: true,
+								isHidden: inArray(columnConfig.id, defaultHiddenColumns),
 								isOver: false,
 							},
 							config = _.assign({}, defaults, columnConfig);
