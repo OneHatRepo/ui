@@ -588,7 +588,7 @@ export function ComboComponent(props) {
 									h="100%"
 									m={0}
 									InputLeftElement={inputIconElement}
-									autoSubmitDelay={0}
+									autoSubmitDelay={500}
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
 									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
@@ -914,7 +914,7 @@ export function ComboComponent(props) {
 							h="100%"
 							m={0}
 							InputLeftElement={inputIconElement}
-							autoSubmitDelay={0}
+							autoSubmitDelay={500}
 							borderTopRightRadius={0}
 							borderBottomRightRadius={0}
 							fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}

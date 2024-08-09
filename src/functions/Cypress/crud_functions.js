@@ -649,7 +649,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 
 		// it('CRUD in full mode', function() {
 
-		// 	const gridSelector = '/' + Models + 'FilteredGridEditor';
+		// 	const gridSelector = '/' + Models + 'GridEditor';
 
 		// 	toFullMode();
 		// 	cy.wait(500); // wait for grid to load
@@ -678,7 +678,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 
 		// it('CRUD in side mode', function() {
 
-		// 	const gridSelector = '/' + Models + 'FilteredSideGridEditor';
+		// 	const gridSelector = '/' + Models + 'GridEditor';
 
 		// 	toSideMode();
 		// 	cy.wait(1000); // wait for grid to load
@@ -747,7 +747,7 @@ export function runClosureTreeManagerScreenCrudTests(model, schema, newData, edi
 
 			const
 				managerSelector = '/' + Models + 'Manager',
-				treeSelector = '/' + Models + 'SideTreeEditor';
+				treeSelector = '/' + Models + 'TreeEditor';
 
 			toSideMode(managerSelector);
 			cy.wait(1000); // wait for grid to load
@@ -786,7 +786,7 @@ export function runInlineManagerScreenCrudTests(model, schema, newData, editData
 
 			const
 				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'FilteredInlineGridEditor';
+				gridSelector = '/' + Models + 'GridEditor';
 
 			toFullMode(managerSelector);
 			cy.wait(500); // wait for grid to load
@@ -799,7 +799,7 @@ export function runInlineManagerScreenCrudTests(model, schema, newData, editData
 
 			const
 				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'FilteredSideGridEditor';
+				gridSelector = '/' + Models + 'GridEditor';
 
 			toSideMode(managerSelector);
 			cy.wait(1000); // wait for grid to load
@@ -838,7 +838,7 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 
 			const
 				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'FilteredGridEditor';
+				gridSelector = '/' + Models + 'GridEditor';
 
 			toFullMode(managerSelector);
 			cy.wait(500); // wait for grid to load
@@ -851,7 +851,7 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 
 			const
 				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'FilteredSideGridEditor';
+				gridSelector = '/' + Models + 'GridEditor';
 
 			toSideMode(managerSelector);
 			cy.wait(1000); // wait for grid to load
