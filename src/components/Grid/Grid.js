@@ -15,9 +15,6 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
 import {
-	v4 as uuid,
-} from 'uuid';
-import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
 } from '../../Constants/Grid.js';
@@ -841,6 +838,7 @@ function GridComponent(props) {
 								isResizable: true,
 								isSortable: true,
 								isHidden: inArray(columnConfig.id, defaultHiddenColumns),
+								isHidable: true,
 								isOver: false,
 							},
 							config = _.assign({}, defaults, columnConfig);

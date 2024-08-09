@@ -296,8 +296,8 @@ export default function GridHeaderRow(props) {
 					let {
 							fieldName,
 							header = _.upperFirst(fieldName),
-							isReorderable,
-							isResizable,
+							isReorderable: configIsReorderable,
+							isResizable: configIsResizable,
 							isSortable,
 							w,
 							flex,
@@ -305,8 +305,8 @@ export default function GridHeaderRow(props) {
 							isHidden = false,
 						} = config,
 						isSorter = isSortable && canColumnsSort && sortField === fieldName,
-						isReorderable = canColumnsReorder && isReorderable,
-						isResizable = canColumnsResize && isResizable,
+						isReorderable = canColumnsReorder && configIsReorderable,
+						isResizable = canColumnsResize && configIsResizable,
 						propsToPass = {
 							borderRightWidth: 2,
 							borderRightColor: '#fff',

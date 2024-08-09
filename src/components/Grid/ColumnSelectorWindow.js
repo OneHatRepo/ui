@@ -79,9 +79,11 @@ export default function ColumnSelectorWindow(props) {
 								const
 									[ix, header] = datum,
 									columnConfig = localColumnsConfig.current[ix],
-									isHidden = columnConfig.isHidden;
+									isHidden = columnConfig.isHidden,
+									isHidable = columnConfig.isHidable;
 								return <CheckboxButton
 											isChecked={!isHidden}
+											isDisabled={!isHidable}
 											onPress={() => {
 												if (isHidden) {
 													onShowColumn(ix);
