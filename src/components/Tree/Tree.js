@@ -31,8 +31,9 @@ import withData from '../Hoc/withData.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
-import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
+import withPresetButtons from '../Hoc/withPresetButtons.js';
+import withPermissions from '../Hoc/withPermissions.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
@@ -1320,15 +1321,17 @@ export const Tree = withComponent(
 						withAlert(
 							withEvents(
 								withData(
-									// withMultiSelection(
-										withSelection(
-											withFilters(
-												withContextMenu(
-													TreeComponent
+									withPermissions(
+										// withMultiSelection(
+											withSelection(
+												withFilters(
+													withContextMenu(
+														TreeComponent
+													)
 												)
 											)
-										)
-									// )
+										// )
+									)
 								)
 							)
 						)
@@ -1338,20 +1341,22 @@ export const SideTreeEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												// withMultiSelection(
-													withSelection(
-														withSideEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		TreeComponent
+												withPermissions(
+													// withMultiSelection(
+														withSelection(
+															withSideEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			TreeComponent
+																		)
 																	)
-																)
-															),
-															true // isTree
+																),
+																true // isTree
+															)
 														)
-													)
-												// )
+													// )
+												)
 											)
 										)
 									)
@@ -1361,20 +1366,22 @@ export const WindowedTreeEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												// withMultiSelection(
-													withSelection(
-														withWindowedEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		TreeComponent
+												withPermissions(
+													// withMultiSelection(
+														withSelection(
+															withWindowedEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			TreeComponent
+																		)
 																	)
-																)
-															),
-															true // isTree
+																),
+																true // isTree
+															)
 														)
-													)
-												// )
+													// )
+												)
 											)
 										)
 									)

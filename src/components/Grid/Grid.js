@@ -32,18 +32,19 @@ import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
 import { withDropTarget } from '../Hoc/withDnd.js';
 import withEvents from '../Hoc/withEvents.js';
-import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
+import withInlineEditor from '../Hoc/withInlineEditor.js';
+import withPermissions from '../Hoc/withPermissions.js';
 import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
+import withSideEditor from '../Hoc/withSideEditor.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
-import withInlineEditor from '../Hoc/withInlineEditor.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
-import nbToRgb from '../../Functions/nbToRgb.js';
 import testProps from '../../Functions/testProps.js';
+import nbToRgb from '../../Functions/nbToRgb.js';
 import Loading from '../Messages/Loading.js';
 import isSerializable from '../../Functions/isSerializable.js';
 import inArray from '../../Functions/inArray.js';
@@ -1146,16 +1147,18 @@ export const Grid = withComponent(
 						withAlert(
 							withEvents(
 								withData(
-									withDropTarget(
-										withMultiSelection(
-											withSelection(
-												withFilters(
-													withPresetButtons(
-														withContextMenu(
-															GridComponent
-														)
-													),
-													true // isGrid
+									withPermissions(
+										withDropTarget(
+											withMultiSelection(
+												withSelection(
+													withFilters(
+														withPresetButtons(
+															withContextMenu(
+																GridComponent
+															)
+														),
+														true // isGrid
+													)
 												)
 											)
 										)
@@ -1169,17 +1172,19 @@ export const SideGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withDropTarget(
-													withMultiSelection(
-														withSelection(
-															withSideEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			GridComponent
-																		)
-																	),
-																	true // isGrid
+												withPermissions(
+													withDropTarget(
+														withMultiSelection(
+															withSelection(
+																withSideEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				GridComponent
+																			)
+																		),
+																		true // isGrid
+																	)
 																)
 															)
 														)
@@ -1194,16 +1199,18 @@ export const WindowedGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withDropTarget(
-													withMultiSelection(
-														withSelection(
-															withWindowedEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			GridComponent
-																		),
-																		true // isGrid
+												withPermissions(
+													withDropTarget(
+														withMultiSelection(
+															withSelection(
+																withWindowedEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				GridComponent
+																			),
+																			true // isGrid
+																		)
 																	)
 																)
 															)
@@ -1219,17 +1226,19 @@ export const InlineGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withDropTarget(
-													withMultiSelection(
-														withSelection(
-															withInlineEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			GridComponent
-																		)
-																	),
-																	true // isGrid
+												withPermissions(
+													withDropTarget(
+														withMultiSelection(
+															withSelection(
+																withInlineEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				GridComponent
+																			)
+																		),
+																		true // isGrid
+																	)
 																)
 															)
 														)
@@ -1244,17 +1253,19 @@ export const InlineGridEditor = withComponent(
 // 									withAlert(
 // 										withEvents(
 // 											withData(
-// 												withDropTarget(
-// 													withMultiSelection(
-// 														withSelection(
-// 															withInlineSideEditor(
-// 																withFilters(
-// 																	withPresetButtons(
-// 																		withContextMenu(
-// 																			GridComponent
-// 																		)
-// 																	),
-// 																	true // isGrid
+// 												withPermissions(
+// 													withDropTarget(
+// 														withMultiSelection(
+// 															withSelection(
+// 																withInlineSideEditor(
+// 																	withFilters(
+// 																		withPresetButtons(
+// 																			withContextMenu(
+// 																				GridComponent
+// 																			)
+// 																		),
+// 																		true // isGrid
+// 																	)
 // 																)
 // 															)
 // 														)

@@ -22,7 +22,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 
 		let [secondaryEditorMode, secondarySetEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
-				secondaryUserCanEdit = true,
+				secondaryUserCanEdit = true, // not permissions, but capability
 				secondaryUserCanView = true,
 				secondaryCanEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
 				secondaryDisableAdd = false,

@@ -20,7 +20,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
-				userCanEdit = true,
+				userCanEdit = true, // not permissions, but capability
 				userCanView = true,
 				canEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
 				disableAdd = false,
