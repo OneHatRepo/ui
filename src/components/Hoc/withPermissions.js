@@ -14,10 +14,10 @@ import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 
-export default function withPermissions(WrappedComponent) {
+export default function withPermissions(WrappedComponent, forceUsePermissions = false) {
 	return (props) => {
 
-		if (!props.usePermissions) {
+		if (!props.usePermissions && !forceUsePermissions) {
 			return <WrappedComponent {...props} />;
 		}
 
@@ -28,7 +28,7 @@ export default function withPermissions(WrappedComponent) {
 				// withData
 				Repository,
 			} = props,
-			model = Repository.schema.name,
+			model = Repository?.schema?.name,
 			checkPermission = (permission) => {
 				const
 					reduxState = UiGlobals.redux?.getState(),
@@ -39,8 +39,13 @@ export default function withPermissions(WrappedComponent) {
 				return inArray(permission, permissions);
 			},
 
-			showPermissionsError = (permission) => {
-				alert(`You are not authorized to ${permission} ${model}.`);
+			showPermissionsError = (permission, modelForAlert = null) => {
+				if (!modelForAlert) {
+					modelForAlert = model; // use default model if none supplied
+				}
+				modelForAlert = Inflector.humanize(Inflector.underscore(modelForAlert)); // 'PmEvents' -> 'pm events'
+			
+				alert(`You are not authorized to ${permission} ${modelForAlert}.`);
 			},
 
 			/**

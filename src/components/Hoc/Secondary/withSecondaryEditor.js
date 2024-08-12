@@ -57,6 +57,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				// withSecondaryData
 				SecondaryRepository,
 
+				// withPermissions
+				canUser,
+				showPermissionsError,
+
 				// withSecondarySelection
 				secondarySelection,
 				secondarySetSelection,
@@ -69,6 +73,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			secondaryListeners = useRef({}),
 			secondaryEditorStateRef = useRef(),
 			secondaryNewEntityDisplayValueRef = useRef(),
+			secondaryModel = SecondaryRepository?.schema?.name,
 			[secondaryCurrentRecord, secondarySetCurrentRecord] = useState(null),
 			[secondaryIsAdding, setIsAdding] = useState(false),
 			[secondaryIsSaving, setIsSaving] = useState(false),
@@ -109,6 +114,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				return secondaryNewEntityDisplayValueRef.current;
 			},
 			secondaryDoAdd = async (e, values) => {
+				if (canUser && !canUser(ADD, secondaryModel)) {
+					showPermissionsError(ADD, secondaryModel);
+					return;
+				}
+
 				let addValues = values;
 
 				if (SecondaryRepository?.isLoading) {
@@ -197,6 +207,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondarySetIsEditorShown(true);
 			},
 			secondaryDoEdit = async () => {
+				if (canUser && !canUser(EDIT, secondaryModel)) {
+					showPermissionsError(EDIT, secondaryModel);
+					return;
+				}
 				if (_.isEmpty(secondarySelection) || (_.isArray(secondarySelection) && (secondarySelection.length > 1 || secondarySelection[0]?.isDestroyed))) {
 					return;
 				}
@@ -211,6 +225,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondarySetIsEditorShown(true);
 			},
 			secondaryDoDelete = async (args) => {
+				if (canUser && !canUser(DELETE, secondaryModel)) {
+					showPermissionsError(DELETE, secondaryModel);
+					return;
+				}
 				let cb = null;
 				if (_.isFunction(args)) {
 					cb = args;
@@ -263,6 +281,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				deleteRecord(false, cb);
 			},
 			deleteRecord = async (moveSubtreeUp, cb) => {
+				if (canUser && !canUser(DELETE, secondaryModel)) {
+					showPermissionsError(DELETE, secondaryModel);
+					return;
+				}
 				if (getListeners().onBeforeDelete) {
 					const listenerResult = await getListeners().onBeforeDelete(secondarySelection);
 					if (listenerResult === false) {
@@ -292,6 +314,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				if (!secondaryUserCanView) {
 					return;
 				}
+				if (canUser && !canUser(VIEW, secondaryModel)) {
+					showPermissionsError(VIEW, secondaryModel);
+					return;
+				}
 				if (secondarySelection.length !== 1) {
 					return;
 				}
@@ -305,6 +331,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			},
 			secondaryDoDuplicate = async () => {
 				if (!secondaryUserCanEdit || secondaryDisableDuplicate) {
+					return;
+				}
+				if (canUser && !canUser(DUPLICATE, secondaryModel)) {
+					showPermissionsError(DUPLICATE, secondaryModel);
 					return;
 				}
 				if (secondarySelection.length !== 1) {
@@ -335,6 +365,12 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryDoEdit();
 			},
 			secondaryDoEditorSave = async (data, e) => {
+				let mode = editorMode === EDITOR_MODE__ADD ? ADD : EDIT;
+				if (canUser && !canUser(mode, secondaryModel)) {
+					showPermissionsError(mode, secondaryModel);
+					return;
+				}
+
 				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
 				const isSingle = secondarySelection.length === 1;
 				let useStaged = false;
@@ -391,7 +427,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 							await getListeners().onAfterAdd(secondarySelection);
 						}
 						setIsAdding(false);
-						secondarySetEditorMode(EDITOR_MODE__EDIT);
+						if (!canUser || canUser(EDIT, secondaryModel)) {
+							secondarySetEditorMode(EDITOR_MODE__EDIT);
+						} else {
+							secondarySetEditorMode(EDITOR_MODE__VIEW);
+						}
 					} else if (secondaryEditorMode === EDITOR_MODE__EDIT) {
 						if (getListeners().onAfterEdit) {
 							await getListeners().onAfterEdit(secondarySelection);
@@ -436,6 +476,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondarySetIsEditorShown(false);
 			},
 			secondaryDoEditorDelete = async () => {
+				if (canUser && !canUser(DELETE, secondaryModel)) {
+					showPermissionsError(DELETE, secondaryModel);
+					return;
+				}
+
 				secondaryDoDelete(() => {
 					secondarySetEditorMode(EDITOR_MODE__VIEW);
 					secondarySetIsEditorShown(false);
@@ -470,9 +515,19 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				return mode;
 			},
 			secondarySetEditMode = () => {
+				if (canUser && !canUser(EDIT, secondaryModel)) {
+					showPermissionsError(EDIT, secondaryModel);
+					return;
+				}
+
 				secondarySetEditorMode(EDITOR_MODE__EDIT);
 			},
 			secondarySetViewMode = () => {
+				if (canUser && !canUser(VIEW, secondaryModel)) {
+					showPermissionsError(VIEW, secondaryModel);
+					return;
+				}
+
 				function doIt() {
 					secondarySetEditorMode(EDITOR_MODE__VIEW);
 				}

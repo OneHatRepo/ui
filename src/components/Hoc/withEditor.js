@@ -452,7 +452,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							await getListeners().onAfterAddSave(selection);
 						}
 						setIsAdding(false);
-						setEditorMode(EDITOR_MODE__EDIT);
+						if (!canUser || canUser(EDIT)) {
+							setEditorMode(EDITOR_MODE__EDIT);
+						} else {
+							setEditorMode(EDITOR_MODE__VIEW);
+						}
 					} else if (editorMode === EDITOR_MODE__EDIT) {
 						if (getListeners().onAfterEdit) {
 							await getListeners().onAfterEdit(selection);
