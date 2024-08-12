@@ -3,10 +3,21 @@ import {
 	Button,
 } from 'native-base';
 import {
+	ADD,
+	EDIT,
+	DELETE,
+	VIEW,
+	COPY,
+	DUPLICATE,
+	PRINT,
+	UPLOAD_DOWNLOAD,
+} from '../../Constants/Commands.js';
+import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 	EDITOR_TYPE__SIDE,
+	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
@@ -55,6 +66,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				// withData
 				Repository,
+
+				// withPermissions
+				canUser,
+				showPermissionsError,
 
 				// withSelection
 				selection,
@@ -108,6 +123,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return newEntityDisplayValueRef.current;
 			},
 			doAdd = async (e, values) => {
+				if (canUser && !canUser(ADD)) {
+					showPermissionsError(ADD);
+					return;
+				}
+
 				let addValues = values;
 
 				if (Repository?.isLoading) {
@@ -201,6 +221,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			doEdit = async () => {
+				if (canUser && !canUser(EDIT)) {
+					showPermissionsError(EDIT);
+					return;
+				}
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
 				}
@@ -215,6 +239,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			doDelete = async (args) => {
+				if (canUser && !canUser(DELETE)) {
+					showPermissionsError(DELETE);
+					return;
+				}
 				let cb = null;
 				if (_.isFunction(args)) {
 					cb = args;
@@ -267,6 +295,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				deleteRecord(false, cb);
 			},
 			deleteRecord = async (moveSubtreeUp, cb) => {
+				if (canUser && !canUser(DELETE)) {
+					showPermissionsError(DELETE);
+					return;
+				}
 				if (getListeners().onBeforeDelete) {
 					const listenerResult = await getListeners().onBeforeDelete(selection);
 					if (listenerResult === false) {
@@ -296,6 +328,17 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (!userCanView) {
 					return;
 				}
+				if (canUser && !canUser(VIEW)) {
+					showPermissionsError(VIEW);
+					return;
+				}
+				if (editorType === EDITOR_TYPE__INLINE) {
+					alert('Cannot view in inline editor.');
+					return; // inline editor doesn't have a view mode
+				}
+
+				// check permissions for view
+
 				if (selection.length !== 1) {
 					return;
 				}
@@ -311,6 +354,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (!userCanEdit || disableDuplicate) {
 					return;
 				}
+				if (canUser && !canUser(DUPLICATE)) {
+					showPermissionsError(DUPLICATE);
+					return;
+				}
+
+				// check permissions for duplicate
+
+
 				if (selection.length !== 1) {
 					return;
 				}
@@ -339,6 +390,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				doEdit();
 			},
 			doEditorSave = async (data, e) => {
+				let mode = editorMode === EDITOR_MODE__ADD ? ADD : EDIT;
+				if (canUser && !canUser(mode)) {
+					showPermissionsError(mode);
+					return;
+				}
+
 				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
 				const isSingle = selection.length === 1;
 				let useStaged = false;
@@ -440,6 +497,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(false);
 			},
 			doEditorDelete = async () => {
+				if (canUser && !canUser(DELETE)) {
+					showPermissionsError(DELETE);
+					return;
+				}
+
 				doDelete(() => {
 					setEditorMode(EDITOR_MODE__VIEW);
 					setIsEditorShown(false);
@@ -484,9 +546,19 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return mode;
 			},
 			setEditMode = () => {
+				if (canUser && !canUser(EDIT)) {
+					showPermissionsError(EDIT);
+					return;
+				}
+
 				setEditorMode(EDITOR_MODE__EDIT);
 			},
 			setViewMode = () => {
+				if (canUser && !canUser(VIEW)) {
+					showPermissionsError(VIEW);
+					return;
+				}
+
 				function doIt() {
 					setEditorMode(EDITOR_MODE__VIEW);
 				}

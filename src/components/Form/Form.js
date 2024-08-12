@@ -8,6 +8,9 @@ import {
 	Text,
 } from 'native-base';
 import {
+	VIEW,
+} from '../../Constants/Commands.js';
+import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,
 	EDITOR_TYPE__SIDE,
@@ -922,7 +925,7 @@ function Form(props) {
 										>Back</Button>}
 									<Text fontSize={20} ml={2} color="trueGray.500">Edit Mode</Text>
 								</Row>
-								{onViewMode && !disableView &&
+								{onViewMode && !disableView && (!canUser || canUser(VIEW)) &&
 									<Button
 										{...testProps('toViewBtn')}
 										key="viewBtn"

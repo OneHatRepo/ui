@@ -19,15 +19,21 @@ import _ from 'lodash';
 export default function withPdfButtons(WrappedComponent) {
 	return withModal((props) => {
 
+		let showButtons = true;
 		if (!props.showPdfBtns) {
+			showButtons = false;
+		}
+		if (props.canUser && !props.canUser(VIEW)) { // permissions
+			showButtons = false;
+		}
+		if (!showButtons) {
 			// bypass everything.
 			// If we don't do this, we get an infinite recursion with Form
 			// because this HOC wraps Form and uses Form itself.
 			return <WrappedComponent {...props} />;
 		}
 
-		const
-			{
+		const {
 				additionalEditButtons = [],
 				additionalViewButtons = [],
 				items = [],

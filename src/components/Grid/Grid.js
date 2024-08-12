@@ -482,49 +482,53 @@ function GridComponent(props) {
 							dragSelectionRef.current = selection;
 							const getSelection = () => dragSelectionRef.current;
 
-							// assign event handlers
-							if (canRowsReorder && isReorderMode) {
-								WhichRow = DragSourceGridRow;
-								rowReorderProps.isDragSource = true;
-								rowReorderProps.dragSourceType = 'row';
-								const dragIx = showHeaders ? index - 1 : index;
-								rowReorderProps.dragSourceItem = {
-									id: item.id,
-									getSelection,
-									onDrag: (dragState) => {
-										onRowReorderDrag(dragState, dragIx);
-									},
-								};
-								rowReorderProps.onDragEnd = onRowReorderEnd;
-							} else {
-								// Don't allow drag/drop from withDnd while reordering
-								if (areRowsDragSource) {
+							const userHasPermissionToDrag = (!userCan || userCan(EDIT));
+							if (userHasPermissionToDrag) {
+								// assign event handlers
+								if (canRowsReorder && isReorderMode) {
 									WhichRow = DragSourceGridRow;
-									rowDragProps.isDragSource = true;
-									rowDragProps.dragSourceType = rowDragSourceType;
-									if (getRowDragSourceItem) {
-										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, rowDragSourceType);
-									} else {
-										rowDragProps.dragSourceItem = {
-											id: item.id,
-											getSelection,
-											type: rowDragSourceType,
+									rowReorderProps.isDragSource = true;
+									rowReorderProps.dragSourceType = 'row';
+									const dragIx = showHeaders ? index - 1 : index;
+									rowReorderProps.dragSourceItem = {
+										id: item.id,
+										getSelection,
+										onDrag: (dragState) => {
+											onRowReorderDrag(dragState, dragIx);
+										},
+									};
+									rowReorderProps.onDragEnd = onRowReorderEnd;
+								} else {
+									// Don't allow drag/drop from withDnd while reordering
+									if (areRowsDragSource) {
+										WhichRow = DragSourceGridRow;
+										rowDragProps.isDragSource = true;
+										rowDragProps.dragSourceType = rowDragSourceType;
+										if (getRowDragSourceItem) {
+											rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, rowDragSourceType);
+										} else {
+											rowDragProps.dragSourceItem = {
+												id: item.id,
+												getSelection,
+												type: rowDragSourceType,
+											};
+										}
+									}
+									if (areRowsDropTarget) {
+										WhichRow = DropTargetGridRow;
+										rowDragProps.isDropTarget = true;
+										rowDragProps.dropTargetAccept = dropTargetAccept;
+										rowDragProps.onDrop = (droppedItem) => {
+											// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
+											onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
 										};
 									}
-								}
-								if (areRowsDropTarget) {
-									WhichRow = DropTargetGridRow;
-									rowDragProps.isDropTarget = true;
-									rowDragProps.dropTargetAccept = dropTargetAccept;
-									rowDragProps.onDrop = (droppedItem) => {
-										// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
-										onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
-									};
-								}
-								if (areRowsDragSource && areRowsDropTarget) {
-									WhichRow = DragSourceDropTargetGridRow;
+									if (areRowsDragSource && areRowsDropTarget) {
+										WhichRow = DragSourceDropTargetGridRow;
+									}
 								}
 							}
+
 						}
 						return <WhichRow
 									columnsConfig={localColumnsConfig}

@@ -22,6 +22,9 @@ export default function withPermissions(WrappedComponent) {
 		}
 
 		const {
+				// withAlert
+				alert,
+
 				// withData
 				Repository,
 			} = props,
@@ -34,6 +37,10 @@ export default function withPermissions(WrappedComponent) {
 					return false;
 				}
 				return inArray(permission, permissions);
+			},
+
+			showPermissionsError = (permission) => {
+				alert(`You are not authorized to ${permission} ${model}.`);
 			},
 
 			/**
@@ -50,18 +57,28 @@ export default function withPermissions(WrappedComponent) {
 			 */
 			canUser = (permission, modelToCheck = null) => {
 
-				// in certain cases, shift permissions to standard CRUD operations
+				// deal with special cases that refer to other permissions
 				switch(permission) {
-					case COPY:
-					case DUPLICATE:
-						permission = ADD;
-						break;
 					case PRINT:
 						permission = VIEW;
 						break;
-					case UPLOAD_DOWNLOAD:
-						permission = EDIT;
-						break;
+					case COPY:
+					case DUPLICATE: {
+						// user must have ADD _and_ EDIT permissions, so check both
+						const
+							hasAddPermission = canUser(ADD, modelToCheck),
+							hasEditPermission = canUser(EDIT, modelToCheck);
+						return hasAddPermission && hasEditPermission;
+					}
+					case UPLOAD_DOWNLOAD: {
+						// user must have VIEW, ADD, EDIT, and DELETE permissions, so check all of them
+						const
+							hasViewPermission = canUser(VIEW, modelToCheck),
+							hasAddPermission = canUser(ADD, modelToCheck),
+							hasEditPermission = canUser(EDIT, modelToCheck),
+							hasDeletePermission = canUser(DELETE, modelToCheck);
+						return hasViewPermission && hasAddPermission && hasEditPermission && hasDeletePermission;
+					}
 					default:
 						// do nothing
 						break;
@@ -82,6 +99,7 @@ export default function withPermissions(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					canUser={canUser}
+					showPermissionsError={showPermissionsError}
 				/>;
 	};
 }

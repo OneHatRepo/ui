@@ -7,6 +7,9 @@ import {
 	Text,
 } from 'native-base';
 import {
+	EDIT,
+} from '../../Constants/Commands.js';
+import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -40,6 +43,10 @@ function Viewer(props) {
 
 			// withData
 			Repository,
+
+			// withPermissions
+			canUser,
+			showPermissionsError,
 
 			// withEditor
 			editorType,
@@ -259,13 +266,14 @@ function Viewer(props) {
 								<Row flex={1} alignItems="center">
 									<Text fontSize={20} ml={2} color="trueGray.500">View Mode</Text>
 								</Row>
-								<Button
-									{...testProps('toEditBtn')}
-									key="editBtn"
-									onPress={onEditMode}
-									leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
-									color="#fff"
-								>To Edit</Button>
+								{(!canUser || canUser(EDIT)) &&
+									<Button
+										{...testProps('toEditBtn')}
+										key="editBtn"
+										onPress={onEditMode}
+										leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+										color="#fff"
+									>To Edit</Button>}
 							</Toolbar>}
 						{!_.isEmpty(additionalButtons) && 
 							<Toolbar justifyContent="flex-end" flexWrap="wrap">
