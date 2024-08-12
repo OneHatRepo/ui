@@ -4,6 +4,9 @@ import {
 	Row,
 	Text,
 } from 'native-base';
+import {
+	VIEW,
+} from '../../Constants/Commands.js';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
 import qs from 'qs';

@@ -482,7 +482,7 @@ function GridComponent(props) {
 							dragSelectionRef.current = selection;
 							const getSelection = () => dragSelectionRef.current;
 
-							const userHasPermissionToDrag = (!userCan || userCan(EDIT));
+							const userHasPermissionToDrag = (!canUser || canUser(EDIT));
 							if (userHasPermissionToDrag) {
 								// assign event handlers
 								if (canRowsReorder && isReorderMode) {

@@ -109,6 +109,9 @@ function Form(props) {
 
 			// withData
 			Repository,
+
+			// withPermissions
+			canUser,
 			
 			// withEditor
 			isEditorViewOnly = false,
