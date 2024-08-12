@@ -56,6 +56,7 @@ import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from '../Grid/NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import Loading from '../Messages/Loading.js';
+import Unauthorized from '../Messages/Unauthorized.js';
 import _ from 'lodash';
 
 const DEPTH_INDENT_PX = 25;
@@ -134,6 +135,9 @@ function TreeComponent(props) {
 			displayField,
 			idIx,
 			displayIx,
+
+			// withPermissions
+			userCan,
 
 			// withSelection
 			selection,
@@ -1176,6 +1180,10 @@ function TreeComponent(props) {
 			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
 		}
 	}, [selectorId, selectorSelected]);
+
+	if (userCan && !userCan('view')) {
+		return <Unauthorized />;
+	}
 
 	if (setWithEditListeners) {
 		setWithEditListeners({ // Update withEdit's listeners on every render

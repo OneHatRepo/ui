@@ -59,6 +59,7 @@ import Toolbar from '../Toolbar/Toolbar.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
 import ColumnSelectorWindow from './ColumnSelectorWindow.js';
+import Unauthorized from '../Messages/Unauthorized.js';
 import _ from 'lodash';
 
 
@@ -153,6 +154,9 @@ function GridComponent(props) {
 			displayField,
 			idIx,
 			displayIx,
+
+			// withPermissions
+			userCan,
 
 			// withDnd
 			isDropTarget,
@@ -941,6 +945,10 @@ function GridComponent(props) {
 		applySelectorSelected();
 
 	}, [selectorSelected]);
+
+	if (userCan && !userCan('view')) {
+		return <Unauthorized />;
+	}
 
 	if (self) {
 		self.ref = containerRef;
