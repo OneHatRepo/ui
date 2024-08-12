@@ -33,7 +33,7 @@ function Viewer(props) {
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			record,
 			additionalViewButtons,
-			verifyCanEdit,
+			canRecordBeEdited,
 
 			// withComponent
 			self,
@@ -246,7 +246,7 @@ function Viewer(props) {
 	}
 
 	let canEdit = true;
-	if (verifyCanEdit && !verifyCanEdit([record])) {
+	if (canRecordBeEdited && !canRecordBeEdited([record])) {
 		canEdit = false;
 	}
 

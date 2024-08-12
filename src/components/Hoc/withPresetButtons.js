@@ -52,9 +52,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				additionalToolbarButtons = [],
 				useUploadDownload = false,
 				onChangeColumnsConfig,
-				verifyCanEdit,
-				verifyCanDelete,
-				verifyCanDuplicate,
+				canRecordBeEdited,
+				canRecordBeDeleted,
+				canRecordBeDuplicated,
 				...propsToPass
 			} = props,
 			{
@@ -204,7 +204,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
 							isDisabled = true;
 						}
-						if (verifyCanEdit && !verifyCanEdit(selection)) {
+						if (canRecordBeEdited && !canRecordBeEdited(selection)) {
 							isDisabled = true;
 						}
 						break;
@@ -219,7 +219,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
 							isDisabled = true;
 						}
-						if (verifyCanDelete && !verifyCanDelete(selection)) {
+						if (canRecordBeDeleted && !canRecordBeDeleted(selection)) {
 							isDisabled = true;
 						}
 						if (isTree) {
@@ -267,7 +267,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (_.isEmpty(selection) || selection.length > 1) {
 							isDisabled = true;
 						}
-						if (verifyCanDuplicate && !verifyCanDuplicate(selection)) {
+						if (canRecordBeDuplicated && !canRecordBeDuplicated(selection)) {
 							isDisabled = true;
 						}
 						break;

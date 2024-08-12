@@ -15,7 +15,7 @@ function Editor(props) {
 			onEditorDelete: onDelete,
 			editorMode,
 			onEditMode,
-			verifyCanEdit,
+			canRecordBeEdited,
 			_viewer = {},
 			_form = {
 				containerProps: {}
@@ -36,7 +36,7 @@ function Editor(props) {
 	const propsToPass = _.omit(props, ['self', 'reference', 'parent']);
 
 	let canEdit = true;
-	if (verifyCanEdit && !verifyCanEdit(selection)) {
+	if (canRecordBeEdited && !canRecordBeEdited(selection)) {
 		canEdit = false;
 	}
 

@@ -15,6 +15,10 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
 import {
+	EDIT,
+	VIEW,
+} from '../../Constants/Commands.js';
+import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
 } from '../../Constants/Grid.js';
@@ -130,7 +134,7 @@ function GridComponent(props) {
 			h,
 			flex,
 			bg = '#fff',
-			verifyCanEdit,
+			canRecordBeEdited,
 			alternateRowBackgrounds = true,
 			alternatingInterval = 2,
 			defaultRowHeight = 48,
@@ -156,7 +160,7 @@ function GridComponent(props) {
 			displayIx,
 
 			// withPermissions
-			userCan,
+			canUser,
 
 			// withDnd
 			isDropTarget,
@@ -376,11 +380,17 @@ function GridComponent(props) {
 
 									if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
 										if (onView) {
+											if (canUser && !canUser(VIEW)) { // permissions
+												return;
+											}
 											onView(true);
 										}
 									} else {
 										if (onEdit) {
-											if (verifyCanEdit && !verifyCanEdit(selection)) {
+											if (canUser && !canUser(EDIT)) { // permissions
+												return;
+											}
+											if (canRecordBeEdited && !canRecordBeEdited(selection)) { // record can be edited
 												return;
 											}
 											onEdit();
@@ -946,7 +956,7 @@ function GridComponent(props) {
 
 	}, [selectorSelected]);
 
-	if (userCan && !userCan('view')) {
+	if (canUser && !canUser('view')) {
 		return <Unauthorized />;
 	}
 

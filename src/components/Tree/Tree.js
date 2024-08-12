@@ -14,6 +14,9 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
 import {
+	EDIT,
+} from '../../Constants/Commands.js';
+import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import {
@@ -107,6 +110,7 @@ function TreeComponent(props) {
 			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
 			parentIdIx,
 			initialSelection,
+			canRecordBeEdited,
 			onTreeLoad,
 
 			// withComponent
@@ -137,7 +141,7 @@ function TreeComponent(props) {
 			displayIx,
 
 			// withPermissions
-			userCan,
+			canUser,
 
 			// withSelection
 			selection,
@@ -868,6 +872,12 @@ function TreeComponent(props) {
 										onNodeClick(item, e); // so reselect it
 									}
 									if (onEdit) {
+										if (canUser && !canUser(EDIT)) { // permissions
+											return;
+										}
+										if (canRecordBeEdited && !canRecordBeEdited(selection)) { // record can be edited
+											return;
+										}
 										onEdit();
 									}
 									break;
@@ -1181,7 +1191,7 @@ function TreeComponent(props) {
 		}
 	}, [selectorId, selectorSelected]);
 
-	if (userCan && !userCan('view')) {
+	if (canUser && !canUser('view')) {
 		return <Unauthorized />;
 	}
 
