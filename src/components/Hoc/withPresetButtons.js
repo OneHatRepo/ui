@@ -11,7 +11,7 @@ import {
 	DUPLICATE,
 	PRINT,
 	UPLOAD_DOWNLOAD,
-} from '../../constants/Commands.js';
+} from '../../Constants/Commands.js';
 import Clipboard from '../Icons/Clipboard.js';
 import Duplicate from '../Icons/Duplicate.js';
 import Edit from '../Icons/Edit.js';

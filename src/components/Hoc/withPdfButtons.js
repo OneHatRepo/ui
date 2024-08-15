@@ -228,7 +228,6 @@ export default function withPdfButtons(WrappedComponent) {
 			onChooseEmailAddress = (data) => {
 				showModal({
 					title: 'Email To',
-					message: 'Please enter an email address to send the PDF to. (1)',
 					includeCancel: true,
 					onOk: () => {
 						hideModal();
@@ -250,7 +249,7 @@ export default function withPdfButtons(WrappedComponent) {
 								<Column w="40px" mr={5} justifyContent="flex-start">
 									<Icon as={TriangleExclamation} size={10} color="#000" />
 								</Column>
-								<Text flex={1}>Please enter an email address to send the PDF to. (2)</Text>
+								<Text flex={1}>Please enter one more more email addresses to send the PDF to.</Text>
 							</Row>
 							<Form
 								parent={self}
@@ -269,7 +268,21 @@ export default function withPdfButtons(WrappedComponent) {
 									},
 								]}
 								validator={yup.object({
-									email: yup.string().email().required(),
+									email: yup.string().required().test({
+										name: 'csvEmails',
+										test: function(value) {
+											const firstInvalidEmail = value.split(",")
+																			.map(email => email.trim())
+																			.filter(v => !_.isEmpty(v))
+																			.find(v => !yup.string().email().isValidSync(v));
+											if (firstInvalidEmail) {
+												return this.createError({
+													message: `The email address '${firstInvalidEmail}' is invalid.`
+												});
+											}
+											return true;
+										},
+									}),
 								})}
 							/>
 						</Column>,
