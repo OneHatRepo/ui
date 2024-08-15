@@ -400,6 +400,7 @@ function Form(props) {
 					title,
 					name,
 					isEditable = true,
+					isEditingEnabledInPlainEditor,
 					label,
 					items,
 					onChange: onEditorChange,
@@ -424,6 +425,10 @@ function Form(props) {
 			}
 			if (propertyDef?.isEditingDisabled && checkIsEditingDisabled) {
 				isEditable = false;
+			}
+			if (isEditingEnabledInPlainEditor && editorType === EDITOR_TYPE__PLAIN) {
+				// If this is a plain editor, allow the field to be editable, even if it's not editable in other editor types
+				isEditable = true;
 			}
 			if (!type) {
 				if (isEditable) {
