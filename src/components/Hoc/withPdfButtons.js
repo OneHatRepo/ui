@@ -249,7 +249,8 @@ export default function withPdfButtons(WrappedComponent) {
 								<Column w="40px" mr={5} justifyContent="flex-start">
 									<Icon as={TriangleExclamation} size={10} color="#000" />
 								</Column>
-								<Text flex={1}>Please enter one more more email addresses to send the PDF to.</Text>
+								<Text flex={1}>Please enter one more more email addresses{"\n"}
+									(separated by a comma) to send the PDF to.</Text>
 							</Row>
 							<Form
 								parent={self}
