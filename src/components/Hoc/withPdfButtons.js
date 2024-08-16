@@ -1,19 +1,11 @@
 import {
-	Column,
-	Icon,
-	Row,
-	Text,
-} from 'native-base';
-import {
 	VIEW,
 } from '../../Constants/Commands.js';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
 import qs from 'qs';
-import Form from '../Form/Form.js';
 import inArray from '../../Functions/inArray.js';
 import Pdf from '../Icons/Pdf.js';
-import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import withModal from './withModal.js';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -307,8 +299,13 @@ export default function withPdfButtons(WrappedComponent) {
 			},
 			sendEmail = async (data) => {
 
+				const
+					dispatch = UiGlobals.redux.dispatch,
+					setIsWaitModalShownAction = UiGlobals.debugReducer.setIsWaitModalShownAction;
+
+				dispatch(setIsWaitModalShownAction(true));
+
 				data.id = selection[0].id;
-				
 				const result = await Repository._send('POST', model + '/emailModelPdf', data);
 
 				const {
@@ -318,13 +315,13 @@ export default function withPdfButtons(WrappedComponent) {
 					message
 				} = Repository._processServerResponse(result);
 
+				dispatch(setIsWaitModalShownAction(false));
+
 				if (!success) {
 					alert('Email could not be sent.');
 					return;
 				}
-
 				showInfo('Email sent successfully.');
-
 			};
 
 		const buttons = [
