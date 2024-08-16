@@ -181,9 +181,9 @@ export default function withPdfButtons(WrappedComponent) {
 
 				showModal({
 					title: 'PDF Fields to Show',
-					message: 'Please select which fields to show in the PDF. (1)',
+					includeReset: true,
 					includeCancel: true,
-					onOk: () => {
+					onSubmit: () => {
 						hideModal();
 
 						const
@@ -196,97 +196,104 @@ export default function withPdfButtons(WrappedComponent) {
 							getPdf(data);
 						}
 					},
-					okBtnLabel: userWantsToEmail ? 'Choose Email' : 'Get PDF',
+					submitBtnLabel: userWantsToEmail ? 'Choose Email' : 'Get PDF',
 					w: 530, // 510 so it's over the stack threshold
 					h: 800,
-					body: <Column w="100%">
-							<Row px={10}>
-								<Column w="40px" mr={5} justifyContent="flex-start">
-									<Icon as={TriangleExclamation} size={10} color="#000" />
-								</Column>
-								<Text flex={1}>Please select which fields to show in the PDF. (2)</Text>
-							</Row>
-							<Form
-								parent={self}
-								reference="ModalForm"
-								editorType={EDITOR_TYPE__PLAIN}
-								useAdditionalEditButtons={false}
-								flex={1}
-								Repository={Repository}
-								items={modalItems}
-								startingValues={startingValues}
-								validator={validator}
-								checkIsEditingDisabled={false}
-								disableFooter={true}
-								columnDefaults={{
-									labelWidth: '100%',
-								}}
-							/>
-						</Column>,
+					self,
+					formProps: {
+						editorType: EDITOR_TYPE__PLAIN,
+						disableFooter: true,
+						columnDefaults: {
+							labelWidth: '100%',
+						},
+						items: [
+							{
+								name: 'instructions',
+								type: 'DisplayField',
+								text: 'Please select which fields to show in the PDF.',
+								mb: 10,
+							},
+							...modalItems,
+						],
+						Repository,
+						startingValues,
+						validator,
+					},
 				});
 			},
 			onChooseEmailAddress = (data) => {
 				showModal({
 					title: 'Email To',
+					includeReset: true,
 					includeCancel: true,
-					onOk: () => {
+					onSubmit: () => {
 						hideModal();
 
 						const
 							fv = self.children.ModalForm.formGetValues(),
-							email = fv.email;
+							email = fv.email,
+							message = fv.message;
 
 						sendEmail({
 							...data,
 							email,
+							message,
 						});
 					},
-					okBtnLabel: 'Email PDF',
+					submitBtnLabel: 'Email PDF',
 					w: 510, // 510 so it's over the stack threshold
-					h: 300,
-					body: <Column w="100%">
-							<Row>
-								<Column w="40px" mr={5} justifyContent="flex-start">
-									<Icon as={TriangleExclamation} size={10} color="#000" />
-								</Column>
-								<Text flex={1}>Please enter one more more email addresses{"\n"}
-									(separated by a comma) to send the PDF to.</Text>
-							</Row>
-							<Form
-								parent={self}
-								reference="ModalForm"
-								editorType={EDITOR_TYPE__PLAIN}
-								disableFooter={true}
-								columnDefaults={{
-									labelWidth: '100%',
-								}}
-								items={[
-									{
-										name: 'email',
-										label: 'Email Address',
-										type: 'Input',
-										required: true,
-									},
-								]}
-								validator={yup.object({
-									email: yup.string().required().test({
-										name: 'csvEmails',
-										test: function(value) {
-											const firstInvalidEmail = value.split(",")
-																			.map(email => email.trim())
-																			.filter(v => !_.isEmpty(v))
-																			.find(v => !yup.string().email().isValidSync(v));
-											if (firstInvalidEmail) {
-												return this.createError({
-													message: `The email address '${firstInvalidEmail}' is invalid.`
-												});
-											}
-											return true;
-										},
-									}),
-								})}
-							/>
-						</Column>,
+					h: 500,
+					self,
+					formProps: {
+						editorType: EDITOR_TYPE__PLAIN,
+						disableFooter: true,
+						columnDefaults: {
+							labelWidth: '100%',
+						},
+						items: [
+							{
+								name: 'instructions',
+								type: 'DisplayField',
+								text: 'Please enter one or more email addresses, separated by a comma.',
+							},
+							{
+								name: 'email',
+								label: 'Email Address',
+								type: 'Input',
+								tooltip: 'Separate multiple email addresses with a comma.',
+							},
+							{
+								name: 'message',
+								label: 'Message',
+								placeholder: 'Please see attached PDF.',
+								type: 'TextArea',
+								totalLines: 6,
+							},
+						],
+						validator: yup.object({
+							email: yup.string().required('Email is required').test({
+								name: 'csvEmails',
+								test: function(value) {
+									if (!value) {
+										return this.createError({
+											message: 'Email is required',
+										});
+									}
+									const firstInvalidEmail = value.split(",")
+																	.map(email => email.trim())
+																	.filter(v => !_.isEmpty(v))
+																	.find(v => !yup.string().email().isValidSync(v));
+									if (firstInvalidEmail) {
+										return this.createError({
+											message: `The email address '${firstInvalidEmail}' is invalid.`
+										});
+									}
+									return true;
+								},
+							}),
+							message: yup.string().notRequired(),
+						}),
+					},
 				});
 			},
 			getPdf = (data) => {

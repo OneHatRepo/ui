@@ -38,10 +38,10 @@ export default function withModal(WrappedComponent) {
 			[isModalShown, setIsModalShown] = useState(false),
 			[isValid, setIsValid] = useState(false),
 			[isDirty, setIsDirty] = useState(false),
-			[h, setHeight] = useState(250),
-			[w, setWidth] = useState(400),
+			[h, setHeight] = useState(),
+			[w, setWidth] = useState(),
 			[onOk, setOnOk] = useState(),
-			[okBtnLabel, setOkBtnLabel] = useState('OK'),
+			[okBtnLabel, setOkBtnLabel] = useState(),
 			[onYes, setOnYes] = useState(),
 			[onNo, setOnNo] = useState(),
 			[onSubmit, setOnSubmit] = useState(),
@@ -49,7 +49,7 @@ export default function withModal(WrappedComponent) {
 			[customButtons, setCustomButtons] = useState(),
 			[formProps, setFormProps] = useState(),
 			[self, setSelf] = useState(),
-			[color, setColor] = useState('#000'),
+			[color, setColor] = useState(),
 			[body, setBody]	= useState(), 
 			useForm = !!formProps, // convenience flag
 			autoFocusRef = useRef(null),
@@ -65,28 +65,31 @@ export default function withModal(WrappedComponent) {
 				self?.children?.ModalForm?.reset();
 			},
 			onCancel = () => {
+				hideModal();
+			},
+			hideModal = () => {
 				setIsModalShown(false);
 			},
 			showModal = (args) => {
-				const {
-					title = '',
-					message = '',
-					body,
+				let {
+					title = null,
+					message = null,
+					body = null,
 					canClose = true,
 					includeCancel = false,
-					onOk,
-					okBtnLabel,
-					onYes,
-					onNo,
-					onSubmit,
-					submitBtnLabel,
-					customButtons,
+					onOk = null,
+					okBtnLabel = null,
+					onYes = null,
+					onNo = null,
+					onSubmit = null,
+					submitBtnLabel = null,
+					customButtons = null,
 					includeReset = false,
-					formProps,
-					self,
-					color,
-					h,
-					w,
+					formProps = null,
+					self = null,
+					color = null,
+					h = null,
+					w = null,
 				} = args;
 
 				if (!message && !body && !formProps) {
@@ -95,54 +98,25 @@ export default function withModal(WrappedComponent) {
 				if (includeReset && !self) {
 					throw new Error('self is required when using includeReset');
 				}
-				if (title) {
-					setTitle(title);
-				}
-				if (message) {
-					setMessage(message);
-				}
-				if (body) {
-					setBody(body);
-				}
+
+				setTitle(title);
+				setMessage(message);
+				setBody(body);
 				setCanClose(canClose);
 				setIncludeCancel(includeCancel);
-				if (onOk) {
-					setOnOk(() => onOk);
-				}
-				if (okBtnLabel) {
-					setOkBtnLabel(okBtnLabel);
-				}
-				if (onYes) {
-					setOnYes(() => onYes);
-				}
-				if (onNo) {
-					setOnNo(() => onNo);
-				}
-				if (onSubmit) {
-					setOnSubmit(() => onSubmit);
-				}
-				if (submitBtnLabel) {
-					setSubmitBtnLabel(submitBtnLabel);
-				}
-				if (customButtons) {
-					setCustomButtons(customButtons);
-				}
+				setOnOk(onOk ? () => onOk : null);
+				setOkBtnLabel(okBtnLabel || 'OK');
+				setOnYes(onYes ? () => onYes : null);
+				setOnNo(onNo ? () => onNo : null);
+				setOnSubmit(onSubmit ? () => onSubmit : null);
+				setSubmitBtnLabel(submitBtnLabel);
+				setCustomButtons(customButtons);
 				setIncludeReset(includeReset);
-				if (formProps) {
-					setFormProps(formProps);
-				}
-				if (self) {
-					setSelf(self);
-				}
-				if (color) {
-					setColor(color);
-				}
-				if (h) {
-					setHeight(h);
-				}
-				if (w) {
-					setWidth(w);
-				}
+				setFormProps(formProps);
+				setSelf(self);
+				setColor(color || '#000');
+				setHeight(h || 250);
+				setWidth(w || 400);
 
 				setIsModalShown(true);
 			};
@@ -218,7 +192,8 @@ export default function withModal(WrappedComponent) {
 		let modalBody = null;
 		if (useForm) {
 			modalBody = <Form
-							{...formProps} 
+							{...formProps}
+							parent={self}
 							reference="ModalForm"
 							onValidityChange={onValidityChange} 
 							onDirtyChange={onDirtyChange}
