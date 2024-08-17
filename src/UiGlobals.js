@@ -11,7 +11,7 @@ const Globals = {
 	autoAdjustPageSizeToHeight: true,
 	doubleClickingGridRowOpensEditorInViewMode: false,
 	disableSavedColumnsConfig: false,
-	autoSubmitDelay: 200,
+	autoSubmitDelay: 500,
 };
 
 export default Globals;
