@@ -85,6 +85,13 @@ function TagComponent(props) {
 				return;
 			}
 
+			if (_.isNil(comboValue)) {
+				// NOTE: We *shouldn't* get here, but for some unknown reason, we *were* getting here on rare occasions.
+				// The combo was giving us null values, and the Tag dutifully added null values to its value array.
+				// Stop this from happening.
+				return;
+			}
+
 			// make sure value doesn't already exist
 			let exists = false;
 			_.each(value, (val) => {
