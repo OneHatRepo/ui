@@ -278,7 +278,6 @@ export function ComboComponent(props) {
 			}
 
 			setTextInputValue(value);
-			showMenu();
 
 			clearTimeout(typingTimeout.current);
 			typingTimeout.current = setTimeout(() => {
@@ -409,12 +408,6 @@ export function ComboComponent(props) {
 			}
 		},
 		searchForMatches = async (value) => {
-			if (!isMenuShown) {
-				showMenu();
-			}
-
-			setIsSearchMode(true);
-
 			let found;
 			if (Repository) {
 				if (Repository.isLoading) {
@@ -464,6 +457,11 @@ export function ComboComponent(props) {
 				});
 				setFilteredData(found);
 			}
+
+			if (!isMenuShown) {
+				showMenu();
+			}
+			setIsSearchMode(true);
 		};
 
 	useEffect(() => {
