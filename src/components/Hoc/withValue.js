@@ -146,7 +146,7 @@ export default function withValue(WrappedComponent) {
 					{...props}
 					disableWithValue={false}
 					value={convertedValue}
-					setValue={setValue}
+					setValue={setValueRef.current}
 					onChangeSelection={onChangeSelection}
 				/>;
 	};
