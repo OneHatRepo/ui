@@ -10,6 +10,7 @@ import {
 import {
 	crudCombo,
 	crudTag,
+	crudJson,
 } from './crud_functions.js';
 import natsort from 'natsort';
 import _ from 'lodash';
@@ -88,6 +89,9 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 		} else
 		if (editorType === 'File') {
 			// setFileValue(selectors, value);
+		} else
+		if (editorType === 'Json') {
+			// do nothing for now
 		} else {
 			const editorFn = customFormFunctions.getCustomEditorSetFn(editorType);
 			if (editorFn) {

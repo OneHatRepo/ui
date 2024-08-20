@@ -73,6 +73,11 @@ import Inflector from 'inflector-js';
 import _ from 'lodash';
 const $ = Cypress.$;
 
+const
+	WINDOWED = 'WINDOWED',
+	INLINE = 'INLINE',
+	SIDE = 'SIDE';
+
 
 // Form fields
 export function crudCombo(selector, newData, editData, schema, ancillaryData, level = 0) {
@@ -107,6 +112,13 @@ export function crudTag(selector, newData, editData, schema, ancillaryData, leve
 	crudWindowedGridRecord(gridSelector, newData, editData, schema, ancillaryData, level +1);
 
 	clickTrigger(selector);
+}
+export function crudJson(selector, newData, editData, schema, ancillaryData, level = 0) {
+	cy.then(() => {
+		Cypress.log({ name: 'crudJson' });
+	});
+
+	// do nothing for now
 }
 
 
@@ -194,7 +206,7 @@ export function crudSideGridRecord(gridSelector, newData, editData, schema, anci
 		verifyGridRecordExistsById(gridSelector, id);
 
 		// edit
-		editGridRecord(gridSelector, editData, schema, id);
+		editGridRecord(gridSelector, editData, schema, id, 0, SIDE);
 
 		// delete
 		verifyGridRecordExistsById(gridSelector, id);
@@ -290,7 +302,7 @@ export function addInlineGridRecord(gridSelector, fieldValues, schema, ancillary
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
 }
-export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0) {
+export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0, whichEditor = WINDOWED) {
 	
 	cy.then(() => {
 		Cypress.log({ name: 'editGridRecord ' + gridSelector + ' ' + id});
@@ -303,13 +315,13 @@ export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0)
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
-	const gridName = getLastPartOfPath(gridSelector);
-	if (gridName.match(/SideGrid/)) { // as opposed to 'SideA' -- we want the side editor, not particular sides of another editor
-		// side editor
+	if (whichEditor === SIDE) {
 		// switch to Edit mode if necessary
+		Cypress.log({ name: 'switch to Edit mode if necessary ' + viewerSelector});
 		clickToEditButtonIfExists(viewerSelector);
 	} else {
 		// windowed or inline editor
+		Cypress.log({ name: 'SHOULD NOT BE HERE!!'});
 		clickEditButton(gridSelector);
 	}
 	cy.wait(1500); // allow form to build
@@ -334,7 +346,7 @@ export function editWindowedGridRecord(gridSelector, fieldValues, schema, id, le
 		Cypress.log({ name: 'editWindowedGridRecord ' + gridSelector + ' ' + id});
 	});
 	
-	editGridRecord(gridSelector, fieldValues, schema, id, level);
+	editGridRecord(gridSelector, fieldValues, schema, id, level, WINDOWED);
 
 	const formSelector = gridSelector + '/editor/form';
 	clickCloseButton(formSelector);
@@ -348,7 +360,7 @@ export function editInlineGridRecord(gridSelector, fieldValues, schema, id, leve
 		Cypress.log({ name: 'editWindowedGridRecord ' + gridSelector + ' ' + id});
 	});
 	
-	editGridRecord(gridSelector, fieldValues, schema, id, level);
+	editGridRecord(gridSelector, fieldValues, schema, id, level, INLINE);
 
 	const formSelector = gridSelector + '/editor/form';
 	clickCloseButton(formSelector);
@@ -811,7 +823,7 @@ export function runInlineManagerScreenCrudTests(model, schema, newData, editData
 	});
 
 }
-export function runManagerScreenCrudTests(model, schema, newData, editData, ancillaryData) {
+export function runManagerScreenCrudTests(model, schema, newData, editData, ancillaryData, fullIsInline = false) {
 
 	const
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
@@ -843,7 +855,11 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 			toFullMode(managerSelector);
 			cy.wait(500); // wait for grid to load
 
-			crudWindowedGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+			if (fullIsInline) {
+				crudInlineGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+			} else {
+				crudWindowedGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+			}
 
 		});
 

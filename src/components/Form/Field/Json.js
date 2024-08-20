@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Row,
-	Text,
 	Tooltip,
 } from 'native-base';
 import {
@@ -11,7 +9,6 @@ import {
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
-import testProps from '../../../Functions/testProps.js';
 import getComponentFromType from '../../../Functions/getComponentFromType.js';
 import _ from 'lodash';
 
@@ -45,6 +42,7 @@ export function JsonElement(props) {
 				flex={1}
 				{...propsToPass}
 				justifyContent="flex-start"
+				testID={testID}
 			>
 				<JsonEditor
 					width="100%"
@@ -55,6 +53,7 @@ export function JsonElement(props) {
 					onEdit={(obj) => {
 						setValue(JSON.stringify(obj.updated_src));
 					}}
+					{...props}
 				/>
 			</Row>;
 
