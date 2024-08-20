@@ -138,7 +138,7 @@ export function setComboValue(selectors, value) {
 				.wait('@getWaiter'); // allow dropdown to load
 				
 			cy.get(field)
-				.wait(1500) // render
+				.wait(2000) // render
 				.type('{downarrow}')
 				.wait(1000) // allow time for selection
 
@@ -179,7 +179,7 @@ export function setTagValue(selectors, value) {
 					.wait('@getWaiter'); // allow dropdown to load
 					
 				cy.get(field)
-					.wait(1500) // render
+					.wait(2000) // render
 					.type('{downarrow}')
 					.wait(1000); // allow time for selection
 			});

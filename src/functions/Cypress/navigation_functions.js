@@ -23,7 +23,7 @@ export function login(loginId = null, password = null) {
 		baseDir = Cypress.env('baseDir');
 	cy.visit(baseUrl + baseDir + 'login')
 		.then(() => {
-			getDomNode('loginId').clear();
+			getDomNode('loginId', { timeout: 10000 }).clear();
 			getDomNode('loginId').type(loginId);
 
 			getDomNode('password').clear();
