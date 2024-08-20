@@ -73,10 +73,10 @@ import Inflector from 'inflector-js';
 import _ from 'lodash';
 const $ = Cypress.$;
 
-const
-	WINDOWED = 'WINDOWED',
-	INLINE = 'INLINE',
-	SIDE = 'SIDE';
+export const WINDOWED = 'WINDOWED';
+export const INLINE = 'INLINE';
+export const SIDE = 'SIDE';
+export const FULL = 'FULL';
 
 
 // Form fields
@@ -316,12 +316,11 @@ export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0,
 		formSelector = editorSelector + '/form';
 
 	if (whichEditor === SIDE) {
-		// switch to Edit mode if necessary
 		Cypress.log({ name: 'switch to Edit mode if necessary ' + viewerSelector});
 		clickToEditButtonIfExists(viewerSelector);
 	} else {
 		// windowed or inline editor
-		Cypress.log({ name: 'SHOULD NOT BE HERE!!'});
+		Cypress.log({ name: 'click editBtn ' + gridSelector});
 		clickEditButton(gridSelector);
 	}
 	cy.wait(1500); // allow form to build
@@ -439,7 +438,7 @@ export function crudWindowedTreeRecord(treeSelector, newData, editData, schema, 
 		verifyTreeRecordExistsById(treeSelector, id);
 
 		// edit
-		editWindowedTreeRecord(treeSelector, editData, schema, id);
+		editWindowedTreeRecord(treeSelector, editData, schema, id, level);
 
 		// delete
 		verifyTreeRecordExistsById(treeSelector, id);
@@ -468,7 +467,7 @@ export function crudSideTreeRecord(treeSelector, newData, editData, schema, anci
 		verifyTreeRecordExistsById(treeSelector, id);
 
 		// edit
-		editTreeRecord(treeSelector, editData, schema, id);
+		editTreeRecord(treeSelector, editData, schema, id, level, SIDE);
 
 		// delete
 		verifyTreeRecordExistsById(treeSelector, id);
@@ -558,7 +557,7 @@ export function addWindowedTreeRecord(treeSelector, fieldValues, schema, ancilla
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
 }
-export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0) {
+export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0, whichEditor = WINDOWED) {
 	
 	cy.then(() => {
 		Cypress.log({ name: 'editTreeRecord ' + treeSelector + ' ' + id});
@@ -571,13 +570,11 @@ export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0)
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
-	const treeName = getLastPartOfPath(treeSelector);
-	if (treeName.match(/SideTree/)) { // as opposed to 'SideA' -- we want the side editor, not particular sides of another editor
-		// side editor
-		// switch to Edit mode if necessary
+	if (whichEditor === SIDE) {
+		Cypress.log({ name: 'switch to Edit mode if necessary ' + viewerSelector});
 		clickToEditButtonIfExists(viewerSelector);
 	} else {
-		// windowed or inline editor
+		Cypress.log({ name: 'click editBtn ' + treeSelector});
 		clickEditButton(treeSelector);
 	}
 	cy.wait(1500); // allow form to build
@@ -602,7 +599,7 @@ export function editWindowedTreeRecord(treeSelector, fieldValues, schema, id, le
 		Cypress.log({ name: 'editWindowedTreeRecord ' + treeSelector + ' ' + id});
 	});
 	
-	editTreeRecord(treeSelector, fieldValues, schema, id, level);
+	editTreeRecord(treeSelector, fieldValues, schema, id, level, WINDOWED);
 
 	const formSelector = treeSelector + '/editor/form';
 	clickCloseButton(formSelector);
@@ -719,9 +716,16 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 	});
 
 }
-export function runClosureTreeManagerScreenCrudTests(model, schema, newData, editData, ancillaryData) {
+export function runClosureTreeManagerScreenCrudTests(args) {
 
-	const
+	const {
+			model,
+			schema,
+			newData,
+			editData,
+			ancillaryData,
+			skip = null,
+		} = args,
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
 		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
 
@@ -742,90 +746,50 @@ export function runClosureTreeManagerScreenCrudTests(model, schema, newData, edi
 		// 	logout();
 		// });
 
-		it('CRUD in full mode', function() {
+		if (skip !== FULL) {
+			it('CRUD in full mode', function() {
 
-			const
-				managerSelector = '/' + Models + 'Manager',
-				treeSelector = '/' + Models + 'TreeEditor';
+				const
+					managerSelector = '/' + Models + 'Manager',
+					treeSelector = '/' + Models + 'TreeEditor';
 
-			toFullMode(managerSelector);
-			cy.wait(500); // wait for grid to load
+				toFullMode(managerSelector);
+				cy.wait(500); // wait for grid to load
 
-			crudWindowedTreeRecord(treeSelector, newData, editData, schema, ancillaryData);
+				crudWindowedTreeRecord(treeSelector, newData, editData, schema, ancillaryData);
 
-		});
-
-		it('CRUD in side mode', function() {
-
-			const
-				managerSelector = '/' + Models + 'Manager',
-				treeSelector = '/' + Models + 'TreeEditor';
-
-			toSideMode(managerSelector);
-			cy.wait(1000); // wait for grid to load
-
-			crudSideTreeRecord(treeSelector, newData, editData, schema, ancillaryData);
-
-		});
-
-	});
-
-}
-export function runInlineManagerScreenCrudTests(model, schema, newData, editData, ancillaryData) {
-
-	const
-		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
-
-	describe(Models + 'Manager', () => {
-
-		beforeEach(function () {
-			login();
-			cy.restoreLocalStorage();
-			cy.url().then((currentUrl) => {
-				if (!currentUrl.endsWith(url)) {
-					navigateViaTabOrHomeButtonTo(url);
-				}
 			});
-		});
-		
-		afterEach(function () {
-			cy.saveLocalStorage();
-			logout();
-		});
+		}
 
-		it('CRUD with inline editor in full mode', function() {
+		if (skip !== SIDE) {
+			it('CRUD in side mode', function() {
 
-			const
-				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'GridEditor';
+				const
+					managerSelector = '/' + Models + 'Manager',
+					treeSelector = '/' + Models + 'TreeEditor';
 
-			toFullMode(managerSelector);
-			cy.wait(500); // wait for grid to load
+				toSideMode(managerSelector);
+				cy.wait(1000); // wait for grid to load
 
-			crudInlineGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+				crudSideTreeRecord(treeSelector, newData, editData, schema, ancillaryData);
 
-		});
-
-		it('CRUD in side mode', function() {
-
-			const
-				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'GridEditor';
-
-			toSideMode(managerSelector);
-			cy.wait(1000); // wait for grid to load
-
-			crudSideGridRecord(gridSelector, newData, editData, schema, ancillaryData);
-
-		});
+			});
+		}
 
 	});
 
 }
-export function runManagerScreenCrudTests(model, schema, newData, editData, ancillaryData, fullIsInline = false) {
+export function runManagerScreenCrudTests(args) {
 
-	const
+	const {
+			model,
+			schema,
+			newData,
+			editData,
+			ancillaryData,
+			fullIsInline = false,
+			skip = null,
+		} = args,
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
 		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
 
@@ -846,35 +810,39 @@ export function runManagerScreenCrudTests(model, schema, newData, editData, anci
 		// 	logout();
 		// });
 
-		it('CRUD in full mode', function() {
+		if (skip !== FULL) {
+			it('CRUD in full mode', function() {
+	
+				const
+					managerSelector = '/' + Models + 'Manager',
+					gridSelector = '/' + Models + 'GridEditor';
+	
+				toFullMode(managerSelector);
+				cy.wait(500); // wait for grid to load
+	
+				if (fullIsInline) {
+					crudInlineGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+				} else {
+					crudWindowedGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+				}
+	
+			});
+		}
 
-			const
-				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'GridEditor';
-
-			toFullMode(managerSelector);
-			cy.wait(500); // wait for grid to load
-
-			if (fullIsInline) {
-				crudInlineGridRecord(gridSelector, newData, editData, schema, ancillaryData);
-			} else {
-				crudWindowedGridRecord(gridSelector, newData, editData, schema, ancillaryData);
-			}
-
-		});
-
-		it('CRUD in side mode', function() {
-
-			const
-				managerSelector = '/' + Models + 'Manager',
-				gridSelector = '/' + Models + 'GridEditor';
-
-			toSideMode(managerSelector);
-			cy.wait(1000); // wait for grid to load
-
-			crudSideGridRecord(gridSelector, newData, editData, schema, ancillaryData);
-
-		});
+		if (skip !== SIDE) {
+			it('CRUD in side mode', function() {
+	
+				const
+					managerSelector = '/' + Models + 'Manager',
+					gridSelector = '/' + Models + 'GridEditor';
+	
+				toSideMode(managerSelector);
+				cy.wait(1000); // wait for grid to load
+	
+				crudSideGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+	
+			});
+		}
 
 	});
 
