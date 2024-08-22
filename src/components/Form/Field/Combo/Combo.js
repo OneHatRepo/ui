@@ -692,6 +692,7 @@ export function ComboComponent(props) {
 			'disablePrint',
 			'selectorId',
 			'selectorSelected',
+			'usePermissions',
 		]);
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 		grid = <WhichGrid

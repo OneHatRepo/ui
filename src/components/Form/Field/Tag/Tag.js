@@ -273,6 +273,7 @@ function TagComponent(props) {
 										onGridSave={onGridSave}
 										onGridDelete={onGridDelete}
 										tooltip={tooltip}
+										usePermissions={props.usePermissions}
 										{..._combo}
 									/>}
 				</Column>
