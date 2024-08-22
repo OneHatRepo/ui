@@ -1580,17 +1580,16 @@ export const commonApplicationMimeTypes = [
 	'application/gzip',
 	'application/javascript',
 	'application/json',
-	'application/msword',
+	'application/msword', // .doc
 	'application/pdf',
 	'application/SGML',
 	'application/sql',
 	'application/vnd.adobe.xdp+xml',
-	'application/vnd.ms-excel',
-	'application/vnd.ms-excel.*',
-	'application/vnd.ms-office.*',
-	'application/vnd.ms-powerpoint',
-	'application/vnd.ms-word.*',
-	'application/vnd.openxmlformats*',
+	'application/vnd.ms-excel', // .xls
+	'application/vnd.ms-powerpoint', // .ppt
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx 
+	'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
 	'application/xml',
 	'application/zip',
 ];
