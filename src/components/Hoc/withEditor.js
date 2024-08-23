@@ -7,10 +7,7 @@ import {
 	EDIT,
 	DELETE,
 	VIEW,
-	COPY,
 	DUPLICATE,
-	PRINT,
-	UPLOAD_DOWNLOAD,
 } from '../../Constants/Commands.js';
 import {
 	EDITOR_MODE__VIEW,

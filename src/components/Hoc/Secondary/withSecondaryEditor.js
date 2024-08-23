@@ -3,6 +3,13 @@ import {
 	Button,
 } from 'native-base';
 import {
+	ADD,
+	EDIT,
+	DELETE,
+	VIEW,
+	DUPLICATE,
+} from '../../../Constants/Commands.js';
+import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
@@ -365,7 +372,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryDoEdit();
 			},
 			secondaryDoEditorSave = async (data, e) => {
-				let mode = editorMode === EDITOR_MODE__ADD ? ADD : EDIT;
+				let mode = secondaryEditorMode === EDITOR_MODE__ADD ? ADD : EDIT;
 				if (canUser && !canUser(mode, secondaryModel)) {
 					showPermissionsError(mode, secondaryModel);
 					return;
