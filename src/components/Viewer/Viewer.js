@@ -1,4 +1,4 @@
-import { useRef, useState, } from 'react';
+import { useEffect, useRef, useState, } from 'react';
 import {
 	Column,
 	Icon,
@@ -37,7 +37,8 @@ function Viewer(props) {
 			record,
 			additionalViewButtons,
 			canRecordBeEdited,
-
+			viewerSetup, // this fn will be executed after the viewer setup is complete
+		
 			// withComponent
 			self,
 
@@ -235,6 +236,12 @@ function Viewer(props) {
 			setContainerWidth(e.nativeEvent.layout.width);
 		};
 
+	useEffect(() => {
+		if (viewerSetup && record?.getSubmitValues) {
+			viewerSetup(record.getSubmitValues());
+		}
+	}, [record]);
+	
 	if (self) {
 		self.ref = scrollViewRef;
 	}

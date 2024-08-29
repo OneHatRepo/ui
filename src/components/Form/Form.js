@@ -794,7 +794,7 @@ function Form(props) {
 			doReset(defaultValues);
 		}
 		if (formSetup) {
-			formSetup(formSetValue, formGetValues, formState)
+			formSetup(formSetValue, formGetValues, formState);
 		}
 	}, [record]);
 
