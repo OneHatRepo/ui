@@ -58,6 +58,27 @@ export default function withPdfButtons(WrappedComponent) {
 			buildModalItems = () => {
 				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
 
+				// remove additionalEditButtons from the modal
+				function walkTreeToDeleteAdditionalEditButtons(item) {
+					if (!item) {
+						return;
+					}
+
+					let {
+							additionalEditButtons,
+							items,
+						} = item;
+					if (!_.isEmpty(items)) {
+						_.each(items, (item) => {
+							walkTreeToDeleteAdditionalEditButtons(item);
+						});
+					}
+					if (additionalEditButtons) {
+						delete item.additionalEditButtons;
+					}
+				}
+				_.each(modalItems, walkTreeToDeleteAdditionalEditButtons);
+
 				if (!_.isEmpty(ancillaryItems)) {
 					const
 						ancillaryItemsClone = _.cloneDeep(ancillaryItems),
@@ -144,7 +165,7 @@ export default function withPdfButtons(WrappedComponent) {
 			},
 			getStartingValues = (modalItems) => {
 				const startingValues = {};
-				function walkTree(item) {
+				function walkTreeToSetStartingValues(item) {
 					if (!item) {
 						return;
 					}
@@ -155,14 +176,14 @@ export default function withPdfButtons(WrappedComponent) {
 						} = item;
 					if (!_.isEmpty(items)) {
 						_.each(items, (item) => {
-							walkTree(item);
+							walkTreeToSetStartingValues(item);
 						});
 					}
 					if (name) {
 						startingValues[name] = true;
 					}
 				}
-				_.each(modalItems, walkTree);
+				_.each(modalItems, walkTreeToSetStartingValues);
 				return startingValues;
 			},
 			onChooseFields = (userWantsToEmail = false) => {
