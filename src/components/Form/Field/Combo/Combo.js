@@ -778,7 +778,7 @@ export function ComboComponent(props) {
 
 					}}
 					onAdd={(selection) => {
-						const entity = selection[0];
+						const entity = _.isArray(selection) ? selection[0] : selection;
 						if (entity.id !== value && !isInTag) {
 							// Select it and set the value of the combo.
 							setGridSelection(selection);
@@ -789,7 +789,7 @@ export function ComboComponent(props) {
 						}
 					}}
 					onSave={(selection) => {
-						const entity = selection[0];
+						const entity = _.isArray(selection) ? selection[0] : selection;
 						if (!isInTag) {
 							if (entity?.id !== value) { // Tag doesn't use value, so don't do this comparison in the Tag
 								// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
