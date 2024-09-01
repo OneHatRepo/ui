@@ -105,6 +105,7 @@ function GridComponent(props) {
 			flatListProps = {},
 			onRowPress,
 			onRender,
+			disableLoadOnRender = false,
 			forceLoadOnRender = false,
 			pullToRefresh = true,
 			hideNavColumn = true,
@@ -801,6 +802,10 @@ function GridComponent(props) {
 			}
 		};
 
+	if (forceLoadOnRender && disableLoadOnRender) {
+		throw new Error('incompatible config! forceLoadOnRender and disableLoadOnRender cannot both be true');
+	}
+
 	useEffect(() => {
 		if (!isInited) {
 			// first call -- meant to render placeholder so we get container dimensions
@@ -934,7 +939,7 @@ function GridComponent(props) {
 		applySelectorSelected();
 		Repository.resumeEvents();
 
-		if ((Repository.isRemote && !Repository.isLoaded) || forceLoadOnRender) {
+		if (((Repository.isRemote && !Repository.isLoaded) || forceLoadOnRender) && !disableLoadOnRender) { // default remote repositories to load on render, optionally force or disable load on render
 			Repository.load();
 		}
 
