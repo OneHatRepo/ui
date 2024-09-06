@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
+	Box,
 	Column,
 	Modal,
 	Row,
@@ -328,6 +329,21 @@ export default function withFilters(WrappedComponent) {
 												{filterElement}
 											</Row>;
 						}
+						// add a container for each filter
+						filterElement = <Row
+											key={'filter-' + ix}
+											bg="trueGray.100"
+											px={1}
+											mx={1}
+											borderRadius={6}
+											borderLeftWidth={1}
+											borderLeftColor="#fff"
+											alignItems="center"
+											h="100%"
+										>
+											{filterElement}
+										</Row>;
+
 						filterElements.push(filterElement);
 					});
 					return filterElements;
