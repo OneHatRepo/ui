@@ -56,9 +56,6 @@ function TagComponent(props) {
 			const
 				id = item.id,
 				repository = propsToPass.Repository;
-			if (!repository.isLoaded) {
-				await repository.load();
-			}
 			if (repository.isLoading) {
 				await repository.waitUntilDoneLoading();
 			}
