@@ -694,6 +694,9 @@ export function ComboComponent(props) {
 			'selectorSelected',
 			'usePermissions',
 		]);
+		if (!Repository) {
+			gridProps.data = filteredData;
+		}
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 		grid = <WhichGrid
 					showHeaders={false}
@@ -711,7 +714,6 @@ export function ComboComponent(props) {
 					}}
 					autoAdjustPageSizeToHeight={false}
 					{...gridProps}
-					data={filteredData}
 					reference="grid"
 					parent={self}
 					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
