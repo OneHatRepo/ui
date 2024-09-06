@@ -438,7 +438,7 @@ export function ComboComponent(props) {
 						fn: (entity) => {
 							const
 								displayValue = entity.displayValue,
-								regex = new RegExp('^' + value);
+								regex = new RegExp('^' + value, 'i'); // case-insensitive
 							return displayValue.match(regex);
 						},
 					});
