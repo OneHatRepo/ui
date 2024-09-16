@@ -9,7 +9,7 @@ import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
 function InputElement(props) {
-	let {
+	let { // so localValue can be changed, if needed
 			value,
 			setValue,
 			autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
@@ -25,6 +25,28 @@ function InputElement(props) {
 		styles = UiGlobals.styles,
 		debouncedSetValueRef = useRef(),
 		[localValue, setLocalValue] = useState(value),
+		isTypingRef = useRef(),
+		isTypingTimeoutRef = useRef(),
+		isTyping = () => {
+			return isTypingRef.current;
+		},
+		setIsTyping = (isTyping) => {
+			isTypingRef.current = isTyping;
+			if (isTyping) {
+				startIsTypingTimeout();
+			}
+		},
+		startIsTypingTimeout = () => {
+			clearIsTypingTimeout();
+			isTypingTimeoutRef.current = setTimeout(() => {
+				setIsTyping(false);
+			}, 2000);
+		},
+		clearIsTypingTimeout = () => {
+			if (isTypingTimeoutRef.current) {
+				clearTimeout(isTypingTimeoutRef.current);
+			}
+		},
 		onKeyPressLocal = (e) => {
 			if (e.key === 'Enter') {
 				debouncedSetValueRef.current?.cancel();
@@ -60,7 +82,7 @@ function InputElement(props) {
 		
 	useEffect(() => {
 
-		if (value !== localValue) {
+		if (!isTyping() && value !== localValue) {
 			// Make local value conform to externally changed value
 			setLocalValue(value);
 		}

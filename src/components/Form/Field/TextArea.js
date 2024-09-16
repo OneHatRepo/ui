@@ -20,6 +20,28 @@ const
 			styles = UiGlobals.styles,
 			debouncedSetValueRef = useRef(),
 			[localValue, setLocalValue] = useState(value),
+			isTypingRef = useRef(),
+			isTypingTimeoutRef = useRef(),
+			isTyping = () => {
+				return isTypingRef.current;
+			},
+			setIsTyping = (isTyping) => {
+				isTypingRef.current = isTyping;
+				if (isTyping) {
+					startIsTypingTimeout();
+				}
+			},
+			startIsTypingTimeout = () => {
+				clearIsTypingTimeout();
+				isTypingTimeoutRef.current = setTimeout(() => {
+					setIsTyping(false);
+				}, 2000);
+			},
+			clearIsTypingTimeout = () => {
+				if (isTypingTimeoutRef.current) {
+					clearTimeout(isTypingTimeoutRef.current);
+				}
+			},
 			onChangeTextLocal = (value) => {
 				if (value === '') {
 					value = null; // empty string makes value null
@@ -42,8 +64,10 @@ const
 
 		useEffect(() => {
 
-			// Make local value conform to externally changed value
-			setLocalValue(value);
+			if (!isTyping() && value !== localValue) {
+				// Make local value conform to externally changed value
+				setLocalValue(value);
+			}
 	
 		}, [value]);
 
