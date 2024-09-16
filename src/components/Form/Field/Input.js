@@ -57,6 +57,7 @@ function InputElement(props) {
 			}
 		},
 		onChangeTextLocal = (value) => {
+			setIsTyping(true);
 			if (value === '') {
 				value = null; // empty string makes value null
 				setLocalValue(value);
