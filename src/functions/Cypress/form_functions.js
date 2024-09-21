@@ -38,7 +38,7 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 		if (schema.model) {
 			// OneHatData schema
 			const propertyDefinition = getPropertyDefinitionFromSchema(fieldName, schema);
-			if (propertyDefinition.isEditingDisabled) {
+			if (propertyDefinition?.isEditingDisabled) {
 				return;
 			}
 			editorType = propertyDefinition?.editorType?.type;
