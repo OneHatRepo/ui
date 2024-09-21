@@ -26,7 +26,7 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 		const {
 				isEditorShown = false,
 				setIsEditorShown,
-				editorProps = {},
+				_editor = {},
 
 				// withComponent
 				self,
@@ -48,7 +48,7 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 					isInlineEditorShown={isEditorShown}
 					inlineEditor={<InlineEditor
 									{...propsToPass}
-									{...editorProps}
+									{..._editor}
 									parent={self}
 									reference="editor"
 									columnsConfig={localColumnsConfig}

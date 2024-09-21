@@ -40,7 +40,7 @@ function InputElement(props) {
 			clearIsTypingTimeout();
 			isTypingTimeoutRef.current = setTimeout(() => {
 				setIsTyping(false);
-			}, 2000);
+			}, autoSubmitDelay + 1000);
 		},
 		clearIsTypingTimeout = () => {
 			if (isTypingTimeoutRef.current) {
