@@ -22,7 +22,7 @@ const downloadWithFetch = (url, options = {}, win = null) => {
 			link.click();
 
 
-			// win.URL.revokeObjectURL(file);
+			// win.URL.revokeObjectURL(file); // if you revoke it, the PDF viewer will not be able to download the PDF.
 
 			// const newWin = win.open(file);
 			// win.location.assign(file);
