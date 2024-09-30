@@ -70,14 +70,14 @@ export default function withAlert(WrappedComponent) {
 				}
 				showAlert();
 			},
-			onConfirm = (message, callback, includeCancel = false) => {
+			onConfirm = (message, yesCallback, includeCancel = false, noCallback) => {
 				clearAll();
 				setMode(includeCancel ? ALERT_MODE_YES : ALERT_MODE_YES_NO);
 				setTitle('Confirm');
 				setMessage(message);
 				setIncludeCancel(includeCancel);
-				setYesCallback(() => callback);
-				setNoCallback(null);
+				setYesCallback(() => yesCallback);
+				setNoCallback(noCallback ? () => noCallback : null);
 				showAlert();
 			},
 			onCancel = () => {
