@@ -1,5 +1,5 @@
 import {
-	Row,
+	HStack,
 	Tooltip,
 } from '@gluestack-ui/themed';
 import {
@@ -38,7 +38,7 @@ export function JsonElement(props) {
 	if (UiGlobals.mode === UI_MODE_WEB) {
 		const src = JSON.parse(value);
 		assembledComponents = 
-			<Row
+			<HStack
 				flex={1}
 				{...propsToPass}
 				justifyContent="flex-start"
@@ -55,7 +55,7 @@ export function JsonElement(props) {
 					}}
 					{...props}
 				/>
-			</Row>;
+			</HStack>;
 
 	}
 	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
