@@ -16,8 +16,6 @@ import Combo, { ComboEditor } from '../Combo/Combo.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import _ from 'lodash';
 
-
-
 function TagComponent(props) {
 
 	const {
@@ -58,9 +56,6 @@ function TagComponent(props) {
 			const
 				id = item.id,
 				repository = propsToPass.Repository;
-			if (!repository.isLoaded) {
-				await repository.load();
-			}
 			if (repository.isLoading) {
 				await repository.waitUntilDoneLoading();
 			}
@@ -87,6 +82,13 @@ function TagComponent(props) {
 				return;
 			}
 
+			if (_.isNil(comboValue)) {
+				// NOTE: We *shouldn't* get here, but for some unknown reason, we *were* getting here on rare occasions.
+				// The combo was giving us null values, and the Tag dutifully added null values to its value array.
+				// Stop this from happening.
+				return;
+			}
+
 			// make sure value doesn't already exist
 			let exists = false;
 			_.each(value, (val) => {
@@ -97,7 +99,7 @@ function TagComponent(props) {
 			});
 			if (exists) {
 				clearComboValue();
-				alert('Value already exists!');
+				// alert('Value already exists!'); // This screws up testing! alerts should be for error conditions, not standard operating conditions
 				return;
 			}
 
@@ -111,7 +113,10 @@ function TagComponent(props) {
 				id = comboValue;
 			let item,
 				displayValue;
-			if (Repository) {
+				
+			if (!id) {
+				displayValue = '';
+			} else if (Repository) {
 				item = Repository.getById(id);
 				if (!item) {
 					throw Error('item not found');
@@ -265,6 +270,7 @@ function TagComponent(props) {
 										onGridSave={onGridSave}
 										onGridDelete={onGridDelete}
 										tooltip={tooltip}
+										usePermissions={props.usePermissions}
 										{..._combo}
 									/>}
 				</VStack>

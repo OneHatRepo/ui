@@ -1,6 +1,7 @@
 import { useEffect, } from 'react';
 import {
 	Button,
+	ButtonText,
 	HStack,
 	Text,
 } from '@gluestack-ui/themed';
@@ -98,7 +99,7 @@ function FileComponent(props) {
 
 	let assembledComponents = null;
 	if (_.isEmpty(filesContent)) {
-		assembledComponents = <Button onPress={() => openFilePicker()}>Select File</Button>;
+		assembledComponents = <Button onPress={() => openFilePicker()}><ButtonText>Select File</ButtonText></Button>;
 	} else {
 		assembledComponents = <HStack
 									px={3}

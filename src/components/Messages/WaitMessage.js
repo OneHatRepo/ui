@@ -17,15 +17,18 @@ const
 	height = 50,
 	width = 200;
 
-// NOTE: THis component does NOT use the native-base Modal
+// NOTE: This component does NOT use the native-base Modal
 // because we need it to appear on top of all other Modals.
 // Therefore, we're using the ReactNative Modal, which at least for web
 // we can control the zIndex of.
 
 export default function WaitMessage(props) {
-	const {
-			textMessage = 'Please wait...',
+	let {
+			text,
 		} = props;
+	if (!text) { // do this here instead of setting default value in deconstructor, so we can use the default for text, even if text is defined and passed as null or empty string
+		text = 'Please wait...';
+	}
 
 	let transform;
 	if (UiGlobals.mode === UI_MODE_WEB) {
@@ -74,7 +77,7 @@ export default function WaitMessage(props) {
 							flexDirection="row"
 						>
 							<Loading minHeight="auto" h={5} w={5} mr={2} />
-							<Text color="#000">{textMessage}</Text>
+							<Text color="#000">{text}</Text>
 						</Box>
 					</View>
 				</View>

@@ -214,6 +214,7 @@ import GridPanel from './Panel/GridPanel.js';
 import IconButton from './Buttons/IconButton.js';
 import Input from './Form/Field/Input.js';
 import IntervalsCombo from './Form/Field/Combo/IntervalsCombo.js';
+import Json from './Form/Field/Json.js';
 import Label from './Form/Label.js';
 import MonthsCombo from './Form/Field/Combo/MonthsCombo.js';
 import Number from './Form/Field/Number.js';
@@ -222,6 +223,7 @@ import Panel from './Panel/Panel.js';
 // import Picker from '../Components/Panel/Picker.js';
 import PlusMinusButton from './Buttons/PlusMinusButton.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
+import Slider from './Form/Field/Slider.js';
 import SquareButton from './Buttons/SquareButton.js';
 import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Tag/Tag.js';
@@ -450,6 +452,7 @@ const components = {
 	IconButton,
 	Input,
 	IntervalsCombo,
+	Json,
 	Label,
 	MonthsCombo,
 	Number,
@@ -458,6 +461,8 @@ const components = {
 	// Picker,
 	PlusMinusButton,
 	RadioGroup,
+	Slider,
+	Row,
 	SquareButton,
 	TabPanel,
 	Tag,

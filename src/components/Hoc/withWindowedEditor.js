@@ -45,7 +45,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				isEditorShown = false,
 				setIsEditorShown,
 				Editor,
-				editorProps = {},
+				_editor = {},
 
 				// withComponent
 				self,
@@ -73,7 +73,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
 								{...propsToPass}
-								{...editorProps}
+								{..._editor}
 								parent={self}
 								reference="editor"
 							/>

@@ -9,7 +9,7 @@ import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
 function InputElement(props) {
-	let {
+	let { // so localValue can be changed, if needed
 			value,
 			setValue,
 			autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
@@ -20,12 +20,36 @@ function InputElement(props) {
 			onChangeText,
 			tooltip = null,
 			tooltipPlacement = 'bottom',
+			self,
 		} = props,
 		styles = UiGlobals.styles,
 		debouncedSetValueRef = useRef(),
 		[localValue, setLocalValue] = useState(value),
+		isTypingRef = useRef(),
+		isTypingTimeoutRef = useRef(),
+		isTyping = () => {
+			return isTypingRef.current;
+		},
+		setIsTyping = (isTyping) => {
+			isTypingRef.current = isTyping;
+			if (isTyping) {
+				startIsTypingTimeout();
+			}
+		},
+		startIsTypingTimeout = () => {
+			clearIsTypingTimeout();
+			isTypingTimeoutRef.current = setTimeout(() => {
+				setIsTyping(false);
+			}, autoSubmitDelay + 1000);
+		},
+		clearIsTypingTimeout = () => {
+			if (isTypingTimeoutRef.current) {
+				clearTimeout(isTypingTimeoutRef.current);
+			}
+		},
 		onKeyPressLocal = (e) => {
 			if (e.key === 'Enter') {
+				debouncedSetValueRef.current?.cancel();
 				setValue(localValue);
 			}
 			if (onKeyPress) {
@@ -33,6 +57,7 @@ function InputElement(props) {
 			}
 		},
 		onChangeTextLocal = (value) => {
+			setIsTyping(true);
 			if (value === '') {
 				value = null; // empty string makes value null
 				setLocalValue(value);
@@ -48,15 +73,20 @@ function InputElement(props) {
 		};
 		
 	useEffect(() => {
+
 		// Set up debounce fn
 		// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
+		debouncedSetValueRef.current?.cancel(); // Cancel any previous debounced fn
 		debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
+
 	}, [setValue]);
 		
 	useEffect(() => {
 
-		// Make local value conform to externally changed value
-		setLocalValue(value);
+		if (!isTyping() && value !== localValue) {
+			// Make local value conform to externally changed value
+			setLocalValue(value);
+		}
 
 	}, [value]);
 

@@ -10,6 +10,7 @@ import {
 import Inflector from 'inflector-js';
 import Header from './Header.js';
 import Mask from './Mask.js';
+import testProps from '../../Functions/testProps.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
 import withComponent from '../Hoc/withComponent.js';
 import emptyFn from '../../Functions/emptyFn.js';
@@ -143,19 +144,20 @@ function Panel(props) {
 		framePropsToUse = frameProps;
 	}
 
+	const self = props.self;
 	if (isCollapsed) {
 		if (collapseDirection === HORIZONTAL) {
-			return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} w="33px">
+			return <VStack {...testProps(self?.reference)} overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} w="33px">
 						{isDisabled && <Mask />}
 						{headerComponent}
 					</VStack>;
 		}
-		return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} h="33px">
+		return <VStack {...testProps(self?.reference)} overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} h="33px">
 					{isDisabled && <Mask />}
 					{headerComponent}
 				</VStack>;
 	}
-	return <VStack overflow="hidden" {...propsToPass} {...framePropsToUse} {...sizeProps} onLayout={onLayout}>
+	return <VStack {...testProps(self?.reference)} overflow="hidden" {...propsToPass} {...framePropsToUse} {...sizeProps} onLayout={onLayout}>
 				{isDisabled && <Mask />}
 				{headerComponent}
 				{topToolbar}

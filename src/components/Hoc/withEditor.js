@@ -4,10 +4,18 @@ import {
 	ButtonText,
 } from '@gluestack-ui/themed';
 import {
+	ADD,
+	EDIT,
+	DELETE,
+	VIEW,
+	DUPLICATE,
+} from '../../Constants/Commands.js';
+import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 	EDITOR_TYPE__SIDE,
+	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
@@ -16,12 +24,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 	return (props) => {
 
 		if (props.disableWithEditor) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} isTree={isTree} />;
 		}
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
-				userCanEdit = true,
+				userCanEdit = true, // not permissions, but capability
 				userCanView = true,
 				canEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
 				disableAdd = false,
@@ -56,6 +64,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				// withData
 				Repository,
+
+				// withPermissions
+				canUser,
+				showPermissionsError,
 
 				// withSelection
 				selection,
@@ -109,7 +121,21 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return newEntityDisplayValueRef.current;
 			},
 			doAdd = async (e, values) => {
+				if (canUser && !canUser(ADD)) {
+					showPermissionsError(ADD);
+					return;
+				}
+
 				let addValues = values;
+
+				if (Repository?.isLoading) {
+					// NOTE: This is a hack to prevent adding a new record while the repository is still loading.
+					// This can happen when the repository is still loading, and the user clicks the 'Add' button.
+					setTimeout(() => {
+						doAdd(e, values);
+					}, 500);
+					return;
+				}
 
 				if (!values) {
 					// you can either:
@@ -143,7 +169,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (!selection[0]) {
 						throw Error('Must select a parent node.');
 					}
-					addValues.parentId = selection[0].id;
+					const parent = selection[0];
+					addValues.parentId = parent.id;
+					addValues.depth = parent.depth +1;
 				} else {
 					// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
 					const currentSorter = Repository.sorters[0];
@@ -174,10 +202,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsSaving(false);
 				setIsIgnoreNextSelectionChange(true);
 				setSelection([entity]);
+				if (getListeners().onAfterAdd) {
+					await getListeners().onAfterAdd(entity);
+				}
 				if (Repository.isAutoSave) {
 					// for isAutoSave Repositories, submit the handers right away
-					if (getListeners().onAfterAdd) {
-						await getListeners().onAfterAdd(entity);
+					if (getListeners().onAfterAddSave) {
+						await getListeners().onAfterAddSave(selection);
 					}
 					if (onAdd) {
 						await onAdd(entity);
@@ -188,6 +219,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			doEdit = async () => {
+				if (canUser && !canUser(EDIT)) {
+					showPermissionsError(EDIT);
+					return;
+				}
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
 				}
@@ -202,6 +237,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			doDelete = async (args) => {
+				if (canUser && !canUser(DELETE)) {
+					showPermissionsError(DELETE);
+					return;
+				}
 				let cb = null;
 				if (_.isFunction(args)) {
 					cb = args;
@@ -229,10 +268,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
 							<Button colorScheme="danger" onPress={() => doMoveChildren(cb)} key="moveBtn">
-								Move Children
+								<ButtonText>Move Children</ButtonText>
 							</Button>,
 							<Button colorScheme="danger" onPress={() => doDeleteChildren(cb)} key="deleteBtn">
-								Delete Children
+								<ButtonText>Delete Children</ButtonText>
 							</Button>
 						],
 						includeCancel: true,
@@ -254,6 +293,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				deleteRecord(false, cb);
 			},
 			deleteRecord = async (moveSubtreeUp, cb) => {
+				if (canUser && !canUser(DELETE)) {
+					showPermissionsError(DELETE);
+					return;
+				}
 				if (getListeners().onBeforeDelete) {
 					const listenerResult = await getListeners().onBeforeDelete(selection);
 					if (listenerResult === false) {
@@ -283,6 +326,17 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (!userCanView) {
 					return;
 				}
+				if (canUser && !canUser(VIEW)) {
+					showPermissionsError(VIEW);
+					return;
+				}
+				if (editorType === EDITOR_TYPE__INLINE) {
+					alert('Cannot view in inline editor.');
+					return; // inline editor doesn't have a view mode
+				}
+
+				// check permissions for view
+
 				if (selection.length !== 1) {
 					return;
 				}
@@ -298,6 +352,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (!userCanEdit || disableDuplicate) {
 					return;
 				}
+				if (canUser && !canUser(DUPLICATE)) {
+					showPermissionsError(DUPLICATE);
+					return;
+				}
+
+				// check permissions for duplicate
+
+
 				if (selection.length !== 1) {
 					return;
 				}
@@ -326,6 +388,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				doEdit();
 			},
 			doEditorSave = async (data, e) => {
+				let mode = editorMode === EDITOR_MODE__ADD ? ADD : EDIT;
+				if (canUser && !canUser(mode)) {
+					showPermissionsError(mode);
+					return;
+				}
+
 				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
 				const isSingle = selection.length === 1;
 				let useStaged = false;
@@ -378,11 +446,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						if (onAdd) {
 							await onAdd(selection);
 						}
-						if (getListeners().onAfterAdd) {
-							await getListeners().onAfterAdd(selection);
+						if (getListeners().onAfterAddSave) {
+							await getListeners().onAfterAddSave(selection);
 						}
 						setIsAdding(false);
-						setEditorMode(EDITOR_MODE__EDIT);
+						if (!canUser || canUser(EDIT)) {
+							setEditorMode(EDITOR_MODE__EDIT);
+						} else {
+							setEditorMode(EDITOR_MODE__VIEW);
+						}
 					} else if (editorMode === EDITOR_MODE__EDIT) {
 						if (getListeners().onAfterEdit) {
 							await getListeners().onAfterEdit(selection);
@@ -409,6 +481,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsEditorShown(false);
 				}
 				const formState = editorStateRef.current;
+				if (!formState) {
+					setIsAdding(false);
+					setIsEditorShown(false);
+					return;
+				}
 				if (!_.isEmpty(formState.dirtyFields)) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
 				} else {
@@ -422,6 +499,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(false);
 			},
 			doEditorDelete = async () => {
+				if (canUser && !canUser(DELETE)) {
+					showPermissionsError(DELETE);
+					return;
+				}
+
 				doDelete(() => {
 					setEditorMode(EDITOR_MODE__VIEW);
 					setIsEditorShown(false);
@@ -466,9 +548,19 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return mode;
 			},
 			setEditMode = () => {
+				if (canUser && !canUser(EDIT)) {
+					showPermissionsError(EDIT);
+					return;
+				}
+
 				setEditorMode(EDITOR_MODE__EDIT);
 			},
 			setViewMode = () => {
+				if (canUser && !canUser(VIEW)) {
+					showPermissionsError(VIEW);
+					return;
+				}
+
 				function doIt() {
 					setEditorMode(EDITOR_MODE__VIEW);
 				}
@@ -479,38 +571,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					doIt();
 				}
 			};
-
-		useEffect(() => {
-			if (!Repository) {
-				return () => {};
-			}
-
-			function handleError(msg, data = null) {
-				if (data) {
-					if (_.isPlainObject(data)) {
-						for (let key in data) { if (data.hasOwnProperty(key)) {
-							const val1 = data[key];
-							if (_.isPlainObject(val1)) {
-								for (let key2 in val1) { if (val1.hasOwnProperty(key2)) {
-									const val2 = val1[key2];
-									msg += "\n" + key + ': ' + val2;
-								} }
-							} else if (_.isString(data)) {
-								msg += "\n" + data;
-							}
-						} }
-					} else {
-						// not sure what to do with data!
-					}
-				}
-				alert(msg);
-			}
-
-			Repository.on('error', handleError);
-			return () => {
-				Repository.off('error', handleError);
-			};
-		}, []);
 
 		useEffect(() => {
 			setEditorMode(calculateEditorMode(isIgnoreNextSelectionChange));
@@ -570,6 +630,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					disableDuplicate={disableDuplicate}
 					disableView ={disableView}
 					setSelection={setSelectionDecorated}
+					isTree={isTree}
 				/>;
 	};
 }

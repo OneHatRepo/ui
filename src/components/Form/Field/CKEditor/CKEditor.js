@@ -29,6 +29,7 @@ const
 		useEffect(() => {
 			// Set up debounce fn
 			// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
+			debouncedSetValueRef.current?.cancel(); // Cancel any previous debounced fn
 			debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
 		}, [setValue]);
 

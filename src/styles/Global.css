@@ -2,3 +2,8 @@ html, body {
 	-webkit-user-select: none;
 	user-select: none;
 }
+
+/* to fix the inline editor */
+[data-testid="gridContainer"] > [data-testid="ScrollView"] > div {
+	height: 100%;
+}

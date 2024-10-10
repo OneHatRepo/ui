@@ -18,6 +18,7 @@ import {
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import useBlocking from '../../Hooks/useBlocking.js';
+import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import HeaderReorderHandle from './HeaderReorderHandle.js';
 import HeaderResizeHandle from './HeaderResizeHandle.js';
@@ -146,7 +147,7 @@ export default function GridHeaderRow(props) {
 			});
 
 			// Verify index can actually be used
-			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].reorderable) {
+			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].isReorderable) {
 				return;
 			}
 
@@ -221,7 +222,7 @@ export default function GridHeaderRow(props) {
 			});
 
 			// Verify index can actually be used
-			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].reorderable) {
+			if (typeof localColumnsConfig[newIx] === 'undefined' || !localColumnsConfig[newIx].isReorderable) {
 				return;
 			}
 
@@ -293,20 +294,19 @@ export default function GridHeaderRow(props) {
 				// so we can drag/drop them to control the columns.
 				const headerColumns = _.map(localColumnsConfig, (config, ix, all) => {
 					let {
-							columnId,
 							fieldName,
 							header = _.upperFirst(fieldName),
-							reorderable,
-							resizable,
-							sortable,
+							isReorderable: configIsReorderable,
+							isResizable: configIsResizable,
+							isSortable,
 							w,
 							flex,
 							isOver = false,
 							isHidden = false,
 						} = config,
-						isSorter = sortable && canColumnsSort && sortField === fieldName,
-						isReorderable = canColumnsReorder && reorderable,
-						isResizable = canColumnsResize && resizable,
+						isSorter = isSortable && canColumnsSort && sortField === fieldName,
+						isReorderable = canColumnsReorder && configIsReorderable,
+						isResizable = canColumnsResize && configIsResizable,
 						propsToPass = {
 							borderRightWidth: 2,
 							borderRightColor: '#fff',
@@ -342,6 +342,7 @@ export default function GridHeaderRow(props) {
 						textProps.textOverflow = 'ellipsis';
 					}
 					return <Pressable
+								{...testProps('Header-' + fieldName)}
 								key={ix}
 								onPress={(e) => {
 									if (e.preventDefault) {
@@ -350,7 +351,7 @@ export default function GridHeaderRow(props) {
 									if (isBlocked.current) { // withDraggable initiates block
 										return;
 									}
-									if (sortable && canColumnsSort) {
+									if (isSortable && canColumnsSort) {
 										onSort(config, e);
 									}
 								}}

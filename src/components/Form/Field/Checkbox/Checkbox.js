@@ -8,12 +8,14 @@ const
 		const {
 				value,
 				setValue,
+				testID = '',
 			} = props,
 			onToggle = () => {
 				setValue(!value);
 			};
 
 		return <CheckboxButton
+					testID={testID}
 					isChecked={value}
 					onPress={onToggle}
 					_icon={{

@@ -14,8 +14,9 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
 import {
-	v4 as uuid,
-} from 'uuid';
+	EDIT,
+	VIEW,
+} from '../../Constants/Commands.js';
 import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
@@ -34,19 +35,23 @@ import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
 import { withDropTarget } from '../Hoc/withDnd.js';
 import withEvents from '../Hoc/withEvents.js';
-import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
+import withInlineEditor from '../Hoc/withInlineEditor.js';
+import withPermissions from '../Hoc/withPermissions.js';
 import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
+import withSideEditor from '../Hoc/withSideEditor.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
-import withInlineEditor from '../Hoc/withInlineEditor.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
 import Loading from '../Messages/Loading.js';
+import isSerializable from '../../Functions/isSerializable.js';
+import inArray from '../../Functions/inArray.js';
+import ReloadPageButton from '../Buttons/ReloadPageButton.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -57,6 +62,7 @@ import Toolbar from '../Toolbar/Toolbar.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
 import ColumnSelectorWindow from './ColumnSelectorWindow.js';
+import Unauthorized from '../Messages/Unauthorized.js';
 import _ from 'lodash';
 
 
@@ -88,6 +94,7 @@ function GridComponent(props) {
 
 			columnsConfig = [], // json configurations for each column
 			columnProps = {},
+			defaultHiddenColumns = [],
 			getRowProps = (item) => {
 				return {
 					borderBottomWidth: 1,
@@ -97,6 +104,7 @@ function GridComponent(props) {
 			flatListProps = {},
 			onRowPress,
 			onRender,
+			disableLoadOnRender = false,
 			forceLoadOnRender = false,
 			pullToRefresh = true,
 			hideNavColumn = true,
@@ -126,7 +134,7 @@ function GridComponent(props) {
 			h,
 			flex,
 			bg = '#fff',
-			verifyCanEdit,
+			canRecordBeEdited,
 			alternateRowBackgrounds = true,
 			alternatingInterval = 2,
 			defaultRowHeight = 48,
@@ -150,6 +158,9 @@ function GridComponent(props) {
 			displayField,
 			idIx,
 			displayIx,
+
+			// withPermissions
+			canUser,
 
 			// withDnd
 			isDropTarget,
@@ -189,17 +200,9 @@ function GridComponent(props) {
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
 		localColumnsConfigKey = id && id + '-localColumnsConfig',
-		[hasFunctionColumn, setHasActionColumns] = useState((() => {
-			// We can't save localColumnsConfig when there's a function column, so we need to determine if this is the case (only run once per Grid)
-			let ret = false;
-			_.each(columnsConfig, (column) => {
-				if (column.renderer || _.isFunction(column)) {
-					ret = true;
-					return false;
-				}
-			});
-			return ret;
-		})()),
+		[hasUnserializableColumns] = useState(() => {
+			return !isSerializable(columnsConfig); // (runs only once, when the component is first created)
+		}),
 		forceUpdate = useForceUpdate(),
 		containerRef = useRef(),
 		gridRef = useRef(),
@@ -222,8 +225,26 @@ function GridComponent(props) {
 			forceUpdate();
 		},
 		setLocalColumnsConfig = (config) => {
-			if (localColumnsConfigKey && !hasFunctionColumn) {
-				setSaved(localColumnsConfigKey, config);
+			if (localColumnsConfigKey) {
+				const localConfig = _.clone(config); // clone it so we don't alter the original
+				if (hasUnserializableColumns) {
+					// just save the data needed to later reconstruct the columns
+					const usedIds = [];
+					_.each(localConfig, (column, ix) => {
+						if (!column.id || inArray(column.id, usedIds)) {
+							throw Error('When using unserializable columns, each column must have a unique id. ' + localColumnsConfigKey);
+						}
+						usedIds.push(column.id);
+						localConfig[ix] = {
+							id: column.id,
+							isHidden: !!column.isHidden,
+						};
+						if (column.w) {
+							localConfig[ix].w = column.w;
+						}
+					});
+				}
+				setSaved(localColumnsConfigKey, localConfig);
 			}
 
 			setLocalColumnsConfigRaw(config);
@@ -307,6 +328,7 @@ function GridComponent(props) {
 			const items = _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 			if (canRowsReorder && CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
 				items.unshift(<IconButton
+					{...testProps('reorderBtn')}
 					key="reorderBtn"
 					parent={self}
 					reference="reorderBtn"
@@ -321,7 +343,7 @@ function GridComponent(props) {
 			if (row.item.isDestroyed) {
 				return null;
 			}
-			if (row.item.id === 'inlineEditor') {
+			if (row.item.id === 'editor') {
 				return inlineEditor;
 			}
 
@@ -335,7 +357,7 @@ function GridComponent(props) {
 
 			let rowComponent =
 				<Pressable
-					// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
+					{...testProps((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id)}
 					onPress={(e) => {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
@@ -358,11 +380,17 @@ function GridComponent(props) {
 
 									if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
 										if (onView) {
+											if (canUser && !canUser(VIEW)) { // permissions
+												return;
+											}
 											onView(true);
 										}
 									} else {
 										if (onEdit) {
-											if (verifyCanEdit && !verifyCanEdit(selection)) {
+											if (canUser && !canUser(EDIT)) { // permissions
+												return;
+											}
+											if (canRecordBeEdited && !canRecordBeEdited(selection)) { // record can be edited
 												return;
 											}
 											onEdit();
@@ -454,49 +482,53 @@ function GridComponent(props) {
 							dragSelectionRef.current = selection;
 							const getSelection = () => dragSelectionRef.current;
 
-							// assign event handlers
-							if (canRowsReorder && isReorderMode) {
-								WhichRow = DragSourceGridRow;
-								rowReorderProps.isDragSource = true;
-								rowReorderProps.dragSourceType = 'row';
-								const dragIx = showHeaders ? index - 1 : index;
-								rowReorderProps.dragSourceItem = {
-									id: item.id,
-									getSelection,
-									onDrag: (dragState) => {
-										onRowReorderDrag(dragState, dragIx);
-									},
-								};
-								rowReorderProps.onDragEnd = onRowReorderEnd;
-							} else {
-								// Don't allow drag/drop from withDnd while reordering
-								if (areRowsDragSource) {
+							const userHasPermissionToDrag = (!canUser || canUser(EDIT));
+							if (userHasPermissionToDrag) {
+								// assign event handlers
+								if (canRowsReorder && isReorderMode) {
 									WhichRow = DragSourceGridRow;
-									rowDragProps.isDragSource = true;
-									rowDragProps.dragSourceType = rowDragSourceType;
-									if (getRowDragSourceItem) {
-										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, rowDragSourceType);
-									} else {
-										rowDragProps.dragSourceItem = {
-											id: item.id,
-											getSelection,
-											type: rowDragSourceType,
+									rowReorderProps.isDragSource = true;
+									rowReorderProps.dragSourceType = 'row';
+									const dragIx = showHeaders ? index - 1 : index;
+									rowReorderProps.dragSourceItem = {
+										id: item.id,
+										getSelection,
+										onDrag: (dragState) => {
+											onRowReorderDrag(dragState, dragIx);
+										},
+									};
+									rowReorderProps.onDragEnd = onRowReorderEnd;
+								} else {
+									// Don't allow drag/drop from withDnd while reordering
+									if (areRowsDragSource) {
+										WhichRow = DragSourceGridRow;
+										rowDragProps.isDragSource = true;
+										rowDragProps.dragSourceType = rowDragSourceType;
+										if (getRowDragSourceItem) {
+											rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, rowDragSourceType);
+										} else {
+											rowDragProps.dragSourceItem = {
+												id: item.id,
+												getSelection,
+												type: rowDragSourceType,
+											};
+										}
+									}
+									if (areRowsDropTarget) {
+										WhichRow = DropTargetGridRow;
+										rowDragProps.isDropTarget = true;
+										rowDragProps.dropTargetAccept = dropTargetAccept;
+										rowDragProps.onDrop = (droppedItem) => {
+											// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
+											onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
 										};
 									}
-								}
-								if (areRowsDropTarget) {
-									WhichRow = DropTargetGridRow;
-									rowDragProps.isDropTarget = true;
-									rowDragProps.dropTargetAccept = dropTargetAccept;
-									rowDragProps.onDrop = (droppedItem) => {
-										// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
-										onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
-									};
-								}
-								if (areRowsDragSource && areRowsDropTarget) {
-									WhichRow = DragSourceDropTargetGridRow;
+									if (areRowsDragSource && areRowsDropTarget) {
+										WhichRow = DragSourceDropTargetGridRow;
+									}
 								}
 							}
+
 						}
 						return <WhichRow
 									columnsConfig={localColumnsConfig}
@@ -504,6 +536,7 @@ function GridComponent(props) {
 									fields={fields}
 									rowProps={rowProps}
 									hideNavColumn={hideNavColumn}
+									isSelected={isSelected}
 									bg={bg}
 									item={item}
 									isInlineEditorShown={isInlineEditorShown}
@@ -768,6 +801,10 @@ function GridComponent(props) {
 			}
 		};
 
+	if (forceLoadOnRender && disableLoadOnRender) {
+		throw new Error('incompatible config! forceLoadOnRender and disableLoadOnRender cannot both be true');
+	}
+
 	useEffect(() => {
 		if (!isInited) {
 			// first call -- meant to render placeholder so we get container dimensions
@@ -787,19 +824,18 @@ function GridComponent(props) {
 
 			// second call -- do other necessary setup
 
-			// calculate localColumnsConfig
-			let localColumnsConfig = [];
-			let savedLocalColumnsConfig;
-			if (localColumnsConfigKey && !hasFunctionColumn && !UiGlobals.disableSavedColumnsConfig) {
+			
+			let localColumnsConfig = [],
+				savedLocalColumnsConfig,
+				calculateLocalColumnsConfig = false;
+			if (localColumnsConfigKey && !UiGlobals.disableSavedColumnsConfig) {
 				savedLocalColumnsConfig = await getSaved(localColumnsConfigKey);
 			}
-			if (savedLocalColumnsConfig) {
-				// use saved
-				localColumnsConfig = savedLocalColumnsConfig;
-			} else {
-				// calculate new
 
-				// convert json config into actual elements
+			if (!savedLocalColumnsConfig || hasUnserializableColumns) {
+				calculateLocalColumnsConfig = true;
+			}
+			if (calculateLocalColumnsConfig) {
 				if (_.isEmpty(columnsConfig)) {
 					if (Repository) {
 						// create a column for the displayProperty
@@ -817,15 +853,15 @@ function GridComponent(props) {
 							localColumnsConfig.push(columnConfig);
 							return;
 						}
-
+	
 						const
 							defaults = {
-								columnId: uuid(),
 								isEditable: false,
-								reorderable: true,
-								resizable: true,
-								sortable: true,
-								isHidden: false,
+								isReorderable: true,
+								isResizable: true,
+								isSortable: true,
+								isHidden: inArray(columnConfig.id, defaultHiddenColumns),
+								isHidable: true,
 								isOver: false,
 							},
 							config = _.assign({}, defaults, columnConfig);
@@ -837,11 +873,29 @@ function GridComponent(props) {
 							// Both are set. Width overrules flex.
 							delete config.flex;
 						}
-
+	
 						localColumnsConfig.push(config);
 					});
 				}
 			}
+
+			if (savedLocalColumnsConfig) {
+				if (!hasUnserializableColumns) {
+					// just use the saved config without any further processing
+					localColumnsConfig = savedLocalColumnsConfig;
+
+				} else {
+					// Conform the calculated localColumnsConfig to the saved config.
+					// This should allow us to continue using non-serializable configurations after a refresh
+					const reconstructedLocalColumnsConfig = savedLocalColumnsConfig.map((savedConfig) => { // foreach saved column, in the order it was saved...
+						const columnConfig = localColumnsConfig.find(localConfig => localConfig.id === savedConfig.id); // find the corresponding column in localColumnsConfig
+						_.assign(columnConfig, savedConfig);
+						return columnConfig;
+					});
+					localColumnsConfig = reconstructedLocalColumnsConfig;
+				}
+			}
+
 			setLocalColumnsConfig(localColumnsConfig);
 
 			setIsReady(true);
@@ -884,7 +938,7 @@ function GridComponent(props) {
 		applySelectorSelected();
 		Repository.resumeEvents();
 
-		if ((Repository.isRemote && !Repository.isLoaded) || forceLoadOnRender) {
+		if (((Repository.isRemote && !Repository.isLoaded) || forceLoadOnRender) && !disableLoadOnRender) { // default remote repositories to load on render, optionally force or disable load on render
 			Repository.load();
 		}
 
@@ -909,6 +963,10 @@ function GridComponent(props) {
 		applySelectorSelected();
 
 	}, [selectorSelected]);
+
+	if (canUser && !canUser('view')) {
+		return <Unauthorized />;
+	}
 
 	if (self) {
 		self.ref = containerRef;
@@ -942,7 +1000,7 @@ function GridComponent(props) {
 		rowData.unshift({ id: 'headerRow' });
 	}
 	if (inlineEditor) {
-		rowData.push({ id: 'inlineEditor' }); // make editor the last row so it can scroll with all other rows
+		rowData.push({ id: 'editor' }); // make editor the last row so it can scroll with all other rows
 	}
 	const initialNumToRender = rowData?.length || 10;
 
@@ -966,19 +1024,15 @@ function GridComponent(props) {
 										showMoreOnly={showMoreOnly}
 									/>;
 		} else if (footerToolbarItemComponents.length) {
-			listFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
+			listFooterComponent = <Toolbar>
+										<ReloadPageButton Repository={Repository} self={self} />
+										{footerToolbarItemComponents}
+									</Toolbar>;
 		}
-	}
-	
-	const sizeProps = {};
-	if (!_.isNil(h)) {
-		sizeProps.h = h;
-	} else {
-		sizeProps.flex = flex ?? 1;
 	}
 
 	let grid = <FlatList
-					testID="flatlist"
+					{...testProps('flatlist')}
 					ref={gridRef}
 					scrollEnabled={CURRENT_MODE === UI_MODE_WEB}
 					nestedScrollEnabled={true}
@@ -1007,7 +1061,7 @@ function GridComponent(props) {
 				/>
 	
 	if (CURRENT_MODE === UI_MODE_WEB) {
-		grid = <ScrollView horizontal={false}>{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
+		grid = <ScrollView horizontal={false} testID="ScrollView">{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
 	} else
 	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
 		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
@@ -1018,7 +1072,7 @@ function GridComponent(props) {
 		if (Repository?.isLoading) {
 			grid = <Loading isScreen={true} />;
 		} else {
-			grid = <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} />;
+			grid = <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} testID="NoRecordsFound" />;
 		}
 	}
 
@@ -1057,10 +1111,16 @@ function GridComponent(props) {
 							/>
 						</Modal>;
 	}
+	
+	const sizeProps = {};
+	if (!_.isNil(h)) {
+		sizeProps.h = h;
+	} else {
+		sizeProps.flex = flex ?? 1;
+	}
 
 	grid = <VStack
-				{...testProps('Grid')}
-				testID="outerContainer"
+				{...testProps(self)}
 				ref={containerRef}
 				tabIndex={0}
 				onKeyDown={onGridKeyDown}
@@ -1097,6 +1157,7 @@ function GridComponent(props) {
 
 	if (isDropTarget) {
 		grid = <Box
+					{...testProps('dropTarget')}
 					ref={dropTargetRef}
 					borderWidth={canDrop && isOver ? 4 : 0}
 					borderColor="#0ff"
@@ -1112,16 +1173,18 @@ export const Grid = withComponent(
 						withAlert(
 							withEvents(
 								withData(
-									withDropTarget(
-										withMultiSelection(
-											withSelection(
-												withFilters(
-													withPresetButtons(
-														withContextMenu(
-															GridComponent
-														)
-													),
-													true // isGrid
+									withPermissions(
+										withDropTarget(
+											withMultiSelection(
+												withSelection(
+													withFilters(
+														withPresetButtons(
+															withContextMenu(
+																GridComponent
+															)
+														),
+														true // isGrid
+													)
 												)
 											)
 										)
@@ -1135,17 +1198,19 @@ export const SideGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withDropTarget(
-													withMultiSelection(
-														withSelection(
-															withSideEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			GridComponent
-																		)
-																	),
-																	true // isGrid
+												withPermissions(
+													withDropTarget(
+														withMultiSelection(
+															withSelection(
+																withSideEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				GridComponent
+																			)
+																		),
+																		true // isGrid
+																	)
 																)
 															)
 														)
@@ -1160,16 +1225,18 @@ export const WindowedGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withDropTarget(
-													withMultiSelection(
-														withSelection(
-															withWindowedEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			GridComponent
-																		),
-																		true // isGrid
+												withPermissions(
+													withDropTarget(
+														withMultiSelection(
+															withSelection(
+																withWindowedEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				GridComponent
+																			),
+																			true // isGrid
+																		)
 																	)
 																)
 															)
@@ -1185,17 +1252,19 @@ export const InlineGridEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												withDropTarget(
-													withMultiSelection(
-														withSelection(
-															withInlineEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			GridComponent
-																		)
-																	),
-																	true // isGrid
+												withPermissions(
+													withDropTarget(
+														withMultiSelection(
+															withSelection(
+																withInlineEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				GridComponent
+																			)
+																		),
+																		true // isGrid
+																	)
 																)
 															)
 														)
@@ -1210,17 +1279,19 @@ export const InlineGridEditor = withComponent(
 // 									withAlert(
 // 										withEvents(
 // 											withData(
-// 												withDropTarget(
-// 													withMultiSelection(
-// 														withSelection(
-// 															withInlineSideEditor(
-// 																withFilters(
-// 																	withPresetButtons(
-// 																		withContextMenu(
-// 																			GridComponent
-// 																		)
-// 																	),
-// 																	true // isGrid
+// 												withPermissions(
+// 													withDropTarget(
+// 														withMultiSelection(
+// 															withSelection(
+// 																withInlineSideEditor(
+// 																	withFilters(
+// 																		withPresetButtons(
+// 																			withContextMenu(
+// 																				GridComponent
+// 																			)
+// 																		),
+// 																		true // isGrid
+// 																	)
 // 																)
 // 															)
 // 														)

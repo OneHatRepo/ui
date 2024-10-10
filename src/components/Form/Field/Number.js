@@ -7,6 +7,7 @@ import {
 } from '@gluestack-ui/themed';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
+import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
@@ -18,80 +19,84 @@ const InputWithTooltip = withTooltip(Input);
 
 function NumberElement(props) {
 	let {
-		value,
-		setValue,
-		minValue,
-		maxValue,
-		autoSubmitDelay = UiGlobals.autoSubmitDelay,
-		tooltip = null,
-		isDisabled = false,
-	} = props,
-	styles = UiGlobals.styles,
-	debouncedSetValueRef = useRef(),
-	[localValue, setLocalValue] = useState(value),
-	onInputKeyPress = (e) => {
-		const key = e.nativeEvent.key; // e.key works on web, but not mobile; so use e.nativeEvent.key which works on both
-		switch(key) {
-			case 'ArrowDown':
-				onDecrement();
-				break;
-			case 'ArrowUp':
-				onIncrement();
-				break;
-			case 'Enter':
-				setValue(value);
-				break;
-			case 'ArrowLeft':
-			case 'ArrowRight':
-			case 'Tab':
-			case 'Backspace':
-				return;
-			default:
-		}
-		if (!key.match(/^[\-\d\.]*$/)) {
-			e.preventDefault(); // kill anything that's not a number
-		}
-	},
-	onChangeText = (value) => {
+			value,
+			setValue,
+			minValue,
+			maxValue,
+			autoSubmitDelay = UiGlobals.autoSubmitDelay,
+			tooltip = null,
+			isDisabled = false,
+			testID,
+			...propsToPass
+		} = props,
+		styles = UiGlobals.styles,
+		debouncedSetValueRef = useRef(),
+		[localValue, setLocalValue] = useState(value),
+		onInputKeyPress = (e) => {
+			const key = e.nativeEvent.key; // e.key works on web, but not mobile; so use e.nativeEvent.key which works on both
+			switch(key) {
+				case 'ArrowDown':
+					onDecrement();
+					break;
+				case 'ArrowUp':
+					onIncrement();
+					break;
+				case 'Enter':
+					debouncedSetValueRef.current?.cancel();
+					setValue(value);
+					break;
+				case 'ArrowLeft':
+				case 'ArrowRight':
+				case 'Tab':
+				case 'Backspace':
+					return;
+				default:
+			}
+			if (!key.match(/^[\-\d\.]*$/)) {
+				e.preventDefault(); // kill anything that's not a number
+			}
+		},
+		onChangeText = (value) => {
 
-		if (value === '') {
-			value = null; // empty string makes value null
-		} else if (value.match(/\.$/)) { // value ends with a decimal point
-			// don't parseFloat, otherwise we'll lose the decimal point
-		} else if (value.match(/0$/)) { // value ends with a zero
-			// don't parseFloat, otherwise we'll lose the ability to do things like 1.03
-		} else {
-			value = parseFloat(value, 10);
-		}
-		setLocalValue(value);
-		debouncedSetValueRef.current(value);
-	},
-	onDecrement = () => {
-		let localValue = value;
-		if (minValue && localValue === minValue) {
-			return;
-		}
-		if (!localValue) {
-			localValue = 0;
-		}
-		localValue = parseFloat(localValue, 10) -1;
-		setValue(localValue);
-	},
-	onIncrement = () => {
-		let localValue = value;
-		if (maxValue && localValue === maxValue) {
-			return;
-		}
-		if (!localValue) {
-			localValue = 0;
-		}
-		localValue = parseFloat(localValue, 10) +1;
-		setValue(localValue);
-	};
-		
+			if (value === '') {
+				value = null; // empty string makes value null
+			} else if (value.match(/\.$/)) { // value ends with a decimal point
+				// don't parseFloat, otherwise we'll lose the decimal point
+			} else if (value.match(/0$/)) { // value ends with a zero
+				// don't parseFloat, otherwise we'll lose the ability to do things like 1.03
+			} else {
+				value = parseFloat(value, 10);
+			}
+			setLocalValue(value);
+			debouncedSetValueRef.current(value);
+		},
+		onDecrement = () => {
+			let localValue = value;
+			if (minValue && localValue === minValue) {
+				return;
+			}
+			if (!localValue) {
+				localValue = 0;
+			}
+			localValue = parseFloat(localValue, 10) -1;
+			setValue(localValue);
+		},
+		onIncrement = () => {
+			let localValue = value;
+			if (maxValue && localValue === maxValue) {
+				return;
+			}
+			if (!localValue) {
+				localValue = 0;
+			}
+			localValue = parseFloat(localValue, 10) +1;
+			setValue(localValue);
+		};
+	
 	useEffect(() => {
 		// Set up debounce fn
 		// Have to do this because otherwise, lodash tries to create a debounced version of the fn from only this render
+		debouncedSetValueRef.current?.cancel(); // Cancel any previous debounced fn
 		debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
 	}, [setValue]);
 	
@@ -118,8 +123,17 @@ function NumberElement(props) {
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
 		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
 
-	return <HStack flex={1} h="100%" p={0} borderWidth={1} borderColor="trueGray.400" borderRadius={6} {...props}>
+	return <HStack
+				flex={1}
+				h="100%"
+				p={0}
+				borderWidth={1}
+				borderColor="trueGray.400"
+				borderRadius={6}
+				{...propsToPass}
+			>
 				<IconButton
+					{...testProps('decrementBtn')}
 					icon={<Icon as={Minus} color={(isDecrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
 					onPress={onDecrement}
 					isDisabled={isDecrementDisabled || isDisabled}
@@ -133,6 +147,7 @@ function NumberElement(props) {
 					zIndex={10}
 				/>
 				<InputWithTooltip
+					testID={testID}
 					value={inputValue}
 					onChangeText={onChangeText}
 					onKeyPress={onInputKeyPress}
@@ -150,6 +165,7 @@ function NumberElement(props) {
 					{...props._input}
 				/>
 				<IconButton
+					{...testProps('incrementBtn')}
 					icon={<Icon as={Plus} color={(isIncrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
 					onPress={onIncrement}
 					isDisabled={isIncrementDisabled || isDisabled}

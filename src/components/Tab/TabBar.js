@@ -13,6 +13,7 @@ import {
 } from '../../Constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import testProps from '../../Functions/testProps.js';
 import withComponent from '../Hoc/withComponent.js';
 import IconButton from '../Buttons/IconButton.js';
 import Minimize from '../Icons/Minimize.js';
@@ -70,7 +71,7 @@ function TabBar(props) {
 				}
 				return; // no change
 			}
-			if (tabs[currentTabIx].content) {
+			if (tabs[currentTabIx]?.content) {
 				tabs[currentTabIx].content = null; // free up memory by clearing rendered content
 			}
 			if (useLocal) {
@@ -97,6 +98,7 @@ function TabBar(props) {
 			let button;
 			if (isCollapsed) {
 				button = <IconButton
+							{...testProps('toggleBtn')}
 							key="toggleBtn"
 							onPress={onToggleCollapse}
 							{...buttonProps}
@@ -112,6 +114,7 @@ function TabBar(props) {
 						/>;
 			} else {
 				button = <Button
+							{...testProps('toggleBtn')}
 							key="toggleBtn"
 							onPress={onToggleCollapse}
 							leftIcon={<Icon
@@ -209,6 +212,7 @@ function TabBar(props) {
 				let closeBtn;
 				if (onTabClose && !tab.disableCloseBox) {
 					closeBtn = <IconButton
+									{...testProps('tabCloseButton-' + ix)}
 									key={'tabCloseButton' + ix}
 									onPress={() => onTabClose(ix)}
 									icon={Xmark}
@@ -222,6 +226,7 @@ function TabBar(props) {
 				}
 				if (useIconButton) {
 					button = <IconButton
+								{...testProps(tab.path)}
 								key={'tabIconButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								{...buttonProps}
@@ -244,6 +249,7 @@ function TabBar(props) {
 					// 		</HStack>;
 				} else {
 					button = <Button
+								{...testProps(tab.path)}
 								key={'tabButton' + ix}
 								onPress={() => setCurrentTab(ix)}
 								leftIcon={<Icon
@@ -411,12 +417,14 @@ function TabBar(props) {
 	let tabBar = null;
 	if (direction === VERTICAL) {
 		tabBar = <VStack
+						{...testProps('TabBar')}
 						alignItems="center"
 						justifyContent="flex-start"
 						py={2}
 						pl={isCollapsed ? 1 : 4}
 						bg={styles.TAB_BAR_BG}
 						w={isCollapsed ? '50px' : tabWidth}
+						{...propsToPass}
 					>
 						{renderedTabs}
 						<VStack flex={1} w="100%" justifyContent="flex-end">
@@ -438,6 +446,7 @@ function TabBar(props) {
 	}
 	if (direction === HORIZONTAL) {
 		tabBar = <HStack
+					{...testProps('TabBar')}
 					alignItems="center"
 					justifyContent="flex-start"
 					p={2}

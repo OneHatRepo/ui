@@ -10,6 +10,9 @@ import {
 	Text,
 } from '@gluestack-ui/themed';
 import {
+	VIEW,
+} from '../../Constants/Commands.js';
+import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,
 	EDITOR_TYPE__SIDE,
@@ -27,11 +30,13 @@ import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import withEditor from '../Hoc/withEditor.js';
-import withPdfButton from '../Hoc/withPdfButton.js';
+import withPdfButtons from '../Hoc/withPdfButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
-// import Button from '../Buttons/Button.js';
+import testProps from '../../Functions/testProps.js';
+import Toolbar from '../Toolbar/Toolbar.js';
+import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
@@ -82,12 +87,15 @@ function Form(props) {
 			onReset,
 			onInit,
 			onViewMode,
+			onValidityChange,
+			onDirtyChange,
 			submitBtnLabel,
 			onSubmit,
 			formSetup, // this fn will be executed after the form setup is complete
 			additionalEditButtons,
 			useAdditionalEditButtons = true,
 			additionalFooterButtons,
+			disableFooter = false,
 			
 			// sizing of outer container
 			h,
@@ -103,6 +111,9 @@ function Form(props) {
 
 			// withData
 			Repository,
+
+			// withPermissions
+			canUser,
 			
 			// withEditor
 			isEditorViewOnly = false,
@@ -134,8 +145,8 @@ function Form(props) {
 	}
 	const
 		isMultiple = _.isArray(record),
-		isSingle = !isMultiple, // for convenience
-		isPhantom = !skipAll && !!record?.isPhantom, //
+		isSingle = _.isNil(record) || !_.isArray(record),
+		isPhantom = !skipAll && !!record?.isPhantom,
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
 		[containerWidth, setContainerWidth] = useState(),
@@ -287,6 +298,7 @@ function Form(props) {
 					}
 
 					let element = <Element
+										{...testProps('field-' + fieldName)}
 										value={value}
 										parent={self}
 										reference={fieldName}
@@ -346,6 +358,7 @@ function Form(props) {
 										}
 
 										let element = <Element
+															{...testProps('field-' + name)}
 															name={name}
 															value={value}
 															onChangeValue={(newValue) => {
@@ -389,6 +402,7 @@ function Form(props) {
 					title,
 					name,
 					isEditable = true,
+					isEditingEnabledInPlainEditor,
 					label,
 					items,
 					onChange: onEditorChange,
@@ -413,6 +427,10 @@ function Form(props) {
 			}
 			if (propertyDef?.isEditingDisabled && checkIsEditingDisabled) {
 				isEditable = false;
+			}
+			if (isEditingEnabledInPlainEditor && editorType === EDITOR_TYPE__PLAIN) {
+				// If this is a plain editor, allow the field to be editable, even if it's not editable in other editor types
+				isEditable = true;
 			}
 			if (!type) {
 				if (isEditable) {
@@ -500,6 +518,7 @@ function Form(props) {
 				}
 		
 				let element = <Element
+									{...testProps('field-' + name)}
 									value={value}
 									parent={self}
 									reference={name}
@@ -583,6 +602,7 @@ function Form(props) {
 								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 							}
 							let element = <Element
+												{...testProps('field-' + name)}
 												name={name}
 												value={value}
 												onChangeValue={(newValue) => {
@@ -701,6 +721,7 @@ function Form(props) {
 					const
 						Element = getComponentFromType(type),
 						element = <Element
+										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
@@ -775,7 +796,7 @@ function Form(props) {
 			doReset(defaultValues);
 		}
 		if (formSetup) {
-			formSetup(formSetValue, formGetValues, formState)
+			formSetup(formSetValue, formGetValues, formState);
 		}
 	}, [record]);
 
@@ -801,6 +822,18 @@ function Form(props) {
 		};
 	}, [Repository]);
 
+	if (onValidityChange) {
+		useEffect(() => {
+			onValidityChange(formState.isValid);
+		}, [formState.isValid]);
+	}
+
+	if (onDirtyChange) {
+		useEffect(() => {
+			onDirtyChange(formState.isDirty);
+		}, [formState.isDirty]);
+	}
+
 	if (skipAll) {
 		return null;
 	}
@@ -815,6 +848,8 @@ function Form(props) {
 
 	if (self) {
 		self.ref = formRef;
+		self.reset = doReset;
+		self.submit = handleSubmit;
 		self.formState = formState;
 		self.formSetValue = formSetValue;
 		self.formGetValues = formGetValues;
@@ -842,7 +877,8 @@ function Form(props) {
 	}
 
 	const formButtons = [];
-	let formComponents,
+	let modeHeader = null,
+		formComponents,
 		editor,
 		additionalButtons,
 		isSaveDisabled = false,
@@ -883,18 +919,27 @@ function Form(props) {
 
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
 
-			formButtons.push(<HStack key="buttonsRow" px={4} pt={4} alignItems="center" justifyContent="flex-end">
-								{isSingle && editorMode === EDITOR_MODE__EDIT && onBack && 
+			if (inArray(editorType, [EDITOR_TYPE__SIDE, EDITOR_TYPE__SMART, EDITOR_TYPE__WINDOWED]) && 
+				isSingle && editorMode === EDITOR_MODE__EDIT && 
+				(onBack || (onViewMode && !disableView))) {
+				modeHeader = <Toolbar>
+								<HStack flex={1} alignItems="center">
+									{onBack &&
+										<Button
+											{...testProps('backBtn')}
+											key="backBtn"
+											onPress={onBack}
+											leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
+											color="#fff"
+											mr={4}
+										>
+											<ButtonText>Back</ButtonText>
+										</Button>}
+									<Text fontSize={20} ml={2} color="trueGray.500">Edit Mode</Text>
+								</HStack>
+								{onViewMode && !disableView && (!canUser || canUser(VIEW)) &&
 									<Button
-										key="backBtn"
-										onPress={onBack}
-										leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
-										color="#fff"
-									>
-										<ButtonText>Back</ButtonText>
-									</Button>}
-								{isSingle && editorMode === EDITOR_MODE__EDIT && onViewMode && !disableView &&
-									<Button
+										{...testProps('toViewBtn')}
 										key="viewBtn"
 										onPress={onViewMode}
 										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
@@ -902,11 +947,12 @@ function Form(props) {
 									>
 										<ButtonText>To View</ButtonText>
 									</Button>}
-							</HStack>);
+							</Toolbar>;
+			}
 			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
-				formButtons.push(<HStack key="additionalButtonsRow" p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+				formButtons.push(<Toolbar key="additionalButtonsToolbar" justifyContent="flex-end" flexWrap="wrap">
 									{additionalButtons}
-								</HStack>)
+								</Toolbar>)
 			}
 		}
 
@@ -944,8 +990,9 @@ function Form(props) {
 				showCloseBtn = true;
 			} else {
 				const formIsDirty = formState.isDirty;
-				// console.log('formIsDirty', formIsDirty);
-				// console.log('isPhantom', isPhantom);
+				// if (editorType === EDITOR_TYPE__WINDOWED && onCancel) {
+				// 	showCancelBtn = true;
+				// }
 				if (formIsDirty || isPhantom) {
 					if (isSingle && onCancel) {
 						showCancelBtn = true;
@@ -965,7 +1012,7 @@ function Form(props) {
 		}
 	}
 	
-	return <VStack {...sizeProps} {...containerProps} onLayout={onLayoutDecorated} ref={formRef} testID="form">
+	return <VStack {...testProps(self)} {...sizeProps} {...containerProps} onLayout={onLayoutDecorated} ref={formRef}>
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
 						<HStack
@@ -980,89 +1027,98 @@ function Form(props) {
 						>{editor}</HStack>}
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
-							{formheader}
+							{modeHeader}
+							{formHeader}
 							{formButtons}
 							{editor}
 						</ScrollView>}
 					
-					<Footer justifyContent="flex-end" {...footerProps} {...savingProps}>
-						{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
+					{!disableFooter && 
+						<Footer justifyContent="flex-end" {...footerProps} {...savingProps}>
+							{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 
-							<HStack flex={1} justifyContent="flex-start">
-								<Button
-									key="deleteBtn"
-									onPress={onDelete}
-									bg="warning"
-									_hover={{
-										bg: 'warningHover',
+								<HStack flex={1} justifyContent="flex-start">
+									<Button
+										{...testProps('deleteBtn')}
+										key="deleteBtn"
+										onPress={onDelete}
+										bg="warning"
+										_hover={{
+											bg: 'warningHover',
+										}}
+										color="#fff"
+									>
+										<ButtonText>Delete</ButtonText>
+									</Button>
+								</HStack>}
+
+							{showResetBtn && 
+								<IconButton
+									{...testProps('resetBtn')}
+									key="resetBtn"
+									onPress={() => doReset()}
+									icon={Rotate}
+									_icon={{
+										color: !formState.isDirty ? 'trueGray.400' : '#000',
 									}}
+									isDisabled={!formState.isDirty}
+									mr={2}
+								/>}
+
+							{showCancelBtn &&
+								<Button
+									{...testProps('cancelBtn')}
+									key="cancelBtn"
+									variant="ghost"
+									onPress={onCancel}
 									color="#fff"
 								>
-									<ButtonText>Delete</ButtonText>
-								</Button>
-							</HStack>}
+									<ButtonText>Cancel</ButtonText>
+								</Button>}
+								
+							{showCloseBtn && 
+								<Button
+									{...testProps('closeBtn')}
+									key="closeBtn"
+									variant="ghost"
+									onPress={onClose}
+									color="#fff"
+								>
+									<ButtonText>Close</ButtonText>
+								</Button>}
 
-						{showResetBtn && 
-							<IconButton
-								key="resetBtn"
-								onPress={() => doReset()}
-								icon={Rotate}
-								_icon={{
-									color: !formState.isDirty ? 'trueGray.400' : '#000',
-								}}
-								isDisabled={!formState.isDirty}
-								mr={2}
-							/>}
-
-						{showCancelBtn &&
-							<Button
-								key="cancelBtn"
-								variant="ghost"
-								onPress={onCancel}
-								color="#fff"
-							>
-								<ButtonText>Cancel</ButtonText>
-							</Button>}
+							{showSaveBtn && 
+								<Button
+									{...testProps('saveBtn')}
+									key="saveBtn"
+									onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+									isDisabled={isSaveDisabled}
+									color="#fff"
+								>
+									<ButtonText>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</ButtonText>
+								</Button>}
 							
-						{showCloseBtn && 
-							<Button
-								key="closeBtn"
-								variant="ghost"
-								onPress={onClose}
-								color="#fff"
-							>
-								<ButtonText>Close</ButtonText>
-							</Button>}
-
-						{showSaveBtn && 
-							<Button
-								key="saveBtn"
-								onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
-								isDisabled={isSaveDisabled}
-								color="#fff"
-							>
-								<ButtonText>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</ButtonText>
-							</Button>}
+							{showSubmitBtn && 
+								<Button
+									{...testProps('submitBtn')}
+									key="submitBtn"
+									onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
+									isDisabled={isSubmitDisabled}
+									color="#fff"
+								>
+									<ButtonText>{submitBtnLabel || 'Submit'}</ButtonText>
+								</Button>}
 						
-						{showSubmitBtn && 
-							<Button
-								key="submitBtn"
-								onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
-								isDisabled={isSubmitDisabled}
-								color="#fff"
-							>
-								<ButtonText>{submitBtnLabel || 'Submit'}</ButtonText>
-							</Button>}
-					
-						{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
-							return <Button
-										{...props}
-										onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
-									>
-										<ButtonText>{props.text}</ButtonText>
-									</Button>;
-						})}
-					</Footer>
+							{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+								return <Button
+											{...testProps('additionalFooterBtn-' + props.key)}
+											{...props}
+											onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
+										>
+											<ButtonText>{props.text}</ButtonText>
+										</Button>;
+							})}
+						</Footer>}
 				</>}
 			</VStack>;
 }
@@ -1111,6 +1167,6 @@ function getNullFieldValues(initialValues, Repository) {
 	return ret;
 }
 
-export const FormEditor = withComponent(withAlert(withEditor(withPdfButton(Form))));
+export const FormEditor = withComponent(withAlert(withEditor(withPdfButtons(Form))));
 
-export default withComponent(withAlert(withPdfButton(Form)));
+export default withComponent(withAlert(withPdfButtons(Form)));

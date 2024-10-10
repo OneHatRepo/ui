@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
+	Box,
 	VStack,
 	Modal,
 	HStack,
@@ -14,6 +15,7 @@ import {
 } from '../../Constants/Filters.js';
 import Inflector from 'inflector-js';
 import inArray from '../../Functions/inArray.js';
+import testProps from '../../Functions/testProps.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
 import FormPanel from '../Panel/FormPanel.js';
@@ -43,6 +45,7 @@ export default function withFilters(WrappedComponent) {
 				showClearFiltersButton = true,
 				defaultFilters = [], // likely a list of field names, possibly could be of shape below
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
+				clearExceptions = [], // list of fields that should not be cleared when clearFilters button is pressed
 				minFilters = 3,
 				maxFilters = 6,
 				onFilterChange,
@@ -213,7 +216,9 @@ export default function withFilters(WrappedComponent) {
 					// Clears values for all active filters
 					const newFilters = [];
 					_.each(filters, (filter) => {
-						filter.value = null;
+						if (!inArray(filter.field, clearExceptions)) {
+							filter.value = null;
+						}
 						newFilters.push(filter);
 					});
 					setFilters(newFilters, false);
@@ -272,7 +277,7 @@ export default function withFilters(WrappedComponent) {
 								type: filterType,
 								title,
 							} = filter;
-						
+							
 						if (!title) {
 							const propertyDef = Repository.getSchema().getPropertyDefinition(field);
 							title = propertyDef?.title;
@@ -281,7 +286,8 @@ export default function withFilters(WrappedComponent) {
 						if (_.isString(filterType)) {
 							if (filterType === FILTER_TYPE_ANCILLARY) {
 								title = modelFilterTypes[field].title;
-								filterType = Inflector.camelize(Inflector.pluralize(field)) + 'Combo'; // Convert field to PluralCamelCombo
+								const tagOrCombo = Repository.schema.model.ancillaryFiltersThatUseTags && inArray(field, Repository.schema.model.ancillaryFiltersThatUseTags) ? 'Tag' : 'Combo';
+								filterType = Inflector.camelize(Inflector.pluralize(field)) + tagOrCombo; // Convert field to PluralCamelCombo
 							}
 							Element = getComponentFromType(filterType);
 							if (filterType === 'Input') {
@@ -299,7 +305,6 @@ export default function withFilters(WrappedComponent) {
 							}
 						}
 						if (!Element) {
-							debugger;
 							return; // to protect against errors
 						}
 						if (field === 'q') {
@@ -309,6 +314,7 @@ export default function withFilters(WrappedComponent) {
 
 						const tooltip = filter.tooltip || title;
 						let filterElement = <Element
+												{...testProps('filter-' + field)}
 												key={'filter-' + field}
 												tooltip={tooltip}
 												placeholder={tooltip}
@@ -323,6 +329,21 @@ export default function withFilters(WrappedComponent) {
 												{filterElement}
 											</HStack>;
 						}
+						// add a container for each filter
+						filterElement = <HStack
+											key={'filter-' + ix}
+											bg="trueGray.100"
+											px={1}
+											mx={1}
+											borderRadius={6}
+											borderLeftWidth={1}
+											borderLeftColor="#fff"
+											alignItems="center"
+											h="100%"
+										>
+											{filterElement}
+										</HStack>;
+
 						filterElements.push(filterElement);
 					});
 					return filterElements;
@@ -434,30 +455,34 @@ export default function withFilters(WrappedComponent) {
 								</ScrollView>
 							</HStack>
 							<HStack flex={hasFilters ? null : 1} alignItems="center" alignSelf="flex-end">
-								{showClearFiltersButton && <IconButton
-									key="clearFiltersBtn"
-									_icon={{
-										as: Ban,
-									}}
-									ml={1}
-									onPress={onClearFilters}
-									tooltip="Clear all filters"
-								/>}
-								{showFilterSelector && !isUsingCustomFilters && <IconButton
-									key="gear"
-									_icon={{
-										as: Gear,
-									}}
-									ml={1}
-									onPress={() => {
-										const f = filters;
-										const s = slots;
-										setModalFilters(filters);
-										setModalSlots(slots);
-										setIsFilterSelectorShown(true);
-									}}
-									tooltip="Swap filters"
-								/>}
+								{showClearFiltersButton && 
+									<IconButton
+										{...testProps('clearFiltersBtn')}
+										key="clearFiltersBtn"
+										_icon={{
+											as: Ban,
+										}}
+										ml={1}
+										onPress={onClearFilters}
+										tooltip="Clear all filters"
+									/>}
+								{showFilterSelector && !isUsingCustomFilters && 
+									<IconButton
+										{...testProps('swapFiltersBtn')}
+										key="swapFiltersBtn"
+										_icon={{
+											as: Gear,
+										}}
+										ml={1}
+										onPress={() => {
+											const f = filters;
+											const s = slots;
+											setModalFilters(filters);
+											setModalSlots(slots);
+											setIsFilterSelectorShown(true);
+										}}
+										tooltip="Swap filters"
+									/>}
 							</HStack>
 						</Toolbar>;
 

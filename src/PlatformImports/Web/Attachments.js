@@ -24,13 +24,16 @@ import inArray from '../../Functions/inArray.js';
 import IconButton from '../../Components/Buttons/IconButton.js';
 import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
+import withComponent from '../../Components/Hoc/withComponent.js';
 import withData from '../../Components/Hoc/withData.js';
 import downloadInBackground from '../../Functions/downloadInBackground.js';
+import downloadWithFetch from '../../Functions/downloadWithFetch.js';
 import _ from 'lodash';
 
 const
 	EXPANDED_MAX = 100,
-	COLLAPSED_MAX = 2;
+	COLLAPSED_MAX = 4,
+	isPwa = !!window?.navigator?.standalone;
 
 function FileCardCustom(props) {
 	const
@@ -82,6 +85,13 @@ function AttachmentsElement(props) {
 			clickable = true,
 			confirmBeforeDelete = false,
 			extraUploadData = {},
+			expandedMax = EXPANDED_MAX,
+			collapsedMax = COLLAPSED_MAX,
+			autoUpload = true,
+			onBeforeDropzoneChange,
+
+			// withComponent
+			self,
 
 			// parentContainer
 			selectorSelected,
@@ -144,6 +154,9 @@ function AttachmentsElement(props) {
 					...extraUploadData,
 				};
 			});
+			if (onBeforeDropzoneChange) {
+				onBeforeDropzoneChange(files);
+			}
 		},
 		onUploadStart = (files) => {
 			setIsUploading(true);
@@ -179,6 +192,16 @@ function AttachmentsElement(props) {
 				confirm('Are you sure you want to delete the file?', () => doDelete(id));
 			} else {
 				doDelete(id);
+			}
+		},
+		onDownload = (id, url) => {
+			if (isPwa) {
+				// This doesn't work because iOS doesn't allow you to open another window within a PWA.
+				// downloadWithFetch(url);
+				
+				alert('Files cannot be downloaded and viewed within an iOS PWA. Please use the Safari browser instead.');
+			} else {
+				downloadInBackground(url);
 			}
 		},
 		doDelete = (id) => {
@@ -232,7 +255,7 @@ function AttachmentsElement(props) {
 					});
 				}
 				Repository.filter(filters);
-				Repository.setPageSize(showAll ? EXPANDED_MAX : COLLAPSED_MAX);
+				Repository.setPageSize(showAll ? expandedMax : collapsedMax);
 				await Repository.load();
 
 				buildFiles();
@@ -256,7 +279,10 @@ function AttachmentsElement(props) {
 	if (!isReady) {
 		return null;
 	}
-	
+
+	if (self) {
+		self.files = files;
+	}
 
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
@@ -276,6 +302,7 @@ function AttachmentsElement(props) {
 												<FileMosaic
 													{...file}
 													backgroundBlurImage={false}
+													onDownload={onDownload}
 													{..._fileMosaic}
 												/>}
 											{!useFileMosaic &&
@@ -287,7 +314,7 @@ function AttachmentsElement(props) {
 										</Box>;
 							})}
 						</HStack>
-						{Repository.total <= COLLAPSED_MAX ? null :
+						{Repository.total <= collapsedMax ? null :
 							<Button
 								onPress={toggleShowAll}
 								mt={4}
@@ -315,7 +342,7 @@ function AttachmentsElement(props) {
 							url: Repository.api.baseURL + Repository.name + '/uploadAttachment',
 							method: 'POST',
 							headers: Repository.headers,
-							autoUpload: true,
+							autoUpload,
 						}}
 						headerConfig={{
 							deleteFiles: false,
@@ -346,4 +373,4 @@ function withAdditionalProps(WrappedComponent) {
 	};
 }
 
-export default withAdditionalProps(withAlert(withData(AttachmentsElement)));
+export default withComponent(withAdditionalProps(withAlert(withData(AttachmentsElement))));

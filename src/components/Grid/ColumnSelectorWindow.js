@@ -1,4 +1,7 @@
 import { useRef, } from 'react';
+import {
+	ButtonText,
+} from '@gluestack-ui/themed';
 import Button from '../Buttons/Button.js';
 import CheckboxButton from '../Buttons/CheckboxButton.js';
 import Grid from './Grid.js';
@@ -70,18 +73,20 @@ export default function ColumnSelectorWindow(props) {
 						{
 							header: 'Show',
 							fieldName: 'is_shown',
-							sortable: false,
+							isSortable: false,
 							isEditable: false,
-							reorderable: false,
-							resizable: false,
+							isReorderable: false,
+							isResizable: false,
 							w: '50px',
 							renderer: (datum) => {
 								const
 									[ix, header] = datum,
 									columnConfig = localColumnsConfig.current[ix],
-									isHidden = columnConfig.isHidden;
+									isHidden = columnConfig.isHidden,
+									isHidable = columnConfig.isHidable;
 								return <CheckboxButton
 											isChecked={!isHidden}
+											isDisabled={!isHidable}
 											onPress={() => {
 												if (isHidden) {
 													onShowColumn(ix);
@@ -95,10 +100,10 @@ export default function ColumnSelectorWindow(props) {
 						{
 							header: 'Column',
 							fieldName: 1, // ix
-							sortable: false,
+							isSortable: false,
 							isEditable: false,
-							reorderable: false,
-							resizable: false,
+							isReorderable: false,
+							isResizable: false,
 							flex: 3,
 						}
 					]}
@@ -111,12 +116,16 @@ export default function ColumnSelectorWindow(props) {
 						onPress={onClose}
 						color="#fff"
 						mr={2}
-					>Cancel</Button>
+					>
+						<ButtonText>Cancel</ButtonText>
+					</Button>
 					<Button
 						key="saveBtn"
 						onPress={onSave}
 						color="#fff"
-					>Save</Button>
+					>
+						<ButtonText>Save</ButtonText>
+					</Button>
 				</Toolbar>
 			</Panel>;
 }

@@ -38,7 +38,6 @@ export default function withData(WrappedComponent) {
 				// withComponent
 				self,
 			} = props,
-			propsToPass = _.omit(props, ['model']), // passing 'model' would mess things up if withData gets called twice (e.g. withData(...withData(...)) ), as we'd be trying to recreate Repository twice
 			localIdIx = idIx || (fields && idField ? fields.indexOf(idField) : null),
 			localDisplayIx = displayIx || (fields && displayField ? fields?.indexOf(displayField) : null),
 			[LocalRepository, setLocalRepository] = useState(Repository || null), // simply pass on Repository if it's already supplied
@@ -106,11 +105,9 @@ export default function withData(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...propsToPass}
+					{...props}
 					disableWithData={false}
 					Repository={LocalRepository}
-					model={model}
-					data={data}
 					fields={fields}
 					idField={idField}
 					displayField={displayField}

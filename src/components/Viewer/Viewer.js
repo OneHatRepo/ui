@@ -1,4 +1,4 @@
-import { useRef, useState, } from 'react';
+import { useEffect, useRef, useState, } from 'react';
 import {
 	Button,
 	ButtonText,
@@ -9,15 +9,20 @@ import {
 	VStack,
 } from '@gluestack-ui/themed';
 import {
+	EDIT,
+} from '../../Constants/Commands.js';
+import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
-import withPdfButton from '../Hoc/withPdfButton.js';
+import withPdfButtons from '../Hoc/withPdfButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
-// import Button from '../Buttons/Button.js';
+import testProps from '../../Functions/testProps.js';
+import Toolbar from '../Toolbar/Toolbar.js';
+import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
@@ -33,13 +38,18 @@ function Viewer(props) {
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			record,
 			additionalViewButtons,
-			verifyCanEdit,
-
+			canRecordBeEdited,
+			viewerSetup, // this fn will be executed after the viewer setup is complete
+		
 			// withComponent
 			self,
 
 			// withData
 			Repository,
+
+			// withPermissions
+			canUser,
+			showPermissionsError,
 
 			// withEditor
 			editorType,
@@ -87,7 +97,7 @@ function Viewer(props) {
 			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!type) {
-				if (propertyDef?.viewerType) {
+				if (propertyDef?.viewerType?.type) {
 					const
 						{
 							type: t,
@@ -101,7 +111,7 @@ function Viewer(props) {
 			if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
 				editorTypeProps.autoLoad = true;
 			}
-			if (type.match(/(Tag|TagEditor)$/)) {
+			if (type?.match(/(Tag|TagEditor)$/)) {
 				editorTypeProps.isViewOnly = true;
 			}
 			const Element = getComponentFromType(type);
@@ -154,6 +164,7 @@ function Viewer(props) {
 			}
 			
 			let element = <Element
+								{...testProps('field-' + name)}
 								value={value}
 								isEditable={false}
 								parent={self}
@@ -197,6 +208,7 @@ function Viewer(props) {
 					const
 						Element = getComponentFromType(type),
 						element = <Element
+										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
 										flex={1}
@@ -226,6 +238,12 @@ function Viewer(props) {
 			setContainerWidth(e.nativeEvent.layout.width);
 		};
 
+	useEffect(() => {
+		if (viewerSetup && record?.getSubmitValues) {
+			viewerSetup(record.getSubmitValues());
+		}
+	}, [record]);
+	
 	if (self) {
 		self.ref = scrollViewRef;
 	}
@@ -244,27 +262,34 @@ function Viewer(props) {
 	}
 
 	let canEdit = true;
-	if (verifyCanEdit && !verifyCanEdit([record])) {
+	if (canRecordBeEdited && !canRecordBeEdited([record])) {
 		canEdit = false;
 	}
 
-	return <VStack flex={flex} {...props} onLayout={onLayout}>
+	return <VStack flex={flex} {...testProps(self)} {...props} onLayout={onLayout}>
 				{containerWidth && <>
 
 					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
 						{canEdit && onEditMode &&
-							<HStack px={4} pt={4} alignItems="center" justifyContent="flex-end">
-								<Button
-									key="editBtn"
-									onPress={onEditMode}
-									leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
-									color="#fff"
-								>To Edit</Button>
-							</HStack>}
+							<Toolbar justifyContent="flex-end">
+								<HStack flex={1} alignItems="center">
+									<Text fontSize={20} ml={2} color="trueGray.500">View Mode</Text>
+								</HStack>
+								{(!canUser || canUser(EDIT)) &&
+									<Button
+										{...testProps('toEditBtn')}
+										key="editBtn"
+										onPress={onEditMode}
+										leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
+										color="#fff"
+									>
+										<ButtonText>To Edit</ButtonText>
+									</Button>}
+							</Toolbar>}
 						{!_.isEmpty(additionalButtons) && 
-							<HStack p={4} alignItems="center" justifyContent="flex-end" flexWrap="wrap">
+							<Toolbar justifyContent="flex-end" flexWrap="wrap">
 								{additionalButtons}
-							</HStack>}
+							</Toolbar>}
 						<VStack>
 							{containerWidth >= CONTAINER_THRESHOLD ? <HStack p={4} pl={0}>{viewerComponents}</HStack> : null}
 							{containerWidth < CONTAINER_THRESHOLD ? <VStack p={4}>{viewerComponents}</VStack> : null}
@@ -276,6 +301,7 @@ function Viewer(props) {
 							{showDeleteBtn && 
 								<HStack flex={1} justifyContent="flex-start">
 									<Button
+										{...testProps('deleteBtn')}
 										key="deleteBtn"
 										onPress={onDelete}
 										bg="warning"
@@ -289,6 +315,7 @@ function Viewer(props) {
 								</HStack>}
 							{onClose && showCloseBtn &&
 								<Button
+									{...testProps('closeBtn')}
 									key="closeBtn"
 									onPress={onClose}
 									color="#fff"
@@ -301,4 +328,4 @@ function Viewer(props) {
 			</VStack>;
 }
 
-export default withComponent(withPdfButton(Viewer));
+export default withComponent(withPdfButtons(Viewer));

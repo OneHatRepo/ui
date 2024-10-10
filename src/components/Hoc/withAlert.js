@@ -15,9 +15,13 @@ import {
 	ALERT_MODE_CUSTOM,
 	ALERT_MODE_INFO,
 } from '../../Constants/Alert.js';
+import testProps from '../../Functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import CircleInfo from '../Icons/CircleInfo.js';
 import _ from 'lodash';
+
+// This HOC enables easy usage of alert dialogs in the wrapped component.
+// It can be used for simple alerts, confirmations, and custom dialogs. 
 
 export default function withAlert(WrappedComponent) {
 	return (props) => {
@@ -66,14 +70,14 @@ export default function withAlert(WrappedComponent) {
 				}
 				showAlert();
 			},
-			onConfirm = (message, callback, includeCancel = false) => {
+			onConfirm = (message, yesCallback, includeCancel = false, noCallback) => {
 				clearAll();
 				setMode(includeCancel ? ALERT_MODE_YES : ALERT_MODE_YES_NO);
 				setTitle('Confirm');
 				setMessage(message);
 				setIncludeCancel(includeCancel);
-				setYesCallback(() => callback);
-				setNoCallback(null);
+				setYesCallback(() => yesCallback);
+				setNoCallback(noCallback ? () => noCallback : null);
 				showAlert();
 			},
 			onCancel = () => {
@@ -123,6 +127,7 @@ export default function withAlert(WrappedComponent) {
 		let buttons = [];
 		if (includeCancel) {
 			buttons.push(<Button
+								{...testProps('cancelBtn')}
 								key="cancelBtn"
 								onPress={onCancel}
 								color="#fff"
@@ -137,6 +142,7 @@ export default function withAlert(WrappedComponent) {
 			case ALERT_MODE_OK:
 			case ALERT_MODE_INFO:
 				buttons.push(<Button
+								{...testProps('okBtn')}
 								key="okBtn"
 								ref={autoFocusRef}
 								onPress={onOk}
@@ -147,6 +153,7 @@ export default function withAlert(WrappedComponent) {
 				break;
 			case ALERT_MODE_YES:
 				buttons.push(<Button
+								{...testProps('yesBtn')}
 								key="yesBtn"
 								ref={autoFocusRef}
 								onPress={onYes}
@@ -159,6 +166,7 @@ export default function withAlert(WrappedComponent) {
 			case ALERT_MODE_YES_NO:
 				// TODO: need to create a new colorScheme so this can be black with blank background
 				buttons.push(<Button
+								{...testProps('noBtn')}
 								key="noBtn"
 								onPress={onNo}
 								color="trueGray.800"
@@ -169,6 +177,7 @@ export default function withAlert(WrappedComponent) {
 								<ButtonText>No</ButtonText>
 							</Button>);
 				buttons.push(<Button
+								{...testProps('yesBtn')}
 								key="yesBtn"
 								ref={autoFocusRef}
 								onPress={onYes}
@@ -200,7 +209,9 @@ export default function withAlert(WrappedComponent) {
 						isOpen={isAlertShown}
 						onClose={() => setIsAlertShown(false)}
 					>
-						<AlertDialog.Content>
+						<AlertDialog.Content
+							{...testProps('AlertDialog')}
+						>
 							{canClose && <AlertDialog.CloseButton />}
 							<AlertDialog.Header>{title}</AlertDialog.Header>
 							<AlertDialog.Body>

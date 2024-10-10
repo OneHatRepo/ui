@@ -2,6 +2,7 @@ import React, { useState, useEffect, } from 'react';
 import {
 	Radio,
 } from '@gluestack-ui/themed';
+import testProps from '../../../../Functions/testProps.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
@@ -32,6 +33,7 @@ const
 				const entities = Repository.getEntitiesOnPage();
 				radios = _.map(entities, (entity, ix) => {
 					return <Radio
+								{...testProps('radio-' + entity.id)}
 								key={ix}
 								value={entity.id}
 								{...radioProps}
@@ -40,6 +42,7 @@ const
 			} else {
 				radios = _.map(data, (datum, ix) => {
 					return <Radio
+								{...testProps('radio-' + datum[idIx])}
 								key={ix}
 								value={datum[idIx]}
 								{...radioProps}

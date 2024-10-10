@@ -2,6 +2,7 @@ import {
 	HStack,
 	Text,
 } from '@gluestack-ui/themed';
+import testProps from '../../../../Functions/testProps.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import Eye from '../../../Icons/Eye.js';
 import Xmark from '../../../Icons/Xmark.js';
@@ -16,6 +17,7 @@ export default function ValueBox(props) {
 		} = props,
 		styles = UiGlobals.styles;
 	return <HStack
+				{...testProps('valueBox-' + text)}
 				borderWidth={1}
 				borderColor="trueGray.400"
 				borderRadius="md"
@@ -25,6 +27,7 @@ export default function ValueBox(props) {
 				maxWidth="100%"
 			>
 				<IconButton
+					{...testProps('eyeBtn')}
 					_icon={{
 						as: Eye,
 						color: 'trueGray.600',
@@ -40,6 +43,7 @@ export default function ValueBox(props) {
 				>{text}</Text>
 				{onDelete &&
 					<IconButton
+						{...testProps('xBtn')}
 						_icon={{
 							as: Xmark,
 							color: 'trueGray.600',

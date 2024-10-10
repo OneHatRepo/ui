@@ -2,6 +2,16 @@ import React, { useState, useEffect, } from 'react';
 import {
 	Modal,
 } from '@gluestack-ui/themed';
+import {
+	ADD,
+	EDIT,
+	DELETE,
+	VIEW,
+	COPY,
+	DUPLICATE,
+	PRINT,
+	UPLOAD_DOWNLOAD,
+} from '../../Constants/Commands.js';
 import Clipboard from '../Icons/Clipboard.js';
 import Duplicate from '../Icons/Duplicate.js';
 import Edit from '../Icons/Edit.js';
@@ -18,14 +28,14 @@ import _ from 'lodash';
 // and a toolbar button that match in text label, icon, and handler.
 
 const presetButtons = [
-	'view',
-	'add',
-	'edit',
-	'delete',
-	'duplicate',
-	'copy',
-	// 'print',
-	'uploadDownload',
+	ADD,
+	EDIT,
+	DELETE,
+	VIEW,
+	COPY,
+	DUPLICATE,
+	// PRINT,
+	UPLOAD_DOWNLOAD,
 ];
 
 export default function withPresetButtons(WrappedComponent, isGrid = false) {
@@ -42,15 +52,16 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				additionalToolbarButtons = [],
 				useUploadDownload = false,
 				onChangeColumnsConfig,
-				verifyCanEdit,
-				verifyCanDelete,
-				verifyCanDuplicate,
+				canRecordBeEdited,
+				canRecordBeDeleted,
+				canRecordBeDuplicated,
 				...propsToPass
 			} = props,
 			{
 				// for local use
 				isEditor = false,
 				isTree = false,
+				canDeleteRootNode = false,
 				isSideEditor = false,
 				canEditorViewOnly = false,
 				disableAdd = !isEditor,
@@ -70,8 +81,11 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				// withData
 				Repository,
 
+				// withPermissions
+				canUser,
+
 				// withEditor
-				userCanEdit = true,
+				userCanEdit = true, // not permissions, but capability
 				userCanView = true,
 				onAdd,
 				onEdit,
@@ -100,43 +114,59 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 			isTypeDisabledCompletely = (type) => {
 				let isDisabled = false;
 				switch(type) {
-					case 'add':
+					case ADD:
 						if (disableAdd || canEditorViewOnly) {
 							isDisabled = true;
+						} else if (canUser && !canUser(ADD)) { // check Permissions
+							isDisabled = true;
 						}
 						break;
-					case 'edit':
+					case EDIT:
 						if (disableEdit || canEditorViewOnly || isSideEditor) {
 							isDisabled = true;
+						} else if (canUser && !canUser(EDIT)) { // check Permissions
+							isDisabled = true;
 						}
 						break;
-					case 'delete':
+					case DELETE:
 						if (disableDelete || canEditorViewOnly) {
 							isDisabled = true;
+						} else if (canUser && !canUser(DELETE)) { // check Permissions
+							isDisabled = true;
 						}
 						break;
-					case 'view':
+					case VIEW:
 						if (disableView || isSideEditor) {
 							isDisabled = true;
+						} else if (canUser && !canUser(VIEW)) { // check Permissions
+							isDisabled = true;
 						}
 						break;
-					case 'copy':
+					case COPY:
 						if (disableCopy) {
 							isDisabled = true;
+						} else if (canUser && !canUser(COPY)) { // check Permissions
+							isDisabled = true;
 						}
 						break;
-					case 'duplicate':
+					case DUPLICATE:
 						if (disableDuplicate || canEditorViewOnly) {
 							isDisabled = true;
-						}
-						break;
-					case 'print':
-						if (disablePrint) {
+						} else if (canUser && !canUser(DUPLICATE)) { // check Permissions
 							isDisabled = true;
 						}
 						break;
-					case 'uploadDownload':
+					case PRINT:
+						if (disablePrint) {
+							isDisabled = true;
+						} else if (canUser && !canUser(PRINT)) { // check Permissions
+							isDisabled = true;
+						}
+						break;
+					case UPLOAD_DOWNLOAD:
 						if (!useUploadDownload) {
+							isDisabled = true;
+						} else if (canUser && !canUser(UPLOAD_DOWNLOAD)) { // check Permissions
 							isDisabled = true;
 						}
 						break;
@@ -151,7 +181,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					icon = null,
 					isDisabled = false;
 				switch(type) {
-					case 'add':
+					case ADD:
 						key = 'addBtn';
 						text = 'Add';
 						handler = onAdd;
@@ -163,7 +193,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							isDisabled = true;
 						}
 						break;
-					case 'edit':
+					case EDIT:
 						key = 'editBtn';
 						text = 'Edit';
 						handler = onEdit;
@@ -174,11 +204,11 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
 							isDisabled = true;
 						}
-						if (verifyCanEdit && !verifyCanEdit(selection)) {
+						if (canRecordBeEdited && !canRecordBeEdited(selection)) {
 							isDisabled = true;
 						}
 						break;
-					case 'delete':
+					case DELETE:
 						key = 'deleteBtn';
 						text = 'Delete';
 						handler = onDelete;
@@ -189,11 +219,17 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (_.isEmpty(selection) || (_.isArray(selection) && selection.length > 1)) {
 							isDisabled = true;
 						}
-						if (verifyCanDelete && !verifyCanDelete(selection)) {
+						if (canRecordBeDeleted && !canRecordBeDeleted(selection)) {
 							isDisabled = true;
 						}
+						if (isTree) {
+							const isRootNode = !!_.find(selection, { isRoot: true, });
+							if (isRootNode && !canDeleteRootNode) {
+								isDisabled = true;
+							}
+						}
 						break;
-					case 'view':
+					case VIEW:
 						key = 'viewBtn';
 						text = 'View';
 						handler = onView;
@@ -206,7 +242,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							isDisabled = true;
 						}
 						break;
-					case 'copy':
+					case COPY:
 						key = 'copyBtn';
 						text = 'Copy to Clipboard';
 						handler = onCopyToClipboard;
@@ -219,7 +255,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							isDisabled = true;
 						}
 						break;
-					case 'duplicate':
+					case DUPLICATE:
 						key = 'duplicateBtn';
 						text = 'Duplicate';
 						handler = onDuplicate;
@@ -231,16 +267,16 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (_.isEmpty(selection) || selection.length > 1) {
 							isDisabled = true;
 						}
-						if (verifyCanDuplicate && !verifyCanDuplicate(selection)) {
+						if (canRecordBeDuplicated && !canRecordBeDuplicated(selection)) {
 							isDisabled = true;
 						}
 						break;
-					// case 'print':
+					// case PRINT:
 					// 	text = 'Print';
 					// 	handler = onPrint;
 					// 	icon = <Print />;
 					// 	break;
-					case 'uploadDownload':
+					case UPLOAD_DOWNLOAD:
 						key = 'uploadDownloadBtn';
 						text = 'Upload/Download';
 						handler = onUploadDownload;
@@ -267,8 +303,8 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					if (isTypeDisabledCompletely(type)) { // i.e. not just temporarily disabled because of selection
 						return;
 					}
-					if ((!userCanEdit && inArray(type, ['add', 'edit', 'delete', 'duplicate',])) ||
-						(!userCanView && type === 'view')) {
+					if ((!userCanEdit && inArray(type, [ADD, EDIT, DELETE, DUPLICATE,])) ||
+						(!userCanView && type === VIEW)) {
 						return;
 					}
 	

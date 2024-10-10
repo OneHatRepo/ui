@@ -4,6 +4,7 @@ import {
 	Text,
 } from '@gluestack-ui/themed';
 import Date from '../Form/Field/Date.js';
+import testProps from '../../Functions/testProps.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
 import _ from 'lodash';
@@ -21,6 +22,7 @@ const
 
 				minValue = 0,
 				maxValue,
+				...propsToPass
 			} = props,
 			[low, setLow] = useState(''),
 			[high, setHigh] = useState(''),
@@ -75,8 +77,10 @@ const
 					alignItems="center"
 					flex={1}
 					px={1}
+					{...propsToPass}
 				>
 					<Date
+						{...testProps('low')}
 						value={low}
 						onChangeValue={onChangeLow}
 						mode={mode}
@@ -86,6 +90,7 @@ const
 					/>
 					<Text px={2} userSelect="none">to</Text>
 					<Date
+						{...testProps('high')}
 						value={high}
 						onChangeValue={onChangeHigh}
 						mode={mode}

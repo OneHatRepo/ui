@@ -22,6 +22,7 @@ import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
+import testProps from '../../../../Functions/testProps.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
@@ -45,6 +46,7 @@ export function ComboComponent(props) {
 			showEyeButton = false,
 			viewerProps = {}, // popup for eyeButton
 			_input = {},
+			_editor = {},
 			isEditor = false,
 			isDisabled = false,
 			isInTag = false,
@@ -57,6 +59,7 @@ export function ComboComponent(props) {
 			onGridSave, // to hook into when menu saves (ComboEditor only)
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
 			newEntityDisplayProperty,
+			testID,
 
 			// withComponent
 			self,
@@ -235,7 +238,7 @@ export function ComboComponent(props) {
 					}
 					
 					if (_.isEmpty(gridSelection)) {
-						confirm('You have nothing selected in the dropdown menu. Clear value?', doIt, true);
+						hideMenu();
 						return;
 					}
 
@@ -275,7 +278,6 @@ export function ComboComponent(props) {
 			}
 
 			setTextInputValue(value);
-			showMenu();
 
 			clearTimeout(typingTimeout.current);
 			typingTimeout.current = setTimeout(() => {
@@ -302,7 +304,11 @@ export function ComboComponent(props) {
 				return;
 			}
 			clearGridFilters();
-			showMenu();
+			if (isMenuShown) {
+				hideMenu();
+			} else {
+				showMenu();
+			}
 		},
 		onTriggerBlur = (e) => {
 			if (!isMenuShown) {
@@ -360,7 +366,7 @@ export function ComboComponent(props) {
 					menuRef.current === relatedTarget || 
 					menuRef.current?.contains(relatedTarget);
 		},
-		getFilterName = () => {
+		getFilterName = (isId) => {
 			// Only used for remote repositories
 			// Gets the filter name of the query, which becomes the condition sent to server 
 			let filterName = FILTER_NAME;
@@ -371,7 +377,10 @@ export function ComboComponent(props) {
 					displayFieldDef = schema.getPropertyDefinition(displayFieldName);
 	
 				// Verify displayField is a real field
-				if (!displayFieldDef.isVirtual) {
+				if (isId) {
+					const idFieldName = schema.model.idProperty;
+					filterName = idFieldName;
+				} else if (!displayFieldDef.isVirtual) {
 					filterName = displayFieldName + ' LIKE';
 				}
 			}
@@ -399,12 +408,6 @@ export function ComboComponent(props) {
 			}
 		},
 		searchForMatches = async (value) => {
-			if (!isMenuShown) {
-				showMenu();
-			}
-
-			setIsSearchMode(true);
-
 			let found;
 			if (Repository) {
 				if (Repository.isLoading) {
@@ -417,10 +420,13 @@ export function ComboComponent(props) {
 				}
 
 				// Set filter
-				const filterName = getFilterName();
+				const
+					idRegex = /^id:(.*)$/,
+					isId = _.isString(value) && !!value.match(idRegex),
+					filterName = getFilterName(isId);
 				if (Repository.isRemote) {
 					// remote
-					const filterValue = _.isEmpty(value) ? null : value + '%';
+					const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : value + '%');
 					await Repository.filter(filterName, filterValue);
 					if (!Repository.isAutoLoad) {
 						await Repository.reload();
@@ -432,7 +438,7 @@ export function ComboComponent(props) {
 						fn: (entity) => {
 							const
 								displayValue = entity.displayValue,
-								regex = new RegExp('^' + value);
+								regex = new RegExp('^' + value, 'i'); // case-insensitive
 							return displayValue.match(regex);
 						},
 					});
@@ -451,6 +457,11 @@ export function ComboComponent(props) {
 				});
 				setFilteredData(found);
 			}
+
+			if (!isMenuShown) {
+				showMenu();
+			}
+			setIsSearchMode(true);
 		};
 
 	useEffect(() => {
@@ -495,6 +506,7 @@ export function ComboComponent(props) {
 	
 	if (showXButton && !_.isNil(value)) {
 		xButton = <IconButton
+						{...testProps('xBtn')}
 						_icon={{
 							as: Xmark,
 							color: 'trueGray.600',
@@ -512,6 +524,7 @@ export function ComboComponent(props) {
 	}
 	if (showEyeButton && Editor && !_.isNil(value)) {
 		eyeButton = <IconButton
+						{...testProps('eyeBtn')}
 						_icon={{
 							as: Eye,
 							color: 'trueGray.600',
@@ -532,6 +545,7 @@ export function ComboComponent(props) {
 		inputAndTrigger = <>
 							{disableDirectEntry ?
 								<Pressable
+									{...testProps('toggleMenuBtn')}
 									onPress={toggleMenu}
 									flex={1}
 									h="100%"
@@ -558,6 +572,7 @@ export function ComboComponent(props) {
 									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
 								</Pressable> :
 								<Input
+									{...testProps('input')}
 									ref={inputRef}
 									reference="ComboInput"
 									value={textInputValue}
@@ -571,7 +586,7 @@ export function ComboComponent(props) {
 									h="100%"
 									m={0}
 									InputLeftElement={inputIconElement}
-									autoSubmitDelay={0}
+									autoSubmitDelay={500}
 									borderTopRightRadius={0}
 									borderBottomRightRadius={0}
 									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
@@ -583,6 +598,7 @@ export function ComboComponent(props) {
 									{..._input}
 								/>}
 							<IconButton
+								{...testProps('trigger')}
 								ref={triggerRef}
 								_icon={{
 									as: CaretDown,
@@ -612,6 +628,7 @@ export function ComboComponent(props) {
 		const displayValue = getDisplayValue();
 		inputAndTrigger = <>
 							<Pressable
+								{...testProps('showMenuBtn')}
 								onPress={showMenu}
 								flex={1}
 								flexDirection="row"
@@ -637,6 +654,7 @@ export function ComboComponent(props) {
 								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
 							</Pressable>
 							<IconButton
+								{...testProps('trigger')}
 								ref={triggerRef}
 								_icon={{
 									as: CaretDown,
@@ -674,7 +692,11 @@ export function ComboComponent(props) {
 			'disablePrint',
 			'selectorId',
 			'selectorSelected',
+			'usePermissions',
 		]);
+		if (!Repository) {
+			gridProps.data = filteredData;
+		}
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 		grid = <WhichGrid
 					showHeaders={false}
@@ -692,7 +714,6 @@ export function ComboComponent(props) {
 					}}
 					autoAdjustPageSizeToHeight={false}
 					{...gridProps}
-					data={filteredData}
 					reference="grid"
 					parent={self}
 					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
@@ -759,7 +780,7 @@ export function ComboComponent(props) {
 
 					}}
 					onAdd={(selection) => {
-						const entity = selection[0];
+						const entity = _.isArray(selection) ? selection[0] : selection;
 						if (entity.id !== value && !isInTag) {
 							// Select it and set the value of the combo.
 							setGridSelection(selection);
@@ -770,7 +791,7 @@ export function ComboComponent(props) {
 						}
 					}}
 					onSave={(selection) => {
-						const entity = selection[0];
+						const entity = _.isArray(selection) ? selection[0] : selection;
 						if (!isInTag) {
 							if (entity?.id !== value) { // Tag doesn't use value, so don't do this comparison in the Tag
 								// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
@@ -798,6 +819,7 @@ export function ComboComponent(props) {
 							onInputFocus();
 						}
 					}}
+					{..._editor}
 				/>;
 		if (UiGlobals.mode === UI_MODE_WEB) {
 			dropdownMenu = <Popover
@@ -837,6 +859,7 @@ export function ComboComponent(props) {
 			if (isEditor) {
 				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
 				checkButton = <IconButton
+								{...testProps('checkBtn')}
 								_icon={{
 									as: Check,
 									color: 'trueGray.600',
@@ -878,6 +901,7 @@ export function ComboComponent(props) {
 							}}
 						>{textInputValue}</Text> :
 						<Input
+							{...testProps('input')}
 							ref={inputRef}
 							reference="ComboInput"
 							value={textInputValue}
@@ -891,7 +915,7 @@ export function ComboComponent(props) {
 							h="100%"
 							m={0}
 							InputLeftElement={inputIconElement}
-							autoSubmitDelay={0}
+							autoSubmitDelay={500}
 							borderTopRightRadius={0}
 							borderBottomRightRadius={0}
 							fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
@@ -903,6 +927,7 @@ export function ComboComponent(props) {
 							{..._input}
 						/>}
 					<IconButton
+						{...testProps('hideMenuBtn')}
 						_icon={{
 							as: CaretDown,
 							color: 'primary.800',
@@ -947,7 +972,7 @@ export function ComboComponent(props) {
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
-			<VStack>
+			<VStack testID={testID}>
 				<HStack {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%">
 					{xButton}
 					{eyeButton}
@@ -960,7 +985,7 @@ export function ComboComponent(props) {
 			</VStack>;
 	} else {
 		assembledComponents = 
-			<HStack {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
+			<HStack testID={testID} {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
 				{xButton}
 				{eyeButton}
 				{inputAndTrigger}

@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef, useMemo, } from 'react';
 import {
-	VStack,
 	Modal,
 	Pressable,
 	HStack,
+	ScrollView,
+	VStack,
 } from '@gluestack-ui/themed';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
+import {
+	EDIT,
+} from '../../Constants/Commands.js';
 import {
 	VERTICAL,
 } from '../../Constants/Directions.js';
@@ -27,17 +31,20 @@ import withData from '../Hoc/withData.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
-import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
+import withPresetButtons from '../Hoc/withPresetButtons.js';
+import withPermissions from '../Hoc/withPermissions.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import inArray from '../../Functions/inArray.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
+import ReloadTreeButton from '../Buttons/ReloadTreeButton.js';
 import TreeNode, { DraggableTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
+import Xmark from '../Icons/Xmark.js';
 import Dot from '../Icons/Dot.js';
 import Collapse from '../Icons/Collapse.js';
 import FolderClosed from '../Icons/FolderClosed.js';
@@ -48,19 +55,25 @@ import ReorderRows from '../Icons/ReorderRows.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from '../Grid/NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
+import Loading from '../Messages/Loading.js';
+import Unauthorized from '../Messages/Unauthorized.js';
 import _ from 'lodash';
 
-const DEPTH_INDENT_PX = 20;
+const DEPTH_INDENT_PX = 25;
 
 function TreeComponent(props) {
 	const {
 			areRootsVisible = true,
+			autoLoadRootNodes = true,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
 				if (Repository) {
 					return item.displayValue;
 				}
 				return item[displayIx];
+			},
+			getDisplayTextFromSearchResults = (item) => {
+				return item.id
 			},
 			getNodeIcon = (which, item) => { // decides what icon to show for this node
 				// TODO: Allow for dynamic props on the icon (e.g. special color for some icons)
@@ -93,6 +106,17 @@ function TreeComponent(props) {
 			additionalToolbarButtons = [],
 			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
 			parentIdIx,
+			initialSelection,
+			canRecordBeEdited,
+			onTreeLoad,
+
+			// withComponent
+			self,
+
+			// withAlert
+			alert,
+			confirm,
+			showInfo,
 		
 			// withEditor
 			onAdd,
@@ -112,6 +136,9 @@ function TreeComponent(props) {
 			displayField,
 			idIx,
 			displayIx,
+
+			// withPermissions
+			canUser,
 
 			// withSelection
 			selection,
@@ -135,7 +162,7 @@ function TreeComponent(props) {
 		treeNodeData = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[isSearchModalShown, setIsSearchModalShown] = useState(false),
+		[isModalShown, setIsModalShown] = useState(false),
 		[rowToDatumMap, setRowToDatumMap] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
@@ -218,7 +245,14 @@ function TreeComponent(props) {
 			}
 		},
 		onBeforeAdd = async () => {
+			// called during withEditor::doAdd, before the add operation is called
+			// returning false will cancel the add operation
+
 			// Load children before adding the new node
+			if (_.isEmpty(selection)) {
+				alert('Please select a parent node first.')
+				return;
+			}
 			const
 				parent = selection[0],
 				parentDatum = getNodeData(parent.id);
@@ -226,23 +260,32 @@ function TreeComponent(props) {
 			if (parent.hasChildren && !parent.areChildrenLoaded) {
 				await loadChildren(parentDatum);
 			}
-		},
-		onAfterAdd = async (entity) => {
-			// Expand the parent before showing the new node
-			const
-				parent = entity.parent,
-				parentDatum = getNodeData(parent.id);
 
+			// forceUpdate();
+		},
+		onAfterAdd = (entity) => {
+			// called during withEditor::doAdd, after the add operation is called
+
+			// Add the entity to the tree, show parent as hasChildren and expanded
+			const
+				parent = selection[0],
+				parentDatum = getNodeData(parent.id);
+			if (!parent.hasChildren) {
+				parent.hasChildren = true; // since we're adding a new child
+			}
 			if (!parentDatum.isExpanded) {
 				parentDatum.isExpanded = true;
 			}
 
-			// Add the entity to the tree
-			const entityDatum = buildTreeNodeDatum(entity);
-			parentDatum.children.unshift(entityDatum);
-			forceUpdate();
-			
 			buildRowToDatumMap();
+			forceUpdate();
+		},
+		onAfterAddSave = (entities) => {
+
+			// Update the datum with the new entity
+			return onAfterEdit(entities);
+			
+
 		},
 		onBeforeEditSave = (entities) => {
 			onBeforeSave(entities);
@@ -319,29 +362,43 @@ function TreeComponent(props) {
 			buildRowToDatumMap();
 			return newTreeNodeData;
 		},
-		onSearchTree = async (value) => {
+		onSearchTree = async (q) => {
 			let found = [];
+			if (q === '') {
+				setHighlitedDatum(null);
+				alert('Please enter a search query.');
+				return;
+			}
+
 			if (Repository?.isRemote) {
 				// Search tree on server
-				found = await Repository.searchNodes(value);
+				found = await Repository.searchNodes(q);
 			} else {
 				// Search local tree data
-				found = findTreeNodesByText(value);
+				found = findTreeNodesByText(q);
+			}
+
+			if (_.isEmpty(found)) {
+				deselectAll();
+				setHighlitedDatum(null);
+				alert('No matches found.');
+				return;
 			}
 
 			const isMultipleHits = found.length > 1;
 			if (!isMultipleHits) {
-				expandPath(found[0].path);
+				expandPath(found[0].cPath); // highlights and selects the last node in the cPath
 				return;
 			}
 
+			// Show modal so user can select which node to go to
 			const searchFormData = [];
 			_.each(found, (item) => {
-				searchFormData.push([item.id, getNodeText(item)]);
+				searchFormData.push([item.id, getDisplayTextFromSearchResults(item)]);
 			});
 			setSearchFormData(searchFormData);
 			setSearchResults(found);
-			setIsSearchModalShown(true);
+			setIsModalShown(true);
 		},
 
 		// utilities
@@ -417,6 +474,11 @@ function TreeComponent(props) {
 			setTreeNodeData(treeNodeData);
 
 			buildRowToDatumMap();
+
+			if (onTreeLoad) {
+				onTreeLoad();
+			}
+			return treeNodeData;
 		},
 		buildRowToDatumMap = () => {
 			const rowToDatumMap = {};
@@ -583,6 +645,7 @@ function TreeComponent(props) {
 			buildRowToDatumMap();
 		},
 		loadChildren = async (datum, depth = 1) => {
+
 			// Show loading indicator (spinner underneath current node?)
 			datum.isLoading = true;
 			forceUpdate();
@@ -619,23 +682,23 @@ function TreeComponent(props) {
 				}
 			});
 		},
-		expandPath = async (path) => {
-			// First, close thw whole tree.
+		expandPath = async (cPath, highlight = true) => {
+			// First, close the whole tree.
 			let newTreeNodeData = _.clone(getTreeNodeData());
 			collapseNodes(newTreeNodeData);
 
 			// As it navigates down, it will expand the appropriate branches,
 			// and then finally highlight & select the node in question
-			let pathParts,
+			let cPathParts,
 				id,
 				currentLevelData = newTreeNodeData,
 				currentDatum,
 				parentDatum,
 				currentNode;
 			
-			while(path.length) {
-				pathParts = path.split('/');
-				id = parseInt(pathParts[0], 10); // grab the first part of the path
+			while(cPath.length) {
+				cPathParts = cPath.split('/');
+				id = parseInt(cPathParts[0], 10); // grab the first part of the cPath
 				
 				// find match in current level
 				currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
@@ -643,9 +706,16 @@ function TreeComponent(props) {
 				});
 
 				if (!currentDatum) {
-					// datum is not currently loaded, so load it
-					await loadChildren(parentDatum, 1);
-					currentLevelData = parentDatum.children;
+					if (!parentDatum) {
+						currentDatum = currentLevelData[0]; // this is essentially the root node (currentLevelData can contain more than one node, so just set it to the first)
+						// currentLevelData = currentDatum;
+					} else {
+						if (!parentDatum.isLoaded) {
+							await loadChildren(parentDatum, 1);
+						}
+						currentLevelData = parentDatum.children;
+					}
+
 					currentDatum = _.find(currentLevelData, (treeNodeDatum) => {
 						return treeNodeDatum.item.id === id; 
 					});
@@ -653,17 +723,20 @@ function TreeComponent(props) {
 				
 				currentNode = currentDatum.item;
 				
-				// THE MAGIC!
-				currentDatum.isExpanded = true;
+				if (!currentDatum.isExpanded) {
+					await loadChildren(currentDatum, 1);
+				}
 				
-				path = pathParts.slice(1).join('/'); // put the rest of it back together
+				cPath = cPathParts.slice(1).join('/'); // put the rest of it back together
 				currentLevelData = currentDatum.children;
 				parentDatum = currentDatum;
 			}
 
 			setSelection([currentNode]);
 			scrollToNode(currentNode);
-			setHighlitedDatum(currentDatum);
+			if (highlight) {
+				setHighlitedDatum(currentDatum);
+			}
 
 			setTreeNodeData(newTreeNodeData);
 			buildRowToDatumMap();
@@ -674,7 +747,31 @@ function TreeComponent(props) {
 
 			// TODO: This will probably need different methods in web and mobile
 
+			// From Github Copliot:
+			// In React, if you want to scroll individual DOM nodes into view, you would typically assign a ref to each of them. However, managing a large number of refs can be cumbersome and may lead to performance issues.
+			// An alternative approach is to assign a unique id to each DOM node and use the document.getElementById(id).scrollIntoView() method to scroll to a specific node. This way, you don't need to manage a large number of refs.
+			// Here's an example:
+			// const MyComponent = () => {
+			// 	const scrollTo = (id) => {
+			// 	  document.getElementById(id).scrollIntoView();
+			// 	};
+			// 	return (
+			// 	  <div>
+			// 		{Array.from({ length: 100 }).map((_, index) => (
+			// 		  <div id={`item-${index}`} key={index}>
+			// 			Item {index}
+			// 		  </div>
+			// 		))}
+			// 		<button onClick={() => scrollTo('item-50')}>Scroll to item 50</button>
+			// 	  </div>
+			// 	);
+			// };
+			// In this example, we're creating 100 divs each with a unique id. We also have a button that, when clicked, scrolls to the div with the id 'item-50'.
+			// Please note that this approach uses the DOM API directly, which is generally discouraged in React. It's recommended to use refs when you need to interact with DOM nodes directly. However, in cases where you need to manage a large number of DOM nodes, using ids can be a more practical solution.
+			// Also, keep in mind that document.getElementById(id).scrollIntoView() might not work as expected in all situations, especially in complex layouts or when using certain CSS properties. Always test your code thoroughly to make sure it works as expected.
 
+			// ... Not sure how to do this with NativeBase, as I've had trouble assigning IDs
+			// Maybe I first collapse the tree, then expand just the cPath?
 		},
 
 		// render
@@ -684,7 +781,7 @@ function TreeComponent(props) {
 					{
 						key: 'searchBtn',
 						text: 'Search tree',
-						handler: onSearchTree,
+						handler: () => onSearchTree(treeSearchValue),
 						icon: MagnifyingGlass,
 						isDisabled: !treeSearchValue.length,
 					},
@@ -701,32 +798,44 @@ function TreeComponent(props) {
 					key: 'reorderBtn',
 					text: (isDragMode ? 'Exit' : 'Enter') + ' reorder mode',
 					handler: () => {
-						setIsDragMode(!isDragMode)
+						setIsDragMode(!isDragMode);
 					},
 					icon: isDragMode ? NoReorderRows : ReorderRows,
 					isDisabled: false,
 				});
 			}
-			const items = _.map(buttons, getIconButtonFromConfig);
+			const items = _.map(buttons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 
 			items.unshift(<Input // Add text input to beginning of header items
 				key="searchNodes"
 				flex={1}
 				placeholder="Find tree node"
 				onChangeText={(val) => setTreeSearchValue(val)}
-				onKeyPress={(e, value) => {
+				onKeyPress={(e) => {
 					if (e.key === 'Enter') {
-						onSearchTree(value);
+						onSearchTree(treeSearchValue);
 					}
 				}}
 				value={treeSearchValue}
 				autoSubmit={false}
 			/>);
 
+			if (treeSearchValue.length) {
+				// Add 'X' button to clear search
+				items.unshift(getIconButtonFromConfig({
+					key: 'xBtn',
+					handler: () => {
+						setHighlitedDatum(null);
+						setTreeSearchValue('');
+					},
+					icon: Xmark,
+				}, 0, self));
+			}
+
 			return items;
 		},
 		getFooterToolbarItems = () => {
-			return _.map(additionalToolbarButtons, getIconButtonFromConfig);
+			return _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 		},
 		renderTreeNode = (datum) => {
 			if (!datum.isVisible) {
@@ -740,9 +849,8 @@ function TreeComponent(props) {
 
 			let nodeProps = getNodeProps ? getNodeProps(item) : {},
 				isSelected = isInSelection(item);
-
 			return <Pressable
-						// {...testProps(Repository ? Repository.schema.name + '-' + item.id : item.id)}
+						{...testProps((Repository ? Repository.schema.name : 'TreeNode') + '-' + item?.id)}
 						key={item.hash}
 						onPress={(e) => {
 							if (e.preventDefault && e.cancelable) {
@@ -752,6 +860,7 @@ function TreeComponent(props) {
 								return
 							}
 							switch (e.detail) {
+								case 0: // simulated click
 								case 1: // single click
 									onNodeClick(item, e); // sets selection
 									break;
@@ -760,6 +869,12 @@ function TreeComponent(props) {
 										onNodeClick(item, e); // so reselect it
 									}
 									if (onEdit) {
+										if (canUser && !canUser(EDIT)) { // permissions
+											return;
+										}
+										if (canRecordBeEdited && !canRecordBeEdited(selection)) { // record can be edited
+											return;
+										}
 										onEdit();
 									}
 									break;
@@ -841,6 +956,7 @@ function TreeComponent(props) {
 										onToggle={onToggle}
 										isDragMode={isDragMode}
 										isHighlighted={highlitedDatum === datum}
+										isSelected={isSelected}
 
 										// fields={fields}
 									/>;
@@ -1021,19 +1137,19 @@ function TreeComponent(props) {
 		
 	useEffect(() => {
 
-		if (!isReady) {
-			if (Repository) {
-				Repository.setBaseParams(extraParams);
-			}
+		if (!Repository) {
 			(async () => {
 				await buildAndSetTreeNodeData();
 				setIsReady(true);
 			})();
-		}
-
-		if (!Repository) {
 			return () => {};
 		}
+
+		(async () => {
+			await reloadTree();
+			setIsReady(true);
+		})();
+
 		
 		// set up @onehat/data repository
 		const
@@ -1042,12 +1158,18 @@ function TreeComponent(props) {
 		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
+		Repository.on('loadRootNodes', setFalse);
+		Repository.on('loadRootNodes', buildAndSetTreeNodeData);
+		Repository.on('add', buildAndSetTreeNodeData);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
+			Repository.off('loadRootNodes', setFalse);
+			Repository.off('loadRootNodes', buildAndSetTreeNodeData);
+			Repository.off('add', buildAndSetTreeNodeData);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
 		};
@@ -1066,21 +1188,35 @@ function TreeComponent(props) {
 		}
 	}, [selectorId, selectorSelected]);
 
-	setWithEditListeners({ // Update withEdit's listeners on every render
-		onBeforeAdd,
-		onAfterAdd,
-		onBeforeEditSave,
-		onAfterEdit,
-		onBeforeDeleteSave,
-		onAfterDelete,
-	});
+	if (canUser && !canUser('view')) {
+		return <Unauthorized />;
+	}
+
+	if (setWithEditListeners) {
+		setWithEditListeners({ // Update withEdit's listeners on every render
+			onBeforeAdd,
+			onAfterAdd,
+			onAfterAddSave,
+			onBeforeEditSave,
+			onAfterEdit,
+			onBeforeDeleteSave,
+			onAfterDelete,
+		});
+	}
+
+	// update self with methods
+	if (self) {
+		self.reloadTree = reloadTree;
+		self.expandPath = expandPath;
+		self.scrollToNode = scrollToNode;
+	}
 	
 	const
 		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, getTreeNodeData()]),
 		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, getTreeNodeData()]);
 
 	if (!isReady) {
-		return null;
+		return <Loading />;
 	}
 	
 	const treeNodes = renderTreeNodes(getTreeNodeData());
@@ -1089,9 +1225,16 @@ function TreeComponent(props) {
 	let treeFooterComponent = null;
 	if (!disableBottomToolbar) {
 		if (Repository && bottomToolbar === 'pagination' && !disablePagination && Repository.isPaginated) {
-			treeFooterComponent = <PaginationToolbar Repository={Repository} toolbarItems={footerToolbarItemComponents} />;
+			treeFooterComponent = <PaginationToolbar
+										Repository={Repository}
+										self={self}
+										toolbarItems={footerToolbarItemComponents}
+									/>;
 		} else if (footerToolbarItemComponents.length) {
-			treeFooterComponent = <Toolbar>{footerToolbarItemComponents}</Toolbar>;
+			treeFooterComponent = <Toolbar>
+										<ReloadTreeButton Repository={Repository} self={self} />
+										{footerToolbarItemComponents}
+									</Toolbar>;
 		}
 	}
 
@@ -1107,11 +1250,12 @@ function TreeComponent(props) {
 
 	return <>
 				<VStack
-					{...testProps('Tree')}
+					{...testProps(self)}
 					flex={1}
 					w="100%"
 				>
 					{topToolbar}
+
 					{headerToolbarItemComponents?.length && <HStack>{headerToolbarItemComponents}</HStack>}
 
 					<VStack
@@ -1119,6 +1263,7 @@ function TreeComponent(props) {
 						w="100%"
 						flex={1}
 						p={2}
+						bg="#fff"
 						{...borderProps}
 						onClick={() => {
 							if (!isDragMode) {
@@ -1126,51 +1271,59 @@ function TreeComponent(props) {
 							}
 						}}
 					>
-						{!treeNodes?.length ? <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
-							treeNodes}
+						<ScrollView {...testProps('ScrollView')} flex={1} w="100%">
+							{!treeNodes?.length ? 
+								<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
+								treeNodes}
+						</ScrollView>
 					</VStack>
 
 					{treeFooterComponent}
+
 				</VStack>
 
 				<Modal
-					isOpen={isSearchModalShown}
-					onClose={() => setIsSearchModalShown(false)}
+					isOpen={isModalShown}
+					onClose={() => setIsModalShown(false)}
 				>
 					<VStack bg="#fff" w={300}>
 						<FormPanel
-							title="Choose Tree Node"
-							instructions="Multiple tree nodes matched your search. Please select which one to show."
-							flex={1}
-							items={[
-								{
-									type: 'Column',
-									flex: 1,
-									items: [
-										{
-											key: 'node_id',
-											name: 'node_id',
-											type: 'Combo',
-											label: 'Tree Node',
-											data: searchFormData,
-										}
-									],
-								},
-							]}
-							onCancel={(e) => {
-								// Just close the modal
-								setIsSearchModalShown(false);
+							_panel={{ 
+								title: 'Choose Tree Node',
 							}}
-							onSave={(data, e) => {
-								const
-									treeNode = _.find(searchResults, (item) => {
-										return item.id === data.node_id;
-									}),
-									path = treeNode.path;
-								expandPath(path);
-
-								// Close the modal
-								setIsSearchModalShown(false);
+							instructions="Multiple tree nodes matched your search. Please select which one to show."
+							_form={{ 
+								flex: 1,
+								items: [
+									{
+										type: 'Column',
+										flex: 1,
+										items: [
+											{
+												key: 'node_id',
+												name: 'node_id',
+												type: 'Combo',
+												label: 'Tree Node',
+												data: searchFormData,
+											}
+										],
+									},
+								],
+								onCancel: (e) => {
+									setHighlitedDatum(null);
+									setIsModalShown(false);
+								},
+								onSave: (data, e) => {
+									const
+										treeNode = _.find(searchResults, (item) => {
+											return item.id === data.node_id;
+										}),
+										cPath = treeNode.cPath;
+									expandPath(cPath);
+	
+									// Close the modal
+									setIsModalShown(false);
+								},
 							}}
 						/>
 					</VStack>
@@ -1183,15 +1336,17 @@ export const Tree = withComponent(
 						withAlert(
 							withEvents(
 								withData(
-									// withMultiSelection(
-										withSelection(
-											withFilters(
-												withContextMenu(
-													TreeComponent
+									withPermissions(
+										// withMultiSelection(
+											withSelection(
+												withFilters(
+													withContextMenu(
+														TreeComponent
+													)
 												)
 											)
-										)
-									// )
+										// )
+									)
 								)
 							)
 						)
@@ -1201,20 +1356,22 @@ export const SideTreeEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												// withMultiSelection(
-													withSelection(
-														withSideEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		TreeComponent
+												withPermissions(
+													// withMultiSelection(
+														withSelection(
+															withSideEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			TreeComponent
+																		)
 																	)
-																)
-															),
-															true // isTree
+																),
+																true // isTree
+															)
 														)
-													)
-												// )
+													// )
+												)
 											)
 										)
 									)
@@ -1224,20 +1381,22 @@ export const WindowedTreeEditor = withComponent(
 									withAlert(
 										withEvents(
 											withData(
-												// withMultiSelection(
-													withSelection(
-														withWindowedEditor(
-															withFilters(
-																withPresetButtons(
-																	withContextMenu(
-																		TreeComponent
+												withPermissions(
+													// withMultiSelection(
+														withSelection(
+															withWindowedEditor(
+																withFilters(
+																	withPresetButtons(
+																		withContextMenu(
+																			TreeComponent
+																		)
 																	)
-																)
-															),
-															true // isTree
+																),
+																true // isTree
+															)
 														)
-													)
-												// )
+													// )
+												)
 											)
 										)
 									)

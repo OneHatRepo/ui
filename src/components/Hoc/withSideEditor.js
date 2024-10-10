@@ -23,7 +23,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 	const SideEditor = (props) => {
 		const {
 				Editor,
-				editorProps = {},
+				_editor = {},
 				sideFlex = 100,
 				isResizable = false,
 
@@ -42,10 +42,10 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 		}
 
 		if (isResizable) {
-			editorProps.w = 500;
-			editorProps.isResizable = true;
+			_editor.w = 500;
+			_editor.isResizable = true;
 		} else {
-			editorProps.flex = sideFlex;
+			_editor.flex = sideFlex;
 		}
 
 		return <Container
@@ -61,11 +61,11 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								editorType={EDITOR_TYPE__SIDE}
 								borderLeftWidth={1}
 								borderLeftColor="#ccc"
-								{...editorProps}
+								{..._editor}
 								parent={self}
 								reference="editor"
 							/>}
 				/>;
 	};
-	return withAdditionalProps(withEditor(SideEditor));
+	return withAdditionalProps(withEditor(SideEditor, isTree));
 }

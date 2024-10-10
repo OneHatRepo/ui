@@ -5,6 +5,7 @@ import {
 	Text,
 } from '@gluestack-ui/themed';
 import withComponent from '../Hoc/withComponent.js';
+import testProps from '../../Functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton';
 import FullWidth from '../Icons/FullWidth';
@@ -22,6 +23,9 @@ function ManagerScreen(props) {
 			title,
 			sideModeComponent,
 			fullModeComponent,
+
+			// withComponent
+			self,
 		} = props,
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
@@ -84,7 +88,7 @@ function ManagerScreen(props) {
 		};
 	}
 
-	return <VStack maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
+	return <VStack {...testProps(self)} maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
 				<HStack
 					h="80px"
 					py={2}
@@ -95,6 +99,7 @@ function ManagerScreen(props) {
 					{allowSideBySide &&
 						<>
 							<IconButton
+								{...testProps('fullModeBtn')}
 								icon={FullWidth}
 								_icon={{
 									size: '25px',
@@ -105,6 +110,7 @@ function ManagerScreen(props) {
 								tooltip="Full Width"
 							/>
 							<IconButton
+								{...testProps('sideModeBtn')}
 								icon={SideBySide}
 								_icon={{
 									size: '25px',

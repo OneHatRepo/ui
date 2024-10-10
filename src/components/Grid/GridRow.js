@@ -10,6 +10,7 @@ import {
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
+import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import _ from 'lodash';
@@ -23,6 +24,7 @@ function GridRow(props) {
 			fields,
 			rowProps,
 			hideNavColumn,
+			isSelected,
 			bg,
 			item,
 			isInlineEditorShown,
@@ -76,7 +78,6 @@ function GridRow(props) {
 					if (_.isPlainObject(config)) {
 						if (config.renderer) {
 							const extraProps = _.omit(config, [
-								'columnId',
 								'header',
 								'fieldName',
 								'type',
@@ -84,9 +85,9 @@ function GridRow(props) {
 								'editor',
 								'format',
 								'renderer',
-								'reorderable',
-								'resizable',
-								'sortable',
+								'isReorderable',
+								'isResizable',
+								'isSortable',
 								'w',
 								'flex',
 								'isOver',
@@ -102,7 +103,12 @@ function GridRow(props) {
 								userSelect: 'none',
 							};
 
-							return <HStack key={key} {...propsToPass} {...extraProps}>{config.renderer(item)}</HStack>;
+							return <HStack
+										key={key}
+										{...testProps('rendererCol-' + key)}
+										{...propsToPass}
+										{...extraProps}
+									>{config.renderer(item)}</HStack>;
 						}
 						if (config.fieldName) {
 							if (item?.properties && item.properties[config.fieldName]) {
@@ -116,10 +122,14 @@ function GridRow(props) {
 									if (UiGlobals.mode === UI_MODE_WEB) {
 										elementProps.textOverflow = 'ellipsis';
 									}
-									if (type.match(/(Tag|TagEditor)$/)) {
+									if (type.match(/(Tag|TagEditor|Json)$/)) {
 										elementProps.isViewOnly = true; // TODO: this won't work for InlineGridEditor, bc that Grid can't use isViewOnly when actually editing
 									}
+									if (config.getCellProps) {
+										_.assign(elementProps, config.getCellProps(item));
+									}
 									return <Element
+												{...testProps('cell-' + config.fieldName)}
 												value={value}
 												key={key}
 												overflow="hidden"
@@ -159,7 +169,11 @@ function GridRow(props) {
 					if (UiGlobals.mode === UI_MODE_WEB) {
 						elementProps.textOverflow = 'ellipsis';
 					}
+					if (config.getCellProps) {
+						_.assign(elementProps, config.getCellProps(item));
+					}
 					return <Text
+								{...testProps('cell-' + config.fieldName)}
 								key={key}
 								overflow="hidden"
 								alignSelf="center"
@@ -211,6 +225,7 @@ function GridRow(props) {
 		}
 
 		return <HStack
+					{...testProps('row' + (isSelected ? '-selected' : ''))}
 					alignItems="center"
 					flexGrow={1}
 					{...rowProps}
