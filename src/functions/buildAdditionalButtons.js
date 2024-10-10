@@ -1,5 +1,4 @@
 import {
-	Button,
 	ButtonText,
 	Icon,
 } from '@gluestack-ui/themed';

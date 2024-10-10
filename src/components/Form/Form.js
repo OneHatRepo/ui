@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, isValidElement, } from 'react';
 import {
 	Box,
-	Button,
 	ButtonText,
 	VStack,
 	HStack,

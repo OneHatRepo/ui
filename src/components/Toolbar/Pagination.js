@@ -1,6 +1,5 @@
 import { useEffect, useMemo, } from 'react';
 import {
-	Button,
 	ButtonText,
 	HStack,
 	Icon,
