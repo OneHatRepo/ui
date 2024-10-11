@@ -28,7 +28,7 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 				// withData
 				Repository,
 			} = props,
-			model = Repository?.schema?.name,
+			model = Repository?.schema?.permissionsModel || Repository?.schema?.name, // so we can use an alternate model for permissions if needed
 			checkPermission = (permission) => {
 				const
 					reduxState = UiGlobals.redux?.getState(),
