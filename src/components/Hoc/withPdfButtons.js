@@ -81,9 +81,8 @@ export default function withPdfButtons(WrappedComponent) {
 
 				if (!_.isEmpty(ancillaryItems)) {
 					const
-						ancillaryItemsClone = _.cloneDeep(ancillaryItems),
 						items = [];
-					_.each(ancillaryItemsClone, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
+					_.each(ancillaryItems, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
 						let name;
 						if (ancillaryItem.pdfModel) {
 							name = ancillaryItem.pdfModel;
