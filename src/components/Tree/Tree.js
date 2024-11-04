@@ -879,6 +879,11 @@ function TreeComponent(props) {
 											return;
 										}
 										onEdit();
+									} else if (onView) {
+										if (canUser && !canUser(VIEW)) { // permissions
+											return;
+										}
+										onView();
 									}
 									break;
 								case 3: // triple click
