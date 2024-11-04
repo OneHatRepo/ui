@@ -395,6 +395,11 @@ function GridComponent(props) {
 												return;
 											}
 											onEdit();
+										} else if (onView) {
+											if (canUser && !canUser(VIEW)) { // permissions
+												return;
+											}
+											onView();
 										}
 									}
 									break;
