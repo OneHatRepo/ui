@@ -93,7 +93,7 @@ export default function withData(WrappedComponent) {
 			})();
 
 			return () => {
-				if (repositoryId) {
+				if (repositoryId && !oneHatData.isDestroyed) {
 					oneHatData.deleteRepository(repositoryId);
 				}
 			}
