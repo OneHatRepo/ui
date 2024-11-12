@@ -238,10 +238,17 @@ export default function withFilters(WrappedComponent) {
 					return filter?.type;
 				},
 				getIsFilterRange = (filter) => {
-					let field = _.isString(filter) ? filter : filter.field;
-					const filterType = getFilterType(field);
+					let filterType;
+					if (filter.type) {
+						// filter type is already determined
+						filterType = filter.type;
+					} else {
+						// try to find filter type from field name
+						const field = _.isString(filter) ? filter : filter.field;
+						filterType = getFilterType(field);
+					}
 					if (filterType?.type) {
-						return inArray(filterType.type, ['NumberRange', 'DateRange'])
+						filterType = filterType.type;
 					}
 					return inArray(filterType, ['NumberRange', 'DateRange']);
 				},
