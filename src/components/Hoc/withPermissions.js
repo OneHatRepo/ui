@@ -85,7 +85,7 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 	return forwardRef((props, ref) => {
 
 		if (!props.usePermissions && !forceUsePermissions) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		const {
@@ -115,6 +115,7 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 					{...props}
 					canUser={canUserDecorator}
 					showPermissionsError={showPermissionsError}
+					ref={ref}
 				/>;
 	});
 }
