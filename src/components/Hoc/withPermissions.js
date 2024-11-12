@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import Inflector from 'inflector-js';
 import inArray from '../../Functions/inArray.js';
 import {
@@ -81,7 +82,7 @@ export function canUser(permission, modelToCheck = null) {
 }
 
 export default function withPermissions(WrappedComponent, forceUsePermissions = false) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (!props.usePermissions && !forceUsePermissions) {
 			return <WrappedComponent {...props} />;
@@ -115,5 +116,5 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 					canUser={canUserDecorator}
 					showPermissionsError={showPermissionsError}
 				/>;
-	};
+	});
 }
