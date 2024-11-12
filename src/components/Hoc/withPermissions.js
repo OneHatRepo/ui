@@ -42,40 +42,39 @@ export function checkPermission(permission) {
  */
 export function canUser(permission, modelToCheck = null) {
 
-	// deal with special cases that refer to other permissions
-	switch(permission) {
-		case PRINT:
-			permission = VIEW;
-			break;
-		case COPY:
-		case DUPLICATE: {
-			// user must have ADD _and_ EDIT permissions, so check both
-			const
-				hasAddPermission = canUser(ADD, modelToCheck),
-				hasEditPermission = canUser(EDIT, modelToCheck);
-			return hasAddPermission && hasEditPermission;
+	if (modelToCheck) {
+		// deal with special cases that refer to other permissions
+		switch(permission) {
+			case PRINT:
+				permission = VIEW; // correct; doesn't recursively call canUser(), just continues on with this permission
+				break;
+			case COPY:
+			case DUPLICATE: {
+				// user must have ADD _and_ EDIT permissions, so check both
+				const
+					hasAddPermission = canUser(ADD, modelToCheck),
+					hasEditPermission = canUser(EDIT, modelToCheck);
+				return hasAddPermission && hasEditPermission;
+			}
+			case UPLOAD_DOWNLOAD: {
+				// user must have VIEW, ADD, EDIT, and DELETE permissions, so check all of them
+				const
+					hasViewPermission = canUser(VIEW, modelToCheck),
+					hasAddPermission = canUser(ADD, modelToCheck),
+					hasEditPermission = canUser(EDIT, modelToCheck),
+					hasDeletePermission = canUser(DELETE, modelToCheck);
+				return hasViewPermission && hasAddPermission && hasEditPermission && hasDeletePermission;
+			}
+			default:
+				// do nothing
+				break;
 		}
-		case UPLOAD_DOWNLOAD: {
-			// user must have VIEW, ADD, EDIT, and DELETE permissions, so check all of them
-			const
-				hasViewPermission = canUser(VIEW, modelToCheck),
-				hasAddPermission = canUser(ADD, modelToCheck),
-				hasEditPermission = canUser(EDIT, modelToCheck),
-				hasDeletePermission = canUser(DELETE, modelToCheck);
-			return hasViewPermission && hasAddPermission && hasEditPermission && hasDeletePermission;
-		}
-		default:
-			// do nothing
-			break;
-	}
 
-	// standard CRUD permissions
-	if (inArray(permission, [VIEW, ADD, EDIT, DELETE])) {
-		if (!modelToCheck) {
-			modelToCheck = model; // use default model if none supplied
+		// standard CRUD permissions
+		if (inArray(permission, [VIEW, ADD, EDIT, DELETE])) {
+			modelToCheck = Inflector.underscore(modelToCheck); // 'PmEvents' -> 'pm_events'
+			permission += '_' + modelToCheck; // e.g. 'view_pm_events'
 		}
-		modelToCheck = Inflector.underscore(modelToCheck); // 'PmEvents' -> 'pm_events'
-		permission += '_' + modelToCheck; // e.g. 'view_pm_events'
 	}
 
 	return checkPermission(permission);
@@ -98,16 +97,22 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 			model = Repository?.schema?.permissionsModel || Repository?.schema?.name, // so we can use an alternate model for permissions if needed
 			showPermissionsError = (permission, modelForAlert = null) => {
 				if (!modelForAlert) {
-					modelForAlert = model; // use default model if none supplied
+					modelForAlert = model;
 				}
 				modelForAlert = Inflector.humanize(Inflector.underscore(modelForAlert)); // 'PmEvents' -> 'pm events'
 			
 				alert(`You are not authorized to ${permission} ${modelForAlert}.`);
+			},
+			canUserDecorator = (permission, modelToCheck = null) => {
+				if (!modelToCheck) {
+					modelToCheck = model; // fallback to the model of the Repository
+				}
+				return canUser(permission, modelToCheck);
 			};
 
 		return <WrappedComponent
 					{...props}
-					canUser={canUser}
+					canUser={canUserDecorator}
 					showPermissionsError={showPermissionsError}
 				/>;
 	};
