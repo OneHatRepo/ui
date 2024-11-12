@@ -129,17 +129,17 @@ function Panel(props) {
 		},
 		nonFrameProps = {
 			...borderProps,
-			borderTopWidth: 1,
-			borderBottomWidth: 1,
-			borderLeftWidth: 1,
-			borderRightWidth: 1,
+			borderTopWidth: 0,
+			borderBottomWidth: 0,
+			borderLeftWidth: 0,
+			borderRightWidth: 0,
 		},
 		frameProps = {
 			...borderProps,
-			borderTopWidth: 3,
-			borderBottomWidth: 3,
-			borderLeftWidth: 3,
-			borderRightWidth: 3,
+			borderTopWidth: 2,
+			borderBottomWidth: 2,
+			borderLeftWidth: 2,
+			borderRightWidth: 2,
 		};
 	let framePropsToUse = nonFrameProps;
 	if (frame) {
