@@ -82,7 +82,8 @@ const
 					>
 						<Text
 							{...testProps('readout')}
-							mx={2}
+							ml={1}
+							mr={2}
 							fontSize={styles.FORM_TOGGLE_FONTSIZE}
 						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</Text>
 					</Pressable>
