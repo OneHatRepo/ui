@@ -1154,7 +1154,9 @@ function TreeComponent(props) {
 		}
 
 		(async () => {
-			await reloadTree();
+			if (autoLoadRootNodes) {
+				await reloadTree();
+			}
 			setIsReady(true);
 		})();
 

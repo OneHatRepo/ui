@@ -20,6 +20,9 @@ const
 		const {
 				value,
 				setValue,
+				onText = 'Yes',
+				offText = 'No',
+
 				flex, // flex doesn't work right on mobile
 				...propsToPass
 			} = props,
@@ -81,7 +84,7 @@ const
 							{...testProps('readout')}
 							mx={2}
 							fontSize={styles.FORM_TOGGLE_FONTSIZE}
-						>{_.isNil(value) ? 'N/A' : (!!value ? 'Yes' : 'No')}</Text>
+						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</Text>
 					</Pressable>
 				</Row>;
 	},
