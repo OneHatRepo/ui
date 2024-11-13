@@ -55,6 +55,10 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				canRecordBeEdited,
 				canRecordBeDeleted,
 				canRecordBeDuplicated,
+				uploadHeaders,
+				uploadParams,
+				downloadHeaders,
+				downloadParams,
 				...propsToPass
 			} = props,
 			{
@@ -382,6 +386,10 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 								onClose={onModalClose}
 								Repository={Repository}
 								columnsConfig={props.columnsConfig}
+								uploadHeaders={uploadHeaders}
+								uploadParams={uploadParams}
+								downloadHeaders={downloadHeaders}
+								downloadParams={downloadParams}
 							/>
 						</Modal>}
 				</>;
