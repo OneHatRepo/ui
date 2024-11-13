@@ -23,6 +23,10 @@ function UploadsDownloadsWindow(props) {
 		{
 			Repository,
 			columnsConfig = [],
+			uploadHeaders,
+			downloadHeaders,
+			uploadParams = {},
+			downloadParams = {},
 
 			// withComponent
 			self,
@@ -64,8 +68,9 @@ function UploadsDownloadsWindow(props) {
 						order,
 						model,
 						isTemplate,
+						...downloadParams,
 					}),
-					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers),
+					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers, downloadHeaders),
 				},
 				fetchWindow = downloadWithFetch(url, options, win),
 				interval = setInterval(function() {
@@ -83,7 +88,7 @@ function UploadsDownloadsWindow(props) {
 		onUpload = async () => {
 			const
 				url = Repository.api.baseURL + Repository.name + '/uploadBatch',
-				result = await Repository._send('POST', url, { importFile })
+				result = await Repository._send('POST', url, { importFile, ...uploadParams, }, uploadHeaders)
 										.catch(error => {
 											if (Repository.debugMode) {
 												console.log(url + ' error', error);
