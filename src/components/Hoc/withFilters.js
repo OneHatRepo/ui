@@ -542,12 +542,8 @@ export default function withFilters(WrappedComponent) {
 								newSlots = _.clone(modalSlots),
 								i = searchAllText ? ixPlusOne : ix; // compensate for 'q' filter's possible presence
 
-							if (newFilters[i]?.value) {
-								newFilters[i].value = value;
-							} else {
-								newFilters[i] = getFormattedFilter(value);
-							}
-							newSlots[ix] = value;
+							newFilters[i] = getFormattedFilter(value);
+							newSlots[i] = value;
 							
 							setModalFilters(newFilters);
 							setModalSlots(newSlots);
