@@ -56,8 +56,13 @@ export default function TreeNode(props) {
 					
 					{isLoading ? 
 						<Spinner px={2} /> : 
-						(hasChildren && !isDragMode ? <IconButton icon={icon} onPress={() => onToggle(datum)} {...testProps('expandBtn')} /> : <Icon as={icon} px={2} />)}
-
+						(hasChildren && !isDragMode ? 
+							<IconButton
+								icon={icon}
+								onPress={(e) => onToggle(datum, e)}
+								{...testProps('expandBtn')}
+							/> : <Icon as={icon} px={2} />)}
+					
 					<Text
 						overflow="hidden"
 						textOverflow="ellipsis"

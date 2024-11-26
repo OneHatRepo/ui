@@ -335,24 +335,38 @@ function TreeComponent(props) {
 				buildRowToDatumMap();
 			}
 		},
-		onToggle = (datum) => {
+		onToggle = async (datum, e) => {
 			if (datum.isLoading) {
 				return;
 			}
 
-			datum.isExpanded = !datum.isExpanded;
+			const
+				isExpanded = !datum.isExpanded, // sets new state
+				isShiftKey = e.shiftKey; // hold down the shift key to load all children
+				
+			datum.isExpanded = isExpanded;
 
-			if (datum.isExpanded && datum.item.repository?.isRemote && datum.item.hasChildren && !datum.item.areChildrenLoaded) {
-				loadChildren(datum, 1);
-				return;
-			}
-
-			if (!datum.isExpanded && datumContainsSelection(datum)) {
-				deselectAll();
+			if (isExpanded) {
+				// opening
+				if (datum.item.repository?.isRemote && datum.item.hasChildren) {
+					if (isShiftKey) {
+						// load ALL children
+						await loadChildren(datum, 'all');
+						return;
+					} else if (!datum.item.areChildrenLoaded) {
+						// load only one level
+						await loadChildren(datum, 1);
+						return;
+					}
+				}
+			} else {
+				// closing
+				if (datumContainsSelection(datum)) {
+					deselectAll();
+				}
 			}
 			
 			forceUpdate();
-
 			buildRowToDatumMap();
 		},
 		onCollapseAll = () => {
@@ -435,20 +449,20 @@ function TreeComponent(props) {
 			});
 			return found;
 		},
-		buildTreeNodeDatum = (treeNode) => {
+		buildTreeNodeDatum = (treeNode, defaultToExpanded = false) => {
 			// Build the data-representation of one node and its children,
 			// caching text & icon, keeping track of the state for whole tree
 			// renderTreeNode uses this to render the nodes.
 			const
 				isRoot = treeNode.isRoot,
-				children = buildTreeNodeData(treeNode.children), // recursively get data for children
+				children = buildTreeNodeData(treeNode.children, defaultToExpanded), // recursively get data for children
 				datum = {
 					item: treeNode,
 					text: getNodeText(treeNode),
 					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
 					iconExpanded: getNodeIcon(EXPANDED, treeNode),
 					iconLeaf: getNodeIcon(LEAF, treeNode),
-					isExpanded: isRoot, // all non-root treeNodes are collapsed by default
+					isExpanded: defaultToExpanded || isRoot, // all non-root treeNodes are collapsed by default
 					isVisible: isRoot ? areRootsVisible : true,
 					isLoading: false,
 					children,
@@ -456,10 +470,10 @@ function TreeComponent(props) {
 
 			return datum;
 		},
-		buildTreeNodeData = (treeNodes) => {
+		buildTreeNodeData = (treeNodes, defaultToExpanded = false) => {
 			const data = [];
 			_.each(treeNodes, (item) => {
-				data.push(buildTreeNodeDatum(item));
+				data.push(buildTreeNodeDatum(item, defaultToExpanded));
 			});
 			return data;
 		},
@@ -657,12 +671,19 @@ function TreeComponent(props) {
 			
 			try {
 
+				let defaultToExpanded = false;
 				if (depth === 'all') {
+					defaultToExpanded = true;
 					depth = 9999;
 				}
 
-				const children = await datum.item.loadChildren(depth);
-				datum.children = buildTreeNodeData(children);
+				const
+					depthChildren = await datum.item.loadChildren(depth),
+					directChildren = _.filter(depthChildren, (child) => { // narrow list to only direct descendants, so buildTreeNodeData can work correctly
+						return child.depth === datum.item.depth + 1;
+					});
+
+				datum.children = buildTreeNodeData(directChildren, defaultToExpanded);
 				datum.isExpanded = true;
 
 			} catch (err) {
@@ -692,23 +713,23 @@ function TreeComponent(props) {
 			});
 		},
 		expandNodes = async (nodes) => {
-			await expandNodesRecursive(nodes);
+
+			// load all children of nodes
+			for (const node of nodes) {
+				await loadChildren(node, 'all');
+			}
+
+			// expand them in UI
+			expandNodesRecursive(nodes);
 			buildRowToDatumMap();
 		},
-		expandNodesRecursive = async (nodes) => {
-			// TODO: instead of doing everything sequentially,
-			// load the tree in parallel, using aync functions
-			// Every time a node loads, it should update the tree.
-			
-			for (const node of nodes) {
-				if (node.item.hasChildren && !node.item.areChildrenLoaded) {
-					await loadChildren(node, 'all');
-				}
+		expandNodesRecursive = (nodes) => {
+			_.each(nodes, (node) => {
 				node.isExpanded = true;
 				if (!_.isEmpty(node.children)) {
-					await expandNodesRecursive(node.children);
+					expandNodesRecursive(node.children);
 				}
-			}
+			});
 		},
 		expandPath = async (cPath, highlight = true) => {
 			// First, close the whole tree.
