@@ -10,20 +10,18 @@ import {
 	UI_MODE_WEB,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import {
+	REPORT_TYPES__EXCEL,
+	REPORT_TYPES__PDF,
+} from '../../Constants/ReportTypes.js';
 import Form from '../Form/Form.js';
 import withComponent from '../Hoc/withComponent.js';
 import testProps from '../../Functions/testProps.js';
 import ChartLine from '../Icons/ChartLine.js';
 import Pdf from '../Icons/Pdf.js';
 import Excel from '../Icons/Excel.js';
-import UiGlobals from '../../UiGlobals.js';
-import downloadInBackground from '../../Functions/downloadInBackground.js';
-import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import getReport from '../../Functions/getReport.js';
 import _ from 'lodash';
-
-const
-	PDF = 'PDF',
-	EXCEL = 'PhpOffice';
 
 function Report(props) {
 	if (CURRENT_MODE !== UI_MODE_WEB) {
@@ -40,30 +38,7 @@ function Report(props) {
 			showReportHeaders = true,
 			h = '300px',
 		} = props,
-		url = UiGlobals.baseURL + 'Reports/getReport',
-		buttons = [],
-		getReport = (reportType, data) => {
-			const params = {
-					report_id: reportId,
-					outputFileType: reportType,
-					showReportHeaders,
-					// download_token, // not sure this is needed
-					...data,
-				};
-
-			if (reportType === EXCEL) {
-				downloadInBackground(url, params);
-			} else {
-				const options = {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(params),
-				};
-				downloadWithFetch(url, options);
-			}
-		};
+		buttons = [];
 
 	const propsIcon = props._icon || {};
 	propsIcon.size = 60;
@@ -86,7 +61,12 @@ function Report(props) {
 			key: 'excelBtn',
 			text: 'Download Excel',
 			leftIcon: <Icon as={Excel} size="md" color="#fff" />,
-			onPress: (data) => getReport(EXCEL, data),
+			onPress: (data) => getReport({
+				reportId,
+				data,
+				reportType: REPORT_TYPES__EXCEL,
+				showReportHeaders,
+			}),
 			ml: 1,
 		});
 	}
@@ -96,7 +76,12 @@ function Report(props) {
 			key: 'pdfBtn',
 			text: 'Download PDF',
 			leftIcon: <Icon as={Pdf} size="md" color="#fff" />,
-			onPress: (data) => getReport(PDF, data),
+			onPress: (data) => getReport({
+				reportId,
+				data,
+				reportType: REPORT_TYPES__PDF,
+				showReportHeaders,
+			}),
 			ml: 1,
 		});
 	}
