@@ -9,7 +9,7 @@ import UiGlobals from '../UiGlobals.js';
 export default function getReport(args) {
 	const {
 			reportId,
-			data,
+			data = {},
 			reportType = REPORT_TYPES__EXCEL,
 			showReportHeaders = true,
 		} = args;
