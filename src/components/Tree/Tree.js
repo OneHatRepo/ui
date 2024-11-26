@@ -50,6 +50,7 @@ import Input from '../Form/Field/Input.js';
 import Xmark from '../Icons/Xmark.js';
 import Dot from '../Icons/Dot.js';
 import Collapse from '../Icons/Collapse.js';
+import Expand from '../Icons/Expand.js';
 import FolderClosed from '../Icons/FolderClosed.js';
 import FolderOpen from '../Icons/FolderOpen.js';
 import MagnifyingGlass from '../Icons/MagnifyingGlass.js';
@@ -354,16 +355,17 @@ function TreeComponent(props) {
 
 			buildRowToDatumMap();
 		},
-		onCollapseAll = (setNewTreeNodeData = true) => {
-			// Go through whole tree and collapse all nodes
+		onCollapseAll = () => {
 			const newTreeNodeData = _.clone(getTreeNodeData());
 			collapseNodes(newTreeNodeData);
-
-			if (setNewTreeNodeData) {
+			setTreeNodeData(newTreeNodeData);
+		},
+		onExpandAll = () => {
+			confirm('Are you sure you want to expand the whole tree? This may take a while.', async () => {
+				const newTreeNodeData = _.clone(getTreeNodeData());
+				await expandNodes(newTreeNodeData);
 				setTreeNodeData(newTreeNodeData);
-			}
-			buildRowToDatumMap();
-			return newTreeNodeData;
+			});
 		},
 		onSearchTree = async (q) => {
 			let found = [];
@@ -655,6 +657,10 @@ function TreeComponent(props) {
 			
 			try {
 
+				if (depth === 'all') {
+					depth = 9999;
+				}
+
 				const children = await datum.item.loadChildren(depth);
 				datum.children = buildTreeNodeData(children);
 				datum.isExpanded = true;
@@ -684,6 +690,25 @@ function TreeComponent(props) {
 					collapseNodesRecursive(node.children);
 				}
 			});
+		},
+		expandNodes = async (nodes) => {
+			await expandNodesRecursive(nodes);
+			buildRowToDatumMap();
+		},
+		expandNodesRecursive = async (nodes) => {
+			// TODO: instead of doing everything sequentially,
+			// load the tree in parallel, using aync functions
+			// Every time a node loads, it should update the tree.
+			
+			for (const node of nodes) {
+				if (node.item.hasChildren && !node.item.areChildrenLoaded) {
+					await loadChildren(node, 'all');
+				}
+				node.isExpanded = true;
+				if (!_.isEmpty(node.children)) {
+					await expandNodesRecursive(node.children);
+				}
+			}
 		},
 		expandPath = async (cPath, highlight = true) => {
 			// First, close the whole tree.
@@ -789,10 +814,17 @@ function TreeComponent(props) {
 						isDisabled: !treeSearchValue.length,
 					},
 					{
-						key: 'collapseBtn',
+						key: 'collapseAllBtn',
 						text: 'Collapse whole tree',
 						handler: onCollapseAll,
 						icon: Collapse,
+						isDisabled: false,
+					},
+					{
+						key: 'expandAllBtn',
+						text: 'Expand whole tree',
+						handler: onExpandAll,
+						icon: Expand,
 						isDisabled: false,
 					},
 				];
