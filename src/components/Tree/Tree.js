@@ -1205,14 +1205,6 @@ function TreeComponent(props) {
 			})();
 			return () => {};
 		}
-
-		(async () => {
-			if (autoLoadRootNodes) {
-				await reloadTree();
-			}
-			setIsReady(true);
-		})();
-
 		
 		// set up @onehat/data repository
 		const
@@ -1226,6 +1218,13 @@ function TreeComponent(props) {
 		Repository.on('add', buildAndSetTreeNodeData);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
+
+		(async () => {
+			if (autoLoadRootNodes) {
+				await reloadTree();
+			}
+			setIsReady(true);
+		})();
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
