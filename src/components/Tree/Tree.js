@@ -1210,6 +1210,10 @@ function TreeComponent(props) {
 		const
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false);
+
+		if (Repository.isLoading) {
+			setTrue();
+		}
 		
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
