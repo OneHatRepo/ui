@@ -43,6 +43,7 @@ import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js'
 import inArray from '../../Functions/inArray.js';
 import testProps from '../../Functions/testProps.js';
 import nbToRgb from '../../Functions/nbToRgb.js';
+import CenterBox from '../Layout/CenterBox.js';
 import ReloadTreeButton from '../Buttons/ReloadTreeButton.js';
 import TreeNode, { DraggableTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
@@ -1255,7 +1256,9 @@ function TreeComponent(props) {
 	}, [selectorId, selectorSelected]);
 
 	if (canUser && !canUser('view')) {
-		return <Unauthorized />;
+		return <CenterBox>
+					<Unauthorized />
+				</CenterBox>;
 	}
 
 	if (setWithEditListeners) {
@@ -1282,7 +1285,9 @@ function TreeComponent(props) {
 		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, getTreeNodeData()]);
 
 	if (!isReady) {
-		return <Loading />;
+		return <CenterBox>
+					<Loading />
+				</CenterBox>;
 	}
 	
 	const treeNodes = renderTreeNodes(getTreeNodeData());
@@ -1339,7 +1344,9 @@ function TreeComponent(props) {
 					>
 						<ScrollView {...testProps('ScrollView')} flex={1} w="100%">
 							{!treeNodes?.length ? 
-								<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} /> :
+								<CenterBox>
+									<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />
+								</CenterBox> :
 								treeNodes}
 						</ScrollView>
 					</Column>
