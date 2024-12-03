@@ -13,7 +13,7 @@ import * as colourMixer from '@k-renwick/colour-mixer';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
-import testProps from '../..Ffunctions/testProps.js';
+import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import _ from 'lodash';

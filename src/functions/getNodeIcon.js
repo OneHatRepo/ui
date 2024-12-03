@@ -2,11 +2,11 @@ import {
 	COLLAPSED,
 	EXPANDED,
 	LEAF,
-} from '../constants/Tree.js';
-import BigCircle from '../components/Icons/BigCircle.js';
-import FolderClosed from '../components/Icons/ChevronRight.js';
-import FolderOpen from '../components/Icons/ChevronDown.js';
-import Camera from '../components/Icons/Camera.js';
+} from '../Constants/Tree.js';
+import BigCircle from '../Components/Icons/BigCircle.js';
+import FolderClosed from '../Components/Icons/ChevronRight.js';
+import FolderOpen from '../Components/Icons/ChevronDown.js';
+import Camera from '../Components/Icons/Camera.js';
 
 export default function getNodeIcon(which, item) {
 	let icon;

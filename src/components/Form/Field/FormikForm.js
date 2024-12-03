@@ -19,7 +19,7 @@ import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
-} from '../../../constants/Editor.js';
+} from '../../../Constants/Editor.js';
 import { Form, Formik, Field } from "formik"; // https://formik.org/docs/overview
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
