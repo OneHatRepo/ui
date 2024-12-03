@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
 	HStack,
-	Pressable,
 	ScrollView,
+	Pressable,
 	VStack,
-} from '@gluestack-ui/themed';
+	VStackNative,
+} from '../Gluestack';
 import inArray from '../../Functions/inArray.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import _ from 'lodash';
@@ -92,7 +93,7 @@ export default function Accordion(props) {
 						>
 							{header}
 						</Pressable>
-						<HStack {...rowProps} bg="#f00">
+						<HStack {...rowProps} className="bg-[#f00]">
 							{content}
 						</HStack>
 					</VStack>;
@@ -122,10 +123,13 @@ export default function Accordion(props) {
 
 	}, [activeSections, isRendered]);
 	
-	return <ScrollView ref={scrollViewRef} keyboardShouldPersistTaps="always" flex={1} w="100%">
-				<VStack
+	return <ScrollView
+				ref={scrollViewRef}
+				keyboardShouldPersistTaps="always"
+				className="flex-1 w-full"
+			>
+				<VStackNative
 					{...propsToPass}
-					pb={(onlyOne ? calculateExtraPadding() : 0) + 'px'}
 					onLayout={(e) => {
 						if (!containerInitialHeight) {
 							const { height } = e.nativeEvent.layout;
@@ -136,8 +140,9 @@ export default function Accordion(props) {
 						}
 						setIsRendered(true);
 					}}
+					className={` pb-${(onlyOne ? calculateExtraPadding() : 0) + 'px'} `}
 				>
 					{items}
-				</VStack>
+				</VStackNative>
 			</ScrollView>;
 }

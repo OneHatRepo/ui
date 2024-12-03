@@ -9,8 +9,8 @@ export default async function waitFor(fn, pollingFrequencyMs = 1000, timeoutMs =
 		timeElapsed += pollingFrequencyMs;
 		return timeElapsed > timeoutMs;
 	};
-    while(!fn() && !isTimedOut()) {
+	while(!fn() && !isTimedOut()) {
 		await sleep(pollingFrequencyMs);
 	}
-    return fn();
+	return fn();
 }

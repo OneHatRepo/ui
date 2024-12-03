@@ -1,6 +1,6 @@
 import {
-	Modal,
-} from '@gluestack-ui/themed';
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+} from '../../Gluestack';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../Constants/Editor.js';
@@ -70,13 +70,18 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 							isOpen={true}
 							onClose={() => secondarySetIsEditorShown(false)}
 						>
-							<SecondaryEditor
-								editorType={EDITOR_TYPE__WINDOWED}
-								{...propsToPass}
-								{...secondaryEditorProps}
-								parent={self}
-								reference="secondaryEditor"
-							/>
+							<ModalBackdrop />
+							<ModalContent>
+								<ModalBody>
+									<SecondaryEditor
+										editorType={EDITOR_TYPE__WINDOWED}
+										{...propsToPass}
+										{...secondaryEditorProps}
+										parent={self}
+										reference="secondaryEditor"
+									/>
+								</ModalBody>
+							</ModalContent>
 						</Modal>}
 				</>;
 	}, isTree));

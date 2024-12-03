@@ -1,6 +1,6 @@
 import {
 	Text,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import Panel from './Panel.js';
 import Form, { FormEditor } from '../Form/Form.js';
 import withData from '../Hoc/withData.js';
@@ -14,9 +14,13 @@ export function FormPanel(props) {
 			_form = {},
 		} = props,
 		WhichForm = isEditor ? FormEditor : Form;
+
+	let formClassName = _form.className || '';
+	formClassName += ' px-3 pt-6';
+
 	return <Panel isCollapsible={false} {...props} {..._panel}>
-				{instructions && <Text px={5} pt={3} fontStyle="italic">{instructions}</Text>}
-				<WhichForm px={3} pt={6} {...props} {..._form}/>
+				{instructions && <Text className="px-5 pt-3 italic-italic">{instructions}</Text>}
+				<WhichForm {...props} {..._form} className={formClassName} />
 			</Panel>;
 }
 

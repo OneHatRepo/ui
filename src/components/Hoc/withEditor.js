@@ -1,8 +1,4 @@
-import { useEffect, useState, useRef, } from 'react';
-import {
-	Button,
-	ButtonText,
-} from '@gluestack-ui/themed';
+import { forwardRef, useEffect, useState, useRef, } from 'react';
 import {
 	ADD,
 	EDIT,
@@ -17,14 +13,15 @@ import {
 	EDITOR_TYPE__SIDE,
 	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
+import Button from '../Buttons/Button.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 export default function withEditor(WrappedComponent, isTree = false) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithEditor) {
-			return <WrappedComponent {...props} isTree={isTree} />;
+			return <WrappedComponent {...props} ref={ref} isTree={isTree} />;
 		}
 
 		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
@@ -267,12 +264,18 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
-							<Button colorScheme="danger" onPress={() => doMoveChildren(cb)} key="moveBtn">
-								<ButtonText>Move Children</ButtonText>
-							</Button>,
-							<Button colorScheme="danger" onPress={() => doDeleteChildren(cb)} key="deleteBtn">
-								<ButtonText>Delete Children</ButtonText>
-							</Button>
+							<Button
+								key="moveBtn"
+								colorScheme="danger"
+								onPress={() => doMoveChildren(cb)}
+								text="Move Children"
+							/>,
+							<Button
+								key="deleteBtn"
+								colorScheme="danger"
+								onPress={() => doDeleteChildren(cb)}
+								text="Delete Children"
+							/>
 						],
 						includeCancel: true,
 					});
@@ -599,6 +602,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					disableWithEditor={false}
 					currentRecord={currentRecord}
 					setCurrentRecord={setCurrentRecord}
@@ -632,5 +636,5 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setSelection={setSelectionDecorated}
 					isTree={isTree}
 				/>;
-	};
+	});
 }

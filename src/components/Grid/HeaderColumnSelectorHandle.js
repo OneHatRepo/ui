@@ -1,7 +1,7 @@
 import {
 	Icon,
 	Pressable,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import Gear from '../Icons/Gear.js';
 import _ from 'lodash';
 
@@ -10,16 +10,22 @@ export default function HeaderColumnSelectorHandle(props) {
 			showColumnsSelector,
 		} = props;
 	return <Pressable
-				testID="HeaderColumnSelectorHandle"
-				bg="trueGray.100"
-				_hover={{ bg: 'trueGray.200' }}
-				_pressed={{ bg: 'trueGray.300' }}
-				h="100%"
-				w={3}
-				alignItems="center"
-				justifyContent="center"
+				_hover={{ bg: 'grey-200' }}
+				_pressed={{ bg: 'grey-300' }}
 				onPress={showColumnsSelector}
+				className={`
+					HeaderColumnSelectorHandle
+					bg-grey-100
+					h-full
+					w-3
+					items-center
+					justify-center
+				`}
 			>
-				<Icon as={Gear} testID="handle" size="xs" w="100%" h="100%" color="#ccc" />
+				<Icon
+					as={Gear}
+					size="xs"
+					className="handle w-full h-full text-[#ccc]"
+				/>
 			</Pressable>;
 }

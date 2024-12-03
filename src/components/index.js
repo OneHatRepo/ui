@@ -1,7 +1,7 @@
 import {
-	HStack,
-	VStack,
-} from '@gluestack-ui/themed';
+	HStackNative,
+	VStackNative,
+} from './Gluestack';
 import AddressBook from './Icons/AddressBook.js';
 import Alt from './Icons/Alt.js';
 import AngleLeft from './Icons/AngleLeft.js';
@@ -58,6 +58,7 @@ import Comments from './Icons/Comments.js';
 import CommentsRegular from './Icons/CommentsRegular.js';
 import Copyright from './Icons/Copyright.js';
 import Dot from './Icons/Dot.js';
+import Download from './Icons/Download.js';
 import Duplicate from './Icons/Duplicate.js';
 import Edit from './Icons/Edit.js';
 import EllipsisHorizontal from './Icons/EllipsisHorizontal.js';
@@ -69,7 +70,7 @@ import Exclamation from './Icons/Exclamation.js';
 import Expand from './Icons/Expand.js';
 import Eye from './Icons/Eye.js';
 import EyeSlash from './Icons/EyeSlash.js';
-import File from './Icons/File.js';
+import FileIcon from './Icons/File.js'; // note name change, since we have a File component
 import FloppyDiskRegular from './Icons/FloppyDiskRegular.js';
 import Folder from './Icons/Folder.js';
 import FolderClosed from './Icons/FolderClosed.js';
@@ -175,6 +176,7 @@ import TrashCan from './Icons/TrashCan.js';
 import TriangleExclamation from './Icons/TriangleExclamation.js';
 import Truck from './Icons/Truck.js';
 import TruckFast from './Icons/TruckFast.js';
+import Upload from './Icons/Upload.js';
 import UploadDownload from './Icons/UploadDownload.js';
 import User from './Icons/User.js';
 import UserGroup from './Icons/UserGroup.js';
@@ -238,8 +240,8 @@ import YearsCombo from './Form/Field/Combo/YearsCombo.js';
 import _ from 'lodash';
 
 const components = {
-	Column: VStack,
-	Row: HStack,
+	Column: VStackNative,
+	Row: HStackNative,
 	AddressBook,
 	Alt,
 	AngleLeft,
@@ -296,6 +298,7 @@ const components = {
 	CommentsRegular,
 	Copyright,
 	Dot,
+	Download,
 	Duplicate,
 	Edit,
 	EllipsisHorizontal,
@@ -307,7 +310,7 @@ const components = {
 	Expand,
 	Eye,
 	EyeSlash,
-	File,
+	FileIcon,
 	FloppyDiskRegular,
 	Folder,
 	FolderClosed,
@@ -413,6 +416,7 @@ const components = {
 	TriangleExclamation,
 	Truck,
 	TruckFast,
+	Upload,
 	UploadDownload,
 	User,
 	UserGroup,

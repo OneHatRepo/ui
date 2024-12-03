@@ -1,7 +1,7 @@
 import {
-	VStack,
 	Icon,
-} from '@gluestack-ui/themed';
+	VStack,
+} from '../Gluestack';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripVertical from '../Icons/GripVertical.js';
@@ -12,15 +12,21 @@ function HeaderReorderHandle(props) {
 		} = props;
 
 	return <VStack
-				testID="HeaderReorderHandle"
-				bg={isDragging ? 'trueGray.300' : 'trueGray.100'}
-				h="100%"
-				w={3}
-				alignItems="center"
-				justifyContent="center"
 				style={styles.ewResize}
+				className={`
+					HeaderReorderHandle
+					h-full
+					w-3
+					items-center
+					justify-center
+					${isDragging ? 'bg-grey-300' : 'bg-grey-100'}
+				`}
 			>
-				<Icon as={GripVertical} testID="handle" size="xs" w="100%" h="100%" color="#ccc" />
+				<Icon
+					as={GripVertical}
+					size="xs"
+					className="reorderHandle w-full h-full text-grey-300"
+				/>
 			</VStack>;
 }
 

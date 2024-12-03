@@ -2,6 +2,7 @@ import {
 	EDITOR_MODE__VIEW,
 } from '../../Constants/Editor.js';
 import withComponent from '../Hoc/withComponent.js';
+import withPdfButtons from '../Hoc/withPdfButtons.js';
 import Form from '../Form/Form.js';
 import Viewer from '../Viewer/Viewer.js';
 import _ from 'lodash';
@@ -39,7 +40,7 @@ function Editor(props) {
 	if (canRecordBeEdited && !canRecordBeEdited(selection)) {
 		canEdit = false;
 	}
-
+	
 	// Repository?.isRemotePhantomMode && selection.length === 1 && 
 	if (editorMode === EDITOR_MODE__VIEW || isEditorViewOnly || !canEdit) {
 		const record = selection[0];
@@ -71,4 +72,4 @@ function Editor(props) {
 			/>;
 }
 
-export default withComponent(Editor);
+export default withComponent(withPdfButtons(Editor));

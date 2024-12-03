@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useRef, isValidElement, } from 'react';
+import { useEffect, useState, useRef, isValidElement, } from 'react';
 import {
 	Box,
-	ButtonText,
-	VStack,
 	HStack,
 	Icon,
 	ScrollView,
 	Text,
-} from '@gluestack-ui/themed';
+	VStack,
+	VStackNative,
+} from '../Gluestack';
 import {
 	VIEW,
 } from '../../Constants/Commands.js';
@@ -21,6 +21,10 @@ import {
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 } from '../../Constants/Editor.js';
+import {
+	hasWidth,
+	hasFlex,
+} from '../../Functions/tailwindFunctions.js';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -29,7 +33,6 @@ import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import withEditor from '../Hoc/withEditor.js';
-import withPdfButtons from '../Hoc/withPdfButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
@@ -44,10 +47,6 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
-
-const
-	ONE_COLUMN_THRESHOLD = 900, // only allow one column in form
-	STACK_ROW_THRESHOLD = 500; // stack field-row elements
 
 // TODO: memoize field Components
 
@@ -95,14 +94,12 @@ function Form(props) {
 			useAdditionalEditButtons = true,
 			additionalFooterButtons,
 			disableFooter = false,
+			hideResetButton = false,
 			
 			// sizing of outer container
-			h,
 			maxHeight,
 			minHeight = 0,
-			w,
 			maxWidth,
-			flex,
 			onLayout, // onLayout handler for main view
 
 			// withComponent
@@ -131,10 +128,12 @@ function Form(props) {
 
 			// withAlert
 			alert,
+			
 		} = props,
 		formRef = useRef(),
 		styles = UiGlobals.styles,
 		record = props.record?.length === 1 ? props.record[0] : props.record;
+
 	let skipAll = false;
 	if (record?.isDestroyed) {
 		skipAll = true; // if record is destroyed, skip render, but allow hooks to still be called
@@ -190,14 +189,16 @@ function Form(props) {
 			// Build the fields that match the current columnsConfig in the grid
 			const
 				elements = [],
-				columnProps = { // props applied to every column
-					justifyContent: 'center',
-					alignItems: 'center',
-					borderRightWidth: 1,
-					borderRightColor: 'trueGray.200',
-					px: 1,
-					minWidth: styles.INLINE_EDITOR_MIN_WIDTH,
-				};
+				columnClassName = `
+					Form-column
+					justify-center
+					items-center
+					h-[60px]
+					border-r-1
+					border-r-grey-200
+					px-1
+					${styles.INLINE_EDITOR_MIN_WIDTH}
+				`;
 			_.each(columnsConfig, (config, ix) => {
 				let {
 						fieldName,
@@ -212,7 +213,7 @@ function Form(props) {
 						getDynamicProps,
 						getIsRequired,
 						isHidden = false,
-						...propsToPass
+						...configPropsToPass
 					} = config,
 					type,
 					editorTypeProps = {},
@@ -274,7 +275,7 @@ function Form(props) {
 				}
 				if (isCombo) {
 					// editorTypeProps.showEyeButton = true;
-					if (_.isNil(propsToPass.showXButton)) {
+					if (_.isNil(configPropsToPass.showXButton)) {
 						editorTypeProps.showXButton = true;
 					}
 				}
@@ -296,15 +297,41 @@ function Form(props) {
 						}
 					}
 
+					let elementClassName = '';
+					const
+						boxFlex = configPropsToPass.flex,
+						boxW = configPropsToPass.w;
+					delete configPropsToPass.w;
+					delete configPropsToPass.flex;
+					const configPropsToPassClassName = configPropsToPass.className;
+					if (configPropsToPassClassName) {
+						elementClassName += ' ' + configPropsToPassClassName;
+					}
+					const viewerTypeClassName = viewerTypeProps.className;
+					if (viewerTypeClassName) {
+						elementClassName += ' ' + viewerTypeClassName;
+					}
 					let element = <Element
 										{...testProps('field-' + fieldName)}
 										value={value}
 										parent={self}
 										reference={fieldName}
-										{...propsToPass}
+										{...configPropsToPass}
 										{...viewerTypeProps}
+										className={elementClassName}
 									/>;
-					elements.push(<Box key={ix} w={w} flex={flex} {...columnProps}>{element}</Box>);
+					const style = {};
+					if (boxFlex) {
+						style.flex = boxFlex;
+					}
+					if (boxW) {
+						style.width = boxW;
+					}
+					elements.push(<Box
+										key={ix}
+										className={columnClassName}
+										style={style}
+									>{element}</Box>);
 					return;
 				}
 
@@ -339,8 +366,8 @@ function Form(props) {
 										if (useSelectorId) { // This causes the whole form to use selectorId
 											editorTypeProps.selectorId = selectorId;
 										}
-										if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
-											if (_.isNil(propsToPass.selectorSelected)) {
+										if (configPropsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
+											if (_.isNil(configPropsToPass.selectorSelected)) {
 												editorTypeProps.selectorSelected = record;
 											}
 										}
@@ -349,37 +376,71 @@ function Form(props) {
 											dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 										}
 
+										let elementClassName = 'flex-1';
 										if (type.match(/Tag/)) {
-											editorTypeProps.overflow = 'auto';
+											elementClassName += ' overflow-auto';
 										}
 										if (!type.match(/Toggle/)) {
-											editorTypeProps.h = '40px';
+											elementClassName += ' h-full';
+										}
+										const configPropsToPassClassName = configPropsToPass.className;
+										if (configPropsToPassClassName) {
+											elementClassName += ' ' + configPropsToPassClassName;
+										}
+										const editorTypeClassName = editorTypeProps.className;
+										if (editorTypeClassName) {
+											elementClassName += ' ' + editorTypeClassName;
+										}
+										const dynamicClassName = dynamicProps.className;
+										if (dynamicClassName) {
+											elementClassName += ' ' + dynamicClassName;
 										}
 
 										let element = <Element
-															{...testProps('field-' + name)}
-															name={name}
-															value={value}
-															onChangeValue={(newValue) => {
-																if (newValue === undefined) {
-																	newValue = null; // React Hook Form doesn't respond well when setting value to undefined
-																}
-																onChange(newValue);
-																if (onEditorChange) {
-																	onEditorChange(newValue, formSetValue, formGetValues, formState, trigger);
-																}
-															}}
-															onBlur={onBlur}
-															flex={1}
-															parent={self}
-															reference={name}
-															{...propsToPass}
-															{...editorTypeProps}
-															{...dynamicProps}
-														/>;
+														{...testProps('field-' + name)}
+														name={name}
+														value={value}
+														onChangeValue={(newValue) => {
+															if (newValue === undefined) {
+																newValue = null; // React Hook Form doesn't respond well when setting value to undefined
+															}
+															onChange(newValue);
+															if (onEditorChange) {
+																onEditorChange(newValue, formSetValue, formGetValues, formState, trigger);
+															}
+														}}
+														onBlur={onBlur}
+														minimizeForRow={true}
+														parent={self}
+														reference={name}
+														{...configPropsToPass}
+														{...editorTypeProps}
+														{...dynamicProps}
+														className={elementClassName}
+													/>;
 
-										const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
-										return <HStack key={ix} bg={error ? '#fdd' : '#fff'} w={w} flex={flex} {...columnProps}>{dirtyIcon}{element}</HStack>;
+										const dirtyIcon = isDirty && !disableDirtyIcon ? 
+															<Icon
+																as={Pencil}
+																size="2xs"
+																className={`
+																	absolute
+																	top-[2px]
+																	left-[2px]
+																	text-grey-300
+																`}
+															/> : null;
+										return <HStack
+													key={ix}
+													className={`
+														flex-${flex}
+														${error ? "bg-[#fdd]" : "bg-white"}
+														${columnClassName}
+													`}
+													style={{ 
+														width: w,
+													}}
+												>{dirtyIcon}{element}</HStack>;
 									}}
 								/>);
 			
@@ -393,7 +454,7 @@ function Form(props) {
 			if (!item) {
 				return null;
 			}
-			if (React.isValidElement(item)) {
+			if (isValidElement(item)) {
 				return item;
 			}
 			let {
@@ -409,16 +470,18 @@ function Form(props) {
 					isHidden = false,
 					getDynamicProps,
 					getIsRequired,
-					...propsToPass
+					...itemPropsToPass
 				} = item,
 				editorTypeProps = {},
 				viewerTypeProps = {};
-
 			if (isHidden) {
 				return null;
 			}
 			if (type === 'DisplayField') {
 				isEditable = false;
+			}
+			if (!itemPropsToPass.className) {
+				itemPropsToPass.className = '';
 			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!useAdditionalEditButtons) {
@@ -462,42 +525,78 @@ function Form(props) {
 			}
 			if (isCombo) {
 				// editorTypeProps.showEyeButton = true;
-				if (_.isNil(propsToPass.showXButton)) {
+				if (_.isNil(itemPropsToPass.showXButton)) {
 					editorTypeProps.showXButton = true;
 				}
 			}
 			const Element = getComponentFromType(type);
 			
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
-				let children;
 				if (_.isEmpty(items)) {
 					return null;
 				}
+				let children;
+				const style = {};
 				if (type === 'Column') {
-					if (containerWidth < ONE_COLUMN_THRESHOLD) {
-						// everything is in one column
-						if (propsToPass.hasOwnProperty('flex')) {
-							delete propsToPass.flex;
+					const isEverythingInOneColumn = containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD;
+					if (itemPropsToPass.hasOwnProperty('flex')) {
+						if (!isEverythingInOneColumn) {
+							style.flex = itemPropsToPass.flex;
 						}
-						if (propsToPass.hasOwnProperty('width')) {
-							delete propsToPass.width;
-						}
-						if (propsToPass.hasOwnProperty('w')) {
-							delete propsToPass.w;
-						}
-						propsToPass.w = '100%';
-						propsToPass.mb = 1;
+						delete itemPropsToPass.flex;
 					}
-					propsToPass.pl = 3;
+					if (itemPropsToPass.hasOwnProperty('w')) {
+						if (!isEverythingInOneColumn) {
+							style.width = itemPropsToPass.w;
+						}
+						delete itemPropsToPass.w;
+					}
+					if (!style.flex && !style.width) {
+						style.flex = 1;
+					}
+					itemPropsToPass.className += ' Column';
 				}
 				if (type === 'Row') {
-					propsToPass.w = '100%';
+					itemPropsToPass.className += ' Row w-full';
 				}
 				const itemDefaults = item.defaults || {};
 				children = _.map(items, (item, ix) => {
 					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
-				return <Element key={ix} title={title} {...defaults} {...itemDefaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
+
+				let elementClassName = '';
+				const defaultsClassName = defaults.className;
+				if (defaultsClassName) {
+					elementClassName += ' ' + defaultsClassName;
+				}
+				const itemDefaultsClassName = itemDefaults.className;
+				if (itemDefaultsClassName) {
+					elementClassName += ' ' + itemDefaultsClassName;
+				}
+				const itemPropsToPassClassName = itemPropsToPass.className;
+				if (itemPropsToPassClassName) {
+					elementClassName += ' ' + itemPropsToPassClassName;
+				}
+				const editorTypeClassName = editorTypeProps.className;
+				if (editorTypeClassName) {
+					elementClassName += ' ' + editorTypeClassName;
+				}
+				let defaultsToPass = {},
+					itemDefaultsToPass = {};
+				if (type === 'FieldSet') { // don't pass for Row and Column, as they use regular <div>s for web
+					defaultsToPass = defaults;
+					itemDefaultsToPass = itemDefaults;
+				}
+				return <Element
+							key={ix}
+							title={title}
+							{...defaultsToPass}
+							{...itemDefaultsToPass}
+							{...itemPropsToPass}
+							{...editorTypeProps}
+							className={elementClassName}
+							style={style}
+						>{children}</Element>;
 			}
 
 			if (!label && Repository && propertyDef?.title) {
@@ -505,15 +604,26 @@ function Form(props) {
 			}
 
 			if (isEditorViewOnly || !isEditable) {
-				let value = null;
-				if (record?.properties && record.properties[name]) {
-					value = record.properties[name].displayValue;
-				}
+				let value = record?.properties[name]?.displayValue || null;
 				if (_.isNil(value) && record && record[name]) {
 					value = record[name];
 				}
 				if (_.isNil(value) && startingValues && startingValues[name]) {
 					value = startingValues[name];
+				}
+
+				let elementClassName = 'field-' + name;
+				const defaultsClassName = defaults.className;
+				if (defaultsClassName) {
+					elementClassName += ' ' + defaultsClassName;
+				}
+				const itemPropsToPassClassName = itemPropsToPass.className;
+				if (itemPropsToPassClassName) {
+					elementClassName += ' ' + itemPropsToPassClassName;
+				}
+				const viewerTypeClassName = viewerTypeProps.className;
+				if (viewerTypeClassName) {
+					elementClassName += ' ' + viewerTypeClassName;
 				}
 		
 				let element = <Element
@@ -521,23 +631,32 @@ function Form(props) {
 									value={value}
 									parent={self}
 									reference={name}
-									{...propsToPass}
+									{...itemPropsToPass}
 									{...viewerTypeProps}
+									className={elementClassName}
 								/>;
 				if (!disableLabels && label) {
-					const labelProps = {};
+					const style = {};
 					if (defaults?.labelWidth) {
-						labelProps.w = defaults.labelWidth;
+						style.width = defaults.labelWidth;
 					}
-					if (containerWidth > STACK_ROW_THRESHOLD) {
-						element = <><Label {...labelProps}>{label}</Label>{element}</>;
+					if (!style.width) {
+						style.width = '50px';
+					}
+					if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
+						element = <HStack className="HStackA py-1">
+										<Label style={style}>{label}</Label>
+										{element}
+									</HStack>;
 					} else {
-						element = <VStack><Label {...labelProps}>{label}</Label>{element}</VStack>;
+						element = <VStack className="HStackA w-full py-1 mt-3">
+										<Label style={style}>{label}</Label>
+										{element}
+									</VStack>;
 					}
 				}
-				return <HStack key={ix} px={2} pb={1}>{element}</HStack>;
+				return <HStack key={ix} className="HStackB px-2 pb-1">{element}</HStack>;
 			}
-
 
 		
 			// // These rules are for fields *outside* the model
@@ -591,8 +710,8 @@ function Form(props) {
 							if (useSelectorId) { // This causes the whole form to use selectorId
 								editorTypeProps.selectorId = selectorId;
 							}
-							if (propsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
-								if (_.isNil(propsToPass.selectorSelected)) {
+							if (itemPropsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
+								if (_.isNil(itemPropsToPass.selectorSelected)) {
 									editorTypeProps.selectorSelected = record;
 								}
 							}
@@ -600,6 +719,25 @@ function Form(props) {
 							if (getDynamicProps) {
 								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 							}
+
+							let elementClassName = 'field-' + name + ' flex-1 Form-Element';
+							const defaultsClassName = defaults.className;
+							if (defaultsClassName) {
+								elementClassName += ' ' + defaultsClassName;
+							}
+							const itemPropsToPassClassName = itemPropsToPass.className;
+							if (itemPropsToPassClassName) {
+								elementClassName += ' ' + itemPropsToPassClassName;
+							}
+							const editorTypeClassName = editorTypeProps.className;
+							if (editorTypeClassName) {
+								elementClassName += ' ' + editorTypeClassName;
+							}
+							const dynamicClassName = dynamicProps.className;
+							if (dynamicClassName) {
+								elementClassName += ' ' + dynamicClassName;
+							}
+
 							let element = <Element
 												{...testProps('field-' + name)}
 												name={name}
@@ -614,13 +752,13 @@ function Form(props) {
 													}
 												}}
 												onBlur={onBlur}
-												flex={1}
 												parent={self}
 												reference={name}
 												{...defaults}
-												{...propsToPass}
+												{...itemPropsToPass}
 												{...editorTypeProps}
 												{...dynamicProps}
+												className={elementClassName}
 											/>;
 							let message = null;
 							if (error) {
@@ -630,24 +768,24 @@ function Form(props) {
 								}
 							}
 							if (message) {
-								message = <Text color="#f00">{message}</Text>;
+								message = <Text className="text-[#f00]">{message}</Text>;
 							}
-							element = <VStack pt={1} flex={1}>
-										{element}
-										{message}
-									</VStack>;
+							element = <VStack className="Form-messageContainer pt-1 flex-1">
+											{element}
+											{message}
+										</VStack>;
 
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
-								if (containerWidth > STACK_ROW_THRESHOLD) {
-									element = <HStack flex={1} flexWrap="wrap">
+								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
+									element = <HStack className="Form-additionalEditButtons flex-1 flex-wrap">
 													{element}
 													{buttons}
 												</HStack>;
 								} else {
-									element = <VStack flex={1} w="100%">
+									element = <VStack className="Form-additionalEditButtons flex-1 w-full">
 												{element}
-												<HStack flex={1} w="100%" mt={2} flexWrap="wrap">
+												<HStack className="Form-additionalEditButtons-VStack flex-1 w-full mt-1 flex-wrap">
 													{buttons}
 												</HStack>
 											</VStack>;
@@ -669,34 +807,59 @@ function Form(props) {
 									isRequired = true;
 								}
 								if (isRequired) {
-									requiredIndicator = <Text color="#f00" fontSize="30px" pr={1}>*</Text>;
+									requiredIndicator = <Text className="text-[#f00] text-[30px] pr-1">*</Text>;
 								}
 							}
 							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
-								const labelProps = {};
+								const style = {};
 								if (defaults?.labelWidth) {
-									labelProps.w = defaults.labelWidth;
+									style.width = defaults.labelWidth;
 								}
-								if (containerWidth > STACK_ROW_THRESHOLD) {
-									element = <HStack w="100%" py={1}>
-													<Label {...labelProps}>{requiredIndicator}{label}</Label>
+								if (!style.width) {
+									style.width = '50px';
+								}
+								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
+									element = <HStack className="HStack3 flex-1 py-1">
+								 					<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
-												</HStack>;
+								 				</HStack>;
 								} else {
-									element = <VStack w="100%" py={1} mt={3}>
-													<Label {...labelProps}>{requiredIndicator}{label}</Label>
+									element = <VStack className="VStack3 flex-1 py-1 mt-3">
+													<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
 												</VStack>;
 								}
 							} else if (disableLabels && requiredIndicator) {
-								element = <HStack w="100%" py={1}>
+								element = <HStack className="HStack3 flex-1 py-1">
 												{requiredIndicator}
 												{element}
 											</HStack>;
 							}
 
-							const dirtyIcon = isDirty && !disableDirtyIcon ? <Icon as={Pencil} size="2xs" color="trueGray.300" position="absolute" top="2px" left="2px" /> : null;
-							return <HStack key={ix} px={2} pb={1} bg={error ? '#fdd' : null}>{dirtyIcon}{element}</HStack>;
+							const dirtyIcon = isDirty && !disableDirtyIcon ? 
+												<Icon
+													as={Pencil}
+													size="2xs"
+													className={`
+														absolute
+														top-[2px]
+														left-[2px]
+														text-grey-300
+													`}
+												/> : null;
+							return <HStack
+										key={ix}
+										className={`
+											HStack4
+											flex-none
+											px-2
+											pb-1
+											${error ? 'bg-[#fdd]' : ''}
+										`}
+									>
+										{dirtyIcon}
+										{element}
+									</HStack>;
 						}}
 					/>;
 		},
@@ -709,41 +872,55 @@ function Form(props) {
 						title = null,
 						description = null,
 						selectorId,
-						...propsToPass
+						...itemPropsToPass
 					} = item;
 					if (isMultiple && type !== 'Attachments') {
 						return;
 					}
-					if (!propsToPass.h) {
-						propsToPass.h = 400;
+					if (type.match(/Grid/) && !itemPropsToPass.h) {
+						itemPropsToPass.h = 400;
 					}
+
 					const
 						Element = getComponentFromType(type),
 						element = <Element
 										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
-										flex={1}
 										uniqueRepository={true}
 										parent={self}
-										{...propsToPass}
+										{...itemPropsToPass}
 									/>;
 					if (title) {
 						if (record?.displayValue) {
 							title += ' for ' + record.displayValue;
 						}
 						title = <Text
-									fontSize={styles.FORM_ANCILLARY_TITLE_FONTSIZE}
-									fontWeight="bold"
+									className={`
+										font-bold
+										${styles.FORM_ANCILLARY_TITLE_FONTSIZE}
+									`}
 								>{title}</Text>;
 					}
 					if (description) {
 						description = <Text
-									fontSize={styles.FORM_ANCILLARY_DESCRIPTION_FONTSIZE}
-									fontStyle="italic"
-								>{description}</Text>;
+										className={`
+											italic
+											${styles.FORM_ANCILLARY_DESCRIPTION_FONTSIZE}
+										`}
+									>{description}</Text>;
 					}
-					components.push(<VStack key={'ancillary-' + ix} mx={2} my={5}>{title}{description}{element}</VStack>);
+					components.push(<VStack
+										key={'ancillary-' + ix}
+										className={`
+											mx-1
+											my-3
+										`}
+									>
+										{title}
+										{description}
+										{element}
+									</VStack>);
 				});
 			}
 			return components;
@@ -842,7 +1019,7 @@ function Form(props) {
 	// }
 
 	if (!_.isNil(editorStateRef)) {
-		editorStateRef.current = formState; // Update state so HOC can know what's going on
+		editorStateRef.current = formState; // Update state so withEditor can know what's going on
 	}
 
 	if (self) {
@@ -854,66 +1031,51 @@ function Form(props) {
 		self.formGetValues = formGetValues;
 	}
 	
-	const sizeProps = {};
-	if (!flex && !h && !w) {
-		sizeProps.flex = 1;
-	} else {
-		if (h) {
-			sizeProps.h = h;
-		}
-		if (w) {
-			sizeProps.w = w;
-		}
-		if (flex) {
-			sizeProps.flex = flex;
-		}
+	const style = props.style || {};
+	if (!hasWidth(props) && !hasFlex(props)) {
+		style.flex = 1;
 	}
 	if (maxWidth) {
-		sizeProps.maxWidth = maxWidth;
+		style.maxWidth = maxWidth;
 	}
 	if (maxHeight) {
-		sizeProps.maxHeight = maxHeight;
+		style.maxHeight = maxHeight;
 	}
 
 	const formButtons = [];
 	let modeHeader = null,
+		footer = null,
+		footerButtons = null,
 		formComponents,
 		editor,
 		additionalButtons,
 		isSaveDisabled = false,
 		isSubmitDisabled = false,
-		savingProps = {},
-
 		showDeleteBtn = false,
 		showResetBtn = false,
 		showCloseBtn = false,
 		showCancelBtn = false,
 		showSaveBtn = false,
 		showSubmitBtn = false;
-
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
-		
-		if (isSaving) {
-			savingProps.borderTopWidth = 2;
-			savingProps.borderTopColor = '#f00';
-		}
 
+		// create editor
 		if (editorType === EDITOR_TYPE__INLINE) {
 			editor = buildFromColumnsConfig();
 		// } else if (editorType === EDITOR_TYPE__PLAIN) {
 		// 	formComponents = buildFromItems();
 		// 	const formAncillaryComponents = buildAncillary();
 		// 	editor = <>
-		// 				<VStack p={4}>{formComponents}</VStack>
-		// 				<VStack pt={4}>{formAncillaryComponents}</VStack>
+		// 				<VStack className="p-4">{formComponents}</VStack>
+		// 				<VStack className="pt-4">{formAncillaryComponents}</VStack>
 		// 			</>;
 		} else {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
 			editor = <>
-						{containerWidth >= ONE_COLUMN_THRESHOLD ? <HStack p={4} pl={0}>{formComponents}</HStack> : null}
-						{containerWidth < ONE_COLUMN_THRESHOLD ? <VStack p={4}>{formComponents}</VStack> : null}
-						<VStack m={2} pt={4} px={2}>{formAncillaryComponents}</VStack>
+						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD ? <HStack className="Form-formComponents-HStack p-4 gap-4 justify-center">{formComponents}</HStack> : null}
+						{containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD ? <VStack className="Form-formComponents-VStack p-4">{formComponents}</VStack> : null}
+						<VStack className="Form-AncillaryComponents m-2 pt-4 px-2">{formAncillaryComponents}</VStack>
 					</>;
 
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
@@ -922,39 +1084,49 @@ function Form(props) {
 				isSingle && editorMode === EDITOR_MODE__EDIT && 
 				(onBack || (onViewMode && !disableView))) {
 				modeHeader = <Toolbar>
-								<HStack flex={1} alignItems="center">
+								<HStack className="flex-1 items-center">
 									{onBack &&
 										<Button
 											{...testProps('backBtn')}
 											key="backBtn"
 											onPress={onBack}
-											leftIcon={<Icon as={AngleLeft} color="#fff" size="sm" />}	
-											color="#fff"
-											mr={4}
-										>
-											<ButtonText>Back</ButtonText>
-										</Button>}
-									<Text fontSize={20} ml={2} color="trueGray.500">Edit Mode</Text>
+											icon={AngleLeft}
+											_icon={{
+												size: 'sm',
+												className: 'text-white',
+											}}
+											className={`
+												mr-4
+											`}
+											text="Back"
+										/>}
+									<Text className="text-[20px] ml-1 text-grey-500">Edit Mode</Text>
 								</HStack>
 								{onViewMode && !disableView && (!canUser || canUser(VIEW)) &&
 									<Button
 										{...testProps('toViewBtn')}
 										key="viewBtn"
 										onPress={onViewMode}
-										leftIcon={<Icon as={Eye} color="#fff" size="sm" />}	
-										color="#fff"
-									>
-										<ButtonText>To View</ButtonText>
-									</Button>}
+										icon={Eye}
+										_icon={{
+											size: 'sm',
+											className: 'text-white',
+										}}
+										text="To View"
+										tooltip="Switch to View Mode"
+									/>}
 							</Toolbar>;
 			}
 			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
-				formButtons.push(<Toolbar key="additionalButtonsToolbar" justifyContent="flex-end" flexWrap="wrap">
+				formButtons.push(<Toolbar key="additionalButtonsToolbar" className="justify-end flex-wrap">
 									{additionalButtons}
 								</Toolbar>)
 			}
 		}
 
+
+
+		// create footer
 		if (!formState.isValid) {
 			isSaveDisabled = true;
 			isSubmitDisabled = true;
@@ -962,25 +1134,10 @@ function Form(props) {
 		if (_.isEmpty(formState.dirtyFields) && !isPhantom) {
 			isSaveDisabled = true;
 		}
-
-		if (editorType === EDITOR_TYPE__INLINE) {
-			footerProps.position = 'sticky';
-			footerProps.alignSelf = 'flex-start';
-			footerProps.justifyContent = 'center';
-			footerProps.top = '100px';
-			footerProps.left = '20px';
-			footerProps.width = '200px';
-			footerProps.bg = 'primary.100';
-			footerProps.p = 0;
-			footerProps.px = 4;
-			footerProps.py = 2;
-			footerProps.borderBottomRadius = 5;
-		}
-
 		if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
 			showDeleteBtn = true;
 		}
-		if (!isEditorViewOnly) {
+		if (!isEditorViewOnly && !hideResetButton) {
 			showResetBtn = true;
 		}
 		if (editorType !== EDITOR_TYPE__SIDE) { // side editor won't show either close or cancel buttons!
@@ -1009,117 +1166,166 @@ function Form(props) {
 		if (!!onSubmit) {
 			showSubmitBtn = true;
 		}
-	}
+		footerButtons =
+			<>
+				{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
+
+					<HStack className="flex-1 justify-start">
+						<Button
+							{...testProps('deleteBtn')}
+							key="deleteBtn"
+							onPress={onDelete}
+							className={`
+								bg-warning-500
+								hover:bg-warning-700
+								text-white
+							`}
+							text="Delete"
+						/>
+					</HStack>}
+
+				{showResetBtn && 
+					<IconButton
+						{...testProps('resetBtn')}
+						key="resetBtn"
+						onPress={() => doReset()}
+						icon={Rotate}
+						className="mr-2"
+						isDisabled={!formState.isDirty}
+					/>}
+
+				{showCancelBtn &&
+					<Button
+						{...testProps('cancelBtn')}
+						key="cancelBtn"
+						variant="outline"
+						onPress={onCancel}
+						className="text-white mr-2"
+						text="Cancel"
+					/>}
+					
+				{showCloseBtn && 
+					<Button
+						{...testProps('closeBtn')}
+						key="closeBtn"
+						variant="outline"
+						onPress={onClose}
+						className="text-white mr-2"
+						text="Close"
+					/>}
+
+				{showSaveBtn && 
+					<Button
+						{...testProps('saveBtn')}
+						key="saveBtn"
+						onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+						isDisabled={isSaveDisabled}
+						className="text-white"
+						text={editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}
+					/>}
+				
+				{showSubmitBtn && 
+					<Button
+						{...testProps('submitBtn')}
+						key="submitBtn"
+						onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
+						isDisabled={isSubmitDisabled}
+						className="text-white"
+						text={submitBtnLabel || 'Submit'}
+					/>}
+			
+				{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+					return <Button
+								{...testProps('additionalFooterBtn-' + props.key)}
+								{...props}
+								onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
+								text={props.text}
+							/>;
+				})}
+			</>;
+
+		if (editorType === EDITOR_TYPE__INLINE) {
+			footer =
+				<Box
+					className={`
+						Form-inlineFooter-container
+						relative
+						w-full
+					`}
+				>
+					<HStack
+						className={`
+							Form-inlineFooter
+							absolute
+							top-[9px]
+							left-[100px]
+							w-[100px]
+							min-w-[300px]
+							py-2
+							justify-center
+							items-center
+							rounded-b-lg
+							bg-red-500
+							${styles.GRID_INLINE_EDITOR_BG}
+						`}
+					>{footerButtons}</HStack>
+				</Box>;
+		} else {
+			if (!disableFooter) {
+				let footerClassName = '';
+				footerClassName += ' justify-end';
+				if (editorType === EDITOR_TYPE__INLINE) {
+					footerClassName += `
+						sticky
+						self-start
+						justify-center
+						bg-primary-100
+						rounded-b-lg
+					`;
+				}
+				if (isSaving) {
+					footerClassName += ' border-t-2 border-t-[#f00]'
+				}
+				footer = <Footer className={footerClassName} {...footerProps}>
+							{footerButtons}
+						</Footer>;
+			}
+		}
+
+	} // END if (containerWidth)
 	
-	return <VStack {...testProps(self)} {...sizeProps} {...containerProps} onLayout={onLayoutDecorated} ref={formRef}>
+	let className = props.className || '';
+	className += ' Form-VStackNative';
+	return <VStackNative
+				ref={formRef}
+				{...testProps(self)}
+				style={style}
+				onLayout={onLayoutDecorated}
+				className={className}
+			>
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE &&
-						<HStack
-							display="inline-block"
-							flex={1}
-							bg="#fff"
-							py={1}
-							borderTopWidth={3}
-							borderBottomWidth={5}
-							borderTopColor="primary.100"
-							borderBottomColor="primary.100"
-						>{editor}</HStack>}
+						editor}
 					{editorType !== EDITOR_TYPE__INLINE &&
-						<ScrollView _web={{ minHeight, }} width="100%" pb={1}>
+						<ScrollView
+							className={`
+								ScrollView
+								w-full
+								flex-1
+								pb-1
+								web:min-h-[${minHeight}px]
+							`}
+						>
 							{modeHeader}
 							{formHeader}
 							{formButtons}
 							{editor}
 						</ScrollView>}
-					
-					{!disableFooter && 
-						<Footer justifyContent="flex-end" {...footerProps} {...savingProps}>
-							{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
 
-								<HStack flex={1} justifyContent="flex-start">
-									<Button
-										{...testProps('deleteBtn')}
-										key="deleteBtn"
-										onPress={onDelete}
-										bg="warning"
-										_hover={{
-											bg: 'warningHover',
-										}}
-										color="#fff"
-									>
-										<ButtonText>Delete</ButtonText>
-									</Button>
-								</HStack>}
+					{footer}
 
-							{showResetBtn && 
-								<IconButton
-									{...testProps('resetBtn')}
-									key="resetBtn"
-									onPress={() => doReset()}
-									icon={Rotate}
-									_icon={{
-										color: !formState.isDirty ? 'trueGray.400' : '#000',
-									}}
-									isDisabled={!formState.isDirty}
-									mr={2}
-								/>}
-
-							{showCancelBtn &&
-								<Button
-									{...testProps('cancelBtn')}
-									key="cancelBtn"
-									variant="ghost"
-									onPress={onCancel}
-									color="#fff"
-								>
-									<ButtonText>Cancel</ButtonText>
-								</Button>}
-								
-							{showCloseBtn && 
-								<Button
-									{...testProps('closeBtn')}
-									key="closeBtn"
-									variant="ghost"
-									onPress={onClose}
-									color="#fff"
-								>
-									<ButtonText>Close</ButtonText>
-								</Button>}
-
-							{showSaveBtn && 
-								<Button
-									{...testProps('saveBtn')}
-									key="saveBtn"
-									onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
-									isDisabled={isSaveDisabled}
-									color="#fff"
-								>
-									<ButtonText>{editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}</ButtonText>
-								</Button>}
-							
-							{showSubmitBtn && 
-								<Button
-									{...testProps('submitBtn')}
-									key="submitBtn"
-									onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
-									isDisabled={isSubmitDisabled}
-									color="#fff"
-								>
-									<ButtonText>{submitBtnLabel || 'Submit'}</ButtonText>
-								</Button>}
-						
-							{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
-								return <Button
-											{...testProps('additionalFooterBtn-' + props.key)}
-											{...props}
-											onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
-										>
-											<ButtonText>{props.text}</ButtonText>
-										</Button>;
-							})}
-						</Footer>}
 				</>}
-			</VStack>;
+			</VStackNative>;
 }
 
 // helper fns
@@ -1166,6 +1372,6 @@ function getNullFieldValues(initialValues, Repository) {
 	return ret;
 }
 
-export const FormEditor = withComponent(withAlert(withEditor(withPdfButtons(Form))));
+export const FormEditor = withComponent(withAlert(withEditor(Form)));
 
-export default withComponent(withAlert(withPdfButtons(Form)));
+export default withComponent(withAlert(Form));

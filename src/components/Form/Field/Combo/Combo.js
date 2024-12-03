@@ -1,29 +1,33 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
-	Icon,
-	Modal,
-	Popover,
-	Pressable,
+	Box,
 	HStack,
+	HStackNative,
+	Icon,
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
+	Pressable,
 	Text,
+	TextNative,
 	Tooltip,
-} from '@gluestack-ui/themed';
+	VStack,
+} from '../../../Gluestack';
 import {
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../../../Constants/UiModes.js';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../../Constants/Editor.js';
+import testProps from '../../../../Functions/testProps.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
+import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
-import testProps from '../../../../Functions/testProps.js';
-import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
 import Check from '../../../Icons/Check.js';
@@ -34,6 +38,7 @@ import _ from 'lodash';
 const FILTER_NAME = 'q';
 
 export function ComboComponent(props) {
+
 	const {
 			additionalButtons,
 			autoFocus = false,
@@ -80,6 +85,7 @@ export function ComboComponent(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		inputRef = useRef(),
+		inputCloneRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
 		displayValueRef = useRef(),
@@ -96,6 +102,7 @@ export function ComboComponent(props) {
 		[textInputValue, setTextInputValue] = useState(''),
 		[newEntityDisplayValue, setNewEntityDisplayValue] = useState(null),
 		[filteredData, setFilteredData] = useState(data),
+		[inputHeight, setInputHeight] = useState(0),
 		[width, setWidth] = useState(0),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
@@ -111,21 +118,10 @@ export function ComboComponent(props) {
 				// For web, ensure it's in the proper place
 				const
 					rect = inputRef.current.getBoundingClientRect(),
-					bodyRect = document.body.getBoundingClientRect(),
-					isUpper = rect.top < bodyRect.height / 2;
-					
-				if (isUpper) {
-					// Menu is below the combo
-					const rectTop = rect.top + rect.height;
-					if (rectTop !== top) {
-						setTop(rectTop);
-					}
-				} else {
-					// Menu is above the combo
-					const rectTop = rect.top - styles.FORM_COMBO_MENU_HEIGHT;
-					if (rectTop !== top) {
-						setTop(rectTop);
-					}
+					inputRect = inputRef.current.getBoundingClientRect();
+
+				if (rect.top !== top) {
+					setTop(rect.top);
 				}
 				if (rect.left !== left) {
 					setLeft(rect.left);
@@ -139,6 +135,8 @@ export function ComboComponent(props) {
 				if (widthToSet !== width) {
 					setWidth(widthToSet);
 				}
+
+				setInputHeight(inputRect.height);
 			}
 			if (Repository && !Repository.isLoaded) {
 				// await Repository.load(); // this breaks when the menu (Grid) has selectorSelected
@@ -495,186 +493,177 @@ export function ComboComponent(props) {
 		return null;
 	}
 
-	const inputIconElement = icon ? <Icon as={icon} color="trueGray.300" size="md" ml={2} mr={3} /> : null;
+	const inputIconElement = icon ? <Icon as={icon} size="md" className="text-grey-300 ml-1 mr-2" /> : null;
 	let xButton = null,
 		eyeButton = null,
-		inputAndTrigger = null,
+		trigger = null,
+		input = null,
+		inputClone = null,
 		checkButton = null,
 		grid = null,
 		dropdownMenu = null,
 		assembledComponents = null;
 	
-	if (showXButton && !_.isNil(value)) {
+	if (showXButton) {
 		xButton = <IconButton
 						{...testProps('xBtn')}
+						icon={Xmark}
 						_icon={{
-							as: Xmark,
-							color: 'trueGray.600',
 							size: 'sm',
+							className: 'text-grey-600',
 						}}
-						isDisabled={isDisabled}
+						isDisabled={isDisabled || _.isNil(value)}
 						onPress={onXButtonPress}
-						h="100%"
-						bg={styles.FORM_COMBO_TRIGGER_BG}
-						_hover={{
-							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-						}}
-						mr={1}
+						tooltip="Clear selection"
+						className={`
+							h-full
+							mr-1
+							${styles.FORM_COMBO_TRIGGER_BG}
+							${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+						`}
 					/>;
 	}
-	if (showEyeButton && Editor && !_.isNil(value)) {
+	if (showEyeButton && Editor) {
 		eyeButton = <IconButton
 						{...testProps('eyeBtn')}
+						icon={Eye}
 						_icon={{
-							as: Eye,
-							color: 'trueGray.600',
 							size: 'sm',
+							className: 'text-grey-600',
 						}}
-						isDisabled={isDisabled}
+						isDisabled={isDisabled || _.isNil(value)}
 						onPress={onEyeButtonPress}
-						h="100%"
-						bg={styles.FORM_COMBO_TRIGGER_BG}
-						_hover={{
-							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-						}}
-						mr={1}
+						tooltip="View selected record"
+						className={`
+							h-full
+							mr-1
+							${styles.FORM_COMBO_TRIGGER_BG}
+							${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+						`}
 					/>;
 	}
+	trigger = <IconButton
+				{...testProps('trigger')}
+				ref={triggerRef}
+				icon={CaretDown}
+				_icon={{
+					size: 'sm',
+					className: 'text-grey-500',
+				}}
+				isDisabled={isDisabled}
+				onPress={onTriggerPress}
+				onBlur={onTriggerBlur}
+				className={`
+					trigger
+					h-full
+					border
+					border-l-0
+					border-gray-400
+					rounded-l-none
+					rounded-r-md
+					${styles.FORM_COMBO_TRIGGER_BG}
+					${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+				`}
+			/>;
 
 	if (UiGlobals.mode === UI_MODE_WEB) {
-		inputAndTrigger = <>
-							{disableDirectEntry ?
-								<Pressable
-									{...testProps('toggleMenuBtn')}
-									onPress={toggleMenu}
-									flex={1}
-									h="100%"
-									flexDirection="row"
-									justifyContent="center"
-									alignItems="center"
-									borderWidth={1}
-									borderColor="trueGray.400"
-									borderTopRightRadius={0}
-									borderBottomRightRadius={0}
-									bg={styles.FORM_COMBO_INPUT_BG}
-									m={0}
-									p={2}
-								>
-									{inputIconElement}
-									<Text
-										ref={inputRef}
-										flex={1}
-										h="100%"
-										numberOfLines={1}
-										ellipsizeMode="head"
-										fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-										color={_.isEmpty(textInputValue) ? 'trueGray.400' : '#000'}
-									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
-								</Pressable> :
-								<Input
-									{...testProps('input')}
-									ref={inputRef}
-									reference="ComboInput"
-									value={textInputValue}
-									autoSubmit={true}
-									isDisabled={isDisabled}
-									onChangeValue={onInputChangeText}
-									onKeyPress={onInputKeyPress}
-									onFocus={onInputFocus}
-									onBlur={onInputBlur}
-									flex={1}
-									h="100%"
-									m={0}
-									InputLeftElement={inputIconElement}
-									autoSubmitDelay={500}
-									borderTopRightRadius={0}
-									borderBottomRightRadius={0}
-									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-									bg={styles.FORM_COMBO_INPUT_BG}
-									_focus={{
-										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-									}}
-									placeholder={placeholder}
-									{..._input}
-								/>}
-							<IconButton
-								{...testProps('trigger')}
-								ref={triggerRef}
-								_icon={{
-									as: CaretDown,
-									color: 'primary.800',
-									size: 'sm',
-								}}
-								isDisabled={isDisabled}
-								onPress={onTriggerPress}
-								onBlur={onTriggerBlur}
-								h="100%"
-								borderWidth={1}
-								borderColor="#bbb"
-								borderLeftWidth={0}
-								borderLeftRadius={0}
-								borderRightRadius="md"
-								bg={styles.FORM_COMBO_TRIGGER_BG}
-								_hover={{
-									bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-								}}
-							/>
-						</>;
+		input = disableDirectEntry ?
+					<Pressable
+						{...testProps('toggleMenuBtn')}
+						onPress={toggleMenu}
+						className={`
+							toggleMenuBtn
+							h-full
+							flex-1
+							flex-row
+							justify-center
+							items-center
+							m-0
+							p-1
+							border
+							border-grey-400
+							rounded-r-none
+							${styles.FORM_COMBO_INPUT_BG}
+						`}
+					>
+						{inputIconElement}
+						<TextNative
+							ref={inputRef}
+							numberOfLines={1}
+							ellipsizeMode="head"
+							className={`
+								Text
+								h-full
+								flex-1
+								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
+								${styles.FORM_COMBO_INPUT_FONTSIZE}
+							`}
+						>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
+					</Pressable> :
+					<Input
+						{...testProps('input')}
+						ref={inputRef}
+						reference="ComboInput"
+						value={textInputValue}
+						autoSubmit={true}
+						isDisabled={isDisabled}
+						onChangeValue={onInputChangeText}
+						onKeyPress={onInputKeyPress}
+						onFocus={onInputFocus}
+						onBlur={onInputBlur}
+						InputLeftElement={inputIconElement}
+						autoSubmitDelay={500}
+						placeholder={placeholder}
+						className={`
+							ComboInput
+							grow
+							h-full
+							min-h-0
+							flex-1
+							m-0
+							rounded-tr-none
+							rounded-br-none
+							${styles.FORM_COMBO_INPUT_FONTSIZE}
+							${styles.FORM_COMBO_INPUT_BG}
+							${styles.FORM_COMBO_INPUT_BG_FOCUS}
+						`}
+						{..._input}
+					/>;
 	}
-
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+	if (UiGlobals.mode === UI_MODE_NATIVE) {
+		throw new Error('Migration to Gluestack not yet implemented on Native');
 		// This input and trigger are for show
 		// They just show the current getDisplayValue and open the menu
 		const displayValue = getDisplayValue();
-		inputAndTrigger = <>
-							<Pressable
-								{...testProps('showMenuBtn')}
-								onPress={showMenu}
-								flex={1}
-								flexDirection="row"
-								justifyContent="center"
-								alignItems="center"
-								borderWidth={1}
-								borderColor="trueGray.400"
-								borderTopRightRadius={0}
-								borderBottomRightRadius={0}
-								bg={styles.FORM_COMBO_INPUT_BG}
-								h="100%"
-							>
-								{inputIconElement}
-								<Text
-									flex={1}
-									h="100%"
-									numberOfLines={1}
-									ellipsizeMode="head"
-									m={0}
-									p={2}
-									color={_.isEmpty(displayValue) ? 'trueGray.400' : '#000'}
-									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
-							</Pressable>
-							<IconButton
-								{...testProps('trigger')}
-								ref={triggerRef}
-								_icon={{
-									as: CaretDown,
-									color: 'primary.800',
-									size: 'sm',
-								}}
-								isDisabled={isDisabled}
-								onPress={onTriggerPress}
-								h="100%"
-								borderWidth={1}
-								borderColor="#bbb"
-								borderLeftWidth={0}
-								borderLeftRadius={0}
-								borderRightRadius="md"
-								bg={styles.FORM_COMBO_TRIGGER_BG}
-								_hover={{
-									bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-								}}
-							/>
-						</>;
+		input = <Pressable
+					{...testProps('showMenuBtn')}
+					onPress={showMenu}
+					className={`
+						h-full
+						flex-1
+						flex-row
+						justify-center
+						items-center
+						border
+						border-grey-400
+						rounded-r-none
+						${styles.FORM_COMBO_INPUT_BG}
+					`}
+				>
+					{inputIconElement}
+					<TextNative
+						numberOfLines={1}
+						ellipsizeMode="head"
+						className={`
+							h-full
+							flex-1
+							m-0
+							p-1
+							${_.isEmpty(displayValue) ? "text-grey-400" : "text-black"}
+							${styles.FORM_COMBO_INPUT_FONTSIZE}
+						`}
+					>{_.isEmpty(displayValue) ? placeholder : displayValue}</TextNative>
+				</Pressable>;
 	}
 
 	if (isMenuShown) {
@@ -698,25 +687,26 @@ export function ComboComponent(props) {
 			gridProps.data = filteredData;
 		}
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
+		const gridStyle = {};
+		if (UiGlobals.mode === UI_MODE_WEB) {
+			gridStyle.height = styles.FORM_COMBO_MENU_HEIGHT;
+		}
 		grid = <WhichGrid
 					showHeaders={false}
 					showHovers={true}
-					shadow={1}
 					getRowProps={() => {
 						return {
-							borderBottomWidth: 1,
-							borderBottomColor: 'trueGray.300',
-							py: 1,
-							pl: 4,
-							pr: 2,
-							w: '100%',
+							className: `
+								w-full
+								pl-4
+								pr-2
+								py-1
+								border-b-1
+								border-grey-300
+							`,
 						};
 					}}
 					autoAdjustPageSizeToHeight={false}
-					{...gridProps}
-					reference="grid"
-					parent={self}
-					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
 					newEntityDisplayValue={newEntityDisplayValue}
 					newEntityDisplayProperty={newEntityDisplayProperty}
 					disablePresetButtons={!isEditor}
@@ -819,87 +809,133 @@ export function ComboComponent(props) {
 							onInputFocus();
 						}
 					}}
+					reference="grid"
+					parent={self}
+					className={`
+						h-full
+					`}
+					style={gridStyle}
+					{...gridProps}
 					{..._editor}
 				/>;
 		if (UiGlobals.mode === UI_MODE_WEB) {
+			if (!disableDirectEntry) {
+				inputClone = <Box
+								className="Combo-inputClone-Box"
+								style={{
+									height: inputHeight,
+								}}
+							>
+								<Input
+									{...testProps('input')}
+									ref={inputCloneRef}
+									reference="ComboInputClone"
+									value={textInputValue}
+									autoSubmit={true}
+									isDisabled={isDisabled}
+									onChangeValue={onInputChangeText}
+									onKeyPress={onInputKeyPress}
+									onFocus={onInputFocus}
+									onBlur={onInputBlur}
+									InputLeftElement={inputIconElement}
+									autoSubmitDelay={500}
+									placeholder={placeholder}
+									className={`
+										Combo-inputClone-Input
+										grow
+										h-full
+										flex-1
+										m-0
+										rounded-tr-none
+										rounded-br-none
+										${styles.FORM_COMBO_INPUT_FONTSIZE}
+										${styles.FORM_COMBO_INPUT_BG}
+										${styles.FORM_COMBO_INPUT_BG_FOCUS}
+									`}
+									{..._input}
+								/>
+							</Box>;
+			}
 			dropdownMenu = <Popover
 								isOpen={isMenuShown}
 								onClose={() => {
 									hideMenu();
 								}}
 								trigger={emptyFn}
-								trapFocus={false}
-								placement={'auto'}
-								// _fade={{
-								// 	entryDuration: 0, // Doesn't work, as Popover doesn't have animation controls like Modal does. See node_modules/native-base/src/components/composites/Popover/Popover.tsx line 99 (vs .../composites/Modal/Modal.tsx line 113 which has ..._fade) I added a feature request to NativeBase https://github.com/GeekyAnts/NativeBase/issues/5651
-								// }}
-								{...props}
+								className="dropdownMenu-Popover block"
+								initialFocusRef={inputCloneRef}
 							>
-								<Popover.Content
-									position="absolute"
-									top={top + 'px'}
-									left={left + 'px'}
-									w={width + 'px'}
-									overflow="auto"
-									bg="#fff"
+								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
+								<Box
+									ref={menuRef}
+									className={`
+										dropdownMenu-Box
+										flex-1
+										overflow-auto
+										p-0
+										rounded-none
+										border
+										border-grey-400
+										shadow-md
+										max-w-full
+									`}
+									style={{
+										top,
+										left,
+										width,
+										height: styles.FORM_COMBO_MENU_HEIGHT + inputHeight,
+										minWidth: 100,
+									}}
 								>
-									<Popover.Body
-										ref={menuRef}
-										borderWidth={1}
-										borderColor='trueGray.400'
-										borderTopWidth={0}
-										p={0}
-									>
-										{grid}
-									</Popover.Body>
-								</Popover.Content>
+									{inputClone}
+									{grid}
+								</Box>
 							</Popover>;
 		}
-		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+		if (UiGlobals.mode === UI_MODE_NATIVE) {
 			if (isEditor) {
 				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
 				checkButton = <IconButton
 								{...testProps('checkBtn')}
+								icon={Check}
 								_icon={{
-									as: Check,
-									color: 'trueGray.600',
 									size: 'sm',
+									className: 'text-grey-600',
 								}}
 								onPress={onCheckButtonPress}
 								isDisabled={!value}
-								h="100%"
-								borderWidth={1}
-								borderColor="#bbb"
-								borderRadius="md"
-								bg={styles.FORM_COMBO_TRIGGER_BG}
-								_hover={{
-									bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-								}}
+								className={`
+									h-full
+									border
+									border-grey-400
+									rounded-md
+									${styles.FORM_COMBO_TRIGGER_BG}
+									${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+								`}
 							/>;
 			}
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
-				<HStack h={10}>
+				<HStack className="h-[10px]">
 					{xButton}
 					{eyeButton}
 					{disableDirectEntry ?
-						<Text
+						<TextNative
 							ref={inputRef}
-							flex={1}
-							h="100%"
 							numberOfLines={1}
 							ellipsizeMode="head"
-							m={0}
-							p={2}
-							borderWidth={1}
-							borderColor="trueGray.400"
-							borderTopRightRadius={0}
-							borderBottomRightRadius={0}
-							fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-							bg={styles.FORM_COMBO_INPUT_BG}
-							_focus={{
-								bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-							}}
-						>{textInputValue}</Text> :
+							className={`
+								h-full
+								flex-1
+								m-0
+								p-1
+								border
+								border-grey-400
+								rounded-r-none
+								${styles.FORM_COMBO_INPUT_BG}
+								${styles.FORM_COMBO_INPUT_BG_FOCUS}
+								${styles.FORM_COMBO_INPUT_FONTSIZE}
+							`}
+						>{textInputValue}</TextNative> :
 						<Input
 							{...testProps('input')}
 							ref={inputRef}
@@ -911,40 +947,38 @@ export function ComboComponent(props) {
 							onKeyPress={onInputKeyPress}
 							onFocus={onInputFocus}
 							onBlur={onInputBlur}
-							flex={1}
-							h="100%"
-							m={0}
 							InputLeftElement={inputIconElement}
 							autoSubmitDelay={500}
-							borderTopRightRadius={0}
-							borderBottomRightRadius={0}
-							fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-							bg={styles.FORM_COMBO_INPUT_BG}
-							_focus={{
-								bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-							}}
 							placeholder={placeholder}
+							className={`
+								h-full
+								flex-1
+								m-0
+								rounded-r-none
+								${styles.FORM_COMBO_INPUT_FONTSIZE}
+								${styles.FORM_COMBO_INPUT_BG}
+								${styles.FORM_COMBO_INPUT_BG_FOCUS}
+							`}
 							{..._input}
 						/>}
 					<IconButton
 						{...testProps('hideMenuBtn')}
+						icon={CaretDown}
 						_icon={{
-							as: CaretDown,
-							color: 'primary.800',
 							size: 'sm',
+							className: 'text-primary-800',
 						}}
 						isDisabled={isDisabled}
 						onPress={() => hideMenu()}
-						h="100%"
-						borderWidth={1}
-						borderColor="#bbb"
-						borderLeftWidth={0}
-						borderLeftRadius={0}
-						borderRightRadius="md"
-						bg={styles.FORM_COMBO_TRIGGER_BG}
-						_hover={{
-							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-						}}
+						className={`
+							h-full
+							border
+							border-grey-400
+							rounded-l-none
+							rounded-r-md
+							${styles.FORM_COMBO_TRIGGER_BG}
+							${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+						`}
 					/>
 					{checkButton}
 				</HStack>;
@@ -952,46 +986,73 @@ export function ComboComponent(props) {
 								isOpen={true}
 								safeAreaTop={true}
 								onClose={() => setIsMenuShown(false)}
-								mt="auto"
-								mb="auto"
-								w="100%"
-								h={400}
-								p={5}
+								className={`
+									h-[400px]
+									w-full
+									my-auto
+									p-[5px]
+								`}
 							>
-								{inputAndTriggerClone}
-								{grid}
+								<ModalBackdrop />
+								<ModalContent>
+									<ModalBody>
+										{inputAndTriggerClone}
+										{grid}
+									</ModalBody>
+								</ModalContent>
 							</Modal>;
 		}
 	}
-
 	const refProps = {};
 	if (tooltipRef) {
 		refProps.ref = tooltipRef;
 	}
 
+	const className = `
+		Combo-HStack
+		flex-1
+		justify-center
+		items-center
+	`;
+	if (props.className) {
+		props.className += ' ' + className;
+	}
+	
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
-			<VStack testID={testID}>
-				<HStack {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%">
+			<VStack
+				testID={testID}
+				className="Combo-VStack"
+			>
+				<HStack
+					{...refProps}
+					className={className}
+				>
 					{xButton}
 					{eyeButton}
-					{inputAndTrigger}
+					{input}
+					{trigger}
 					{dropdownMenu}
 				</HStack>
-				<HStack mt={2}>
+				<HStack className="mt-1">
 					{additionalButtons}
 				</HStack>
 			</VStack>;
 	} else {
 		assembledComponents = 
-			<HStack testID={testID} {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
+			<HStackNative
+				{...refProps}
+				onLayout={onLayout}
+				className={className}
+			>
 				{xButton}
 				{eyeButton}
-				{inputAndTrigger}
+				{input}
+				{trigger}
 				{additionalButtons}
 				{dropdownMenu}
-			</HStack>;
+			</HStackNative>;
 	}
 	
 	if (isViewerShown && Editor) {
@@ -1019,26 +1080,28 @@ export function ComboComponent(props) {
 						onClose={onViewerClose}
 					>
 						<Editor
-							{...propsForViewer}
 							editorType={EDITOR_TYPE__WINDOWED}
 							isEditorViewOnly={true}
-							{...viewerProps}
-							px={0}
-							py={0}
-							w="100%"
 							parent={self}
 							reference="viewer"
 							selection={viewerSelection}
 							onEditorClose={onViewerClose}
+							className={`
+								w-full
+								p-0
+							`}
+							{...propsForViewer}
+							{...viewerProps}
 						/>
 					</Modal>
 				</>;
 	}
 	
 	if (tooltip) {
-		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement} h="100%">
-								{assembledComponents}
-							</Tooltip>;
+		// TODO: implement withTooltip for Combo
+		// assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement} className="h-full">
+		// 						{assembledComponents}
+		// 					</Tooltip>;
 	}
 	
 	return assembledComponents;

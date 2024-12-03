@@ -1,17 +1,14 @@
 import {
-	VStack,
 	Text,
-} from '@gluestack-ui/themed';
+	VStack,
+} from '../Gluestack';
 
 export default function Unauthorized(props) {
 	const 
 		{
 			text = 'Unauthorized.',
 		} = props;
-	return <VStack justifyContent="center" alignItems="center" w="100%" flex={1}>
-				<Text
-					textAlign="center"
-					color="#f00"
-				>{text}</Text>
+	return <VStack className="w-full flex-1 justify-center items-center">
+				<Text className="text-center text-[#f00]">{text}</Text>
 			</VStack>;
 }

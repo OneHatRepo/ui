@@ -1,7 +1,8 @@
-import { G, Path } from 'react-native-svg';
-import { createIcon } from '@gluestack-ui/themed';
+import { createIcon } from "../Gluestack/icon";
+import { G, Path, Svg } from 'react-native-svg';
 
 const SvgComponent = createIcon({
+	Root: Svg,
 	viewBox: '0 0 513.2 512.1',
 	path: <G>
 				<Path d="M1.1 0H513.2V512.1H1.1z" fill="none" />

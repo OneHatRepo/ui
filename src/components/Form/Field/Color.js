@@ -1,10 +1,10 @@
 import React, { useState, useRef, } from 'react';
 import {
-	Popover,
+	HStackNative,
+	Popover, PopoverContent, PopoverBody,
 	Pressable,
-	HStack,
 	Tooltip,
-} from '@gluestack-ui/themed';
+} from '../../Gluestack';
 import { SketchPicker } from 'react-color';
 import {
 	UI_MODE_WEB,
@@ -135,20 +135,19 @@ export function ColorElement(props) {
 	// Web version
 	let assembledComponents = null;
 	assembledComponents =
-		<HStack flex={1} h="100%" alignItems="center" onLayout={() => setIsRendered(true)}>
+		<HStackNative
+			onLayout={() => setIsRendered(true)}
+			className="flex-1 h-full items-center"
+		>
 			<Pressable
 				ref={triggerRef}
 				onPress={onTriggerPress}
 				onBlur={onTriggerBlur}
-				h={10}
-				w={10}
-				bg={value}
 				borderTopLeftRadius={6}
 				borderBottomLeftRadius={6}
 				borderTopRightRadius={0}
 				borderBottomRightRadius={0}
-				borderWidth={1}
-				borderColor="trueGray.300"
+				className={` bg-${value} h-[10px] w-[10px] border border-grey-300 `}
 			/>
 			<Input
 				ref={inputRef}
@@ -157,21 +156,21 @@ export function ColorElement(props) {
 				maxLength={7}
 				onBlur={onInputBlur}
 				onClick={onInputClick}
-				flex={1}
-				h="100%"
-				p={2}
-				borderWidth={1}
-				borderColor="trueGray.300"
-				borderLeftWidth={0}
-				borderTopLeftRadius={0}
-				borderBottomLeftRadius={0}
-				borderTopRightRadius={6}
-				borderBottomRightRadius={6}
-				fontSize={styles.FORM_COLOR_READOUT_FONTSIZE}
-				bg={styles.FORM_COLOR_INPUT_BG}
-				_focus={{
-					bg: styles.FORM_COLOR_INPUT_FOCUS_BG,
-				}}
+				className={`
+					flex-1
+					h-full
+					p-2
+					border
+					border-grey-300
+					border-left-0
+					border-top-left-radius-0
+					border-bottom-left-radius-0
+					border-top-right-radius-6
+					border-bottom-right-radius-6
+					${styles.FORM_COLOR_READOUT_FONTSIZE}
+					${styles.FORM_COLOR_INPUT_BG}
+					${styles.FORM_COLOR_INPUT_BG_FOCUS}
+				`}
 				onLayout={(e) => {
 					// On web, this is not needed, but on RN it might be, so leave it in for now
 					const {
@@ -193,17 +192,21 @@ export function ColorElement(props) {
 				placement={'auto'}
 				{...props}
 			>
-				<Popover.Content
+				<PopoverContent
 					position="absolute"
-					top={top + 'px'}
-					left={left + 'px'}
-					w={220}
-					h={287}
+					className={`
+						w-[220px]
+						h-[287px]
+					`}
+					style={{
+						top,
+						left,
+					}}
 					{...translateProps}
 				>
-					<Popover.Body
+					<PopoverBody
 						ref={pickerRef}
-						p={0}
+						className="p-0"
 					>
 						<SketchPicker
 							disableAlpha={true}
@@ -211,10 +214,10 @@ export function ColorElement(props) {
 							onChange={(color) => setValue(color.hex)}
 							{...props}
 						/>
-					</Popover.Body>
-				</Popover.Content>
+					</PopoverBody>
+				</PopoverContent>
 			</Popover>
-		</HStack>;
+		</HStackNative>;
 
 
 	// React Native v1

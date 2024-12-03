@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo, } from 'react';
 import {
 	Box,
+	HStack,
 	Icon,
 	Pressable,
-	HStack,
-	Text,
-} from '@gluestack-ui/themed';
+	TextNative,
+} from '../Gluestack';
 import {
 	SORT_ASCENDING,
 	SORT_DESCENDING,
@@ -307,40 +307,38 @@ export default function GridHeaderRow(props) {
 						isSorter = isSortable && canColumnsSort && sortField === fieldName,
 						isReorderable = canColumnsReorder && configIsReorderable,
 						isResizable = canColumnsResize && configIsResizable,
-						propsToPass = {
-							borderRightWidth: 2,
-							borderRightColor: '#fff',
-						};
+						rowClassName = `
+							border-r-2
+							border-r-white
+						`;
 					if (isHidden) {
 						return null;
 					}
 
+					const rowStyle = {};
 					if (all.length === 1) {
-						propsToPass.w = '100%';
+						rowClassName += ' w-full';
 						isReorderable = false;
 						isResizable = false;
 					} else {
 						if (w) {
-							propsToPass.w = w;
+							rowStyle.width = w;
 						} else if (flex) {
-							propsToPass.flex = flex;
-							propsToPass.minWidth = 100;
+							rowStyle.flex = flex;
+							rowClassName += ' min-w-[100px]';
 						} else if (localColumnsConfig.length === 1) {
 							// Only one column and flex is not set
-							propsToPass.flex = 1;
+							rowClassName += ' flex-1';
 							if (!header) {
 							}
 						}
 					}
+					rowStyle.userSelect = 'none';
 
 					if (isInlineEditorShown) {
-						propsToPass.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
+						rowClassName = ' ' + styles.INLINE_EDITOR_MIN_WIDTH;
 					}
 
-					const textProps = {};
-					if (UiGlobals.mode === UI_MODE_WEB) {
-						textProps.textOverflow = 'ellipsis';
-					}
 					return <Pressable
 								{...testProps('Header-' + fieldName)}
 								key={ix}
@@ -355,17 +353,17 @@ export default function GridHeaderRow(props) {
 										onSort(config, e);
 									}
 								}}
-								flexDirection="row"
-								h="100%"
-								bg={styles.GRID_HEADER_BG}
-								_hover={{
-									bg: styles.GRID_HEADER_HOVER_BG,
-								}}
-								p={0}
-								style={{ userSelect: 'none', }}
 								onMouseEnter={(e) => onHeaderMouseEnter(e, ix)}
 								onMouseLeave={(e) => onHeaderMouseLeave(e, ix)}
-								{...propsToPass}
+								className={`
+									h-full
+									flex-row
+									p-0
+									${rowClassName}
+									${styles.GRID_HEADER_BG}
+									${styles.GRID_HEADER_BG_HOVER}
+								`}
+								style={rowStyle}
 							>
 								{isReorderable && isOver && 
 										<HeaderReorderHandle
@@ -390,31 +388,33 @@ export default function GridHeaderRow(props) {
 													return proxy;
 												}}
 											/>}
-								<Text
+								<TextNative
 									key="Text"
-									fontSize={styles.GRID_HEADER_FONTSIZE}
-									overflow="hidden"
-									flex={1}
-									h="100%"
-									px={styles.GRID_HEADER_CELL_PX}
-									py={styles.GRID_HEADER_CELL_PY}
-									alignItems="center"
-									justifyContent="center"
 									numberOfLines={1}
-									ellipsizeMode="head"
-									{...textProps}
-								>{header}</Text>
+									className={`
+										h-full
+										flex-1
+										items-center
+										justify-center
+										overflow-hidden
+										text-ellipsis
+										${styles.GRID_HEADER_FONTSIZE}
+										${styles.GRID_HEADER_CELL_PX}
+										${styles.GRID_HEADER_CELL_PY}
+									`}
+								>{header}</TextNative>
 								
 								{isSorter && 
-									<Icon 
-										key="Icon" 
-										as={isSortDirectionAsc ? SortUp : SortDown} 
-										textAlign="center" 
+									<Icon
+										key="Icon"
+										as={isSortDirectionAsc ? SortUp : SortDown}
 										size={styles.GRID_HEADER_ICON_SIZE}
-										mt={styles.GRID_HEADER_ICON_MT} 
-										mr={styles.GRID_HEADER_ICON_MR} 
-										color="trueGray.500"
-									/>}
+										className={`
+											text-center
+											text-grey-500
+											${styles.GRID_HEADER_ICON_MT}
+											${styles.GRID_HEADER_ICON_MR}
+										`} />}
 								
 								{isOver && UiGlobals.mode === UI_MODE_WEB && // only works for web for now 
 										<HeaderColumnSelectorHandle
@@ -460,28 +460,20 @@ export default function GridHeaderRow(props) {
 				if (areRowsDragSource) {
 					headerColumns.unshift(<Box
 						key="spacer"
-						w={3}
+						className="w-[3px]"
 					/>);
 				}
 				if (!hideNavColumn) {
-					headerColumns.push(<AngleRight
-											key="AngleRight"
-											color="#aaa"
-											variant="ghost"
-											w={30}
-											alignSelf="center"
-											ml={3}
-										/>);
+					headerColumns.push(<Icon as={AngleRight} className={`AngleRight text-[#aaa] w-[30px] self-center ml-3`} />);
 				}
 				return headerColumns;
 			};
 
 		return <HStack
-					w="100%"
-					bg="trueGray.200"
 					style={{
 						scrollbarWidth: 'none',
 					}}
+					className="w-full bg-grey-200"
 				> 
 					{renderHeaders()}
 				</HStack>;

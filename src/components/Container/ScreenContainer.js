@@ -4,10 +4,11 @@ import {
 	useWindowDimensions,
 } from 'react-native';
 import {
-	VStack,
-	ScrollView,
 	KeyboardAvoidingView,
-} from '@gluestack-ui/themed';
+	ScrollView,
+	VStack,
+	VStackNative,
+} from '../Gluestack';
 import withComponent from '../Hoc/withComponent.js';
 // import { useHeaderHeight } from '@react-navigation/elements';
 // import testProps from '../OneHat/functions/testProps';
@@ -35,20 +36,23 @@ function ScreenContainer(props) {
 		safeAreaProps.safeArea = true;
 	}
 
-	const column = <VStack
-						// {...testProps(screenName)}
-						alignItems="center"
-						justifyContent="flex-start"
-						flex={1}
-						w="100%"
-						p={p}
-						bg={bg}
-						overflow="visible"
+	const column = <VStackNative
 						onLayout={onLayout}
 						{...safeAreaProps}
+						className={`
+							items-center
+							justify-start
+							flex-1
+							w-full
+							overflow-visible
+						`}
+						style={{
+							padding: p,
+							backgroundColor: bg,
+						}}
 					>
 						{props.children}
-					</VStack>;
+					</VStackNative>;
 	
 	if (scrollEnabled) {
 		const scrollViewProps = {};
@@ -66,15 +70,21 @@ function ScreenContainer(props) {
 								{...scrollViewProps}
 							>{column}</ScrollView>;
 		if (keyboardAvoiding) {
-			return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} flex={1} width="100%">
+			return <KeyboardAvoidingView
+						behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+						className="flex-1 w-full"
+					>
 						{scrollView}
-					</KeyboardAvoidingView>
+					</KeyboardAvoidingView>;
 		} else {
 			return scrollView;
 		}
 	}
 	if (keyboardAvoiding) {
-		return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} flex={1} width="100%">
+		return <KeyboardAvoidingView
+					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+					className="flex-1 w-full"
+				>
 					{column}
 				</KeyboardAvoidingView>;
 	}

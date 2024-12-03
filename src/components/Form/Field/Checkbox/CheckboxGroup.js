@@ -1,7 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Checkbox,
-} from '@gluestack-ui/themed';
+	Checkbox, CheckboxGroup,
+} from '../../../Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
@@ -50,9 +50,14 @@ const
 			setCheckboxes(checkboxes);
 		}, [value]);
 
-		return <Checkbox.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}>
+		return <CheckboxGroup
+					onChange={props.setValue}
+					accessibilityLabel={props.name}
+					ref={props.outerRef}
+					{...props}
+				>
 					{checkboxes}
-				</Checkbox.Group>;
+				</CheckboxGroup>;
 	},
 	CheckboxGroupField = withValue(withData(CheckboxGroupElement));
 

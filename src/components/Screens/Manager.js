@@ -1,9 +1,9 @@
-import React, { useState, useEffect, } from 'react';
 import {
-	VStack,
 	HStack,
 	Text,
-} from '@gluestack-ui/themed';
+	VStackNative,
+} from '../Gluestack';
+import React, { useState, useEffect, } from 'react';
 import withComponent from '../Hoc/withComponent.js';
 import testProps from '../../Functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -88,42 +88,42 @@ function ManagerScreen(props) {
 		};
 	}
 
-	return <VStack {...testProps(self)} maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
-				<HStack
-					h="80px"
-					py={2}
-					borderBottomWidth={2}
-					borderBottomColor="#ccc"
-				>
-					<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
+	return <VStackNative
+				{...testProps(self)}
+				onLayout={onLayout}
+				className="max-h-screen overflow-hidden flex-1 w-full"
+			>
+				<HStack className="h-[80px] items-center border-b-[2px] border-b-[#ccc]">
+					<Text {...textProps} className="pl-5 text-[26px] font-[700]">{title}</Text>
 					{allowSideBySide &&
 						<>
 							<IconButton
 								{...testProps('fullModeBtn')}
 								icon={FullWidth}
 								_icon={{
-									size: '25px',
-									color: mode === MODE_FULL ? 'primary.100' : '#000',
+									size: 'xl',
+									className: 'text-black',
 								}}
-								disabled={mode === MODE_FULL}
+								isDisabled={mode === MODE_FULL}
 								onPress={() => setMode(MODE_FULL)}
-								tooltip="Full Width"
+								tooltip="To full width"
+								className="ml-5"
 							/>
 							<IconButton
 								{...testProps('sideModeBtn')}
 								icon={SideBySide}
 								_icon={{
-									size: '25px',
-									color: mode === MODE_SIDE ? 'primary.100' : '#000',
+									size: 'xl',
+									className: 'text-black',
 								}}
-								disabled={mode === MODE_SIDE}
+								isDisabled={mode === MODE_SIDE}
 								onPress={() => setMode(MODE_SIDE)}
-								tooltip="Side Editor"
+								tooltip="To side editor"
 							/>
 						</>}
 				</HStack>
 				{isRendered && isModeSet && whichComponent}
-			</VStack>;
+			</VStackNative>;
 }
 
 export default withComponent(ManagerScreen);

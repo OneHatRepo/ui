@@ -1,8 +1,8 @@
 import React from 'react';
 import {
 	HStack,
-	Text,
-} from '@gluestack-ui/themed';
+	HStackNative,
+} from '../Gluestack';
 import IconButton from './IconButton.js';
 import Plus from '../Icons/Plus.js';
 import Minus from '../Icons/Minus.js';
@@ -15,24 +15,37 @@ const PlusMinusButton = React.forwardRef((props, ref) => {
 			isMinusDisabled = false,
 			plusHandler = () => {},
 			minusHandler = () => {},
-		} = props;
+			plusTooltip,
+			minusTooltip,
+		} = props,
+		_icon = {
+			className: 'text-black',
+		};
 
-		return <HStack {...props}>
-					<HStack alignItems="center">
-						<IconButton
-							icon={<Minus color="#fff" />}
-							onPress={minusHandler}
-							bg="primary.200"
-							isDisabled={isMinusDisabled}
-						/>
-						<IconButton
-							icon={<Plus color="#fff" />}
-							onPress={plusHandler}
-							bg="primary.200"
-							isDisabled={isPlusDisabled}
-							ml={1}
-						/>
-					</HStack>
+		let className = `
+			PlusMinusButton-HStack
+			items-center
+		`;
+		if (props.className) {
+			className += ' ' + props.className
+		}
+
+		return <HStack className={className}>
+					<IconButton
+						icon={Minus}
+						_icon={_icon}
+						onPress={minusHandler}
+						isDisabled={isMinusDisabled}
+						tooltip={minusTooltip}
+					/>
+					<IconButton
+						icon={Plus}
+						_icon={_icon}
+						onPress={plusHandler}
+						isDisabled={isPlusDisabled}
+						className="ml-1"
+						tooltip={plusTooltip}
+					/>
 				</HStack>;
 
 });

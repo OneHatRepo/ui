@@ -1,18 +1,27 @@
+import { forwardRef } from 'react';
 import {
 	Icon,
-	Pressable,
-	Text,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
+import Button from './Button';
 import AngleLeft from '../Icons/AngleLeft.js';
 
-export default function BackButton(props) {
+const BackButton = forwardRef((props, ref) => {
 	const {
-		color = '',
-		...propsToPass
-	} = props;
-	return <Pressable flexDirection="row" justifyContent="flex-start" alignItems="center" pr={5} {...propsToPass}>
-				<Icon as={AngleLeft} color={color} size="sm" mr={1} />
-				<Text fontSize={18} color={color} left={-1}>Back</Text>
-			</Pressable>;
-}
+			color = 'grey-500',
+			...propsToPass
+		} = props,
+		icon = <Icon as={AngleLeft} className={`text-${color} mr-1`} />;
 
+	return <Button
+				{...propsToPass}
+				ref={ref}
+				icon={icon}
+				text="Back"
+				_text={{
+					className: `text-${color} text-[18px] -left-1`,
+				}}
+				className="flex-row justify-start items-center pr-[5px]"
+			/>;
+});
+
+export default BackButton;

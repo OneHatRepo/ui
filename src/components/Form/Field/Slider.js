@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef, } from 'react';
 import {
 	HStack,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../../Gluestack';
+import {
+	hasWidth,
+	hasFlex,
+} from '../../../Functions/tailwindFunctions.js';
+import Decimal from 'decimal.js';
 import Input from './Input.js';
 import Slider from '@react-native-community/slider'; // https://www.npmjs.com/package/@react-native-community/slider
 import UiGlobals from '../../../UiGlobals.js';
@@ -28,7 +33,6 @@ const
 				tooltip = null,
 				isDisabled = false,
 				testID,
-				...propsToPass
 			} = props,
 			styles = UiGlobals.styles,
 			debouncedSetValueRef = useRef(),
@@ -58,7 +62,7 @@ const
 				}
 			},
 			onChangeText = (value) => {
-				if (value === '') {
+				if (!value || value === '') {
 					value = 0; // empty string makes value null
 				} else if (value.match(/\.$/)) { // value ends with a decimal point
 					// don't parseFloat, otherwise we'll lose the decimal point
@@ -83,7 +87,7 @@ const
 				if (!localValue) {
 					localValue = 0;
 				}
-				localValue = parseFloat(localValue, 10) - step;
+				localValue = new Decimal(localValue).minus(step).toNumber();
 				if (minValue > localValue) {
 					localValue = minValue;
 				}
@@ -97,7 +101,7 @@ const
 				if (!localValue) {
 					localValue = 0;
 				}
-				localValue = parseFloat(localValue, 10) + step;
+				localValue = new Decimal(localValue).plus(step).toNumber();
 				if (maxValue < localValue) {
 					localValue = maxValue;
 				}
@@ -136,46 +140,50 @@ const
 			inputValue = '' + inputValue;
 		}
 
-		const sizeProps = {};
-		if (!props.flex && !props.w) {
-			sizeProps.flex = 1;
+		const style = props.style || {};
+		if (!hasWidth(props) && !hasFlex(props)) {
+			style.flex = 1;
 		}
 
 		if (sliderValue === 0) {
 			sliderValue = FAKE_ZERO; // Slider doesn't like zero
 		}
 
+		let className = `
+			w-full
+			items-center
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
+		}
+		
 		return <HStack
-					w="100%"
-					alignItems="center"
-					{...propsToPass}
+					className={className}
+					style={props.style}
 				>
 					<InputWithTooltip
 						{...testProps('readout')}
 						value={inputValue}
 						onChangeText={onChangeText}
 						onKeyPress={onInputKeyPress}
-						h="100%"
-						w="50px"
-						p={2}
-						mr={4}
-						bg={styles.FORM_INPUT_BG}
-						_focus={{
-							bg: styles.FORM_INPUT_FOCUS_BG,
-						}}
-						fontSize={styles.SLIDER_READOUT_FONTSIZE}
-						textAlign="center"
-						borderRadius="md"
-						borderWidth={1}
-						borderColor="#bbb"
 						isDisabled={isDisabled}
+						disableAutoFlex={true}
+						className={`
+							InputWithTooltip
+							h-full
+							w-[50px]
+							p-2
+							mr-4
+							text-center
+							rounded-md
+							${styles.SLIDER_READOUT_FONTSIZE}
+						`}
 						{...props._input}
 					/>
-					<HStack flex={1}>
+					<HStack className="flex-1">
 						<Slider
 							{...testProps('slider')}
 							ref={props.outerRef}
-
 							style={{
 								width: '100%', 
 								height: 40,

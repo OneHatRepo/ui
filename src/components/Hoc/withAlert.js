@@ -1,232 +1,172 @@
-import React, { useState, useRef, } from 'react';
+import { forwardRef, } from 'react';
 import {
-	AlertDialog,
-	Button,
-	ButtonText,
-	VStack,
-	Icon,
+	Box,
 	HStack,
+	Icon,
 	Text,
-} from '@gluestack-ui/themed';
-import {
-	ALERT_MODE_OK,
-	ALERT_MODE_YES,
-	ALERT_MODE_YES_NO,
-	ALERT_MODE_CUSTOM,
-	ALERT_MODE_INFO,
-} from '../../Constants/Alert.js';
-import testProps from '../../Functions/testProps.js';
-import TriangleExclamation from '../Icons/TriangleExclamation.js';
+} from '../Gluestack';
+import withModal from './withModal.js';
 import CircleInfo from '../Icons/CircleInfo.js';
+import CircleQuestion from '../Icons/CircleQuestion.js';
+import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import _ from 'lodash';
 
 // This HOC enables easy usage of alert dialogs in the wrapped component.
-// It can be used for simple alerts, confirmations, and custom dialogs. 
+// It can be used for simple alerts, info boxes, confirmations, and 
+// custom dialogs.
 
-export default function withAlert(WrappedComponent) {
-	return (props) => {
+function withAlert(WrappedComponent) {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithAlert || props.alert) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
-		const
-			[isAlertShown, setIsAlertShown] = useState(false),
-			[title, setTitle] = useState(''),
-			[message, setMessage] = useState(''),
-			[canClose, setCanClose] = useState(true),
-			[includeCancel, setIncludeCancel] = useState(false),
-			[okCallback, setOkCallback] = useState(),
-			[yesCallback, setYesCallback] = useState(),
-			[noCallback, setNoCallback] = useState(),
-			[customButtons, setCustomButtons] = useState(),
-			[mode, setMode] = useState(ALERT_MODE_OK),
-			autoFocusRef = useRef(null),
-			cancelRef = useRef(null),
-			onAlert = (arg1, okCallback, includeCancel = false, canClose = true) => {
-				clearAll();
+		const {
+				showModal,
+				hideModal,
+			} = props,
+			getBody = (args) => {
+				const {
+					icon,
+					message,
+					color = 'black',
+				} = args;
+				return <HStack className="withAlert-HStack flex-1 w-full">
+							<Box className={`
+								withAlert-Box1
+								h-full
+								w-[100px]
+								flex
+								items-end
+								justify-center 
+								pr-3
+							`}>
+								<Icon as={icon} className={`
+									withAlert-Icon
+									h-[40px]
+									w-[40px]
+									text-${color}
+								`} />
+							</Box>
+							<Box className={`
+								withAlert-Box2
+								h-full
+								flex
+								flex-1
+								items-start
+								justify-center
+							`}>
+								<Text className={`
+									withAlert-Text
+									text-${color}
+									text-[18px]
+									flex-none
+								`}>{message}</Text>
+							</Box>
+						</HStack>;
+			},
+			onAlert = (arg1, onOk, includeCancel = false, canClose = true) => {
+
+				hideModal();
+
+				let title = 'Alert',
+					message,
+					buttons;
+				
 				if (_.isString(arg1)) {
-					setMode(ALERT_MODE_OK);
-					setTitle('Alert');
-					setMessage(arg1);
-					setOkCallback(() => okCallback);
-					setIncludeCancel(includeCancel);
-					setCanClose(canClose);
+					// simple alert
+					message = arg1;
 				} else if (_.isPlainObject(arg1)) {
 					// custom
-					const {
-							title = 'Alert',
-							message,
-							buttons,
-							includeCancel,
-							canClose,
-						} = arg1;
-					setMode(ALERT_MODE_CUSTOM);
-					setTitle(title);
-					setMessage(message);
-					setCustomButtons(buttons);
-					setIncludeCancel(includeCancel);
-					setCanClose(canClose);
+					if (arg1.hasOwnProperty('title')) {
+						title = arg1.title;
+					}
+					message = arg1.message;
+					if (arg1.hasOwnProperty('buttons')) {
+						buttons = arg1.buttons;
+					}
+					if (arg1.hasOwnProperty('onOk')) {
+						onOk = arg1.onOk;
+					}
+					if (arg1.hasOwnProperty('includeCancel')) {
+						includeCancel = arg1.includeCancel;
+					}
+					if (arg1.hasOwnProperty('canClose')) {
+						canClose = arg1.canClose;
+					}
 				}
-				showAlert();
+				showModal({
+					title,
+					body: getBody({
+						icon: TriangleExclamation,
+						message,
+						color: 'red',
+					}),
+					onOk: () => {
+						hideModal();
+						onOk();
+					},
+					includeCancel,
+					canClose,
+					customButtons: buttons ?? null,
+					h: 250,
+					w: 400,
+				});
 			},
-			onConfirm = (message, yesCallback, includeCancel = false, noCallback) => {
-				clearAll();
-				setMode(includeCancel ? ALERT_MODE_YES : ALERT_MODE_YES_NO);
-				setTitle('Confirm');
-				setMessage(message);
-				setIncludeCancel(includeCancel);
-				setYesCallback(() => yesCallback);
-				setNoCallback(noCallback ? () => noCallback : null);
-				showAlert();
+			onConfirm = (message, onYes, includeCancel = false, onNo) => {
+				hideModal();
+				showModal({
+					title: 'Confirm',
+					body: getBody({
+						icon: CircleQuestion,
+						message,
+					}),
+					onYes: () => {
+						hideModal();
+						onYes();
+					},
+					onNo: () => {
+						hideModal();
+						if (onNo) {
+							onNo();
+						}
+					},
+					includeCancel,
+					h: 250,
+					w: 400,
+				});
 			},
-			onCancel = () => {
-				setIsAlertShown(false);
-			},
-			onInfo = (msg) => {
-				clearAll();
-				setMode(ALERT_MODE_INFO);
-				setTitle('Info');
-				setMessage(msg);
-				setIncludeCancel(false);
-				setCanClose(true);
-				showAlert();
-			},
-			onOk = () => {
-				if (okCallback) {
-					okCallback();
-				}
-				hideAlert();
-			},
-			onYes = () => {
-				if (yesCallback) {
-					yesCallback();
-				}
-				hideAlert();
-			},
-			onNo = () => {
-				if (noCallback) {
-					noCallback();
-				}
-				hideAlert();
-			},
-			showAlert = () => {
-				setIsAlertShown(true);
-			},
-			hideAlert = () => {
-				setIsAlertShown(false);
-				clearAll();
-			},
-			clearAll = () => {
-				setOkCallback();
-				setYesCallback();
-				setNoCallback();
-				setCustomButtons();
+			onInfo = (message) => {
+				hideModal();
+				showModal({
+					title: 'Info',
+					body: getBody({
+						icon: CircleInfo,
+						message,
+					}),
+					onOk: () => hideModal(),
+					canClose: true,
+					h: 200,
+					w: 400,
+				});
 			};
 
-		let buttons = [];
-		if (includeCancel) {
-			buttons.push(<Button
-								{...testProps('cancelBtn')}
-								key="cancelBtn"
-								onPress={onCancel}
-								color="#fff"
-								colorScheme="coolGray"
-								variant="ghost" // or unstyled
-								ref={cancelRef}
-							>
-								<ButtonText>Cancel</ButtonText>
-							</Button>);
-		}
-		switch(mode) {
-			case ALERT_MODE_OK:
-			case ALERT_MODE_INFO:
-				buttons.push(<Button
-								{...testProps('okBtn')}
-								key="okBtn"
-								ref={autoFocusRef}
-								onPress={onOk}
-								color="#fff"
-							>
-								<ButtonText>OK</ButtonText>
-							</Button>);
-				break;
-			case ALERT_MODE_YES:
-				buttons.push(<Button
-								{...testProps('yesBtn')}
-								key="yesBtn"
-								ref={autoFocusRef}
-								onPress={onYes}
-								color="#fff"
-								colorScheme="danger"
-							>
-								<ButtonText>Yes</ButtonText>
-							</Button>);
-				break;
-			case ALERT_MODE_YES_NO:
-				// TODO: need to create a new colorScheme so this can be black with blank background
-				buttons.push(<Button
-								{...testProps('noBtn')}
-								key="noBtn"
-								onPress={onNo}
-								color="trueGray.800"
-								variant="ghost"
-								// colorScheme="neutral"
-								mr={2}
-							>
-								<ButtonText>No</ButtonText>
-							</Button>);
-				buttons.push(<Button
-								{...testProps('yesBtn')}
-								key="yesBtn"
-								ref={autoFocusRef}
-								onPress={onYes}
-								color="#fff"
-								colorScheme="danger"
-							>
-								<ButtonText>Yes</ButtonText>
-							</Button>);
-				break;
-			case ALERT_MODE_CUSTOM:
-				_.each(customButtons, (button) => {
-					buttons.push(button);
-				});
-				break;
-			default:
+		if (!showModal) {
+			throw new Error('withAlert: showModal is not defined in props');
 		}
 
-		return <>
-					<WrappedComponent
-						{...props}
-						disableWithAlert={false}
-						alert={onAlert}
-						confirm={onConfirm}
-						hideAlert={hideAlert}
-						showInfo={onInfo}
-					/>
-					<AlertDialog
-						leastDestructiveRef={cancelRef}
-						isOpen={isAlertShown}
-						onClose={() => setIsAlertShown(false)}
-					>
-						<AlertDialog.Content
-							{...testProps('AlertDialog')}
-						>
-							{canClose && <AlertDialog.CloseButton />}
-							<AlertDialog.Header>{title}</AlertDialog.Header>
-							<AlertDialog.Body>
-								<HStack alignItems="center">
-									<VStack w="40px" p={0} mr={5}>
-										<Icon as={mode === ALERT_MODE_INFO ? CircleInfo : TriangleExclamation} size={10} color={mode === ALERT_MODE_INFO ? '#000' : '#f00'} />
-									</VStack>
-									<Text flex={1}>{message}</Text>
-								</HStack>
-							</AlertDialog.Body>
-							<AlertDialog.Footer>
-								{buttons}
-							</AlertDialog.Footer>
-						</AlertDialog.Content>
-					</AlertDialog>
-				</>;
-	};
+		return <WrappedComponent
+					{...props}
+					ref={ref}
+					alert={onAlert}
+					confirm={onConfirm}
+					hideAlert={hideModal}
+					showInfo={onInfo}
+				/>;
+	});
+}
+
+export default function(WrappedComponent) {
+	return withModal(withAlert(WrappedComponent));
 }

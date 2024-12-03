@@ -1,9 +1,10 @@
 import {
-	Icon,
 	HStack,
-	Select,
+	HStackNative,
+	Icon,
+	Select, SelectItem,
 	Tooltip,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import CaretDown from '../Icons/CaretDown.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
@@ -29,11 +30,11 @@ export default function Picker(props) {
 		if (label.length > cutoff) {
 			label = label.substring(0, 25) + '...';
 		}
-		items.push(<Select.Item key={entity.id} label={label} value={entity.id} {...testProps('PickerItem-' + entity.id)} />);
+		items.push(<SelectItem key={entity.id} label={label} value={entity.id} {...testProps('PickerItem-' + entity.id)} />);
 	});
 
 	if (allowNull) {
-		items.unshift(<Select.Item key="null" label={nullLabel} value={null} {...testProps('PickerItem-null')} />);
+		items.unshift(<SelectItem key="null" label={nullLabel} value={null} {...testProps('PickerItem-null')} />);
 	}
 
 	if (!items.length) {
@@ -50,15 +51,15 @@ export default function Picker(props) {
 	let select = <Select
 						placeholder={placeholder}
 						isDisabled={false}
-						dropdownIcon={<Icon as={CaretDown} size="sm" mr={3} color="trueGray.800" />}
+						dropdownIcon={<Icon as={CaretDown} size="sm" className="mr-2 text-grey-800" />}
 						{..._select}
 					>{items}</Select>;
 	if (tooltip) {
 		//TODO: This doesn't yet work, but doesn't do anything harmful either!
 		// select = <Tooltip label={tooltip} placement={tooltipPlacement}>{select}</Tooltip>;
 	}
-	return <HStack {...props}>
+	return <HStackNative {...props}>
 				{select}
-			</HStack>;
+			</HStackNative>;
 }
 

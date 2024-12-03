@@ -5,9 +5,6 @@
  * "LICENSE.txt" file, which is part of this source code package.
  */
 import { useState, } from 'react';
-import {
-	Icon,
-} from '@gluestack-ui/themed';
 import Excel from '../Icons/Excel';
 import Panel from '../Panel/Panel.js';
 import Form from '../Form/Form.js';
@@ -15,6 +12,8 @@ import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
+import Download from '../Icons/Download';
+import Upload from '../Icons/Upload';
 import Cookies from 'js-cookie';
 import _ from 'lodash';
 
@@ -23,6 +22,10 @@ function UploadsDownloadsWindow(props) {
 		{
 			Repository,
 			columnsConfig = [],
+			uploadHeaders,
+			downloadHeaders,
+			uploadParams = {},
+			downloadParams = {},
 
 			// withComponent
 			self,
@@ -64,8 +67,9 @@ function UploadsDownloadsWindow(props) {
 						order,
 						model,
 						isTemplate,
+						...downloadParams,
 					}),
-					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers),
+					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers, downloadHeaders),
 				},
 				fetchWindow = downloadWithFetch(url, options, win),
 				interval = setInterval(function() {
@@ -83,7 +87,7 @@ function UploadsDownloadsWindow(props) {
 		onUpload = async () => {
 			const
 				url = Repository.api.baseURL + Repository.name + '/uploadBatch',
-				result = await Repository._send('POST', url, { importFile })
+				result = await Repository._send('POST', url, { importFile, ...uploadParams, }, uploadHeaders)
 										.catch(error => {
 											if (Repository.debugMode) {
 												console.log(url + ' error', error);
@@ -128,15 +132,21 @@ function UploadsDownloadsWindow(props) {
 				reference="UploadsDownloadsWindow"
 				isCollapsible={false}
 				title="Uploads & Downloads"
-				bg="#fff"
-				w={width}
-				h={height}
-				flex={null}
+				className={`
+					flex-none
+					bg-white
+					shadow-lg
+				`}
+				style={{
+					height,
+					width,
+				}}
 			>
 				<Form
 					{...props}
 					parent={self}
 					reference="form"
+					hideResetButton={true}
 					items={[
 						{
 							"type": "Column",
@@ -151,13 +161,16 @@ function UploadsDownloadsWindow(props) {
 									type: 'Button',
 									text: 'Download',
 									isEditable: false,
-									leftIcon: <Icon as={Excel} />,
+									icon: Excel,
+									_icon: {
+										size: 'md',
+									},
 									onPress: () => onDownload(),
+									className: 'mb-5',
 								},
 								{
 									type: 'DisplayField',
 									text: 'Upload an Excel file to the current grid.',
-									mt: 10,
 								},
 								{
 									type: 'File',
@@ -166,19 +179,29 @@ function UploadsDownloadsWindow(props) {
 									accept: '.xlsx',
 								},
 								{
-									type: 'Button',
-									text: 'Upload',
-									isEditable: false,
-									leftIcon: <Icon as={Excel} />,
-									isDisabled: !importFile,
-									onPress: onUpload,
-								},
-								{
-									type: 'Button',
-									text: 'Get Template',
-									isEditable: false,
-									onPress: onDownloadTemplate,
-									variant: 'ghost',
+									type: 'Row',
+									className: 'mt-2',
+									items: [
+										{
+											type: 'Button',
+											text: 'Upload',
+											isEditable: false,
+											icon: Upload,
+											_icon: {
+												size: 'md',
+											},
+											isDisabled: !importFile,
+											onPress: onUpload,
+										},
+										{
+											type: 'Button',
+											text: 'Get Template',
+											icon: Download,
+											isEditable: false,
+											onPress: onDownloadTemplate,
+										},
+
+									],
 								},
 							]
 						},

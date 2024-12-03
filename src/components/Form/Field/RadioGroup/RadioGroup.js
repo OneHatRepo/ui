@@ -1,7 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Radio,
-} from '@gluestack-ui/themed';
+	Radio, RadioGroup,
+} from '../../../Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
@@ -53,9 +53,9 @@ const
 		}, [value]);
 
 		// return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}> // RadioGroup from NativeBase doesn't yet allow refs
-		return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} {...props}>
+		return <RadioGroup onChange={props.setValue} accessibilityLabel={props.name} {...props}>
 					{radios}
-				</Radio.Group>;
+				</RadioGroup>;
 	},
 	RadioGroupField = withComponent(withValue(withData(RadioGroupElement)));
 

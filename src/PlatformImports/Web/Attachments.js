@@ -1,18 +1,17 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
-	Button,
-	ButtonText,
-	VStack,
-	Pressable,
 	HStack,
+	Pressable,
 	Spinner,
 	Text,
-} from '@gluestack-ui/themed';
+	VStack,
+} from '../../Components/Gluestack';
+import Button from '../../Components/Buttons/Button';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import {
@@ -46,24 +45,19 @@ function FileCardCustom(props) {
 			uploadStatus,
 		} = props,
 		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']);
-	return <Pressable
-				px={3}
-				py={1}
-				alignItems="center"
-				flexDirection="row"
-				borderRadius={5}
-				borderWidth={1}
-				borderColor="primary.700"
-				onPress={() => {
-					downloadInBackground(downloadUrl);
-				}}
-			>
-				{isDownloading && <Spinner mr={2} />}
-				<Text>{filename}</Text>
-				{onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
-			</Pressable>;
+	return (
+        <Pressable
+            onPress={() => {
+                downloadInBackground(downloadUrl);
+            }}
+            className="px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700">
+                    {isDownloading && <Spinner className="mr-2" />}
+                    <Text>{filename}</Text>
+                    {onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
+                </Pressable>
+    );
 }
-	
+
 
 // Note this component uploads only one file per server request---
 // it doesn't upload multiple files simultaneously.
@@ -287,16 +281,12 @@ function AttachmentsElement(props) {
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
 	}
-	let content = <VStack
-						w="100%"
-						p={2}
-						background={styles.ATTACHMENTS_BG}
-					>
-						<HStack flexWrap="wrap">
+	let content = <VStack background={styles.ATTACHMENTS_BG} className="w-[100%] p-1">
+						<HStack className="flex-wrap">
 							{files.map((file) => {
 								return <Box
 											key={file.id}
-											marginRight={4}
+											className="mr-2"
 										>
 											{useFileMosaic &&
 												<FileMosaic
@@ -317,17 +307,18 @@ function AttachmentsElement(props) {
 						{Repository.total <= collapsedMax ? null :
 							<Button
 								onPress={toggleShowAll}
-								mt={4}
+								className="mt-2"
+								text={'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}
 								_text={{
-									color: 'trueGray.600',
-									fontStyle: 'italic',
-									textAlign: 'left',
-									width: '100%',
+									className: `
+										text-grey-600
+										italic
+										text-left
+										w-full
+									`,
 								}}
-								variant="ghost"
-							>
-								<ButtonText>{'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}</ButtonText>
-							</Button>}
+								variant="outline"
+							/>}
 					</VStack>;
 	
 	if (canCrud) {

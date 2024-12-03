@@ -1,4 +1,5 @@
 import { CURRENT_MODE } from './Constants/UiModes.js';
+import Styles from './Constants/Styles.js';
 import _ from 'lodash';
 
 
@@ -10,8 +11,14 @@ const Globals = {
 	paginationIsShowMoreOnly: false,
 	autoAdjustPageSizeToHeight: true,
 	doubleClickingGridRowOpensEditorInViewMode: false,
-	disableSavedColumnsConfig: false,
+	disableSavedColumnsConfig: true,
 	autoSubmitDelay: 500,
+	// stayInEditModeOnSelectionChange: true,
+	// isSideEditorAlwaysEditMode: true,
+
+	styles: {
+		...Styles,
+	},
 };
 
 export default Globals;

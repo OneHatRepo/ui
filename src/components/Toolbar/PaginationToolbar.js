@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
 	HStack,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import Pagination from './Pagination.js'
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
@@ -13,7 +13,7 @@ export default function PaginationToolbar(props) {
 		} = props,
 		[minimize, setMinimize] = useState(false),
 		propsToPass = _.omit(props, 'toolbarItems'),
-		showPagination = props.Repository?.totalPages > 1,
+		showPagination = true,//props.Repository?.totalPages > 1,
 		onLayout = (e) => {
 			// Note to future self: this is using hard-coded values.
 			// Eventually might want to make it responsive to actual sizes
@@ -32,24 +32,30 @@ export default function PaginationToolbar(props) {
 			}
 		};
 
-	let toolbarProps = {};
-	if (showPagination) {
-		toolbarProps = {
-			borderLeftWidth: 1,
-			borderLeftColor: 'trueGray.400',
-			pl: 3,
-			ml: 3,
-		};
-	}
-
 	return <Toolbar
-				bg="trueGray.200"
-				borderTopWidth={1}
-				borderTopColor="trueGray.400"
-				w="100%"
+				className={`
+					border-t
+					border-t-grey-400
+					w-full
+				`}
 				onLayout={(e) => onLayout(e)}
 			>
-				<Pagination {...propsToPass} showPagination={showPagination} w={toolbarItems.length ? null : '100%'} minimize={minimize} disablePageSize={disablePageSize} />
-				{toolbarItems.length ? <HStack flex={1} {...toolbarProps}>{toolbarItems}</HStack> : null}
+				<Pagination
+					{...propsToPass}
+					showPagination={showPagination}
+					w={toolbarItems.length ? null : '100%'}
+					minimize={minimize}
+					disablePageSize={disablePageSize}
+				/>
+				{toolbarItems.length &&
+					<HStack className={`
+						flex-1
+						space-x-1
+						border-l
+						border-l-grey-400
+						ml-3
+						pl-3
+					`}
+					>{toolbarItems}</HStack>}
 			</Toolbar>;
 };

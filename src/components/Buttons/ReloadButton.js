@@ -1,16 +1,14 @@
-import {
-	Icon,
-} from '@gluestack-ui/themed';
 import testProps from '../../Functions/testProps.js';
 import IconButton from './IconButton.js';
 import Rotate from '../Icons/Rotate.js';
 
 export default function ReloadButton(props) {
 	const {
-			iconProps ={},
+			_icon ={},
 			self,
 			Repository,
 			isTree = false,
+			propsToPass,
 		} = props,
 		onPress = () => {
 			if (isTree) {
@@ -26,13 +24,14 @@ export default function ReloadButton(props) {
 
 	return <IconButton
 				{...testProps('reloadBtn')}
-				{...props}
-				reference="reloadBtn"
 				parent={self}
-				icon={<Icon as={Rotate} {...iconProps} color="trueGray.600" />}
+				reference="reloadBtn"
 				onPress={onPress}
+				{...propsToPass}
+				icon={Rotate}
+				_icon={_icon}
+				className="ml-2"
 				tooltip="Reload"
-				ml={2}
 			/>;
 }
 

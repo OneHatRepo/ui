@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, } from 'react';
+import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
@@ -10,17 +10,17 @@ import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
 export default function withSelection(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithSelection) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		if (props.setSelection) {
 			// bypass everything, since we're already using withSelection() in hierarchy.
 			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
 			// but we only need it defined once for the whole thing.
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		const
@@ -393,6 +393,7 @@ export default function withSelection(WrappedComponent) {
 		
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					disableWithSelection={false}
 					selection={localSelection.current}
 					setSelection={setSelection}
@@ -409,5 +410,5 @@ export default function withSelection(WrappedComponent) {
 					getIdsFromSelection={getIdsFromLocalSelection}
 					getDisplayValuesFromSelection={getDisplayValuesFromSelection}
 				/>;
-	};
+	});
 }

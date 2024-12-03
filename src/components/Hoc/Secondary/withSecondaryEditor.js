@@ -1,9 +1,5 @@
 import { useEffect, useState, useRef, } from 'react';
 import {
-	Button,
-	ButtonText,
-} from '@gluestack-ui/themed';
-import {
 	ADD,
 	EDIT,
 	DELETE,
@@ -16,6 +12,8 @@ import {
 	EDITOR_MODE__EDIT,
 	EDITOR_TYPE__SIDE,
 } from '../../../Constants/Editor.js';
+import Button from '../../Buttons/Button.js';
+import UiGlobals from '../../../UiGlobals.js';
 import _ from 'lodash';
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withEditor
@@ -263,12 +261,18 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
-							<Button colorScheme="danger" onPress={() => secondaryDoMoveChildren(cb)} key="moveBtn">
-								<ButtonText>Move Children</ButtonText>
-							</Button>,
-							<Button colorScheme="danger" onPress={() => secondaryDoDeleteChildren(cb)} key="deleteBtn">
-								<ButtonText>Delete Children</ButtonText>
-							</Button>
+							<Button
+								key="moveBtn"
+								colorScheme="danger"
+								onPress={() => secondaryDoMoveChildren(cb)}
+								text="Move Children"
+							/>,
+							<Button
+								key="deleteBtn"
+								colorScheme="danger"
+								onPress={() => secondaryDoDeleteChildren(cb)}
+								text="Delete Children"
+							/>
 						],
 						includeCancel: true,
 					});

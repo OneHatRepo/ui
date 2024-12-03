@@ -1,14 +1,12 @@
 import { useEffect, } from 'react';
 import {
-	Button,
-	ButtonText,
 	HStack,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../../Components/Gluestack';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 // import {
@@ -17,7 +15,9 @@ import UiGlobals from '../../UiGlobals.js';
 // 	FileSizeValidator,
 // 	ImageDimensionsValidator,
 // } from 'use-file-picker/validators';
-import { useFilePicker, useImperativeFilePicker } from 'use-file-picker'; // https://www.npmjs.com/package/use-file-picker
+import { useFilePicker } from 'use-file-picker/dist'; // https://github.com/Jaaneek/useFilePicker/issues/81#issuecomment-1774044241
+// import { useFilePicker } from 'use-file-picker'; // https://www.npmjs.com/package/use-file-picker
+import Button from '../../Components/Buttons/Button.js';
 import IconButton from '../../Components/Buttons/IconButton.js';
 import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
@@ -99,32 +99,39 @@ function FileComponent(props) {
 
 	let assembledComponents = null;
 	if (_.isEmpty(filesContent)) {
-		assembledComponents = <Button onPress={() => openFilePicker()}><ButtonText>Select File</ButtonText></Button>;
+		assembledComponents = 
+			<Button
+				onPress={() => openFilePicker()}
+				text="Select File"
+			/>;
 	} else {
-		assembledComponents = <HStack
-									px={3}
-									py={1}
-									alignItems="center"
-									borderRadius={5}
-									borderWidth={1}
-									borderColor="primary.700"
-								>
-									<IconButton
-										_icon={{
-											as: Xmark,
-											color: 'trueGray.600',
-											size: 'sm',
-										}}
-										onPress={() => clear()}
-										h="100%"
-										bg={styles.FORM_COMBO_TRIGGER_BG}
-										_hover={{
-											bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-										}}
-										mr={1}
-									/>
-									<Text>{plainFiles[0].name}</Text>
-								</HStack>;
+		assembledComponents = 
+			<HStack
+				className={`
+					px-3
+					py-1
+					items-center
+					rounded-[5px]
+					border
+					border-primary.700
+				`}
+			>
+				<IconButton
+					icon={Xmark}
+					_icon={{
+						size: 'sm',
+						className: 'text-grey-600',
+					}}
+					onPress={() => clear()}
+					className={`
+						h-full
+						mr-1
+						${styles.FORM_COMBO_TRIGGER_BG}
+						${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+					`}
+				/>
+				<Text>{plainFiles[0].name}</Text>
+			</HStack>;
 	}
 
 	return assembledComponents;

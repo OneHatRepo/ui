@@ -1,26 +1,36 @@
-import React, { useState, useEffect, useRef, } from 'react';
+import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
-	Input,
-	Tooltip,
-} from '@gluestack-ui/themed';
+	Input, InputField, InputIcon, InputSlot,
+	Pressable,
+} from '../../Gluestack';
+import {
+	hasWidth,
+	hasFlex,
+} from '../../../Functions/tailwindFunctions.js';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
+import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
-function InputElement(props) {
+const InputElement = forwardRef((props, ref) => {
 	let { // so localValue can be changed, if needed
+			testID,
 			value,
 			setValue,
 			autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
 			autoSubmitDelay = UiGlobals.autoSubmitDelay,
-			autoCapitalize = 'none',
+			disableAutoFlex = false,
 			maxLength,
 			onKeyPress,
 			onChangeText,
-			tooltip = null,
-			tooltipPlacement = 'bottom',
-			self,
+			leftElement,
+			leftIcon,
+			leftIconHandler,
+			rightElement,
+			rightIcon,
+			rightIconHandler,
+			placeholder,
 		} = props,
 		styles = UiGlobals.styles,
 		debouncedSetValueRef = useRef(),
@@ -94,39 +104,79 @@ function InputElement(props) {
 		localValue = ''; // If the value is null or undefined, don't let this be an uncontrolled input
 	}
 
-	const sizeProps = {};
-	if (!props.flex && !props.w) {
-		sizeProps.flex = 1;
+	const style = props.style || {};
+	// auto-set width to flex if it's not already set another way
+	if (!disableAutoFlex && !hasWidth(props) && !hasFlex(props)) {
+		style.flex = 1;
+	}
+	let inputClassName = `
+			Input
+			flex-1
+			block
+			h-auto
+			${styles.FORM_INPUT_BG}
+			${styles.FORM_INPUT_BG_FOCUS}
+			${styles.FORM_INPUT_BG_HOVER}
+		`,
+		inputFieldClassName = `
+			InputField
+			min-h-[40px]
+			w-full
+			p-2
+			text-left
+			${styles.FORM_INPUT_FONTSIZE}
+			${styles.FORM_INPUT_BG}
+			${styles.FORM_INPUT_BG_FOCUS}
+			${styles.FORM_INPUT_BG_HOVER}
+		`;
+	if (props.className) {
+		inputClassName += props.className;
+		inputFieldClassName += props.className;
 	}
 	
-	let component = <Input
-						ref={props.outerRef}
-						onChangeText={onChangeTextLocal}
-						_input={{
-							onKeyPress: onKeyPressLocal,
-						}}
-						fontSize={styles.FORM_INPUT_FONTSIZE}
-						bg={styles.FORM_INPUT_BG}
-						_focus={{
-							bg: styles.FORM_INPUT_FOCUS_BG,
-						}}
-						autoCapitalize={autoCapitalize}
-						{...sizeProps}
-						{...props}
-						value={localValue}
-					/>;
-	if (tooltip) {
-		// component = <Tooltip label={tooltip} placement={tooltipPlacement}>
-		// 				{component}
-		// 			</Tooltip>;
-	}
-	return component;
-}
+	return <Input
+				className={inputClassName}
+				style={style}
+			>
+				{leftElement &&
+					<InputSlot>{leftElement}</InputSlot>}
+				
+				{leftIcon && leftIconHandler && 
+					<Pressable onPress={leftIconHandler}>
+						<InputIcon className="ml-2">
+							{leftIcon}
+						</InputIcon>
+					</Pressable>}
+				{leftIcon && !leftIconHandler && 
+					<InputIcon className="ml-2">
+						{leftIcon}
+					</InputIcon>}
 
-const
-	InputField = withComponent(withValue(InputElement)),
-	InputForwardRef = React.forwardRef((props, ref) => {
-		return <InputField {...props} outerRef={ref} component="Input" />;
-	});
+				<InputField
+					ref={ref}
+					onChangeText={onChangeTextLocal}
+					onKeyPress={onKeyPressLocal}
+					value={localValue}
+					className={inputFieldClassName}
+					dataFocusVisible={true}
+					variant="outline"
+					placeholder={placeholder}
+				/>
 
-export default InputForwardRef;
+				{rightElement &&
+					<InputSlot>{rightElement}</InputSlot>}
+
+				{rightIcon && rightIconHandler && 
+					<Pressable onPress={rightIconHandler}>
+						<InputIcon className="mr-2">
+							{rightIcon}
+						</InputIcon>
+					</Pressable>}
+				{rightIcon && !rightIconHandler && 
+					<InputIcon className="mr-2">
+						{rightIcon}
+					</InputIcon>}
+			</Input>;
+});
+
+export default withComponent(withValue(withTooltip(InputElement)));

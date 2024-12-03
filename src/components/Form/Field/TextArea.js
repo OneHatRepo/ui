@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
-	Textarea,
-} from '@gluestack-ui/themed';
+	Textarea, TextareaInput,
+} from '../../Gluestack';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
@@ -15,6 +15,8 @@ const
 				autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
 				autoSubmitDelay = UiGlobals.autoSubmitDelay,
 				onChangeText,
+				placeholder,
+				minimizeForRow = false,
 			} = props,
 			value = _.isNil(props.value) ? '' : props.value, // null value may not actually reset this TextArea, so set it explicitly to empty string
 			styles = UiGlobals.styles,
@@ -75,20 +77,35 @@ const
 		if (localValue === null || typeof localValue === 'undefined') {
 			localValue = ''; // If the value is null or undefined, don't let this be an uncontrolled input
 		}
+		let textareaClassName = `
+				Textarea
+			`,
+			inputClassName = `
+				TextAreaInput
+				flex-1
+				${styles.FORM_TEXTAREA_BG}
+				${styles.FORM_TEXTAREA_FONTSIZE}
+				${styles.FORM_TEXTAREA_HEIGHT}
+			`;
+		if (props.className) {
+			inputClassName += ' ' + props.className;
+		}
+		if (minimizeForRow) {
+			textareaClassName += ' max-h-[50px] overflow-auto';
+		}
 
-		return <Textarea
-					ref={props.outerRef}
-					onChangeText={onChangeTextLocal}
-					flex={1}
-					bg={styles.FORM_TEXTAREA_BG}
-					_focus={{
-						bg: styles.FORM_TEXTAREA_BG,
-					}}
-					fontSize={styles.FORM_TEXTAREA_FONTSIZE}
-					h={styles.FORM_TEXTAREA_HEIGHT}
-					{...props}
-					value={localValue}
-				/>;
+		return <Textarea className={textareaClassName}>
+					<TextareaInput
+						ref={props.outerRef}
+						onChangeText={onChangeTextLocal}
+						_focus={{
+							bg: styles.FORM_TEXTAREA_BG,
+						}}
+						value={localValue}
+						className={inputClassName}
+						placeholder={placeholder}
+					/>
+				</Textarea>;
 	},
 	TextAreaField = withComponent(withValue(TextAreaElement));
 

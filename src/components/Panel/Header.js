@@ -1,11 +1,10 @@
-import React from 'react';
+import { cloneElement } from 'react';
 import {
-	VStack,
-	Icon,
-	Pressable,
 	HStack,
-	Text,
-} from '@gluestack-ui/themed';
+	Pressable,
+	TextNative,
+	VStack,
+} from '../Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -13,7 +12,7 @@ import {
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import Minus from '../Icons/Minus.js';
@@ -22,6 +21,8 @@ import Xmark from '../Icons/Xmark.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import IconButton from '../Buttons/IconButton.js';
 
+const DOUBLE_CLICK = 2;
+
 export default function Header(props) {
 
 	const {
@@ -29,8 +30,9 @@ export default function Header(props) {
 			title = '',
 			onClose,
 			isCollapsible = true,
-			collapseDirection = VERTICAL,
 			isCollapsed = false,
+			isWindow = false,
+			collapseDirection = VERTICAL,
 			onToggleCollapse = emptyFn,
 		} = props,
 		styles = UiGlobals.styles;
@@ -38,25 +40,45 @@ export default function Header(props) {
 	let closeBtn = null,
 		collapseBtn = null;
 	if (onClose) {
+		let closeClassName = `
+			closeBtn
+			self-center
+			border
+			border-grey-400
+			${styles.PANEL_HEADER_BG}
+		`;
+		if (collapseDirection !== HORIZONTAL) {
+			closeClassName += ' mr-3';
+		}
 		closeBtn = <IconButton
-						icon={<Icon as={Xmark} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.PANEL_HEADER_ICON_COLOR} />}
 						onPress={onClose}
-						testID="closeBtn"
-						alignSelf="center"
-						mr={3}
-						borderWidth={1}
-						borderColor="trueGray.400"
+						icon={Xmark}
+						_icon={{
+							size: styles.PANEL_HEADER_ICON_SIZE,
+							className: styles.PANEL_HEADER_ICON_COLOR,
+						}}
+						className={closeClassName}
 					/>;
 	}
 	if (isCollapsible) {
+		let collapseClassName = `
+			collapseBtn
+			self-center
+			border
+			border-grey-400
+			${styles.PANEL_HEADER_BG}
+		`;
+		if (collapseDirection !== HORIZONTAL) {
+			collapseClassName += ' ml-3';
+		}
 		collapseBtn = <IconButton
-						icon={isCollapsed ? <Icon as={Plus} size={styles.PANEL_HEADER_ICON_SIZE} color={styles.PANEL_HEADER_ICON_COLOR} /> : <Icon as={Minus} size={styles.PANEL_HEADER_ICON_SIZE}  color={styles.PANEL_HEADER_ICON_COLOR} />}
 						onPress={onToggleCollapse}
-						testID="collapseBtn"
-						alignSelf="center"
-						ml={1}
-						h="20px"
-						w="30px"
+						icon={isCollapsed ? Plus : Minus}
+						_icon={{
+							size: styles.PANEL_HEADER_ICON_SIZE,
+							className: styles.PANEL_HEADER_ICON_COLOR,
+						}}
+						className={collapseClassName}
 					/>;
 	}
 	
@@ -65,144 +87,160 @@ export default function Header(props) {
 		doubleClickStyle.cursor = 'pointer';
 	}
 
-
+	let panelClassName = `
+		header
+		items-center
+		justify-start
+		py-1
+		border-b-grey-400
+		border-b-1
+		${isWindow ? 'rounded-t-lg' : ''}
+		${styles.PANEL_HEADER_BG}
+	`;
 	if (CURRENT_MODE === UI_MODE_WEB) {
 
 		if (isCollapsed) {
 			if (collapseDirection === HORIZONTAL) {
-				collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
+				// collapseBtn = cloneElement(collapseBtn, { className: 'my-2 mr-1', });
+				panelClassName += ' h-full w-full';
 				return <div
-							className="header"
-							style={{ flex: 1, width: '100%', userSelect: 'none', ...doubleClickStyle, }}
+							className="Header-div"
+							style={{
+								flex: 1,
+								width: '100%',
+								userSelect: 'none',
+								...doubleClickStyle,
+							}}
 							onClick={(e) => {
-								if (isCollapsible && e.detail === 2) { // double-click
+								if (isCollapsible && e.detail === DOUBLE_CLICK) { // double-click
 									onToggleCollapse(e);
 								}
 							}}
 						>
-							 <VStack
-							 	alignItems="center"
-								justifyContent="flex-start"
-								h="100%"
-								w="100%"
-								bg={styles.PANEL_HEADER_BG_VERTICAL}
-								borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
-								borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
+							<VStack
 								style={{ userSelect: 'none', }}
-								testID={testID}
+								className={panelClassName}
 							>
 								{collapseBtn}
 								<div style={{ textOrientation: 'mixed', writingMode: 'vertical-rl', }}>
-									<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
+									<TextNative
+										numberOfLines={1}
+										ellipsizeMode="head"
+										className={`
+											TextNative
+											flex-1
+											${styles.PANEL_HEADER_TEXT_COLOR}
+											${styles.PANEL_HEADER_TEXT_FONTSIZE}
+										`}>{title}</TextNative>
 								</div>
 							</VStack>
 						</div>;
 			}
 		}
-	
+		if (closeBtn) {
+			panelClassName += ' pl-[4px] pr-3';
+		} else {
+			panelClassName += ' px-3';
+		}
 		return <div
-					className="header"
-					style={{ width: '100%', userSelect: 'none', ...doubleClickStyle, }}
+					className="Header-div"
+					style={{
+						width: '100%',
+						userSelect: 'none',
+						...doubleClickStyle,
+					}}
 					onClick={(e) => {
-						if (isCollapsible && e.detail === 2) { // double-click
+						if (isCollapsible && e.detail === DOUBLE_CLICK) {
 							onToggleCollapse(e);
 						}
 					}}
 				>
 					<HStack
-						alignItems="center"
-						justifyContent="flex-start"
-						px={styles.PANEL_HEADER_PX}
-						py={styles.PANEL_HEADER_PY}
-						bg={styles.PANEL_HEADER_BG}
-						borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
-						borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
 						style={{ userSelect: 'none', }}
-						testID={testID}>
+						className={panelClassName}
+					>
 						{closeBtn}
-						<Text flex={1} fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE} color={styles.PANEL_HEADER_TEXT_COLOR} numberOfLines={1} ellipsizeMode="head" testID="text">{title}</Text>
+						<TextNative
+							numberOfLines={1}
+							ellipsizeMode="head"
+							className={`
+								TextNative
+								flex-1
+								${styles.PANEL_HEADER_TEXT_COLOR}
+								${styles.PANEL_HEADER_TEXT_FONTSIZE}
+							`}
+						>{title}</TextNative>
 						{collapseBtn}
 					</HStack>
 				</div>;
 
-	} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+	} else if (CURRENT_MODE === UI_MODE_NATIVE) {
 
 		if (isCollapsed) {
 			if (collapseDirection === HORIZONTAL) {
-				collapseBtn = React.cloneElement(collapseBtn, { my: 2, mr: 1, });
+				// collapseBtn = cloneElement(collapseBtn, { my: 2, mr: 1, });
+				if (closeBtn) {
+					panelClassName += ' pl-[4px] pr-3';
+				} else {
+					panelClassName += ' px-3';
+				}
 				return <Pressable
 							testID={testID}
-							flex={1}
-							w="100%"
 							style={{ userSelect: 'none', ...doubleClickStyle, }}
 							onPress={(e) => {
 								if (isCollapsible) {
 									onToggleCollapse(e);
 								}
 							}}
+							className="flex-1 w-full"
 						>
-							 <VStack
-							 	alignItems="center"
-								justifyContent="flex-start"
-								h="100%" 
-								w="100%"
-								bg={styles.PANEL_HEADER_BG_VERTICAL}
-								borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
-								borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
+							<VStack
+								className={panelClassName}
 							>
 								{collapseBtn}
-								<VStack
-									alignItems="center"
-									justifyContent="center"
-									flex={1} 
-									w="100%"
-								>
-									<Text
-										textAlign="right"
-										fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE}
-										color={styles.PANEL_HEADER_TEXT_COLOR}
+								<VStack className="items-center justify-center flex-1 w-full">
+									<TextNative
 										numberOfLines={1}
 										ellipsizeMode="head"
-										w={200}
 										style={{ transform: [{ rotate: '-90deg'}] }}
-									>{title}</Text>
+										className={`
+											w-[200px]
+											text-right
+											${styles.PANEL_HEADER_TEXT_COLOR}
+											${styles.PANEL_HEADER_TEXT_FONTSIZE}
+										`}
+									>{title}</TextNative>
 								</VStack>
 							</VStack>
 						</Pressable>;
 			}
 		}
-	
+		if (closeBtn) {
+			panelClassName += ' pl-[4px] pr-3';
+		} else {
+			panelClassName += ' px-3';
+		}
 		return <Pressable
 					testID={testID}
-					w="100%"
 					style={{ userSelect: 'none', ...doubleClickStyle, }}
 					onPress={(e) => {
 						if (isCollapsible) {
 							onToggleCollapse(e);
 						}
 					}}
+					className="w-full"
 				>
 					<HStack
-						alignItems="center"
-						justifyContent="flex-start"
-						px={styles.PANEL_HEADER_PX}
-						py={styles.PANEL_HEADER_PY}
-						bg={styles.PANEL_HEADER_BG}
-						borderBottomWidth={styles.PANEL_HEADER_BORDER_BOTTOM_WIDTH}
-						borderBottomColor={styles.PANEL_HEADER_BORDER_BOTTOM_COLOR}
+						className={panelClassName}
 					>
 						{closeBtn}
-						<Text
-							flex={1}
-							fontSize={styles.PANEL_HEADER_TEXT_FONTSIZE}
-							color={styles.PANEL_HEADER_TEXT_COLOR}
+						<TextNative
 							numberOfLines={1}
 							ellipsizeMode="head"
-						>{title}</Text>
+							className={` ${styles.PANEL_HEADER_TEXT_COLOR} ${styles.PANEL_HEADER_TEXT_FONTSIZE} flex-1 `}>{title}</TextNative>
 						{collapseBtn}
 					</HStack>
 				</Pressable>;
-
 	}
 
 }

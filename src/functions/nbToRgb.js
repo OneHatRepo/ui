@@ -11,7 +11,7 @@ function isRgb(color) {
 // 'color' might be in a format NativeBase uses, like '#000:alpha.20' or 'primary.200'
 // Try to convert this to actual RGB colors.
 export default function nbToRgb(color) {
-
+return '';
 	let regex, alpha, matches;
 
 	if (isRgb(color)) {

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
 	HStack,
+	HStackNative,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import Date from '../Form/Field/Date.js';
 import testProps from '../../Functions/testProps.js';
 import withTooltip from '../Hoc/withTooltip.js';
@@ -18,10 +19,17 @@ const
 				},
 				setValue,
 				mode,
-				tooltip = '',
-
-				minValue = 0,
+				minValue,
 				maxValue,
+				tooltip,
+
+				// withComponent
+				self,
+
+				// prevent passthru of these props
+				onChangeValue,
+				onChangeSelection,
+
 				...propsToPass
 			} = props,
 			[low, setLow] = useState(''),
@@ -71,32 +79,43 @@ const
 		if (!isReady) {
 			return null;
 		}
+
+		let className = `
+			flex-1
+			justify-center
+			items-center
+			px-1
+			py-[2px]
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
+		}
 		
-		return <HStack
-					justifyContent="center"
-					alignItems="center"
-					flex={1}
-					px={1}
-					{...propsToPass}
-				>
+		return <HStack className={className} style={props.style}>
 					<Date
 						{...testProps('low')}
 						value={low}
 						onChangeValue={onChangeLow}
 						mode={mode}
-						// minValue={minValue}
-						// maxValue={maxValue}
+						minValue={minValue}
+						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'Low'}
+						limitWidth={true}
+						parent={self}
+						reference="low"
 					/>
-					<Text px={2} userSelect="none">to</Text>
+					<Text className="px-2 select-none">to</Text>
 					<Date
 						{...testProps('high')}
 						value={high}
 						onChangeValue={onChangeHigh}
 						mode={mode}
-						// minValue={minValue}
-						// maxValue={maxValue}
+						minValue={minValue}
+						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
+						limitWidth={true}
+						parent={self}
+						reference="high"
 					/>
 				</HStack>;
 	},

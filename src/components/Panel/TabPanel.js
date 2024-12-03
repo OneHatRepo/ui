@@ -3,7 +3,7 @@ import Panel from './Panel.js';
 
 
 export default function TabPanel(props) {
-	return <Panel flex={1} w="100%" {...props._panel}>
+	return <Panel className="w-full flex" {...props._panel}>
 				<TabBar {...props} />
 			</Panel>;
 }

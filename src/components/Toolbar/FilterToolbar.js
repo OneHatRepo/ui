@@ -1,20 +1,24 @@
 import {
 	HStack,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
 
 export default function FilterToolbar(props) {
 	const {
 			toolbarItems = [],
-		} = props,
-		propsToPass = _.omit(props, 'toolbarItems');
-	return <Toolbar
-				bg="trueGray.200"
-				borderTopWidth={1}
-				borderTopColor="trueGray.400"
-				w="100%"
-			>
-				{toolbarItems.length ? <HStack flex={1} borderLeftWidth={1} borderLeftColor="trueGray.100">{toolbarItems}</HStack> : null}
+		} = props;
+	return <Toolbar className={`
+				bg-grey-200
+				border-t
+				border-t-grey-400
+				w-full
+			`} >
+				{toolbarItems.length && 
+					<HStack className={`
+						flex-1
+						border
+						border-l-grey-100
+					`}>{toolbarItems}</HStack>}
 			</Toolbar>;
 };

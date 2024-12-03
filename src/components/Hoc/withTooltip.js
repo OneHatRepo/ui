@@ -1,21 +1,27 @@
-import React from 'react';
-import {
-	Tooltip,
-} from '@gluestack-ui/themed';
+import { forwardRef } from 'react';
+import Tooltip from '../Tooltip/Tooltip.js';
+import _ from 'lodash';
 
-// NOTE: Can't seem to get this working for some elements like Combo or File
+// This HOC adds a standardized tooltip to the wrapped component.
+// If you need a tooltip with custom elements, use the Tooltip component directly.
 
 export default function withTooltip(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		const {
 				tooltip,
 				tooltipPlacement = 'bottom',
+				_tooltip = {},
+				...propsToPass
 			} = props;
-		// if (!tooltip) {
-			return <WrappedComponent {...props} />;
-		// }
-		return <Tooltip label={tooltip} placement={tooltipPlacement}>
-					<WrappedComponent {...props} />
-				</Tooltip>;
-	};
+		
+		let component = <WrappedComponent {...propsToPass} ref={ref} />;
+
+		if (tooltip || !_.isEmpty(_tooltip)) {
+			component = <Tooltip label={tooltip} placement={tooltipPlacement} {..._tooltip}>
+							{component}
+						</Tooltip>;
+		}
+		
+		return component;
+	});
 }

@@ -1,6 +1,4 @@
-import {
-	Box,
-} from '@gluestack-ui/themed';
+import { Box } from './Gluestack';
 import _ from 'lodash';
 
 export default function Blank(props) {

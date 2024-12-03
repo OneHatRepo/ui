@@ -1,25 +1,36 @@
 import {
 	HStack,
-	Text,
-} from '@gluestack-ui/themed';
+	TextNative,
+} from '../Gluestack';
 import styles from '../../Constants/Styles.js';
 
 export default function Label(props) {
-	const {
-			w = styles.FORM_LABEL_WIDTH,
-		} = props;
+	let className = `
+		Label
+		items-center
+		min-w-[120px]
+		pl-2
+	`;
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+	let textClassName = `
+		Label-TextNative
+		text-ellipsis
+		${styles.FORM_LABEL_FONTSIZE}
+	`;
+	if (props._text?.className) {
+		textClassName += ' ' + props._text.className;
+	}
+	
 	return <HStack
-				w={w}
-				minWidth="120px"
-				// maxWidth="50%"
-				alignItems="center"
-				pl={2}
-				{...props}
+				className={className}
+				style={props.style || {}}
 			>
-				<Text
-					fontSize={styles.FORM_LABEL_FONTSIZE}
+				<TextNative
 					numberOfLines={1}
 					ellipsizeMode="head"
-				>{props.children}</Text>
+					className={textClassName}
+				>{props.children}</TextNative>
 			</HStack>;
 }

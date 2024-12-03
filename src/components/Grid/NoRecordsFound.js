@@ -1,8 +1,8 @@
 import {
-	VStack,
 	HStack,
 	Text,
-} from '@gluestack-ui/themed';
+	VStack,
+} from '../Gluestack';
 import IconButton from '../Buttons/IconButton.js';
 import Rotate from '../Icons/Rotate.js';
 
@@ -13,31 +13,28 @@ export default function NoRecordsFound(props) {
 			text = 'No Records found.',
 		} = props,
 		textComponent = <Text
-							textAlign="center"
+							className="text-center"
 						>{text}</Text>;
 
 	let component = textComponent;
 	if (onRefresh) {
-		component = <HStack justifyContent="center" alignItems="center" w="100%" flex={1}>
+		component = <HStack className="NoRecordsFound justify-center items-center w-full flex-1">
 						<IconButton
+							icon={Rotate}
 							_icon={{
-								as: Rotate,
-								name: 'redo-alt',
-								style: {
-									fontSize: 16,
-								},
-								color: 'trueGray.400',
-								mr: 1,
+								size: 'md',
+								className: `
+									text-grey-400
+								`,
 							}}
 							onPress={onRefresh}
-							variant="ghost"
-							p={1}
-							ml={-4}
+							variant="outline"
+							className="p-1 px-2 mr-2"
 						/>
 						{textComponent}
 					</HStack>;
 	} else {
-		component = <VStack justifyContent="center" alignItems="center" w="100%" flex={1}>
+		component = <VStack className="NoRecordsFound justify-center items-center w-full flex-1">
 						{textComponent}
 					</VStack>;
 	}

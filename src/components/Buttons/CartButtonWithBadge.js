@@ -3,7 +3,7 @@ import {
 	Icon,
 	Pressable,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import {
 	Ionicons,
 } from '@expo/vector-icons';
@@ -14,12 +14,20 @@ export default function CartButtonWithBadge(props) {
 			badgeMsg,
 			onPress,
 		} = props;
-	return <Pressable onPress={onPress} flexDirection="row" justifyContent="center" pr={5} {...testProps('cartBtn')}>
-				<Icon as={Ionicons} name="cart" color="primary.800" size="xl" pb={1} />
+	return <Pressable
+				onPress={onPress}
+				{...testProps('cartBtn')}
+				className="flex-row justify-center pr-[5px]"
+			>
+				<Icon as={Ionicons} name="cart" size="xl" className="text-primary-800 pb-1" />
 				{badgeMsg > 0 && 
-					<Badge position="absolute" right={2} top={-10} colorScheme="danger" rounded="20px" variant="solid" {...testProps('cartBadge')}>
-						<Text fontSize={12} fontWeight="bold" color="lightText">{badgeMsg}</Text>
+					<Badge
+						colorScheme="danger"
+						variant="solid"
+						{...testProps('cartBadge')}
+						className="absolute right-2 -top-10 rounded-[20px]">
+						<Text className="text-[12px] font-bold text-lightText">{badgeMsg}</Text>
 					</Badge>}
-			</Pressable>
+			</Pressable>;
 }
 

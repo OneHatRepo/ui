@@ -1,7 +1,4 @@
-import React, { useState, useEffect, } from 'react';
-import {
-	Modal,
-} from '@gluestack-ui/themed';
+import { forwardRef, useState, useEffect, } from 'react';
 import {
 	ADD,
 	EDIT,
@@ -39,11 +36,11 @@ const presetButtons = [
 ];
 
 export default function withPresetButtons(WrappedComponent, isGrid = false) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disablePresetButtons) {
 			// bypass everything
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		const {
@@ -51,6 +48,10 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				contextMenuItems = [],
 				additionalToolbarButtons = [],
 				useUploadDownload = false,
+				uploadHeaders,
+				uploadParams,
+				downloadHeaders,
+				downloadParams,
 				onChangeColumnsConfig,
 				canRecordBeEdited,
 				canRecordBeDeleted,
@@ -74,6 +75,10 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 
 				// withAlert
 				showInfo,
+
+				// withModal
+				showModal,
+				hideModal,
 
 				// withComponent
 				self,
@@ -101,7 +106,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				selectorSelected,
 			} = props,
 			[isReady, setIsReady] = useState(false),
-			[isModalShown, setIsModalShown] = useState(false),
 			[localContextMenuItems, setLocalContextMenuItems] = useState([]),
 			[localAdditionalToolbarButtons, setLocalAdditionalToolbarButtons] = useState([]),
 			[localColumnsConfig, setLocalColumnsConfig] = useState([]),
@@ -185,7 +189,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'addBtn';
 						text = 'Add';
 						handler = onAdd;
-						icon = <Plus />;
+						icon = Plus;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
 						}
@@ -197,7 +201,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'editBtn';
 						text = 'Edit';
 						handler = onEdit;
-						icon = <Edit />;
+						icon = Edit;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
 						}
@@ -212,7 +216,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'deleteBtn';
 						text = 'Delete';
 						handler = onDelete;
-						icon = <Trash />;
+						icon = Trash;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
 						}
@@ -233,7 +237,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'viewBtn';
 						text = 'View';
 						handler = onView;
-						icon = <Eye />;
+						icon = Eye;
 						isDisabled = !selection.length || selection.length !== 1;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
@@ -246,7 +250,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'copyBtn';
 						text = 'Copy to Clipboard';
 						handler = onCopyToClipboard;
-						icon = <Clipboard />;
+						icon = Clipboard;
 						isDisabled = !selection.length;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
@@ -259,7 +263,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'duplicateBtn';
 						text = 'Duplicate';
 						handler = onDuplicate;
-						icon = <Duplicate />;
+						icon = Duplicate;
 						isDisabled = !selection.length || selection.length !== 1;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
@@ -274,13 +278,13 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					// case PRINT:
 					// 	text = 'Print';
 					// 	handler = onPrint;
-					// 	icon = <Print />;
+					// 	icon = Print;
 					// 	break;
 					case UPLOAD_DOWNLOAD:
 						key = 'uploadDownloadBtn';
 						text = 'Upload/Download';
 						handler = onUploadDownload;
-						icon = <UploadDownload />;
+						icon = UploadDownload;
 						break;
 					default:
 				}
@@ -341,8 +345,21 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					showInfo('Copied to clipboard!');
 				}
 			},
-			onUploadDownload = () => setIsModalShown(true),
-			onModalClose = () => setIsModalShown(false);
+			onUploadDownload = () => {
+				showModal({
+					body: <UploadsDownloadsWindow
+								reference="uploadsDownloads"
+								onClose={hideModal}
+								Repository={Repository}
+								columnsConfig={props.columnsConfig}
+								uploadHeaders={uploadHeaders}
+								uploadParams={uploadParams}
+								downloadHeaders={downloadHeaders}
+								downloadParams={downloadParams}
+							/>,
+					onCancel: hideModal,
+				});
+			};
 			// onPrint = () => {
 			// 	debugger;
 			// };
@@ -358,32 +375,19 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 			return null;
 		}
 
-		return <>
-					<WrappedComponent
-						{...propsToPass}
-						disablePresetButtons={false}
-						contextMenuItems={[
-							...localContextMenuItems,
-							...contextMenuItems,
-						]}
-						additionalToolbarButtons={[
-							...localAdditionalToolbarButtons,
-							...additionalToolbarButtons,
-						]}
-						onChangeColumnsConfig={onChangeColumnsConfigDecorator}
-					/>
-					{isModalShown && 
-						<Modal
-							isOpen={true}
-							onClose={onModalClose}
-						>
-							<UploadsDownloadsWindow
-								reference="uploadsDownloads"
-								onClose={onModalClose}
-								Repository={Repository}
-								columnsConfig={props.columnsConfig}
-							/>
-						</Modal>}
-				</>;
-	};
+		return <WrappedComponent
+					{...propsToPass}
+					ref={ref}
+					disablePresetButtons={false}
+					contextMenuItems={[
+						...localContextMenuItems,
+						...contextMenuItems,
+					]}
+					additionalToolbarButtons={[
+						...localAdditionalToolbarButtons,
+						...additionalToolbarButtons,
+					]}
+					onChangeColumnsConfig={onChangeColumnsConfigDecorator}
+				/>;
+	});
 }

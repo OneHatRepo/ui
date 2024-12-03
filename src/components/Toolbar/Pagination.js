@@ -1,22 +1,20 @@
 import { useEffect, useMemo, } from 'react';
 import {
-	ButtonText,
 	HStack,
-	Icon,
+	HStackNative,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
-import ReloadPageButton from '../Buttons/ReloadPageButton.js';
+import ReloadButton from '../Buttons/ReloadButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import AnglesLeft from '../Icons/AnglesLeft.js';
 import AngleRight from '../Icons/AngleRight.js';
 import AnglesRight from '../Icons/AnglesRight.js';
-import Rotate from '../Icons/Rotate.js';
 import Input from '../Form/Field/Input.js';
-import PageSizeCombo from '../Form/Field/Combo/PageSizeCombo.js';
+import PageSizeSelect from '../Form/Field/Select/PageSizeSelect.js';
 
 export default function Pagination(props) {
 	const {
@@ -50,17 +48,10 @@ export default function Pagination(props) {
 
 	return useMemo(() => {
 		const
-			iconButtonProps = {
-				// mx: 1,
-			},
 			iconProps = {
-				// position: 'absolute',
-				alignSelf: 'center',
 				size: 'sm',
-				color: 'trueGray.500',
-				h: 20,
-				w: 20,
 			};
+
 		let items = [],
 			isDisabled = false;
 		if (showMoreOnly) {
@@ -73,13 +64,16 @@ export default function Pagination(props) {
 								parent={self}
 								onPress={() => Repository.showMore()}
 								isDisabled={isDisabled}
-								tooltip="Show More"
-							>
-								<ButtonText>Show More</ButtonText>
-							</Button>);
+								text="Show More"
+							/>);
 			}
 			if (!Repository.isLocal) {
-				items.push(<ReloadPageButton key="reloadPageBtn" {...iconButtonProps} iconProps={iconProps} Repository={Repository} self={self} />);
+				items.push(<ReloadButton
+					key="reloadPageBtn"
+					_icon={iconProps}
+					Repository={Repository}
+					self={self}
+				/>);
 			}
 		} else {
 			isDisabled = page === 1;
@@ -89,9 +83,9 @@ export default function Pagination(props) {
 								key="firstPageBtn"
 								reference="firstPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AnglesLeft}
+								_icon={iconProps}
 								onPress={() => Repository.setPage(1)}
 								tooltip="First Page"
 							/>);
@@ -100,20 +94,24 @@ export default function Pagination(props) {
 								key="prevPageBtn"
 								reference="prevPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AngleLeft}
+								_icon={iconProps}
 								onPress={() => Repository.prevPage()}
 								tooltip="Previous Page"
 							/>);
 				if (!minimize) {
 					items.push(<HStack
 									key="pageSelector"
-									mx={3}
-									justifyContent="center"
-									alignItems="center"
-								>
-									<Text mr={2}>Page</Text>
+									className={`
+										pageSelector
+										w-[100px]
+										mx-2
+										justify-center
+										items-center
+										bg-[#f00]
+									`}>
+									{/* <Text className="page mr-1">Page</Text>
 									<Input
 										{...testProps('pageInput')}
 										reference="pageInput"
@@ -123,10 +121,10 @@ export default function Pagination(props) {
 										onChangeValue={(value) => Repository.setPage(value)}
 										maxValue={totalPages}
 										isDisabled={totalPages === 1}
-										w={10}
+										className="pageInput w-[30px] text-center bg-grey-100"
 										tooltip="Set Page"
 									/>
-									<Text ml={2}>of {totalPages}</Text>
+									<Text className="of ml-1">of {totalPages}</Text> */}
 								</HStack>);
 				}
 
@@ -136,9 +134,9 @@ export default function Pagination(props) {
 								key="nextPageBtn"
 								reference="nextPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AngleRight}
+								_icon={iconProps}
 								onPress={() => Repository.nextPage()}
 								tooltip="Next Page"
 							/>);
@@ -147,19 +145,24 @@ export default function Pagination(props) {
 								key="lastPageBtn"
 								reference="lastPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AnglesRight}
+								_icon={iconProps}
 								onPress={() => Repository.setPage(totalPages)}
 								tooltip="Last Page"
 							/>);
 			}
 
 			if (!Repository.isLocal) {
-				items.push(<ReloadPageButton key="reloadPageBtn" {...iconButtonProps} iconProps={iconProps} Repository={Repository} self={self} />);
+				items.push(<ReloadButton
+					key="reloadPageBtn"
+					_icon={iconProps}
+					Repository={Repository}
+					self={self}
+				/>);
 			}
 			if (showPagination && !minimize && !disablePageSize) {
-				items.push(<PageSizeCombo
+				items.push(<PageSizeSelect
 								{...testProps('pageSize')}
 								key="pageSize"
 								reference="pageSize"
@@ -173,16 +176,15 @@ export default function Pagination(props) {
 				if (pageStart === pageEnd) {
 					pageSpan = pageStart;
 				}
-				items.push(<Text key="pageDisplay" ml={3}>Displaying {pageSpan} of {total}</Text>);
+				items.push(<Text
+								key="pageDisplay"
+								className="pageDisplay ml-3 min-w-[200px]"
+							>Displaying {pageSpan} of {total}</Text>);
 			}
 		}
-		
 		return <HStack
-					justifyContent="flex-start"
-					alignItems="center"
-					px={2}
 					style={{ userSelect: 'none', }}
-					{...props}
+					className="Pagination justify-start items-center px-2 "
 				>
 					{items}
 				</HStack>;
@@ -196,5 +198,5 @@ export default function Pagination(props) {
 		pageStart,
 		pageEnd,
 		minimize,
-	])
-};
+	]);
+}

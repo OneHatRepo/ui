@@ -1,21 +1,25 @@
-import { useEffect, useRef, useState, } from 'react';
+import { useEffect, useRef, useState, isValidElement, } from 'react';
 import {
-	ButtonText,
 	HStack,
-	Icon,
 	ScrollView,
 	Text,
 	VStack,
-} from '@gluestack-ui/themed';
+	VStackNative,
+} from '../Gluestack';
 import {
 	EDIT,
 } from '../../Constants/Commands.js';
 import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
+import {
+	extractCssPropertyFromClassName,
+	hasHeight,
+	hasWidth,
+	hasFlex,
+} from '../../Functions/tailwindFunctions.js';
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
-import withPdfButtons from '../Hoc/withPdfButtons.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
@@ -27,8 +31,6 @@ import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import _ from 'lodash';
 
-const CONTAINER_THRESHOLD = 900;
-
 function Viewer(props) {
 	const {
 			viewerCanDelete = false,
@@ -39,6 +41,7 @@ function Viewer(props) {
 			additionalViewButtons,
 			canRecordBeEdited,
 			viewerSetup, // this fn will be executed after the viewer setup is complete
+			disableLabels = false,
 		
 			// withComponent
 			self,
@@ -74,25 +77,31 @@ function Viewer(props) {
 			if (!item) {
 				return null;
 			}
+			if (isValidElement(item)) {
+				return item;
+			}
 			let {
 					type,
 					title,
 					name,
 					label,
 					items,
-					// onChange: onEditorChange,
 					useSelectorId = false,
 					isHidden = false,
 					isHiddenInViewMode = false,
-					...propsToPass
+					getDynamicProps,
+					...itemPropsToPass
 				} = item,
-				editorTypeProps = {};
+				viewerTypeProps = {};
 
 			if (isHidden) {
 				return null;
 			}
 			if (isHiddenInViewMode) {
 				return null;
+			}
+			if (!itemPropsToPass.className) {
+				itemPropsToPass.className = '';
 			}
 			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 			if (!type) {
@@ -102,48 +111,110 @@ function Viewer(props) {
 							type: t,
 							...p
 						} = propertyDef.viewerType;
-					type = t
+					type = t;
+					viewerTypeProps = p;
 				} else {
 					type = 'Text';
 				}
 			}
-			if (type?.match && type.match(/Combo$/) && Repository?.isRemote && !Repository?.isLoaded) {
-				editorTypeProps.autoLoad = true;
+			const isCombo = type?.match && type.match(/Combo/);
+			if (item.hasOwnProperty('autoLoad')) {
+				viewerTypeProps.autoLoad = item.autoLoad;
+			} else {
+				if (isCombo && Repository?.isRemote && !Repository?.isLoaded) {
+					viewerTypeProps.autoLoad = true;
+				}
 			}
 			if (type?.match(/(Tag|TagEditor)$/)) {
-				editorTypeProps.isViewOnly = true;
+				viewerTypeProps.isViewOnly = true;
 			}
 			const Element = getComponentFromType(type);
-			let children;
 
-			if (inArray(type, ['Column', 'FieldSet'])) {
+			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
 				}
+				let children;
+				const style = {};
 				if (type === 'Column') {
-					if (containerWidth < CONTAINER_THRESHOLD) {
-						// everything is in one column
-						if (propsToPass.hasOwnProperty('flex')) {
-							delete propsToPass.flex;
+					const isEverythingInOneColumn = containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD;
+					if (itemPropsToPass.hasOwnProperty('flex')) {
+						if (!isEverythingInOneColumn) {
+							style.flex = itemPropsToPass.flex;
 						}
-						if (propsToPass.hasOwnProperty('width')) {
-							delete propsToPass.width;
-						}
-						if (propsToPass.hasOwnProperty('w')) {
-							delete propsToPass.w;
-						}
-						propsToPass.w = '100%';
-						propsToPass.mb = 1;
+						delete itemPropsToPass.flex;
 					}
-					propsToPass.pl = 3;
-				} else if (type === 'FieldSet' && item.showToggleAllCheckbox) {
-					propsToPass.showToggleAllCheckbox = false; // don't allow it in view mode
+					if (itemPropsToPass.hasOwnProperty('w')) {
+						if (!isEverythingInOneColumn) {
+							style.width = itemPropsToPass.w;
+						}
+						delete itemPropsToPass.w;
+					}
+					if (!style.flex && !style.width) {
+						style.flex = 1;
+					}
+					itemPropsToPass.className += ' Column';
+					// if (containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD) {
+					// 	// everything is in one column
+					// 	if (hasFlex(itemPropsToPass)) {
+					// 		itemPropsToPass.className = extractCssPropertyFromClassName(itemPropsToPass.className, 'flex').className;
+					// 		if (itemPropsToPass.style?.flex) {
+					// 			delete itemPropsToPass.style.flex;
+					// 		}
+					// 	}
+					// 	if (hasWidth(itemPropsToPass)) {
+					// 		itemPropsToPass.className = extractCssPropertyFromClassName(itemPropsToPass.className, 'width').className;
+					// 		if (itemPropsToPass.style?.width) {
+					// 			delete itemPropsToPass.style.width;
+					// 		}
+					// 	}
+					// 	itemPropsToPass.className += ' w-full mb-1';
+					// }
+				}
+				if (type === 'Row') {
+					itemPropsToPass.className += ' Row w-full';
+				}
+				if (type === 'FieldSet' && item.showToggleAllCheckbox) {
+					itemPropsToPass.showToggleAllCheckbox = false; // don't allow it in view mode
 				}
 				const itemDefaults = item.defaults || {};
 				children = _.map(items, (item, ix) => {
 					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
-				return <Element key={ix} title={title} {...defaults} {...itemDefaults} {...propsToPass} {...editorTypeProps}>{children}</Element>;
+
+				let elementClassName = '';
+				const defaultsClassName = defaults.className;
+				if (defaultsClassName) {
+					elementClassName += ' ' + defaultsClassName;
+				}
+				const itemDefaultsClassName = itemDefaults.className;
+				if (itemDefaultsClassName) {
+					elementClassName += ' ' + itemDefaultsClassName;
+				}
+				const itemPropsToPassClassName = itemPropsToPass.className;
+				if (itemPropsToPassClassName) {
+					elementClassName += ' ' + itemPropsToPassClassName;
+				}
+				const editorTypeClassName = viewerTypeProps.className;
+				if (editorTypeClassName) {
+					elementClassName += ' ' + editorTypeClassName;
+				}
+				let defaultsToPass = {},
+					itemDefaultsToPass = {};
+				if (type === 'FieldSet') { // don't pass for Row and Column, as they use regular <div>s for web
+					defaultsToPass = defaults;
+					itemDefaultsToPass = itemDefaults;
+				}
+				return <Element
+							key={ix}
+							title={title}
+							{...defaultsToPass}
+							{...itemDefaultsToPass}
+							{...itemPropsToPass}
+							{...viewerTypeProps}
+							className={elementClassName}
+							style={style}
+						>{children}</Element>;
 			}
 
 			if (!label && Repository && propertyDef?.title) {
@@ -161,6 +232,20 @@ function Viewer(props) {
 					value = record.properties[fkDisplayField].displayValue;
 				}
 			}
+
+			let elementClassName = 'field-' + name;
+			const defaultsClassName = defaults.className;
+			if (defaultsClassName) {
+				elementClassName += ' ' + defaultsClassName;
+			}
+			const itemPropsToPassClassName = itemPropsToPass.className;
+			if (itemPropsToPassClassName) {
+				elementClassName += ' ' + itemPropsToPassClassName;
+			}
+			const viewerTypeClassName = viewerTypeProps.className;
+			if (viewerTypeClassName) {
+				elementClassName += ' ' + viewerTypeClassName;
+			}
 			
 			let element = <Element
 								{...testProps('field-' + name)}
@@ -168,25 +253,39 @@ function Viewer(props) {
 								isEditable={false}
 								parent={self}
 								reference={name}
-								{...propsToPass}
-								{...editorTypeProps}
+								{...itemPropsToPass}
+								{...viewerTypeProps}
+								className={elementClassName}
 							/>;
 
 			if (item.additionalViewButtons) {
-				element = <HStack flexWrap="wrap">
+				element = <HStack className="flex-wrap">
 								{element}
 								{buildAdditionalButtons(item.additionalViewButtons, self)}
 							</HStack>;
 			}
 
-			if (label) {
-				const labelProps = {};
+			if (!disableLabels && label) {
+				const style = {};
 				if (defaults?.labelWidth) {
-					labelProps.w = defaults.labelWidth;
+					style.width = defaults.labelWidth;
 				}
-				element = <><Label {...labelProps}>{label}</Label>{element}</>;
+				if (!style.width) {
+					style.width = '50px';
+				}
+				if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
+					element = <HStack className="HStackA py-1">
+									<Label style={style}>{label}</Label>
+									{element}
+								</HStack>;
+				} else {
+					element = <VStack className="HStackA w-full py-1 mt-3">
+									<Label style={style}>{label}</Label>
+									{element}
+								</VStack>;
+				}
 			}
-			return <HStack key={ix}>{element}</HStack>;
+			return <HStack key={ix} className="HStackB px-2 pb-1">{element}</HStack>;
 		},
 		buildAncillary = () => {
 			const components = [];
@@ -196,39 +295,35 @@ function Viewer(props) {
 						type,
 						title = null,
 						selectorId = null,
-						...propsToPass
+						...itemPropsToPass
 					} = item;
 					if (isMultiple && type !== 'Attachments') {
 						return;
 					}
-					if (!propsToPass.h) {
-						propsToPass.h = 400;
+					if (type.match(/Grid/) && !itemPropsToPass.h) {
+						itemPropsToPass.h = 400;
 					}
+
 					const
 						Element = getComponentFromType(type),
 						element = <Element
 										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
-										flex={1}
-										h={350}
 										canEditorViewOnly={true}
 										canCrud={false}
 										uniqueRepository={true}
 										parent={self}
-										{...propsToPass}
+										{...itemPropsToPass}
 										canRowsReorder={false}
 									/>;
 					if (title) {
 						if (record?.displayValue) {
 							title += ' for ' + record.displayValue;
 						}
-						title = <Text
-									fontSize={styles.VIEWER_ANCILLARY_FONTSIZE}
-									fontWeight="bold"
-								>{title}</Text>;
+						title = <Text className={`${styles.VIEWER_ANCILLARY_FONTSIZE} font-bold`}>{title}</Text>;
 					}
-					components.push(<VStack key={'ancillary-' + ix} my={5}>{title}{element}</VStack>);
+					components.push(<VStack key={'ancillary-' + ix} className="my-3">{title}{element}</VStack>);
 				});
 			}
 			return components;
@@ -265,66 +360,87 @@ function Viewer(props) {
 		canEdit = false;
 	}
 
-	return <VStack flex={flex} {...testProps(self)} {...props} onLayout={onLayout}>
+	let className = 'Viewer-VStackNative';
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+
+	return <VStackNative
+				{...testProps(self)}
+				{...props}
+				className={className}
+				onLayout={onLayout}
+			>
 				{containerWidth && <>
 
-					<ScrollView _web={{ height: 1 }} width="100%" pb={1} ref={scrollViewRef}>
+					<ScrollView
+						_web={{ height: 1 }}
+						ref={scrollViewRef}
+						className={`
+							ScrollView
+							w-full
+							pb-1
+						`}
+					>
 						{canEdit && onEditMode &&
-							<Toolbar justifyContent="flex-end">
-								<HStack flex={1} alignItems="center">
-									<Text fontSize={20} ml={2} color="trueGray.500">View Mode</Text>
+							<Toolbar className="justify-end">
+								<HStack className="flex-1 items-center">
+									<Text className="text-[20px] ml-1 text-grey-500">View Mode</Text>
 								</HStack>
 								{(!canUser || canUser(EDIT)) &&
 									<Button
 										{...testProps('toEditBtn')}
 										key="editBtn"
 										onPress={onEditMode}
-										leftIcon={<Icon as={Pencil} color="#fff" size="sm" />}	
-										color="#fff"
-									>
-										<ButtonText>To Edit</ButtonText>
-									</Button>}
+										icon={Pencil}
+										_icon={{ 
+											size: 'sm',
+											className: 'text-white'
+										}}
+										className="text-white"
+										text="To Edit"
+										tooltip="Switch to Edit Mode"
+									/>}
 							</Toolbar>}
+						
 						{!_.isEmpty(additionalButtons) && 
-							<Toolbar justifyContent="flex-end" flexWrap="wrap">
+							<Toolbar className="justify-end flex-wrap">
 								{additionalButtons}
 							</Toolbar>}
-						<VStack>
-							{containerWidth >= CONTAINER_THRESHOLD ? <HStack p={4} pl={0}>{viewerComponents}</HStack> : null}
-							{containerWidth < CONTAINER_THRESHOLD ? <VStack p={4}>{viewerComponents}</VStack> : null}
-							<VStack m={2} pt={4}>{ancillaryComponents}</VStack>
-						</VStack>
+						
+						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD ? <HStack className="Viewer-formComponents-HStack p-4 gap-4 justify-center">{viewerComponents}</HStack> : null}
+						{containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD ? <VStack className="Viewer-formComponents-VStack p-4">{viewerComponents}</VStack> : null}
+						<VStack className="Viewer-AncillaryComponents m-2 pt-4 px-2">{ancillaryComponents}</VStack>
 					</ScrollView>
+
 					{(showDeleteBtn || showCloseBtn) && 
-						<Footer justifyContent="flex-end">
+						<Footer className="justify-end">
 							{showDeleteBtn && 
-								<HStack flex={1} justifyContent="flex-start">
+								<HStack className="flex-1 justify-start">
 									<Button
 										{...testProps('deleteBtn')}
 										key="deleteBtn"
 										onPress={onDelete}
-										bg="warning"
-										_hover={{
-											bg: 'warningHover',
-										}}
-										color="#fff"
-									>
-										<ButtonText>Delete</ButtonText>
-									</Button>
+										className={`
+											text-white
+											bg-warning-500
+											hover:bg-warning-600
+										`}
+										text="Delete"
+									/>
 								</HStack>}
 							{onClose && showCloseBtn &&
 								<Button
 									{...testProps('closeBtn')}
 									key="closeBtn"
 									onPress={onClose}
-									color="#fff"
-								>
-									<ButtonText>Close</ButtonText>
-								</Button>}
+									className="text-white"
+									text="Close"
+								/>}
 						</Footer>}
 
 				</>}
-			</VStack>;
+			</VStackNative>;
 }
 
-export default withComponent(withPdfButtons(Viewer));
+export default withComponent(Viewer);

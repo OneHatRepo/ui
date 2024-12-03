@@ -1,43 +1,46 @@
 import {
 	Box,
-	Button,
 	ButtonText,
 	Icon,
-	Modal,
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
+import Button from '../Buttons/Button';
 import testProps from '../../Functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 
 export default function ErrorMessage(props) {
 	const {
 			text = 'Error',
-			color = 'red.500',
+			color = 'red-500',
 			onOk,
 		} = props;
 
-	return <Modal isOpen={true} {...props} _backdrop={{ bg: "#000" }} {...testProps('ErrorMessage')}>
-				<Modal.Content>
-					<Modal.Header>Alert</Modal.Header>
-					<Modal.Body
-						borderTopWidth={0}
-						bg="#fff"
-						p={3}
-						justifyContent="center"
-						alignItems="center"
-						borderRadius={5}
-						flexDirection="row"
+	return <Modal isOpen={true} {...props} {...testProps('ErrorMessage')}>
+				<ModalBackdrop />
+				<ModalContent>
+					<ModalHeader>Alert</ModalHeader>
+					<ModalBody
+						className={`
+							flex-row
+							align-center
+							justify-center
+							p-3
+							bg-white
+							border-t-0
+							rounded-md
+						`}
 					>
-						<Box w="50px" mx={2}>
-							<Icon as={TriangleExclamation} color="red.500" size="10" />
+						<Box className="w-[50px] mx-1">
+							<Icon as={TriangleExclamation} size="10" className="text-red-500" />
 						</Box>
-						<Text flex={1} color={color} fontSize="18px">{text}</Text>
-					</Modal.Body>
-					<Modal.Footer py={2} pr={4}>
-						<Button color="primary.800" onPress={onOk}>
+						<Text className={` text-${color} flex-1 text-[18px] `}>{text}</Text>
+					</ModalBody>
+					<ModalFooter className="py-2 pr-4">
+						<Button onPress={onOk} className="text-primary-800">
 							<ButtonText>OK</ButtonText>
 						</Button>
-					</Modal.Footer>
-				</Modal.Content>
+					</ModalFooter>
+				</ModalContent>
 			</Modal>;
 }

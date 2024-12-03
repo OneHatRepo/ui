@@ -1,16 +1,19 @@
-import { useEffect, useMemo, useRef, } from 'react';
+import { useMemo, } from 'react';
 import {
 	Box,
 	HStack,
-	Text,
-} from '@gluestack-ui/themed';
+	HStackNative,
+	Icon,
+	TextNative,
+} from '../Gluestack';
 import {
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
+import * as colourMixer from '@k-renwick/colour-mixer';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../..Ffunctions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import _ from 'lodash';
@@ -25,12 +28,17 @@ function GridRow(props) {
 			rowProps,
 			hideNavColumn,
 			isSelected,
+			isHovered,
 			bg,
+			showHovers,
+			index,
+			alternatingInterval,
+			alternateRowBackgrounds,
 			item,
 			isInlineEditorShown,
 			isDraggable = false, // withDraggable
 			isDragSource = false, // withDnd
-			isOver = false,
+			isOver = false, // drop target
 			dragSourceRef,
 			dropTargetRef,
 		} = props,
@@ -43,8 +51,32 @@ function GridRow(props) {
 	const
 		isPhantom = item.isPhantom,
 		hash = item?.hash || item;
-
 	return useMemo(() => {
+
+		let bg = props.bg || styles.GRID_ROW_BG,
+			mixWith;
+		if (isSelected) {
+			if (showHovers && isHovered) {
+				mixWith = styles.GRID_ROW_SELECTED_BG_HOVER;
+			} else {
+				mixWith = styles.GRID_ROW_SELECTED_BG;
+			}
+		} else if (showHovers && isHovered) {
+			mixWith = styles.GRID_ROW_BG_HOVER;
+		} else if (alternateRowBackgrounds && index % alternatingInterval === 0) { // i.e. every second line, or every third line
+			mixWith = styles.GRID_ROW_ALTERNATE_BG;
+		}
+		if (mixWith) {
+			// const
+			// 	mixWithObj = gsToHex(mixWith),
+			// 	ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
+			// bg = colourMixer.blend(bg, ratio, mixWithObj.color);
+			bg = colourMixer.blend(bg, 0.5, mixWith);
+		}
+		const
+			visibleColumns = _.filter(columnsConfig, (config) => !config.isHidden),
+			isOnlyOneVisibleColumn = visibleColumns.length === 1;
+
 		const renderColumns = (item) => {
 			if (_.isArray(columnsConfig)) {
 				return _.map(columnsConfig, (config, key, all) => {
@@ -52,23 +84,29 @@ function GridRow(props) {
 						return null;
 					}
 					const propsToPass = columnProps[key] || {};
-					if (all.length === 1) {
-						propsToPass.w = '100%';
+					const colStyle = {};
+					let colClassName = `
+						GridRow-column
+						p-1
+						justify-center
+						border-r-black-100
+						mr-1
+					`;
+					if (isOnlyOneVisibleColumn) {
+						colClassName = ' w-full';
 					} else {
 						if (config.w) {
-							propsToPass.w = config.w;
+							colStyle.width = config.w;
 						} else if (config.flex) {
-							propsToPass.flex = config.flex;
-							propsToPass.minWidth = 100;
+							colStyle.flex = config.flex;
+							colClassName = ' min-w-[100px]';
 						} else {
-							propsToPass.flex = 1;
+							colClassName = ' flex-1';
 						}
 					}
-					propsToPass.p = 1;
-					propsToPass.justifyContent = 'center';
 
 					if (isInlineEditorShown) {
-						propsToPass.minWidth = styles.INLINE_EDITOR_MIN_WIDTH;
+						colClassName += ' ' + styles.INLINE_EDITOR_MIN_WIDTH;
 					}
 
 					let value;
@@ -103,14 +141,17 @@ function GridRow(props) {
 								userSelect: 'none',
 							};
 
-							return <HStack
+							return <HStackNative
 										key={key}
 										{...testProps('rendererCol-' + key)}
+										className={colClassName}
 										{...propsToPass}
 										{...extraProps}
-									>{config.renderer(item)}</HStack>;
+										style={colStyle}
+									>{config.renderer(item)}</HStackNative>;
 						}
 						if (config.fieldName) {
+
 							if (item?.properties && item.properties[config.fieldName]) {
 								const property = item.properties[config.fieldName];
 								value = property.displayValue;
@@ -119,9 +160,6 @@ function GridRow(props) {
 								if (type) {
 									const Element = getComponentFromType(type);
 									const elementProps = {};
-									if (UiGlobals.mode === UI_MODE_WEB) {
-										elementProps.textOverflow = 'ellipsis';
-									}
 									if (type.match(/(Tag|TagEditor|Json)$/)) {
 										elementProps.isViewOnly = true; // TODO: this won't work for InlineGridEditor, bc that Grid can't use isViewOnly when actually editing
 									}
@@ -133,13 +171,20 @@ function GridRow(props) {
 												value={value}
 												key={key}
 												overflow="hidden"
-												alignSelf="center"
 												style={{
 													userSelect: 'none',
+													...colStyle,
 												}}
-												fontSize={styles.GRID_CELL_FONTSIZE}
-												px={styles.GRID_CELL_PX}
-												py={styles.GRID_CELL_PY}
+												minimizeForRow={true}
+												className={`
+													GridRow-Element
+													self-center
+													text-ellipsis
+													${colClassName}
+													${styles.GRID_CELL_FONTSIZE}
+													${styles.GRID_CELL_PX}
+													${styles.GRID_CELL_PY}
+												`}
 												numberOfLines={1}
 												ellipsizeMode="head"
 												{...propsToPass}
@@ -166,72 +211,119 @@ function GridRow(props) {
 						return value(key);
 					}
 					const elementProps = {};
-					if (UiGlobals.mode === UI_MODE_WEB) {
-						elementProps.textOverflow = 'ellipsis';
-					}
 					if (config.getCellProps) {
 						_.assign(elementProps, config.getCellProps(item));
 					}
-					return <Text
+					return <TextNative
 								{...testProps('cell-' + config.fieldName)}
 								key={key}
-								overflow="hidden"
-								alignSelf="center"
 								style={{
 									userSelect: 'none',
+									...colStyle,
 								}}
-								fontSize={styles.GRID_CELL_FONTSIZE}
-								px={styles.GRID_CELL_PX}
-								py={styles.GRID_CELL_PY}
 								numberOfLines={1}
 								ellipsizeMode="head"
+								className={`
+									GridRow-TextNative
+									self-center
+									overflow-hidden
+									text-ellipsis
+									${colClassName}
+									${styles.GRID_CELL_FONTSIZE} 
+									${styles.GRID_CELL_PX} 
+									${styles.GRID_CELL_PY} 
+								`}
 								{...elementProps}
 								{...propsToPass}
-							>{value}</Text>;
+							>{value}</TextNative>;
 				});
 			} else {
 				// TODO: if 'columnsConfig' is an object, parse its contents
 				throw new Error('Non-array columnsConfig not yet supported');
 			}
 		};
-		if (isOver) {
-			rowProps.borderWidth = 4;
-			rowProps.borderColor = '#0ff';
-		} else {
-			rowProps.borderWidth = 0;
-			rowProps.borderColor = null;
-		}
 
 		let rowContents = <>
 							{(isDragSource || isDraggable) && <RowDragHandle />}
-							{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
+							{isPhantom && 
+								<Box
+									className={`
+										GridRow-phantom
+										absolute
+										h-[2px]
+										w-[2px]
+										top-0
+										left-0
+										bg-[#f00]
+									`}
+								/>}
 							
 							{renderColumns(item)}
 
-							{!hideNavColumn && <AngleRight
-													color={styles.GRID_NAV_COLUMN_COLOR}
-													variant="ghost"
-													w={30}
-													alignSelf="center"
-													mx={3}
-												/>}
+							{!hideNavColumn &&
+								<Icon
+									as={AngleRight}
+									variant="outline"
+									className={`
+										GridRow-Icon
+										w-30
+										self-center
+										mx-3
+										${styles.GRID_NAV_COLUMN_COLOR}
+									`}
+								/>}
 						</>;
 
 		if (dragSourceRef) {
-			rowContents = <HStack flexGrow={1} flex={1} w="100%" bg={bg} ref={dragSourceRef}>{rowContents}</HStack>;
+			rowContents = <HStack
+								ref={dragSourceRef}
+								className={`
+									dragSourceRef
+									w-full
+									flex-1
+									grow-1
+								`}
+								style={{
+									backgroundColor: bg,
+								}}
+							>{rowContents}</HStack>;
 		}
 		if (dropTargetRef) {
-			rowContents = <HStack flexGrow={1} flex={1} w="100%" bg={bg} ref={dropTargetRef}>{rowContents}</HStack>;
+			rowContents = <HStack
+								ref={dropTargetRef}
+								className={`
+									dropTargetRef
+									w-full
+									flex-1
+									grow-1
+								`}
+								style={{
+									backgroundColor: bg,
+								}}
+							>{rowContents}</HStack>;
 		}
 
-		return <HStack
+		let rowClassName = `
+			GridRow-HStackNative
+			items-center
+		`;
+		if (isOnlyOneVisibleColumn) {
+			rowClassName += ' w-full';
+		}
+		if (isOver) {
+			rowClassName += ' border-4 border-[#0ff]';
+		} else {
+			rowClassName += ' border-b border-b-grey-100';
+		}
+		return <HStackNative
 					{...testProps('row' + (isSelected ? '-selected' : ''))}
-					alignItems="center"
-					flexGrow={1}
 					{...rowProps}
-					bg={bg}
 					key={hash}
-				>{rowContents}</HStack>;
+					className={rowClassName}
+					style={{
+						backgroundColor: bg,
+					}}
+				>{rowContents}</HStackNative>;
 	}, [
 		columnsConfig,
 		columnProps,
@@ -243,7 +335,9 @@ function GridRow(props) {
 		isPhantom,
 		hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
 		isInlineEditorShown,
-		isOver,
+		isSelected,
+		isHovered,
+		index,
 		dragSourceRef,
 		dropTargetRef,
 	]);

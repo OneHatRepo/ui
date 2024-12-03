@@ -3,7 +3,8 @@ import {
 	Box,
 	HStack,
 	Text,
-} from '@gluestack-ui/themed';
+	TextNative,
+} from '../Gluestack';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';
@@ -23,7 +24,6 @@ export default function FieldSet(props) {
 			isCollapsed,
 			hasErrors,
 			showToggleAllCheckbox = false,
-			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
@@ -75,63 +75,87 @@ export default function FieldSet(props) {
 				setIsAllChecked(isAllChecked);
 			}
 		};
-		
+
+	const className = `
+		FieldSet-Box
+		mb-4
+		mx-0
+		p-1
+		border
+		border-grey-400
+		${styles.FORM_FIELDSET_BG}
+	`;
+	if (props.className) {
+		props.className += className;
+	}
+
+	
 	return <Box
-				borderWidth={1}
-				borderColor="trueGray.400"
-				bg={styles.FORM_FIELDSET_BG}
-				mb={4}
-				pb={1}
-				pr={4}
-				{...propsToPass}
+				className={className}
+				style={props.style || {}}
 			>
 				{title &&
 					<HStack
-						w="100%"
-						borderBottomWidth={1}
-						borderBottomColor="trueGray.200"
-						mb={2}
 						style={{ userSelect: 'none', }}
+						className={`
+							FieldSet-title-HStack
+							w-full
+							mb-1
+							border
+							border-b-grey-200
+						`}
 					>
-						<Text
-							fontSize={styles.FORM_FIELDSET_FONTSIZE}
-							fontWeight="bold"
-							py={1}
-							px={3}
-							flex={1}
+						<TextNative
 							numberOfLines={1}
 							ellipsizeMode="head"
-						>{title}</Text>
-						{showToggleAllCheckbox && <HStack alignSelf="right">
-														<Text
-															fontSize={styles.FORM_FIELDSET_FONTSIZE}
-															py={1}
-															px={3}
-															flex={1}
-															numberOfLines={1}
-														>Toggle All?</Text>
-														<CheckboxButton
-															{...testProps('toggleAllBtn')}
-															isChecked={getIsAllChecked()}
-															onPress={onToggleAllChecked}
-															_icon={{
-																size: 'lg',
-															}}
-														/>
-													</HStack>}
-						{isCollapsible && <IconButton
-												{...testProps('toggleCollapseBtn')}
-												_icon={{
-													as: isLocalCollapsed ? <CaretDown /> : <CaretUp />,
-													size: 'sm',
-													color: 'trueGray.300',
-												}}
-												onPress={onToggleCollapse}
-											/>}
+							className={`
+								FieldSet-title-Text
+								flex-1
+								py-1
+								px-3
+								font-bold
+								${styles.FORM_FIELDSET_FONTSIZE}
+							`}
+						>{title}</TextNative>
+
+						{showToggleAllCheckbox && 
+							<HStack className="self-right">
+								<TextNative
+									numberOfLines={1}
+									className={`
+										flex-1
+										py-1
+										px-3
+										${styles.FORM_FIELDSET_FONTSIZE}
+									`}
+								>Toggle All?</TextNative>
+								<CheckboxButton
+									{...testProps('toggleAllBtn')}
+									isChecked={getIsAllChecked()}
+									onPress={onToggleAllChecked}
+									_icon={{
+										size: 'lg',
+									}}
+								/>
+							</HStack>}
+						
+						{isCollapsible && 
+							<IconButton
+								{...testProps('toggleCollapseBtn')}
+								icon={isLocalCollapsed ? CaretDown : CaretUp}
+								_icon={{
+									size: 'sm',
+									className: 'text-grey-300',
+								}}
+								onPress={onToggleCollapse}
+							/>}
 					</HStack>}
+
 				{helpText && <Text>{helpText}</Text>}
-				{!isLocalCollapsed && <FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
-											{children}
-										</FieldSetContext.Provider>}
+
+				{!isLocalCollapsed &&
+					<FieldSetContext.Provider value={{ registerChild, onChangeValue, }}>
+						{children}
+					</FieldSetContext.Provider>}
 			</Box>;
 }

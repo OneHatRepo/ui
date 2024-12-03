@@ -13,25 +13,21 @@ export default function getIconButtonFromConfig(config, ix, parent) {
 		} = config,
 		styles = UiGlobals.styles,
 		iconButtonProps = {
-			_hover: {
-				bg: 'trueGray.400',
-			},
-			mx: 1,
-			px: 3,
+			className: `
+				mx-1
+				px-3
+				self-center
+			`,
 		},
 		_icon = {
-			alignSelf: 'center',
 			size: styles.TOOLBAR_ITEMS_ICON_SIZE,
-			h: 20,
-			w: 20,
-			color: isDisabled ? styles.TOOLBAR_ITEMS_DISABLED_COLOR : styles.TOOLBAR_ITEMS_COLOR,
 		};
 	return <IconButton
 				{...testProps(key || 'btn-' + ix)}
 				key={key || ix}
 				parent={parent}
 				reference={key || ix}
-				onPress={() => handler(parent)}
+				onPress={(e) => handler(parent, e)}
 				icon={icon}
 				_icon={_icon}
 				isDisabled={isDisabled}

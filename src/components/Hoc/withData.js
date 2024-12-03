@@ -1,4 +1,4 @@
-import { useState, useEffect, } from 'react';
+import { forwardRef, useState, useEffect, } from 'react';
 import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
@@ -10,10 +10,10 @@ import _ from 'lodash';
 // This is the primary link between @onehat/data and the UI components
 
 export default function withData(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithData) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 		
 		const
@@ -93,7 +93,7 @@ export default function withData(WrappedComponent) {
 			})();
 
 			return () => {
-				if (repositoryId) {
+				if (repositoryId && !oneHatData.isDestroyed) {
 					oneHatData.deleteRepository(repositoryId);
 				}
 			}
@@ -106,6 +106,7 @@ export default function withData(WrappedComponent) {
 
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					disableWithData={false}
 					Repository={LocalRepository}
 					fields={fields}
@@ -114,5 +115,5 @@ export default function withData(WrappedComponent) {
 					idIx={localIdIx}
 					displayIx={localDisplayIx}
 				/>;
-	};
+	});
 }

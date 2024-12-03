@@ -1,20 +1,22 @@
 import {
 	HStack,
+	HStackNative,
 	Spinner,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import ScreenContainer from '../Container/ScreenContainer.js';
 
 export default function Loading(props) {
+
 	if (props.isScreen) {
 		return <ScreenContainer {...props}>
-					<HStack flex={1} justifyContent="center" alignItems="center">
-						<Spinner color="primary.500" mr={2} />
+					<HStack className="flex-1 justify-center items-center">
+						<Spinner className="text-primary-500 mr-1" />
 						<Text>Loading</Text>
 					</HStack>
 				</ScreenContainer>;
 	}
-	return <HStack justifyContent="center" minHeight={100} {...props}>
-				<Spinner flex={1} color="primary.500" />
-			</HStack>;
+	return <HStackNative {...props} className="justify-center min-h-[100px]">
+				<Spinner className="flex-1 text-primary-500" />
+			</HStackNative>;
 }

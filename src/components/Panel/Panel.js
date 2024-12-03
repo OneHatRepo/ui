@@ -1,19 +1,23 @@
 import { useEffect, useState, } from 'react';
 import {
-	VStack,
 	ScrollView,
-} from '@gluestack-ui/themed';
+	VStack,
+	VStackNative,
+} from '../Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import {
+	hasWidth,
+	hasFlex,
+} from '../../Functions/tailwindFunctions.js';
 import Inflector from 'inflector-js';
 import Header from './Header.js';
 import Mask from './Mask.js';
 import testProps from '../../Functions/testProps.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
 import withComponent from '../Hoc/withComponent.js';
-import emptyFn from '../../Functions/emptyFn.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
@@ -27,12 +31,10 @@ function Panel(props) {
 			isDisabled = false,
 			frame = false,
 			isScrollable = false,
-			h,
+			isWindow = false,
 			maxHeight,
-			w,
 			maxWidth,
-			flex,
-			onLayout = null,
+			disableAutoFlex = false,
 			
 			// Header
 			title = props.model ? UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))) : '',
@@ -53,6 +55,7 @@ function Panel(props) {
 
 			...propsToPass
 		} = props,
+		self = props.self,
 		[titleSuffix, setTitleSuffix] = useState(''),
 		onToggleCollapse = () => {
 			setIsCollapsed(!isCollapsed);
@@ -81,7 +84,7 @@ function Panel(props) {
 			return null;
 		}
 	}
-
+	
 	let headerComponent = header;
 	if (showHeader && title) {
 		headerComponent = <Header
@@ -89,84 +92,66 @@ function Panel(props) {
 								onClose={onClose}
 								isCollapsible={isCollapsible}
 								isCollapsed={isCollapsed}
+								isWindow={isWindow}
 								collapseDirection={collapseDirection}
 								onToggleCollapse={onToggleCollapse}
 							/>;
 	}
 
-	const sizeProps = {};
-	if (!flex && !h && !w) {
-		sizeProps.flex = 1;
-	} else {
-		if (h) {
-			sizeProps.h = h;
-		}
-		if (w) {
-			sizeProps.w = w;
-		}
-		if (flex) {
-			sizeProps.flex = flex;
-		}
+	let className = 'Panel';
+	const style = props.style || {};
+	if (!hasWidth(props) && !hasFlex(props) && !disableAutoFlex) {
+		style.flex = 1;
 	}
 	if (maxWidth) {
-		sizeProps.maxWidth = maxWidth;
+		style.maxWidth = maxWidth;
 	}
 	if (maxHeight) {
-		sizeProps.maxHeight = maxHeight;
+		style.maxHeight = maxHeight;
 	}
-	// if (propsToPass.h && isCollapsed) {
-	// 	delete propsToPass.h;
-	// }
-
-	const
-		borderProps = {
-			borderTopColor: 'primary.600',
-			borderBottomColor: 'primary.600',
-			borderLeftColor: 'primary.600',
-			borderRightColor: 'primary.600',
-		},
-		nonFrameProps = {
-			...borderProps,
-			borderTopWidth: 1,
-			borderBottomWidth: 1,
-			borderLeftWidth: 1,
-			borderRightWidth: 1,
-		},
-		frameProps = {
-			...borderProps,
-			borderTopWidth: 3,
-			borderBottomWidth: 3,
-			borderLeftWidth: 3,
-			borderRightWidth: 3,
-		};
-	let framePropsToUse = nonFrameProps;
-	if (frame) {
-		framePropsToUse = frameProps;
-	}
-
-	const self = props.self;
 	if (isCollapsed) {
 		if (collapseDirection === HORIZONTAL) {
-			return <VStack {...testProps(self?.reference)} overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} w="33px">
-						{isDisabled && <Mask />}
-						{headerComponent}
-					</VStack>;
+			className += ' w-[33px]';
+		} else {
+			className += ' h-[33px]';
 		}
-		return <VStack {...testProps(self?.reference)} overflow="hidden" {...propsToPass} {...framePropsToUse}  {...sizeProps} h="33px">
-					{isDisabled && <Mask />}
-					{headerComponent}
-				</VStack>;
 	}
-	return <VStack {...testProps(self?.reference)} overflow="hidden" {...propsToPass} {...framePropsToUse} {...sizeProps} onLayout={onLayout}>
+
+	// frame
+	className += ' border-primary-600' + (isWindow ? ' rounded-lg shadow-lg ' : '') + (frame ? ' border-2' : ' border-none');
+
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+
+	return <VStackNative
+				{...testProps(self?.reference)}
+				className={className}
+				style={style}
+			>
 				{isDisabled && <Mask />}
 				{headerComponent}
-				{topToolbar}
-				<VStack flex={1} w="100%" overflow="hidden">
-					{isScrollable ? <ScrollView>{children}</ScrollView> : children}
-				</VStack>
-				{bottomToolbar}
-				{footer}
-			</VStack>;
+				{!isCollapsed && <>
+					{topToolbar}
+					<VStack
+						className={`
+							Panel-VSstack
+							flex-1
+							flex
+							w-full
+							overflow-hidden
+						`}
+					>
+						{isScrollable ? 
+							<ScrollView className="ScrollView">
+								{children}
+							</ScrollView> : 
+							children}
+					</VStack>
+					{bottomToolbar}
+					{footer}
+				</>}
+			</VStackNative>;
 
 }
 

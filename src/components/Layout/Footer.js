@@ -1,20 +1,27 @@
 import {
 	HStack,
-} from '@gluestack-ui/themed';
+} from '../Gluestack';
 import UiGlobals from '../../UiGlobals.js';
 
 export default function Footer(props) {
 	const styles = UiGlobals.styles;
+	let className = `
+		Footer
+		w-full
+		items-center
+		justify-center
+		self-end
+		p-2
+		border-t-2
+		${styles.PANEL_FOOTER_BORDER_TOP_COLOR}
+	`;
+	if (props.className) {
+		className += ' ' + props.className
+	}
 	return <HStack
-				alignItems="center"
-				justifyContent="center"
-				alignSelf="flex-end"
-				bg={styles.PANEL_FOOTER_BG}
-				testID="footer"
-				w="100%"
-				p={2}
-				// safeAreaBottom
-				{...props}
+				// safeAreaBottom (see https://www.nativewind.dev/tailwind/new-concepts/safe-area-insets)
+				className={className}
+				style={props.style || {}}
 			>
 				{props.children}
 			</HStack>;

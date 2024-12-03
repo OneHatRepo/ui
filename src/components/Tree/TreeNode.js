@@ -1,11 +1,12 @@
 import { useMemo, } from 'react';
 import {
 	Box,
-	Icon,
 	HStack,
+	Icon,
 	Spinner,
-	Text,
-} from '@gluestack-ui/themed';
+	TextNative,
+} from '../Gluestack';
+import * as colourMixer from '@k-renwick/colour-mixer';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -16,13 +17,14 @@ import _ from 'lodash';
 
 export default function TreeNode(props) {
 	const {
-			nodeProps = {},
-			bg,
 			datum,
+			nodeProps = {},
 			onToggle,
+			isSelected,
+			isHovered,
 			isDragMode,
 			isHighlighted,
-			isSelected,
+			bg,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -38,55 +40,97 @@ export default function TreeNode(props) {
 		iconLeaf = datum.iconLeaf,
 		hash = item?.hash || item;
 
-	const
-		icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf,
-		adjustedBg = isHighlighted ? styles.TREE_NODE_HIGHLIGHTED_BG : bg;
-
 	return useMemo(() => {
-		
+		const icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf;
+		let bg = props.bg || styles.TREE_NODE_BG,
+			mixWith;
+		if (isSelected) {
+			if (isHovered) {
+				mixWith = styles.TREE_NODE_SELECTED_BG_HOVER;
+			} else {
+				mixWith = styles.TREE_NODE_SELECTED_BG;
+			}
+		} else if (isHovered) {
+			mixWith = styles.TREE_NODE_BG_HOVER;
+		}
+		if (isHighlighted) {
+			mixWith = styles.TREE_NODE_HIGHLIGHTED_BG;
+		}
+		if (mixWith) {
+			// const
+			// 	mixWithObj = gsToHex(mixWith),
+			// 	ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
+			// bg = colourMixer.blend(bg, ratio, mixWithObj.color);
+			bg = colourMixer.blend(bg, 0.5, mixWith);
+		}
+
+		let className = `
+			treenode
+			items-center
+			flex
+			flex-1
+			grow-1
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
+		}
+	
 		return <HStack
 					{...testProps('node' + (isSelected ? '-selected' : ''))}
-					alignItems="center"
-					flexGrow={1}
 					{...nodeProps}
-					bg={adjustedBg}
 					key={hash}
+					className={className}
+					style={{
+						backgroundColor: bg,
+					}}
 				>
-					{isPhantom && <Box position="absolute" bg="#f00" h={2} w={2} t={0} l={0} />}
+					{isPhantom && <Box t={0} l={0} className="absolute bg-[#f00] h-[2px] w-[2px]" />}
 					
 					{isLoading ? 
-						<Spinner px={2} /> : 
-						(hasChildren && !isDragMode ? <IconButton icon={icon} onPress={() => onToggle(datum)} {...testProps('expandBtn')} /> : <Icon as={icon} px={2} />)}
+						<Spinner className="px-2" /> : 
+						(hasChildren && !isDragMode ? 
+							<IconButton
+								{...testProps('expandBtn')}
+								icon={icon}
+								onPress={(e) => onToggle(datum, e)}
+							/> : 
+							<Icon as={icon} className="ml-4 mr-1" />)}
 
-					<Text
-						overflow="hidden"
-						textOverflow="ellipsis"
-						alignSelf="center"
-						style={{ userSelect: 'none', }}
-						fontSize={styles.TREE_NODE_FONTSIZE}
-						px={styles.TREE_NODE_PX}
-						py={styles.TREE_NODE_PY}
+					<TextNative
 						numberOfLines={1}
 						ellipsizeMode="head"
-						{...propsToPass}
-					>{text}</Text>
+						// {...propsToPass}
+						className={`
+							treenode-text
+							self-center
+							overflow-hidden
+							flex
+							flex-1
+							text-ellipsis
+							${styles.TREE_NODE_PY}
+							${styles.TREE_NODE_PX}
+							${styles.TREE_NODE_FONTSIZE}
+						`}
+						style={{ userSelect: 'none', }}
+					>{text}</TextNative>
 
 				</HStack>;
 	}, [
 		nodeProps,
-		adjustedBg,
+		bg,
 		item,
-		isPhantom,
 		hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
+		isDragMode,
+		isHighlighted,
+		isSelected,
+		isPhantom,
 		isExpanded,
+		isLoading,
 		hasChildren,
 		depth,
 		text,
-		icon,
 		onToggle,
 		isLoading,
-		isDragMode,
-		isHighlighted,
 	]);
 }
 

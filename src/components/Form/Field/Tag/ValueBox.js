@@ -1,7 +1,7 @@
 import {
 	HStack,
 	Text,
-} from '@gluestack-ui/themed';
+} from '../../../Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import Eye from '../../../Icons/Eye.js';
@@ -18,39 +18,44 @@ export default function ValueBox(props) {
 		styles = UiGlobals.styles;
 	return <HStack
 				{...testProps('valueBox-' + text)}
-				borderWidth={1}
-				borderColor="trueGray.400"
-				borderRadius="md"
-				mr={1}
-				bg="trueGray.200"
-				alignItems="center"
-				maxWidth="100%"
+				className={`
+					max-w-full
+					items-center
+					mr-1
+					bg-grey-100
+					border
+					border-grey-400
+					rounded-md
+					${!onDelete && 'pr-4'}
+				`}
 			>
 				<IconButton
 					{...testProps('eyeBtn')}
+					icon={Eye}
 					_icon={{
-						as: Eye,
-						color: 'trueGray.600',
 						size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
+						className: 'text-grey-600',
 					}}
 					onPress={onView}
-					h="100%"
+					className="h-full"
 				/>
 				<Text
-					color="trueGray.600"
-					mr={onDelete ? 0 : 2}
-					fontSize={styles.FORM_TAG_VALUEBOX_FONTSIZE}
+					className={`
+						text-grey-600
+						${styles.FORM_TAG_VALUEBOX_FONTSIZE}
+						${onDelete ? 'mr-0' : 'mr-1'}
+					`}
 				>{text}</Text>
 				{onDelete &&
 					<IconButton
 						{...testProps('xBtn')}
+						icon={Xmark}
 						_icon={{
-							as: Xmark,
-							color: 'trueGray.600',
 							size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
+							className: 'text-grey-600',
 						}}
 						onPress={onDelete}
-						h="100%"
+						className="h-full"
 					/>}
 			</HStack>;
 }
