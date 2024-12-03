@@ -1,6 +1,6 @@
 import {
 	HStackNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import UiGlobals from '../../UiGlobals.js';
 
 export default function Toolbar(props) {

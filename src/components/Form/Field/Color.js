@@ -4,7 +4,7 @@ import {
 	Popover, PopoverContent, PopoverBody,
 	Pressable,
 	Tooltip,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import { SketchPicker } from 'react-color';
 import {
 	UI_MODE_WEB,

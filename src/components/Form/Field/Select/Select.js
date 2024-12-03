@@ -1,7 +1,7 @@
 import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	Select, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectInput, SelectIcon,  SelectItem,  SelectPortal, SelectTrigger,
-} from '../../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	hasWidth,
 	hasFlex,

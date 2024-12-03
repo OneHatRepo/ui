@@ -5,7 +5,7 @@ import {
 	Icon,
 	Text,
 	TextNative,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,

@@ -2,7 +2,7 @@ import {
 	HStack,
 	Text,
 	VStackNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import React, { useState, useEffect, } from 'react';
 import withComponent from '../Hoc/withComponent.js';
 import testProps from '../../Functions/testProps.js';

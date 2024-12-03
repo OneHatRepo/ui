@@ -5,7 +5,7 @@ import {
 	Icon,
 	Spinner,
 	TextNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import * as colourMixer from '@k-renwick/colour-mixer';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';

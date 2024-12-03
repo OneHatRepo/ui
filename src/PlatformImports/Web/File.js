@@ -2,7 +2,7 @@ import { useEffect, } from 'react';
 import {
 	HStack,
 	Text,
-} from '../../Components/Gluestack';
+} from '@project-components/Gluestack';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,

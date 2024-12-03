@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
 	HStack,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import Decimal from 'decimal.js';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';

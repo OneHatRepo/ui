@@ -1,7 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
 	Radio, RadioGroup,
-} from '../../../Gluestack';
+} from '@project-components/Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';

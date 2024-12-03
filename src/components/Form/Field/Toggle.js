@@ -5,7 +5,7 @@ import {
 	Pressable,
 	Switch,
 	Text,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Na from '../../Icons/Na.js';

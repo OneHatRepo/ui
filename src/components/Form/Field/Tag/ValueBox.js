@@ -1,7 +1,7 @@
 import {
 	HStack,
 	Text,
-} from '../../../Gluestack';
+} from '@project-components/Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import Eye from '../../../Icons/Eye.js';

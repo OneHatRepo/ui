@@ -1,7 +1,7 @@
 import {
 	HStack,
 	TextNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import styles from '../../Constants/Styles.js';
 
 export default function Label(props) {

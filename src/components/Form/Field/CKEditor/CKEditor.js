@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
 	HStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import UiGlobals from '../../../../UiGlobals.js';
 import { CKEditor } from '@ckeditor/ckeditor5-react'; // https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/react.html
 import './ckeditor.css';

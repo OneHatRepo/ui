@@ -2,7 +2,7 @@ import React, { useState, useEffect, } from 'react';
 import {
 	HStack,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Number from '../Form/Field/Number.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';

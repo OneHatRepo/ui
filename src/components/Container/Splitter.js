@@ -1,7 +1,7 @@
 import {
 	HStack,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,

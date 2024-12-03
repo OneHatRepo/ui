@@ -3,7 +3,7 @@ import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Spinner,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import testProps from '../../Functions/testProps.js';
 
 export default function WaitMessage(props) {

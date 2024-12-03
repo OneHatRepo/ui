@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import withComponent from '../Hoc/withComponent.js';
 import {
 	UI_MODE_WEB,

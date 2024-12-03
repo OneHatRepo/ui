@@ -4,7 +4,7 @@ import {
 	Icon,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Button from '../Buttons/Button.js';
 import Panel from '../Panel/Panel.js';
 import Footer from '../Layout/Footer.js';

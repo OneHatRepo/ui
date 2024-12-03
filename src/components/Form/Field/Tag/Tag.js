@@ -2,7 +2,7 @@ import { useRef, } from 'react';
 import {
 	HStack,
 	VStack,
-} from '../../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../../Constants/Editor.js';

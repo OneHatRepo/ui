@@ -1,6 +1,6 @@
 import {
 	HStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
 

@@ -1,4 +1,4 @@
-import { Box } from './Gluestack';
+import { Box } from '@project-components/Gluestack';
 import _ from 'lodash';
 
 export default function Blank(props) {

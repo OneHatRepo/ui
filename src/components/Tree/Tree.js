@@ -4,7 +4,7 @@ import {
 	Pressable,
 	ScrollView,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,

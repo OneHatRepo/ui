@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
 	HStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Pagination from './Pagination.js'
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';

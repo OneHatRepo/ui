@@ -1,7 +1,7 @@
 import {
 	Icon,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripLinesVertical from '../Icons/GripLinesVertical.js';

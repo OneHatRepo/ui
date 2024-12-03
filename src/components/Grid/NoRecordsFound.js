@@ -2,7 +2,7 @@ import {
 	HStack,
 	Text,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import IconButton from '../Buttons/IconButton.js';
 import Rotate from '../Icons/Rotate.js';
 

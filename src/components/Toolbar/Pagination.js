@@ -3,7 +3,7 @@ import {
 	HStack,
 	HStackNative,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';

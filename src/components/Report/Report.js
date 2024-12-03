@@ -4,7 +4,7 @@ import {
 	Icon,
 	Text,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor';
 import {
 	UI_MODE_WEB,

@@ -3,7 +3,7 @@ import {
 	HStack,
 	ScrollView,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,

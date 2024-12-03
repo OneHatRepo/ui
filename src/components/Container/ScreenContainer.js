@@ -8,7 +8,7 @@ import {
 	ScrollView,
 	VStack,
 	VStackNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import withComponent from '../Hoc/withComponent.js';
 // import { useHeaderHeight } from '@react-navigation/elements';
 // import testProps from '../OneHat/functions/testProps';

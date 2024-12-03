@@ -3,7 +3,7 @@ import {
 	HStack,
 	HStackNative,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Date from '../Form/Field/Date.js';
 import testProps from '../../Functions/testProps.js';
 import withTooltip from '../Hoc/withTooltip.js';

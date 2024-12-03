@@ -2,7 +2,7 @@ import { forwardRef, useRef, useState, useEffect, } from 'react';
 import {
 	Text,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Button from '../Buttons/Button.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';

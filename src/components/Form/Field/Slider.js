@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, } from 'react';
 import {
 	HStack,
 	Text,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	hasWidth,
 	hasFlex,

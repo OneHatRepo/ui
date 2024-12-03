@@ -7,7 +7,7 @@ import {
 	// ScrollView,
 	VStack,
 	VStackNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	ScrollView,
 } from 'react-native';

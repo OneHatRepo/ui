@@ -49,7 +49,7 @@ import { Text } from './text';
 import { Text as TextNative } from './text/index.tsx'; // explicitly import the native version
 import { Textarea, TextareaInput } from './textarea';
 import { Toast } from './toast';
-import { Tooltip } from './tooltip';
+import { Tooltip, TooltipContent, TooltipText } from './tooltip';
 import { View } from './view';
 import { VirtualizedList } from './virtualized-list';
 import { VStack } from './vstack';
@@ -108,7 +108,7 @@ export {
 	TextNative,
 	Textarea, TextareaInput,
 	Toast,
-	Tooltip,
+	Tooltip, TooltipContent, TooltipText,
 	View,
 	VirtualizedList,
 	VStack,

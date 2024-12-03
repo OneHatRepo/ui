@@ -4,7 +4,7 @@ import {
 	HStack,
 	Text,
 	TextNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';

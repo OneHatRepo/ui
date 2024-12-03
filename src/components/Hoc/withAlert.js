@@ -4,7 +4,7 @@ import {
 	HStack,
 	Icon,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import withModal from './withModal.js';
 import CircleInfo from '../Icons/CircleInfo.js';
 import CircleQuestion from '../Icons/CircleQuestion.js';

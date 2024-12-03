@@ -7,7 +7,7 @@ import {
 	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
 	Pressable,
 	TextNative,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	DATE,
 	TIME,

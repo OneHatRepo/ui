@@ -5,7 +5,7 @@ import {
 	HStackNative,
 	Icon,
 	TextNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';

@@ -11,7 +11,7 @@ import {
 	TextNative,
 	Tooltip,
 	VStack,
-} from '../../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,

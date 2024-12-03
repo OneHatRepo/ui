@@ -2,7 +2,7 @@ import { cloneElement, useState, useEffect, } from 'react';
 import {
 	HStack,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
 	Text,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';

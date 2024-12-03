@@ -2,7 +2,7 @@ import React from 'react';
 import {
 	HStack,
 	HStackNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import IconButton from './IconButton.js';
 import Plus from '../Icons/Plus.js';
 import Minus from '../Icons/Minus.js';

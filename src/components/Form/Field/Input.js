@@ -2,7 +2,7 @@ import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	Input, InputField, InputIcon, InputSlot,
 	Pressable,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	hasWidth,
 	hasFlex,

@@ -4,7 +4,7 @@ import {
 	Pressable,
 	TextNative,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,

@@ -5,7 +5,7 @@ import {
 	Text,
 	VStack,
 	VStackNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	EDIT,
 } from '../../Constants/Commands.js';

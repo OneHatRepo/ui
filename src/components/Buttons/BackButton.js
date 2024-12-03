@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import {
 	Icon,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Button from './Button';
 import AngleLeft from '../Icons/AngleLeft.js';
 

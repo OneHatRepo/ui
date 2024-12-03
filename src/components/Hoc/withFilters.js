@@ -3,7 +3,7 @@ import {
 	HStack,
 	// ScrollView,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	ScrollView,
 } from 'react-native'

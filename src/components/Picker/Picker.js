@@ -4,7 +4,7 @@ import {
 	Icon,
 	Select, SelectItem,
 	Tooltip,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import CaretDown from '../Icons/CaretDown.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';

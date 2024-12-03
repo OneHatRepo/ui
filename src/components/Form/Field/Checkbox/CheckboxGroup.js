@@ -1,7 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
 	Checkbox, CheckboxGroup,
-} from '../../../Gluestack';
+} from '@project-components/Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';

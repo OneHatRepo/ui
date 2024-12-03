@@ -1,6 +1,6 @@
 import {
 	Icon,
-} from '../Components/Gluestack';
+} from '@project-components/Gluestack';
 import Button from '../Components/Buttons/Button.js';
 import testProps from './testProps.js';
 import _ from 'lodash';

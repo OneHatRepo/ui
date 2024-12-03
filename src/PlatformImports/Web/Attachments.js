@@ -6,7 +6,7 @@ import {
 	Spinner,
 	Text,
 	VStack,
-} from '../../Components/Gluestack';
+} from '@project-components/Gluestack';
 import Button from '../../Components/Buttons/Button';
 import {
 	CURRENT_MODE,

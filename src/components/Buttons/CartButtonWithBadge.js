@@ -3,7 +3,7 @@ import {
 	Icon,
 	Pressable,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	Ionicons,
 } from '@expo/vector-icons';

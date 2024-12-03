@@ -2,7 +2,7 @@ import { useState, } from 'react';
 import {
 	ScrollView,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Accordion from 'react-native-collapsible/Accordion'; // https://www.npmjs.com/package/react-native-collapsible
 import testProps from '../../Functions/testProps';
 import Footer from '../Layout/Footer.js';

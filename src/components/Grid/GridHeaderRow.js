@@ -5,7 +5,7 @@ import {
 	Icon,
 	Pressable,
 	TextNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	SORT_ASCENDING,
 	SORT_DESCENDING,

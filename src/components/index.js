@@ -1,7 +1,7 @@
 import {
 	HStackNative,
 	VStackNative,
-} from './Gluestack';
+} from '@project-components/Gluestack';
 import AddressBook from './Icons/AddressBook.js';
 import Alt from './Icons/Alt.js';
 import AngleLeft from './Icons/AngleLeft.js';

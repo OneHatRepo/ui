@@ -3,7 +3,7 @@ import {
 	HStackNative,
 	Spinner,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import ScreenContainer from '../Container/ScreenContainer.js';
 
 export default function Loading(props) {

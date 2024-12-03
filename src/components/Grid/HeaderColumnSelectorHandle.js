@@ -1,7 +1,7 @@
 import {
 	Icon,
 	Pressable,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Gear from '../Icons/Gear.js';
 import _ from 'lodash';
 

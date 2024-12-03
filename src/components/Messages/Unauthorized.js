@@ -1,7 +1,7 @@
 import {
 	Text,
 	VStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 
 export default function Unauthorized(props) {
 	const 

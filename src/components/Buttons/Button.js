@@ -6,7 +6,7 @@ import {
 	ButtonIcon,
 	ButtonGroup,
 	Tooltip,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import _ from 'lodash';

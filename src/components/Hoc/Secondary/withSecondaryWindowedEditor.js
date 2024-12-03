@@ -1,6 +1,6 @@
 import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../Constants/Editor.js';

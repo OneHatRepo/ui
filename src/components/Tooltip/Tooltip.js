@@ -1,5 +1,5 @@
 import { forwardRef, cloneElement } from 'react';
-import { Tooltip, TooltipContent, TooltipText } from "../Gluestack/tooltip";
+import { Tooltip, TooltipContent, TooltipText } from '@project-components/Gluestack';
 
 const TooltipElement = forwardRef((props, ref) => {
 	const {

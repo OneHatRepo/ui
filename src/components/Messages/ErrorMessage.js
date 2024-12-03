@@ -4,7 +4,7 @@ import {
 	Icon,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import Button from '../Buttons/Button';
 import testProps from '../../Functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';

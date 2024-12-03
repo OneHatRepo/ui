@@ -8,7 +8,7 @@ import {
 	TextNative,
 	VStack,
 	VStackNative,
-} from '../../Gluestack';
+} from '@project-components/Gluestack';
 import { View, } from 'react-native';
 import {
 	EDITOR_TYPE__INLINE,

@@ -5,7 +5,7 @@ import {
 	Pressable,
 	VStack,
 	VStackNative,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import inArray from '../../Functions/inArray.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import _ from 'lodash';

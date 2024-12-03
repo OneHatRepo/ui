@@ -1,6 +1,6 @@
 import {
 	HStack,
-} from '../Gluestack';
+} from '@project-components/Gluestack';
 import UiGlobals from '../../UiGlobals.js';
 
 export default function Footer(props) {
