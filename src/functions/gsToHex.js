@@ -1,7 +1,9 @@
-import tailwindConfig from '../../tailwind.config';
+import UiGlobals from '../UiGlobals';
 import gluestackConfig from '../Components/Gluestack/gluestack-ui-provider/config';
 import { hslToRgb, rgbToHsl, rgbToHex, rgbaToHex, hslToHex, hslaToHex, } from './colorConversions';
 import _ from 'lodash';
+
+const tailwindConfig = UiGlobals.tailwindConfig;
 
 
 function getHexFromNamedColor(color) {
