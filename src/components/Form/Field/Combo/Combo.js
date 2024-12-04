@@ -1011,6 +1011,7 @@ export function ComboComponent(props) {
 	const className = `
 		Combo-HStack
 		flex-1
+		h-[40px]
 		justify-center
 		items-center
 	`;

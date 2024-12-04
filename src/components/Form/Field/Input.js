@@ -1,7 +1,6 @@
 import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	Input, InputField, InputIcon, InputSlot,
-	Pressable,
 } from '@project-components/Gluestack';
 import {
 	hasWidth,
@@ -18,10 +17,10 @@ const InputElement = forwardRef((props, ref) => {
 			testID,
 			value,
 			setValue,
+			maxLength,
 			autoSubmit = true, // automatically setValue after user stops typing for autoSubmitDelay
 			autoSubmitDelay = UiGlobals.autoSubmitDelay,
 			disableAutoFlex = false,
-			maxLength,
 			onKeyPress,
 			onChangeText,
 			leftElement,
@@ -31,6 +30,7 @@ const InputElement = forwardRef((props, ref) => {
 			rightIcon,
 			rightIconHandler,
 			placeholder,
+			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
 		debouncedSetValueRef = useRef(),
@@ -109,11 +109,12 @@ const InputElement = forwardRef((props, ref) => {
 	if (!disableAutoFlex && !hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
+	// flex-1
+	// block
+	// h-auto
+	// h-[10px]
 	let inputClassName = `
 			Input
-			flex-1
-			block
-			h-auto
 			${styles.FORM_INPUT_BG}
 			${styles.FORM_INPUT_BG_FOCUS}
 			${styles.FORM_INPUT_BG_HOVER}
@@ -121,6 +122,7 @@ const InputElement = forwardRef((props, ref) => {
 		inputFieldClassName = `
 			InputField
 			min-h-[40px]
+			h-auto
 			w-full
 			p-2
 			text-left
@@ -139,16 +141,16 @@ const InputElement = forwardRef((props, ref) => {
 				style={style}
 			>
 				{leftElement &&
-					<InputSlot>{leftElement}</InputSlot>}
+					<InputSlot className="leftElementInputSlot">{leftElement}</InputSlot>}
 				
 				{leftIcon && leftIconHandler && 
-					<Pressable onPress={leftIconHandler}>
-						<InputIcon className="ml-2">
+					<InputSlot onPress={leftIconHandler} className="InputSlot">
+						<InputIcon className="leftInputIconWithHandler ml-2">
 							{leftIcon}
 						</InputIcon>
-					</Pressable>}
+					</InputSlot>}
 				{leftIcon && !leftIconHandler && 
-					<InputIcon className="ml-2">
+					<InputIcon className="leftInputIcon ml-2">
 						{leftIcon}
 					</InputIcon>}
 
@@ -161,19 +163,20 @@ const InputElement = forwardRef((props, ref) => {
 					dataFocusVisible={true}
 					variant="outline"
 					placeholder={placeholder}
+					{...propsToPass}
 				/>
 
 				{rightElement &&
-					<InputSlot>{rightElement}</InputSlot>}
+					<InputSlot className="rightElementInputSlot">{rightElement}</InputSlot>}
 
 				{rightIcon && rightIconHandler && 
-					<Pressable onPress={rightIconHandler}>
-						<InputIcon className="mr-2">
+					<InputSlot onPress={rightIconHandler} className="InputSlot">
+						<InputIcon className="rightInputIconWithHandler mr-2">
 							{rightIcon}
 						</InputIcon>
-					</Pressable>}
+					</InputSlot>}
 				{rightIcon && !rightIconHandler && 
-					<InputIcon className="mr-2">
+					<InputIcon className="rightInputIcon mr-2">
 						{rightIcon}
 					</InputIcon>}
 			</Input>;

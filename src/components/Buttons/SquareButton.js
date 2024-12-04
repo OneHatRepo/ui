@@ -26,6 +26,7 @@ export default function SquareButton(props) {
 
 	return <IconButton
 				className={`
+					SquareButton
 					rounded-md
 					p-2
 					bg-[${bg}]

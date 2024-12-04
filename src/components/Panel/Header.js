@@ -41,7 +41,7 @@ export default function Header(props) {
 		collapseBtn = null;
 	if (onClose) {
 		let closeClassName = `
-			closeBtn
+			Header-closeBtn
 			self-center
 			border
 			border-grey-400
@@ -54,7 +54,7 @@ export default function Header(props) {
 						onPress={onClose}
 						icon={Xmark}
 						_icon={{
-							size: styles.PANEL_HEADER_ICON_SIZE,
+							// size: styles.PANEL_HEADER_ICON_SIZE,
 							className: styles.PANEL_HEADER_ICON_COLOR,
 						}}
 						className={closeClassName}
@@ -62,7 +62,7 @@ export default function Header(props) {
 	}
 	if (isCollapsible) {
 		let collapseClassName = `
-			collapseBtn
+			Header-collapseBtn
 			self-center
 			border
 			border-grey-400
@@ -88,7 +88,8 @@ export default function Header(props) {
 	}
 
 	let panelClassName = `
-		header
+		Header
+		bg-grey-300
 		items-center
 		justify-start
 		py-1
@@ -127,8 +128,9 @@ export default function Header(props) {
 										numberOfLines={1}
 										ellipsizeMode="head"
 										className={`
-											TextNative
+											Header-TextNative1
 											flex-1
+											font-bold
 											${styles.PANEL_HEADER_TEXT_COLOR}
 											${styles.PANEL_HEADER_TEXT_FONTSIZE}
 										`}>{title}</TextNative>
@@ -164,8 +166,9 @@ export default function Header(props) {
 							numberOfLines={1}
 							ellipsizeMode="head"
 							className={`
-								TextNative
+								Header-TextNative2
 								flex-1
+								font-bold
 								${styles.PANEL_HEADER_TEXT_COLOR}
 								${styles.PANEL_HEADER_TEXT_FONTSIZE}
 							`}
@@ -204,6 +207,8 @@ export default function Header(props) {
 										ellipsizeMode="head"
 										style={{ transform: [{ rotate: '-90deg'}] }}
 										className={`
+											Header-TextNative3
+											font-bold
 											w-[200px]
 											text-right
 											${styles.PANEL_HEADER_TEXT_COLOR}
@@ -237,7 +242,13 @@ export default function Header(props) {
 						<TextNative
 							numberOfLines={1}
 							ellipsizeMode="head"
-							className={` ${styles.PANEL_HEADER_TEXT_COLOR} ${styles.PANEL_HEADER_TEXT_FONTSIZE} flex-1 `}>{title}</TextNative>
+							className={`
+								Header-TextNative4
+								font-bold
+								flex-1
+								${styles.PANEL_HEADER_TEXT_COLOR}
+								${styles.PANEL_HEADER_TEXT_FONTSIZE}
+							`}>{title}</TextNative>
 						{collapseBtn}
 					</HStack>
 				</Pressable>;

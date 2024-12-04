@@ -1,8 +1,10 @@
 import { cloneElement, useState, useEffect, } from 'react';
 import {
 	HStack,
+	HStackNative,
 	ScrollView,
 	VStack,
+	VStackNative,
 } from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
@@ -488,7 +490,7 @@ function TabBar(props) {
 
 	let tabBar = null;
 	if (direction === VERTICAL) {
-		tabBar = <VStack
+		tabBar = <VStackNative
 					{...testProps('TabBar')}
 					{...propsToPass}
 					className={`
@@ -500,22 +502,22 @@ function TabBar(props) {
 						py-2
 					`}
 				>
-						{renderedTabs}
-						<VStack className="flex-1 w-full justify-end">
-							{renderedToggleButton}
-						</VStack>
-					</VStack>;
+					{renderedTabs}
+					<VStack className="flex-1 w-full justify-end">
+						{renderedToggleButton}
+					</VStack>
+				</VStackNative>;
 		if (renderedCurrentTabContent) {
-			tabBar = <HStack {...propsToPass} className="flex-1 w-full">
+			tabBar = <HStackNative {...propsToPass} className="flex-1 w-full">
 						{tabBar}
 						<VStack className="items-center justify-start flex-1">
 							{renderedCurrentTabContent}
 						</VStack>
-					</HStack>;
+					</HStackNative>;
 		}
 	}
 	if (direction === HORIZONTAL) {
-		tabBar = <HStack
+		tabBar = <HStackNative
 					{...testProps('TabBar')}
 					className={`
 						${isCollapsed ? 'h-[38px]' : 'h-[' + tabHeight + 'px]'}
@@ -537,14 +539,14 @@ function TabBar(props) {
 							{renderedToggleButton}
 						</HStack>
 					</HStack>
-				</HStack>;
+				</HStackNative>;
 		if (renderedCurrentTabContent) {
-			tabBar = <VStack {...propsToPass} className="flex-1 w-full">
+			tabBar = <VStackNative {...propsToPass} className="flex-1 w-full">
 						{tabBar}
 						<VStack className="items-center justify-start flex-1">
 							{renderedCurrentTabContent}
 						</VStack>
-					</VStack>;
+					</VStackNative>;
 		}
 	}
 	return tabBar;

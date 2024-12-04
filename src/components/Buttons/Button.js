@@ -32,7 +32,7 @@ const ButtonComponent = forwardRef((props, ref) => {
 				icon = cloneElement(icon, {..._icon});
 			}
 		} else {
-			icon = <ButtonIcon as={icon} {..._icon} />;
+			icon = <ButtonIcon className="ButtonIcon" as={icon} {..._icon} />;
 		}
 	}
 	if (rightIcon) {
@@ -41,7 +41,7 @@ const ButtonComponent = forwardRef((props, ref) => {
 				rightIcon = cloneElement(rightIcon, {..._rightIcon});
 			}
 		} else {
-			rightIcon = <ButtonIcon as={rightIcon} {..._rightIcon} />;
+			rightIcon = <ButtonIcon className="ButtonIcon" as={rightIcon} {..._rightIcon} />;
 		}
 	}
 	
@@ -62,9 +62,9 @@ const ButtonComponent = forwardRef((props, ref) => {
 	}
 	
 	let button = <Button {...propsToPass} className={className} ref={ref}>
-					{isLoading && <ButtonSpinner {..._spinner} />}
+					{isLoading && <ButtonSpinner className="ButtonSpinner" {..._spinner} />}
 					{icon}
-					{text && <ButtonText {..._text}>{text}</ButtonText>}
+					{text && <ButtonText className="ButtonText" {..._text}>{text}</ButtonText>}
 					{rightIcon}
 				</Button>;
 	if (tooltip) {

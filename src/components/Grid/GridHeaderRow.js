@@ -356,9 +356,12 @@ export default function GridHeaderRow(props) {
 								onMouseEnter={(e) => onHeaderMouseEnter(e, ix)}
 								onMouseLeave={(e) => onHeaderMouseLeave(e, ix)}
 								className={`
+									GridHeaderRow-Pressable
 									h-full
 									flex-row
 									p-0
+									items-center
+									justify-center
 									${rowClassName}
 									${styles.GRID_HEADER_BG}
 									${styles.GRID_HEADER_BG_HOVER}
@@ -392,10 +395,13 @@ export default function GridHeaderRow(props) {
 									key="Text"
 									numberOfLines={1}
 									className={`
-										h-full
+										GridHeaderRow-TextNative
+										h-auto
 										flex-1
 										items-center
 										justify-center
+										leading-tight
+										text-center
 										overflow-hidden
 										text-ellipsis
 										${styles.GRID_HEADER_FONTSIZE}
@@ -410,6 +416,7 @@ export default function GridHeaderRow(props) {
 										as={isSortDirectionAsc ? SortUp : SortDown}
 										size={styles.GRID_HEADER_ICON_SIZE}
 										className={`
+											GridHeaderRow-Icon
 											text-center
 											text-grey-500
 											${styles.GRID_HEADER_ICON_MT}
@@ -460,7 +467,7 @@ export default function GridHeaderRow(props) {
 				if (areRowsDragSource) {
 					headerColumns.unshift(<Box
 						key="spacer"
-						className="w-[3px]"
+						className="Spacer w-[3px]"
 					/>);
 				}
 				if (!hideNavColumn) {
@@ -473,7 +480,12 @@ export default function GridHeaderRow(props) {
 					style={{
 						scrollbarWidth: 'none',
 					}}
-					className="w-full bg-grey-200"
+					className={`
+						GridHeaderRow-HStack
+						w-full
+						h-[40px]
+						bg-grey-200
+					`}
 				> 
 					{renderHeaders()}
 				</HStack>;

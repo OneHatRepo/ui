@@ -819,18 +819,18 @@ function Form(props) {
 									style.width = '50px';
 								}
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="HStack3 flex-1 py-1">
+									element = <HStack className="HStack3 flex-1">
 								 					<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
 								 				</HStack>;
 								} else {
-									element = <VStack className="VStack3 flex-1 py-1 mt-3">
+									element = <VStack className="VStack3 flex-1 mt-3">
 													<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
 												</VStack>;
 								}
 							} else if (disableLabels && requiredIndicator) {
-								element = <HStack className="HStack3 flex-1 py-1">
+								element = <HStack className="HStack3 flex-1">
 												{requiredIndicator}
 												{element}
 											</HStack>;
@@ -852,8 +852,8 @@ function Form(props) {
 										className={`
 											HStack4
 											flex-none
-											px-2
-											pb-1
+											pb-2
+											h-[50px]
 											${error ? 'bg-[#fdd]' : ''}
 										`}
 									>
@@ -1075,7 +1075,7 @@ function Form(props) {
 			editor = <>
 						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD ? <HStack className="Form-formComponents-HStack p-4 gap-4 justify-center">{formComponents}</HStack> : null}
 						{containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD ? <VStack className="Form-formComponents-VStack p-4">{formComponents}</VStack> : null}
-						<VStack className="Form-AncillaryComponents m-2 pt-4 px-2">{formAncillaryComponents}</VStack>
+						{formAncillaryComponents.length ? <VStack className="Form-AncillaryComponents m-2 pt-4 px-2">{formAncillaryComponents}</VStack> : null}
 					</>;
 
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
