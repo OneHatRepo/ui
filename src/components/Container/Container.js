@@ -325,13 +325,13 @@ function Container(props) {
 		componentProps = {};
 	}
 	
-	return <VStack className="w-full flex-1">
+	return <VStack className="Container-all w-full flex-1">
 				{northComponent}
 				{(!isNorthCollapsed && !localIsNorthCollapsed) && northSplitter}
-				<HStack className="w-full" style={{ flex: 100 }}>
+				<HStack className="Container-mid w-full" style={{ flex: 100 }}>
 					{westComponent}
 					{(!isWestCollapsed && !localIsWestCollapsed) && westSplitter}
-					<VStack className="h-full overflow-auto" style={{ flex: 100 }}>
+					<VStack className="Container-center h-full overflow-auto" style={{ flex: 100 }}>
 						{centerComponent}
 					</VStack>
 					{(!isEastCollapsed && !localIsEastCollapsed) && eastSplitter}
