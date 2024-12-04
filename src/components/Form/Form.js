@@ -552,9 +552,9 @@ function Form(props) {
 						}
 						delete itemPropsToPass.w;
 					}
-					if (!style.flex && !style.width) {
-						style.flex = 1;
-					}
+					// if (!style.flex && !style.width) {
+					// 	style.flex = 1;
+					// }
 					itemPropsToPass.className += ' Column';
 				}
 				if (type === 'Row') {
