@@ -376,7 +376,7 @@ function Form(props) {
 											dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 										}
 
-										let elementClassName = 'flex-1';
+										let elementClassName = 'Form-Element flex-1';
 										if (type.match(/Tag/)) {
 											elementClassName += ' overflow-auto';
 										}
@@ -433,6 +433,7 @@ function Form(props) {
 										return <HStack
 													key={ix}
 													className={`
+														Form-HStack1
 														flex-${flex}
 														${error ? "bg-[#fdd]" : "bg-white"}
 														${columnClassName}
@@ -564,7 +565,7 @@ function Form(props) {
 					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
 
-				let elementClassName = '';
+				let elementClassName = 'Form-Element';
 				const defaultsClassName = defaults.className;
 				if (defaultsClassName) {
 					elementClassName += ' ' + defaultsClassName;
@@ -644,18 +645,18 @@ function Form(props) {
 						style.width = '50px';
 					}
 					if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-						element = <HStack className="HStackA py-1">
+						element = <HStack className="Form-HStack2 w-full py-1">
 										<Label style={style}>{label}</Label>
 										{element}
 									</HStack>;
 					} else {
-						element = <VStack className="HStackA w-full py-1 mt-3">
+						element = <VStack className="Form-VStack1 w-full py-1 mt-3">
 										<Label style={style}>{label}</Label>
 										{element}
 									</VStack>;
 					}
 				}
-				return <HStack key={ix} className="HStackB px-2 pb-1">{element}</HStack>;
+				return <HStack key={ix} className="Form-HStack3 w-full px-2 pb-1">{element}</HStack>;
 			}
 
 		
@@ -720,7 +721,7 @@ function Form(props) {
 								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 							}
 
-							let elementClassName = 'field-' + name + ' flex-1 Form-Element';
+							let elementClassName = 'Form-Element field-' + name + ' flex-1';
 							const defaultsClassName = defaults.className;
 							if (defaultsClassName) {
 								elementClassName += ' ' + defaultsClassName;
@@ -770,7 +771,7 @@ function Form(props) {
 							if (message) {
 								message = <Text className="text-[#f00]">{message}</Text>;
 							}
-							element = <VStack className="Form-messageContainer pt-1 flex-1">
+							element = <VStack className="Form-VStack4 pt-1 flex-1">
 											{element}
 											{message}
 										</VStack>;

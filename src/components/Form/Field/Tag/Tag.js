@@ -249,6 +249,7 @@ function TagComponent(props) {
 
 	let className = `
 		Tag
+		w-full
 		p-0
 	`;
 	if (props.className) {
