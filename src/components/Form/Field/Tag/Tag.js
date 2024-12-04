@@ -272,6 +272,7 @@ function TagComponent(props) {
 	let valueBoxesClassName = `
 		Tag-valueBoxes-container
 		w-full
+		min-h-[40px]
 		flex-wrap
 		max-h-[200px]
 		overflow-auto

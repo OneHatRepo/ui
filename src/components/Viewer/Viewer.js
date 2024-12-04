@@ -150,9 +150,9 @@ function Viewer(props) {
 						}
 						delete itemPropsToPass.w;
 					}
-					if (!style.flex && !style.width) {
-						style.flex = 1;
-					}
+					// if (!style.flex && !style.width) {
+					// 	style.flex = 1;
+					// }
 					itemPropsToPass.className += ' Column';
 					// if (containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD) {
 					// 	// everything is in one column
