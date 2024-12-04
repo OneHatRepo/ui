@@ -297,7 +297,7 @@ function Form(props) {
 						}
 					}
 
-					let elementClassName = '';
+					let elementClassName = 'Form-ElementFromColumnsConfig';
 					const
 						boxFlex = configPropsToPass.flex,
 						boxW = configPropsToPass.w;
@@ -565,7 +565,7 @@ function Form(props) {
 					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
 
-				let elementClassName = 'Form-Element';
+				let elementClassName = 'Form-ElementFromItem';
 				const defaultsClassName = defaults.className;
 				if (defaultsClassName) {
 					elementClassName += ' ' + defaultsClassName;
@@ -645,12 +645,12 @@ function Form(props) {
 						style.width = '50px';
 					}
 					if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-						element = <HStack className="Form-HStack2 w-full py-1">
+						element = <HStack className="Form-HStack1 w-full py-1">
 										<Label style={style}>{label}</Label>
 										{element}
 									</HStack>;
 					} else {
-						element = <VStack className="Form-VStack1 w-full py-1 mt-3">
+						element = <VStack className="Form-VStack2 w-full py-1 mt-3">
 										<Label style={style}>{label}</Label>
 										{element}
 									</VStack>;
@@ -779,14 +779,14 @@ function Form(props) {
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="Form-additionalEditButtons flex-1 flex-wrap">
+									element = <HStack className="Form-HStack5 flex-1 flex-wrap">
 													{element}
 													{buttons}
 												</HStack>;
 								} else {
-									element = <VStack className="Form-additionalEditButtons flex-1 w-full">
+									element = <VStack className="Form-VStack6 flex-1 w-full">
 												{element}
-												<HStack className="Form-additionalEditButtons-VStack flex-1 w-full mt-1 flex-wrap">
+												<HStack className="Form-HStack7-VStack flex-1 w-full mt-1 flex-wrap">
 													{buttons}
 												</HStack>
 											</VStack>;
@@ -820,18 +820,18 @@ function Form(props) {
 									style.width = '50px';
 								}
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="HStack3 flex-1">
+									element = <HStack className="Form-HStack8 flex-1">
 								 					<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
 								 				</HStack>;
 								} else {
-									element = <VStack className="VStack3 flex-1 mt-3">
+									element = <VStack className="Form-VStack9 flex-1 mt-3">
 													<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
 												</VStack>;
 								}
 							} else if (disableLabels && requiredIndicator) {
-								element = <HStack className="HStack3 flex-1">
+								element = <HStack className="Form-HStack10 flex-1">
 												{requiredIndicator}
 												{element}
 											</HStack>;
@@ -851,7 +851,7 @@ function Form(props) {
 							return <HStack
 										key={ix}
 										className={`
-											HStack4
+											Form-HStack11
 											flex-none
 											pb-2
 											h-[50px]
@@ -898,6 +898,7 @@ function Form(props) {
 						}
 						title = <Text
 									className={`
+										Form-Ancillary-Title
 										font-bold
 										${styles.FORM_ANCILLARY_TITLE_FONTSIZE}
 									`}
@@ -906,6 +907,7 @@ function Form(props) {
 					if (description) {
 						description = <Text
 										className={`
+											Form-Ancillary-Description
 											italic
 											${styles.FORM_ANCILLARY_DESCRIPTION_FONTSIZE}
 										`}
@@ -914,6 +916,7 @@ function Form(props) {
 					components.push(<VStack
 										key={'ancillary-' + ix}
 										className={`
+											Form-VStack12
 											mx-1
 											my-3
 										`}
