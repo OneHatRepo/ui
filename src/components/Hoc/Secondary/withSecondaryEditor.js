@@ -59,6 +59,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				// parent container
 				secondarySelectorId,
 				secondarySelectorSelected,
+				secondarySelectorSelectedField = 'id',
 
 				// withSecondaryData
 				SecondaryRepository,
@@ -149,7 +150,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 
 				if (secondarySelectorId && !_.isEmpty(secondarySelectorSelected)) {
-					addValues[secondarySelectorId] = secondarySelectorSelected.id;
+					addValues[secondarySelectorId] = secondarySelectorSelected[secondarySelectorSelectedField];
 				}
 
 				if (getNewEntityDisplayValue()) {

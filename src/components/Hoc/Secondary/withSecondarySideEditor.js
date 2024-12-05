@@ -35,6 +35,7 @@ export default function withSecondarySideEditor(WrappedComponent, isTree = false
 				// pull these out, as we don't want them going to the Editor
 				secondarySelectorId,
 				secondarySelectorSelected,
+				secondarySelectorSelectedField,
 				
 				...propsToPass
 			} = props;

@@ -125,6 +125,7 @@ function Form(props) {
 			// parent container
 			selectorId,
 			selectorSelected,
+			selectorSelectedField,
 
 			// withAlert
 			alert,
@@ -365,6 +366,7 @@ function Form(props) {
 
 										if (useSelectorId) { // This causes the whole form to use selectorId
 											editorTypeProps.selectorId = selectorId;
+											editorTypeProps.selectorSelectedField = selectorSelectedField;
 										}
 										if (configPropsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
 											if (_.isNil(configPropsToPass.selectorSelected)) {
@@ -710,6 +712,7 @@ function Form(props) {
 
 							if (useSelectorId) { // This causes the whole form to use selectorId
 								editorTypeProps.selectorId = selectorId;
+								editorTypeProps.selectorSelectedField = selectorSelectedField;
 							}
 							if (itemPropsToPass.selectorId || editorTypeProps.selectorId) { // editorTypeProps.selectorId causes just this one field to use selectorId
 								if (_.isNil(itemPropsToPass.selectorSelected)) {
@@ -873,6 +876,7 @@ function Form(props) {
 						title = null,
 						description = null,
 						selectorId,
+						selectorSelectedField,
 						...itemPropsToPass
 					} = item;
 					if (isMultiple && type !== 'Attachments') {
@@ -887,6 +891,7 @@ function Form(props) {
 						element = <Element
 										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
+										selectorSelectedField={selectorSelectedField}
 										selectorSelected={selectorSelected || record}
 										uniqueRepository={true}
 										parent={self}

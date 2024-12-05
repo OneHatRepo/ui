@@ -39,6 +39,7 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 				// pull these out, as we don't want them going to the SecondaryEditor
 				secondarySelectorId,
 				secondarySelectorSelected,
+				secondarySelectorSelectedField,
 				h,
 
 				...propsToPass

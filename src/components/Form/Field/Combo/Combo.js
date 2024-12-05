@@ -681,6 +681,7 @@ export function ComboComponent(props) {
 			'disablePrint',
 			'selectorId',
 			'selectorSelected',
+			'selectorSelectedField',
 			'usePermissions',
 		]);
 		if (!Repository) {

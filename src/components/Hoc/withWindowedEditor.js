@@ -56,6 +56,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				// pull these out, as we don't want them going to the Editor
 				selectorId,
 				selectorSelected,
+				selectorSelectedField,
 				h,
 
 				...propsToPass

@@ -89,6 +89,7 @@ function AttachmentsElement(props) {
 
 			// parentContainer
 			selectorSelected,
+			selectorSelectedField = 'id',
 
 			// withData
 			Repository,
@@ -100,7 +101,7 @@ function AttachmentsElement(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name,
-		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity.id) : selectorSelected?.id,
+		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity[selectorSelectedField]) : selectorSelected?.[selectorSelectedField],
 		modelid = useRef(modelidCalc),
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
