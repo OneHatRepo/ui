@@ -60,6 +60,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				// parent container
 				selectorId,
 				selectorSelected,
+				selectorSelectedField = 'id',
 
 				// withData
 				Repository,
@@ -149,7 +150,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
-					addValues[selectorId] = selectorSelected.id;
+					addValues[selectorId] = selectorSelected[selectorSelectedField];
 				}
 
 				if (getNewEntityDisplayValue()) {

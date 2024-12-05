@@ -239,6 +239,7 @@ function TagComponent(props) {
 	if (propsToPass.selectorId) {
 		_combo.selectorId = propsToPass.selectorId;
 		_combo.selectorSelected = propsToPass.selectorSelected;
+		_combo.selectorSelectedField = propsToPass.selectorSelectedField;
 	}
 
 	return <>

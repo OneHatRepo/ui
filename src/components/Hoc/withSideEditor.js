@@ -33,6 +33,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 				// pull these out, as we don't want them going to the Editor
 				selectorId,
 				selectorSelected,
+				selectorSelectedField,
 				
 				...propsToPass
 			} = props;

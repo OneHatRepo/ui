@@ -58,6 +58,7 @@ function Viewer(props) {
 			// parent container
 			selectorId,
 			selectorSelected,
+			selectorSelectedField,
 
 		} = props,
 		scrollViewRef = useRef(),
@@ -209,6 +210,7 @@ function Viewer(props) {
 										{...testProps('ancillary-' + type)}
 										selectorId={selectorId}
 										selectorSelected={selectorSelected || record}
+										selectorSelectedField={selectorSelectedField}
 										flex={1}
 										h={350}
 										canEditorViewOnly={true}

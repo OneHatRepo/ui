@@ -111,7 +111,6 @@ function GridComponent(props) {
 			hideNavColumn = true,
 			noneFoundText,
 			autoAdjustPageSizeToHeight = true,
-			disableSelectorSelected = false,
 			showRowExpander = false,
 			getExpandedRowContent,
 			showHeaders = true,
@@ -139,6 +138,22 @@ function GridComponent(props) {
 			alternateRowBackgrounds = true,
 			alternatingInterval = 2,
 			defaultRowHeight = 48,
+
+			// The selectorSelected mechanism allows us to filter results of the primary model, (e.g. WorkOrders)
+			//   by the selection on the secondary model (e.g. Equipment). It's used on Grids, Trees, Forms, etc.
+			// The 'selectorId' is the name of the primary model's filter (e.g. 'WorkOrders.equipment_id').
+			//   which gets submitted to the server as a condition (e.g. 'conditions[WorkOrders.equipment_id]').
+			// The 'selectorSelected' is the Entity on the secondary model which is selected (e.g. Equipment).
+			// The 'selectorSelectedField' is the field on the secondary model to use as the value for the filter
+			//   (e.g. 'fleet_id'). If not given, it defaults to 'id'.
+			// It can be disabled altogether for a specific grid ('disableSelectorSelected'), and configured
+			//   so that no selection means no results ('noSelectorMeansNoResults').
+
+			selectorId,
+			selectorSelected,
+			selectorSelectedField = 'id',
+			noSelectorMeansNoResults = false,
+			disableSelectorSelected = false,
 
 			// withComponent
 			self,
@@ -182,15 +197,10 @@ function GridComponent(props) {
 			deselectAll,
 			selectRangeTo,
 			isInSelection,
-			noSelectorMeansNoResults = false,
 			selectNext,
 			selectPrev,
 			addNextToSelection,
 			addPrevToSelection,
-
-			// DataMgt
-			selectorId,
-			selectorSelected,
 
 			// withInlineEditor
 			inlineEditor = null,
@@ -212,6 +222,7 @@ function GridComponent(props) {
 		expandedRowsRef = useRef({}),
 		cachedDragElements = useRef(),
 		dragSelectionRef = useRef([]),
+		previousSelectorId = useRef(),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -755,11 +766,23 @@ function GridComponent(props) {
 			if (disableSelectorSelected || !selectorId) {
 				return
 			}
-			let id = selectorSelected?.id;
-			if (_.isEmpty(selectorSelected)) {
-				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
+
+			if (previousSelectorId.current && selectorId !== previousSelectorId.current) {
+				Repository.pauseEvents();
+				Repository.clearFilters(previousSelectorId.current);
+				Repository.resumeEvents();
 			}
-			Repository.filter(selectorId, id, false); // so it doesn't clear existing filters
+			previousSelectorId.current = selectorId;
+
+			let value = null;
+			if (selectorSelected) {
+				value = selectorSelected[selectorSelectedField];
+			}
+			if (noSelectorMeansNoResults && _.isEmpty(selectorSelected)) {
+				value = 'NO_MATCHES';
+			}
+
+			Repository.filter(selectorId, value, false); // false so it doesn't clear existing filters
 		},
 		onGridKeyDown = (e) => {
 			if (isInlineEditorShown) {
@@ -968,7 +991,7 @@ function GridComponent(props) {
 
 		applySelectorSelected();
 
-	}, [selectorSelected]);
+	}, [selectorId, selectorSelected]);
 
 	if (canUser && !canUser('view')) {
 		return <Unauthorized />;

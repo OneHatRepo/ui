@@ -115,6 +115,10 @@ function TreeComponent(props) {
 			canRecordBeEdited,
 			onTreeLoad,
 
+			selectorId,
+			selectorSelected,
+			selectorSelectedField = 'id',
+
 			// withComponent
 			self,
 
@@ -155,10 +159,6 @@ function TreeComponent(props) {
 			selectRangeTo,
 			isInSelection,
 			noSelectorMeansNoResults = false,
-
-			// DataMgt
-			selectorId,
-			selectorSelected,
 
 		} = props,
 		styles = UiGlobals.styles,
@@ -1247,7 +1247,7 @@ function TreeComponent(props) {
 			return () => {};
 		}
 		if (!disableSelectorSelected && selectorId) {
-			let id = selectorSelected?.id;
+			let id = selectorSelected?.[selectorSelectedField] ?? null;
 			if (_.isEmpty(selectorSelected)) {
 				id = noSelectorMeansNoResults ? 'NO_MATCHES' : null;
 			}
