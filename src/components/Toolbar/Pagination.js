@@ -61,6 +61,7 @@ export default function Pagination(props) {
 								{...testProps('showMoreBtn')}
 								key="showMoreBtn"
 								reference="showMoreBtn"
+								className="Pagination-showMoreBtn"
 								parent={self}
 								onPress={() => Repository.showMore()}
 								isDisabled={isDisabled}
@@ -70,6 +71,7 @@ export default function Pagination(props) {
 			if (!Repository.isLocal) {
 				items.push(<ReloadButton
 					key="reloadPageBtn"
+					className="Pagination-reloadPageBtn"
 					_icon={iconProps}
 					Repository={Repository}
 					self={self}
@@ -82,6 +84,7 @@ export default function Pagination(props) {
 								{...testProps('firstPageBtn')}
 								key="firstPageBtn"
 								reference="firstPageBtn"
+								className="Pagination-firstPageBtn"
 								parent={self}
 								isDisabled={isDisabled}
 								icon={AnglesLeft}
@@ -93,6 +96,7 @@ export default function Pagination(props) {
 								{...testProps('prevPageBtn')}
 								key="prevPageBtn"
 								reference="prevPageBtn"
+								className="Pagination-prevPageBtn"
 								parent={self}
 								isDisabled={isDisabled}
 								icon={AngleLeft}
@@ -101,31 +105,38 @@ export default function Pagination(props) {
 								tooltip="Previous Page"
 							/>);
 				if (!minimize) {
-					items.push(<HStack
-									key="pageSelector"
-									className={`
-										pageSelector
-										w-[100px]
-										mx-2
-										justify-center
-										items-center
-										bg-[#f00]
-									`}>
-									{/* <Text className="page mr-1">Page</Text>
-									<Input
-										{...testProps('pageInput')}
-										reference="pageInput"
-										parent={self}
-										keyboardType="numeric"
-										value={page?.toString()}
-										onChangeValue={(value) => Repository.setPage(value)}
-										maxValue={totalPages}
-										isDisabled={totalPages === 1}
-										className="pageInput w-[30px] text-center bg-grey-100"
-										tooltip="Set Page"
-									/>
-									<Text className="of ml-1">of {totalPages}</Text> */}
-								</HStack>);
+					items.push(<Text
+						key="page"
+						className="Pagination-page mx-1"
+					>Page</Text>);
+					items.push(<Input
+						{...testProps('pageInput')}
+						key="pageInput"
+						reference="pageInput"
+						parent={self}
+						keyboardType="numeric"
+						value={page?.toString()}
+						onChangeValue={(value) => Repository.setPage(value)}
+						maxValue={totalPages}
+						isDisabled={totalPages === 1}
+						className={`
+							Pagination-pageInput
+							min-w-[40px]
+							w-[40px]
+							text-center
+							bg-grey-100
+						`}
+						tooltip="Set Page"
+					/>);
+					items.push(<Text
+						key="totalPages"
+						className={`
+							Pagination-totalPages
+							whitespace-nowrap
+							inline-flex
+							mx-1
+						`}
+					>{`of ${totalPages}`}</Text>);
 				}
 
 				isDisabled = page === totalPages || totalPages <= 1;
@@ -133,6 +144,7 @@ export default function Pagination(props) {
 								{...testProps('nextPageBtn')}
 								key="nextPageBtn"
 								reference="nextPageBtn"
+								className="Pagination-nextPageBtn"
 								parent={self}
 								isDisabled={isDisabled}
 								icon={AngleRight}
@@ -144,6 +156,7 @@ export default function Pagination(props) {
 								{...testProps('lastPageBtn')}
 								key="lastPageBtn"
 								reference="lastPageBtn"
+								className="Pagination-lastPageBtn"
 								parent={self}
 								isDisabled={isDisabled}
 								icon={AnglesRight}
@@ -156,6 +169,7 @@ export default function Pagination(props) {
 			if (!Repository.isLocal) {
 				items.push(<ReloadButton
 					key="reloadPageBtn"
+					className="Pagination-reloadPageBtn"
 					_icon={iconProps}
 					Repository={Repository}
 					self={self}
@@ -178,13 +192,26 @@ export default function Pagination(props) {
 				}
 				items.push(<Text
 								key="pageDisplay"
-								className="pageDisplay ml-3 min-w-[200px]"
-							>Displaying {pageSpan} of {total}</Text>);
+								className={`
+									Pagination-pageDisplay
+									whitespace-nowrap
+									inline-flex
+									mx-1
+								`}
+							>{`Displaying ${pageSpan} of ${total}`}</Text>);
 			}
 		}
 		return <HStack
 					style={{ userSelect: 'none', }}
-					className="Pagination justify-start items-center px-2 "
+					className={`
+						Pagination
+						flex-none
+						gap-1
+						justify-start
+						items-center
+						px-2
+						mr-3
+					`}
 				>
 					{items}
 				</HStack>;

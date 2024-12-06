@@ -1013,6 +1013,7 @@ export function ComboComponent(props) {
 		Combo-HStack
 		flex-1
 		h-[40px]
+		min-h-[40px]
 		justify-center
 		items-center
 	`;

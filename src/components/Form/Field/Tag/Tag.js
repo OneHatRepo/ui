@@ -274,8 +274,8 @@ function TagComponent(props) {
 		Tag-valueBoxes-container
 		w-full
 		min-h-[40px]
-		flex-wrap
 		max-h-[200px]
+		flex-wrap
 		overflow-auto
 		border
 		border-grey-300

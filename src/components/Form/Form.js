@@ -378,7 +378,7 @@ function Form(props) {
 											dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 										}
 
-										let elementClassName = 'Form-Element flex-1';
+										let elementClassName = 'Form-Element';
 										if (type.match(/Tag/)) {
 											elementClassName += ' overflow-auto';
 										}
@@ -643,10 +643,10 @@ function Form(props) {
 					if (defaults?.labelWidth) {
 						style.width = defaults.labelWidth;
 					}
-					if (!style.width) {
-						style.width = '50px';
-					}
 					if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
+						if (!style.width) {
+							style.width = '100px';
+						}
 						element = <HStack className="Form-HStack1 w-full py-1">
 										<Label style={style}>{label}</Label>
 										{element}
@@ -724,7 +724,7 @@ function Form(props) {
 								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
 							}
 
-							let elementClassName = 'Form-Element field-' + name + ' flex-1';
+							let elementClassName = 'Form-Element field-' + name + ' w-full';
 							const defaultsClassName = defaults.className;
 							if (defaultsClassName) {
 								elementClassName += ' ' + defaultsClassName;
@@ -774,7 +774,7 @@ function Form(props) {
 							if (message) {
 								message = <Text className="text-[#f00]">{message}</Text>;
 							}
-							element = <VStack className="Form-VStack4 pt-1 flex-1">
+							element = <VStack className="Form-VStack4 w-full pt-1">
 											{element}
 											{message}
 										</VStack>;
@@ -782,14 +782,14 @@ function Form(props) {
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="Form-HStack5 flex-1 flex-wrap">
+									element = <HStack className="Form-HStack5 w-full flex-wrap">
 													{element}
 													{buttons}
 												</HStack>;
 								} else {
-									element = <VStack className="Form-VStack6 flex-1 w-full">
+									element = <VStack className="Form-VStack6 w-full">
 												{element}
-												<HStack className="Form-HStack7-VStack flex-1 w-full mt-1 flex-wrap">
+												<HStack className="Form-HStack7-VStack w-full mt-1 flex-wrap">
 													{buttons}
 												</HStack>
 											</VStack>;
@@ -819,22 +819,22 @@ function Form(props) {
 								if (defaults?.labelWidth) {
 									style.width = defaults.labelWidth;
 								}
-								if (!style.width) {
-									style.width = '50px';
-								}
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="Form-HStack8 flex-1">
+									if (!style.width) {
+										style.width = '100px';
+									}
+									element = <HStack className="Form-HStack8 w-full">
 								 					<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
 								 				</HStack>;
 								} else {
-									element = <VStack className="Form-VStack9 flex-1 mt-3">
+									element = <VStack className="Form-VStack9 w-full mt-3">
 													<Label style={style}>{requiredIndicator}{label}</Label>
 													{element}
 												</VStack>;
 								}
 							} else if (disableLabels && requiredIndicator) {
-								element = <HStack className="Form-HStack10 flex-1">
+								element = <HStack className="Form-HStack10 w-full">
 												{requiredIndicator}
 												{element}
 											</HStack>;
@@ -855,9 +855,10 @@ function Form(props) {
 										key={ix}
 										className={`
 											Form-HStack11
+											min-h-[50px]
+											w-full
 											flex-none
 											pb-2
-											h-[50px]
 											${error ? 'bg-[#fdd]' : ''}
 										`}
 									>
