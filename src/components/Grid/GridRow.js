@@ -315,6 +315,9 @@ function GridRow(props) {
 		} else {
 			rowClassName += ' border-b border-b-grey-100';
 		}
+		if (rowProps?.className) {
+			rowClassName += ' ' + rowProps.className;
+		}
 		return <HStackNative
 					{...testProps('row' + (isSelected ? '-selected' : ''))}
 					{...rowProps}
