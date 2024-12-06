@@ -107,7 +107,6 @@ const
 
 function GridComponent(props) {
 	const {
-
 			columnsConfig = [], // json configurations for each column
 			columnProps = {},
 			defaultHiddenColumns = [],
@@ -1250,6 +1249,7 @@ function GridComponent(props) {
 					className={`
 						gridContainer
 						w-full
+						h-full
 						flex-1
 						min-h-[40px]
 						${gridContainerBorderClassName}
@@ -1266,7 +1266,8 @@ function GridComponent(props) {
 		grid = <Box
 					ref={dropTargetRef}
 					className={`
-						dropTarget
+						Grid-dropTarget
+						h-full
 						w-full
 						border-[#0ff]
 						${canDrop && isOver ? "border-[4px]" : "border-[0px]"}
