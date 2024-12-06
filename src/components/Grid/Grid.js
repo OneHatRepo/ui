@@ -365,7 +365,7 @@ function GridComponent(props) {
 					onPress={() => setIsReorderMode(!isReorderMode)}
 					icon={isReorderMode ? NoReorderRows : ReorderRows}
 					_icon={{
-						className: styles.GRID_TOOLBAR_ITEMS_COLOR,
+						className: styles.TOOLBAR_ITEMS_COLOR,
 					}}
 					tooltip="Reorder Rows"
 				/>);
@@ -466,28 +466,36 @@ function GridComponent(props) {
 							onContextMenu(item, e, selection);
 						}
 					}}
-					className="flex-row grow-1">
+					className="flex-row grow">
 					{({
 						hovered,
 						focused,
 						pressed,
 					}) => {
 						if (isHeaderRow) {
-							return <GridHeaderRow
-										Repository={Repository}
-										columnsConfig={localColumnsConfig}
-										setColumnsConfig={setLocalColumnsConfig}
-										hideNavColumn={hideNavColumn}
-										canColumnsSort={canColumnsSort}
-										canColumnsReorder={canColumnsReorder}
-										canColumnsResize={canColumnsResize}
-										setSelection={setSelection}
-										gridRef={gridRef}
-										isHovered={hovered}
-										isInlineEditorShown={isInlineEditorShown}
-										areRowsDragSource={areRowsDragSource}
-										showColumnsSelector={showColumnsSelector}
-									/>;
+							let headerRow = <GridHeaderRow
+												Repository={Repository}
+												columnsConfig={localColumnsConfig}
+												setColumnsConfig={setLocalColumnsConfig}
+												hideNavColumn={hideNavColumn}
+												canColumnsSort={canColumnsSort}
+												canColumnsReorder={canColumnsReorder}
+												canColumnsResize={canColumnsResize}
+												setSelection={setSelection}
+												gridRef={gridRef}
+												isHovered={hovered}
+												isInlineEditorShown={isInlineEditorShown}
+												areRowsDragSource={areRowsDragSource}
+												showColumnsSelector={showColumnsSelector}
+											/>;
+							if (showRowExpander) {
+								// align the header row to content rows
+								headerRow = <HStack className="">
+												<Box className="w-[40px]"></Box>
+												{headerRow}
+											</HStack>;
+							}
+							return headerRow;
 						}
 
 						const
@@ -572,15 +580,29 @@ function GridComponent(props) {
 
 			if (showRowExpander && !isHeaderRow) {
 				const isExpanded = getIsExpanded(index);
-				rowComponent = <VStack>
-									<HStack>
+				let className = `
+					Grid-rowExpander
+					w-full
+					flex-none
+				`;
+				if (rowProps?.className) {
+					className += ' ' + rowProps.className;
+				}
+				rowComponent = <VStack className={className}>
+									<HStack
+										className={`
+											Grid-rowExpander-HStack
+											w-full
+											grow
+										`}
+									>
 										<ExpandButton
 											isExpanded={isExpanded}
 											onToggle={() => setIsExpanded(index, !isExpanded)}
 											_icon={{
 												size: 'sm',
 											}}
-											className="py-0"
+											className="Grid-rowExpander-expandBtn py-0"
 											tooltip="Expand/Contract Row"
 										/>
 										{rowComponent}

@@ -305,6 +305,7 @@ function GridRow(props) {
 
 		let rowClassName = `
 			GridRow-HStackNative
+			w-full
 			items-center
 		`;
 		if (isOnlyOneVisibleColumn) {
