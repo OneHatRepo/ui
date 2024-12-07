@@ -107,6 +107,7 @@ const
 
 function GridComponent(props) {
 	const {
+
 			columnsConfig = [], // json configurations for each column
 			columnProps = {},
 			defaultHiddenColumns = [],
@@ -1177,13 +1178,14 @@ function GridComponent(props) {
 				/>;
 	
 	if (CURRENT_MODE === UI_MODE_WEB) {
+		// fix scrolling bug on nested FlatLists (inner one would not scroll without this)
 		grid = <ScrollView
 					horizontal={false}
-					className="ScrollView"
+					className="ScrollView overflow-auto"
 					contentContainerStyle={{
 						height: '100%',
 					}}
-				>{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
+				>{grid}</ScrollView>;
 	} else
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		grid = <ScrollView className="flex-1 w-full">{grid}</ScrollView>
