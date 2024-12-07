@@ -250,8 +250,8 @@ function GridRow(props) {
 									className={`
 										GridRow-phantom
 										absolute
-										h-[2px]
-										w-[2px]
+										h-2
+										w-2
 										top-0
 										left-0
 										bg-[#f00]

@@ -91,7 +91,8 @@ const
 			inputClassName += ' ' + props.className;
 		}
 		if (minimizeForRow) {
-			textareaClassName += ' max-h-[50px] overflow-auto';
+			textareaClassName += ' h-auto min-h-0 max-h-[40px] overflow-auto';
+			inputClassName += ' py-0';
 		}
 
 		return <Textarea className={textareaClassName}>

@@ -315,6 +315,7 @@ function Form(props) {
 					let element = <Element
 										{...testProps('field-' + fieldName)}
 										value={value}
+										minimizeForRow={true}
 										parent={self}
 										reference={fieldName}
 										{...configPropsToPass}
@@ -1150,16 +1151,15 @@ function Form(props) {
 		if (!isEditorViewOnly && !hideResetButton) {
 			showResetBtn = true;
 		}
-		if (editorType !== EDITOR_TYPE__SIDE) { // side editor won't show either close or cancel buttons!
-			// determine whether we should show the close or cancel button
+		// determine whether we should show the close or cancel button
+		if (editorType !== EDITOR_TYPE__SIDE) {
 			if (isEditorViewOnly) {
 				showCloseBtn = true;
 			} else {
-				const formIsDirty = formState.isDirty;
 				// if (editorType === EDITOR_TYPE__WINDOWED && onCancel) {
 				// 	showCancelBtn = true;
 				// }
-				if (formIsDirty || isPhantom) {
+				if (formState.isDirty || isPhantom) {
 					if (isSingle && onCancel) {
 						showCancelBtn = true;
 					}
@@ -1168,6 +1168,11 @@ function Form(props) {
 						showCloseBtn = true;
 					}
 				}
+			}
+		} else {
+			// side editor only
+			if (isPhantom && isSingle && onCancel) {
+				showCancelBtn = true;
 			}
 		}
 		if (!isEditorViewOnly && onSave) {
@@ -1208,7 +1213,7 @@ function Form(props) {
 					<Button
 						{...testProps('cancelBtn')}
 						key="cancelBtn"
-						variant="outline"
+						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
 						onPress={onCancel}
 						className="text-white mr-2"
 						text="Cancel"
@@ -1218,7 +1223,7 @@ function Form(props) {
 					<Button
 						{...testProps('closeBtn')}
 						key="closeBtn"
-						variant="outline"
+						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
 						onPress={onClose}
 						className="text-white mr-2"
 						text="Close"

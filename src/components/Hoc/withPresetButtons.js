@@ -188,7 +188,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case ADD:
 						key = 'addBtn';
 						text = 'Add';
-						handler = onAdd;
+						handler = (parent, e) => onAdd();
 						icon = Plus;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
@@ -200,7 +200,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case EDIT:
 						key = 'editBtn';
 						text = 'Edit';
-						handler = onEdit;
+						handler = (parent, e) => onEdit();
 						icon = Edit;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
@@ -216,6 +216,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'deleteBtn';
 						text = 'Delete';
 						handler = onDelete;
+						handler = (parent, e) => onDelete();
 						icon = Trash;
 						if (selectorId && !selectorSelected) {
 							isDisabled = true;
@@ -236,7 +237,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case VIEW:
 						key = 'viewBtn';
 						text = 'View';
-						handler = onView;
+						handler = (parent, e) => onView();
 						icon = Eye;
 						isDisabled = !selection.length || selection.length !== 1;
 						if (selectorId && !selectorSelected) {
@@ -249,7 +250,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case COPY:
 						key = 'copyBtn';
 						text = 'Copy to Clipboard';
-						handler = onCopyToClipboard;
+						handler = (parent, e) => onCopyToClipboard();
 						icon = Clipboard;
 						isDisabled = !selection.length;
 						if (selectorId && !selectorSelected) {
@@ -262,7 +263,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case DUPLICATE:
 						key = 'duplicateBtn';
 						text = 'Duplicate';
-						handler = onDuplicate;
+						handler = (parent, e) => onDuplicate();
 						icon = Duplicate;
 						isDisabled = !selection.length || selection.length !== 1;
 						if (selectorId && !selectorSelected) {
@@ -283,7 +284,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case UPLOAD_DOWNLOAD:
 						key = 'uploadDownloadBtn';
 						text = 'Upload/Download';
-						handler = onUploadDownload;
+						handler = (parent, e) => onUploadDownload();
 						icon = UploadDownload;
 						break;
 					default:

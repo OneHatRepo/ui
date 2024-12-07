@@ -48,6 +48,7 @@ export const DateElement = forwardRef((props, ref) => {
 			_input = {},
 			isDisabled = false,
 			limitWidth = false,
+			minimizeForRow = false,
 			minValue,
 			maxValue,
 			testID,
@@ -218,7 +219,6 @@ export const DateElement = forwardRef((props, ref) => {
 				setTextInputValue(value);
 			}
 		};
-
 
 	useEffect(() => {
 
@@ -575,6 +575,9 @@ export const DateElement = forwardRef((props, ref) => {
 	`;
 	if (props.className) {
 		className += props.className;
+	}
+	if (minimizeForRow) {
+		className += ' h-auto min-h-0 max-h-[50px]';
 	}
 	const style = props.style || {};
 	if (!_.isNil(height)) {

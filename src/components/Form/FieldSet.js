@@ -76,7 +76,7 @@ export default function FieldSet(props) {
 			}
 		};
 
-	const className = `
+	let className = `
 		FieldSet-Box
 		mb-4
 		mx-0
@@ -86,7 +86,7 @@ export default function FieldSet(props) {
 		${styles.FORM_FIELDSET_BG}
 	`;
 	if (props.className) {
-		props.className += className;
+		className += props.className;
 	}
 
 	

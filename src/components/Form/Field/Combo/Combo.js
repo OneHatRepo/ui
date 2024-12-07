@@ -55,6 +55,7 @@ export function ComboComponent(props) {
 			isEditor = false,
 			isDisabled = false,
 			isInTag = false,
+			minimizeForRow = false,
 			tooltipPlacement = 'bottom',
 			placeholder,
 			onRowPress,
@@ -542,28 +543,29 @@ export function ComboComponent(props) {
 						`}
 					/>;
 	}
+	const triggerClassName = `
+		Combo-trigger
+		h-full
+		border
+		border-l-0
+		border-gray-400
+		rounded-l-none
+		rounded-r-md
+		${styles.FORM_COMBO_TRIGGER_BG}
+		${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+	`;
 	trigger = <IconButton
 				{...testProps('trigger')}
 				ref={triggerRef}
 				icon={CaretDown}
 				_icon={{
-					size: 'sm',
+					size: 'md',
 					className: 'text-grey-500',
 				}}
 				isDisabled={isDisabled}
 				onPress={onTriggerPress}
 				onBlur={onTriggerBlur}
-				className={`
-					trigger
-					h-full
-					border
-					border-l-0
-					border-gray-400
-					rounded-l-none
-					rounded-r-md
-					${styles.FORM_COMBO_TRIGGER_BG}
-					${styles.FORM_COMBO_TRIGGER_BG_HOVER}
-				`}
+				className={triggerClassName}
 			/>;
 
 	if (UiGlobals.mode === UI_MODE_WEB) {
@@ -619,6 +621,7 @@ export function ComboComponent(props) {
 							grow
 							h-full
 							min-h-0
+							max-h-[40px]
 							flex-1
 							m-0
 							rounded-tr-none
@@ -1009,16 +1012,19 @@ export function ComboComponent(props) {
 		refProps.ref = tooltipRef;
 	}
 
-	const className = `
+	let className = `
 		Combo-HStack
 		flex-1
 		h-[40px]
 		min-h-[40px]
 		justify-center
-		items-center
+		items-stretch
 	`;
 	if (props.className) {
-		props.className += ' ' + className;
+		className += ' ' + props.className;
+	}
+	if (minimizeForRow) {
+		className += ' h-auto min-h-0 max-h-[40px]';
 	}
 	
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
