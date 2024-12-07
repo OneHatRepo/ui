@@ -310,13 +310,11 @@ function GridRow(props) {
 		if (isOnlyOneVisibleColumn) {
 			rowClassName += ' w-full';
 		}
-		if (isOver) {
-			rowClassName += ' border-4 border-[#0ff]';
-		} else {
-			rowClassName += ' border-b border-b-grey-100';
-		}
 		if (rowProps?.className) {
 			rowClassName += ' ' + rowProps.className;
+		}
+		if (isOver) {
+			rowClassName += ' border-4 border-[#0ff]';
 		}
 		return <HStackNative
 					{...testProps('row' + (isSelected ? '-selected' : ''))}

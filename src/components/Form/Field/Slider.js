@@ -30,6 +30,7 @@ const
 				maxValue = 100,
 				step = 10,
 				autoSubmitDelay = UiGlobals.autoSubmitDelay,
+				minimizeForRow = false,
 				tooltip = null,
 				isDisabled = false,
 				testID,
@@ -150,11 +151,23 @@ const
 		}
 
 		let className = `
-			w-full
-			items-center
-		`;
+				w-full
+				items-center
+			`,
+			inputClassName = `
+				InputWithTooltip
+				h-full
+				w-[60px]
+				mr-4
+				text-center
+				rounded-md
+				${styles.SLIDER_READOUT_FONTSIZE}
+			`;
 		if (props.className) {
 			className += ' ' + props.className;
+		}
+		if (minimizeForRow) {
+			inputClassName += ' h-auto min-h-0 max-h-[50px] mr-1';
 		}
 		
 		return <HStack
@@ -168,16 +181,7 @@ const
 						onKeyPress={onInputKeyPress}
 						isDisabled={isDisabled}
 						disableAutoFlex={true}
-						className={`
-							InputWithTooltip
-							h-full
-							w-[60px]
-							p-2
-							mr-4
-							text-center
-							rounded-md
-							${styles.SLIDER_READOUT_FONTSIZE}
-						`}
+						className={inputClassName}
 						{...props._input}
 					/>
 					<HStack className="flex-1">
