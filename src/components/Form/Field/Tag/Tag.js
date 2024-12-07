@@ -291,10 +291,10 @@ function TagComponent(props) {
 	if (minimizeForRow) {
 		if (isViewOnly) {
 			// combo is not shown, so allow valueBoxes to take up more space
-			valueBoxesClassName += ' h-auto min-h-0 max-h-[50px] overflow-auto flex-1';
+			valueBoxesClassName += ' h-auto min-h-[50px] max-h-[50px] overflow-auto flex-1';
 		} else {
 			// shrink both down
-			valueBoxesClassName += ' h-auto min-h-0 max-h-[25px] overflow-auto flex-1';
+			valueBoxesClassName += ' h-auto min-h-[25px] max-h-[25px] overflow-auto flex-1';
 			comboClassName += ' h-auto min-h-0 max-h-[25px] flex-1';
 		}
 	}
