@@ -372,8 +372,7 @@ export const DateElement = forwardRef((props, ref) => {
 					flex-1
 					h-full
 					m-0
-					rounded-tr-none
-					rounded-br-none
+					rounded-r-lg
 					${styles.FORM_DATE_INPUT_BG}
 					${styles.FORM_DATE_INPUT_BG_FOCUS}
 					${styles.FORM_DATE_READOUT_FONTSIZE}

@@ -1205,7 +1205,6 @@ function Form(props) {
 						key="resetBtn"
 						onPress={() => doReset()}
 						icon={Rotate}
-						className="mr-2"
 						isDisabled={!formState.isDirty}
 					/>}
 
@@ -1215,7 +1214,7 @@ function Form(props) {
 						key="cancelBtn"
 						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
 						onPress={onCancel}
-						className="text-white mr-2"
+						className="text-white"
 						text="Cancel"
 					/>}
 					
@@ -1225,7 +1224,7 @@ function Form(props) {
 						key="closeBtn"
 						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
 						onPress={onClose}
-						className="text-white mr-2"
+						className="text-white"
 						text="Close"
 					/>}
 
@@ -1277,6 +1276,7 @@ function Form(props) {
 							w-[100px]
 							min-w-[300px]
 							py-2
+							gap-2
 							justify-center
 							items-center
 							rounded-b-lg
@@ -1287,8 +1287,11 @@ function Form(props) {
 				</Box>;
 		} else {
 			if (!disableFooter) {
-				let footerClassName = '';
-				footerClassName += ' justify-end';
+				let footerClassName = `
+					Form-Footer
+					justify-end
+					gap-2
+				`;
 				if (editorType === EDITOR_TYPE__INLINE) {
 					footerClassName += `
 						sticky

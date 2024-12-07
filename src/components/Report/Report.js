@@ -1,9 +1,11 @@
-import React from 'react';
+import { cloneElement, isValidElement } from 'react';
 import {
+	Box,
 	HStack,
 	Icon,
 	Text,
 	VStack,
+	VStackNative,
 } from '@project-components/Gluestack';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor';
 import {
@@ -41,15 +43,14 @@ function Report(props) {
 		buttons = [];
 
 	const propsIcon = props._icon || {};
-	propsIcon.size = 60;
-	propsIcon.px = 5;
+	propsIcon.className = 'w-full h-full text-primary-500';
 	let icon = props.icon;
 	if (_.isEmpty(icon)) {
 		icon = ChartLine;
 	}
-	if (React.isValidElement(icon)) {
+	if (isValidElement(icon)) {
 		if (!_.isEmpty(propsIcon)) {
-			icon = React.cloneElement(icon, {...propsIcon});
+			icon = cloneElement(icon, {...propsIcon});
 		}
 	} else {
 		icon = <Icon as={icon} {...propsIcon} />;
@@ -60,14 +61,13 @@ function Report(props) {
 			...testProps('excelBtn'),
 			key: 'excelBtn',
 			text: 'Download Excel',
-			leftIcon: <Icon as={Excel} size="md" className="text-white" />,
+			icon: Excel,
 			onPress: (data) => getReport({
 				reportId,
 				data,
 				reportType: REPORT_TYPES__EXCEL,
 				showReportHeaders,
 			}),
-			ml: 1,
 		});
 	}
 	if (!disablePdf) {
@@ -75,22 +75,30 @@ function Report(props) {
 			...testProps('pdfBtn'),
 			key: 'pdfBtn',
 			text: 'Download PDF',
-			leftIcon: <Icon as={Pdf} size="md" className="text-white" />,
+			icon: Pdf,
 			onPress: (data) => getReport({
 				reportId,
 				data,
 				reportType: REPORT_TYPES__PDF,
 				showReportHeaders,
 			}),
-			ml: 1,
 		});
 	}
-	return <VStack
+	return <VStackNative
 				{...testProps('Report-' + reportId)}
-				className="w-full border border-primary-300 pt-4 mb-3"
+				className={`
+					w-full
+					border
+					border-primary-300
+					p-4
+					mb-3
+					rounded-lg
+				`}
 			>
 				<HStack>
-					{icon && <VStack>{icon}</VStack>}
+					<Box className="w-[50px] mr-4">
+						{icon}
+					</Box>
 					<VStack className="flex-1">
 						<Text className="text-2xl max-w-full">{title}</Text>
 						<Text className="text-sm">{description}</Text>
@@ -101,7 +109,7 @@ function Report(props) {
 					additionalFooterButtons={buttons}
 					{...props._form}
 				/>
-			</VStack>;
+			</VStackNative>;
 }
 
 export default withComponent(Report);
