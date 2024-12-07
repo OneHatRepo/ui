@@ -365,6 +365,7 @@ function Viewer(props) {
 	let className = `
 		Viewer-VStackNative
 		h-full
+		bg-white
 	`;
 	if (props.className) {
 		className += ' ' + props.className;
@@ -372,7 +373,6 @@ function Viewer(props) {
 
 	return <VStackNative
 				{...testProps(self)}
-				{...props}
 				className={className}
 				onLayout={onLayout}
 			>
