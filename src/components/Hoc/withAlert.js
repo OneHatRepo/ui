@@ -105,7 +105,9 @@ function withAlert(WrappedComponent) {
 					}),
 					onOk: () => {
 						hideModal();
-						onOk();
+						if (onOk) {
+							onOk();
+						}
 					},
 					includeCancel,
 					canClose,
