@@ -362,7 +362,10 @@ function Viewer(props) {
 		canEdit = false;
 	}
 
-	let className = 'Viewer-VStackNative';
+	let className = `
+		Viewer-VStackNative
+		h-full
+	`;
 	if (props.className) {
 		className += ' ' + props.className;
 	}
@@ -379,9 +382,10 @@ function Viewer(props) {
 						_web={{ height: 1 }}
 						ref={scrollViewRef}
 						className={`
-							ScrollView
+							Viewer-ScrollView
 							w-full
 							pb-1
+							flex-1
 						`}
 					>
 						{canEdit && onEditMode &&

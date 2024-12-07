@@ -137,13 +137,12 @@ function Panel(props) {
 						className={`
 							Panel-VSstack
 							flex-1
-							flex
 							w-full
 							overflow-hidden
 						`}
 					>
 						{isScrollable ? 
-							<ScrollView className="ScrollView">
+							<ScrollView className="Panel-ScrollView">
 								{children}
 							</ScrollView> : 
 							children}
