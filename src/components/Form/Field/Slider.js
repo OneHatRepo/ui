@@ -171,7 +171,7 @@ const
 						className={`
 							InputWithTooltip
 							h-full
-							w-[50px]
+							w-[60px]
 							p-2
 							mr-4
 							text-center

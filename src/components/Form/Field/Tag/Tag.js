@@ -22,7 +22,6 @@ function TagComponent(props) {
 			isViewOnly = false,
 			isValueAlwaysArray,
 			isValueAsStringifiedJson,
-			isFilter = false,
 			minimizeForRow = false,
 			Editor,
 			_combo = {},

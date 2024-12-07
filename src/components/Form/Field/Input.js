@@ -30,6 +30,7 @@ const InputElement = forwardRef((props, ref) => {
 			rightIcon,
 			rightIconHandler,
 			placeholder,
+			className,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -109,10 +110,6 @@ const InputElement = forwardRef((props, ref) => {
 	if (!disableAutoFlex && !hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	// flex-1
-	// block
-	// h-auto
-	// h-[10px]
 	let inputClassName = `
 			Input
 			${styles.FORM_INPUT_BG}
@@ -125,15 +122,14 @@ const InputElement = forwardRef((props, ref) => {
 			h-auto
 			w-full
 			p-2
-			text-left
+			text-center
 			${styles.FORM_INPUT_FONTSIZE}
 			${styles.FORM_INPUT_BG}
 			${styles.FORM_INPUT_BG_FOCUS}
 			${styles.FORM_INPUT_BG_HOVER}
 		`;
-	if (props.className) {
-		inputClassName += props.className;
-		inputFieldClassName += props.className;
+	if (className) {
+		inputClassName += className;
 	}
 	
 	return <Input
