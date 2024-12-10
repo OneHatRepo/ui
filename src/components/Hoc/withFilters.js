@@ -303,6 +303,7 @@ export default function withFilters(WrappedComponent) {
 											value={getFilterValue(field)}
 											onChangeValue={(value) => onFilterChangeValue(field, value)}
 											isFilter={true}
+											minimizeForRow={true}
 											{...filterProps}
 											{...elementProps}
 											className={filterClassName}

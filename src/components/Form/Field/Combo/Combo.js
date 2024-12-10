@@ -545,7 +545,8 @@ export function ComboComponent(props) {
 	}
 	const triggerClassName = `
 		Combo-trigger
-		h-full
+		self-stretch
+		h-auto
 		border
 		border-l-0
 		border-gray-400
@@ -575,7 +576,8 @@ export function ComboComponent(props) {
 						onPress={toggleMenu}
 						className={`
 							toggleMenuBtn
-							h-full
+							h-auto
+							self-stretch
 							flex-1
 							flex-row
 							justify-center
@@ -595,7 +597,8 @@ export function ComboComponent(props) {
 							ellipsizeMode="head"
 							className={`
 								Text
-								h-full
+								h-auto
+								self-stretch
 								flex-1
 								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
 								${styles.FORM_COMBO_INPUT_FONTSIZE}
@@ -619,9 +622,8 @@ export function ComboComponent(props) {
 						className={`
 							ComboInput
 							grow
-							h-full
-							min-h-0
-							max-h-[40px]
+							h-auto
+							self-stretch
 							flex-1
 							m-0
 							rounded-tr-none
@@ -1015,8 +1017,9 @@ export function ComboComponent(props) {
 	let className = `
 		Combo-HStack
 		flex-1
-		h-[40px]
-		min-h-[40px]
+		items-stretch
+		h-auto
+		self-stretch
 		justify-center
 		items-stretch
 	`;

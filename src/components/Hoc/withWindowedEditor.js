@@ -58,7 +58,8 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				selectorSelected,
 				selectorSelectedField,
 				h,
-
+				style,
+				
 				...propsToPass
 			} = props,
 			onEditorCancel = props.onEditorCancel;

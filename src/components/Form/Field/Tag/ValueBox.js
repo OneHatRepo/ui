@@ -1,5 +1,5 @@
 import {
-	HStack,
+	HStackNative,
 	Text,
 } from '@project-components/Gluestack';
 import testProps from '../../../../Functions/testProps.js';
@@ -16,7 +16,7 @@ export default function ValueBox(props) {
 			onDelete,
 		} = props,
 		styles = UiGlobals.styles;
-	return <HStack
+	return <HStackNative
 				{...testProps('valueBox-' + text)}
 				className={`
 					max-w-full
@@ -57,5 +57,5 @@ export default function ValueBox(props) {
 						onPress={onDelete}
 						className="h-full"
 					/>}
-			</HStack>;
+			</HStackNative>;
 }

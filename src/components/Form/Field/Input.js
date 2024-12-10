@@ -30,6 +30,7 @@ const InputElement = forwardRef((props, ref) => {
 			rightIcon,
 			rightIconHandler,
 			placeholder,
+			textAlignIsCenter = true,
 			className,
 			...propsToPass
 		} = props,
@@ -118,11 +119,11 @@ const InputElement = forwardRef((props, ref) => {
 		`,
 		inputFieldClassName = `
 			InputField
-			min-h-[40px]
+			self-stretch
 			h-auto
 			w-full
 			p-2
-			text-center
+			${textAlignIsCenter ? 'text-center' : 'text-left'}
 			${styles.FORM_INPUT_FONTSIZE}
 			${styles.FORM_INPUT_BG}
 			${styles.FORM_INPUT_BG_FOCUS}

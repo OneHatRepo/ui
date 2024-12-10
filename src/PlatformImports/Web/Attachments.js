@@ -282,7 +282,11 @@ function AttachmentsElement(props) {
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
 	}
-	let content = <VStack background={styles.ATTACHMENTS_BG} className="w-[100%] p-1">
+	let className = 'w-full p-1 bg-white rounded-[5px]';
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+	let content = <VStack className={className}>
 						<HStack className="flex-wrap">
 							{files.map((file) => {
 								return <Box
