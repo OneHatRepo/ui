@@ -184,9 +184,9 @@ export default function withModal(WrappedComponent) {
 						<Modal
 							isOpen={true}
 							onClose={onCancel}
-							className="Modal"
+							className="withModal-Modal"
 						>
-							<ModalBackdrop />
+							<ModalBackdrop className="withModal-ModalBackdrop" />
 							{modalBody}
 						</Modal>}
 					

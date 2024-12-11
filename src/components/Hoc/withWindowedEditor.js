@@ -74,8 +74,9 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 						<Modal
 							isOpen={true}
 							onClose={onEditorCancel}
+							className="withEditor-Modal"
 						>
-							<ModalBackdrop />
+							<ModalBackdrop className="withEditor-ModalBackdrop" />
 							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
 								{...propsToPass}
