@@ -1345,7 +1345,7 @@ function TreeComponent(props) {
 						<ScrollView {...testProps('ScrollView')} flex={1} w="100%">
 							{!treeNodes?.length ? 
 								<CenterBox>
-									<NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />
+									{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />}
 								</CenterBox> :
 								treeNodes}
 						</ScrollView>
