@@ -367,6 +367,10 @@ function Viewer(props) {
 		canEdit = false;
 	}
 
+	const style = props.style || {};
+	if (!hasWidth(props) && !hasFlex(props)) {
+		style.flex = 1;
+	}
 	let className = `
 		Viewer-VStackNative
 		h-full
@@ -378,8 +382,9 @@ function Viewer(props) {
 
 	return <VStackNative
 				{...testProps(self)}
-				className={className}
+				style={style}
 				onLayout={onLayout}
+				className={className}
 			>
 				{containerWidth && <>
 
