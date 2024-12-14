@@ -299,6 +299,9 @@ function Form(props) {
 					}
 
 					let elementClassName = 'Form-ElementFromColumnsConfig';
+					if (type === 'Text') {
+						elementClassName += ' flex items-center justify-center';
+					}
 					const
 						boxFlex = configPropsToPass.flex,
 						boxW = configPropsToPass.w;
@@ -1285,7 +1288,7 @@ function Form(props) {
 						className={`
 							Form-inlineFooter
 							absolute
-							top-[9px]
+							top-[5px]
 							left-[100px]
 							w-[100px]
 							min-w-[300px]

@@ -83,6 +83,11 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 								{..._editor}
 								parent={self}
 								reference="editor"
+								className={`
+									bg-white
+									shadow-lg
+									rounded-lg
+								`}
 							/>
 						</Modal>}
 				</>;

@@ -92,7 +92,9 @@ function Report(props) {
 					border-primary-300
 					p-4
 					mb-3
+					bg-white
 					rounded-lg
+					shadow-sm
 				`}
 			>
 				<HStack>

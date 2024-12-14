@@ -1014,7 +1014,7 @@ export function ComboComponent(props) {
 		className += ' ' + props.className;
 	}
 	if (minimizeForRow) {
-		className += ' h-auto min-h-0 max-h-[40px]';
+		className += ' h-auto min-h-0';
 	}
 	
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
