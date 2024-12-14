@@ -313,7 +313,7 @@ export default function withFilters(WrappedComponent) {
 											<Label
 												className="min-w-0 mr-1"
 												_text={{
-													className: UiGlobals.styles.FILTER_LABEL_FONTSIZE,
+													className: UiGlobals.styles.FILTER_LABEL_CLASSNAME,
 												}}
 											>{title}</Label>
 											{filterElement}

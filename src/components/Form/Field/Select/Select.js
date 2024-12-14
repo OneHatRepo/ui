@@ -72,10 +72,7 @@ const SelectElement = forwardRef((props, ref) => {
 		w-full
 		text-left
 		rounded-lg
-		${styles.FORM_SELECT_FONTSIZE}
-		${styles.FORM_SELECT_BG}
-		${styles.FORM_SELECT_BG_FOCUS}
-		${styles.FORM_SELECT_BG_HOVER}
+		${styles.FORM_SELECT_CLASSNAME}
 	`;
 	if (props.className) {
 		className += props.className;

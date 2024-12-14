@@ -170,10 +170,6 @@ function NumberElement(props) {
 						h-full
 						text-center
 						rounded-none
-						${styles.FORM_INPUT_FONTSIZE}
-						${styles.FORM_INPUT_BG}
-						${styles.FORM_INPUT_BG_HOVER}
-						${styles.FORM_INPUT_BG_FOCUS}
 					`}
 					style={{
 						flex: 3

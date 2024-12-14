@@ -83,9 +83,7 @@ const
 			inputClassName = `
 				TextAreaInput
 				flex-1
-				${styles.FORM_TEXTAREA_BG}
-				${styles.FORM_TEXTAREA_FONTSIZE}
-				${styles.FORM_TEXTAREA_HEIGHT}
+				${styles.FORM_TEXTAREA_CLASSNAME}
 			`;
 		if (props.className) {
 			inputClassName += ' ' + props.className;
@@ -99,9 +97,6 @@ const
 					<TextareaInput
 						ref={props.outerRef}
 						onChangeText={onChangeTextLocal}
-						_focus={{
-							bg: styles.FORM_TEXTAREA_BG,
-						}}
 						value={localValue}
 						className={inputClassName}
 						placeholder={placeholder}

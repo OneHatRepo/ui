@@ -14,14 +14,11 @@ const IconButtonElement = forwardRef((props, ref) => {
 
 	let buttonClassName = `
 		IconButton
-		${styles.ICON_BUTTON_PY}
-		${styles.ICON_BUTTON_PX}
-		${styles.ICON_BUTTON_BG}
-		${styles.ICON_BUTTON_BG_HOVER}
-		${styles.ICON_BUTTON_BG_ACTIVE}
-		${styles.ICON_BUTTON_BG_DISABLED}
 		rounded-md
 		self-center
+		px-[10px]
+		py-[10px]
+		${styles.ICON_BUTTON_CLASSNAME}
 	`;
 	if (props.className) {
 		buttonClassName += ' ' + props.className;

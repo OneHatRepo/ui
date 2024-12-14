@@ -109,7 +109,7 @@ export default function FieldSet(props) {
 							numberOfLines={1}
 							ellipsizeMode="head"
 							className={`
-								FieldSet-title-Text
+								FieldSet-title-TextNative
 								flex-1
 								py-1
 								px-3
@@ -119,25 +119,15 @@ export default function FieldSet(props) {
 						>{title}</TextNative>
 
 						{showToggleAllCheckbox && 
-							<HStack className="self-right">
-								<TextNative
-									numberOfLines={1}
-									className={`
-										flex-1
-										py-1
-										px-3
-										${styles.FORM_FIELDSET_FONTSIZE}
-									`}
-								>Toggle All?</TextNative>
-								<CheckboxButton
-									{...testProps('toggleAllBtn')}
-									isChecked={getIsAllChecked()}
-									onPress={onToggleAllChecked}
-									_icon={{
-										size: 'lg',
-									}}
-								/>
-							</HStack>}
+							<CheckboxButton
+								{...testProps('toggleAllBtn')}
+								isChecked={getIsAllChecked()}
+								onPress={onToggleAllChecked}
+								className="FieldSet-title-showToggleAllCheckbox self-right"
+								_icon={{
+									size: 'lg',
+								}}
+							/>}
 						
 						{isCollapsible && 
 							<IconButton

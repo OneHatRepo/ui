@@ -126,8 +126,7 @@ function FileComponent(props) {
 					className={`
 						h-full
 						mr-1
-						${styles.FORM_COMBO_TRIGGER_BG}
-						${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+						${styles.FORM_COMBO_TRIGGER_CLASSNAME}
 					`}
 				/>
 				<Text>{plainFiles[0].name}</Text>

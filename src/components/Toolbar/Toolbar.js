@@ -20,7 +20,7 @@ export default function Toolbar(props) {
 		border-b
 		border-solid
 		border-b-grey-400
-		${styles.TOOLBAR_BG}
+		${styles.TOOLBAR_CLASSNAME}
 	`;
 	if (props.className) {
 		className += ' ' + props.className

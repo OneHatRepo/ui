@@ -13,7 +13,7 @@ export default function Footer(props) {
 		self-end
 		p-2
 		border-t-2
-		${styles.PANEL_FOOTER_BORDER_TOP_COLOR}
+		${styles.PANEL_FOOTER_CLASSNAME}
 	`;
 	if (props.className) {
 		className += ' ' + props.className

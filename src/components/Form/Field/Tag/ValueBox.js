@@ -19,6 +19,7 @@ export default function ValueBox(props) {
 	return <HStackNative
 				{...testProps('valueBox-' + text)}
 				className={`
+					ValueBox-HStackNative
 					max-w-full
 					items-center
 					mr-1
@@ -37,12 +38,13 @@ export default function ValueBox(props) {
 						className: 'text-grey-600',
 					}}
 					onPress={onView}
-					className="h-full"
+					className="ValueBox-eyeBtn h-full"
 				/>
 				<Text
 					className={`
+						ValueBox-Text
 						text-grey-600
-						${styles.FORM_TAG_VALUEBOX_FONTSIZE}
+						${styles.FORM_TAG_VALUEBOX_CLASSNAME}
 						${onDelete ? 'mr-0' : 'mr-1'}
 					`}
 				>{text}</Text>
@@ -55,7 +57,7 @@ export default function ValueBox(props) {
 							className: 'text-grey-600',
 						}}
 						onPress={onDelete}
-						className="h-full"
+						className="ValueBox-xBtn h-full"
 					/>}
 			</HStackNative>;
 }

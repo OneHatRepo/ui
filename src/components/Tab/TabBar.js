@@ -155,10 +155,10 @@ function TabBar(props) {
 				buttonProps = {
 					className: `
 						${styles.TAB_BG}
+						${isCollapsed ? 'justify-center' : 'justify-start'}
 						${styles.TAB_BG_HOVER}
 						${styles.TAB_BG_ACTIVE}
 						${styles.TAB_BG_DISABLED}
-						${isCollapsed ? 'justify-center' : 'justify-start'}
 					`,
 				},
 				textProps = {
@@ -496,10 +496,10 @@ function TabBar(props) {
 					className={`
 						${isCollapsed ? 'w-[50px]' : 'w-[' + tabWidth + 'px]'}
 						${isCollapsed ? 'pl-1' : 'pl-4'}
-						${styles.TAB_BAR_BG}
 						items-center
 						justify-start
 						py-2
+						${styles.TAB_BAR_CLASSNAME}
 					`}
 				>
 					{renderedTabs}
@@ -521,11 +521,11 @@ function TabBar(props) {
 					{...testProps('TabBar')}
 					className={`
 						${isCollapsed ? 'h-[38px]' : 'h-[' + tabHeight + 'px]'}
-						${styles.TAB_BAR_BG}
 						items-center
 						justify-start
 						p-1
 						pb-0
+						${styles.TAB_BAR_CLASSNAME}
 					`}
 				>
 					<ScrollView

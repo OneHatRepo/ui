@@ -519,8 +519,7 @@ export function ComboComponent(props) {
 						className={`
 							h-full
 							mr-1
-							${styles.FORM_COMBO_TRIGGER_BG}
-							${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
 						`}
 					/>;
 	}
@@ -538,8 +537,7 @@ export function ComboComponent(props) {
 						className={`
 							h-full
 							mr-1
-							${styles.FORM_COMBO_TRIGGER_BG}
-							${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
 						`}
 					/>;
 	}
@@ -552,8 +550,7 @@ export function ComboComponent(props) {
 		border-gray-400
 		rounded-l-none
 		rounded-r-md
-		${styles.FORM_COMBO_TRIGGER_BG}
-		${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+		${styles.FORM_COMBO_TRIGGER_CLASSNAME}
 	`;
 	trigger = <IconButton
 				{...testProps('trigger')}
@@ -575,7 +572,7 @@ export function ComboComponent(props) {
 						{...testProps('toggleMenuBtn')}
 						onPress={toggleMenu}
 						className={`
-							toggleMenuBtn
+							Combo-toggleMenuBtn
 							h-auto
 							self-stretch
 							flex-1
@@ -596,12 +593,12 @@ export function ComboComponent(props) {
 							numberOfLines={1}
 							ellipsizeMode="head"
 							className={`
-								Text
+								Combo-TextNative
 								h-auto
 								self-stretch
 								flex-1
 								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
-								${styles.FORM_COMBO_INPUT_FONTSIZE}
+								${styles.FORM_COMBO_INPUT_CLASSNAME}
 							`}
 						>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
 					</Pressable> :
@@ -620,7 +617,7 @@ export function ComboComponent(props) {
 						autoSubmitDelay={500}
 						placeholder={placeholder}
 						className={`
-							ComboInput
+							Combo-Input
 							grow
 							h-auto
 							self-stretch
@@ -628,9 +625,7 @@ export function ComboComponent(props) {
 							m-0
 							rounded-tr-none
 							rounded-br-none
-							${styles.FORM_COMBO_INPUT_FONTSIZE}
-							${styles.FORM_COMBO_INPUT_BG}
-							${styles.FORM_COMBO_INPUT_BG_FOCUS}
+							${styles.FORM_COMBO_INPUT_CLASSNAME}
 						`}
 						{..._input}
 					/>;
@@ -665,7 +660,7 @@ export function ComboComponent(props) {
 							m-0
 							p-1
 							${_.isEmpty(displayValue) ? "text-grey-400" : "text-black"}
-							${styles.FORM_COMBO_INPUT_FONTSIZE}
+							${styles.FORM_COMBO_INPUT_CLASSNAME}
 						`}
 					>{_.isEmpty(displayValue) ? placeholder : displayValue}</TextNative>
 				</Pressable>;
@@ -854,9 +849,7 @@ export function ComboComponent(props) {
 										m-0
 										rounded-tr-none
 										rounded-br-none
-										${styles.FORM_COMBO_INPUT_FONTSIZE}
-										${styles.FORM_COMBO_INPUT_BG}
-										${styles.FORM_COMBO_INPUT_BG_FOCUS}
+										${styles.FORM_COMBO_INPUT_CLASSNAME}
 									`}
 									{..._input}
 								/>
@@ -915,8 +908,7 @@ export function ComboComponent(props) {
 									border
 									border-grey-400
 									rounded-md
-									${styles.FORM_COMBO_TRIGGER_BG}
-									${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+									${styles.FORM_COMBO_TRIGGER_CLASSNAME}
 								`}
 							/>;
 			}
@@ -937,9 +929,7 @@ export function ComboComponent(props) {
 								border
 								border-grey-400
 								rounded-r-none
-								${styles.FORM_COMBO_INPUT_BG}
-								${styles.FORM_COMBO_INPUT_BG_FOCUS}
-								${styles.FORM_COMBO_INPUT_FONTSIZE}
+								${styles.FORM_COMBO_INPUT_CLASSNAME}
 							`}
 						>{textInputValue}</TextNative> :
 						<Input
@@ -961,9 +951,7 @@ export function ComboComponent(props) {
 								flex-1
 								m-0
 								rounded-r-none
-								${styles.FORM_COMBO_INPUT_FONTSIZE}
-								${styles.FORM_COMBO_INPUT_BG}
-								${styles.FORM_COMBO_INPUT_BG_FOCUS}
+								${styles.FORM_COMBO_INPUT_CLASSNAME}
 							`}
 							{..._input}
 						/>}
@@ -982,8 +970,7 @@ export function ComboComponent(props) {
 							border-grey-400
 							rounded-l-none
 							rounded-r-md
-							${styles.FORM_COMBO_TRIGGER_BG}
-							${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
 						`}
 					/>
 					{checkButton}

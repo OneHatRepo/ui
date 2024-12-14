@@ -101,7 +101,7 @@ const
 							className={`
 								ml-1
 								mr-2
-								${styles.FORM_TOGGLE_FONTSIZE}
+								${styles.FORM_TOGGLE_READOUT_CLASSNAME}
 							`}
 						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</Text>
 					</Pressable>

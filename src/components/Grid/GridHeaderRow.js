@@ -363,8 +363,7 @@ export default function GridHeaderRow(props) {
 									items-center
 									justify-center
 									${rowClassName}
-									${styles.GRID_HEADER_BG}
-									${styles.GRID_HEADER_BG_HOVER}
+									${styles.GRID_HEADER_PRESSABLE_CLASSNAME}
 								`}
 								style={rowStyle}
 							>
@@ -404,9 +403,9 @@ export default function GridHeaderRow(props) {
 										text-center
 										overflow-hidden
 										text-ellipsis
-										${styles.GRID_HEADER_FONTSIZE}
-										${styles.GRID_HEADER_CELL_PX}
-										${styles.GRID_HEADER_CELL_PY}
+										px-2
+										py-3
+										${styles.GRID_HEADER_CLASSNAME}
 									`}
 								>{header}</TextNative>
 								
@@ -419,8 +418,7 @@ export default function GridHeaderRow(props) {
 											GridHeaderRow-Icon
 											text-center
 											text-grey-500
-											${styles.GRID_HEADER_ICON_MT}
-											${styles.GRID_HEADER_ICON_MR}
+											${styles.GRID_HEADER_ICON_CLASSNAME}
 										`} />}
 								
 								{isOver && UiGlobals.mode === UI_MODE_WEB && // only works for web for now 

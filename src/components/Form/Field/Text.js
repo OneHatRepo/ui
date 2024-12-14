@@ -16,7 +16,7 @@ const
 			min-h-[40px]
 			px-3
 			py-2
-			${styles.FORM_TEXT_FONTSIZE}
+			${styles.FORM_TEXT_CLASSNAME}
 		`;
 		if (props.className) {
 			className += ' ' + props.className;

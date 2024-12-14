@@ -65,7 +65,7 @@ export default function TreeNode(props) {
 		}
 
 		let className = `
-			treenode
+			TreeNode
 			items-center
 			flex
 			flex-1
@@ -101,15 +101,13 @@ export default function TreeNode(props) {
 						ellipsizeMode="head"
 						// {...propsToPass}
 						className={`
-							treenode-text
+							TreeNode-TextNative
 							self-center
 							overflow-hidden
 							flex
 							flex-1
 							text-ellipsis
-							${styles.TREE_NODE_PY}
-							${styles.TREE_NODE_PX}
-							${styles.TREE_NODE_FONTSIZE}
+							${styles.TREE_NODE_CLASSNAME}
 						`}
 						style={{ userSelect: 'none', }}
 					>{text}</TextNative>

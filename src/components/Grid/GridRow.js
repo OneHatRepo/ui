@@ -180,10 +180,10 @@ function GridRow(props) {
 													GridRow-Element
 													self-center
 													text-ellipsis
+													px-2
+													py-3
 													${colClassName}
-													${styles.GRID_CELL_FONTSIZE}
-													${styles.GRID_CELL_PX}
-													${styles.GRID_CELL_PY}
+													${styles.GRID_CELL_CLASSNAME}
 												`}
 												numberOfLines={1}
 												ellipsizeMode="head"
@@ -228,8 +228,11 @@ function GridRow(props) {
 									self-center
 									overflow-hidden
 									text-ellipsis
+									truncate
+									whitespace-nowrap
+									overflow-hidden
 									${colClassName}
-									${styles.GRID_CELL_FONTSIZE} 
+									${styles.GRID_CELL_CLASSNAME} 
 									${styles.GRID_CELL_PX} 
 									${styles.GRID_CELL_PY} 
 								`}
@@ -278,7 +281,7 @@ function GridRow(props) {
 			rowContents = <HStack
 								ref={dragSourceRef}
 								className={`
-									dragSourceRef
+									GridRow-dragSourceRef
 									w-full
 									flex-1
 									grow-1
@@ -292,7 +295,7 @@ function GridRow(props) {
 			rowContents = <HStack
 								ref={dropTargetRef}
 								className={`
-									dropTargetRef
+									GridRow-dropTargetRef
 									w-full
 									flex-1
 									grow-1

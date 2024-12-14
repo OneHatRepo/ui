@@ -292,9 +292,9 @@ export const DateElement = forwardRef((props, ref) => {
 						isDisabled={isDisabled}
 						onPress={onClearBtn}
 						className={`
+							Date-xBtn
 							h-full
-							${styles.FORM_COMBO_TRIGGER_BG}
-							${styles.FORM_COMBO_TRIGGER_BG_HOVER}
+							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
 						`}
 					/>;
 	}
@@ -304,20 +304,20 @@ export const DateElement = forwardRef((props, ref) => {
 				icon={Calendar}
 				_icon={{
 					size: 'sm',
-					className: styles.FORM_DATE_ICON_COLOR,
+					className: styles.FORM_DATE_TRIGGER_ICON_CLASSNAME,
 				}}
 				onPress={onTriggerPress}
 				onBlur={onTriggerBlur}
 				isDisabled={isDisabled}
 				className={`
+					Date-trigger
 					h-10
 					w-10
 					border
 					border-grey-400
 					rounded-l-md
 					rounded-r-none
-					${styles.FORM_DATE_ICON_BG}
-					${styles.FORM_DATE_ICON_BG_HOVER}
+					${styles.FORM_DATE_TRIGGER_CLASSNAME}
 				`}
 			/>;
 
@@ -326,13 +326,14 @@ export const DateElement = forwardRef((props, ref) => {
 			<Pressable
 				{...testProps('togglePickerBtn')}
 				onPress={togglePicker}
-				className="flex-1 h-full"
+				className="Date-togglePickerBtn flex-1 h-full"
 			>
 				<TextNative
 					ref={inputRef}
 					numberOfLines={1}
 					ellipsizeMode="head"
 					className={`
+						Date-TextNative
 						flex-1
 						h-full
 						m-0
@@ -343,9 +344,7 @@ export const DateElement = forwardRef((props, ref) => {
 						rounded-l-none
 						rounded-r-md
 						${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
-						${styles.FORM_DATE_INPUT_BG}
-						${styles.FORM_DATE_INPUT_BG_FOCUS}
-						${styles.FORM_DATE_READOUT_FONTSIZE}
+						${styles.FORM_DATE_INPUT_CLASSNAME}
 					`}
 				>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
 			</Pressable> :
@@ -369,13 +368,12 @@ export const DateElement = forwardRef((props, ref) => {
 				// 	setTop(Math.round(height));
 				// }}
 				className={`
+					Date-Input
 					flex-1
 					h-full
 					m-0
 					rounded-r-lg
-					${styles.FORM_DATE_INPUT_BG}
-					${styles.FORM_DATE_INPUT_BG_FOCUS}
-					${styles.FORM_DATE_READOUT_FONTSIZE}
+					${styles.FORM_DATE_INPUT_CLASSNAME}
 					${_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black'}
 				`}
 				autoSubmitDelay={1000}
@@ -407,8 +405,8 @@ export const DateElement = forwardRef((props, ref) => {
 							rounded-r-md
 							${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"} 
 							${styles.FORM_DATE_READOUT_FONTSIZE} 
-							${styles.FORM_DATE_INPUT_BG}
-							${styles.FORM_DATE_INPUT_BG_FOCUS}
+							${styles.FORM_DATE_INPUT_CLASSNAME}
+							${styles.FORM_DATE_INPUT_CLASSNAME_FOCUS}
 						`}
 					>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
 				</Pressable>;
@@ -422,13 +420,13 @@ export const DateElement = forwardRef((props, ref) => {
 									hidePicker();
 								}}
 								trigger={emptyFn}
-								className="block"
+								className="Date-Popover block"
 							>
 								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
 								<PopoverContent
 									ref={pickerRef}
 									className={`
-										PopoverContent
+										Date-PopoverContent
 									`}
 									style={{
 										top,
@@ -440,7 +438,7 @@ export const DateElement = forwardRef((props, ref) => {
 								>
 									<PopoverBody
 										className={`
-											PopoverBody
+											Date-PopoverBody
 											overflow-hidden
 										`}
 									>
@@ -463,10 +461,10 @@ export const DateElement = forwardRef((props, ref) => {
 				<HStack className="h-[10px]">
 					<IconButton
 						{...testProps('hidePickerBtn')}
+						icon={Calendar}
 						_icon={{
-							as: Calendar,
-							color: styles.FORM_DATE_ICON_COLOR,
 							size: 'sm',
+							className: styles.FORM_DATE_TRIGGER_ICON_CLASSNAME,
 						}}
 						isDisabled={isDisabled}
 						onPress={() => hidePicker()}
@@ -477,8 +475,7 @@ export const DateElement = forwardRef((props, ref) => {
 							border-grey-400
 							rounded-l-md
 							rounded-r-none
-							${styles.FORM_DATE_ICON_BG}
-							${styles.FORM_DATE_ICON_BG_HOVER}
+							${styles.FORM_DATE_TRIGGER_CLASSNAME}
 						`}
 					/>
 					{disableDirectEntry ?
@@ -497,9 +494,7 @@ export const DateElement = forwardRef((props, ref) => {
 								rounded-l-none
 								rounded-r-md
 								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
-								${styles.FORM_DATE_INPUT_BG}
-								${styles.FORM_DATE_INPUT_BG_FOCUS}
-								${styles.FORM_DATE_READOUT_FONTSIZE}
+								${styles.FORM_DATE_INPUT_CLASSNAME}
 							`}
 						>{textInputValue}</TextNative> :
 						<Input
@@ -521,9 +516,7 @@ export const DateElement = forwardRef((props, ref) => {
 								rounded-tr-none
 								rounded-br-none
 								${_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black'}
-								${styles.FORM_DATE_READOUT_FONTSIZE}
-								${styles.FORM_DATE_INPUT_BG}
-								${styles.FORM_DATE_INPUT_BG_FOCUS}
+								${styles.FORM_DATE_INPUT_CLASSNAME}
 							`}
 							{..._input}
 						/>}
@@ -532,7 +525,13 @@ export const DateElement = forwardRef((props, ref) => {
 								isOpen={true}
 								safeAreaTop={true}
 								onClose={() => setIsPickerShown(false)}
-								className="mt-auto mb-auto w-full h-[400px] p-[5px]"
+								className={`
+									Date-Modal
+									my-auto
+									w-full
+									h-[400px]
+									p-3
+								`}
 							>
 								<ModalBackdrop />
 								<ModalContent>
@@ -548,7 +547,7 @@ export const DateElement = forwardRef((props, ref) => {
 											timeFormat={mode === TIME || mode === DATETIME ? 'HH:mm:ss' : false}
 											onChange={onPickerChange}
 										/> */}
-										<Box className="bg-white">
+										<Box className="Date-Box bg-white">
 											<Datetime
 												{...testProps('picker')}
 												initialDate={moment(value).toDate()}
@@ -570,7 +569,7 @@ export const DateElement = forwardRef((props, ref) => {
 		flex-1
 		justify-center
 		items-center
-		${styles.FORM_COMBO_HEIGHT}
+		${styles.FORM_DATE_CLASSNAME}
 	`;
 	if (props.className) {
 		className += props.className;

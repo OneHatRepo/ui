@@ -646,7 +646,7 @@ function Form(props) {
 					}
 					if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
 						if (!style.width) {
-							style.width = '100px';
+							style.width = '120px';
 						}
 						element = <HStack className="Form-HStack1 w-full py-1">
 										<Label style={style}>{label}</Label>
@@ -812,7 +812,15 @@ function Form(props) {
 									isRequired = true;
 								}
 								if (isRequired) {
-									requiredIndicator = <Text className="text-[#f00] text-[30px] pr-1">*</Text>;
+									requiredIndicator = <Text
+															className={`
+																Form-requiredIndicator
+																self-center
+																text-[#f00]
+																text-[30px]
+																pr-1
+															`}
+														>*</Text>;
 								}
 							}
 							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
@@ -822,15 +830,21 @@ function Form(props) {
 								}
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
 									if (!style.width) {
-										style.width = '100px';
+										style.width = '120px';
 									}
 									element = <HStack className="Form-HStack8 w-full">
-								 					<Label style={style}>{requiredIndicator}{label}</Label>
+								 					<Label style={style}>
+														{requiredIndicator}
+														{label}
+													</Label>
 													{element}
 								 				</HStack>;
 								} else {
 									element = <VStack className="Form-VStack9 w-full mt-3">
-													<Label style={style}>{requiredIndicator}{label}</Label>
+													<Label style={style}>
+														{requiredIndicator}
+														{label}
+													</Label>
 													{element}
 												</VStack>;
 								}
@@ -907,7 +921,7 @@ function Form(props) {
 									className={`
 										Form-Ancillary-Title
 										font-bold
-										${styles.FORM_ANCILLARY_TITLE_FONTSIZE}
+										${styles.FORM_ANCILLARY_TITLE_CLASSNAME}
 									`}
 								>{title}</Text>;
 					}
@@ -916,7 +930,7 @@ function Form(props) {
 										className={`
 											Form-Ancillary-Description
 											italic
-											${styles.FORM_ANCILLARY_DESCRIPTION_FONTSIZE}
+											${styles.FORM_ANCILLARY_DESCRIPTION_CLASSNAME}
 										`}
 									>{description}</Text>;
 					}
@@ -1280,8 +1294,7 @@ function Form(props) {
 							justify-center
 							items-center
 							rounded-b-lg
-							bg-red-500
-							${styles.GRID_INLINE_EDITOR_BG}
+							bg-primary-700
 						`}
 					>{footerButtons}</HStack>
 				</Box>;

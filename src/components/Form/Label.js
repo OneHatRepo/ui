@@ -16,8 +16,9 @@ export default function Label(props) {
 	}
 	let textClassName = `
 		Label-TextNative
+		flex
 		text-ellipsis
-		${styles.FORM_LABEL_FONTSIZE}
+		${styles.FORM_LABEL_CLASSNAME}
 	`;
 	if (props._text?.className) {
 		textClassName += ' ' + props._text.className;

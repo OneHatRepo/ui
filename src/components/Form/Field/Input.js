@@ -113,9 +113,7 @@ const InputElement = forwardRef((props, ref) => {
 	}
 	let inputClassName = `
 			Input
-			${styles.FORM_INPUT_BG}
-			${styles.FORM_INPUT_BG_FOCUS}
-			${styles.FORM_INPUT_BG_HOVER}
+			${styles.FORM_INPUT_CLASSNAME}
 		`,
 		inputFieldClassName = `
 			InputField
@@ -124,10 +122,8 @@ const InputElement = forwardRef((props, ref) => {
 			w-full
 			p-2
 			${textAlignIsCenter ? 'text-center' : 'text-left'}
-			${styles.FORM_INPUT_FONTSIZE}
-			${styles.FORM_INPUT_BG}
-			${styles.FORM_INPUT_BG_FOCUS}
-			${styles.FORM_INPUT_BG_HOVER}
+			${styles.FORM_INPUT_CLASSNAME}
+			${styles.FORM_INPUT_FIELD_CLASSNAME}
 		`;
 	if (className) {
 		inputClassName += className;

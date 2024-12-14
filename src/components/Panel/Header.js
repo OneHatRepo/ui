@@ -55,7 +55,7 @@ export default function Header(props) {
 						icon={Xmark}
 						_icon={{
 							// size: styles.PANEL_HEADER_ICON_SIZE,
-							className: styles.PANEL_HEADER_ICON_COLOR,
+							className: styles.PANEL_HEADER_ICON_CLASSNAME,
 						}}
 						className={closeClassName}
 					/>;
@@ -76,7 +76,7 @@ export default function Header(props) {
 						icon={isCollapsed ? Plus : Minus}
 						_icon={{
 							size: styles.PANEL_HEADER_ICON_SIZE,
-							className: styles.PANEL_HEADER_ICON_COLOR,
+							className: styles.PANEL_HEADER_ICON_CLASSNAME,
 						}}
 						className={collapseClassName}
 					/>;
@@ -131,8 +131,7 @@ export default function Header(props) {
 											Header-TextNative1
 											flex-1
 											font-bold
-											${styles.PANEL_HEADER_TEXT_COLOR}
-											${styles.PANEL_HEADER_TEXT_FONTSIZE}
+											${styles.PANEL_HEADER_TEXT_CLASSNAME}
 										`}>{title}</TextNative>
 								</div>
 							</VStack>
@@ -169,8 +168,7 @@ export default function Header(props) {
 								Header-TextNative2
 								flex-1
 								font-bold
-								${styles.PANEL_HEADER_TEXT_COLOR}
-								${styles.PANEL_HEADER_TEXT_FONTSIZE}
+								${styles.PANEL_HEADER_TEXT_CLASSNAME}
 							`}
 						>{title}</TextNative>
 						{collapseBtn}
@@ -211,8 +209,7 @@ export default function Header(props) {
 											font-bold
 											w-[200px]
 											text-right
-											${styles.PANEL_HEADER_TEXT_COLOR}
-											${styles.PANEL_HEADER_TEXT_FONTSIZE}
+											${styles.PANEL_HEADER_TEXT_CLASSNAME}
 										`}
 									>{title}</TextNative>
 								</VStack>
@@ -246,8 +243,7 @@ export default function Header(props) {
 								Header-TextNative4
 								font-bold
 								flex-1
-								${styles.PANEL_HEADER_TEXT_COLOR}
-								${styles.PANEL_HEADER_TEXT_FONTSIZE}
+								${styles.PANEL_HEADER_TEXT_CLASSNAME}
 							`}>{title}</TextNative>
 						{collapseBtn}
 					</HStack>

@@ -137,7 +137,12 @@ export function ColorElement(props) {
 	assembledComponents =
 		<HStackNative
 			onLayout={() => setIsRendered(true)}
-			className="flex-1 h-full items-center"
+			className={`
+				ColorElement-HStackNative
+				flex-1
+				h-full
+				items-center
+			`}
 		>
 			<Pressable
 				ref={triggerRef}
@@ -147,7 +152,14 @@ export function ColorElement(props) {
 				borderBottomLeftRadius={6}
 				borderTopRightRadius={0}
 				borderBottomRightRadius={0}
-				className={` bg-${value} h-[10px] w-[10px] border border-grey-300 `}
+				className={`
+					ColorElement-Pressable
+					bg-${value}
+					h-[10px]
+					w-[10px]
+					border
+					border-grey-300
+				`}
 			/>
 			<Input
 				ref={inputRef}
@@ -157,6 +169,7 @@ export function ColorElement(props) {
 				onBlur={onInputBlur}
 				onClick={onInputClick}
 				className={`
+					ColorElement-Input
 					flex-1
 					h-full
 					p-2
@@ -167,9 +180,7 @@ export function ColorElement(props) {
 					border-bottom-left-radius-0
 					border-top-right-radius-6
 					border-bottom-right-radius-6
-					${styles.FORM_COLOR_READOUT_FONTSIZE}
-					${styles.FORM_COLOR_INPUT_BG}
-					${styles.FORM_COLOR_INPUT_BG_FOCUS}
+					${styles.FORM_COLOR_INPUT_CLASSNAME}
 				`}
 				onLayout={(e) => {
 					// On web, this is not needed, but on RN it might be, so leave it in for now
@@ -190,11 +201,14 @@ export function ColorElement(props) {
 				trigger={emptyFn}
 				trapFocus={true}
 				placement={'auto'}
-				{...props}
+				className={`
+					ColorElement-Popover
+				`}
 			>
 				<PopoverContent
 					position="absolute"
 					className={`
+						ColorElement-PopoverContent
 						w-[220px]
 						h-[287px]
 					`}
@@ -206,7 +220,10 @@ export function ColorElement(props) {
 				>
 					<PopoverBody
 						ref={pickerRef}
-						className="p-0"
+						className={`
+							ColorElement-PopoverBody
+							p-0
+						`}
 					>
 						<SketchPicker
 							disableAlpha={true}

@@ -642,12 +642,12 @@ function FormikForm(props) {
 							title += ' for ' + record.displayValue;
 						}
 						title = <Text
-									className={` ${styles.FORM_ANCILLARY_TITLE_FONTSIZE} font-bold `}
+									className={` ${styles.FORM_ANCILLARY_TITLE_CLASSNAME} font-bold `}
 								>{title}</Text>;
 					}
 					if (description) {
 						description = <Text
-											className={` ${styles.FORM_ANCILLARY_DESCRIPTION_FONTSIZE} italic-italic `}
+											className={` ${styles.FORM_ANCILLARY_DESCRIPTION_CLASSNAME} italic-italic `}
 										>{description}</Text>;
 					}
 					components.push(<VStack key={'ancillary-' + ix} className="mx-1 my-3">{title}{description}{element}</VStack>);

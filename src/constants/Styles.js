@@ -11,77 +11,63 @@ const defaults = {
 	ATTACHMENTS_MAX_FILESIZE: 1024 * 1024 * 5, // 5MB
 	DEFAULT_WINDOW_WIDTH: 900,
 	DEFAULT_WINDOW_HEIGHT: 800,
-	FILTER_LABEL_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_ANCILLARY_TITLE_FONTSIZE: 'text-[22px]',
-	FORM_ANCILLARY_DESCRIPTION_FONTSIZE: 'text-[16px]',
-	FORM_COLOR_READOUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_COLOR_INPUT_BG: 'bg-' + WHITE,
-	FORM_COLOR_INPUT_BG_FOCUS: 'focus:bg-' + FOCUS,
-	FORM_COMBO_HEIGHT: 'h-[40px]',
-	FORM_COMBO_INPUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_COMBO_INPUT_BG: 'bg-' + WHITE,
-	FORM_COMBO_INPUT_BG_FOCUS: 'focus:bg-' + FOCUS,
+	FILTER_LABEL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
+	FORM_ANCILLARY_TITLE_CLASSNAME: 'text-[22px]',
+	FORM_ANCILLARY_DESCRIPTION_CLASSNAME: 'text-[16px]',
+	FORM_COLOR_INPUT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' +
+								'bg-' + WHITE + ' ' + 
+								'focus:bg-' + FOCUS,
+	FORM_COMBO_INPUT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' + 
+								'bg-' + WHITE + ' ' +
+								'focus:bg-' + FOCUS,
 	FORM_COMBO_MENU_HEIGHT: 250,
 	FORM_COMBO_MENU_MIN_WIDTH: 250,
-	FORM_COMBO_TRIGGER_BG: 'bg-' + WHITE,
-	FORM_COMBO_TRIGGER_BG_HOVER: 'hover:bg-grey-300',
-	FORM_DATE_ICON_BG: 'bg-primary-200',
-	FORM_DATE_ICON_BG_HOVER: 'hover:bg-primary-400',
-	FORM_DATE_ICON_COLOR: 'text-' + WHITE,
-	FORM_DATE_INPUT_BG: 'bg-' + WHITE,
-	FORM_DATE_INPUT_BG_FOCUS: 'focus:bg-' + FOCUS,
-	FORM_DATE_READOUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
+	FORM_COMBO_TRIGGER_CLASSNAME: 'bg-' + WHITE + ' ' +
+									'hover:bg-grey-300',
+	FORM_DATE_CLASSNAME: 'h-[40px]',
+	FORM_DATE_TRIGGER_CLASSNAME: 'bg-primary-200 ' +
+								'hover:bg-primary-400',
+	FORM_DATE_TRIGGER_ICON_CLASSNAME: 'text-' + WHITE,
+	FORM_DATE_INPUT_CLASSNAME: 'bg-' + WHITE + ' ' +
+								'focus:bg-' + FOCUS + ' ' +
+								'text-' + DEFAULT_FONTSIZE,
 	FORM_FIELDSET_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
 	FORM_FIELDSET_BG: 'bg-[#f6f6f6]',
-	FORM_FILE_ICON_BG: 'bg-primary-200',
-	FORM_FILE_ICON_BG_HOVER: 'hover:bg-primary-400',
-	FORM_FILE_ICON_COLOR: 'text-' + WHITE,
-	FORM_FILE_INPUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_FILE_READOUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_FILE_READOUT_BG: 'bg-' + WHITE,
-	FORM_INPUT_BG: 'bg-' + WHITE,
-	FORM_INPUT_BG_FOCUS: 'focus:bg-' + FOCUS,
-	FORM_INPUT_BG_HOVER: 'hover:bg-' + HOVER,
-	FORM_INPUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_LABEL_WIDTH: '30%',
-	FORM_LABEL_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_NUMBER_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_SELECT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_SELECT_BG: 'bg-grey-100',
-	FORM_SELECT_BG_FOCUS: 'focus:bg-' + FOCUS,
-	FORM_SELECT_BG_HOVER: 'hover:bg-' + HOVER,
-	FORM_TAG_MB: 'mb-1',
-	FORM_TAG_MIN_HEIGHT: 'min-h-10',
-	FORM_TAG_PADDING: 'p-1',
-	FORM_TAG_VALUEBOX_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
+	// FORM_FILE_ICON_BG: 'bg-primary-200',
+	// FORM_FILE_ICON_BG_HOVER: 'hover:bg-primary-400',
+	// FORM_FILE_ICON_COLOR: 'text-' + WHITE,
+	// FORM_FILE_INPUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
+	// FORM_FILE_READOUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
+	// FORM_FILE_READOUT_BG: 'bg-' + WHITE,
+	FORM_INPUT_CLASSNAME: 'bg-' + WHITE + ' ' +
+						'focus:bg-' + FOCUS + ' ' +
+						'hover:bg-' + HOVER,
+	FORM_INPUT_FIELD_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
+	FORM_LABEL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
+	FORM_SELECT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' + 
+							'bg-grey-100 ' +
+							'focus:bg-' + FOCUS + ' ' +
+							'hover:bg-' + HOVER,
+	FORM_TAG_CLASSNAME: '',
+	FORM_TAG_VALUEBOX_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_TAG_VALUEBOX_ICON_SIZE: 'sm',
-	FORM_TEXT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_TEXTAREA_BG: 'bg-' + WHITE,
-	FORM_TEXTAREA_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	FORM_TEXTAREA_HEIGHT: 'h-[130px]',
+	FORM_TEXT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
+	FORM_TEXTAREA_CLASSNAME: 'bg-' + WHITE + ' ' +
+							'text-' + DEFAULT_FONTSIZE + ' ' +
+							'h-[130px]',
 	FORM_TOGGLE_BG: null,
-	FORM_TOGGLE_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
+	FORM_TOGGLE_READOUT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_TOGGLE_SIZE: 'md',
 	FORM_TOGGLE_ON_COLOR: '#0b0',
-	FORM_TOGGLE_ON_HOVER_COLOR: '#090',
 	FORM_TOGGLE_OFF_COLOR: '#f00',
-	FORM_TOGGLE_OFF_HOVER_COLOR: '#c00',
 	FORM_ONE_COLUMN_THRESHOLD: 900, // only allow one column in form unless form is wider than this
 	FORM_STACK_ROW_THRESHOLD: 400, // stack labels & fields if row is less than this width
-	GRID_CELL_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	GRID_CELL_PX: 'px-2',
-	GRID_CELL_PY: 'py-3',
-	GRID_HEADER_BG: 'bg-[#eee]',
-	GRID_HEADER_BG_HOVER: 'hover:bg-[#ddd]',
-	GRID_HEADER_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	GRID_HEADER_CELL_PX: 'px-2',
-	GRID_HEADER_CELL_PY: 'py-3',
-	GRID_HEADER_ICON_MT: 'mt-3',
-	GRID_HEADER_ICON_MR: 'mt-2',
+	GRID_CELL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
+	GRID_HEADER_PRESSABLE_CLASSNAME: 'bg-[#eee] ' +
+									'hover:bg-[#ddd]',
+	GRID_HEADER_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
+	GRID_HEADER_ICON_CLASSNAME: 'mt-3 mr-2',
 	GRID_HEADER_ICON_SIZE: 'sm',
-	GRID_INLINE_EDITOR_BORDER_TOP_COLOR: 'border-t-primary-100',
-	GRID_INLINE_EDITOR_BORDER_BOTTOM_COLOR: 'border-b-primary-100',
-	GRID_INLINE_EDITOR_BG: 'bg-primary-700',
 	GRID_NAV_COLUMN_COLOR: 'text-grey-400',
 	GRID_ROW_BG: '#fff', // must be hex
 	GRID_ROW_ALTERNATE_BG: '#ddd', // must be hex
@@ -91,25 +77,22 @@ const defaults = {
 	GRID_REORDER_BORDER_COLOR: 'border-[#23d9ea]',
 	GRID_REORDER_BORDER_WIDTH: 'border-4',
 	GRID_REORDER_BORDER_STYLE: 'border-dashed',
-	ICON_BUTTON_BG: 'bg-grey-100',
-	ICON_BUTTON_BG_ACTIVE: 'active:bg-grey-900/50',
-	ICON_BUTTON_BG_DISABLED: 'disabled:bg-grey-200',
-	ICON_BUTTON_BG_HOVER: 'hover:bg-grey-900/20',
-	ICON_BUTTON_BG_ACTIVE_HOVER: 'hover:bg-grey-200',
-	ICON_BUTTON_PX: 'px-[10px]',
-	ICON_BUTTON_PY: 'py-[10px]',
+	ICON_BUTTON_CLASSNAME: 'bg-grey-100 ' + 
+							'active:bg-grey-900/50 ' +
+							'disabled:bg-grey-200 ' +
+							'hover:bg-grey-900/20',
 	INLINE_EDITOR_MIN_WIDTH: 'min-w-[150px]',
-	PANEL_FOOTER_BORDER_TOP_COLOR: 'border-t-primary-300', // :alpha.50
+	PANEL_FOOTER_CLASSNAME: 'border-t-primary-300', // :alpha.50
 	PANEL_HEADER_BG: 'bg-primary-500',
-	PANEL_HEADER_ICON_COLOR: 'text-' + WHITE,
+	PANEL_HEADER_ICON_CLASSNAME: 'text-' + WHITE,
 	PANEL_HEADER_ICON_SIZE: 'md',
-	PANEL_HEADER_TEXT_COLOR: 'text-' + WHITE,
-	PANEL_HEADER_TEXT_FONTSIZE: 'text-[18px]',
+	PANEL_HEADER_TEXT_CLASSNAME: 'text-' + WHITE + ' ' +
+								'text-[18px]',
 	SLIDER_MIN_TRACK_COLOR: '#000',
 	SLIDER_MAX_TRACK_COLOR: '#ccc',
 	SLIDER_THUMB_COLOR: '#000',
 	SLIDER_READOUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	TAB_BAR_BG: 'bg-grey-300',
+	TAB_BAR_CLASSNAME: 'bg-grey-300',
 	TAB_BG: 'bg-grey-300',
 	TAB_BG_ACTIVE: 'active:bg-grey-900/50',
 	TAB_BG_CURRENT: 'bg-grey-0',
@@ -127,17 +110,16 @@ const defaults = {
 	TAB_ICON_COLOR_DISABLED: 'group-disabled/button:text-grey-400',
 	TAB_FONTSIZE: 'text-md',
 	TEXT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	TREE_NODE_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	TREE_NODE_PX: 'px-2',
-	TREE_NODE_PY: 'py-3',
+	TREE_NODE_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' +
+						'px-2 ' + 
+						'py-3',
 	TREE_NODE_BG: '#fff', // must be hex
 	TREE_NODE_BG_HOVER: '#cce', // must be hex
 	TREE_NODE_SELECTED_BG: '#ff0', // must be hex
 	TREE_NODE_SELECTED_BG_HOVER: '#cc0', // must be hex
 	TREE_NODE_HIGHLIGHTED_BG: '#0f0', // must be hex
-	TOOLBAR_BG: 'bg-grey-200',
+	TOOLBAR_CLASSNAME: 'bg-grey-200',
 	TOOLBAR_ITEMS_COLOR: 'text-grey-800',
-	TOOLBAR_ITEMS_DISABLED_COLOR: 'disabled:text-grey-400',
 	TOOLBAR_ITEMS_ICON_SIZE: 'sm',
 	VIEWER_ANCILLARY_FONTSIZE: 'text-[22px]',
 };

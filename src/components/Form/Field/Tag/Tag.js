@@ -274,15 +274,15 @@ function TagComponent(props) {
 		w-full
 		min-h-[40px]
 		max-h-[200px]
+		mb-1
+		p-1
 		flex-wrap
 		overflow-auto
 		border
 		border-grey-300
 		rounded-md
 		bg-grey-100
-		${styles.FORM_TAG_MIN_HEIGHT}
-		${styles.FORM_TAG_MB}
-		${styles.FORM_TAG_PADDING}
+		${styles.FORM_TAG_CLASSNAME}
 	`,
 	comboClassName = '';
 	if (_combo.className) {

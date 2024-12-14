@@ -157,8 +157,8 @@ function InlineEditor(props) {
 							py-1
 							border-t-4
 							border-b-4
-							${styles.GRID_INLINE_EDITOR_BORDER_TOP_COLOR}
-							${styles.GRID_INLINE_EDITOR_BORDER_BOTTOM_COLOR}
+							border-t-primary-100
+							border-b-primary-100
 						`}
 					/>
 				</VStack>
