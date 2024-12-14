@@ -946,7 +946,8 @@ function GridComponent(props) {
 			// second call -- do other necessary setup
 
 			
-			let localColumnsConfig = [],
+			let columnsConfigVariable = columnsConfig,
+				localColumnsConfig = [],
 				savedLocalColumnsConfig,
 				calculateLocalColumnsConfig = false;
 			if (localColumnsConfigKey && !UiGlobals.disableSavedColumnsConfig) {
@@ -957,7 +958,10 @@ function GridComponent(props) {
 				calculateLocalColumnsConfig = true;
 			}
 			if (calculateLocalColumnsConfig) {
-				if (_.isEmpty(columnsConfig)) {
+				if (_.isFunction(columnsConfigVariable)) {
+					columnsConfigVariable = columnsConfigVariable();
+				}
+				if (_.isEmpty(columnsConfigVariable)) {
 					if (Repository) {
 						// create a column for the displayProperty
 						localColumnsConfig.push({
@@ -969,7 +973,7 @@ function GridComponent(props) {
 						});
 					}
 				} else {
-					_.each(columnsConfig, (columnConfig) => {
+					_.each(columnsConfigVariable, (columnConfig) => {
 						if (!_.isPlainObject(columnConfig)) {
 							localColumnsConfig.push(columnConfig);
 							return;

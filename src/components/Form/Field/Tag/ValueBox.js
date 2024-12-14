@@ -38,7 +38,11 @@ export default function ValueBox(props) {
 						className: 'text-grey-600',
 					}}
 					onPress={onView}
-					className="ValueBox-eyeBtn h-full"
+					className={`
+						ValueBox-eyeBtn
+						h-full
+						${styles.FORM_TAG_BTN_CLASSNAME}
+					`}
 				/>
 				<Text
 					className={`
@@ -57,7 +61,11 @@ export default function ValueBox(props) {
 							className: 'text-grey-600',
 						}}
 						onPress={onDelete}
-						className="ValueBox-xBtn h-full"
+						className={`
+							ValueBox-xBtn
+							h-full
+							${styles.FORM_TAG_BTN_CLASSNAME}
+						`}
 					/>}
 			</HStackNative>;
 }

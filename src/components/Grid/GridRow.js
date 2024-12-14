@@ -90,7 +90,6 @@ function GridRow(props) {
 						p-1
 						justify-center
 						border-r-black-100
-						mr-1
 					`;
 					if (isOnlyOneVisibleColumn) {
 						colClassName = ' w-full';
