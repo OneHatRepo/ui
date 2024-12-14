@@ -489,7 +489,7 @@ function GridComponent(props) {
 												showColumnsSelector={showColumnsSelector}
 											/>;
 							if (showRowExpander) {
-								// align the header row to content rows
+								// align the header row to content rows by adding a spacer that matches the width of the Grid-rowExpander-expandBtn
 								headerRow = <HStack className="">
 												<Box className="w-[40px]"></Box>
 												{headerRow}
@@ -602,7 +602,10 @@ function GridComponent(props) {
 											_icon={{
 												size: 'sm',
 											}}
-											className="Grid-rowExpander-expandBtn py-0"
+											className={`
+												Grid-rowExpander-expandBtn
+												${styles.GRID_EXPAND_BTN_CLASSNAME}
+											`}
 											tooltip="Expand/Contract Row"
 										/>
 										{rowComponent}

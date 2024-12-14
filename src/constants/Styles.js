@@ -9,6 +9,8 @@ const
 
 const defaults = {
 	ATTACHMENTS_MAX_FILESIZE: 1024 * 1024 * 5, // 5MB
+	CONTEXT_MENU_WIDTH: 180,
+	CONTEXT_MENU_ITEM_HEIGHT: 30,
 	DEFAULT_WINDOW_WIDTH: 900,
 	DEFAULT_WINDOW_HEIGHT: 800,
 	FILTER_LABEL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
@@ -63,6 +65,7 @@ const defaults = {
 	FORM_ONE_COLUMN_THRESHOLD: 900, // only allow one column in form unless form is wider than this
 	FORM_STACK_ROW_THRESHOLD: 400, // stack labels & fields if row is less than this width
 	GRID_CELL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
+	GRID_EXPAND_BTN_CLASSNAME: '',
 	GRID_HEADER_PRESSABLE_CLASSNAME: 'bg-[#eee] ' +
 									'hover:bg-[#ddd]',
 	GRID_HEADER_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,

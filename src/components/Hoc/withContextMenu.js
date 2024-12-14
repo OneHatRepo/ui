@@ -3,13 +3,10 @@ import {
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import UiGlobals from '../../UiGlobals.js';
 import Button from '../Buttons/Button.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
-
-const
-	CONTEXT_MENU_WIDTH = 180,
-	CONTEXT_MENU_ITEM_HEIGHT = 30;
 
 export default function withContextMenu(WrappedComponent) {
 	return forwardRef((props, ref) => {
@@ -30,6 +27,7 @@ export default function withContextMenu(WrappedComponent) {
 				isModalShown,
 				whichModal,
 			} = props,
+			styles = UiGlobals.styles,
 			[doShowContextMenu, setDoShowContextMenu] = useState(false),
 			[left, setLeft] = useState(0),
 			[top, setTop] = useState(0),
@@ -133,16 +131,16 @@ export default function withContextMenu(WrappedComponent) {
 				screenHeight = window.innerHeight;
 			let l = left,
 				t = top;
-			if (screenWidth - CONTEXT_MENU_WIDTH < l) {
-				l = screenWidth - CONTEXT_MENU_WIDTH;
+			if (screenWidth - styles.CONTEXT_MENU_WIDTH < l) {
+				l = screenWidth - styles.CONTEXT_MENU_WIDTH;
 			}
-			if (screenHeight - (contextMenuItemComponents.length * CONTEXT_MENU_ITEM_HEIGHT) < t) {
-				t = screenHeight - (contextMenuItemComponents.length * CONTEXT_MENU_ITEM_HEIGHT);
+			if (screenHeight - (contextMenuItemComponents.length * styles.CONTEXT_MENU_ITEM_HEIGHT) < t) {
+				t = screenHeight - (contextMenuItemComponents.length * styles.CONTEXT_MENU_ITEM_HEIGHT);
 			}
 			const style = {
 				left: l,
 				top: t,
-				width: CONTEXT_MENU_WIDTH,
+				width: styles.CONTEXT_MENU_WIDTH,
 			};
 
 			showModal({

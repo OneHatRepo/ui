@@ -183,7 +183,7 @@ function Viewer(props) {
 					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
 
-				let elementClassName = '';
+				let elementClassName = 'Viewer-ElementFromItem';
 				const defaultsClassName = defaults.className;
 				if (defaultsClassName) {
 					elementClassName += ' ' + defaultsClassName;
@@ -234,7 +234,7 @@ function Viewer(props) {
 				}
 			}
 
-			let elementClassName = 'field-' + name;
+			let elementClassName = 'Viewer-field-' + name;
 			const defaultsClassName = defaults.className;
 			if (defaultsClassName) {
 				elementClassName += ' ' + defaultsClassName;
@@ -260,7 +260,7 @@ function Viewer(props) {
 							/>;
 
 			if (item.additionalViewButtons) {
-				element = <HStack className="flex-wrap">
+				element = <HStack className="Viewer-HStack1 flex-wrap">
 								{element}
 								{buildAdditionalButtons(item.additionalViewButtons, self)}
 							</HStack>;
@@ -275,18 +275,18 @@ function Viewer(props) {
 					style.width = '50px';
 				}
 				if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-					element = <HStack className="HStackA py-1">
+					element = <HStack className="Viewer-HStack2 py-1 w-full">
 									<Label style={style}>{label}</Label>
 									{element}
 								</HStack>;
 				} else {
-					element = <VStack className="HStackA w-full py-1 mt-3">
+					element = <VStack className="Viewer-HStack3 w-full py-1 mt-3">
 									<Label style={style}>{label}</Label>
 									{element}
 								</VStack>;
 				}
 			}
-			return <HStack key={ix} className="HStackB px-2 pb-1">{element}</HStack>;
+			return <HStack key={ix} className="Viewer-HStack4 px-2 pb-1">{element}</HStack>;
 		},
 		buildAncillary = () => {
 			const components = [];
@@ -304,6 +304,10 @@ function Viewer(props) {
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
 						itemPropsToPass.h = 400;
 					}
+					let className = 'Viewer-ancillary-' + type;
+					if (itemPropsToPass.className) {
+						className += ' ' + itemPropsToPass.className;
+					}
 
 					const
 						Element = getComponentFromType(type),
@@ -317,6 +321,7 @@ function Viewer(props) {
 										uniqueRepository={true}
 										parent={self}
 										{...itemPropsToPass}
+										className={className}
 										canRowsReorder={false}
 									/>;
 					if (title) {
