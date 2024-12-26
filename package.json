@@ -57,7 +57,7 @@
 		"@hookform/resolvers": "^3.3.1",
 		"@k-renwick/colour-mixer": "^1.2.1",
 		"@legendapp/motion": "^2.4.0",
-		"@onehat/data": "^1.21.19",
+		"@onehat/data": "^1.22.0",
 		"nativewind": "4.0.36",
 		"normalize-css-color": "^1.0.2",
 		"@react-native-community/slider": "^4.5.2",
