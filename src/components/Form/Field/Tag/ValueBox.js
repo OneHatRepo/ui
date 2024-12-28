@@ -14,6 +14,7 @@ export default function ValueBox(props) {
 			text,
 			onView,
 			onDelete,
+			showEye,
 		} = props,
 		styles = UiGlobals.styles;
 	return <HStackNative
@@ -30,25 +31,26 @@ export default function ValueBox(props) {
 					${!onDelete && 'pr-4'}
 				`}
 			>
-				<IconButton
-					{...testProps('eyeBtn')}
-					icon={Eye}
-					_icon={{
-						size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
-						className: 'text-grey-600',
-					}}
-					onPress={onView}
-					className={`
-						ValueBox-eyeBtn
-						h-full
-						${styles.FORM_TAG_BTN_CLASSNAME}
-					`}
-				/>
+				{showEye && <IconButton
+								{...testProps('eyeBtn')}
+								icon={Eye}
+								_icon={{
+									size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
+									className: 'text-grey-600',
+								}}
+								onPress={onView}
+								className={`
+									ValueBox-eyeBtn
+									h-full
+									${styles.FORM_TAG_BTN_CLASSNAME}
+								`}
+							/>}
 				<Text
 					className={`
 						ValueBox-Text
 						text-grey-600
 						${styles.FORM_TAG_VALUEBOX_CLASSNAME}
+						${showEye ? 'ml-0' : 'ml-1'}
 						${onDelete ? 'mr-0' : 'mr-1'}
 					`}
 				>{text}</Text>
