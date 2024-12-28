@@ -33,6 +33,7 @@ export default function TreeNode(props) {
 		hasChildren = item.hasChildren,
 		depth = item.depth,
 		text = datum.text,
+		content = datum.content,
 		iconCollapsed = datum.iconCollapsed,
 		iconExpanded = datum.iconExpanded,
 		iconLeaf = datum.iconLeaf,
@@ -63,18 +64,20 @@ export default function TreeNode(props) {
 								{...testProps('expandBtn')}
 							/> : <Icon as={icon} px={2} />)}
 					
-					<Text
-						overflow="hidden"
-						textOverflow="ellipsis"
-						alignSelf="center"
-						style={{ userSelect: 'none', }}
-						fontSize={styles.TREE_NODE_FONTSIZE}
-						px={styles.TREE_NODE_PX}
-						py={styles.TREE_NODE_PY}
-						numberOfLines={1}
-						ellipsizeMode="head"
-						{...propsToPass}
-					>{text}</Text>
+					{text ? <Text
+								overflow="hidden"
+								textOverflow="ellipsis"
+								alignSelf="center"
+								style={{ userSelect: 'none', }}
+								fontSize={styles.TREE_NODE_FONTSIZE}
+								px={styles.TREE_NODE_PX}
+								py={styles.TREE_NODE_PY}
+								numberOfLines={1}
+								ellipsizeMode="head"
+								{...propsToPass}
+							>{text}</Text> : null}
+
+					{content}
 
 				</Row>;
 	}, [
@@ -87,6 +90,7 @@ export default function TreeNode(props) {
 		hasChildren,
 		depth,
 		text,
+		content,
 		icon,
 		onToggle,
 		isLoading,

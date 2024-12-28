@@ -77,6 +77,9 @@ function TreeComponent(props) {
 				}
 				return item[displayIx];
 			},
+			getNodeContent = (item) => { // extracts model/data and decides what the row content should be
+				return null;
+			},
 			getDisplayTextFromSearchResults = (item) => {
 				return item.id
 			},
@@ -460,6 +463,7 @@ function TreeComponent(props) {
 				datum = {
 					item: treeNode,
 					text: getNodeText(treeNode),
+					content: getNodeContent(treeNode),
 					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
 					iconExpanded: getNodeIcon(EXPANDED, treeNode),
 					iconLeaf: getNodeIcon(LEAF, treeNode),
