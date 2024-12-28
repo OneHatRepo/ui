@@ -14,6 +14,7 @@ export default function ValueBox(props) {
 			text,
 			onView,
 			onDelete,
+			showEye,
 		} = props,
 		styles = UiGlobals.styles;
 	return <Row
@@ -26,18 +27,19 @@ export default function ValueBox(props) {
 				alignItems="center"
 				maxWidth="100%"
 			>
-				<IconButton
-					{...testProps('eyeBtn')}
-					_icon={{
-						as: Eye,
-						color: 'trueGray.600',
-						size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
-					}}
-					onPress={onView}
-					h="100%"
-				/>
+				{showEye && <IconButton
+								{...testProps('eyeBtn')}
+								_icon={{
+									as: Eye,
+									color: 'trueGray.600',
+									size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
+								}}
+								onPress={onView}
+								h="100%"
+							/>}
 				<Text
 					color="trueGray.600"
+					ml={showEye ? 0 : 2}
 					mr={onDelete ? 0 : 2}
 					fontSize={styles.FORM_TAG_VALUEBOX_FONTSIZE}
 				>{text}</Text>

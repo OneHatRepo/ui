@@ -22,6 +22,7 @@ function TagComponent(props) {
 			isViewOnly = false,
 			isValueAlwaysArray,
 			isValueAsStringifiedJson,
+			showEye = true,
 			Editor,
 			_combo = {},
 			tooltip,
@@ -214,6 +215,7 @@ function TagComponent(props) {
 						text={val.text}
 						onView={() => onView(val)}
 						onDelete={!isViewOnly ? () => onDelete(val) : null}
+						showEye={showEye}
 					/>;
 		});
 	
