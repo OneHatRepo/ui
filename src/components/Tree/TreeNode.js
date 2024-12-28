@@ -35,6 +35,7 @@ export default function TreeNode(props) {
 		hasChildren = item.hasChildren,
 		depth = item.depth,
 		text = datum.text,
+		content = datum.content,
 		iconCollapsed = datum.iconCollapsed,
 		iconExpanded = datum.iconExpanded,
 		iconLeaf = datum.iconLeaf,
@@ -96,21 +97,23 @@ export default function TreeNode(props) {
 							/> : 
 							<Icon as={icon} className="ml-4 mr-1" />)}
 
-					<TextNative
-						numberOfLines={1}
-						ellipsizeMode="head"
-						// {...propsToPass}
-						className={`
-							TreeNode-TextNative
-							self-center
-							overflow-hidden
-							flex
-							flex-1
-							text-ellipsis
-							${styles.TREE_NODE_CLASSNAME}
-						`}
-						style={{ userSelect: 'none', }}
-					>{text}</TextNative>
+					{text ? <TextNative
+								numberOfLines={1}
+								ellipsizeMode="head"
+								// {...propsToPass}
+								className={`
+									TreeNode-TextNative
+									self-center
+									overflow-hidden
+									flex
+									flex-1
+									text-ellipsis
+									${styles.TREE_NODE_CLASSNAME}
+								`}
+								style={{ userSelect: 'none', }}
+							>{text}</TextNative> : null}
+
+					{content}
 
 				</HStack>;
 	}, [
@@ -127,6 +130,7 @@ export default function TreeNode(props) {
 		hasChildren,
 		depth,
 		text,
+		content,
 		onToggle,
 		isLoading,
 	]);
