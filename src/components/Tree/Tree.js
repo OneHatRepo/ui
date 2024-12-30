@@ -467,7 +467,7 @@ function TreeComponent(props) {
 					</VStack>,
 				onCancel: hideModal,
 			});
-		};
+		},
 
 		// utilities
 		getNodeData = (id) => {
@@ -877,13 +877,13 @@ function TreeComponent(props) {
 		getHeaderToolbarItems = () => {
 			const
 				buttons = [
-					{
-						key: 'searchBtn',
-						text: 'Search tree',
-						handler: () => onSearchTree(treeSearchValue),
-						icon: MagnifyingGlass,
-						isDisabled: !treeSearchValue.length,
-					},
+					// {
+					// 	key: 'searchBtn',
+					// 	text: 'Search tree',
+					// 	handler: () => onSearchTree(treeSearchValue),
+					// 	icon: MagnifyingGlass,
+					// 	isDisabled: !treeSearchValue.length,
+					// },
 					{
 						key: 'collapseAllBtn',
 						text: 'Collapse whole tree',
@@ -912,31 +912,31 @@ function TreeComponent(props) {
 			}
 			const items = _.map(buttons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 
-			items.unshift(<Input // Add text input to beginning of header items
-				key="searchNodes"
-				className="flex-1"
-				placeholder="Find tree node"
-				onChangeText={(val) => setTreeSearchValue(val)}
-				onKeyPress={(e) => {
-					if (e.key === 'Enter') {
-						onSearchTree(treeSearchValue);
-					}
-				}}
-				value={treeSearchValue}
-				autoSubmit={false}
-			/>);
+			// items.unshift(<Input // Add text input to beginning of header items
+			// 	key="searchNodes"
+			// 	className="flex-1"
+			// 	placeholder="Find tree node"
+			// 	onChangeText={(val) => setTreeSearchValue(val)}
+			// 	onKeyPress={(e) => {
+			// 		if (e.key === 'Enter') {
+			// 			onSearchTree(treeSearchValue);
+			// 		}
+			// 	}}
+			// 	value={treeSearchValue}
+			// 	autoSubmit={false}
+			// />);
 
-			if (treeSearchValue.length) {
-				// Add 'X' button to clear search
-				items.unshift(getIconButtonFromConfig({
-					key: 'xBtn',
-					handler: () => {
-						setHighlitedDatum(null);
-						setTreeSearchValue('');
-					},
-					icon: Xmark,
-				}, 0, self));
-			}
+			// if (treeSearchValue.length) {
+			// 	// Add 'X' button to clear search
+			// 	items.unshift(getIconButtonFromConfig({
+			// 		key: 'xBtn',
+			// 		handler: () => {
+			// 			setHighlitedDatum(null);
+			// 			setTreeSearchValue('');
+			// 		},
+			// 		icon: Xmark,
+			// 	}, 0, self));
+			// }
 
 			return items;
 		},

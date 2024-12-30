@@ -112,8 +112,10 @@ function Panel(props) {
 	if (isCollapsed) {
 		if (collapseDirection === HORIZONTAL) {
 			className += ' w-[33px]';
+			delete style.width;
 		} else {
 			className += ' h-[33px]';
+			delete style.height;
 		}
 	}
 

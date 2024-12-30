@@ -45,10 +45,14 @@ export default function Header(props) {
 			self-center
 			border
 			border-grey-400
+			h-[20px]
+			w-[20px]
+			px-[2px]
+			py-[2px]
 			${styles.PANEL_HEADER_BG}
 		`;
-		if (collapseDirection !== HORIZONTAL) {
-			closeClassName += ' mr-3';
+		if (collapseDirection === HORIZONTAL && isCollapsed) {
+			closeClassName += ' mb-1';
 		}
 		closeBtn = <IconButton
 						onPress={onClose}
@@ -66,10 +70,14 @@ export default function Header(props) {
 			self-center
 			border
 			border-grey-400
+			h-[20px]
+			w-[20px]
+			px-[2px]
+			py-[2px]
 			${styles.PANEL_HEADER_BG}
 		`;
-		if (collapseDirection !== HORIZONTAL) {
-			collapseClassName += ' ml-3';
+		if (collapseDirection === HORIZONTAL && isCollapsed) {
+			collapseClassName += ' mb-1';
 		}
 		collapseBtn = <IconButton
 						onPress={onToggleCollapse}
