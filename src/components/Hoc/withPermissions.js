@@ -12,6 +12,7 @@ import {
 	UPLOAD_DOWNLOAD,
 } from '../../Constants/Commands.js';
 import UiGlobals from '../../UiGlobals.js';
+import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
 /**
@@ -22,11 +23,23 @@ import _ from 'lodash';
 export function checkPermission(permission) {
 	const
 		reduxState = UiGlobals.redux?.getState(),
-		permissions = reduxState?.app?.permissions;
-	if (!permissions) {
-		return false;
+		permissions = reduxState?.app?.permissions || [];
+	let hasPermission = inArray(permission, permissions);
+	if (hasPermission) {
+		return true;
 	}
-	return inArray(permission, permissions);
+	// check for anonymous get
+	const matches = permission.match(/^view_(.*)$/);
+	if (matches) {
+		const
+			name = Inflector.camelize(matches[1]), // 'pm_events' -> 'PmEvents'
+			repository = oneHatData.getRepository(name),
+			allowAnonymousGet = repository?.schema.repository.allowAnonymousGet;
+		if (allowAnonymousGet) {
+			hasPermission = true;
+		}
+	}
+	return hasPermission;
 }
 
 /**
