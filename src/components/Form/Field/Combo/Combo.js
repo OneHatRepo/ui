@@ -56,6 +56,7 @@ export function ComboComponent(props) {
 			isDisabled = false,
 			isInTag = false,
 			minimizeForRow = false,
+			menuHeight,
 			tooltipPlacement = 'bottom',
 			placeholder,
 			onRowPress,
@@ -690,7 +691,7 @@ export function ComboComponent(props) {
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 		const gridStyle = {};
 		if (UiGlobals.mode === UI_MODE_WEB) {
-			gridStyle.height = styles.FORM_COMBO_MENU_HEIGHT;
+			gridStyle.height = menuHeight || styles.FORM_COMBO_MENU_HEIGHT;
 		}
 		grid = <WhichGrid
 					showHeaders={false}
@@ -882,7 +883,7 @@ export function ComboComponent(props) {
 										top,
 										left,
 										width,
-										height: styles.FORM_COMBO_MENU_HEIGHT + inputHeight,
+										height: (menuHeight || styles.FORM_COMBO_MENU_HEIGHT) + inputHeight,
 										minWidth: 100,
 									}}
 								>

@@ -18,6 +18,7 @@ export default function BooleanCombo(props) {
 
 	return <ArrayCombo
 				data={data}
+				menuHeight={70}
 				{...props}
 			/>;
 }
