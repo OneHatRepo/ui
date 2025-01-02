@@ -4,6 +4,7 @@ import {
 	Pressable,
 	ScrollView,
 	VStack,
+	VStackNative,
 } from '@project-components/Gluestack';
 import {
 	SELECTION_MODE_SINGLE,
@@ -49,6 +50,7 @@ import Collapse from '../Icons/Collapse.js';
 import Expand from '../Icons/Expand.js';
 import FolderClosed from '../Icons/FolderClosed.js';
 import FolderOpen from '../Icons/FolderOpen.js';
+import Gear from '../Icons/Gear.js';
 import MagnifyingGlass from '../Icons/MagnifyingGlass.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
@@ -71,6 +73,8 @@ function TreeComponent(props) {
 			areRootsVisible = true,
 			autoLoadRootNodes = true,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
+			isNodeTextConfigurable = false,
+			editDisplaySettings, // fn
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
 				if (Repository) {
 					return item.displayValue;
@@ -198,8 +202,7 @@ function TreeComponent(props) {
 				return;
 			}
 
-			const
-				{
+			const {
 					shiftKey,
 					metaKey,
 				 } = e;
@@ -508,7 +511,7 @@ function TreeComponent(props) {
 				datum = {
 					item: treeNode,
 					text: getNodeText(treeNode),
-					content: getNodeContent(treeNode),
+					content: getNodeContent ? getNodeContent(treeNode) : null,
 					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
 					iconExpanded: getNodeIcon(EXPANDED, treeNode),
 					iconLeaf: getNodeIcon(LEAF, treeNode),
@@ -908,6 +911,14 @@ function TreeComponent(props) {
 					},
 					icon: isDragMode ? NoReorderRows : ReorderRows,
 					isDisabled: false,
+				});
+			}
+			if (isNodeTextConfigurable && editDisplaySettings) {
+				buttons.push({
+					key: 'editNodeTextBtn',
+					text: 'Display Settings',
+					handler: () => editDisplaySettings(),
+					icon: Gear,
 				});
 			}
 			const items = _.map(buttons, (config, ix) => getIconButtonFromConfig(config, ix, self));
@@ -1310,6 +1321,8 @@ function TreeComponent(props) {
 		self.reloadTree = reloadTree;
 		self.expandPath = expandPath;
 		self.scrollToNode = scrollToNode;
+		self.buildAndSetTreeNodeData = buildAndSetTreeNodeData;
+		self.forceUpdate = forceUpdate;
 	}
 	
 	const
@@ -1364,7 +1377,7 @@ function TreeComponent(props) {
 		className += ' ' + props.className;
 	}
 
-	return <VStack
+	return <VStackNative
 				{...testProps(self)}
 				className={className}
 			>
@@ -1392,7 +1405,7 @@ function TreeComponent(props) {
 
 				{treeFooterComponent}
 
-			</VStack>;
+			</VStackNative>;
 
 }
 

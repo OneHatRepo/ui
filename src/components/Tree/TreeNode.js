@@ -1,7 +1,7 @@
 import { useMemo, } from 'react';
 import {
 	Box,
-	HStack,
+	HStackNative,
 	Icon,
 	Spinner,
 	TextNative,
@@ -68,7 +68,6 @@ export default function TreeNode(props) {
 		let className = `
 			TreeNode
 			items-center
-			flex
 			flex-1
 			grow-1
 		`;
@@ -76,7 +75,7 @@ export default function TreeNode(props) {
 			className += ' ' + props.className;
 		}
 	
-		return <HStack
+		return <HStackNative
 					{...testProps('node' + (isSelected ? '-selected' : ''))}
 					{...nodeProps}
 					key={hash}
@@ -89,7 +88,7 @@ export default function TreeNode(props) {
 					
 					{isLoading ? 
 						<Spinner className="px-2" /> : 
-						(hasChildren && !isDragMode ? 
+						(icon && hasChildren && !isDragMode ? 
 							<IconButton
 								{...testProps('expandBtn')}
 								icon={icon}
@@ -115,7 +114,7 @@ export default function TreeNode(props) {
 
 					{content}
 
-				</HStack>;
+				</HStackNative>;
 	}, [
 		nodeProps,
 		bg,
