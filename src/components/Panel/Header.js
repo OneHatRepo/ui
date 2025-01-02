@@ -146,6 +146,7 @@ export default function Header(props) {
 						</div>;
 			}
 		}
+		panelClassName += ' gap-2';
 		if (closeBtn) {
 			panelClassName += ' pl-[4px] pr-3';
 		} else {
@@ -225,6 +226,7 @@ export default function Header(props) {
 						</Pressable>;
 			}
 		}
+		panelClassName += ' gap-2';
 		if (closeBtn) {
 			panelClassName += ' pl-[4px] pr-3';
 		} else {
