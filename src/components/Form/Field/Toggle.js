@@ -4,7 +4,7 @@ import {
 	Icon,
 	Pressable,
 	Switch,
-	Text,
+	TextNative,
 } from '@project-components/Gluestack';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
@@ -96,14 +96,14 @@ const
 						{...testProps('readoutBtn')}
 						onPress={onToggle}
 					>
-						<Text
+						<TextNative
 							{...testProps('readout')}
 							className={`
 								ml-1
 								mr-2
 								${styles.FORM_TOGGLE_READOUT_CLASSNAME}
 							`}
-						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</Text>
+						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</TextNative>
 					</Pressable>
 				</HStack>;
 	},
