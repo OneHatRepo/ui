@@ -16,8 +16,10 @@ export default function Label(props) {
 	}
 	let textClassName = `
 		Label-TextNative
-		flex
+		inline-block
 		text-ellipsis
+		text-base
+		w-full
 		${styles.FORM_LABEL_CLASSNAME}
 	`;
 	if (props._text?.className) {

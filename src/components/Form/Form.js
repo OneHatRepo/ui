@@ -471,6 +471,7 @@ function Form(props) {
 					isEditable = true,
 					isEditingEnabledInPlainEditor,
 					label,
+					labelWidth,
 					items,
 					onChange: onEditorChange,
 					useSelectorId = false,
@@ -647,9 +648,12 @@ function Form(props) {
 					if (defaults?.labelWidth) {
 						style.width = defaults.labelWidth;
 					}
+					if (labelWidth) {
+						style.width = labelWidth;
+					}
 					if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
 						if (!style.width) {
-							style.width = '120px';
+							style.width = '160px';
 						}
 						element = <HStack className="Form-HStack1 w-full py-1">
 										<Label style={style}>{label}</Label>
@@ -778,7 +782,7 @@ function Form(props) {
 							if (message) {
 								message = <Text className="text-[#f00]">{message}</Text>;
 							}
-							element = <VStack className="Form-VStack4 w-full pt-1">
+							element = <VStack className="Form-VStack4 flex-1 pt-1">
 											{element}
 											{message}
 										</VStack>;
@@ -786,14 +790,14 @@ function Form(props) {
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="Form-HStack5 w-full flex-wrap">
+									element = <HStack className="Form-HStack5 flex-1 flex-wrap">
 													{element}
 													{buttons}
 												</HStack>;
 								} else {
-									element = <VStack className="Form-VStack6 w-full">
+									element = <VStack className="Form-VStack6 flex-1">
 												{element}
-												<HStack className="Form-HStack7-VStack w-full mt-1 flex-wrap">
+												<HStack className="Form-HStack7-VStack flex-1 mt-1 flex-wrap">
 													{buttons}
 												</HStack>
 											</VStack>;
@@ -831,9 +835,12 @@ function Form(props) {
 								if (defaults?.labelWidth) {
 									style.width = defaults.labelWidth;
 								}
+								if (labelWidth) {
+									style.width = labelWidth;
+								}
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
 									if (!style.width) {
-										style.width = '120px';
+										style.width = '160px';
 									}
 									element = <HStack className="Form-HStack8 w-full">
 								 					<Label style={style}>
