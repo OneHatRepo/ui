@@ -24,14 +24,31 @@ export default function withToast(WrappedComponent) {
 					title = null,
 					description = null,
 					placement = 'top',
-					duration = 3000,
+					duration,
+					onCloseComplete,
+					avoidKeyboard,
+					containerStyle,
 				} = args;
 
 				if (!title && !description) {
 					throw Error('Toast must have a title or description');
 				}
 
-				const id = ++toastId.current;
+				const
+					toastProps = {},
+					id = ++toastId.current;
+				if (duration) {
+					toastProps.duration = duration;
+				}
+				if (onCloseComplete) {
+					toastProps.onCloseComplete = onCloseComplete;
+				}
+				if (avoidKeyboard) {
+					toastProps.avoidKeyboard = avoidKeyboard;
+				}
+				if (containerStyle) {
+					toastProps.containerStyle = containerStyle;
+				}
 
 				toast.show({
 					id,
@@ -50,9 +67,8 @@ export default function withToast(WrappedComponent) {
 									{bodyElements}
 								</Toast>;
 					},
+					...toastProps,
 				})
-
-
 			};
 		
 		return <WrappedComponent
