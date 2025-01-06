@@ -548,7 +548,7 @@ function TreeComponent(props) {
 			buildRowToDatumMap();
 
 			if (onTreeLoad) {
-				onTreeLoad();
+				onTreeLoad(self);
 			}
 			return treeNodeData;
 		},
