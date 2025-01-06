@@ -121,6 +121,7 @@ function TreeComponent(props) {
 			initialSelection,
 			canRecordBeEdited,
 			onTreeLoad,
+			onLayout,
 			
 			selectorId,
 			selectorSelected,
@@ -1380,6 +1381,7 @@ function TreeComponent(props) {
 	return <VStackNative
 				{...testProps(self)}
 				className={className}
+				onLayout={onLayout}
 			>
 				{topToolbar}
 
