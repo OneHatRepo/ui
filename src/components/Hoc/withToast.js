@@ -23,23 +23,24 @@ export default function withToast(WrappedComponent) {
 				let {
 					title = null,
 					description = null,
+					body = null,
 					placement = 'top',
-					duration,
+					action = 'muted',
+					variant = 'solid',
+					duration = 3000,
 					onCloseComplete,
 					avoidKeyboard,
 					containerStyle,
+					className,
 				} = args;
 
-				if (!title && !description) {
-					throw Error('Toast must have a title or description');
+				if (!title && !description && !body) {
+					throw Error('Toast must have a title or description or body');
 				}
 
 				const
 					toastProps = {},
 					id = ++toastId.current;
-				if (duration) {
-					toastProps.duration = duration;
-				}
 				if (onCloseComplete) {
 					toastProps.onCloseComplete = onCloseComplete;
 				}
@@ -55,16 +56,21 @@ export default function withToast(WrappedComponent) {
 					placement,
 					duration,
 					render: ({ id }) => {
-						const uniqueToastId = 'toast-' + id;
+						const toastId = 'toast-' + id;
 						let bodyElements = [];
 						if (title) {
-							bodyElements.push(<ToastTitle key="title">{title}</ToastTitle>);
+							bodyElements.push(<ToastTitle key="title" className="text-lg">{title}</ToastTitle>);
 						}
 						if (description) {
 							bodyElements.push(<ToastDescription key="description">{description}</ToastDescription>);
 						}
-						return <Toast nativeID={uniqueToastId} action="muted" variant="solid">
-									{bodyElements}
+						return <Toast
+									nativeID={toastId}
+									action={action}
+									variant={variant}
+									className={className}
+								>
+									{body || bodyElements}
 								</Toast>;
 					},
 					...toastProps,
