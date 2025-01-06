@@ -23,6 +23,7 @@ function ManagerScreen(props) {
 			title,
 			sideModeComponent,
 			fullModeComponent,
+			onChangeMode,
 
 			// withComponent
 			self,
@@ -44,6 +45,9 @@ function ManagerScreen(props) {
 			setModeRaw(newMode);
 			if (id) {
 				setSaved(id + '-mode', newMode);
+			}
+			if (onChangeMode) {
+				onChangeMode(newMode);
 			}
 		},
 		onLayout = (e) => {
