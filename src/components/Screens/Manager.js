@@ -33,6 +33,7 @@ function ManagerScreen(props) {
 		[isModeSet, setIsModeSet] = useState(false),
 		[allowSideBySide, setAllowSideBySide] = useState(false),
 		[mode, setModeRaw] = useState(MODE_FULL),
+		actualMode = (!allowSideBySide || mode === MODE_FULL) ? MODE_FULL : MODE_SIDE,
 		setMode = (newMode) => {
 			if (!allowSideBySide && newMode === MODE_SIDE) {
 				return;
@@ -74,14 +75,13 @@ function ManagerScreen(props) {
 		})();
 	}, [isRendered]);
 
-	let whichComponent;
-	if (!allowSideBySide || mode === MODE_FULL) {
-		whichComponent = fullModeComponent;
-	} else if (mode === MODE_SIDE) {
-		whichComponent = sideModeComponent;
+	if (self) {
+		self.mode = actualMode;
 	}
 
-	const textProps = {};
+	const
+		whichComponent = actualMode === MODE_FULL ? fullModeComponent : sideModeComponent,
+		textProps = {};
 	if (styles.MANAGER_SCREEN_TITLE) {
 		textProps.style = {
 			fontFamily: styles.MANAGER_SCREEN_TITLE,
@@ -104,7 +104,7 @@ function ManagerScreen(props) {
 									size: 'xl',
 									className: 'text-black',
 								}}
-								isDisabled={mode === MODE_FULL}
+								isDisabled={actualMode === MODE_FULL}
 								onPress={() => setMode(MODE_FULL)}
 								tooltip="To full width"
 								className="ml-5"
@@ -116,7 +116,7 @@ function ManagerScreen(props) {
 									size: 'xl',
 									className: 'text-black',
 								}}
-								isDisabled={mode === MODE_SIDE}
+								isDisabled={actualMode === MODE_SIDE}
 								onPress={() => setMode(MODE_SIDE)}
 								tooltip="To side editor"
 							/>
