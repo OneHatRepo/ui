@@ -43,7 +43,7 @@ export default function TreeNode(props) {
 
 	return useMemo(() => {
 		const icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf;
-		let bg = props.bg || styles.TREE_NODE_BG,
+		let bg = props.nodeProps?.bg || props.bg || styles.TREE_NODE_BG,
 			mixWith;
 		if (isSelected) {
 			if (isHovered) {
