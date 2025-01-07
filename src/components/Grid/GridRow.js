@@ -53,7 +53,7 @@ function GridRow(props) {
 		hash = item?.hash || item;
 	return useMemo(() => {
 
-		let bg = props.bg || styles.GRID_ROW_BG,
+		let bg = rowProps.bg || props.bg || styles.GRID_ROW_BG,
 			mixWith;
 		if (isSelected) {
 			if (showHovers && isHovered) {
