@@ -137,7 +137,7 @@ function GridRow(props) {
 								extraProps._web.style = {};
 							}
 							extraProps._web.style = {
-								userSelect: 'none',
+								// userSelect: 'none',
 							};
 
 							return <HStackNative
@@ -171,7 +171,7 @@ function GridRow(props) {
 												key={key}
 												overflow="hidden"
 												style={{
-													userSelect: 'none',
+													// userSelect: 'none',
 													...colStyle,
 												}}
 												minimizeForRow={true}
@@ -217,7 +217,7 @@ function GridRow(props) {
 								{...testProps('cell-' + config.fieldName)}
 								key={key}
 								style={{
-									userSelect: 'none',
+									// userSelect: 'none',
 									...colStyle,
 								}}
 								numberOfLines={1}
