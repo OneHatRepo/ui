@@ -516,7 +516,7 @@ function TreeComponent(props) {
 					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
 					iconExpanded: getNodeIcon(EXPANDED, treeNode),
 					iconLeaf: getNodeIcon(LEAF, treeNode),
-					isExpanded: defaultToExpanded || isRoot, // all non-root treeNodes are collapsed by default
+					isExpanded: treeNode.isExpanded || defaultToExpanded || isRoot, // all non-root treeNodes are collapsed by default
 					isVisible: isRoot ? areRootsVisible : true,
 					isLoading: false,
 					children,
