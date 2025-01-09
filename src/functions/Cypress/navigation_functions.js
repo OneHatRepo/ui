@@ -34,7 +34,8 @@ export function login(loginId = null, password = null) {
 		});
 }
 export function logout() {
-	getDomNode('logoutBtn').click({ force: true });
+	const baseDir = Cypress.env('baseDir');
+	getDomNode(baseDir + 'logout').click({ force: true });
 }
 
 
