@@ -262,8 +262,11 @@ export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, 
 				schema = data.schema,
 				newData = data.newData,
 				editData = data.editData,
-				ancillaryData = data.ancillaryData,
-				ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+				ancillaryData = data.ancillaryData;
+			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
+				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
+			}
 			crudWindowedGridRecord(ancillaryGridSelector, newData, editData, schema, ancillaryData, level+1);
 		});
 	}
@@ -378,7 +381,7 @@ export function deleteGridRecord(gridSelector, id) {
 	
 	// Click OK on confirmation box
 	cy.intercept('POST', '**/delete**').as('waiter');
-	clickYesButton('AlertDialog');
+	clickYesButton('ConfirmModal');
 	cy.wait('@waiter');
 
 	verifyNoErrorBox();
@@ -534,8 +537,11 @@ export function addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, 
 				schema = data.schema,
 				newData = data.newData,
 				editData = data.editData,
-				ancillaryData = data.ancillaryData,
-				ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+				ancillaryData = data.ancillaryData;
+			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
+				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
+			}
 			crudWindowedGridRecord(ancillaryGridSelector, newData, editData, schema, ancillaryData, level+1);
 		});
 	}
@@ -618,7 +624,7 @@ export function deleteTreeRecord(treeSelector, id) {
 	
 	// Click OK on confirmation box
 	cy.intercept('POST', '**/delete**').as('waiter');
-	clickYesButton('AlertDialog');
+	clickYesButton('ConfirmModal');
 	cy.wait('@waiter');
 
 	verifyNoErrorBox();

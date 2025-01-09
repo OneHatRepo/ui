@@ -10,6 +10,10 @@ import moment from 'moment';
 export function fixInflector(str) {
 	// inflector-js doesn't handle pluralization of 'equipment' correctly
 	str = str.replace(/quipments/, 'quipment');
+
+	// Don't pluralize 'SideA' or 'SideB'
+	str = str.replace(/SideAs/, 'SideA');
+	str = str.replace(/SideBs/, 'SideB');
 	return str;
 }
 export function getPropertyDefinitionFromSchema(fieldName, schema) {

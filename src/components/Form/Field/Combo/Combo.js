@@ -10,7 +10,7 @@ import {
 	Text,
 	TextNative,
 	Tooltip,
-	VStack,
+	VStackNative,
 } from '@project-components/Gluestack';
 import {
 	UI_MODE_NATIVE,
@@ -444,8 +444,9 @@ export function ComboComponent(props) {
 					});
 				}
 
-				setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
-			
+				if (!isId) {
+					setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
+				}
 			} else {
 				// Search through data
 				const regex = new RegExp('^' + value);
@@ -1021,7 +1022,7 @@ export function ComboComponent(props) {
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
-			<VStack
+			<VStackNative
 				testID={testID}
 				className="Combo-VStack"
 			>
@@ -1038,11 +1039,12 @@ export function ComboComponent(props) {
 				<HStack className="mt-1">
 					{additionalButtons}
 				</HStack>
-			</VStack>;
+			</VStackNative>;
 	} else {
 		assembledComponents = 
 			<HStackNative
 				{...refProps}
+				testID={testID}
 				onLayout={onLayout}
 				className={className}
 			>

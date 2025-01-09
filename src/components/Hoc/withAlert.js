@@ -97,6 +97,7 @@ function withAlert(WrappedComponent) {
 					}
 				}
 				showModal({
+					testID: 'AlertModal',
 					title,
 					body: getBody({
 						icon: TriangleExclamation,
@@ -119,6 +120,7 @@ function withAlert(WrappedComponent) {
 			onConfirm = (message, onYes, includeCancel = false, onNo) => {
 				hideModal();
 				showModal({
+					testID: 'ConfirmModal',
 					title: 'Confirm',
 					body: getBody({
 						icon: CircleQuestion,
@@ -142,6 +144,7 @@ function withAlert(WrappedComponent) {
 			onInfo = (message) => {
 				hideModal();
 				showModal({
+					testID: 'InfoModal',
 					title: 'Info',
 					body: getBody({
 						icon: CircleInfo,

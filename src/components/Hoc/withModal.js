@@ -36,6 +36,7 @@ export default function withModal(WrappedComponent) {
 			[customButtons, setCustomButtons] = useState(),
 			[body, setBody] = useState(),
 			[whichModal, setWhichModal] = useState(),
+			[testID, setTestID] = useState('Modal'),
 			autoFocusRef = useRef(null),
 			cancelRef = useRef(null),
 			[windowWidth, windowHeight] = useAdjustedWindowSize(w, h),
@@ -59,6 +60,7 @@ export default function withModal(WrappedComponent) {
 					h = null,
 					w = null,
 					whichModal = null,
+					testID = null,
 					formProps = null, // deprecated
 				} = args;
 				
@@ -83,6 +85,9 @@ export default function withModal(WrappedComponent) {
 				setWidth(w); // || 400
 				setWhichModal(whichModal);
 				setIsModalShown(true);
+				if (testID) {
+					setTestID(testID);
+				}
 			},
 			updateModalBody = (newBody) => {
 				setBody(newBody);
@@ -185,6 +190,7 @@ export default function withModal(WrappedComponent) {
 							isOpen={true}
 							onClose={onCancel}
 							className="withModal-Modal"
+							{...testProps(testID)}
 						>
 							<ModalBackdrop className="withModal-ModalBackdrop" />
 							{modalBody}

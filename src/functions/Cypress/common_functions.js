@@ -30,7 +30,7 @@ export function waitForNavigationTo(url) {
 // /_/  /_/\___/____/____/\__,_/\__, /\___/_____/\____/_/|_|
 //                             /____/
 export function clickMessageBoxDefaultButton() {
-	getDomNode(['AlertDialogue', 'okBtn'])
+	getDomNode(['AlertModal', 'okBtn'])
 		.click();
 }
 export function verifyNoErrorBox() {

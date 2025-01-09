@@ -17,6 +17,7 @@ const
 				onChangeText,
 				placeholder,
 				minimizeForRow = false,
+				testID,
 			} = props,
 			value = _.isNil(props.value) ? '' : props.value, // null value may not actually reset this TextArea, so set it explicitly to empty string
 			styles = UiGlobals.styles,
@@ -95,6 +96,7 @@ const
 
 		return <Textarea className={textareaClassName}>
 					<TextareaInput
+						testID={testID}
 						ref={props.outerRef}
 						onChangeText={onChangeTextLocal}
 						value={localValue}

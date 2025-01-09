@@ -1,7 +1,7 @@
 import { useRef, } from 'react';
 import {
 	HStack,
-	VStack,
+	VStackNative,
 } from '@project-components/Gluestack';
 import {
 	EDITOR_TYPE__WINDOWED,
@@ -27,6 +27,7 @@ function TagComponent(props) {
 			Editor,
 			_combo = {},
 			tooltip,
+			testID,
 
 			// parent Form
 			onChangeValue,
@@ -301,7 +302,8 @@ function TagComponent(props) {
 		}
 	}
 	
-	return <VStack
+	return <VStackNative
+				testID={testID}
 				className={className}
 				style={style}
 			>
@@ -322,7 +324,7 @@ function TagComponent(props) {
 									{..._combo}
 									className={comboClassName}
 								/>}
-			</VStack>;
+			</VStackNative>;
 	
 }
 
