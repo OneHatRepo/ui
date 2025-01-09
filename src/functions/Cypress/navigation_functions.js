@@ -35,7 +35,7 @@ export function login(loginId = null, password = null) {
 }
 export function logout() {
 	const baseDir = Cypress.env('baseDir');
-	getDomNode(baseDir + 'logout').click({ force: true });
+	getDomNode(baseDir + 'logoutBtn').click({ force: true });
 }
 
 
