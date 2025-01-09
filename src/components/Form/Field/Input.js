@@ -14,7 +14,6 @@ import _ from 'lodash';
 
 const InputElement = forwardRef((props, ref) => {
 	let { // so localValue can be changed, if needed
-			testID,
 			value,
 			setValue,
 			maxLength,
