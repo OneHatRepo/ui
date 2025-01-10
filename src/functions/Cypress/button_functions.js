@@ -46,6 +46,9 @@ export function clickExpandButton(parentSelectors) {
 export function clickXButton(parentSelectors) {
 	return clickButton(parentSelectors, 'xBtn');
 }
+export function clickXButtonIfEnabled(parentSelectors) {
+	return clickButtonIfEnabled(parentSelectors, 'xBtn', true);
+}
 export function clickTrigger(parentSelectors) {
 	return clickButton(parentSelectors, 'trigger');
 }
@@ -67,12 +70,19 @@ export function toFullMode(parentSelectors) {
 export function toSideMode(parentSelectors) {
 	return clickButton(parentSelectors, 'sideModeBtn');
 }
-export function clickButton(parentSelectors, name) {
+export function clickButton(parentSelectors, name) { // requires the button to be enabled
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
 	return getDomNode([...parentSelectors, name])
-				// .scrollIntoView()
+				.should('not.have.attr', 'data-disabled', 'true') // Check that the element is not disabled
+				.click({ force: true });
+}
+export function clickButtonIfEnabled(parentSelectors, name) { // allows button to be disabled
+	if (_.isString(parentSelectors)) {
+		parentSelectors = [parentSelectors];
+	}
+	return getDomNode([...parentSelectors, name])
 				.click({ force: true });
 }
 export function clickButtonIfExists(parentSelectors, name) {
