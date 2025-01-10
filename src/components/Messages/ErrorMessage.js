@@ -36,7 +36,7 @@ export default function ErrorMessage(props) {
 								className={`
 									justify-end
 									py-2
-									pr-4
+									px-4
 									bg-grey-100
 								`}
 							>
@@ -49,13 +49,13 @@ export default function ErrorMessage(props) {
 								/>
 							</Footer>}
 				>
-					<HStack className="ErrorMessage-HStack flex-1 w-full">
+					<HStack className="ErrorMessage-HStack flex-1 w-full p-4">
 						<Box className={`
 							ErrorMessage-Box1
 							h-full
 							w-[100px]
 							flex
-							items-end
+							items-center
 							justify-center 
 							pr-3
 						`}>
@@ -73,12 +73,16 @@ export default function ErrorMessage(props) {
 							flex-1
 							items-start
 							justify-center
+							overflow-hidden
 						`}>
 							<Text className={`
 								ErrorMessage-Text
 								text-${color}
 								text-[18px]
-								flex-none
+								break-words
+								whitespace-normal
+								w-full
+								overflow-auto
 							`}>{text}</Text>
 						</Box>
 					</HStack>
