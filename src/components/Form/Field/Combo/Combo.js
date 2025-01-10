@@ -180,7 +180,7 @@ export function ComboComponent(props) {
 					displayValue = _.each(value, (id) => {
 						const entity = Repository.getById(id);
 						if (entity) {
-							displayValue.push(entity.displayValue)
+							displayValue.push(entity.displayValue);
 						}
 					});
 				} else {
@@ -202,6 +202,9 @@ export function ComboComponent(props) {
 							await Repository.waitUntilDoneLoading();
 						}
 						entity = Repository.getById(value);
+						if (!entity) {
+							entity = await Repository.getSingleEntityFromServer(value);
+						}
 					}
 					displayValue = entity?.displayValue || '';
 				} else {
