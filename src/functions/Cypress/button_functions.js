@@ -1,4 +1,4 @@
-
+import 'cypress-if'; // for clickButtonIfExists only!
 import {
 	getDomNode,
 	getDomNodes,
@@ -79,7 +79,7 @@ export function clickButtonIfExists(parentSelectors, name) {
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
-	return getDomNode([...parentSelectors, name]).then((node) => {
+	return getDomNode([...parentSelectors, name]).if().then((node) => { // NOTE if() is a cypress-if function
 		if (node) {
 			node.click();
 		}
