@@ -39,17 +39,13 @@ export function getRowWithFieldValue(gridSelector, field, value) {
 
 // Select rows
 export function selectGridRowById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'selectGridRowById ' + gridSelector + ' ' + id});
-	});
+	cy.log('selectGridRowById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNode([gridSelector, rowSelector])
 		.click();
 }
 export function selectGridRowIfNotAlreadySelectedById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'selectGridRowIfNotAlreadySelectedById ' + gridSelector + ' ' + id});
-	});
+	cy.log('selectGridRowIfNotAlreadySelectedById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNode([gridSelector, rowSelector]).then((row) => {
 		const found = row.find('[data-testid="row-selected"]')
@@ -100,26 +96,20 @@ export function verifyGridRecordExistsByValue(gridSelector, fieldValues, schema)
 		.should('exist');
 }
 export function verifyGridRecordExistsById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyGridRecordExistsById ' + gridSelector + ' ' + id });
-	});
+	cy.log('verifyGridRecordExistsById ' + gridSelector + ' ' + id);
 	
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNodes([gridSelector, rowSelector])
 		.should('exist');
 }
 export function verifyGridRecordDoesNotExistById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyGridRecordDoesNotExistById ' + gridSelector + ' ' + id });
-	});
+	cy.log('verifyGridRecordDoesNotExistById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNodes([gridSelector, rowSelector])
 		.should('not.exist');
 }
 export function verifyGridRowIsSelectedById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyGridRowIsSelectedById ' + gridSelector + ' ' + id});
-	});
+	cy.log('verifyGridRowIsSelectedById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNodes([gridSelector, rowSelector, 'row-selected'])
 		.should('exist');

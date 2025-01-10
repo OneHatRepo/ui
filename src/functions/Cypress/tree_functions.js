@@ -43,17 +43,13 @@ export function getFirstTreeRootNode(treeSelector) {
 
 // Select rows
 export function selectTreeNodeById(treeSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'selectTreeNodeById ' + treeSelector + ' ' + id});
-	});
+	cy.log('selectTreeNodeById ' + treeSelector + ' ' + id);
 	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
 	getDomNode([treeSelector, rowSelector])
 		.click();
 }
 export function selectTreeNodeIfNotAlreadySelectedById(treeSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'selectTreeNodeIfNotAlreadySelectedById ' + treeSelector + ' ' + id});
-	});
+	cy.log('selectTreeNodeIfNotAlreadySelectedById ' + treeSelector + ' ' + id);
 	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
 	getDomNode([treeSelector, rowSelector]).then((row) => {
 		const found = row.find('[data-testid="node-selected"]')
@@ -104,26 +100,20 @@ export function verifyTreeRecordExistsByValue(treeSelector, fieldValues, schema)
 		.should('exist');
 }
 export function verifyTreeRecordExistsById(treeSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyTreeRecordExistsById ' + treeSelector + ' ' + id });
-	});
+	cy.log('verifyTreeRecordExistsById ' + treeSelector + ' ' + id);
 	
 	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
 	getDomNodes([treeSelector, rowSelector])
 		.should('exist');
 }
 export function verifyTreeRecordDoesNotExistById(treeSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyTreeRecordDoesNotExistById ' + treeSelector + ' ' + id });
-	});
+	cy.log('verifyTreeRecordDoesNotExistById ' + treeSelector + ' ' + id);
 	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
 	getDomNodes([treeSelector, rowSelector])
 		.should('not.exist');
 }
 export function verifyTreeNodeIsSelectedById(treeSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyTreeNodeIsSelectedById ' + treeSelector + ' ' + id});
-	});
+	cy.log('verifyTreeNodeIsSelectedById ' + treeSelector + ' ' + id);
 	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
 	getDomNodes([treeSelector, rowSelector, 'node-selected'])
 		.should('exist');
