@@ -449,7 +449,7 @@ export function ComboComponent(props) {
 				}
 			} else {
 				// Search through data
-				const regex = new RegExp('^' + value);
+				const regex = new RegExp('^' + value, 'i'); // case-insensitive
 				found = _.filter(data, (item) => {
 					if (_.isString(item[displayIx]) && _.isString(value)) {
 						return item[displayIx].match(regex);
