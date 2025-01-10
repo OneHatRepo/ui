@@ -275,7 +275,7 @@ export function addInlineGridRecord(gridSelector, fieldValues, schema, ancillary
 
 	cy.log('addInlineGridRecord ' + gridSelector);
 
-	addGridRecord(gridSelector, fieldValues, schema, ancillaryData, level);
+	addGridRecord(gridSelector, fieldValues, schema, [], level); // NOTE: ancillaryData is not passed to addGridRecord because can't edit ancillary data in an inline editor
 
 	cy.log('addWindowedGridRecord: close window ' + gridSelector);
 	const formSelector = gridSelector + '/editor/form';
