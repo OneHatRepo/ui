@@ -119,6 +119,7 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 // export function setFileValue(field, value) {
 // }
 export function setArrayComboValue(selectors, value) {
+	cy.log('setArrayComboValue ' + value);
 	getDomNode([...selectors, 'input']).then((field) => {
 		cy.get(field).clear({ force: true });
 		if (value) {
@@ -132,6 +133,7 @@ export function setArrayComboValue(selectors, value) {
 	});
 }
 export function setComboValue(selectors, value) {
+	cy.log('setComboValue ' + value);
 	getDomNode([...selectors, 'input']).then((field) => {
 		cy.get(field).clear({ force: true });
 		if (value) {
@@ -154,6 +156,7 @@ export function setComboValue(selectors, value) {
 	});
 }
 export function setTagValue(selectors, value) {
+	cy.log('setTagValue ' + value);
 	const values = !_.isEmpty(value) ? JSON.parse(value) : null;
 
 	// Clear any previously selected tags
@@ -196,6 +199,7 @@ export function setTagValue(selectors, value) {
 	});
 }
 export function setDateValue(selectors, value) {
+	cy.log('setDateValue ' + value);
 	getDomNode(selectors).then((field) => {
 		cy.get(field).clear({ force: true });
 		if (value) {
@@ -206,6 +210,7 @@ export function setDateValue(selectors, value) {
 	});
 }
 export function setNumberValue(selectors, value) {
+	cy.log('setNumberValue ' + value);
 	// setTextValue(selectors, value);
 
 	getDomNode(selectors).clear({ force: true });
@@ -216,6 +221,7 @@ export function setNumberValue(selectors, value) {
 	}
 }
 export function setToggleValue(selectors, value) {
+	cy.log('setToggleValue ' + value);
 	selectors.push('input[role="switch"]');
 	if (value) {
 		getToggleState(selectors).then((isYes) => {
@@ -234,6 +240,7 @@ export function setToggleValue(selectors, value) {
 	}
 }
 export function getToggleState(selectors) {
+	cy.log('getToggleState');
 	return getDomNode(selectors).then((node) => {
 		if (!node.length) {
 			return null;
@@ -242,9 +249,11 @@ export function getToggleState(selectors) {
 	});
 }
 export function clickToggle(selectors, options = {}) {
+	cy.log('clickToggle');
 	getDomNode(selectors).click(options);
 }
 export function setTextValue(selectors, value) {
+	cy.log('setTextValue ' + value);
 	getDomNode(selectors).clear({ force: true });
 	if (value !== null && value !== '') {
 		getDomNode(selectors)
@@ -253,6 +262,7 @@ export function setTextValue(selectors, value) {
 	}
 }
 export function setTextAreaValue(selectors, value) {
+	cy.log('setTextAreaValue ' + value);
 	getDomNode(selectors).clear({ force: true });
 	if (value !== null && value !== '') {
 		getDomNode(selectors)
@@ -260,6 +270,7 @@ export function setTextAreaValue(selectors, value) {
 	}
 }
 export function setInputValue(selectors, value) {
+	cy.log('setInputValue ' + value);
 	setTextValue(selectors, value);
 }
 

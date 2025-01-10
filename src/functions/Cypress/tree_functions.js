@@ -14,9 +14,11 @@ const $ = Cypress.$;
 
 // Get rows
 export function hasNodeWithFieldValue(treeSelector, field, value) {
+	cy.log('hasNodeWithFieldValue ' + treeSelector + ' ' + field + ' ' + value);
 	return getDomNodes([treeSelector, 'row', 'cell-' + field]).contains(value);
 }
 export function getNodeWithFieldValue(treeSelector, field, value) {
+	cy.log('getNodeWithFieldValue ' + treeSelector + ' ' + field + ' ' + value);
 	return getDomNodes([treeSelector, 'row', 'cell-' + field]).contains(value).then((cells) => {
 		if (!cells.length) {
 			return null;
@@ -27,6 +29,7 @@ export function getNodeWithFieldValue(treeSelector, field, value) {
 	});
 }
 export function getFirstTreeRootNode(treeSelector) {
+	cy.log('getFirstTreeRootNode ' + treeSelector);
 	return cy.get('[data-testid="' + treeSelector + '"]:first ' + 
 					'[data-testid="ScrollView"]:first > div > div:first'); // this is fragile!
 }
@@ -86,6 +89,7 @@ export function verifyTreeRecordDoesNotExistByValue(treeSelector, fieldValues, s
 		field = schema.model.displayProperty,
 		value = fieldValues[field];
 		
+	cy.log('verifyTreeRecordDoesNotExistByValue ' + treeSelector + ' ' + value);
 	getDomNodes([treeSelector, 'row', 'cell-' + field])
 		.contains(value, { timeout: 500 })
 		.should('not.exist');
@@ -95,6 +99,7 @@ export function verifyTreeRecordExistsByValue(treeSelector, fieldValues, schema)
 		field = schema.model.displayProperty,
 		value = fieldValues[field];
 		
+	cy.log('verifyTreeRecordExistsByValue ' + treeSelector + ' ' + value);
 	getDomNodes([treeSelector, 'row', 'cell-' + field])
 		.contains(value, { timeout: 500 })
 		.should('exist');

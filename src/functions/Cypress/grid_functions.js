@@ -14,9 +14,11 @@ const $ = Cypress.$;
 
 // Get rows
 export function hasRowWithFieldValue(gridSelector, field, value) {
+	cy.log('hasRowWithFieldValue ' + gridSelector + ' ' + field + ' ' + value);
 	return getDomNodes([gridSelector, 'row', 'cell-' + field]).contains(value);
 }
 export function getRowWithFieldValue(gridSelector, field, value) {
+	cy.log('getRowWithFieldValue ' + gridSelector + ' ' + field + ' ' + value);
 	return getDomNodes([gridSelector, 'row', 'cell-' + field]).contains(value).then((cells) => {
 		if (!cells.length) {
 			return null;
@@ -82,6 +84,7 @@ export function verifyGridRecordDoesNotExistByValue(gridSelector, fieldValues, s
 		field = schema.model.displayProperty,
 		value = fieldValues[field];
 		
+	cy.log('verifyGridRecordDoesNotExistByValue ' + gridSelector + ' ' + value);
 	getDomNodes([gridSelector, 'row', 'cell-' + field])
 		.contains(value, { timeout: 500 })
 		.should('not.exist');
@@ -91,6 +94,7 @@ export function verifyGridRecordExistsByValue(gridSelector, fieldValues, schema)
 		field = schema.model.displayProperty,
 		value = fieldValues[field];
 		
+	cy.log('verifyGridRecordExistsByValue ' + gridSelector + ' ' + value);
 	getDomNodes([gridSelector, 'row', 'cell-' + field])
 		.contains(value, { timeout: 500 })
 		.should('exist');

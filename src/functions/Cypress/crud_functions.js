@@ -287,7 +287,6 @@ export function addInlineGridRecord(gridSelector, fieldValues, schema, ancillary
 	// TODO: Change this to wait until window is closed
 }
 export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0, whichEditor = WINDOWED) {
-	
 	cy.log('editGridRecord ' + gridSelector + ' ' + id);
 	
 	selectGridRowIfNotAlreadySelectedById(gridSelector, id);
@@ -345,7 +344,6 @@ export function editInlineGridRecord(gridSelector, fieldValues, schema, id, leve
 	// TODO: Change this to wait until window is closed
 }
 export function deleteGridRecord(gridSelector, id) {
-
 	cy.log('deleteGridRecord ' + gridSelector + ' ' + id);
 	
 	selectGridRowIfNotAlreadySelectedById(gridSelector, id);
