@@ -225,9 +225,9 @@ export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, 
 	if (isRemotePhantomMode) {
 		method = 'edit';
 	}
-	cy.intercept('POST', '**/' + method + '**').as('addEditWaiter');
+	cy.intercept('POST', '**/' + method + '**').as(method + 'Waiter');
 	clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
-	cy.wait('@addEditWaiter');
+	cy.wait('@' + method + 'Waiter');
 
 	verifyNoErrorBox();
 
@@ -310,8 +310,10 @@ export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0,
 	fillForm(formSelector, fieldValues, schema, level +1);
 	cy.wait(500); // allow validator to enable save button
 	// TODO: Change this to wait until save button is enabled
-
-	cy.intercept('POST', 'http://localhost/Jimax/WorkOrders/edit').as('editWaiter');
+	const existingEditWaiter = Cypress.state('aliases')['editWaiter'];
+	if (!existingEditWaiter) {
+		cy.intercept('POST', '**/edit**').as('editWaiter');
+	}
 	clickSaveButton(formSelector);
 	cy.wait('@editWaiter');
 
@@ -470,9 +472,9 @@ export function addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, 
 	if (schema.repository.isRemotePhantomMode) {
 		method = 'edit';
 	}
-	cy.intercept('POST', '**/' + method + '**').as('waiter');
+	cy.intercept('POST', '**/' + method + '**').as(method + 'Waiter');
 	clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
-	cy.wait('@waiter');
+	cy.wait('@' + method + 'Waiter');
 
 	verifyNoErrorBox();
 
@@ -543,9 +545,12 @@ export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0,
 	cy.wait(500); // allow validator to enable save button
 	// TODO: Change this to wait until save button is enabled
 
-	cy.intercept('POST', '**/edit**').as('waiter');
+	const existingEditWaiter = Cypress.state('aliases')['editWaiter'];
+	if (!existingEditWaiter) {
+		cy.intercept('POST', '**/edit**').as('editWaiter');
+	}
 	clickSaveButton(formSelector);
-	cy.wait('@waiter');
+	cy.wait('@editWaiter');
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
@@ -572,9 +577,9 @@ export function deleteTreeRecord(treeSelector, id) {
 	cy.wait(500); // allow confirmation box to appear
 	
 	// Click OK on confirmation box
-	cy.intercept('POST', '**/delete**').as('waiter');
+	cy.intercept('POST', '**/delete**').as('deleteWaiter');
 	clickYesButton('ConfirmModal');
-	cy.wait('@waiter');
+	cy.wait('@deleteWaiter');
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
@@ -831,17 +836,17 @@ export function runReportsManagerTests(reportData) {
 
 
 				// Press Excel button
-				cy.intercept('GET', '**/getReport**').as('waiter');
+				cy.intercept('GET', '**/getReport**').as('getWaiter');
 				clickButton(selector, 'excelBtn');
-				cy.wait('@waiter', { timeout: 10000 }).then((interception) => {
+				cy.wait('@getWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 				});
 
 
 				// Press PDF button
-				cy.intercept('POST', '**/getReport**').as('waiter');
+				cy.intercept('POST', '**/getReport**').as('getReportWaiter');
 				clickButton(selector, 'pdfBtn');
-				cy.wait('@waiter', { timeout: 10000 }).then((interception) => {
+				cy.wait('@getReportWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('pdf');
 				});
 

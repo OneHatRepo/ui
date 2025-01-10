@@ -32,6 +32,7 @@ export function setCustomFormFunctions(fns) {
  * @param {object} schema - fieldName/fieldType pairs
  */
 export function fillForm(selector, fieldValues, schema, level = 0) {
+	cy.log('fillForm');
 	_.each(fieldValues, (value, fieldName) => {
 
 		const selectors = [selector, 'field-' + fieldName];
@@ -135,20 +136,23 @@ export function setArrayComboValue(selectors, value) {
 export function setComboValue(selectors, value) {
 	cy.log('setComboValue ' + value);
 	getDomNode([...selectors, 'input']).then((field) => {
-		cy.get(field).clear({ force: true });
+		// cy.get(field).clear({ force: true });
+		clickXButtonIfEnabled(selectors); // clear current value
 		if (value) {
-			cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
-
-			clickXButtonIfEnabled(selectors); // clear current value
+			const existingGetWaiter = Cypress.state('aliases')['getWaiter'];
+			if (!existingGetWaiter) {
+				cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
+			}
 
 			cy.get(field)
 				.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 				.wait('@getWaiter'); // allow dropdown to load
 				
 			cy.get(field)
-				.wait(2000) // render
+				.wait(1000) // render
+
 				.type('{downarrow}')
-				.wait(1000) // allow time for selection
+				.wait(500) // allow time for selection
 
 				.type('{enter}')
 				.wait(250); // allow time to register enter key
@@ -182,15 +186,18 @@ export function setTagValue(selectors, value) {
 		if (!_.isEmpty(values)) {
 			_.each(values, (value) => {
 				const id = value.id;
-				cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
+				const existingGetWaiter = Cypress.state('aliases')['getWaiter'];
+				if (!existingGetWaiter) {
+					cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
+				}
 				cy.get(field)
 					.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 					.wait('@getWaiter'); // allow dropdown to load
 					
 				cy.get(field)
-					.wait(2000) // render
+					.wait(1000) // render
 					.type('{downarrow}')
-					.wait(1000); // allow time for selection
+					.wait(500); // allow time for selection
 			});
 
 			// press trigger to hide dropdown
