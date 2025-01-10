@@ -1,11 +1,14 @@
 import {
 	Box,
-	ButtonText,
+	HStack,
 	Icon,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
 } from '@project-components/Gluestack';
-import Button from '../Buttons/Button';
+import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
+import Button from '../Buttons/Button.js';
+import Panel from '../Panel/Panel.js';
+import Footer from '../Layout/Footer.js';
 import testProps from '../../Functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 
@@ -14,33 +17,71 @@ export default function ErrorMessage(props) {
 			text = 'Error',
 			color = 'red-500',
 			onOk,
-		} = props;
+		} = props,
+		[width, height] = useAdjustedWindowSize(500, 250);
 
 	return <Modal isOpen={true} {...props} {...testProps('ErrorMessage')}>
 				<ModalBackdrop />
-				<ModalContent>
-					<ModalHeader>Alert</ModalHeader>
-					<ModalBody
-						className={`
-							flex-row
-							align-center
-							justify-center
-							p-3
-							bg-white
-							border-t-0
-							rounded-md
-						`}
-					>
-						<Box className="w-[50px] mx-1">
-							<Icon as={TriangleExclamation} size="10" className="text-red-500" />
+
+				<Panel
+					title="Alert"
+					isCollapsible={false}
+					className="bg-white overflow-auto"
+					h={height}
+					w={width}
+					isWindow={true}
+					disableAutoFlex={true}
+					onClose={onOk}
+					footer={<Footer
+								className={`
+									justify-end
+									py-2
+									pr-4
+									bg-grey-100
+								`}
+							>
+								<Button
+									{...testProps('okBtn')}
+									key="okBtn"
+									onPress={onOk}
+									text="OK"
+									className="text-white"
+								/>
+							</Footer>}
+				>
+					<HStack className="ErrorMessage-HStack flex-1 w-full">
+						<Box className={`
+							ErrorMessage-Box1
+							h-full
+							w-[100px]
+							flex
+							items-end
+							justify-center 
+							pr-3
+						`}>
+							<Icon as={TriangleExclamation} className={`
+								ErrorMessage-Icon
+								h-[40px]
+								w-[40px]
+								text-${color}
+							`} />
 						</Box>
-						<Text className={` text-${color} flex-1 text-[18px] `}>{text}</Text>
-					</ModalBody>
-					<ModalFooter className="py-2 pr-4">
-						<Button onPress={onOk} className="text-primary-800">
-							<ButtonText>OK</ButtonText>
-						</Button>
-					</ModalFooter>
-				</ModalContent>
+						<Box className={`
+							ErrorMessage-Box2
+							h-full
+							flex
+							flex-1
+							items-start
+							justify-center
+						`}>
+							<Text className={`
+								ErrorMessage-Text
+								text-${color}
+								text-[18px]
+								flex-none
+							`}>{text}</Text>
+						</Box>
+					</HStack>
+				</Panel>
 			</Modal>;
 }
