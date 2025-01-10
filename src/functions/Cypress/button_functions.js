@@ -85,11 +85,11 @@ export function clickToViewButtonIfExists(parentSelectors) {
 }
 export function toFullMode(parentSelectors) {
 	cy.log('toFullMode');
-	return clickButton(parentSelectors, 'fullModeBtn');
+	return clickButtonIfEnabled(parentSelectors, 'fullModeBtn');
 }
 export function toSideMode(parentSelectors) {
 	cy.log('toSideMode');
-	return clickButton(parentSelectors, 'sideModeBtn');
+	return clickButtonIfEnabled(parentSelectors, 'sideModeBtn');
 }
 export function clickButton(parentSelectors, name) { // requires the button to be enabled
 	if (_.isString(parentSelectors)) {

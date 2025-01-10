@@ -139,11 +139,6 @@ export function setComboValue(selectors, value) {
 		// cy.get(field).clear({ force: true });
 		clickXButtonIfEnabled(selectors); // clear current value
 		if (value) {
-			const existingGetWaiter = Cypress.state('aliases')['getWaiter'];
-			if (!existingGetWaiter) {
-				cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
-			}
-
 			cy.get(field)
 				.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 				.wait('@getWaiter'); // allow dropdown to load
@@ -186,10 +181,6 @@ export function setTagValue(selectors, value) {
 		if (!_.isEmpty(values)) {
 			_.each(values, (value) => {
 				const id = value.id;
-				const existingGetWaiter = Cypress.state('aliases')['getWaiter'];
-				if (!existingGetWaiter) {
-					cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
-				}
 				cy.get(field)
 					.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 					.wait('@getWaiter'); // allow dropdown to load

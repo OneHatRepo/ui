@@ -6,7 +6,14 @@ import moment from 'moment';
 // / /_/ / /_/ / / / /_/ /  __(__  )
 // \____/\__/_/_/_/\__/_/\___/____/
 
-
+export function bootstrapRouteWaiters() {
+	cy.log('bootstrapRouteWaiters');
+	cy.intercept('GET', '**/get**').as('getWaiter');
+	cy.intercept('POST', '**/add**').as('addWaiter');
+	cy.intercept('POST', '**/edit**').as('editWaiter');
+	cy.intercept('POST', '**/delete**').as('deleteWaiter');
+	cy.intercept('POST', '**/getReport**').as('getReportWaiter');
+}
 export function fixInflector(str) {
 	// inflector-js doesn't handle pluralization of 'equipment' correctly
 	str = str.replace(/quipments/, 'quipment');

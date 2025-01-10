@@ -1,6 +1,7 @@
 import {
 	fixInflector,
 	getLastPartOfPath,
+	bootstrapRouteWaiters,
 } from './utilities.js';
 import {
 	login,
@@ -208,9 +209,6 @@ export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, 
 		formSelector = editorSelector + '/form',
 		isRemotePhantomMode = schema.repository.isRemotePhantomMode;
 
-	if (isRemotePhantomMode) {
-		cy.intercept('POST', '**/add**').as('addWaiter');
-	}
 	clickAddButton(gridSelector);
 	if (isRemotePhantomMode) {
 		cy.wait('@addWaiter');
@@ -225,7 +223,6 @@ export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, 
 	if (isRemotePhantomMode) {
 		method = 'edit';
 	}
-	cy.intercept('POST', '**/' + method + '**').as(method + 'Waiter');
 	clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
 	cy.wait('@' + method + 'Waiter');
 
@@ -310,10 +307,7 @@ export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0,
 	fillForm(formSelector, fieldValues, schema, level +1);
 	cy.wait(500); // allow validator to enable save button
 	// TODO: Change this to wait until save button is enabled
-	const existingEditWaiter = Cypress.state('aliases')['editWaiter'];
-	if (!existingEditWaiter) {
-		cy.intercept('POST', '**/edit**').as('editWaiter');
-	}
+	
 	clickSaveButton(formSelector);
 	cy.wait('@editWaiter');
 
@@ -353,7 +347,6 @@ export function deleteGridRecord(gridSelector, id) {
 	cy.wait(500); // allow confirmation box to appear
 	
 	// Click OK on confirmation box
-	cy.intercept('POST', '**/delete**').as('deleteWaiter');
 	clickYesButton('ConfirmModal');
 	cy.wait('@deleteWaiter');
 
@@ -472,7 +465,6 @@ export function addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, 
 	if (schema.repository.isRemotePhantomMode) {
 		method = 'edit';
 	}
-	cy.intercept('POST', '**/' + method + '**').as(method + 'Waiter');
 	clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
 	cy.wait('@' + method + 'Waiter');
 
@@ -545,10 +537,6 @@ export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0,
 	cy.wait(500); // allow validator to enable save button
 	// TODO: Change this to wait until save button is enabled
 
-	const existingEditWaiter = Cypress.state('aliases')['editWaiter'];
-	if (!existingEditWaiter) {
-		cy.intercept('POST', '**/edit**').as('editWaiter');
-	}
 	clickSaveButton(formSelector);
 	cy.wait('@editWaiter');
 
@@ -577,7 +565,6 @@ export function deleteTreeRecord(treeSelector, id) {
 	cy.wait(500); // allow confirmation box to appear
 	
 	// Click OK on confirmation box
-	cy.intercept('POST', '**/delete**').as('deleteWaiter');
 	clickYesButton('ConfirmModal');
 	cy.wait('@deleteWaiter');
 
@@ -596,6 +583,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -692,6 +680,7 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -756,6 +745,7 @@ export function runManagerScreenCrudTests(args) {
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -814,6 +804,7 @@ export function runReportsManagerTests(reportData) {
 	describe('ReportsManager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
@@ -836,7 +827,6 @@ export function runReportsManagerTests(reportData) {
 
 
 				// Press Excel button
-				cy.intercept('GET', '**/getReport**').as('getWaiter');
 				clickButton(selector, 'excelBtn');
 				cy.wait('@getWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -844,7 +834,6 @@ export function runReportsManagerTests(reportData) {
 
 
 				// Press PDF button
-				cy.intercept('POST', '**/getReport**').as('getReportWaiter');
 				clickButton(selector, 'pdfBtn');
 				cy.wait('@getReportWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('pdf');
