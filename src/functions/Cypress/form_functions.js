@@ -13,7 +13,7 @@ import {
 	crudJson,
 } from './crud_functions.js';
 import {
-	clickXButton
+	clickXButtonIfEnabled
 } from './button_functions.js';
 import natsort from 'natsort';
 import _ from 'lodash';
@@ -137,7 +137,7 @@ export function setComboValue(selectors, value) {
 		if (value) {
 			cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
 
-			clickXButton(selectors); // clear current value
+			clickXButtonIfEnabled(selectors); // clear current value
 
 			cy.get(field)
 				.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
