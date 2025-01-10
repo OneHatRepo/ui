@@ -243,10 +243,12 @@ export function ComboComponent(props) {
 					}
 
 					let id = null;
-					if (gridSelection.length && gridSelection[0].id) {
-						id = gridSelection[0].id;
+					if (gridSelection.length) {
+						id = Repository ? gridSelection[0].id : gridSelection[0][idIx];
 					}
-					setValue(id);
+					if (id !== value) {
+						setValue(id);
+					}
 					hideMenu();
 					break;
 				case 'ArrowDown':
