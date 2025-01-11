@@ -597,6 +597,7 @@ function GridComponent(props) {
 										`}
 									>
 										<ExpandButton
+											{...testProps((Repository ? Repository.schema.name : 'GridRow') + '-expandBtn-' + item?.id)}
 											isExpanded={isExpanded}
 											onToggle={() => setIsExpanded(index, !isExpanded)}
 											_icon={{
