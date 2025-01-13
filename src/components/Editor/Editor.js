@@ -1,5 +1,6 @@
 import {
 	EDITOR_MODE__VIEW,
+	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
 import withComponent from '../Hoc/withComponent.js';
 import withPdfButtons from '../Hoc/withPdfButtons.js';
@@ -35,6 +36,9 @@ function Editor(props) {
 	}
 
 	const propsToPass = _.omit(props, ['self', 'reference', 'parent', 'style']);
+	if (propsToPass.editorType === EDITOR_TYPE__SIDE) {
+		propsToPass.style = props.style; // side editor needs the style prop, but a windowed editor can get messed up if it's present (and withModal is used)!
+	}
 
 	let canEdit = true;
 	if (canRecordBeEdited && !canRecordBeEdited(selection)) {
