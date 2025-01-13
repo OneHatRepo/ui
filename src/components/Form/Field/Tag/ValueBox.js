@@ -15,6 +15,7 @@ export default function ValueBox(props) {
 			onView,
 			onDelete,
 			showEye,
+			minimizeForRow = false,
 		} = props,
 		styles = UiGlobals.styles;
 	return <HStackNative
@@ -31,20 +32,22 @@ export default function ValueBox(props) {
 					${!onDelete && 'pr-4'}
 				`}
 			>
-				{showEye && <IconButton
-								{...testProps('eyeBtn')}
-								icon={Eye}
-								_icon={{
-									size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
-									className: 'text-grey-600',
-								}}
-								onPress={onView}
-								className={`
-									ValueBox-eyeBtn
-									h-full
-									${styles.FORM_TAG_BTN_CLASSNAME}
-								`}
-							/>}
+				{showEye &&
+					<IconButton
+						{...testProps('eyeBtn')}
+						icon={Eye}
+						_icon={{
+							size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
+							className: 'text-grey-600',
+						}}
+						onPress={onView}
+						className={`
+							ValueBox-eyeBtn
+							h-full
+							${minimizeForRow ? 'py-0' : ''}
+							${styles.FORM_TAG_BTN_CLASSNAME}
+						`}
+					/>}
 				<Text
 					className={`
 						ValueBox-Text
@@ -52,6 +55,7 @@ export default function ValueBox(props) {
 						${styles.FORM_TAG_VALUEBOX_CLASSNAME}
 						${showEye ? 'ml-0' : 'ml-1'}
 						${onDelete ? 'mr-0' : 'mr-1'}
+						${minimizeForRow ? 'py-0' : ''}
 					`}
 				>{text}</Text>
 				{onDelete &&
@@ -66,6 +70,7 @@ export default function ValueBox(props) {
 						className={`
 							ValueBox-xBtn
 							h-full
+							${minimizeForRow ? 'py-0' : ''}
 							${styles.FORM_TAG_BTN_CLASSNAME}
 						`}
 					/>}

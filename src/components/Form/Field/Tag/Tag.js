@@ -234,6 +234,7 @@ function TagComponent(props) {
 						onView={() => onView(val)}
 						onDelete={!isViewOnly ? () => onDelete(val) : null}
 						showEye={showEye}
+						minimizeForRow={minimizeForRow}
 					/>;
 		});
 	
@@ -297,7 +298,7 @@ function TagComponent(props) {
 			valueBoxesClassName += ' min-h-[25px] h-full overflow-auto flex-1';
 		} else {
 			// shrink both down
-			valueBoxesClassName += ' h-auto min-h-[25px] max-h-[25px] overflow-auto flex-1';
+			valueBoxesClassName += ' Scott h-auto min-h-[25px] max-h-[35px] overflow-auto flex-1';
 			comboClassName += ' h-auto min-h-0 max-h-[25px] flex-1';
 		}
 	}
