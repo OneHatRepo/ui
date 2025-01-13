@@ -34,7 +34,7 @@ function Editor(props) {
 		return null; // hide the editor when no selection
 	}
 
-	const propsToPass = _.omit(props, ['self', 'reference', 'parent']);
+	const propsToPass = _.omit(props, ['self', 'reference', 'parent', 'style']);
 
 	let canEdit = true;
 	if (canRecordBeEdited && !canRecordBeEdited(selection)) {
