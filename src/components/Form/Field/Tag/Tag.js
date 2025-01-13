@@ -77,7 +77,6 @@ function TagComponent(props) {
 			showModal({
 				body: <Editor
 							editorType={EDITOR_TYPE__WINDOWED}
-							{...propsToPass}
 							parent={self}
 							reference="viewer"
 							isEditorViewOnly={true}
