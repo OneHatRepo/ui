@@ -47,8 +47,9 @@ export default function PaginationToolbar(props) {
 					minimize={minimize}
 					disablePageSize={disablePageSize}
 				/>
-				{toolbarItems.length &&
+				{toolbarItems.length ?
 					<HStack className={`
+						PaginationToolbar-HStack
 						flex-1
 						space-x-1
 						border-l
@@ -56,6 +57,6 @@ export default function PaginationToolbar(props) {
 						ml-3
 						pl-3
 					`}
-					>{toolbarItems}</HStack>}
+					>{toolbarItems}</HStack> : null}
 			</Toolbar>;
 };
