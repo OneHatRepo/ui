@@ -153,6 +153,7 @@ function GridComponent(props) {
 			alternateRowBackgrounds = true,
 			alternatingInterval = 2,
 			defaultRowHeight = 48,
+			getRowTestId,
 			
 			// The selectorSelected mechanism allows us to filter results of the primary model, (e.g. WorkOrders)
 			//   by the selection on the secondary model (e.g. Equipment). It's used on Grids, Trees, Forms, etc.
@@ -390,7 +391,7 @@ function GridComponent(props) {
 
 			let rowComponent =
 				<Pressable
-					{...testProps((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id)}
+					{...testProps(getRowTestId ? getRowTestId(row) : ((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id))}
 					onPress={(e) => {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
@@ -1273,7 +1274,8 @@ function GridComponent(props) {
 			</VStackNative>
 
 	if (isDropTarget) {
-		grid = <Box
+		grid = <VStackNative
+					{...testProps(self, '-dropTarget')}
 					ref={dropTargetRef}
 					className={`
 						Grid-dropTarget
@@ -1282,7 +1284,7 @@ function GridComponent(props) {
 						border-[#0ff]
 						${canDrop && isOver ? "border-[4px]" : "border-[0px]"}
 					`}
-				>{grid}</Box>
+				>{grid}</VStackNative>
 	}
 	return grid;
 }
