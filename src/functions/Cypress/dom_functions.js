@@ -37,6 +37,12 @@ export function getTestIdSelectors(selectors, isGetFirst = false) {
 		if (selector.match(/=/)) { // selector is something like [role="switch"], so don't use data-testid
 			return selector;
 		}
+		if (selector.match(/^\./)) { // selector is something like .my-class, so don't use data-testid
+			return selector;
+		}
+		if (selector.match(/^#/)) { // selector is something like #my-id, so don't use data-testid
+			return selector;
+		}
 		return '[data-testid="' + selector + '"]' + (isGetFirst ? ':first' : '');
 	});
 	return selectorParts.join(' ');
