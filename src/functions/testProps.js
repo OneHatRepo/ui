@@ -4,7 +4,7 @@ import UiGlobals from '../UiGlobals.js';
 // This adds a data-testid attribute to the DOM node,
 // which can be quried in Cypress by: document.querySelector(`[data-testid='MyTestId']`);
 
-export default function testProps(id) {
+export default function testProps(id, suffix) {
 	if (!UiGlobals.debugMode) {
 		return {};
 	}
@@ -18,6 +18,9 @@ export default function testProps(id) {
 	}
 	if (id.match(/\s/g)) {
 		id = id.replace(/\s/g, '_'); // convert any spaces to underscores
+	}
+	if (suffix) {
+		id += suffix; // this is used in conjunction with 'self' object
 	}
 	if (!window && Platform.OS === 'android') {
 		return {
