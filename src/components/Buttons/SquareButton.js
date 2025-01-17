@@ -7,14 +7,13 @@ export default function SquareButton(props) {
 	const {
 			text,
 			isActive = false,
-			activeColor,
+			activeClassName,
 			invertColorWhenActive = false,
 			showText = true,
 			disableInteractions = false,
 			fontSize = '20px',
 			...propsToPass
 		} = props,
-		bg = isActive ? activeColor || '#56a6f8' : '#fff',
 		color = invertColorWhenActive && isActive ? '#fff' : '#000';
 
 	if (!props.icon) {
@@ -24,21 +23,26 @@ export default function SquareButton(props) {
 		throw Error('text missing. If you want to hide the text, use showText={false}');
 	}
 
+	let className = `
+		SquareButton
+		rounded-md
+		p-2
+		h-[100px]
+		w-[100px]
+		flex
+		flex-col
+		justify-center
+		items-center
+		bg-trueGray-300
+		hover:bg-trueGray-400
+		disabled:bg-trueGray-200
+	`;
+	if (isActive && activeClassName) {
+		className += ' ' + activeClassName;
+	}
+
 	return <IconButton
-				className={`
-					SquareButton
-					rounded-md
-					p-2
-					bg-[${bg}]
-					hover:bg-[${bg}]
-					disabled:bg-[${bg}]
-					h-[100px]
-					w-[100px]
-					flex
-					flex-col
-					justify-center
-					items-center
-				`}
+				className={className}
 				style={{
 					// backgroundColor: bg,
 				}}
