@@ -33,9 +33,9 @@ export default function SquareButton(props) {
 		flex-col
 		justify-center
 		items-center
-		bg-trueGray-300
-		hover:bg-trueGray-400
-		disabled:bg-trueGray-200
+		bg-grey-300
+		hover:bg-grey-400
+		disabled:bg-grey-200
 	`;
 	if (isActive && activeClassName) {
 		className += ' ' + activeClassName;
