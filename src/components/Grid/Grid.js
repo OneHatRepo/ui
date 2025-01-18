@@ -417,7 +417,7 @@ function GridComponent(props) {
 											if (canUser && !canUser(VIEW)) { // permissions
 												return;
 											}
-											onView(true);
+											onView(!props.isEditorViewOnly);
 										}
 									} else {
 										if (onEdit) {
