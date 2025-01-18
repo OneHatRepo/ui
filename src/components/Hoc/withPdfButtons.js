@@ -83,7 +83,13 @@ export default function withPdfButtons(WrappedComponent) {
 
 				if (!_.isEmpty(ancillaryItems)) {
 					const
-						ancillaryItemsClone = _.cloneDeep(ancillaryItems),
+						ancillaryItemsClone = _.cloneDeepWith(ancillaryItems, (value) => {
+							// Exclude the 'parent' property from being cloned, as it would introduce an infinitely recursive loop
+							if (value && value.parent) {
+								const { parent, ...rest } = value;
+								return rest;
+							}
+						}),
 						items = [];
 					_.each(ancillaryItemsClone, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
 						let name;
