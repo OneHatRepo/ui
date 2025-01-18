@@ -163,13 +163,14 @@ export default function withModal(WrappedComponent) {
 					<Panel
 						title={title}
 						isCollapsible={false}
-						className="bg-white overflow-auto"
+						className="withModal-Panel bg-white"
 						h={h > windowHeight ? windowHeight : h}
 						w={w > windowWidth ? windowWidth : w}
 						isWindow={true}
 						disableAutoFlex={true}
 						onClose={canClose ? hideModal : null}
 						footer={footer}
+						isScrollable={true}
 					>{modalBody}</Panel>
 			}
 		}
