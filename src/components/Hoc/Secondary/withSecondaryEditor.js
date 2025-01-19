@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, } from 'react';
+import { forwardRef, useEffect, useState, useRef, } from 'react';
 import {
 	ADD,
 	EDIT,
@@ -11,6 +11,7 @@ import {
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 	EDITOR_TYPE__SIDE,
+	EDITOR_TYPE__INLINE,
 } from '../../../Constants/Editor.js';
 import Button from '../../Buttons/Button.js';
 import UiGlobals from '../../../UiGlobals.js';
@@ -20,10 +21,10 @@ import _ from 'lodash';
 // This HOC will eventually get out of sync with that one, and may need to be updated.
 
 export default function withSecondaryEditor(WrappedComponent, isTree = false) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.secondaryDisableWithEditor) {
-			return <WrappedComponent {...props} isTree={isTree} />;
+			return <WrappedComponent {...props} ref={ref} isTree={isTree} />;
 		}
 
 		let [secondaryEditorMode, secondarySetEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
@@ -52,6 +53,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryNewEntityDisplayValue,
 				secondaryNewEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				secondaryDefaultValues,
+				secondaryStayInEditModeOnSelectionChange = false,
 
 				// withComponent
 				self,
@@ -132,7 +134,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					// NOTE: This is a hack to prevent adding a new record while the repository is still loading.
 					// This can happen when the repository is still loading, and the user clicks the 'Add' button.
 					setTimeout(() => {
-						doAdd(e, values);
+						secondaryDoAdd(e, values);
 					}, 500);
 					return;
 				}
@@ -169,7 +171,9 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					if (!secondarySelection[0]) {
 						throw Error('Must select a parent node.');
 					}
-					addValues.parentId = secondarySelection[0].id;
+					const parent = secondarySelection[0];
+					addValues.parentId = parent.id;
+					addValues.depth = parent.depth +1;
 				} else {
 					// Set repository to sort by id DESC and switch to page 1, so this new entity is guaranteed to show up on the current page, even after saving
 					const currentSorter = SecondaryRepository.sorters[0];
@@ -200,10 +204,13 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				setIsSaving(false);
 				setSecondaryIsIgnoreNextSelectionChange(true);
 				secondarySetSelection([entity]);
+				if (getListeners().onAfterAdd) {
+					await getListeners().onAfterAdd(entity);
+				}
 				if (SecondaryRepository.isAutoSave) {
 					// for isAutoSave Repositories, submit the handers right away
-					if (getListeners().onAfterAdd) {
-						await getListeners().onAfterAdd(entity);
+					if (getListeners().onAfterAddSave) {
+						await getListeners().onAfterAddSave(entity);
 					}
 					if (secondaryOnAdd) {
 						await secondaryOnAdd(entity);
@@ -331,6 +338,13 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(VIEW, secondaryModel);
 					return;
 				}
+				if (secondaryEditorType === EDITOR_TYPE__INLINE) {
+					alert('Cannot view in inline editor.');
+					return; // inline editor doesn't have a view mode
+				}
+
+				// check permissions for view
+				
 				if (secondarySelection.length !== 1) {
 					return;
 				}
@@ -350,6 +364,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(DUPLICATE, secondaryModel);
 					return;
 				}
+
+				// check permissions for duplicate
+
+
 				if (secondarySelection.length !== 1) {
 					return;
 				}
@@ -436,8 +454,8 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 						if (secondaryOnAdd) {
 							await secondaryOnAdd(secondarySelection);
 						}
-						if (getListeners().onAfterAdd) {
-							await getListeners().onAfterAdd(secondarySelection);
+						if (getListeners().onAfterAddSave) {
+							await getListeners().onAfterAddSave(secondarySelection);
 						}
 						setIsAdding(false);
 						if (!canUser || canUser(EDIT, secondaryModel)) {
@@ -500,6 +518,16 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				});
 			},
 			calculateEditorMode = (secondaryIsIgnoreNextSelectionChange = false) => {
+			
+				let doStayInEditModeOnSelectionChange = secondaryStayInEditModeOnSelectionChange;
+				if (!_.isNil(UiGlobals.stayInEditModeOnSelectionChange)) {
+					// allow global override to for this property
+					doStayInEditModeOnSelectionChange = UiGlobals.stayInEditModeOnSelectionChange;
+				}
+				if (doStayInEditModeOnSelectionChange) {
+					secondaryIsIgnoreNextSelectionChange = true;
+				}
+			
 				// calculateEditorMode gets called only on selection changes
 				let mode;
 				if (secondaryEditorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
@@ -579,6 +607,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					secondaryDisableWithEditor={false}
 					secondaryCurrentRecord={secondaryCurrentRecord}
 					secondarySetCurrentRecord={secondarySetCurrentRecord}
@@ -612,5 +641,5 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondarySetSelection={secondarySetSelectionDecorated}
 					isTree={isTree}
 				/>;
-	};
+	});
 }
