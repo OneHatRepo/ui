@@ -1,5 +1,6 @@
 import {
 	HStack,
+	Icon,
 	Text,
 	VStackNative,
 } from '@project-components/Gluestack';
@@ -98,7 +99,16 @@ function ManagerScreen(props) {
 				className="max-h-screen overflow-hidden flex-1 w-full"
 			>
 				<HStack className="h-[80px] items-center border-b-[2px] border-b-[#ccc]">
-					<Text {...textProps} className="pl-5 text-[26px] font-[700]">{title}</Text>
+					{props.icon ? 
+						<Icon
+							as={props.icon}
+							className={`
+								ml-5
+							`}
+							size="xl"
+							color="#000"
+						/> : null}
+					<Text {...textProps} className="pl-4 text-[26px] font-[700]">{title}</Text>
 					{allowSideBySide &&
 						<>
 							<IconButton
