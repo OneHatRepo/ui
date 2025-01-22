@@ -109,7 +109,9 @@ export default function TreeNode(props) {
 									text-ellipsis
 									${styles.TREE_NODE_CLASSNAME}
 								`}
-								style={{ userSelect: 'none', }}
+								style={{
+									// userSelect: 'none',
+								}}
 							>{text}</TextNative> : null}
 
 					{content}
