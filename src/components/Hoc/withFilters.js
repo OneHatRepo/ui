@@ -617,7 +617,7 @@ export default function withFilters(WrappedComponent) {
 			hasFilters = !!renderedFilters.length,
 			toolbar = <Toolbar>
 						<HStack className="withFilters-scrollViewContainer flex-1 items-center">
-							<ScrollView className="ScrollView" horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+							<ScrollView className="withFilters-ScrollView" horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
 								<Text
 									className={`
 										withFilters-filtersLabel

@@ -143,8 +143,13 @@ function Panel(props) {
 							overflow-hidden
 						`}
 					>
-						{isScrollable ? 
-							<ScrollView className="Panel-ScrollView">
+						{isScrollable ?
+							<ScrollView
+								className="Panel-ScrollView"
+								contentContainerStyle={{
+									height: '100%',
+								}}
+							>
 								{children}
 							</ScrollView> : 
 							children}

@@ -126,7 +126,10 @@ export default function Accordion(props) {
 	return <ScrollView
 				ref={scrollViewRef}
 				keyboardShouldPersistTaps="always"
-				className="flex-1 w-full"
+				className="Accordion-ScrollView flex-1 w-full"
+				contentContainerStyle={{
+					height: '100%',
+				}}
 			>
 				<VStackNative
 					{...propsToPass}

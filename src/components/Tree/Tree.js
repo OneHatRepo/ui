@@ -1396,7 +1396,13 @@ function TreeComponent(props) {
 					}}
 					className="Tree-deselector w-full flex-1 p-1 bg-white"
 				>
-					<ScrollView {...testProps('ScrollView')} className="ScrollView flex-1 w-full">
+					<ScrollView
+						{...testProps('ScrollView')}
+						className="Tree-ScrollView flex-1 w-full"
+						contentContainerStyle={{
+							height: '100%',
+						}}
+					>
 						{!treeNodes?.length ? 
 						<CenterBox>
 							{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />}

@@ -1350,12 +1350,15 @@ function Form(props) {
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView
 							className={`
-								ScrollView
+								Form-ScrollView
 								w-full
 								flex-1
 								pb-1
 								web:min-h-[${minHeight}px]
 							`}
+							contentContainerStyle={{
+								height: '100%',
+							}}
 						>
 							{modeHeader}
 							{formHeader}
