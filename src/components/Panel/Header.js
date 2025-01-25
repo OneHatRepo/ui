@@ -15,6 +15,7 @@ import {
 	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
+import testProps from '../../Functions/testProps.js';
 import Minus from '../Icons/Minus.js';
 import Plus from '../Icons/Plus.js';
 import Xmark from '../Icons/Xmark.js';
@@ -55,6 +56,7 @@ export default function Header(props) {
 			closeClassName += ' mb-1';
 		}
 		closeBtn = <IconButton
+						{...testProps('closeBtn')}
 						onPress={onClose}
 						icon={Xmark}
 						_icon={{
