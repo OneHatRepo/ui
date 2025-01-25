@@ -29,7 +29,7 @@ const InputElement = forwardRef((props, ref) => {
 			rightIcon,
 			rightIconHandler,
 			placeholder,
-			textAlignIsCenter = true,
+			textAlignIsCenter = false,
 			className,
 			...propsToPass
 		} = props,

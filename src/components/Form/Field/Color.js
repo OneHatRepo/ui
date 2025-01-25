@@ -182,6 +182,7 @@ export function ColorElement(props) {
 					border-bottom-right-radius-6
 					${styles.FORM_COLOR_INPUT_CLASSNAME}
 				`}
+				textAlignIsCenter={true}
 				onLayout={(e) => {
 					// On web, this is not needed, but on RN it might be, so leave it in for now
 					const {

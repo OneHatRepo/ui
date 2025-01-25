@@ -378,6 +378,7 @@ export const DateElement = forwardRef((props, ref) => {
 				`}
 				autoSubmitDelay={1000}
 				placeholder={placeholder}
+				textAlignIsCenter={true}
 				{..._input}
 			/>;
 	}

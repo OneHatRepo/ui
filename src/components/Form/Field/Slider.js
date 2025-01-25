@@ -182,6 +182,7 @@ const
 						isDisabled={isDisabled}
 						disableAutoFlex={true}
 						className={inputClassName}
+						textAlignIsCenter={true}
 						{...props._input}
 					/>
 					<HStack className="flex-1">

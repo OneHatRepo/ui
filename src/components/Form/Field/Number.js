@@ -171,6 +171,7 @@ function NumberElement(props) {
 						text-center
 						rounded-none
 					`}
+					textAlignIsCenter={true}
 					style={{
 						flex: 3
 					}}

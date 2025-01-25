@@ -126,6 +126,7 @@ export default function Pagination(props) {
 							text-center
 							bg-grey-100
 						`}
+						textAlignIsCenter={true}
 						tooltip="Set Page"
 					/>);
 					items.push(<Text
