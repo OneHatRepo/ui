@@ -1,4 +1,6 @@
-import { Box } from "../Gluestack";
+import {
+	Box
+} from '@project-components/Gluestack';
 
 export default function CenterBox(props) {
 	let className = `
