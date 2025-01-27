@@ -120,7 +120,7 @@ function Panel(props) {
 	}
 
 	// frame
-	className += ' border-primary-600' + (isWindow ? ' rounded-lg shadow-lg ' : '') + (frame ? ' border-2' : ' border-none');
+	className += ' border-grey-300' + (isWindow ? ' rounded-lg shadow-lg ' : '') + (frame ? ' border-2' : ' border-none');
 
 	if (props.className) {
 		className += ' ' + props.className;
