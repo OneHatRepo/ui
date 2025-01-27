@@ -1,5 +1,5 @@
 import {
-	Text,
+	TextNative,
 	Tooltip, TooltipContent, TooltipText,
 } from '@project-components/Gluestack';
 
@@ -12,7 +12,7 @@ export default function TextWithTooltip(props) {
 	return <Tooltip
 				placement="bottom"
 				trigger={(triggerProps) => {
-					return <Text {...triggerProps} {...propsToPass}>{children}</Text>
+					return <TextNative {...triggerProps} {...propsToPass}>{children}</TextNative>
 				}}
 			>
 				<TooltipContent>
