@@ -577,6 +577,7 @@ export function ComboComponent(props) {
 		input = disableDirectEntry ?
 					<Pressable
 						{...testProps('toggleMenuBtn')}
+						ref={inputRef}
 						onPress={toggleMenu}
 						className={`
 							Combo-toggleMenuBtn
@@ -587,7 +588,8 @@ export function ComboComponent(props) {
 							justify-center
 							items-center
 							m-0
-							p-1
+							p-2
+							bg-white
 							border
 							border-grey-400
 							rounded-r-none
@@ -596,13 +598,10 @@ export function ComboComponent(props) {
 					>
 						{inputIconElement}
 						<TextNative
-							ref={inputRef}
 							numberOfLines={1}
 							ellipsizeMode="head"
 							className={`
 								Combo-TextNative
-								h-auto
-								self-stretch
 								flex-1
 								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
 								${styles.FORM_COMBO_INPUT_CLASSNAME}
@@ -878,6 +877,7 @@ export function ComboComponent(props) {
 										dropdownMenu-Box
 										flex-1
 										overflow-auto
+										bg-white
 										p-0
 										rounded-none
 										border
