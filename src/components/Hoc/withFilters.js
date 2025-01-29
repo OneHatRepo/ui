@@ -6,6 +6,7 @@ import {
 } from '@project-components/Gluestack';
 import {
 	ScrollView,
+	Platform,
 } from 'react-native'
 import {
 	EDITOR_TYPE__PLAIN,
@@ -34,6 +35,8 @@ import _ from 'lodash';
 // - Save user choice in cookie for next time this component loads
 // 
 // Model defaultFilters should adjust to this new arrangement
+
+const isWindows = Platform.OS === 'windows';
 
 export default function withFilters(WrappedComponent) {
 	return forwardRef((props, ref) => {
@@ -140,9 +143,11 @@ export default function withFilters(WrappedComponent) {
 
 		const
 			filterCallbackRef = useRef(),
+			scrollViewRef = useRef(),
 			[filters, setFiltersRaw] = useState(formattedStartingFilters), // array of formatted filters
 			[slots, setSlots] = useState(startingSlots), // array of field names user is currently filtering on; blank slots have a null entry in array
 			[previousFilterNames, setPreviousFilterNames] = useState([]), // names of filters the repository used last query
+			[isHorizontalScrollbarShown, setIsHorizontalScrollbarShown] = useState(false),
 			setFilters = (filters, doSetSlots = true, save = true) => {
 				setFiltersRaw(filters);
 
@@ -348,6 +353,16 @@ export default function withFilters(WrappedComponent) {
 					canClose: true,
 					w: 500,
 				});
+			},
+			onContentSizeChange = (contentWidth, contentHeight) => {
+				if (!isWindows) {
+					return;
+				}
+				if (scrollViewRef.current) {
+					scrollViewRef.current.measure((x, y, width, height, pageX, pageY) => {
+						setIsHorizontalScrollbarShown(contentWidth > width);
+					});
+				}
 			},
 			buildModalBody = (modalFilters, modalSlots) => {
 
@@ -603,6 +618,25 @@ export default function withFilters(WrappedComponent) {
 			})();
 		}, [filters]);
 
+		useEffect(() => {
+			if (!isWindows) {
+				return;
+			}
+
+			// NOTE: On Windows machines, I was getting horizontal scrollbars when the ScrollView 
+			// was not wide enough to contain all the filters. This workaround adds pb-5 to the ScrollView
+			// when the scrollbar is shown.
+
+			if (scrollViewRef.current) {
+				scrollViewRef.current.addEventListener('contentSizeChange', onContentSizeChange);
+			}
+			return () => {
+				if (scrollViewRef.current) {
+					scrollViewRef.current.removeEventListener('contentSizeChange', onContentSizeChange);
+				}
+			};
+		}, []);
+		
 		if (!isReady) {
 			return null;
 		}
@@ -615,9 +649,16 @@ export default function withFilters(WrappedComponent) {
 		const
 			renderedFilters = renderFilters(),
 			hasFilters = !!renderedFilters.length,
+			scrollViewClass = isWindows && isHorizontalScrollbarShown ? 'pb-5' : '',
 			toolbar = <Toolbar>
 						<HStack className="withFilters-scrollViewContainer flex-1 items-center">
-							<ScrollView className="withFilters-ScrollView" horizontal={true} contentContainerStyle={{ alignItems: 'center' }}>
+							<ScrollView
+								ref={scrollViewRef}
+								className={`withFilters-ScrollView ${scrollViewClass}`}
+								horizontal={true}
+								contentContainerStyle={{ alignItems: 'center' }}
+								onContentSizeChange={onContentSizeChange}
+							>
 								<Text
 									className={`
 										withFilters-filtersLabel
