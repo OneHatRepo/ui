@@ -1357,7 +1357,7 @@ function Form(props) {
 								web:min-h-[${minHeight}px]
 							`}
 							contentContainerStyle={{
-								height: '100%',
+								// height: '100%',
 							}}
 						>
 							{modeHeader}
