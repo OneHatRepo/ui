@@ -65,6 +65,7 @@ export function ComboComponent(props) {
 			onGridAdd, // to hook into when menu adds (ComboEditor only)
 			onGridSave, // to hook into when menu saves (ComboEditor only)
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
+			onSubmit, // when Combo is used in a Tag, call this when the user submits the Combo value (i.e. presses Enter or clicks a row)
 			newEntityDisplayProperty,
 			testID,
 
@@ -251,6 +252,9 @@ export function ComboComponent(props) {
 					}
 					if (id !== value) {
 						setValue(id);
+					}
+					if (onSubmit) {
+						onSubmit(id);
 					}
 					hideMenu();
 					break;
@@ -814,6 +818,9 @@ export function ComboComponent(props) {
 						if (id === value && !isEditor) {
 							hideMenu();
 							onInputFocus();
+						}
+						if (onSubmit) {
+							onSubmit(id);
 						}
 					}}
 					reference="grid"

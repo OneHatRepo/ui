@@ -50,13 +50,6 @@ function TagComponent(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		valueRef = useRef(value),
-		ignoreNextComboValueChangeRef = useRef(false),
-		getIgnoreNextComboValueChange = () => {
-			return ignoreNextComboValueChangeRef.current;
-		},
-		setIgnoreNextComboValueChange = (bool) => {
-			ignoreNextComboValueChangeRef.current = bool;
-		},
 		onView = async (item, e) => {
 			const
 				id = item.id,
@@ -91,14 +84,9 @@ function TagComponent(props) {
 			});
 		},
 		clearComboValue = () => {
-			setIgnoreNextComboValueChange(true); // we're clearing out the value of the underlying Combo, so ignore it when this combo submits the new value change
 			self.children.combo.setValue(null);
 		},
 		onChangeComboValue = (comboValue) => {
-			if (getIgnoreNextComboValueChange()) {
-				setIgnoreNextComboValueChange(false);
-				return;
-			}
 
 			if (_.isNil(comboValue)) {
 				// NOTE: We *shouldn't* get here, but for some unknown reason, we *were* getting here on rare occasions.
@@ -309,21 +297,22 @@ function TagComponent(props) {
 			>
 				<HStack className={valueBoxesClassName}>{valueBoxes}</HStack>
 				
-				{!isViewOnly && <WhichCombo
-									Repository={props.Repository}
-									Editor={props.Editor}
-									onChangeValue={onChangeComboValue}
-									parent={self}
-									reference="combo"
-									isInTag={true}
-									onGridAdd={onGridAdd}
-									onGridSave={onGridSave}
-									onGridDelete={onGridDelete}
-									tooltip={tooltip}
-									usePermissions={props.usePermissions}
-									{..._combo}
-									className={comboClassName}
-								/>}
+				{!isViewOnly && 
+					<WhichCombo
+						Repository={props.Repository}
+						Editor={props.Editor}
+						onSubmit={onChangeComboValue}
+						parent={self}
+						reference="combo"
+						isInTag={true}
+						onGridAdd={onGridAdd}
+						onGridSave={onGridSave}
+						onGridDelete={onGridDelete}
+						tooltip={tooltip}
+						usePermissions={props.usePermissions}
+						{..._combo}
+						className={comboClassName}
+					/>}
 			</VStackNative>;
 	
 }

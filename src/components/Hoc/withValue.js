@@ -20,8 +20,7 @@ export default function withValue(WrappedComponent) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
-		const
-			{
+		const {
 				onChangeValue,
 				value,
 				startingValue = null,
