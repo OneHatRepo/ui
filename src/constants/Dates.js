@@ -14,3 +14,4 @@ export const ONE_YEAR_AGO = moment().add(-1, 'years');
 export const MOMENT_DATE_FORMAT_1 = 'YYYY-MM-DD HH:mm:ss';
 export const MOMENT_DATE_FORMAT_2 = 'MMMM Do YYYY, h:mm:ss a';
 export const MOMENT_DATE_FORMAT_3 = 'h:mm A';
+export const MOMENT_DATE_FORMAT_4 = 'YYYY-MM-DD';
