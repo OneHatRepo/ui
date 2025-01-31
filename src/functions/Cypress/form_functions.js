@@ -188,7 +188,9 @@ export function setTagValue(selectors, value) {
 				cy.get(field)
 					.wait(1000) // render
 					.type('{downarrow}')
-					.wait(500); // allow time for selection
+					.wait(500) // allow time for selection
+					.type('{enter}')
+					.wait(250); // allow time to register enter key
 			});
 
 			// press trigger to hide dropdown
