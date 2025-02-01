@@ -782,7 +782,7 @@ function Form(props) {
 							if (message) {
 								message = <Text className="text-[#f00]">{message}</Text>;
 							}
-							element = <VStack className="Form-VStack4 flex-1 pt-1">
+							element = <VStack className="Form-VStack4 flex-1">
 											{element}
 											{message}
 										</VStack>;
@@ -790,7 +790,7 @@ function Form(props) {
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="Form-HStack5 flex-1 flex-wrap">
+									element = <HStack className="Form-HStack5 flex-1 flex-wrap items-center">
 													{element}
 													{buttons}
 												</HStack>;
@@ -883,7 +883,6 @@ function Form(props) {
 											min-h-[50px]
 											w-full
 											flex-none
-											pb-2
 											${error ? 'bg-[#fdd]' : ''}
 										`}
 									>

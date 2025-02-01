@@ -81,6 +81,8 @@ export default function FieldSet(props) {
 		mb-4
 		mx-0
 		p-1
+		pb-2
+		gap-2
 		border
 		border-grey-400
 		${styles.FORM_FIELDSET_BG}
