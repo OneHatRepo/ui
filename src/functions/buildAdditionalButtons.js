@@ -1,6 +1,3 @@
-import {
-	Icon,
-} from '@project-components/Gluestack';
 import Button from '../Components/Buttons/Button.js';
 import testProps from './testProps.js';
 import _ from 'lodash';
@@ -14,32 +11,28 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 				handler,
 				icon,
 				isDisabled,
+				tooltip,
 				color = '#fff',
 			} = config,
 			buttonProps = {
 				key,
+				parent: self,
 				reference: key,
+				text,
+				icon,
+				isDisabled,
 				className: 'ml-2',
+				tooltip,
+				color,
 			};
 		if (handler) {
 			buttonProps.onPress = () => handler(handlerArgs);
 		}
-		if (icon) {
-			buttonProps.leftIcon = <Icon as={icon} size="sm" className="text-[#fff]" />;
-		}
-		if (isDisabled) {
-			buttonProps.isDisabled = isDisabled;
-		}
 		
-		const button = <Button
-							{...testProps('btn-' + key)}
-							color={color}
-							parent={self}
-							reference={key}
-							text={text}
-							{...buttonProps}
-						/>;
-		additionalButtons.push(button);
+		additionalButtons.push(<Button
+			{...testProps(key)}
+			{...buttonProps}
+		/>);
 	});
 	return additionalButtons;
 }
