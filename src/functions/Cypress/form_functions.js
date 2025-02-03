@@ -167,7 +167,7 @@ export function setTagValue(selectors, value) {
 				return;
 			}
 			cy.get(selector).eq(0)
-				.click()
+				.click({ force: true })
 				.then(() => {
 					clickButtonsWithRemove(selector); // Recursive call for the next element
 				});
