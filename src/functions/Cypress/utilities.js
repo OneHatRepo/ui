@@ -12,7 +12,8 @@ export function bootstrapRouteWaiters() {
 	cy.intercept('POST', '**/add**').as('addWaiter');
 	cy.intercept('POST', '**/edit**').as('editWaiter');
 	cy.intercept('POST', '**/delete**').as('deleteWaiter');
-	cy.intercept('POST', '**/getReport**').as('getReportWaiter');
+	cy.intercept('GET', '**/getReport**').as('getReportWaiter');
+	cy.intercept('POST', '**/getReport**').as('postReportWaiter');
 }
 export function fixInflector(str) {
 	// inflector-js doesn't handle pluralization of 'equipment' correctly

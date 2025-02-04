@@ -828,14 +828,14 @@ export function runReportsManagerTests(reportData) {
 
 				// Press Excel button
 				clickButton(selector, 'excelBtn');
-				cy.wait('@getWaiter', { timeout: 10000 }).then((interception) => {
+				cy.wait('@getReportWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 				});
 
 
 				// Press PDF button
 				clickButton(selector, 'pdfBtn');
-				cy.wait('@getReportWaiter', { timeout: 10000 }).then((interception) => {
+				cy.wait('@postReportWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('pdf');
 				});
 
