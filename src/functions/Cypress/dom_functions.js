@@ -80,3 +80,14 @@ export function drag(draggableSelectors, droppableSelectors, options = {}) {
 				debugger;
 			});
 }
+
+export function ifExists(parentSelectors, name, cb) {
+	if (_.isString(parentSelectors)) {
+		parentSelectors = [parentSelectors];
+	}
+	return getDomNode([...parentSelectors, name]).if().then((node) => { // NOTE if() is a cypress-if function
+		if (node) {
+			cb(node);
+		}
+	});
+}

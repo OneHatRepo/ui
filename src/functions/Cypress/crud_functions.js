@@ -2,6 +2,7 @@ import {
 	fixInflector,
 	getLastPartOfPath,
 	bootstrapRouteWaiters,
+	stubWindowOpen,
 } from './utilities.js';
 import {
 	login,
@@ -11,6 +12,7 @@ import {
 import {
 	getDomNode,
 	getDomNodes,
+	ifExists,
 } from './dom_functions.js';
 import {
 	hasRowWithFieldValue,
@@ -114,6 +116,39 @@ export function crudJson(selector, newData, editData, schema, ancillaryData, lev
 	cy.log('crudJson');
 
 	// do nothing for now
+}
+
+// Editor
+export function viewPdf(editorSelector, formSelector) {
+	ifExists(formSelector, 'viewPdfBtn', (btn) => {
+		clickButton(formSelector, 'viewPdfBtn');
+
+		cy.wait(1000); // allow time for modal to render
+		const modalSelector = editorSelector + '/chooseFieldsForm';
+		clickButton(modalSelector, 'submitBtn');
+		cy.wait(1000); // allow time for pdf to download
+		cy.get('@windowOpen').should('be.calledWithMatch', /viewModelPdf/);
+	});
+}
+export function emailPdf(editorSelector, formSelector) {
+	ifExists(formSelector, 'emailPdfBtn', (btn) => {
+		clickButton(formSelector, 'emailPdfBtn');
+	
+		cy.wait(1000); // allow time for modal to render
+		const modalSelector = editorSelector + '/chooseFieldsForm';
+		clickButton(modalSelector, 'submitBtn');
+		cy.wait(1000); // allow time for new modal to render
+	
+		// UI now shows the email modal
+		fillForm(modalSelector, { email: 'scott@onehat.com', message: 'Sample message', }, { email: 'Input', message: 'TextArea', });
+		clickButton(modalSelector, 'submitBtn');
+		cy.wait('@emailModelPdf');
+
+		getDomNode('InfoModal')
+			.should('exist')
+			.should('contain', 'Email sent successfully.');
+		clickButton('InfoModal', 'okBtn');
+	});
 }
 
 
@@ -313,7 +348,11 @@ export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0,
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
-	
+
+	if (whichEditor !== INLINE) {
+		viewPdf(editorSelector, formSelector);
+		emailPdf(editorSelector, formSelector);
+	}
 }
 export function editWindowedGridRecord(gridSelector, fieldValues, schema, id, level = 0) {
 	// edits the record as normal, then closes the editor window
@@ -542,6 +581,11 @@ export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0,
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
+
+	if (whichEditor !== INLINE) {
+		viewPdf(editorSelector, formSelector);
+		emailPdf(editorSelector, formSelector);
+	}
 	
 }
 export function editWindowedTreeRecord(treeSelector, fieldValues, schema, id, level = 0) {
@@ -591,6 +635,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 		
 		afterEach(function () {
@@ -688,6 +733,7 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 		
 		// afterEach(function () {
@@ -753,6 +799,7 @@ export function runManagerScreenCrudTests(args) {
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 		
 		// afterEach(function () {
@@ -806,11 +853,13 @@ export function runReportsManagerTests(reportData) {
 		beforeEach(function () {
 			bootstrapRouteWaiters();
 			login();
+			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 
 		_.each(reportData, (report) => {

@@ -14,6 +14,12 @@ export function bootstrapRouteWaiters() {
 	cy.intercept('POST', '**/delete**').as('deleteWaiter');
 	cy.intercept('GET', '**/getReport**').as('getReportWaiter');
 	cy.intercept('POST', '**/getReport**').as('postReportWaiter');
+	cy.intercept('POST', '**/emailModelPdf**').as('emailModelPdf');
+}
+export function stubWindowOpen() { // This needs to be called after the page in question has loaded. See https://docs.cypress.io/api/commands/stub#Replace-built-in-window-methods-like-prompt
+	cy.window().then((win) => {
+		cy.stub(win, 'open').as('windowOpen');
+	});
 }
 export function fixInflector(str) {
 	// inflector-js doesn't handle pluralization of 'equipment' correctly

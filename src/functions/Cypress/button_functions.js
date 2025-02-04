@@ -113,7 +113,7 @@ export function clickButtonIfExists(parentSelectors, name) {
 	}
 	return getDomNode([...parentSelectors, name]).if().then((node) => { // NOTE if() is a cypress-if function
 		if (node) {
-			node.click();
+			cy.get(node).click();
 		}
 	});
 }

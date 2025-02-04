@@ -11,6 +11,7 @@ import Form from '../Form/Form.js';
 import Pdf from '../Icons/Pdf.js';
 import UiGlobals from '../../UiGlobals.js';
 import inArray from '../../Functions/inArray.js';
+import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
 export default function withPdfButtons(WrappedComponent) {
@@ -206,6 +207,8 @@ export default function withPdfButtons(WrappedComponent) {
 					h: 800,
 					w: styles.FORM_STACK_ROW_THRESHOLD + 10,
 					body: <Form
+								parent={self}
+								reference="chooseFieldsForm"
 								editorType={EDITOR_TYPE__PLAIN}
 								alert={alert}
 								columnDefaults={{
@@ -244,6 +247,8 @@ export default function withPdfButtons(WrappedComponent) {
 					w: 510, // 510 so it's over the stack threshold
 					h: 500,
 					body: <Form
+								parent={self}
+								reference="chooseEmailAddressForm"
 								submitBtnLabel='Email PDF'
 								onSubmit={(values)=> {
 									hideModal();
