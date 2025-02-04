@@ -8,7 +8,14 @@
  * @return Cypress chainer
  */
 export function getDomNode(selectors, options = {}) {
-	return cy.get(getTestIdSelectors(selectors, true), options);
+	let useFirst;
+	if (options?.hasOwnProperty('first')) {
+		useFirst = options.first;
+		delete options.first;
+	} else {
+		useFirst = true;
+	}
+	return cy.get(getTestIdSelectors(selectors, useFirst), options);
 }
 
 /**
@@ -20,6 +27,21 @@ export function getDomNode(selectors, options = {}) {
  */
 export function getDomNodes(selectors, options = {}) {
 	return cy.get(getTestIdSelectors(selectors), options);
+}
+
+/**
+ * Verifies that an element with the given selectors does not exist in the DOM.
+ * @argument {string | string[]} selectors - data-testid attribute values
+ * If an array is given, these will be considered nested selectors.
+ * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
+ */
+export function verifyElementDoesNotExist(selectors) {
+	cy.get('body').then(($body) => {
+		const selectorString = getTestIdSelectors(selectors);
+		if ($body.find(selectorString).length > 0) {
+			throw new Error(`Element with selectors ${selectorString} exists in the DOM`);
+		}
+	});
 }
 
 /**

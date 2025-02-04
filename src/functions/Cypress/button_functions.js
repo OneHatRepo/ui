@@ -61,7 +61,7 @@ export function clickXButton(parentSelectors) {
 }
 export function clickXButtonIfEnabled(parentSelectors) {
 	cy.log('clickXButtonIfEnabled');
-	return clickButtonIfEnabled(parentSelectors, 'xBtn', true);
+	return clickButtonIfEnabled(parentSelectors, 'xBtn');
 }
 export function clickTrigger(parentSelectors) {
 	cy.log('clickTrigger');
@@ -91,27 +91,27 @@ export function toSideMode(parentSelectors) {
 	cy.log('toSideMode');
 	return clickButtonIfEnabled(parentSelectors, 'sideModeBtn');
 }
-export function clickButton(parentSelectors, name) { // requires the button to be enabled
+export function clickButton(parentSelectors, name, options) { // requires the button to be enabled
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
 	cy.log('clickButton ' + name);
-	return getDomNode([...parentSelectors, name])
+	return getDomNode([...parentSelectors, name], options)
 				.should('not.have.attr', 'data-disabled', 'true') // Check that the element is not disabled
 				.click({ force: true });
 }
-export function clickButtonIfEnabled(parentSelectors, name) { // allows button to be disabled
+export function clickButtonIfEnabled(parentSelectors, name, options) { // allows button to be disabled
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
-	return getDomNode([...parentSelectors, name])
+	return getDomNode([...parentSelectors, name], options)
 				.click({ force: true });
 }
-export function clickButtonIfExists(parentSelectors, name) {
+export function clickButtonIfExists(parentSelectors, name, options) {
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
-	return getDomNode([...parentSelectors, name]).if().then((node) => { // NOTE if() is a cypress-if function
+	return getDomNode([...parentSelectors, name], options).if().then((node) => { // NOTE if() is a cypress-if function
 		if (node) {
 			cy.get(node).click();
 		}
