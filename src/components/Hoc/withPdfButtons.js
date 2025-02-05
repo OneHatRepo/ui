@@ -11,7 +11,6 @@ import Form from '../Form/Form.js';
 import Pdf from '../Icons/Pdf.js';
 import UiGlobals from '../../UiGlobals.js';
 import inArray from '../../Functions/inArray.js';
-import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
 export default function withPdfButtons(WrappedComponent) {

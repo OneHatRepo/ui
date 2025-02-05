@@ -504,16 +504,14 @@ function Form(props) {
 			}
 			if (!type) {
 				if (isEditable) {
-					const
-						{
+					const {
 							type: t,
 							...p
 						} = propertyDef?.editorType;
 					type = t;
 					editorTypeProps = p;
 				} else if (propertyDef?.viewerType) {
-					const
-						{
+					const {
 							type: t,
 							...p
 						} =  propertyDef?.viewerType;
