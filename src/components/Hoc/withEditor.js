@@ -13,6 +13,7 @@ import {
 	EDITOR_TYPE__SIDE,
 	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js'
 import Button from '../Buttons/Button.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
@@ -76,6 +77,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				confirm,
 				hideAlert,
 			} = props,
+			forceUpdate = useForceUpdate(),
 			listeners = useRef({}),
 			editorStateRef = useRef(),
 			newEntityDisplayValueRef = useRef(),
@@ -128,7 +130,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return editorModeRef.current;
 			},
 			setEditorMode = (mode) => {
-				editorModeRef.current = mode;
+				if (editorModeRef.current !== mode) {
+					editorModeRef.current = mode;
+					forceUpdate();
+				}
 			},
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
