@@ -15,7 +15,7 @@ function Editor(props) {
 			onEditorSave: onSave,
 			onEditorClose: onClose,
 			onEditorDelete: onDelete,
-			editorMode,
+			getEditorMode,
 			onEditMode,
 			canRecordBeEdited,
 			_viewer = {},
@@ -46,7 +46,7 @@ function Editor(props) {
 	}
 	
 	// Repository?.isRemotePhantomMode && selection.length === 1 && 
-	if (editorMode === EDITOR_MODE__VIEW || isEditorViewOnly || !canEdit) {
+	if (getEditorMode() === EDITOR_MODE__VIEW || isEditorViewOnly || !canEdit) {
 		const record = selection[0];
 		if (record.isDestroyed) {
 			return null;

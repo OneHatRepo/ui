@@ -48,14 +48,14 @@ export default function withSelection(WrappedComponent) {
 			usesWithValue = !!setValue,
 			initialSelection = selection || defaultSelection || [],
 			forceUpdate = useForceUpdate(),
-			localSelection = useRef(initialSelection),
+			selectionRef = useRef(initialSelection),
 			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
 			setSelection = (selection) => {
-				if (_.isEqual(selection, localSelection.current)) {
+				if (_.isEqual(selection, getSelection())) {
 					return;
 				}
 
-				localSelection.current = selection;
+				selectionRef.current = selection;
 				if (onChangeSelection) {
 					onChangeSelection(selection);
 				}
@@ -64,6 +64,9 @@ export default function withSelection(WrappedComponent) {
 				}
 				forceUpdate();
 			},
+			getSelection = () => {
+				return selectionRef.current;
+			}
 			selectPrev = () => {
 				selectDirection(SELECT_UP);
 			},
@@ -103,16 +106,16 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			addToSelection = (item) => {
-				const newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
+				const newSelection = _.clone(getSelection()); // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				setSelection(newSelection);
 			},
 			removeFromSelection = (item) => {
 				let newSelection = [];
 				if (Repository) {
-					newSelection = _.remove(localSelection.current, (sel) => sel !== item);
+					newSelection = _.remove(getSelection(), (sel) => sel !== item);
 				} else {
-					newSelection = _.remove(localSelection.current, (sel) => sel[idIx] !== item[idIx]);
+					newSelection = _.remove(getSelection(), (sel) => sel[idIx] !== item[idIx]);
 				}
 				setSelection(newSelection);
 			},
@@ -126,7 +129,7 @@ export default function withSelection(WrappedComponent) {
 				// That way, after a load event, we'll keep the same selection, if possible.
 				const
 					newSelection = [],
-					ids = _.map(localSelection.current, (item) => item.id);
+					ids = _.map(getSelection(), (item) => item.id);
 				_.each(ids, (id) => {
 					const found = Repository.getById(id);
 					if (found) {
@@ -160,9 +163,9 @@ export default function withSelection(WrappedComponent) {
 			selectRangeTo = (item) => {
 				// Select above max or below min to this one
 				const
-					currentSelectionLength = localSelection.current.length,
+					currentSelectionLength = getSelection().length,
 					index = getIndexOfSelectedItem(item);
-				let newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
+				let newSelection = _.clone(getSelection()); // so we get a new object, so descendants rerender
 
 				if (currentSelectionLength) {
 					const { items, max, min, } = getMaxMinSelectionIndices();
@@ -189,10 +192,10 @@ export default function withSelection(WrappedComponent) {
 			},
 			isInSelection = (item) => {
 				if (Repository) {
-					return inArray(item, localSelection.current);
+					return inArray(item, getSelection());
 				}
 
-				const found = _.find(localSelection.current, (selectedItem) => {
+				const found = _.find(getSelection(), (selectedItem) => {
 						return selectedItem[idIx] === item[idIx];
 					});
 				return !!found;
@@ -214,10 +217,10 @@ export default function withSelection(WrappedComponent) {
 				return found;
 			},
 			getIdsFromLocalSelection = () => {
-				if (!localSelection.current[0]) {
+				if (!getSelection()[0]) {
 					return null;
 				}
-				const values = _.map(localSelection.current, (item) => {
+				const values = _.map(getSelection(), (item) => {
 					if (Repository) {
 						return item.id;
 					}
@@ -301,7 +304,7 @@ export default function withSelection(WrappedComponent) {
 					}
 				}
 
-				if (!_.isEqual(newSelection, localSelection.current)) {
+				if (!_.isEqual(newSelection, getSelection())) {
 					setSelection(newSelection);
 				}
 			};
@@ -352,7 +355,7 @@ export default function withSelection(WrappedComponent) {
 		}, [value]);
 
 		if (self) {
-			self.selection = localSelection.current;
+			self.selection = getSelection();
 			self.setSelection = setSelection;
 			self.selectPrev = selectPrev;
 			self.selectNext = selectNext;
@@ -395,7 +398,8 @@ export default function withSelection(WrappedComponent) {
 					{...props}
 					ref={ref}
 					disableWithSelection={false}
-					selection={localSelection.current}
+					selection={getSelection()}
+					getSelection={getSelection}
 					setSelection={setSelection}
 					selectionMode={selectionMode}
 					selectPrev={selectPrev}

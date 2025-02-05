@@ -114,7 +114,7 @@ function Form(props) {
 			// withEditor
 			isEditorViewOnly = false,
 			isSaving = false,
-			editorMode,
+			getEditorMode,
 			onCancel,
 			onSave,
 			onClose,
@@ -1115,7 +1115,7 @@ function Form(props) {
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
 
 			if (inArray(editorType, [EDITOR_TYPE__SIDE, EDITOR_TYPE__SMART, EDITOR_TYPE__WINDOWED]) && 
-				isSingle && editorMode === EDITOR_MODE__EDIT && 
+				isSingle && getEditorMode() === EDITOR_MODE__EDIT && 
 				(onBack || (onViewMode && !disableView))) {
 				modeHeader = <Toolbar>
 								<HStack className="flex-1 items-center">
@@ -1151,7 +1151,7 @@ function Form(props) {
 									/>}
 							</Toolbar>;
 			}
-			if (editorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
+			if (getEditorMode() === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
 				formButtons.push(<Toolbar key="additionalButtonsToolbar" className="justify-end flex-wrap">
 									{additionalButtons}
 								</Toolbar>)
@@ -1168,7 +1168,7 @@ function Form(props) {
 		if (_.isEmpty(formState.dirtyFields) && !isPhantom) {
 			isSaveDisabled = true;
 		}
-		if (onDelete && editorMode === EDITOR_MODE__EDIT && isSingle) {
+		if (onDelete && getEditorMode() === EDITOR_MODE__EDIT && isSingle) {
 			showDeleteBtn = true;
 		}
 		if (!isEditorViewOnly && !hideResetButton) {
@@ -1206,7 +1206,7 @@ function Form(props) {
 		}
 		footerButtons =
 			<>
-				{onDelete && editorMode === EDITOR_MODE__EDIT && isSingle &&
+				{onDelete && getEditorMode() === EDITOR_MODE__EDIT && isSingle &&
 
 					<HStack className="flex-1 justify-start">
 						<Button
@@ -1258,7 +1258,7 @@ function Form(props) {
 						onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
 						isDisabled={isSaveDisabled}
 						className="text-white"
-						text={editorMode === EDITOR_MODE__ADD ? 'Add' : 'Save'}
+						text={getEditorMode() === EDITOR_MODE__ADD ? 'Add' : 'Save'}
 					/>}
 				
 				{showSubmitBtn && 
