@@ -65,8 +65,7 @@ import _ from 'lodash';
 // Form is embedded on screen in some other way. Mainly use startingValues, items, validator
 
 function Form(props) {
-	const
-		{
+	const {
 			editorType = EDITOR_TYPE__WINDOWED, // EDITOR_TYPE__INLINE | EDITOR_TYPE__WINDOWED | EDITOR_TYPE__SIDE | EDITOR_TYPE__SMART | EDITOR_TYPE__PLAIN
 			startingValues = {},
 			items = [], // Columns, FieldSets, Fields, etc to define the form
@@ -114,7 +113,7 @@ function Form(props) {
 			// withEditor
 			isEditorViewOnly = false,
 			isSaving = false,
-			getEditorMode,
+			getEditorMode = () => {},
 			onCancel,
 			onSave,
 			onClose,
@@ -247,16 +246,14 @@ function Form(props) {
 				} else {
 					// editor is not defined, fall back to property definition
 					if (isEditable) {
-						const
-							{
+						const {
 								type: t,
 								...p
 							} = propertyDef?.editorType;
 						type = t;
 						editorTypeProps = p;
 					} else if (propertyDef?.viewerType) {
-						const
-							{
+						const {
 								type: t,
 								...p
 							} =  propertyDef?.viewerType;
