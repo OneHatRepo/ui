@@ -11,6 +11,15 @@ import _ from 'lodash';
 const $ = Cypress.$;
 
 
+// Get cells
+export function getGridCellValue(gridSelector, rowId, field) {
+	cy.log('getGridCellValue ' + gridSelector + ' ' + rowId + ' ' + field);
+	const rowSelector = getGridRowSelectorById(gridSelector, rowId);
+	return getDomNode([gridSelector, rowSelector, 'cell-' + field])
+				.invoke('text');
+}
+
+
 
 // Get rows
 export function hasRowWithFieldValue(gridSelector, field, value) {

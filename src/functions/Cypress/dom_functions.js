@@ -39,7 +39,7 @@ export function verifyElementDoesNotExist(selectors) {
 	cy.get('body').then(($body) => {
 		const selectorString = getTestIdSelectors(selectors);
 		if ($body.find(selectorString).length > 0) {
-			throw new Error(`Element with selectors ${selectorString} exists in the DOM`);
+			throw new Error(`Element with selectors ${selectorString} exists in the DOM, when it should not`);
 		}
 	});
 }
