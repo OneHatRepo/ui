@@ -21,7 +21,6 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 				text,
 				icon,
 				isDisabled,
-				className: 'ml-2',
 				tooltip,
 				color,
 			};

@@ -182,8 +182,9 @@ function AttachmentsElement(props) {
 			}
 		},
 		onFileDelete = (id) => {
+			const file = _.find(files, { id });
 			if (confirmBeforeDelete) {
-				confirm('Are you sure you want to delete the file?', () => doDelete(id));
+				confirm('Are you sure you want to delete the file "' + file.name + '"?', () => doDelete(id));
 			} else {
 				doDelete(id);
 			}
@@ -286,7 +287,6 @@ function AttachmentsElement(props) {
 		w-full
 		h-full
 		p-1
-		bg-white
 		rounded-[5px]
 	`;
 	if (props.className) {

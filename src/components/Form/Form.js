@@ -1147,7 +1147,7 @@ function Form(props) {
 							</Toolbar>;
 			}
 			if (getEditorMode() === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
-				formButtons.push(<Toolbar key="additionalButtonsToolbar" className="justify-end flex-wrap">
+				formButtons.push(<Toolbar key="additionalButtonsToolbar" className="justify-end flex-wrap gap-2">
 									{additionalButtons}
 								</Toolbar>)
 			}
