@@ -391,6 +391,7 @@ function GridComponent(props) {
 
 			let rowComponent =
 				<Pressable
+					dataSet={{ ix: index }}
 					{...testProps(getRowTestId ? getRowTestId(row) : ((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id))}
 					onPress={(e) => {
 						if (e.preventDefault && e.cancelable) {
@@ -467,7 +468,7 @@ function GridComponent(props) {
 							onContextMenu(item, e, selection);
 						}
 					}}
-					className="flex-row grow">
+					className="Pressable Row flex-row grow">
 					{({
 						hovered,
 						focused,
@@ -1182,7 +1183,7 @@ function GridComponent(props) {
 					initialNumToRender={initialNumToRender}
 					initialScrollIndex={0}
 					renderItem={renderRow}
-					className="FlatList bg-grey-100"
+					className="bg-grey-100"
 					{...flatListProps}
 				/>;
 	

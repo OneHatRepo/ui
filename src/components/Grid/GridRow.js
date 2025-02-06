@@ -319,7 +319,7 @@ function GridRow(props) {
 			rowClassName += ' border-4 border-[#0ff]';
 		}
 		return <HStackNative
-					{...testProps('row' + (isSelected ? '-selected' : ''))}
+					{...testProps('Row ' + (isSelected ? 'row-selected' : ''))}
 					{...rowProps}
 					key={hash}
 					className={rowClassName}
