@@ -23,8 +23,7 @@ export default function withSelection(WrappedComponent) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
-		const
-			{
+		const {
 				selection,
 				defaultSelection,
 				onChangeSelection,
@@ -120,7 +119,9 @@ export default function withSelection(WrappedComponent) {
 				setSelection(newSelection);
 			},
 			deselectAll = () => {
-				setSelection([]);
+				if (!_.isEmpty(getSelection())) {
+					setSelection([]);
+				}
 			},
 			refreshSelection = () => {
 				// When Repository reloads, the entities get destroyed.

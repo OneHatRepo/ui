@@ -15,7 +15,9 @@ function Editor(props) {
 			onEditorSave: onSave,
 			onEditorClose: onClose,
 			onEditorDelete: onDelete,
-			getEditorMode = () => {},
+			getEditorMode = () => {
+				return props.editorMode;
+			},
 			onEditMode,
 			canRecordBeEdited,
 			_viewer = {},
