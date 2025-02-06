@@ -45,6 +45,16 @@ export function verifyElementDoesNotExist(selectors) {
 }
 
 /**
+ * Verifies that an element with the given selectors exists in the DOM.
+ * @argument {string | string[]} selectors - data-testid attribute values
+ * If an array is given, these will be considered nested selectors.
+ * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
+ */
+export function verifyElementExists(selectors) {
+	cy.get(getTestIdSelectors(selectors)).should('exist');
+}
+
+/**
  * Builds selector string for data-testid attributes.
  * It leaves classname, id, and attribute selectors unchanged.
  * 
@@ -103,13 +113,21 @@ export function drag(draggableSelectors, droppableSelectors, options = {}) {
 			});
 }
 
+
+// conditions functions that make use of cypress-if
 export function ifExists(parentSelectors, name, cb) {
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
-	return getDomNode([...parentSelectors, name]).if().then((node) => { // NOTE if() is a cypress-if function
+	return getDomNode([...parentSelectors, name]).if().then((node) => {
 		if (node) {
 			cb(node);
 		}
 	});
+}
+export function ifNotExists(parentSelectors, name, cb) {
+	if (_.isString(parentSelectors)) {
+		parentSelectors = [parentSelectors];
+	}
+	return getDomNode([...parentSelectors, name]).if('not.exist').then(cb);
 }

@@ -65,11 +65,15 @@ export function selectGridRowIfNotAlreadySelectedById(gridSelector, id) {
 		}
 	})
 }
+export function selectGridRowByIx(gridSelector, ix) {
+	cy.log('selectGridRowByIx ' + gridSelector + ' ' + ix);
+	
+	ix++; // compensate for header row
+	getDomNode([gridSelector, '[data-ix=' + ix + ']'])
+		.click();
+}
 // export function selectRowWithText(grid, text) {
 // 	getRowWithText(grid, text).click(5, 5);
-// }
-// export function selectRowWithIx(grid, ix) {
-// 	getRowWithIx(grid, ix).click(5, 5);
 // }
 // export function cmdClickRowWithId(grid, id) {
 // 	getRowWithId(grid, id).click('left', { metaKey: true });
@@ -243,12 +247,8 @@ export function getModelFromGridSelector(gridSelector) {
 }
 export function getGridRowSelectorById(gridSelector, id) {
 	const
-		model = getModelFromGridSelector(gridSelector);
-
-		if (!model) {
-			debugger;
-		}
-		const inflected = fixInflector(Inflector.camelize(Inflector.pluralize(model)));
+		model = getModelFromGridSelector(gridSelector),
+		inflected = fixInflector(Inflector.camelize(Inflector.pluralize(model)));
 	return inflected + '-' + id;
 }
 
