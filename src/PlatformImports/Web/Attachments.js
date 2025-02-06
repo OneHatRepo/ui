@@ -45,17 +45,16 @@ function FileCardCustom(props) {
 			uploadStatus,
 		} = props,
 		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']);
-	return (
-        <Pressable
-            onPress={() => {
-                downloadInBackground(downloadUrl);
-            }}
-            className="px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700">
-                    {isDownloading && <Spinner className="mr-2" />}
-                    <Text>{filename}</Text>
-                    {onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
-                </Pressable>
-    );
+	return <Pressable
+				onPress={() => {
+					downloadInBackground(downloadUrl);
+				}}
+				className="px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700"
+			>
+				{isDownloading && <Spinner className="mr-2" />}
+				<Text>{filename}</Text>
+				{onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
+			</Pressable>;
 }
 
 
@@ -282,12 +281,20 @@ function AttachmentsElement(props) {
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
 	}
-	let className = 'w-full p-1 bg-white rounded-[5px]';
+	let className = `
+		AttachmentsElement
+		w-full
+		h-full
+		p-1
+		bg-white
+		rounded-[5px]
+	`;
 	if (props.className) {
 		className += ' ' + props.className;
 	}
 	let content = <VStack className={className}>
-						<HStack className="flex-wrap">
+						<HStack className="AttachmentsElement-HStack flex-wrap">
+							{files.length === 0 && <Text className="text-grey-600 italic">No files</Text>}
 							{files.map((file) => {
 								return <Box
 											key={file.id}
@@ -312,7 +319,7 @@ function AttachmentsElement(props) {
 						{Repository.total <= collapsedMax ? null :
 							<Button
 								onPress={toggleShowAll}
-								className="mt-2"
+								className="AttachmentsElement-toggleShowAll mt-2"
 								text={'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}
 								_text={{
 									className: `
