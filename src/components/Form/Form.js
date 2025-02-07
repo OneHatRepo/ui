@@ -1267,11 +1267,16 @@ function Form(props) {
 					/>}
 			
 				{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+					let isDisabled = false;
+					if (props.disableOnInvalid) {
+						isDisabled = !formState.isValid;
+					}
 					return <Button
 								{...testProps('additionalFooterBtn-' + props.key)}
 								{...props}
 								onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
 								text={props.text}
+								isDisabled={isDisabled}
 							/>;
 				})}
 			</>;

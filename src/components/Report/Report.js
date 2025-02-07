@@ -33,12 +33,9 @@ function Report(props) {
 			title,
 			description,
 			reportId,
-			// icon,
 			disablePdf = false,
 			disableExcel = false,
-			includePresets = false,
 			showReportHeaders = true,
-			h = '300px',
 		} = props,
 		buttons = [];
 
@@ -68,6 +65,7 @@ function Report(props) {
 				reportType: REPORT_TYPES__EXCEL,
 				showReportHeaders,
 			}),
+			disabledOnInvalid: true,
 		});
 	}
 	if (!disablePdf) {
@@ -82,6 +80,7 @@ function Report(props) {
 				reportType: REPORT_TYPES__PDF,
 				showReportHeaders,
 			}),
+			disableOnInvalid: true,
 		});
 	}
 	return <VStackNative
