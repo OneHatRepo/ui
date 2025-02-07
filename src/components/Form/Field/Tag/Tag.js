@@ -72,6 +72,7 @@ function TagComponent(props) {
 							editorType={EDITOR_TYPE__WINDOWED}
 							parent={self}
 							reference="viewer"
+							Repository={repository}
 							isEditorViewOnly={true}
 							selection={[record]}
 							onEditorClose={hideModal}
