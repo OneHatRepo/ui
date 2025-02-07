@@ -236,7 +236,7 @@ function Viewer(props) {
 
 			let elementClassName = `
 				Viewer-field
-				basis-0
+				basis-auto
 				grow
 				shrink
 			`;
