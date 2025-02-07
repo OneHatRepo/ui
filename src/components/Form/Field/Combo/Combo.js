@@ -56,6 +56,7 @@ export function ComboComponent(props) {
 			isDisabled = false,
 			isInTag = false,
 			minimizeForRow = false,
+			reloadOnTrigger = false,
 			menuHeight,
 			tooltipPlacement = 'bottom',
 			placeholder,
@@ -308,11 +309,14 @@ export function ComboComponent(props) {
 			resetTextInputValue();
 			hideMenu();
 		},
-		onTriggerPress = (e) => {
+		onTriggerPress = async (e) => {
 			if (!isRendered) {
 				return;
 			}
 			clearGridFilters();
+			if (reloadOnTrigger && Repository) {
+				await Repository.reload();
+			}
 			if (isMenuShown) {
 				hideMenu();
 			} else {
