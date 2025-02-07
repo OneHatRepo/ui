@@ -785,7 +785,7 @@ function Form(props) {
 							if (item.additionalEditButtons) {
 								const buttons = buildAdditionalButtons(item.additionalEditButtons, self, { fieldState, formSetValue, formGetValues, formState });
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
-									element = <HStack className="Form-HStack5 flex-1 flex-wrap items-center">
+									element = <HStack className="Form-HStack5 flex-1 flex-wrap items-center gap-2">
 													{element}
 													{buttons}
 												</HStack>;
