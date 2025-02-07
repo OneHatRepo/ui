@@ -75,7 +75,7 @@ export default function withModal(WrappedComponent) {
 				setBody(body);
 				setCanClose(canClose);
 				setIncludeCancel(includeCancel);
-				setOnCancel(onCancel);
+				setOnCancel(() => onCancel);
 				setOnOk(onOk ? () => onOk : null);
 				setOkBtnLabel(okBtnLabel || 'OK');
 				setOnYes(onYes ? () => onYes : null);
