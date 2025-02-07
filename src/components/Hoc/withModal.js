@@ -33,6 +33,7 @@ export default function withModal(WrappedComponent) {
 			[okBtnLabel, setOkBtnLabel] = useState(),
 			[onYes, setOnYes] = useState(),
 			[onNo, setOnNo] = useState(),
+			[onCancel, setOnCancel] = useState(),
 			[customButtons, setCustomButtons] = useState(),
 			[body, setBody] = useState(),
 			[whichModal, setWhichModal] = useState(),
@@ -40,9 +41,6 @@ export default function withModal(WrappedComponent) {
 			autoFocusRef = useRef(null),
 			cancelRef = useRef(null),
 			[windowWidth, windowHeight] = useAdjustedWindowSize(w, h),
-			onCancel = () => {
-				hideModal();
-			},
 			hideModal = () => {
 				setIsModalShown(false);
 			},
@@ -52,6 +50,7 @@ export default function withModal(WrappedComponent) {
 					body = null,
 					canClose = false,
 					includeCancel = false,
+					onCancel = null,
 					onOk = null,
 					okBtnLabel = null,
 					onYes = null,
@@ -76,6 +75,7 @@ export default function withModal(WrappedComponent) {
 				setBody(body);
 				setCanClose(canClose);
 				setIncludeCancel(includeCancel);
+				setOnCancel(onCancel);
 				setOnOk(onOk ? () => onOk : null);
 				setOkBtnLabel(okBtnLabel || 'OK');
 				setOnYes(onYes ? () => onYes : null);
@@ -101,7 +101,7 @@ export default function withModal(WrappedComponent) {
 				buttons.push(<Button
 									{...testProps('cancelBtn')}
 									key="cancelBtn"
-									onPress={onCancel}
+									onPress={onCancel || hideModal}
 									colorScheme="coolGray"
 									ref={cancelRef}
 									className="mr-2"
@@ -180,7 +180,7 @@ export default function withModal(WrappedComponent) {
 						{...props}
 						disableWithModal={false}
 						showModal={showModal}
-						hideModal={onCancel}
+						hideModal={onCancel || hideModal}
 						updateModalBody={updateModalBody}
 						isModalShown={isModalShown}
 						whichModal={whichModal}

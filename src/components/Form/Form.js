@@ -80,6 +80,7 @@ function Form(props) {
 			checkIsEditingDisabled = true,
 			disableLabels = false,
 			disableDirtyIcon = false,
+			alwaysShowCancelButton = false,
 			onBack,
 			onReset,
 			onInit,
@@ -1170,27 +1171,31 @@ function Form(props) {
 			showResetBtn = true;
 		}
 		// determine whether we should show the close or cancel button
-		if (editorType !== EDITOR_TYPE__SIDE) {
-			if (isEditorViewOnly) {
-				showCloseBtn = true;
-			} else {
-				// if (editorType === EDITOR_TYPE__WINDOWED && onCancel) {
-				// 	showCancelBtn = true;
-				// }
-				if (formState.isDirty || isPhantom) {
-					if (isSingle && onCancel) {
-						showCancelBtn = true;
-					}
+		if (alwaysShowCancelButton) {
+			showCancelBtn = true;
+		} else {
+			if (editorType !== EDITOR_TYPE__SIDE) {
+				if (isEditorViewOnly) {
+					showCloseBtn = true;
 				} else {
-					if (onClose) {
-						showCloseBtn = true;
+					// if (editorType === EDITOR_TYPE__WINDOWED && onCancel) {
+					// 	showCancelBtn = true;
+					// }
+					if (formState.isDirty || isPhantom) {
+						if (isSingle && onCancel) {
+							showCancelBtn = true;
+						}
+					} else {
+						if (onClose) {
+							showCloseBtn = true;
+						}
 					}
 				}
-			}
-		} else {
-			// side editor only
-			if (isPhantom && isSingle && onCancel) {
-				showCancelBtn = true;
+			} else {
+				// side editor only
+				if (isPhantom && isSingle && onCancel) {
+					showCancelBtn = true;
+				}
 			}
 		}
 		if (!isEditorViewOnly && onSave) {

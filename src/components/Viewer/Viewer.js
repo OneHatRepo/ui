@@ -234,7 +234,12 @@ function Viewer(props) {
 				}
 			}
 
-			let elementClassName = 'Viewer-field-' + name;
+			let elementClassName = `
+				Viewer-field
+				basis-0
+				grow
+				shrink
+			`;
 			const defaultsClassName = defaults.className;
 			if (defaultsClassName) {
 				elementClassName += ' ' + defaultsClassName;
