@@ -231,6 +231,7 @@ import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Tag/Tag.js';
 import TextArea from './Form/Field/TextArea.js';
 import Text from './Form/Field/Text.js';
+import TextWithLinks from './Viewer/TextWithLinks.js';
 import TimezonesCombo from './Form/Field/Combo/TimezonesCombo.js';
 import Toggle from './Form/Field/Toggle.js';
 import Toolbar from './Toolbar/Toolbar.js';
@@ -471,6 +472,7 @@ const components = {
 	Tag,
 	Text,
 	TextArea,
+	TextWithLinks,
 	TimezonesCombo,
 	Toggle,
 	Toolbar,

@@ -83,8 +83,9 @@ function GridRow(props) {
 					if (config.isHidden) {
 						return null;
 					}
-					const propsToPass = columnProps[key] || {};
-					const colStyle = {};
+					const
+						propsToPass = columnProps[key] || {},
+						colStyle = {};
 					let colClassName = `
 						GridRow-column
 						p-1
@@ -155,9 +156,10 @@ function GridRow(props) {
 						if (config.fieldName) {
 
 							if (item?.properties && item.properties[config.fieldName]) {
-								const property = item.properties[config.fieldName];
+								const
+									property = item.properties[config.fieldName],
+									type = property?.viewerType?.type;
 								value = property.displayValue;
-								const type = property?.viewerType?.type;
 
 								if (type) {
 									const Element = getComponentFromType(type);
@@ -167,6 +169,21 @@ function GridRow(props) {
 									}
 									if (config.getCellProps) {
 										_.assign(elementProps, config.getCellProps(item));
+									}
+									const elementClassName = `
+										GridRow-Element
+										self-center
+										text-ellipsis
+										px-2
+										py-3
+										block
+										max-h-[40px]
+										overflow-scroll
+										${colClassName}
+										${styles.GRID_CELL_CLASSNAME}
+									`;
+									if (config.className) {
+										elementClassName += ' ' + config.className;
 									}
 									return <Element
 												{...testProps('cell-' + config.fieldName)}
@@ -178,18 +195,7 @@ function GridRow(props) {
 													...colStyle,
 												}}
 												minimizeForRow={true}
-												className={`
-													GridRow-Element
-													self-center
-													text-ellipsis
-													px-2
-													py-3
-													block
-													max-h-[40px]
-													overflow-scroll
-													${colClassName}
-													${styles.GRID_CELL_CLASSNAME}
-												`}
+												className={elementClassName}
 												numberOfLines={1}
 												ellipsizeMode="head"
 												{...propsToPass}
@@ -219,6 +225,22 @@ function GridRow(props) {
 					if (config.getCellProps) {
 						_.assign(elementProps, config.getCellProps(item));
 					}
+					const textClassName = `
+						GridRow-TextNative
+						self-center
+						overflow-hidden
+						text-ellipsis
+						truncate
+						whitespace-nowrap
+						overflow-hidden
+						${colClassName}
+						${styles.GRID_CELL_CLASSNAME} 
+						${styles.GRID_CELL_PX} 
+						${styles.GRID_CELL_PY} 
+					`;
+					if (config.className) {
+						textClassName += ' ' + config.className;
+					}
 					return <TextNative
 								{...testProps('cell-' + config.fieldName)}
 								key={key}
@@ -228,19 +250,7 @@ function GridRow(props) {
 								}}
 								numberOfLines={1}
 								ellipsizeMode="head"
-								className={`
-									GridRow-TextNative
-									self-center
-									overflow-hidden
-									text-ellipsis
-									truncate
-									whitespace-nowrap
-									overflow-hidden
-									${colClassName}
-									${styles.GRID_CELL_CLASSNAME} 
-									${styles.GRID_CELL_PX} 
-									${styles.GRID_CELL_PY} 
-								`}
+								className={textClassName}
 								{...elementProps}
 								{...propsToPass}
 							>{value}</TextNative>;
