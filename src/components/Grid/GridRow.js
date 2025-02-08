@@ -170,7 +170,7 @@ function GridRow(props) {
 									if (config.getCellProps) {
 										_.assign(elementProps, config.getCellProps(item));
 									}
-									const elementClassName = `
+									let elementClassName = `
 										GridRow-Element
 										self-center
 										text-ellipsis
@@ -184,6 +184,9 @@ function GridRow(props) {
 									`;
 									if (config.className) {
 										elementClassName += ' ' + config.className;
+									}
+									if (type.match(/(Tag|TagEditor)$/)) {
+										elementClassName += ' max-h-[80px]';
 									}
 									return <Element
 												{...testProps('cell-' + config.fieldName)}
@@ -225,7 +228,7 @@ function GridRow(props) {
 					if (config.getCellProps) {
 						_.assign(elementProps, config.getCellProps(item));
 					}
-					const textClassName = `
+					let textClassName = `
 						GridRow-TextNative
 						self-center
 						overflow-hidden
