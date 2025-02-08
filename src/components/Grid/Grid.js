@@ -763,8 +763,18 @@ function GridComponent(props) {
 			const
 				headerHeight = showHeaders ? 50 : 0,
 				footerHeight = !disablePagination ? 50 : 0,
-				height = containerHeight - headerHeight - footerHeight,
-				rowsPerContainer = Math.floor(height / defaultRowHeight);
+				height = containerHeight - headerHeight - footerHeight;
+
+			const rowsPerContainer = Math.floor(height / defaultRowHeight);
+
+			// // Get the total height of all rows
+			// const rows = gridRef.current._listRef._scrollRef.childNodes[0].childNodes;
+			// let totalRowHeight = 0;
+			// rows.forEach((row) => {
+			// 	totalRowHeight += row.getBoundingClientRect().height;
+			// });
+			// const rowsPerContainer = Math.floor(height / (totalRowHeight / rows.length));
+
 			let pageSize = rowsPerContainer;
 			if (showHeaders) {
 				pageSize--;
