@@ -8,9 +8,9 @@ import {
 } from '@project-components/Gluestack';
 import {
 	UI_MODE_WEB,
-} from '@onehat/ui/src/Constants/UiModes.js';
-import UiGlobals from '@onehat/ui/src/UiGlobals.js';
-import withComponent from '@onehat/ui/src/Components/Hoc/withComponent.js';
+} from '../../Constants/UiModes.js';
+import UiGlobals from '../../UiGlobals.js';
+import withComponent from '../Hoc/withComponent.js';
 import _ from 'lodash';
 
 function TextWithLinksElement(props) {
