@@ -90,6 +90,9 @@ function GridRow(props) {
 						p-1
 						justify-center
 						border-r-black-100
+						block
+						max-h-[40px]
+						overflow-scroll
 					`;
 					if (isOnlyOneVisibleColumn) {
 						colClassName = ' w-full';
@@ -181,6 +184,9 @@ function GridRow(props) {
 													text-ellipsis
 													px-2
 													py-3
+													block
+													max-h-[40px]
+													overflow-scroll
 													${colClassName}
 													${styles.GRID_CELL_CLASSNAME}
 												`}
