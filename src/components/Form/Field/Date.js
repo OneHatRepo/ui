@@ -24,7 +24,6 @@ import Input from '../Field/Input.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Xmark from '../../Icons/Xmark.js';
 import withComponent from '../../Hoc/withComponent.js';
-import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
 import testProps from '../../../Functions/testProps.js';
@@ -51,6 +50,8 @@ export const DateElement = forwardRef((props, ref) => {
 			minimizeForRow = false,
 			minValue,
 			maxValue,
+			tooltip = null,
+			tooltipPlacement = 'bottom',
 			testID,
 
 			// withComponent
@@ -359,6 +360,8 @@ export const DateElement = forwardRef((props, ref) => {
 				onFocus={onInputFocus}
 				autoSubmit={true}
 				isDisabled={isDisabled}
+				tooltip={tooltip}
+				tooltipPlacement={tooltipPlacement}
 				// onLayout={(e) => {
 				// 	const {
 				// 			height,
@@ -510,6 +513,8 @@ export const DateElement = forwardRef((props, ref) => {
 							onBlur={onInputBlur}
 							autoSubmitDelay={1000}
 							placeholder={placeholder}
+							tooltip={tooltip}
+							tooltipPlacement={tooltipPlacement}
 							className={`
 								flex-1
 								h-full
@@ -602,4 +607,4 @@ export const DateElement = forwardRef((props, ref) => {
 
 });
 
-export default withComponent(withValue(withTooltip(DateElement)));
+export default withComponent(withValue(DateElement));

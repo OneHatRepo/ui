@@ -17,7 +17,8 @@ const
 					high: null,
 				},
 				setValue,
-				tooltip = '',
+				tooltip,
+				tooltipPlacement,
 
 				minValue = 0,
 				maxValue,
@@ -82,6 +83,7 @@ const
 						minValue={minValue}
 						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'Low'}
+						tooltipPlacement={tooltipPlacement}
 						className="max-w-[150px]"
 					/>
 					<Text className="px-2 select-none">to</Text>
@@ -93,6 +95,7 @@ const
 						minValue={minValue}
 						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
+						tooltipPlacement={tooltipPlacement}
 						className="max-w-[150px]"
 					/>
 				</HStack>;

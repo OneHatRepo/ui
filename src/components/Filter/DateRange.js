@@ -6,7 +6,6 @@ import {
 } from '@project-components/Gluestack';
 import Date from '../Form/Field/Date.js';
 import testProps from '../../Functions/testProps.js';
-import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
 import _ from 'lodash';
 
@@ -22,6 +21,7 @@ const
 				minValue,
 				maxValue,
 				tooltip,
+				tooltipPlacement,
 
 				// withComponent
 				self,
@@ -100,6 +100,7 @@ const
 						minValue={minValue}
 						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'Low'}
+						tooltipPlacement={tooltipPlacement}
 						limitWidth={true}
 						parent={self}
 						reference="low"
@@ -113,6 +114,7 @@ const
 						minValue={minValue}
 						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
+						tooltipPlacement={tooltipPlacement}
 						limitWidth={true}
 						parent={self}
 						reference="high"

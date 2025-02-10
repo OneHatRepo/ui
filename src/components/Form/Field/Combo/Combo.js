@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, } from 'react';
+import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	HStack,
@@ -37,13 +37,11 @@ import _ from 'lodash';
 
 const FILTER_NAME = 'q';
 
-export function ComboComponent(props) {
+export const ComboComponent = forwardRef((props, ref) => {
 
 	const {
 			additionalButtons,
 			autoFocus = false,
-			tooltipRef = null,
-			tooltip = null,
 			menuMinWidth,
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
@@ -58,7 +56,6 @@ export function ComboComponent(props) {
 			minimizeForRow = false,
 			reloadOnTrigger = false,
 			menuHeight,
-			tooltipPlacement = 'bottom',
 			placeholder,
 			onRowPress,
 			icon,
@@ -68,6 +65,8 @@ export function ComboComponent(props) {
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
 			onSubmit, // when Combo is used in a Tag, call this when the user submits the Combo value (i.e. presses Enter or clicks a row)
 			newEntityDisplayProperty,
+			tooltip = null,
+			tooltipPlacement = 'bottom',
 			testID,
 
 			// withComponent
@@ -630,6 +629,8 @@ export function ComboComponent(props) {
 						InputLeftElement={inputIconElement}
 						autoSubmitDelay={500}
 						placeholder={placeholder}
+						tooltip={tooltip}
+						tooltipPlacement={tooltipPlacement}
 						className={`
 							Combo-Input
 							grow
@@ -858,6 +859,8 @@ export function ComboComponent(props) {
 									InputLeftElement={inputIconElement}
 									autoSubmitDelay={500}
 									placeholder={placeholder}
+									tooltip={tooltip}
+									tooltipPlacement={tooltipPlacement}
 									className={`
 										Combo-inputClone-Input
 										grow
@@ -964,6 +967,8 @@ export function ComboComponent(props) {
 							InputLeftElement={inputIconElement}
 							autoSubmitDelay={500}
 							placeholder={placeholder}
+							tooltip={tooltip}
+							tooltipPlacement={tooltipPlacement}
 							className={`
 								h-full
 								flex-1
@@ -1014,10 +1019,6 @@ export function ComboComponent(props) {
 							</Modal>;
 		}
 	}
-	const refProps = {};
-	if (tooltipRef) {
-		refProps.ref = tooltipRef;
-	}
 
 	let className = `
 		Combo-HStack
@@ -1043,7 +1044,6 @@ export function ComboComponent(props) {
 				className="Combo-VStack"
 			>
 				<HStack
-					{...refProps}
 					className={className}
 				>
 					{xButton}
@@ -1059,7 +1059,6 @@ export function ComboComponent(props) {
 	} else {
 		assembledComponents = 
 			<HStackNative
-				{...refProps}
 				testID={testID}
 				onLayout={onLayout}
 				className={className}
@@ -1115,15 +1114,9 @@ export function ComboComponent(props) {
 				</>;
 	}
 	
-	if (tooltip) {
-		// TODO: implement withTooltip for Combo
-		// assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement} className="h-full">
-		// 						{assembledComponents}
-		// 					</Tooltip>;
-	}
-	
 	return assembledComponents;
-}
+	
+});
 
 export const Combo = withComponent(
 						withAlert(

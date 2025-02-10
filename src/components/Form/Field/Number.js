@@ -9,13 +9,10 @@ import IconButton from '../../Buttons/IconButton.js';
 import Input from './Input.js';
 import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
-import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import Plus from '../../Icons/Plus.js';
 import Minus from '../../Icons/Minus.js';
 import _ from 'lodash';
-
-const InputWithTooltip = withTooltip(Input);
 
 function NumberElement(props) {
 	let {
@@ -24,7 +21,8 @@ function NumberElement(props) {
 			minValue,
 			maxValue,
 			autoSubmitDelay = UiGlobals.autoSubmitDelay,
-			tooltip = null,
+			tooltip,
+			tooltipPlacement,
 			isDisabled = false,
 			testID,
 		} = props,
@@ -158,15 +156,15 @@ function NumberElement(props) {
 						width: 40,
 					}}
 				/>
-				<InputWithTooltip
+				<Input
 					testID={testID}
 					value={inputValue}
 					onChangeText={onChangeText}
 					onKeyPress={onInputKeyPress}
 					isDisabled={isDisabled}
 					tooltip={tooltip}
+					tooltipPlacement={tooltipPlacement}
 					className={`
-						InputWithTooltip
 						h-full
 						text-center
 						rounded-none

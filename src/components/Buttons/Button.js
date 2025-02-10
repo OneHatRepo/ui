@@ -5,7 +5,6 @@ import {
 	ButtonSpinner,
 	ButtonIcon,
 	ButtonGroup,
-	Tooltip,
 } from '@project-components/Gluestack';
 import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../Hoc/withTooltip.js';
@@ -22,7 +21,6 @@ const ButtonComponent = forwardRef((props, ref) => {
 			_icon, // props for icon
 			_rightIcon, // props for rightIcon
 			_text = {}, // props for ButtonText
-			tooltip,
 			...propsToPass
 		} = props;
 	
@@ -61,17 +59,12 @@ const ButtonComponent = forwardRef((props, ref) => {
 		className += ' ' + propsToPass.className;
 	}
 	
-	let button = <Button {...propsToPass} className={className} ref={ref}>
-					{isLoading && <ButtonSpinner className="ButtonSpinner" {..._spinner} />}
-					{icon}
-					{text && <ButtonText className="ButtonText" {..._text}>{text}</ButtonText>}
-					{rightIcon}
-				</Button>;
-	if (tooltip) {
-		button = <Tooltip text={tooltip}>{button}</Tooltip>;
-	}
-	return button;
-
+	return <Button {...propsToPass} className={className} ref={ref}>
+				{isLoading && <ButtonSpinner className="ButtonSpinner" {..._spinner} />}
+				{icon}
+				{text && <ButtonText className="ButtonText" {..._text}>{text}</ButtonText>}
+				{rightIcon}
+			</Button>;
 });
 
 export default withComponent(withTooltip(ButtonComponent));
