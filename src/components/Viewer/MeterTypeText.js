@@ -1,5 +1,5 @@
 import {
-	Text,
+	TextNative,
 } from '@project-components/Gluestack';
 import UiGlobals from '../../UiGlobals';
 
@@ -16,8 +16,8 @@ export default function MeterTypeText(props) {
 	if (props.className) {
 		className += ' ' + props.className;
 	}
-	return <Text
+	return <TextNative
 				{...props}
 				className={className}
-			>{props.value ? 'Time (hrs)' : 'Distance (mi/km)'}</Text>;
+			>{props.value ? 'Time (hrs)' : 'Distance (mi/km)'}</TextNative>;
 };
