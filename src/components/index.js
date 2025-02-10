@@ -218,7 +218,7 @@ import Input from './Form/Field/Input.js';
 import IntervalsCombo from './Form/Field/Combo/IntervalsCombo.js';
 import Json from './Form/Field/Json.js';
 import Label from './Form/Label.js';
-import MeterTypeCombo from './Form/Field/Combo/MeterTypeCombo.js';
+import MeterTypesCombo from './Form/Field/Combo/MeterTypesCombo.js';
 import MeterTypeText from './Viewer/MeterTypeText.js';
 import MonthsCombo from './Form/Field/Combo/MonthsCombo.js';
 import Number from './Form/Field/Number.js';
@@ -461,7 +461,7 @@ const components = {
 	IntervalsCombo,
 	Json,
 	Label,
-	MeterTypeCombo,
+	MeterTypesCombo,
 	MeterTypeText,
 	MonthsCombo,
 	Number,

@@ -9,13 +9,13 @@ import ArrayCombo from './ArrayCombo.js';
 import {
 	METER_TYPES__HOURS,
 	METER_TYPES__MILES,
-} from '../../../../constants/MeterTypes.js';
+} from '../../../../Constants/MeterTypes.js';
 
 const data = [
 	[METER_TYPES__HOURS, 'Hours'],
 	[METER_TYPES__MILES, 'Miles'],
 ];
-function MeterTypeCombo(props) {
+function MeterTypesCombo(props) {
 	return <ArrayCombo
 				reference="MeterTypeCombo"
 				data={data}
@@ -24,4 +24,4 @@ function MeterTypeCombo(props) {
 			/>;
 }
 
-export default MeterTypeCombo;
+export default MeterTypesCombo;
