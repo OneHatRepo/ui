@@ -19,5 +19,5 @@ export default function MeterTypeText(props) {
 	return <Text
 				{...props}
 				className={className}
-			>{props.value ? 'Hours' : 'Miles'}</Text>;
+			>{props.value ? 'Time (hrs)' : 'Distance (mi/km)'}</Text>;
 };

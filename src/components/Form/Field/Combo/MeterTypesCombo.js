@@ -12,8 +12,8 @@ import {
 } from '../../../../Constants/MeterTypes.js';
 
 const data = [
-	[METER_TYPES__HOURS, 'Hours'],
-	[METER_TYPES__MILES, 'Miles'],
+	[METER_TYPES__HOURS, 'Time (hrs)'],
+	[METER_TYPES__MILES, 'Distance (mi/km)'],
 ];
 function MeterTypesCombo(props) {
 	return <ArrayCombo
