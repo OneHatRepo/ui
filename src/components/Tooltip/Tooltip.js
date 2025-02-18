@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import {
-	Box,
+	BoxNative as Box,
 	Tooltip, TooltipContent, TooltipText,
 } from '@project-components/Gluestack';
 
