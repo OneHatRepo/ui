@@ -9,7 +9,6 @@ import {
 	Pressable,
 	Text,
 	TextNative,
-	Tooltip,
 	VStackNative,
 } from '@project-components/Gluestack';
 import {
@@ -631,6 +630,14 @@ export const ComboComponent = forwardRef((props, ref) => {
 						placeholder={placeholder}
 						tooltip={tooltip}
 						tooltipPlacement={tooltipPlacement}
+						_tooltip={{
+							className: `
+								grow
+								h-auto
+								self-stretch
+								flex-1
+							`,
+						}}
 						className={`
 							Combo-Input
 							grow
@@ -861,6 +868,13 @@ export const ComboComponent = forwardRef((props, ref) => {
 									placeholder={placeholder}
 									tooltip={tooltip}
 									tooltipPlacement={tooltipPlacement}
+									_tooltip={{
+										className: `
+											grow
+											h-full
+											flex-1
+										`,
+									}}
 									className={`
 										Combo-inputClone-Input
 										grow
@@ -969,6 +983,12 @@ export const ComboComponent = forwardRef((props, ref) => {
 							placeholder={placeholder}
 							tooltip={tooltip}
 							tooltipPlacement={tooltipPlacement}
+							_tooltip={{
+								className: `
+									h-full
+									flex-1
+								`,
+							}}
 							className={`
 								h-full
 								flex-1

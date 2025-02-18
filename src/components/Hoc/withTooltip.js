@@ -17,7 +17,11 @@ export default function withTooltip(WrappedComponent) {
 		let component = <WrappedComponent {...propsToPass} ref={ref} />;
 
 		if (tooltip || !_.isEmpty(_tooltip)) {
-			component = <Tooltip label={tooltip} placement={tooltipPlacement} {..._tooltip}>
+			component = <Tooltip
+							label={tooltip}
+							placement={tooltipPlacement}
+							{..._tooltip}
+						>
 							{component}
 						</Tooltip>;
 		}

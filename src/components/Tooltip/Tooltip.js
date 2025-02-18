@@ -1,5 +1,8 @@
-import { forwardRef, cloneElement } from 'react';
-import { Tooltip, TooltipContent, TooltipText } from '@project-components/Gluestack';
+import { forwardRef } from 'react';
+import {
+	Box,
+	Tooltip, TooltipContent, TooltipText,
+} from '@project-components/Gluestack';
 
 const TooltipElement = forwardRef((props, ref) => {
 	const {
@@ -12,18 +15,18 @@ const TooltipElement = forwardRef((props, ref) => {
 	if (props.className) {
 		className += ' ' + props.className;
 	}
+
+	let triggerClassName = 'Tooltip-trigger';
+	if (props.className) {
+		triggerClassName += ' ' + props.className;
+	}
 	
 	return <Tooltip
 				placement={placement}
 				trigger={(triggerProps) => {
-					const propsToPass = {
-						...triggerProps,
-						...children.props,
-					};
-					if (ref) {
-						propsToPass.ref = ref;
-					}
-					return cloneElement(children, propsToPass);
+					return <Box className={triggerClassName} {...triggerProps}>
+								{children}
+							</Box>;
 				}}
 			>
 				<TooltipContent className={className}>
