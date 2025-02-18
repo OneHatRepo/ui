@@ -24,6 +24,7 @@ export default function PageSizeCombo(props) {
 						value={pageSize}
 						onChangeValue={(value) => Repository.setPageSize(value)}
 						tooltip="Page Size"
+						tooltipClassName="w-[100px]"
 						allowNull={false}
 						disableDirectEntry={true}
 					/>

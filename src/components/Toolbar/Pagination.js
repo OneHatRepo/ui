@@ -128,6 +128,7 @@ export default function Pagination(props) {
 						`}
 						textAlignIsCenter={true}
 						tooltip="Set Page"
+						tooltipClassName="w-[40px]"
 					/>);
 					items.push(<Text
 						key="totalPages"

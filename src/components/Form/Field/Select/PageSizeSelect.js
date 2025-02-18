@@ -24,6 +24,7 @@ export default function PageSizeSelect(props) {
 						value={pageSize}
 						onChangeValue={(value) => Repository.setPageSize(value)}
 						tooltip="Page Size"
+						tooltipClassName="w-[70px]"
 					/>
 				</HStack>;
 	}, [
