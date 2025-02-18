@@ -455,17 +455,20 @@ function GridComponent(props) {
 						if (isHeaderRow || isReorderMode) {
 							return
 						}
+						if (selection && selection[0] && selection[0].isRemotePhantom) {
+							return; // block context menu or changing selection when a remote phantom is already selected
+						}
 						
 						// context menu
-						const selection = [item];
+						const newSelection = [item];
 						if (!disableWithSelection) {
-							setSelection(selection);
+							setSelection(newSelection);
 						}
 						if (onEditorRowClick) { // e.g. inline editor
 							onEditorRowClick(item, index, e);
 						}
 						if (onContextMenu) {
-							onContextMenu(item, e, selection);
+							onContextMenu(item, e, newSelection);
 						}
 					}}
 					className="Pressable Row flex-row grow">
