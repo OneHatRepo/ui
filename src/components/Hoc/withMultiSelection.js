@@ -5,8 +5,7 @@ import {
 
 export default function withMultiSelection(WrappedComponent) {
 	return forwardRef((props, ref) => {
-		const
-			{
+		const {
 				selectionMode = SELECTION_MODE_MULTI,
 			} = props;
 		return <WrappedComponent

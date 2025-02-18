@@ -608,12 +608,15 @@ function Form(props) {
 			}
 
 			if (isEditorViewOnly || !isEditable) {
-				let value = record?.properties[name]?.displayValue || null;
-				if (_.isNil(value) && record && record[name]) {
-					value = record[name];
-				}
-				if (_.isNil(value) && startingValues && startingValues[name]) {
-					value = startingValues[name];
+				let value = null;
+				if (isSingle) {
+					value = record?.properties[name]?.displayValue || null;
+					if (_.isNil(value) && record && record[name]) {
+						value = record[name];
+					}
+					if (_.isNil(value) && startingValues && startingValues[name]) {
+						value = startingValues[name];
+					}
 				}
 
 				let elementClassName = 'field-' + name;
