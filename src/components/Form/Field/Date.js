@@ -362,6 +362,10 @@ export const DateElement = forwardRef((props, ref) => {
 				isDisabled={isDisabled}
 				tooltip={tooltip}
 				tooltipPlacement={tooltipPlacement}
+				tooltipClassName={`
+					flex-1
+					h-full
+				`}
 				// onLayout={(e) => {
 				// 	const {
 				// 			height,
@@ -515,6 +519,10 @@ export const DateElement = forwardRef((props, ref) => {
 							placeholder={placeholder}
 							tooltip={tooltip}
 							tooltipPlacement={tooltipPlacement}
+							tooltipClassName={`
+								flex-1
+								h-full
+							`}
 							className={`
 								flex-1
 								h-full
