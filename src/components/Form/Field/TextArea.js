@@ -97,13 +97,13 @@ const TextAreaElement = forwardRef((props, ref) => {
 
 	return <Textarea className={textareaClassName}>
 				<TextareaInput
+					{...propsToPass}
 					testID={testID}
 					ref={ref}
 					onChangeText={onChangeTextLocal}
 					value={localValue}
 					className={inputClassName}
 					placeholder={placeholder}
-					{...propsToPass}
 				/>
 			</Textarea>;
 });
