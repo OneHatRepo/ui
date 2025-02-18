@@ -10,6 +10,7 @@ export default function withTooltip(WrappedComponent) {
 		const {
 				tooltip,
 				tooltipPlacement = 'bottom',
+				tooltipClassName,
 				_tooltip = {},
 				...propsToPass
 			} = props;
@@ -20,6 +21,7 @@ export default function withTooltip(WrappedComponent) {
 			component = <Tooltip
 							label={tooltip}
 							placement={tooltipPlacement}
+							className={tooltipClassName}
 							{..._tooltip}
 						>
 							{component}
