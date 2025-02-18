@@ -50,6 +50,7 @@ export default function withSelection(WrappedComponent) {
 			initialSelection = secondarySelection || secondaryDefaultSelection || [],
 			forceUpdate = useForceUpdate(),
 			secondarySelectionRef = useRef(initialSelection),
+			SecondaryRepositoryRef = useRef(SecondaryRepository),
 			[isReady, setIsReady] = useState(secondarySelection || false), // if secondarySelection is already defined, or secondaryValue is not null and we don't need to load repository, it's ready
 			secondarySetSelection = (secondarySelection) => {
 				if (_.isEqual(secondarySelection, secondaryGetSelection())) {
@@ -67,6 +68,9 @@ export default function withSelection(WrappedComponent) {
 			},
 			secondaryGetSelection = () => {
 				return secondarySelectionRef.current;
+			},
+			secondaryGetRepository = () => {
+				return SecondaryRepositoryRef.current;
 			},
 			secondarySelectPrev = () => {
 				secondarySelectDirection(SELECT_UP);
@@ -112,6 +116,7 @@ export default function withSelection(WrappedComponent) {
 				secondarySetSelection(newSelection);
 			},
 			secondaryRemoveFromSelection = (item) => {
+				const SecondaryRepository = secondaryGetRepository();
 				let newSelection = [];
 				if (SecondaryRepository) {
 					newSelection = _.remove(secondaryGetSelection(), (sel) => sel !== item);
@@ -132,7 +137,8 @@ export default function withSelection(WrappedComponent) {
 				// That way, after a load event, we'll keep the same selection, if possible.
 				const
 					newSelection = [],
-					ids = _.map(secondaryGetSelection(), (item) => item.id);
+					ids = _.map(secondaryGetSelection(), (item) => item.id),
+					SecondaryRepository = secondaryGetRepository();
 				_.each(ids, (id) => {
 					const found = SecondaryRepository.getById(id);
 					if (found) {
@@ -144,6 +150,7 @@ export default function withSelection(WrappedComponent) {
 			getMaxMinSelectionIndices = () => {
 				let items,
 					currentlySelectedRowIndices = [];
+				const SecondaryRepository = secondaryGetRepository();
 				if (SecondaryRepository) {
 					items = SecondaryRepository.getEntitiesOnPage();
 				} else {
@@ -194,6 +201,7 @@ export default function withSelection(WrappedComponent) {
 				secondarySetSelection(newSelection);
 			},
 			secondaryIsInSelection = (item) => {
+				const SecondaryRepository = secondaryGetRepository();
 				if (SecondaryRepository) {
 					return inArray(item, secondaryGetSelection());
 				}
@@ -204,6 +212,8 @@ export default function withSelection(WrappedComponent) {
 				return !!found;
 			},
 			getIndexOfSelectedItem = (item) => {
+				const SecondaryRepository = secondaryGetRepository();
+
 				// Gets ix of entity on page, or element in secondaryData array
 				if (SecondaryRepository) {
 					const entities = SecondaryRepository.getEntitiesOnPage();
@@ -223,12 +233,14 @@ export default function withSelection(WrappedComponent) {
 				if (!secondaryGetSelection()[0]) {
 					return null;
 				}
-				const secondaryValues = _.map(secondaryGetSelection(), (item) => {
-					if (SecondaryRepository) {
-						return item.id;
-					}
-					return item[secondaryIdIx];
-				});
+				const
+					SecondaryRepository = secondaryGetRepository(),
+					secondaryValues = _.map(secondaryGetSelection(), (item) => {
+						if (SecondaryRepository) {
+							return item.id;
+						}
+						return item[secondaryIdIx];
+					});
 				if (secondaryValues.length === 1) {
 					return secondaryValues[0];
 				}
@@ -239,6 +251,7 @@ export default function withSelection(WrappedComponent) {
 					return '';
 				}
 
+				const SecondaryRepository = secondaryGetRepository();
 				return _.map(secondarySelection, (item) => {
 							if (SecondaryRepository) {
 								return item.displayValue;
@@ -258,6 +271,7 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			conformSelectionToValue = async () => {
+				const SecondaryRepository = secondaryGetRepository();
 				let newSelection = [];
 				if (SecondaryRepository) {
 					if (SecondaryRepository.isLoading) {
@@ -325,6 +339,7 @@ export default function withSelection(WrappedComponent) {
 
 			(async () => {
 
+				const SecondaryRepository = secondaryGetRepository();
 				if (usesWithValue && SecondaryRepository?.isRemote 
 					&& !SecondaryRepository.isAutoLoad && !SecondaryRepository.isLoaded && !SecondaryRepository.isLoading && (!_.isNil(secondaryValue) || !_.isEmpty(secondarySelection)) || secondaryAutoSelectFirstItem) {
 					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 

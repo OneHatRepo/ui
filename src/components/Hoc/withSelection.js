@@ -48,6 +48,7 @@ export default function withSelection(WrappedComponent) {
 			initialSelection = selection || defaultSelection || [],
 			forceUpdate = useForceUpdate(),
 			selectionRef = useRef(initialSelection),
+			RepositoryRef = useRef(Repository),
 			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
 			setSelection = (selection) => {
 				if (_.isEqual(selection, getSelection())) {
@@ -65,7 +66,10 @@ export default function withSelection(WrappedComponent) {
 			},
 			getSelection = () => {
 				return selectionRef.current;
-			}
+			},
+			getRepository = () => {
+				return RepositoryRef.current;
+			},
 			selectPrev = () => {
 				selectDirection(SELECT_UP);
 			},
@@ -110,6 +114,7 @@ export default function withSelection(WrappedComponent) {
 				setSelection(newSelection);
 			},
 			removeFromSelection = (item) => {
+				const Repository = getRepository();
 				let newSelection = [];
 				if (Repository) {
 					newSelection = _.remove(getSelection(), (sel) => sel !== item);
@@ -130,7 +135,8 @@ export default function withSelection(WrappedComponent) {
 				// That way, after a load event, we'll keep the same selection, if possible.
 				const
 					newSelection = [],
-					ids = _.map(getSelection(), (item) => item.id);
+					ids = _.map(getSelection(), (item) => item.id),
+					Repository = getRepository();
 				_.each(ids, (id) => {
 					const found = Repository.getById(id);
 					if (found) {
@@ -142,6 +148,7 @@ export default function withSelection(WrappedComponent) {
 			getMaxMinSelectionIndices = () => {
 				let items,
 					currentlySelectedRowIndices = [];
+				const Repository = getRepository();
 				if (Repository) {
 					items = Repository.getEntitiesOnPage();
 				} else {
@@ -192,6 +199,7 @@ export default function withSelection(WrappedComponent) {
 				setSelection(newSelection);
 			},
 			isInSelection = (item) => {
+				const Repository = getRepository();
 				if (Repository) {
 					return inArray(item, getSelection());
 				}
@@ -202,6 +210,8 @@ export default function withSelection(WrappedComponent) {
 				return !!found;
 			},
 			getIndexOfSelectedItem = (item) => {
+				const Repository = getRepository();
+
 				// Gets ix of entity on page, or element in data array
 				if (Repository) {
 					const entities = Repository.getEntitiesOnPage();
@@ -221,12 +231,14 @@ export default function withSelection(WrappedComponent) {
 				if (!getSelection()[0]) {
 					return null;
 				}
-				const values = _.map(getSelection(), (item) => {
-					if (Repository) {
-						return item.id;
-					}
-					return item[idIx];
-				});
+				const
+					Repository = getRepository(),
+					values = _.map(getSelection(), (item) => {
+						if (Repository) {
+							return item.id;
+						}
+						return item[idIx];
+					});
 				if (values.length === 1) {
 					return values[0];
 				}
@@ -237,6 +249,7 @@ export default function withSelection(WrappedComponent) {
 					return '';
 				}
 
+				const Repository = getRepository();
 				return _.map(selection, (item) => {
 							if (Repository) {
 								return item.displayValue;
@@ -256,6 +269,7 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			conformSelectionToValue = async () => {
+				const Repository = getRepository();
 				let newSelection = [];
 				if (Repository) {
 					if (Repository.isLoading) {
@@ -323,6 +337,7 @@ export default function withSelection(WrappedComponent) {
 
 			(async () => {
 
+				const Repository = getRepository();
 				if (usesWithValue && Repository?.isRemote 
 					&& !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading && (!_.isNil(value) || !_.isEmpty(selection)) || autoSelectFirstItem) {
 					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
