@@ -966,7 +966,7 @@ function Form(props) {
 		doReset = (values) => {
 			reset(values);
 			if (onReset) {
-				onReset(values, formSetValue, formGetValues);
+				onReset(values, formSetValue, formGetValues, trigger);
 			}
 		},
 		onSaveDecorated = async (data, e) => {
@@ -1005,7 +1005,7 @@ function Form(props) {
 			doReset(defaultValues);
 		}
 		if (formSetup) {
-			formSetup(formSetValue, formGetValues, formState);
+			formSetup(formSetValue, formGetValues, formState, trigger);
 		}
 	}, [record]);
 
