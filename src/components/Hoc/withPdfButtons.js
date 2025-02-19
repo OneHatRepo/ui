@@ -141,6 +141,9 @@ export default function withPdfButtons(WrappedComponent) {
 					if (!_.isEmpty(items)) {
 						const defaults = item.defaults;
 						item.items = _.map(items, (item, ix) => {
+							if (!item){
+								return null;
+							}
 							return buildNextLayer(item, ix, defaults);
 						});
 					}
