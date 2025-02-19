@@ -197,15 +197,17 @@ export const ComboComponent = forwardRef((props, ref) => {
 				if (Repository) {
 					if (!Repository.isDestroyed) {
 						let entity;
-						if (!Repository.isLoaded) {
-							entity = await Repository.getSingleEntityFromServer(value);
-						} else {
-							if (Repository.isLoading) {
-								await Repository.waitUntilDoneLoading();
-							}
-							entity = Repository.getById(value);
-							if (!entity) {
+						if (!_.isEmpty(value)) {
+							if (!Repository.isLoaded) {
 								entity = await Repository.getSingleEntityFromServer(value);
+							} else {
+								if (Repository.isLoading) {
+									await Repository.waitUntilDoneLoading();
+								}
+								entity = Repository.getById(value);
+								if (!entity) {
+									entity = await Repository.getSingleEntityFromServer(value);
+								}
 							}
 						}
 						displayValue = entity?.displayValue || '';
