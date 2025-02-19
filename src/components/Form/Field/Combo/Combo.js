@@ -213,6 +213,10 @@ export const ComboComponent = forwardRef((props, ref) => {
 				}
 			}
 
+			if (isInTag) {
+				displayValue = '';
+			}
+
 			displayValueRef.current = displayValue;
 			resetTextInputValue();
 		},
