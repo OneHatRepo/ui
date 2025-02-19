@@ -534,10 +534,12 @@ function TreeComponent(props) {
 		buildAndSetTreeNodeData = async () => {
 			let nodes = [];
 			if (Repository) {
-				if (!Repository.areRootNodesLoaded) {
-					nodes = await Repository.loadRootNodes(1);
-				} else {
-					nodes = Repository.getRootNodes();
+				if (!Repository.isDestroyed) {
+					if (!Repository.areRootNodesLoaded) {
+						nodes = await Repository.loadRootNodes(1);
+					} else {
+						nodes = Repository.getRootNodes();
+					}
 				}
 			} else {
 				nodes = assembleDataTreeNodes();
@@ -611,7 +613,9 @@ function TreeComponent(props) {
 		},
 		getTreeNodeByNodeId = (node_id) => {
 			if (Repository) {
-				return Repository.getById(node_id);
+				if (!Repository.isDestroyed) {
+					return Repository.getById(node_id);
+				}
 			}
 			return data[node_id]; // TODO: This is probably not right!
 		},
@@ -1217,11 +1221,11 @@ function TreeComponent(props) {
 				dropRowRecord = dropRowDatum.item;
 
 			if (Repository) {
-				
-				const commonAncestorId = await Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
-				const commonAncestorDatum = getDatumById(commonAncestorId);
-				reloadNode(commonAncestorDatum.item);
-
+				if (!Repository.isDestroyed) {
+					const commonAncestorId = await Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
+					const commonAncestorDatum = getDatumById(commonAncestorId);
+					reloadNode(commonAncestorDatum.item);
+				}
 			} else {
 
 				throw Error('Not yet implemented');

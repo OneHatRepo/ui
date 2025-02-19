@@ -170,19 +170,20 @@ export const ComboComponent = forwardRef((props, ref) => {
 			} else if (_.isArray(value)) {
 				displayValue = [];
 				if (Repository) {
-					if (!Repository.isLoaded) {
-						debugger;
-						throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
-					}
-					if (Repository.isLoading) {
-						await Repository.waitUntilDoneLoading();
-					}
-					displayValue = _.each(value, (id) => {
-						const entity = Repository.getById(id);
-						if (entity) {
-							displayValue.push(entity.displayValue);
+					if (!Repository.isDestroyed) {
+						if (!Repository.isLoaded) {
+							throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
 						}
-					});
+						if (Repository.isLoading) {
+							await Repository.waitUntilDoneLoading();
+						}
+						displayValue = _.each(value, (id) => {
+							const entity = Repository.getById(id);
+							if (entity) {
+								displayValue.push(entity.displayValue);
+							}
+						});
+					}
 				} else {
 					displayValue = _.each(value, (id) => {
 						const item = _.find(data, (datum) => datum[idIx] === id);
@@ -194,19 +195,21 @@ export const ComboComponent = forwardRef((props, ref) => {
 				displayValue = displayValue.join(', ');
 			} else {
 				if (Repository) {
-					let entity;
-					if (!Repository.isLoaded) {
-						entity = await Repository.getSingleEntityFromServer(value);
-					} else {
-						if (Repository.isLoading) {
-							await Repository.waitUntilDoneLoading();
-						}
-						entity = Repository.getById(value);
-						if (!entity) {
+					if (!Repository.isDestroyed) {
+						let entity;
+						if (!Repository.isLoaded) {
 							entity = await Repository.getSingleEntityFromServer(value);
+						} else {
+							if (Repository.isLoading) {
+								await Repository.waitUntilDoneLoading();
+							}
+							entity = Repository.getById(value);
+							if (!entity) {
+								entity = await Repository.getSingleEntityFromServer(value);
+							}
 						}
+						displayValue = entity?.displayValue || '';
 					}
-					displayValue = entity?.displayValue || '';
 				} else {
 					const item = _.find(data, (datum) => datum[idIx] === value);
 					displayValue = (item && item[displayIx]) || '';
@@ -403,14 +406,16 @@ export const ComboComponent = forwardRef((props, ref) => {
 		},
 		clearGridFilters = async () => {
 			if (Repository) {
-				if (Repository.isLoading) {
-					await Repository.waitUntilDoneLoading();
-				}
-				const filterName = getFilterName();
-				if (Repository.hasFilter(filterName)) {
-					Repository.clearFilters(filterName);
-					if (Repository.isRemote && !Repository.isAutoLoad) {
-						await Repository.reload();
+				if (!Repository.isDestroyed) {
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
+					}
+					const filterName = getFilterName();
+					if (Repository.hasFilter(filterName)) {
+						Repository.clearFilters(filterName);
+						if (Repository.isRemote && !Repository.isAutoLoad) {
+							await Repository.reload();
+						}
 					}
 				}
 			} else {
@@ -425,38 +430,40 @@ export const ComboComponent = forwardRef((props, ref) => {
 		searchForMatches = async (value) => {
 			let found;
 			if (Repository) {
-				if (Repository.isLoading) {
-					await Repository.waitUntilDoneLoading();
-				}
-
-				if (_.isEmpty(value)) {
-					clearGridFilters();
-					return;
-				}
-
-				// Set filter
-				const
-					idRegex = /^id:(.*)$/,
-					isId = _.isString(value) && !!value.match(idRegex),
-					filterName = getFilterName(isId);
-				if (Repository.isRemote) {
-					// remote
-					const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : value + '%');
-					await Repository.filter(filterName, filterValue);
-					if (!Repository.isAutoLoad) {
-						await Repository.reload();
+				if (!Repository.isDestroyed) {
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
 					}
-				} else {
-					// local
-					Repository.filter({
-						name: filterName,
-						fn: (entity) => {
-							const
-								displayValue = entity.displayValue,
-								regex = new RegExp('^' + value, 'i'); // case-insensitive
-							return displayValue.match(regex);
-						},
-					});
+
+					if (_.isEmpty(value)) {
+						clearGridFilters();
+						return;
+					}
+
+					// Set filter
+					const
+						idRegex = /^id:(.*)$/,
+						isId = _.isString(value) && !!value.match(idRegex),
+						filterName = getFilterName(isId);
+					if (Repository.isRemote) {
+						// remote
+						const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : value + '%');
+						await Repository.filter(filterName, filterValue);
+						if (!Repository.isAutoLoad) {
+							await Repository.reload();
+						}
+					} else {
+						// local
+						Repository.filter({
+							name: filterName,
+							fn: (entity) => {
+								const
+									displayValue = entity.displayValue,
+									regex = new RegExp('^' + value, 'i'); // case-insensitive
+								return displayValue.match(regex);
+							},
+						});
+					}
 				}
 
 				if (!isId) {

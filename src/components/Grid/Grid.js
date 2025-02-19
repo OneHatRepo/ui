@@ -744,10 +744,12 @@ function GridComponent(props) {
 				let dragRecord,
 					dropRecord;
 				if (Repository) {
-					dragRecord = Repository.getByIx(dragIx);
-					dropRecord = Repository.getByIx(dropIx);
-					if (dropRecord) {
-						Repository.reorder(dragRecord, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
+					if (!Repository.isDestroyed) {
+						dragRecord = Repository.getByIx(dragIx);
+						dropRecord = Repository.getByIx(dropIx);
+						if (dropRecord) {
+							Repository.reorder(dragRecord, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
+						}
 					}
 				} else {
 					function arrayMove(arr, fromIndex, toIndex) {

@@ -30,15 +30,17 @@ const
 				my: '2px',
 			};
 			if (Repository) {
-				const entities = Repository.getEntitiesOnPage();
-				radios = _.map(entities, (entity, ix) => {
-					return <Radio
-								{...testProps('radio-' + entity.id)}
-								key={ix}
-								value={entity.id}
-								{...radioProps}
-							>{entity.displayValue}</Radio>;
-				});
+				if (!Repository.isDestroyed) {
+					const entities = Repository.getEntitiesOnPage();
+					radios = _.map(entities, (entity, ix) => {
+						return <Radio
+									{...testProps('radio-' + entity.id)}
+									key={ix}
+									value={entity.id}
+									{...radioProps}
+								>{entity.displayValue}</Radio>;
+					});
+				}
 			} else {
 				radios = _.map(data, (datum, ix) => {
 					return <Radio

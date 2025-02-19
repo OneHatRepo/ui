@@ -124,11 +124,13 @@ function TagComponent(props) {
 			if (!id) {
 				displayValue = '';
 			} else if (Repository) {
-				item = Repository.getById(id);
-				if (!item) {
-					throw Error('item not found');
+				if (!Repository.isDestroyed) {
+					item = Repository.getById(id);
+					if (!item) {
+						throw Error('item not found');
+					}
+					displayValue = item.displayValue;
 				}
-				displayValue = item.displayValue;
 			} else {
 				item = _.find(data, (datum) => datum[idIx] === id);
 				if (!item) {

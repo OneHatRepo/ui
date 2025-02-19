@@ -150,7 +150,9 @@ export default function withSelection(WrappedComponent) {
 					currentlySelectedRowIndices = [];
 				const Repository = getRepository();
 				if (Repository) {
-					items = Repository.getEntitiesOnPage();
+					if (!Repository.isDestroyed) {
+						items = Repository.getEntitiesOnPage();
+					}
 				} else {
 					items = data;
 				}
@@ -214,8 +216,12 @@ export default function withSelection(WrappedComponent) {
 
 				// Gets ix of entity on page, or element in data array
 				if (Repository) {
-					const entities = Repository.getEntitiesOnPage();
-					return entities.indexOf(item);
+					if (!Repository.isDestroyed) {
+						const entities = Repository.getEntitiesOnPage();
+						return entities.indexOf(item);
+					} else {
+						return -1;
+					}
 				}
 				
 				let found;
@@ -272,28 +278,30 @@ export default function withSelection(WrappedComponent) {
 				const Repository = getRepository();
 				let newSelection = [];
 				if (Repository) {
-					if (Repository.isLoading) {
-						await Repository.waitUntilDoneLoading();
-					}
-					// Get entity or entities that match value
-					if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
-						if (_.isArray(value)) {
-							newSelection = Repository.getBy((entity) => inArray(entity.id, value));
-						} else {
-							let found = Repository.getById(value);
-							if (found) {
-								newSelection.push(found);
-							// } else if (Repository?.isRemote && Repository?.entities.length) {
-
-							// 	// Value cannot be found in Repository, but actually exists on server
-							// 	// Try to get this value from the server directly
-							// 	Repository.filter(Repository.schema.model.idProperty, value);
-							// 	await Repository.load();
-							// 	found = Repository.getById(value);
-							// 	if (found) {
-							// 		newSelection.push(found);
-							// 	}
-
+					if (!Repository.isDestroyed) {
+						if (Repository.isLoading) {
+							await Repository.waitUntilDoneLoading();
+						}
+						// Get entity or entities that match value
+						if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
+							if (_.isArray(value)) {
+								newSelection = Repository.getBy((entity) => inArray(entity.id, value));
+							} else {
+								let found = Repository.getById(value);
+								if (found) {
+									newSelection.push(found);
+								// } else if (Repository?.isRemote && Repository?.entities.length) {
+	
+								// 	// Value cannot be found in Repository, but actually exists on server
+								// 	// Try to get this value from the server directly
+								// 	Repository.filter(Repository.schema.model.idProperty, value);
+								// 	await Repository.load();
+								// 	found = Repository.getById(value);
+								// 	if (found) {
+								// 		newSelection.push(found);
+								// 	}
+	
+								}
 							}
 						}
 					}
@@ -326,6 +334,9 @@ export default function withSelection(WrappedComponent) {
 
 		if (Repository) {
 			useEffect(() => {
+				if (Repository.isDestroyed) {
+					return null;
+				}
 				Repository.on('load', refreshSelection);
 				return () => {
 					Repository.off('load', refreshSelection);
@@ -356,8 +367,10 @@ export default function withSelection(WrappedComponent) {
 				} else if (autoSelectFirstItem) {
 					let newSelection = [];
 					if (Repository) {
-						const entitiesOnPage = Repository.getEntitiesOnPage();
-						newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
+						if (!Repository.isDestroyed) {
+							const entitiesOnPage = Repository.getEntitiesOnPage();
+							newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
+						}
 					} else {
 						newSelection = data[0] ? [data[0]] : [];
 					}
