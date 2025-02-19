@@ -998,7 +998,7 @@ function Form(props) {
 		}
 		if (record === previousRecord) {
 			if (onInit) {
-				onInit(initialValues, formSetValue, formGetValues);
+				onInit(initialValues, formSetValue, formGetValues, trigger);
 			}
 		} else {
 			setPreviousRecord(record);
