@@ -250,18 +250,18 @@ function TagComponent(props) {
 		className += ' ' + props.className;
 	}
 	const style = {};
-	if (!props.flex && !props.w) {
-		style.flex = 1;
-	} else {
-		if (props.w) {
-			style.width = props.w;
-		}
-		if (props.flex) {
-			style.flex = props.flex;
-		}
-	}
 	if (props.style) {
 		_.assign(style, props.style); // needed for grid; otherwise valuebox width can be too wide
+	}
+	if (!props.flex && !props.w && !style.width) {
+		style.flex = 1;
+	} else {
+		if (props.w && !style.width) {
+			style.width = props.w;
+		}
+		if (props.flex && !style.width) {
+			style.flex = props.flex;
+		}
 	}
 	let valueBoxesClassName = `
 		Tag-valueBoxes-container

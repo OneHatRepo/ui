@@ -92,7 +92,7 @@ function GridRow(props) {
 						justify-center
 						border-r-black-100
 						block
-						max-h-[40px]
+						max-h-[80px]
 						overflow-scroll
 					`;
 					if (isOnlyOneVisibleColumn) {
@@ -232,14 +232,9 @@ function GridRow(props) {
 						GridRow-TextNative
 						self-center
 						overflow-hidden
-						text-ellipsis
-						truncate
-						whitespace-nowrap
-						overflow-hidden
+						max-h-[80px]
 						${colClassName}
-						${styles.GRID_CELL_CLASSNAME} 
-						${styles.GRID_CELL_PX} 
-						${styles.GRID_CELL_PY} 
+						${styles.GRID_CELL_CLASSNAME}
 					`;
 					if (config.className) {
 						textClassName += ' ' + config.className;
