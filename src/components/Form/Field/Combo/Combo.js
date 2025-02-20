@@ -36,6 +36,21 @@ import _ from 'lodash';
 
 const FILTER_NAME = 'q';
 
+/**
+ * isEmptyValue
+ * _.isEmpty returns true for all integers, so we need this instead
+ * @param {*} value 
+ * @returns boolean
+ */
+function isEmptyValue(value) {
+	// 
+	return value === null ||
+			value === undefined ||
+			value === '' ||
+			value === 0 ||
+			(_.isObject(value) && _.isEmpty(value));
+};
+
 export const ComboComponent = forwardRef((props, ref) => {
 
 	const {
@@ -197,7 +212,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 				if (Repository) {
 					if (!Repository.isDestroyed) {
 						let entity;
-						if (!_.isEmpty(value)) {
+						if (!isEmptyValue(value)) {
 							if (!Repository.isLoaded) {
 								entity = await Repository.getSingleEntityFromServer(value);
 							} else {
