@@ -167,8 +167,9 @@ function GridRow(props) {
 									if (type.match(/(Tag|TagEditor|Json)$/)) {
 										elementProps.isViewOnly = true; // TODO: this won't work for InlineGridEditor, bc that Grid can't use isViewOnly when actually editing
 									}
+									let cellProps = {};
 									if (config.getCellProps) {
-										_.assign(elementProps, config.getCellProps(item));
+										_.assign(cellProps, config.getCellProps(item));
 									}
 									let elementClassName = `
 										GridRow-Element
@@ -184,6 +185,9 @@ function GridRow(props) {
 									`;
 									if (config.className) {
 										elementClassName += ' ' + config.className;
+									}
+									if (cellProps.className) {
+										elementClassName += ' ' + cellProps.className;
 									}
 									if (type.match(/(Tag|TagEditor)$/)) {
 										elementClassName += ' max-h-[80px]';
