@@ -481,10 +481,10 @@ export const ComboComponent = forwardRef((props, ref) => {
 							},
 						});
 					}
-				}
 
-				if (!isId) {
-					setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
+					if (!isId) {
+						setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
+					}
 				}
 			} else {
 				// Search through data
