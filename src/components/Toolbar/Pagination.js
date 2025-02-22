@@ -70,14 +70,23 @@ export default function Pagination(props) {
 			}
 			if (!Repository.isLocal) {
 				items.push(<ReloadButton
-					key="reloadPageBtn"
-					className="Pagination-reloadPageBtn"
-					_icon={iconProps}
-					Repository={Repository}
-					self={self}
-				/>);
+								key="reloadPageBtn"
+								className="Pagination-reloadPageBtn"
+								_icon={iconProps}
+								Repository={Repository}
+								self={self}
+							/>);
 			}
 		} else {
+			if (!Repository.isLocal) {
+				items.push(<ReloadButton
+								key="reloadPageBtn"
+								className="Pagination-reloadPageBtn"
+								_icon={iconProps}
+								Repository={Repository}
+								self={self}
+							/>);
+			}
 			isDisabled = page === 1;
 			if (showPagination) {
 				items.push(<IconButton
@@ -104,42 +113,6 @@ export default function Pagination(props) {
 								onPress={() => Repository.prevPage()}
 								tooltip="Previous Page"
 							/>);
-				if (!minimize) {
-					items.push(<Text
-						key="page"
-						className="Pagination-page mx-1"
-					>Page</Text>);
-					items.push(<Input
-						{...testProps('pageInput')}
-						key="pageInput"
-						reference="pageInput"
-						parent={self}
-						keyboardType="numeric"
-						value={page?.toString()}
-						onChangeValue={(value) => Repository.setPage(value)}
-						maxValue={totalPages}
-						isDisabled={totalPages === 1}
-						className={`
-							Pagination-pageInput
-							min-w-[40px]
-							w-[40px]
-							text-center
-							bg-grey-100
-						`}
-						textAlignIsCenter={true}
-						tooltip="Set Page"
-						tooltipClassName="w-[40px]"
-					/>);
-					items.push(<Text
-						key="totalPages"
-						className={`
-							Pagination-totalPages
-							whitespace-nowrap
-							inline-flex
-							mx-1
-						`}
-					>{`of ${totalPages}`}</Text>);
-				}
 
 				isDisabled = page === totalPages || totalPages <= 1;
 				items.push(<IconButton
@@ -166,17 +139,44 @@ export default function Pagination(props) {
 								onPress={() => Repository.setPage(totalPages)}
 								tooltip="Last Page"
 							/>);
+				if (!minimize) {
+					items.push(<Text
+									key="page"
+									className="Pagination-page mx-1"
+								>Page</Text>);
+					items.push(<Input
+									{...testProps('pageInput')}
+									key="pageInput"
+									reference="pageInput"
+									parent={self}
+									keyboardType="numeric"
+									value={page?.toString()}
+									onChangeValue={(value) => Repository.setPage(value)}
+									maxValue={totalPages}
+									isDisabled={totalPages === 1}
+									className={`
+										Pagination-pageInput
+										min-w-[40px]
+										w-[40px]
+										text-center
+										bg-grey-100
+									`}
+									textAlignIsCenter={true}
+									tooltip="Set Page"
+									tooltipClassName="w-[40px]"
+								/>);
+					items.push(<Text
+									key="totalPages"
+									className={`
+										Pagination-totalPages
+										whitespace-nowrap
+										inline-flex
+										mx-1
+									`}
+								>{`of ${totalPages}`}</Text>);
+				}
 			}
 
-			if (!Repository.isLocal) {
-				items.push(<ReloadButton
-					key="reloadPageBtn"
-					className="Pagination-reloadPageBtn"
-					_icon={iconProps}
-					Repository={Repository}
-					self={self}
-				/>);
-			}
 			if (showPagination && !minimize && !disablePageSize) {
 				items.push(<PageSizeSelect
 								{...testProps('pageSize')}
@@ -204,15 +204,14 @@ export default function Pagination(props) {
 			}
 		}
 		return <HStack
-					style={{ userSelect: 'none', }}
+					style={{
+						userSelect: 'none',
+					}}
 					className={`
 						Pagination
-						flex-none
-						gap-1
-						justify-start
 						items-center
-						px-2
-						mr-3
+						shrink-0
+						gap-2
 					`}
 				>
 					{items}

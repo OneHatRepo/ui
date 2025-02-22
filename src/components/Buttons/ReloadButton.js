@@ -30,7 +30,6 @@ export default function ReloadButton(props) {
 				{...propsToPass}
 				icon={Rotate}
 				_icon={_icon}
-				className="ml-2"
 				tooltip="Reload"
 			/>;
 }

@@ -11,7 +11,7 @@ export default function PageSizeSelect(props) {
 		} = props;
 
 	return useMemo(() => {
-		return <HStack className="PageSizeSelect-HStack w-[70px] ml-3">
+		return <HStack className="PageSizeSelect-HStack w-[70px]">
 					<Select
 						data={[
 							// [ 1, '1', ],

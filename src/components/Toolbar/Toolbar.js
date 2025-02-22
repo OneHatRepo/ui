@@ -9,14 +9,10 @@ export default function Toolbar(props) {
 	
 	let className = `
 		Toolbar
-		flex
-		w-full
-		justify-start
-		items-center
 		overflow-auto
-		space-x-2
-		px-2
-		py-2
+		items-center
+		justify-start
+		p-2
 		border-b
 		border-solid
 		border-b-grey-400

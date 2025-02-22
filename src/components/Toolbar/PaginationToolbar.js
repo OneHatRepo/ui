@@ -36,10 +36,20 @@ export default function PaginationToolbar(props) {
 				className={`
 					border-t
 					border-t-grey-400
-					w-full
 				`}
 				onLayout={(e) => onLayout(e)}
 			>
+				{toolbarItems.length ?
+					<HStack
+						className={`
+							PaginationToolbar-HStack
+							shrink-0
+							border-r
+							border-r-grey-400
+							mr-3
+							pr-3
+						`}
+					>{toolbarItems}</HStack> : null}
 				<Pagination
 					{...propsToPass}
 					showPagination={showPagination}
@@ -47,16 +57,5 @@ export default function PaginationToolbar(props) {
 					minimize={minimize}
 					disablePageSize={disablePageSize}
 				/>
-				{toolbarItems.length ?
-					<HStack className={`
-						PaginationToolbar-HStack
-						flex-1
-						space-x-1
-						border-l
-						border-l-grey-400
-						ml-3
-						pl-3
-					`}
-					>{toolbarItems}</HStack> : null}
 			</Toolbar>;
 };
