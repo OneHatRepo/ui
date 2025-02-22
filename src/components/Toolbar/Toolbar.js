@@ -12,6 +12,7 @@ export default function Toolbar(props) {
 		overflow-auto
 		items-center
 		justify-start
+		gap-2
 		p-2
 		border-b
 		border-solid
