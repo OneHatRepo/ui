@@ -654,7 +654,7 @@ export default function withFilters(WrappedComponent) {
 						<HStack className="withFilters-scrollViewContainer flex-1 items-center">
 							<ScrollView
 								ref={scrollViewRef}
-								className={`withFilters-ScrollView ${scrollViewClass}`}
+								className={`withFilters-ScrollView ${scrollViewClass} pb-1`}
 								horizontal={true}
 								contentContainerStyle={{ alignItems: 'center' }}
 								onContentSizeChange={onContentSizeChange}
