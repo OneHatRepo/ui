@@ -93,7 +93,7 @@ function GridRow(props) {
 						border-r-black-100
 						block
 						max-h-[80px]
-						overflow-scroll
+						overflow-auto
 					`;
 					if (isOnlyOneVisibleColumn) {
 						colClassName = ' w-full';
