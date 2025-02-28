@@ -78,6 +78,8 @@ const defaults = {
 	GRID_ROW_BG_HOVER: '#ccc', // must be hex
 	GRID_ROW_SELECTED_BG: '#ff0', // must be hex
 	GRID_ROW_SELECTED_BG_HOVER: '#cc0', // must be hex
+	GRID_ROW_MAX_HEIGHT_NORMAL: 'max-h-[40px]',
+	GRID_ROW_MAX_HEIGHT_EXTRA: 'max-h-[80px]',
 	GRID_REORDER_BORDER_COLOR: 'border-[#23d9ea]',
 	GRID_REORDER_BORDER_WIDTH: 'border-4',
 	GRID_REORDER_BORDER_STYLE: 'border-dashed',

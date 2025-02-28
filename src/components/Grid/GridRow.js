@@ -92,8 +92,8 @@ function GridRow(props) {
 						justify-center
 						border-r-black-100
 						block
-						max-h-[80px]
 						overflow-auto
+						${styles.GRID_ROW_MAX_HEIGHT_EXTRA}
 					`;
 					if (isOnlyOneVisibleColumn) {
 						colClassName = ' w-full';
@@ -178,10 +178,10 @@ function GridRow(props) {
 										px-2
 										py-3
 										block
-										max-h-[40px]
 										overflow-scroll
 										${colClassName}
 										${styles.GRID_CELL_CLASSNAME}
+										${styles.GRID_ROW_MAX_HEIGHT_NORMAL}
 									`;
 									if (config.className) {
 										elementClassName += ' ' + config.className;
@@ -190,7 +190,7 @@ function GridRow(props) {
 										elementClassName += ' ' + cellProps.className;
 									}
 									if (type.match(/(Tag|TagEditor)$/)) {
-										elementClassName += ' max-h-[80px]';
+										elementClassName += ' ' + styles.GRID_ROW_MAX_HEIGHT_EXTRA;
 									}
 									return <Element
 												{...testProps('cell-' + config.fieldName)}
@@ -236,9 +236,9 @@ function GridRow(props) {
 						GridRow-TextNative
 						self-center
 						overflow-hidden
-						max-h-[80px]
 						${colClassName}
 						${styles.GRID_CELL_CLASSNAME}
+						${styles.GRID_ROW_MAX_HEIGHT_EXTRA}
 					`;
 					if (config.className) {
 						textClassName += ' ' + config.className;

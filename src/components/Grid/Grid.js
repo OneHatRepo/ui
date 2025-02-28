@@ -769,21 +769,13 @@ function GridComponent(props) {
 			const
 				headerHeight = showHeaders ? 50 : 0,
 				footerHeight = !disablePagination ? 50 : 0,
-				height = containerHeight - headerHeight - footerHeight;
-
-			const rowsPerContainer = Math.floor(height / defaultRowHeight);
-
-			// // Get the total height of all rows
-			// const rows = gridRef.current._listRef._scrollRef.childNodes[0].childNodes;
-			// let totalRowHeight = 0;
-			// rows.forEach((row) => {
-			// 	totalRowHeight += row.getBoundingClientRect().height;
-			// });
-			// const rowsPerContainer = Math.floor(height / (totalRowHeight / rows.length));
-
-			let pageSize = rowsPerContainer;
-			if (showHeaders) {
-				pageSize--;
+				availableHeight = containerHeight - headerHeight - footerHeight,
+				maxClassNormal = styles.GRID_ROW_MAX_HEIGHT_NORMAL, // e.g. max-h-[40px]
+				rowNormalHeight = parseInt(maxClassNormal.match(/\d+/)[0]);
+			
+			let pageSize = Math.floor(availableHeight / rowNormalHeight);
+			if (pageSize < 1) {
+				pageSize = 1;
 			}
 			return pageSize;
 		},
