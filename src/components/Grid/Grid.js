@@ -146,6 +146,7 @@ function GridComponent(props) {
 			disableBottomToolbar = false,
 			disablePagination = false,
 			bottomToolbar = 'pagination',
+			_paginationToolbarProps = {},
 			topToolbar = null,
 			additionalToolbarButtons = [],
 			bg = '#fff',
@@ -1164,6 +1165,7 @@ function GridComponent(props) {
 										toolbarItems={footerToolbarItemComponents}
 										disablePageSize={disablePageSize}
 										showMoreOnly={showMoreOnly}
+										{..._paginationToolbarProps}
 									/>;
 		} else if (footerToolbarItemComponents.length) {
 			listFooterComponent = <Toolbar>
