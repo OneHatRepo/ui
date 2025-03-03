@@ -101,6 +101,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onEditorClose();
 				}
 			},
+			setIsWaitModalShown = (bool) => {
+				const
+					dispatch = UiGlobals.redux?.dispatch,
+					setIsWaitModalShownAction = UiGlobals.debugReducer?.setIsWaitModalShownAction;
+				if (setIsWaitModalShownAction) {
+					console.log('withEditor:setIsWaitModalShownAction', bool);
+					dispatch(setIsWaitModalShownAction(bool));
+				}
+			},
 			setSelectionDecorated = (newSelection) => {
 				function doIt() {
 					setSelection(newSelection);
@@ -386,36 +395,66 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 
-				// check permissions for duplicate
-
 				const selection = getSelection();
 				if (selection.length !== 1) {
 					return;
 				}
+
 				if (useRemoteDuplicate) {
-					const results = await onRemoteDuplicate();
-					return results;
+					return await onRemoteDuplicate();
 				}
-				const
-					entity = selection[0],
-					idProperty = Repository.getSchema().model.idProperty,
-					rawValues = _.omit(entity.getOriginalData(), idProperty);
-				rawValues.id = null; // unset the id of the duplicate
-				const duplicate = await Repository.add(rawValues, false, true);
-				setIsIgnoreNextSelectionChange(true);
-				setSelection([duplicate]);
-				setEditorMode(EDITOR_MODE__EDIT);
-				setIsEditorShown(true);
+
+				let isSuccess = false,
+					duplicateEntity;
+				try {
+					const
+						entity = selection[0],
+						idProperty = Repository.getSchema().model.idProperty,
+						rawValues = _.omit(entity.getOriginalData(), idProperty);
+					rawValues.id = null; // unset the id of the duplicate
+
+					setIsWaitModalShown(true);
+
+					duplicateEntity = await Repository.add(rawValues, false, true);
+					isSuccess = true;
+
+				} catch(err) {
+					// do nothing
+				} finally {
+					setIsWaitModalShown(false);
+				}
+
+				if (isSuccess) {
+					setIsIgnoreNextSelectionChange(true);
+					setSelection([duplicateEntity]);
+					setEditorMode(EDITOR_MODE__EDIT);
+					setIsEditorShown(true);
+				}
 			},
 			onRemoteDuplicate = async () => {
-				const
-					selection = getSelection(),
-					entity = selection[0],
-					duplicateEntity = await Repository.remoteDuplicate(entity);
+				let isSuccess = false,
+					duplicateEntity;
+				try {
+					const
+						selection = getSelection(),
+						entity = selection[0];
+					
+					setIsWaitModalShown(true);
 
-				setIsIgnoreNextSelectionChange(true);
-				setSelection([duplicateEntity]);
-				doEdit();
+					duplicateEntity = await Repository.remoteDuplicate(entity);
+					isSuccess = true;
+					
+				} catch(err) {
+					// do nothing
+				} finally {
+					setIsWaitModalShown(false);
+				}
+				if (isSuccess) {
+					setIsIgnoreNextSelectionChange(true);
+					setSelection([duplicateEntity]);
+					doEdit();
+					return duplicateEntity;
+				}
 			},
 			doEditorSave = async (data, e) => {
 				let mode = getEditorMode() === EDITOR_MODE__ADD ? ADD : EDIT;
