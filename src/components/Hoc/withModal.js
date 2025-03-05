@@ -189,7 +189,7 @@ export default function withModal(WrappedComponent) {
 					{isModalShown && 
 						<Modal
 							isOpen={true}
-							onClose={onCancel}
+							onClose={onCancel || hideModal}
 							className="withModal-Modal"
 							{...testProps(testID)}
 						>
