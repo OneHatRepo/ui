@@ -70,16 +70,16 @@ function UploadsDownloadsWindow(props) {
 						...downloadParams,
 					}),
 					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers, downloadHeaders),
-				},
-				fetchWindow = downloadWithFetch(url, options, win),
-				interval = setInterval(function() {
-					const cookie = Cookies.get(download_token);
-					if (fetchWindow.window && cookie) {
-						clearInterval(interval);
-						Cookies.remove(download_token);
-						fetchWindow.window.close();
-					}
-				}, 1000);
+				};
+			downloadWithFetch(url, options);
+			const interval = setInterval(function() {
+				const cookie = Cookies.get(download_token);
+				if (win.window && cookie) {
+					clearInterval(interval);
+					Cookies.remove(download_token);
+					win.window.close();
+				}
+			}, 1000);
 		},
 		onDownloadTemplate = () => {
 			onDownload(true);
