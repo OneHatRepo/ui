@@ -1303,7 +1303,7 @@ function Form(props) {
 							Form-inlineFooter
 							absolute
 							top-[5px]
-							left-[100px]
+							left-[40px]
 							w-[100px]
 							min-w-[300px]
 							py-2
