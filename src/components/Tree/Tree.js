@@ -736,8 +736,8 @@ function TreeComponent(props) {
 				}
 
 				const
-					depthChildren = await datum.item.loadChildren(depth),
-					directChildren = _.filter(depthChildren, (child) => { // narrow list to only direct descendants, so buildTreeNodeData can work correctly
+					node = await datum.item.loadChildren(depth),
+					directChildren = _.filter(node.children, (child) => { // narrow list to only direct descendants, so buildTreeNodeData can work correctly
 						return child.depth === datum.item.depth + 1;
 					});
 
