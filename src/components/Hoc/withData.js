@@ -16,8 +16,7 @@ export default function withData(WrappedComponent) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 		
-		const
-			{
+		const {
 				// For @onehat/data repositories
 				Repository,
 				setRepository,

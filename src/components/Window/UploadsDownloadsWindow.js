@@ -18,14 +18,14 @@ import Cookies from 'js-cookie';
 import _ from 'lodash';
 
 function UploadsDownloadsWindow(props) {
-	const
-		{
+	const {
 			Repository,
 			columnsConfig = [],
 			uploadHeaders,
 			downloadHeaders,
 			uploadParams = {},
 			downloadParams = {},
+			onUpload,
 
 			// withComponent
 			self,
@@ -84,7 +84,7 @@ function UploadsDownloadsWindow(props) {
 		onDownloadTemplate = () => {
 			onDownload(true);
 		},
-		onUpload = async () => {
+		onUploadLocal = async () => {
 			const
 				url = Repository.api.baseURL + Repository.name + '/uploadBatch',
 				result = await Repository._send('POST', url, { importFile, ...uploadParams, }, uploadHeaders)
@@ -123,6 +123,9 @@ function UploadsDownloadsWindow(props) {
 				setImportFile(null);
 				self.formSetValue('file', null);
 				showInfo("Upload successful.\n");
+				if (onUpload) {
+					onUpload();
+				}
 			}
 		};
 	
@@ -191,7 +194,7 @@ function UploadsDownloadsWindow(props) {
 												size: 'md',
 											},
 											isDisabled: !importFile,
-											onPress: onUpload,
+											onPress: onUploadLocal,
 										},
 										{
 											type: 'Button',

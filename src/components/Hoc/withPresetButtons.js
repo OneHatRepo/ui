@@ -50,6 +50,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				useUploadDownload = false,
 				uploadHeaders,
 				uploadParams,
+				onUpload,
 				downloadHeaders,
 				downloadParams,
 				onChangeColumnsConfig,
@@ -369,6 +370,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 								columnsConfig={props.columnsConfig}
 								uploadHeaders={uploadHeaders}
 								uploadParams={uploadParams}
+								onUpload={onUpload}
 								downloadHeaders={downloadHeaders}
 								downloadParams={downloadParams}
 							/>,
