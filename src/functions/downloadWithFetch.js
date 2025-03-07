@@ -1,8 +1,18 @@
 const downloadWithFetch = (url, options = {}, win = null) => {
 	let obj = {};
 	fetch(url, options)
-		.then( res => res.blob() )
-		.then( blob => {
+		.then((res) => {
+			const contentDisposition = res.headers.get('Content-Disposition');
+			let filename = 'download';
+			if (contentDisposition && contentDisposition.indexOf('attachment') !== -1) {
+				const matches = /filename="([^"]*)"/.exec(contentDisposition);
+				if (matches != null && matches[1]) { 
+					filename = matches[1];
+				}
+			}
+			return res.blob().then((blob) => ({ blob, filename }));
+		})
+		.then(({ blob, filename }) => {
 			// if (!win) {
 			// 	const
 			// 		winName = 'Download',
@@ -17,7 +27,7 @@ const downloadWithFetch = (url, options = {}, win = null) => {
 			// const link = win.document.createElement('a');
 			const link = document.createElement('a');
 			link.href = file;
-			// link.download = true;
+			link.download = filename; // Set the filename from the Content-Disposition header
 			link.target = "_blank";
 			link.click();
 
