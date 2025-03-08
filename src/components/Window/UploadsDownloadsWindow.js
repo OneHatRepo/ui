@@ -45,10 +45,6 @@ function UploadsDownloadsWindow(props) {
 
 			const
 				baseURL = Repository.api.baseURL,
-				filters = Repository.filters.reduce((result, current) => {
-					result[current.name] = current.value;
-					return result;
-				}, {}),
 				columns = columnsConfig.map((column) => {
 					return column.fieldName;
 				}),
@@ -62,11 +58,11 @@ function UploadsDownloadsWindow(props) {
 					body: JSON.stringify({
 						download_token,
 						report_id: 1,
-						filters,
 						columns,
 						order,
 						model,
 						isTemplate,
+						...Repository._params,
 						...downloadParams,
 					}),
 					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers, downloadHeaders),
