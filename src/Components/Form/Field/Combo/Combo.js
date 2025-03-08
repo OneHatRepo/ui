@@ -722,7 +722,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			// 'data',
 			'idIx',
 			'displayIx',
-			'value',
+			// 'value',
 			'disableView',
 			'disableCopy',
 			'disableDuplicate',
@@ -732,6 +732,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 			'selectorSelectedField',
 			'usePermissions',
 		]);
+		if (!isInTag) {
+			gridProps.value = props.value;
+		}
 		if (!Repository) {
 			gridProps.data = filteredData;
 		}
