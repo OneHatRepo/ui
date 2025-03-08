@@ -307,7 +307,7 @@ export default function withFilters(WrappedComponent) {
 											placeholder={tooltip}
 											value={getFilterValue(field)}
 											onChangeValue={(value) => onFilterChangeValue(field, value)}
-											isFilter={true}
+											isInFilter={true}
 											minimizeForRow={true}
 											{...filterProps}
 											{...elementProps}

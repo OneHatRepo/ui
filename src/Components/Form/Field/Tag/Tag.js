@@ -38,6 +38,9 @@ function TagComponent(props) {
 			// withComponent
 			self,
 
+			// withFilters
+			isInFilter,
+
 			// withValue
 			value = [],
 			setValue,
@@ -246,6 +249,9 @@ function TagComponent(props) {
 		w-full
 		p-0
 	`;
+	if (isInFilter) {
+		className += ' max-w-[250px]';
+	}
 	if (props.className) {
 		className += ' ' + props.className;
 	}
