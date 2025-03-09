@@ -148,6 +148,7 @@ function SliderElement(props) {
 	}
 
 	let className = `
+			Slider
 			w-full
 			items-center
 		`,
@@ -184,7 +185,7 @@ function SliderElement(props) {
 					tooltipPlacement={tooltipPlacement}
 					{...props._input}
 				/>
-				<HStack className="flex-1">
+				<HStack className="SliderContainer flex-1">
 					<Slider
 						{...testProps('slider')}
 						ref={props.outerRef}
