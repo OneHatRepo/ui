@@ -292,6 +292,10 @@ function AttachmentsElement(props) {
 					</HStack>;
 		},
 		onViewLightbox = (url, id) => {
+			if (!url && !id) {
+				alert('Cannot view lightbox until image is uploaded.');
+				return;
+			}
 			showModal({
 				title: 'Lightbox',
 				body: buildModalBody(url, id),
@@ -302,8 +306,22 @@ function AttachmentsElement(props) {
 			});
 		},
 		doDelete = (id) => {
-			Repository.deleteById(id);
-			Repository.save();
+			const file = Repository.getById(id);
+			if (file) {
+				// if the file exists in the repository, delete it there
+				Repository.deleteById(id);
+				Repository.save();
+
+			} else {
+				// simply remove it from the files array
+				const newFiles = [];
+				_.each(files, (file) => {
+					if (file.id !== id) {
+						newFiles.push(file);
+					}
+				});
+				setFiles(newFiles);
+			}
 		};
 
 	if (!_.isEqual(modelidCalc, modelid.current)) {
