@@ -62,6 +62,7 @@ function withAlert(WrappedComponent) {
 									text-${color}
 									text-[18px]
 									flex-none
+									mr-2
 								`}>{message}</Text>
 							</Box>
 						</HStack>;
