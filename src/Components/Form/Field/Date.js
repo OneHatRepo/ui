@@ -17,6 +17,7 @@ import {
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
+import Button from '../../Buttons/Button.js';
 import UiGlobals from '../../../UiGlobals.js';
 import Formatters from '@onehat/data/src/Util/Formatters.js';
 import Parsers from '@onehat/data/src/Util/Parsers.js';
@@ -219,6 +220,9 @@ export const DateElement = forwardRef((props, ref) => {
 				setBothValues(value);
 				setTextInputValue(value);
 			}
+		},
+		onToday = () => {
+			onPickerChange(moment());
 		};
 
 	useEffect(() => {
@@ -459,6 +463,15 @@ export const DateElement = forwardRef((props, ref) => {
 											dateFormat={mode === DATE || mode === DATETIME ? 'YYYY-MM-DD' : false}
 											timeFormat={mode === TIME || mode === DATETIME ? 'HH:mm:ss' : false}
 											onChange={onPickerChange}
+										/>
+										<Button
+											{...testProps('todayBtn')}
+											key="todayBtn"
+											onPress={onToday}
+											className={`
+												mt-2
+											`}
+											text="Today"
 										/>
 									</PopoverBody>
 								</PopoverContent>
