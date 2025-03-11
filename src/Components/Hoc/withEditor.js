@@ -500,13 +500,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				setIsSaving(true);
-				let success;
-				try {
-					await Repository.save(null, useStaged);
-					success = true;
-				} catch (e) {
-					success = e;
-				}
+				let success = true;
+				const tempListener = (err) => {
+					success = false;
+				};
+
+				Repository.on('error', tempListener); // add a temporary listener for the error event
+				await Repository.save(null, useStaged);
+				Repository.off('error', tempListener); // remove the temporary listener
+				
 				setIsSaving(false);
 
 				if (_.isBoolean(success) && success) {
@@ -534,7 +536,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							onSave(selection);
 						}
 					}
-					// setIsEditorShown(false);
+					if (editorType === EDITOR_TYPE__INLINE) {
+						setIsEditorShown(false);
+					}
 				}
 
 				return success;
