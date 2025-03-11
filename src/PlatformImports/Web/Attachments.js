@@ -31,6 +31,7 @@ import withData from '../../Components/Hoc/withData.js';
 import CenterBox from '../../Components/Layout/CenterBox.js';
 import downloadInBackground from '../../Functions/downloadInBackground.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import _ from 'lodash';
 
 const
@@ -88,7 +89,7 @@ function AttachmentsElement(props) {
 			expandedMax = EXPANDED_MAX,
 			collapsedMax = COLLAPSED_MAX,
 			autoUpload = true,
-			onBeforeDropzoneChange,
+			onAfterDropzoneChange, // fn, should return true if it mutated the files array
 
 			// withComponent
 			self,
@@ -111,6 +112,7 @@ function AttachmentsElement(props) {
 		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name,
 		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity[selectorSelectedField]) : selectorSelected?.[selectorSelectedField],
 		modelid = useRef(modelidCalc),
+		forceUpdate = useForceUpdate(),
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
 		[showAll, setShowAll] = useState(false),
@@ -144,7 +146,7 @@ function AttachmentsElement(props) {
 		toggleShowAll = () => {
 			setShowAll(!showAll);
 		},
-		onDropzoneChange = (files) => {
+		onDropzoneChange = async (files) => {
 			if (!files.length) {
 				alert('No files accepted. Perhaps they were too large or the wrong file type?');
 				return;
@@ -157,8 +159,11 @@ function AttachmentsElement(props) {
 					...extraUploadData,
 				};
 			});
-			if (onBeforeDropzoneChange) {
-				onBeforeDropzoneChange(files);
+			if (onAfterDropzoneChange) {
+				const isChanged = await onAfterDropzoneChange(files);
+				if (isChanged) {
+					forceUpdate();
+				}
 			}
 		},
 		onUploadStart = (files) => {
