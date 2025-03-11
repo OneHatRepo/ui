@@ -501,8 +501,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				setIsSaving(true);
 				let success = true;
-				const tempListener = (err) => {
-					success = false;
+				const tempListener = (msg, data) => {
+					success = { msg, data };
 				};
 
 				Repository.on('error', tempListener); // add a temporary listener for the error event

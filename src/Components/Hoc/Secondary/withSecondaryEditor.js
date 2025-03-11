@@ -465,13 +465,15 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 
 				setIsSaving(true);
-				let success;
-				try {
-					await SecondaryRepository.save(null, useStaged);
-					success = true;
-				} catch (e) {
-					success = e;
-				}
+				let success = true;
+				const tempListener = (msg, data) => {
+					success = { msg, data };
+				};
+
+				SecondaryRepository.on('error', tempListener); // add a temporary listener for the error event
+				await SecondaryRepository.save(null, useStaged);
+				SecondaryRepository.off('error', tempListener); // remove the temporary listener
+				
 				setIsSaving(false);
 
 				if (_.isBoolean(success) && success) {
@@ -499,7 +501,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 							secondaryOnSave(secondarySelection);
 						}
 					}
-					// setIsEditorShown(false);
+					if (secondaryEditorType === EDITOR_TYPE__INLINE) {
+						secondarySetIsEditorShown(false);
+					}
+
 				}
 
 				return success;
