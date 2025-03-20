@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
-	Column,
-	Row,
-	Text,
-} from 'native-base';
+	VStack,
+} from '@project-components/Gluestack';
 import withComponent from '../Hoc/withComponent.js';
 import {
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
 import {
 	EDITOR_TYPE__INLINE,
@@ -20,7 +18,7 @@ import _ from 'lodash';
 
 function InlineEditor(props) {
 
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+	if (UiGlobals.mode === UI_MODE_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 	
@@ -46,6 +44,7 @@ function InlineEditor(props) {
 		styles = UiGlobals.styles,
 		maskRef = useRef(),
 		inlineEditorRef = useRef(),
+		footerRef = useRef(),
 		[currentRow, setCurrentRow] = useState(),
 		onScreenResize = () => {
 			// TODO: Attach a div with zIndex 0 to body to monitor resize events. THis is handler
@@ -65,7 +64,7 @@ function InlineEditor(props) {
 		onEditorShown = () => {
 			// determine which row to move the editor to
 			const
-				data = self.parent.gridRef.current.props.data, // This is okay, because (for now) the inlineEditor is only for use with grids
+				data = self.parent.gridRef.current.props.data, // This is okay, because (for now) the inlineEditor is only for use with Grids
 				ix = data.indexOf(selection[0]),
 				gridRowsContainer = self.parent.gridRef.current._listRef._scrollRef.childNodes[0],
 				currentRow = gridRowsContainer.childNodes[ix];
@@ -102,14 +101,6 @@ function InlineEditor(props) {
 	return <>
 				<Box
 					ref={maskRef}
-					position="fixed"
-					w="100vw"
-					h="100vh"
-					top="0"
-					left="0"
-					bg="#000"
-					opacity={0.3}
-					zIndex={0}
 					onClick={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
@@ -121,41 +112,56 @@ function InlineEditor(props) {
 							onEditorCancel();
 						}
 					}}
+					className={`
+						InlineEditor-mask
+						fixed
+						w-screen
+						h-screen
+						top-0
+						left-0
+						bg-black
+						opacity-30 z-0
+					`} 
 				/>
-				<Column
+				<VStack
 					ref={inlineEditorRef}
-					position="absolute"
-					zIndex={10}
 					{...testProps('inlineEditor')}
-					h={isEditorShown ? '100px' : 0}
-					minWidth="100%"
-					display="inline-block"
-					whiteSpace="nowrap"
+					className={`
+						InlineEditor-VStack
+						absolute
+						z-10
+						min-w-full
+						inline-block
+						max-h-[100px]
+						${isEditorShown ? "h-[100px]" : "h-[0px]"}
+					`}
 				>
 					<Form
 						editorType={EDITOR_TYPE__INLINE}
 						editorStateRef={editorStateRef}
-
 						Repository={Repository}
 						isMultiple={selection.length > 1}
 						isEditorViewOnly={isEditorViewOnly}
 						columnsConfig={columnsConfig}
-						bg="#fff"
-						borderTopWidth={4}
-						borderTopColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
-						borderBottomWidth={4}
-						borderBottomColor={styles.GRID_INLINE_EDITOR_BORDER_COLOR}
-						py={1}
-						px={0}
-
 						record={selection[0]}
 						onCancel={onEditorCancel}
 						onSave={onEditorSave}
 						onClose={onEditorClose}
 						parent={self}
 						reference="form"
+						className={`
+							InlineEditor-Form
+							flex-1
+							bg-white
+							px-0
+							py-1
+							border-t-4
+							border-b-4
+							border-t-primary-100
+							border-b-primary-100
+						`}
 					/>
-				</Column>
+				</VStack>
 			</>;
 
 }

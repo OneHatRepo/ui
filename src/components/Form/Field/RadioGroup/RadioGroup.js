@@ -1,9 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Column,
-	Radio,
-	Row,
-} from 'native-base';
+	Radio, RadioGroup,
+} from '@project-components/Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
@@ -32,15 +30,17 @@ const
 				my: '2px',
 			};
 			if (Repository) {
-				const entities = Repository.getEntitiesOnPage();
-				radios = _.map(entities, (entity, ix) => {
-					return <Radio
-								{...testProps('radio-' + entity.id)}
-								key={ix}
-								value={entity.id}
-								{...radioProps}
-							>{entity.displayValue}</Radio>;
-				});
+				if (!Repository.isDestroyed) {
+					const entities = Repository.getEntitiesOnPage();
+					radios = _.map(entities, (entity, ix) => {
+						return <Radio
+									{...testProps('radio-' + entity.id)}
+									key={ix}
+									value={entity.id}
+									{...radioProps}
+								>{entity.displayValue}</Radio>;
+					});
+				}
 			} else {
 				radios = _.map(data, (datum, ix) => {
 					return <Radio
@@ -55,9 +55,9 @@ const
 		}, [value]);
 
 		// return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}> // RadioGroup from NativeBase doesn't yet allow refs
-		return <Radio.Group onChange={props.setValue} accessibilityLabel={props.name} {...props}>
+		return <RadioGroup onChange={props.setValue} accessibilityLabel={props.name} {...props}>
 					{radios}
-				</Radio.Group>;
+				</RadioGroup>;
 	},
 	RadioGroupField = withComponent(withValue(withData(RadioGroupElement)));
 

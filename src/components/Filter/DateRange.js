@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
-	Row,
+	HStack,
+	HStackNative,
 	Text,
-} from 'native-base';
+} from '@project-components/Gluestack';
 import Date from '../Form/Field/Date.js';
 import testProps from '../../Functions/testProps.js';
-import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
 import _ from 'lodash';
 
@@ -18,10 +18,18 @@ const
 				},
 				setValue,
 				mode,
-				tooltip = '',
-
-				minValue = 0,
+				minValue,
 				maxValue,
+				tooltip,
+				tooltipPlacement,
+
+				// withComponent
+				self,
+
+				// prevent passthru of these props
+				onChangeValue,
+				onChangeSelection,
+
 				...propsToPass
 			} = props,
 			[low, setLow] = useState(''),
@@ -71,34 +79,47 @@ const
 		if (!isReady) {
 			return null;
 		}
+
+		let className = `
+			flex-1
+			justify-center
+			items-center
+			px-1
+			py-[2px]
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
+		}
 		
-		return <Row
-					justifyContent="center"
-					alignItems="center"
-					flex={1}
-					px={1}
-					{...propsToPass}
-				>
+		return <HStack className={className} style={props.style}>
 					<Date
 						{...testProps('low')}
 						value={low}
 						onChangeValue={onChangeLow}
 						mode={mode}
-						// minValue={minValue}
-						// maxValue={maxValue}
+						minValue={minValue}
+						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'Low'}
+						tooltipPlacement={tooltipPlacement}
+						limitWidth={true}
+						parent={self}
+						reference="low"
 					/>
-					<Text px={2} userSelect="none">to</Text>
+					<Text className="px-2 select-none">to</Text>
 					<Date
 						{...testProps('high')}
 						value={high}
 						onChangeValue={onChangeHigh}
 						mode={mode}
-						// minValue={minValue}
-						// maxValue={maxValue}
+						minValue={minValue}
+						maxValue={maxValue}
 						tooltip={(tooltip ? tooltip + ' ' : '') + 'High'}
+						tooltipPlacement={tooltipPlacement}
+						limitWidth={true}
+						parent={self}
+						reference="high"
 					/>
-				</Row>;
+				</HStack>;
 	},
 	DateRangeField = withValue(DateRange);
 

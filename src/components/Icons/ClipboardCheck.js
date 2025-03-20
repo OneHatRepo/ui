@@ -1,21 +1,11 @@
+import { createIcon } from "../Gluestack/icon";
 // Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc.
-import * as React from "react"
-import Svg, { Path } from "react-native-svg"
-import { Icon } from 'native-base';
+import { Path, Svg } from 'react-native-svg';
 
-function SvgComponent(props) {
-  return (
-    <Icon
-      id="Layer_2"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 9.51 12.68"
-      {...props}
-    >
-      <Path
-        d="M4.76 0C3.72 0 2.84.66 2.52 1.59h-.93C.72 1.59 0 2.3 0 3.18v7.93c0 .87.71 1.59 1.59 1.59h6.34c.87 0 1.59-.71 1.59-1.59V3.17c0-.87-.71-1.59-1.59-1.59H7A2.384 2.384 0 004.76-.01zm0 1.59c.44 0 .79.35.79.79s-.35.79-.79.79-.79-.35-.79-.79.35-.79.79-.79zm2.8 5.18L4.39 9.94c-.23.23-.61.23-.84 0L1.96 8.35c-.23-.23-.23-.61 0-.84s.61-.23.84 0l1.16 1.16 2.75-2.75c.23-.23.61-.23.84 0s.23.61 0 .84z"
-      />
-    </Icon>
-  )
-}
+const SvgComponent = createIcon({
+	Root: Svg,
+	viewBox: '0 0 384 512',
+	path: <Path d="M192 0c-41.8 0-77.4 26.7-90.5 64L64 64C28.7 64 0 92.7 0 128L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64l-37.5 0C269.4 26.7 233.8 0 192 0zm0 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM305 273L177 401c-9.4 9.4-24.6 9.4-33.9 0L79 337c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L271 239c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z" />
+});
 
 export default SvgComponent

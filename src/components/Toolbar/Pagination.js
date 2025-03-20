@@ -1,21 +1,20 @@
 import { useEffect, useMemo, } from 'react';
 import {
-	Icon,
-	Row,
+	HStack,
+	HStackNative,
 	Text,
-} from 'native-base';
+} from '@project-components/Gluestack';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
-import ReloadPageButton from '../Buttons/ReloadPageButton.js';
+import ReloadButton from '../Buttons/ReloadButton.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import AnglesLeft from '../Icons/AnglesLeft.js';
 import AngleRight from '../Icons/AngleRight.js';
 import AnglesRight from '../Icons/AnglesRight.js';
-import Rotate from '../Icons/Rotate.js';
 import Input from '../Form/Field/Input.js';
-import PageSizeCombo from '../Form/Field/Combo/PageSizeCombo.js';
+import PageSizeSelect from '../Form/Field/Select/PageSizeSelect.js';
 
 export default function Pagination(props) {
 	const {
@@ -49,17 +48,10 @@ export default function Pagination(props) {
 
 	return useMemo(() => {
 		const
-			iconButtonProps = {
-				// mx: 1,
-			},
 			iconProps = {
-				// position: 'absolute',
-				alignSelf: 'center',
 				size: 'sm',
-				color: 'trueGray.500',
-				h: 20,
-				w: 20,
 			};
+
 		let items = [],
 			isDisabled = false;
 		if (showMoreOnly) {
@@ -69,26 +61,43 @@ export default function Pagination(props) {
 								{...testProps('showMoreBtn')}
 								key="showMoreBtn"
 								reference="showMoreBtn"
+								className="Pagination-showMoreBtn"
 								parent={self}
 								onPress={() => Repository.showMore()}
 								isDisabled={isDisabled}
-								tooltip="Show More"
-							>Show More</Button>);
+								text="Show More"
+							/>);
 			}
 			if (!Repository.isLocal) {
-				items.push(<ReloadPageButton key="reloadPageBtn" {...iconButtonProps} iconProps={iconProps} Repository={Repository} self={self} />);
+				items.push(<ReloadButton
+								key="reloadPageBtn"
+								className="Pagination-reloadPageBtn"
+								_icon={iconProps}
+								Repository={Repository}
+								self={self}
+							/>);
 			}
 		} else {
+			if (!Repository.isLocal) {
+				items.push(<ReloadButton
+								key="reloadPageBtn"
+								className="Pagination-reloadPageBtn"
+								_icon={iconProps}
+								Repository={Repository}
+								self={self}
+							/>);
+			}
 			isDisabled = page === 1;
 			if (showPagination) {
 				items.push(<IconButton
 								{...testProps('firstPageBtn')}
 								key="firstPageBtn"
 								reference="firstPageBtn"
+								className="Pagination-firstPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AnglesLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AnglesLeft}
+								_icon={iconProps}
 								onPress={() => Repository.setPage(1)}
 								tooltip="First Page"
 							/>);
@@ -96,46 +105,25 @@ export default function Pagination(props) {
 								{...testProps('prevPageBtn')}
 								key="prevPageBtn"
 								reference="prevPageBtn"
+								className="Pagination-prevPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AngleLeft} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AngleLeft}
+								_icon={iconProps}
 								onPress={() => Repository.prevPage()}
 								tooltip="Previous Page"
 							/>);
-				if (!minimize) {
-					items.push(<Row
-									key="pageSelector"
-									mx={3}
-									justifyContent="center"
-									alignItems="center"
-								>
-									<Text mr={2}>Page</Text>
-									<Input
-										{...testProps('pageInput')}
-										reference="pageInput"
-										parent={self}
-										keyboardType="numeric"
-										value={page?.toString()}
-										onChangeValue={(value) => Repository.setPage(value)}
-										maxValue={totalPages}
-										isDisabled={totalPages === 1}
-										w={10}
-										tooltip="Set Page"
-									/>
-									<Text ml={2}>of {totalPages}</Text>
-								</Row>);
-				}
 
 				isDisabled = page === totalPages || totalPages <= 1;
 				items.push(<IconButton
 								{...testProps('nextPageBtn')}
 								key="nextPageBtn"
 								reference="nextPageBtn"
+								className="Pagination-nextPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AngleRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AngleRight}
+								_icon={iconProps}
 								onPress={() => Repository.nextPage()}
 								tooltip="Next Page"
 							/>);
@@ -143,20 +131,54 @@ export default function Pagination(props) {
 								{...testProps('lastPageBtn')}
 								key="lastPageBtn"
 								reference="lastPageBtn"
+								className="Pagination-lastPageBtn"
 								parent={self}
-								{...iconButtonProps}
 								isDisabled={isDisabled}
-								icon={<Icon as={AnglesRight} {...iconProps} color={isDisabled ? 'disabled' : 'trueGray.600'} />}
+								icon={AnglesRight}
+								_icon={iconProps}
 								onPress={() => Repository.setPage(totalPages)}
 								tooltip="Last Page"
 							/>);
+				if (!minimize) {
+					items.push(<Text
+									key="page"
+									className="Pagination-page mx-1"
+								>Page</Text>);
+					items.push(<Input
+									{...testProps('pageInput')}
+									key="pageInput"
+									reference="pageInput"
+									parent={self}
+									keyboardType="numeric"
+									value={page?.toString()}
+									onChangeValue={(value) => Repository.setPage(value)}
+									maxValue={totalPages}
+									isDisabled={totalPages === 1}
+									className={`
+										Pagination-pageInput
+										min-w-[40px]
+										w-[40px]
+										text-center
+										bg-grey-100
+									`}
+									textAlignIsCenter={true}
+									tooltip="Set Page"
+									tooltipClassName="w-[40px]"
+								/>);
+					items.push(<Text
+									key="totalPages"
+									className={`
+										Pagination-totalPages
+										whitespace-nowrap
+										inline-flex
+										mx-1
+									`}
+								>{`of ${totalPages}`}</Text>);
+				}
 			}
 
-			if (!Repository.isLocal) {
-				items.push(<ReloadPageButton key="reloadPageBtn" {...iconButtonProps} iconProps={iconProps} Repository={Repository} self={self} />);
-			}
 			if (showPagination && !minimize && !disablePageSize) {
-				items.push(<PageSizeCombo
+				items.push(<PageSizeSelect
 								{...testProps('pageSize')}
 								key="pageSize"
 								reference="pageSize"
@@ -170,19 +192,30 @@ export default function Pagination(props) {
 				if (pageStart === pageEnd) {
 					pageSpan = pageStart;
 				}
-				items.push(<Text key="pageDisplay" ml={3}>Displaying {pageSpan} of {total}</Text>);
+				items.push(<Text
+								key="pageDisplay"
+								className={`
+									Pagination-pageDisplay
+									whitespace-nowrap
+									inline-flex
+									mx-1
+								`}
+							>{`Displaying ${pageSpan} of ${total}`}</Text>);
 			}
 		}
-		
-		return <Row
-					justifyContent="flex-start"
-					alignItems="center"
-					px={2}
-					style={{ userSelect: 'none', }}
-					{...props}
+		return <HStack
+					style={{
+						userSelect: 'none',
+					}}
+					className={`
+						Pagination
+						items-center
+						shrink-0
+						gap-2
+					`}
 				>
 					{items}
-				</Row>;
+				</HStack>;
 	}, [
 		Repository?.hash,
 		showPagination,
@@ -193,5 +226,5 @@ export default function Pagination(props) {
 		pageStart,
 		pageEnd,
 		minimize,
-	])
-};
+	]);
+}

@@ -1,21 +1,31 @@
 import {
-	Row,
-} from 'native-base';
+	HStackNative,
+} from '@project-components/Gluestack';
 import UiGlobals from '../../UiGlobals.js';
 
 export default function Toolbar(props) {
+	
 	const styles = UiGlobals.styles;
-	return <Row
-				w="100%"
-				justifyContent="flex-start"
-				bg="trueGray.200"
-				borderBottomWidth={1}
-				borderBottomColor="trueGray.400"
-				px={styles.TOOLBAR_PX}
-				py={styles.TOOLBAR_PY}
-				overflow="auto"
-				{...props}
+	
+	let className = `
+		Toolbar
+		overflow-auto
+		items-center
+		justify-start
+		gap-2
+		p-2
+		border-b
+		border-solid
+		border-b-grey-400
+		${styles.TOOLBAR_CLASSNAME}
+	`;
+	if (props.className) {
+		className += ' ' + props.className
+	}
+	return <HStackNative
+				className={className}
+				style={props.style || {}}
 			>
 				{props.children}
-			</Row>;
+			</HStackNative>;
 };

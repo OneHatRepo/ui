@@ -1,6 +1,3 @@
-import {
-	Icon,
-} from 'native-base';
 import Button from '../Components/Buttons/Button.js';
 import testProps from './testProps.js';
 import _ from 'lodash';
@@ -14,32 +11,27 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 				handler,
 				icon,
 				isDisabled,
+				tooltip,
 				color = '#fff',
 			} = config,
 			buttonProps = {
 				key,
+				parent: self,
 				reference: key,
+				text,
+				icon,
+				isDisabled,
+				tooltip,
+				color,
 			};
 		if (handler) {
 			buttonProps.onPress = () => handler(handlerArgs);
 		}
-		if (icon) {
-			buttonProps.leftIcon = <Icon as={icon} color="#fff" size="sm" />;
-		}
-		if (isDisabled) {
-			buttonProps.isDisabled = isDisabled;
-		}
 		
-		const button = <Button
-							{...testProps('btn-' + key)}
-							color={color}
-							ml={2}
-							// mb={2}
-							parent={self}
-							reference={key}
-							{...buttonProps}
-						>{text}</Button>;
-		additionalButtons.push(button);
+		additionalButtons.push(<Button
+			{...testProps(key)}
+			{...buttonProps}
+		/>);
 	});
 	return additionalButtons;
 }

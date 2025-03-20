@@ -1,7 +1,7 @@
-import React from 'react';
+import { forwardRef } from 'react';
 import {
-	Text,
-} from 'native-base';
+	TextNative,
+} from '@project-components/Gluestack';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
@@ -9,20 +9,29 @@ import withTooltip from '../../Hoc/withTooltip.js';
 const
 	TextElement = (props) => {
 		const styles = UiGlobals.styles;
-		return <Text
+
+		let className = `
+			Text
+			flex-1
+			min-h-[40px]
+			px-3
+			py-2
+			${styles.FORM_TEXT_CLASSNAME}
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
+		}
+		
+		return <TextNative
 					ref={props.outerRef}
-					ellipsizeMode="head" 
-					flex={1}
-					fontSize={styles.FORM_TEXT_FONTSIZE}
-					minHeight='40px'
-					px={3}
-					py={2}
+					ellipsizeMode="head"
 					{...props}
-				>{props.value}</Text>;
+					className={className}
+				>{props.value}</TextNative>;
 	},
 	TextField = withComponent(TextElement); // NOT using withValue on Text element, as this element is simply for display purposes!
 
 // Tooltip needs us to forwardRef
-export default withTooltip(React.forwardRef((props, ref) => {
+export default withTooltip(forwardRef((props, ref) => {
 	return <TextField {...props} outerRef={ref} />;
 }));

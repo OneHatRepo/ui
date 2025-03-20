@@ -5,9 +5,6 @@
  * "LICENSE.txt" file, which is part of this source code package.
  */
 import { useState, } from 'react';
-import {
-	Icon,
-} from 'native-base';
 import Excel from '../Icons/Excel';
 import Panel from '../Panel/Panel.js';
 import Form from '../Form/Form.js';
@@ -15,18 +12,20 @@ import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
+import Download from '../Icons/Download';
+import Upload from '../Icons/Upload';
 import Cookies from 'js-cookie';
 import _ from 'lodash';
 
 function UploadsDownloadsWindow(props) {
-	const
-		{
+	const {
 			Repository,
 			columnsConfig = [],
 			uploadHeaders,
 			downloadHeaders,
 			uploadParams = {},
 			downloadParams = {},
+			onUpload,
 
 			// withComponent
 			self,
@@ -46,10 +45,6 @@ function UploadsDownloadsWindow(props) {
 
 			const
 				baseURL = Repository.api.baseURL,
-				filters = Repository.filters.reduce((result, current) => {
-					result[current.name] = current.value;
-					return result;
-				}, {}),
 				columns = columnsConfig.map((column) => {
 					return column.fieldName;
 				}),
@@ -63,29 +58,29 @@ function UploadsDownloadsWindow(props) {
 					body: JSON.stringify({
 						download_token,
 						report_id: 1,
-						filters,
 						columns,
 						order,
 						model,
 						isTemplate,
+						...Repository._params,
 						...downloadParams,
 					}),
 					headers: _.merge({ 'Content-Type': 'application/json' }, Repository.headers, downloadHeaders),
-				},
-				fetchWindow = downloadWithFetch(url, options, win),
-				interval = setInterval(function() {
-					const cookie = Cookies.get(download_token);
-					if (fetchWindow.window && cookie) {
-						clearInterval(interval);
-						Cookies.remove(download_token);
-						fetchWindow.window.close();
-					}
-				}, 1000);
+				};
+			downloadWithFetch(url, options);
+			const interval = setInterval(function() {
+				const cookie = Cookies.get(download_token);
+				if (win.window && cookie) {
+					clearInterval(interval);
+					Cookies.remove(download_token);
+					win.window.close();
+				}
+			}, 1000);
 		},
 		onDownloadTemplate = () => {
 			onDownload(true);
 		},
-		onUpload = async () => {
+		onUploadLocal = async () => {
 			const
 				url = Repository.api.baseURL + Repository.name + '/uploadBatch',
 				result = await Repository._send('POST', url, { importFile, ...uploadParams, }, uploadHeaders)
@@ -124,6 +119,9 @@ function UploadsDownloadsWindow(props) {
 				setImportFile(null);
 				self.formSetValue('file', null);
 				showInfo("Upload successful.\n");
+				if (onUpload) {
+					onUpload();
+				}
 			}
 		};
 	
@@ -133,15 +131,21 @@ function UploadsDownloadsWindow(props) {
 				reference="UploadsDownloadsWindow"
 				isCollapsible={false}
 				title="Uploads & Downloads"
-				bg="#fff"
-				w={width}
-				h={height}
-				flex={null}
+				className={`
+					flex-none
+					bg-white
+					shadow-lg
+				`}
+				style={{
+					height,
+					width,
+				}}
 			>
 				<Form
 					{...props}
 					parent={self}
 					reference="form"
+					hideResetButton={true}
 					items={[
 						{
 							"type": "Column",
@@ -156,13 +160,16 @@ function UploadsDownloadsWindow(props) {
 									type: 'Button',
 									text: 'Download',
 									isEditable: false,
-									leftIcon: <Icon as={Excel} />,
+									icon: Excel,
+									_icon: {
+										size: 'md',
+									},
 									onPress: () => onDownload(),
+									className: 'mb-5',
 								},
 								{
 									type: 'DisplayField',
 									text: 'Upload an Excel file to the current grid.',
-									mt: 10,
 								},
 								{
 									type: 'File',
@@ -171,19 +178,29 @@ function UploadsDownloadsWindow(props) {
 									accept: '.xlsx',
 								},
 								{
-									type: 'Button',
-									text: 'Upload',
-									isEditable: false,
-									leftIcon: <Icon as={Excel} />,
-									isDisabled: !importFile,
-									onPress: onUpload,
-								},
-								{
-									type: 'Button',
-									text: 'Get Template',
-									isEditable: false,
-									onPress: onDownloadTemplate,
-									variant: 'ghost',
+									type: 'Row',
+									className: 'mt-2',
+									items: [
+										{
+											type: 'Button',
+											text: 'Upload',
+											isEditable: false,
+											icon: Upload,
+											_icon: {
+												size: 'md',
+											},
+											isDisabled: !importFile,
+											onPress: onUploadLocal,
+										},
+										{
+											type: 'Button',
+											text: 'Get Template',
+											icon: Download,
+											isEditable: false,
+											onPress: onDownloadTemplate,
+										},
+
+									],
 								},
 							]
 						},

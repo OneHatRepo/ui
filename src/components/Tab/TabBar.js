@@ -1,16 +1,16 @@
-import React, { useState, useEffect, } from 'react';
+import { cloneElement, useState, useEffect, } from 'react';
 import {
-	Button,
-	Column,
-	Icon,
-	Row,
+	HStack,
+	HStackNative,
 	ScrollView,
-	Text,
-} from 'native-base';
+	VStack,
+	VStackNative,
+} from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import Button from '../Buttons/Button.js';
 import UiGlobals from '../../UiGlobals.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import testProps from '../../Functions/testProps.js';
@@ -85,93 +85,133 @@ function TabBar(props) {
 				onChangeCurrentTab(ix);
 			}
 		},
-		onToggleCollapse = () => {
-			setIsCollapsed(!isCollapsed);
-		},
 		renderToggleButton = () => {
-			const
-				{
-					buttonProps,
-					textProps,
+			const {
+					buttonProps: {
+						className: buttonPropsClassName,
+						...buttonPropsToPass
+					},
+					textProps: {
+						className: textPropsClassName,
+						...textPropsToPass
+					},
+					iconProps: {
+						className: iconPropsClassName,
+						...iconPropsToPass
+					},
 				} = getButtonProps();
 
+			let buttonClassName = buttonPropsClassName,
+				textClassName = textPropsClassName,
+				iconClassName = iconPropsClassName;
+			
+			const
+				icon = Maximize,
+				_icon = {
+					...iconPropsToPass,
+					className: iconClassName,
+				},
+				onPress = () => setIsCollapsed(!isCollapsed);
 			let button;
 			if (isCollapsed) {
 				button = <IconButton
 							{...testProps('toggleBtn')}
 							key="toggleBtn"
-							onPress={onToggleCollapse}
-							{...buttonProps}
-							_icon={{
-								as: Maximize,
-								color: styles.TAB_ICON_COLOR,
-							}}
-							_hover={{
-								bg: styles.TAB_HOVER_BG,
-							}}
-							bg={styles.TAB_BG}
+							onPress={onPress}
+							{...buttonPropsToPass}
+							icon={icon}
+							_icon={_icon}
+							className={buttonClassName}
 							tooltip={isCollapsed ? 'Expand' : 'Collapse'}
 						/>;
 			} else {
+				buttonClassName += `
+					w-[200px]
+					pr-0
+					mr-0
+				`;
+				_icon.as = Minimize;
 				button = <Button
 							{...testProps('toggleBtn')}
 							key="toggleBtn"
-							onPress={onToggleCollapse}
-							leftIcon={<Icon
-										as={Minimize}
-										color={styles.TAB_ICON_COLOR}
-									/>}
-							_hover={{
-								bg: styles.TAB_HOVER_BG,
+							onPress={onPress}
+							{...buttonPropsToPass}
+							icon={icon}
+							_icon={_icon}
+							className={buttonClassName}
+							text="Collapse"
+							_text={{
+								className: textClassName,
+								...textPropsToPass,
 							}}
-							bg={styles.TAB_BG}
-							{...buttonProps}
-							// {...thisButtonProps}
-						>
-							<Text
-								color={styles.TAB_COLOR}
-								fontSize={styles.TAB_FONTSIZE}
-								numberOfLines={1}
-								ellipsizeMode="head"
-								{...textProps}
-							>Collapse</Text>
-						</Button>;
+							action="none"
+							variant="none"
+						/>;
 			}
 			return button;
 		},
 		getButtonProps = () => {
 			const
-				iconProps = {
-					size: 'md',
-				},
-				textProps = {},
 				buttonProps = {
-					bg: styles.TAB_BG,
-					color: styles.TAB_COLOR,
-					fontSize: styles.TAB_FONTSIZE,
-					textAlign: 'left',
-					justifyContent: isCollapsed ? 'center' : 'flex-start',
+					className: `
+						${styles.TAB_BG}
+						${isCollapsed ? 'justify-center' : 'justify-start'}
+						${styles.TAB_BG_HOVER}
+						${styles.TAB_BG_ACTIVE}
+						${styles.TAB_BG_DISABLED}
+					`,
+				},
+				textProps = {
+					// numberOfLines: 1,
+					// ellipsizeMode: 'head',
+					className: `
+						${styles.TAB_FONTSIZE}
+						${styles.TAB_COLOR}
+					`,
+				},
+				iconProps = {
+					// size: 'md',
+					className: `
+						${styles.TAB_ICON_COLOR}
+						${styles.TAB_ICON_COLOR_HOVER}
+						${styles.TAB_ICON_COLOR_ACTIVE}
+						${styles.TAB_ICON_COLOR_DISABLED}
+					`,
 				};
 			switch(direction) {
 				case VERTICAL:
-					buttonProps.borderLeftRadius = 4;
-					buttonProps.borderRightRadius = 0;
-					buttonProps.w = '100%';
-					buttonProps.mb = 1;
-					textProps.w = '100%';
-					textProps.py = 0;
-					textProps.pl = 3;
-					textProps.mb = 1;
+					buttonProps.className += `
+						rounded-l-lg
+						rounded-r-none
+						w-full
+						ml-2
+						mr-0
+						mb-1
+						px-4
+					`;
+					textProps.className += `
+						w-full
+						mr-0
+						mb-1
+						py-0
+						pl-3
+						pr-0
+						flex-1
+						text-left
+					`;
 					break;
 				case HORIZONTAL:
-					buttonProps.borderTopRadius = 4;
-					buttonProps.borderBottomRadius = 0;
-					textProps.borderTopRadius = 4;
-					buttonProps.mr = 1;
-					buttonProps.py = 1;
-					textProps.mr = 1;
-					textProps.px = 1;
-					textProps.py = 1;
+					buttonProps.className += `
+						rounded-t
+						rounded-b-none
+						mr-1
+						py-1
+					`;
+					textProps.className += `
+						px-1
+						py-0
+						mr-1
+					`;
 					break;
 				default:
 			}
@@ -182,103 +222,116 @@ function TabBar(props) {
 			};
 		},
 		renderTabs = () => {
-			const
-				{
-					buttonProps,
-					textProps,
-					iconProps,
+			const {
+					buttonProps: {
+						className: buttonPropsClassName,
+						...buttonPropsToPass
+					},
+					textProps: {
+						className: textPropsClassName,
+						...textPropsToPass
+					},
+					iconProps: {
+						className: iconPropsClassName,
+						...iconPropsToPass
+					},
 				} = getButtonProps(),
 				buttons = [];
-			
+				
 			_.each(tabs, (tab, ix) => {
-				if (!tab._icon) {
-					throw new Error('tab._icon required!');
+				if (!tab.icon) {
+					throw new Error('tab.icon required!');
 				}
-				let button;
 				const
 					isCurrentTab = ix === getCurrentTab(),
-					thisButtonProps = {};
-				let useIconButton = false;
-				if (isCollapsed || !tab.title) {
-					useIconButton = true;
-				}
-				const tabIcon = _.clone(tab._icon);
+					useIconButton = (isCollapsed || !tab.title),
+					tabIcon = tab._icon ? _.clone(tab._icon) : {};
 				if (tabIcon.as && _.isString(tabIcon.as)) {
 					const Type = getComponentFromType(tabIcon.as);
 					if (Type) {
 						tabIcon.as = Type;
 					}
 				}
-				let closeBtn;
-				if (onTabClose && !tab.disableCloseBox) {
-					closeBtn = <IconButton
-									{...testProps('tabCloseButton-' + ix)}
-									key={'tabCloseButton' + ix}
-									onPress={() => onTabClose(ix)}
-									icon={Xmark}
-									_icon={{
-										color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
-										...iconProps,
-									}}
-									tooltip="Close Tab"
-									p={0}
-								/>;
+
+				let buttonClassName = buttonPropsClassName,
+					textClassName = textPropsClassName,
+					iconClassName = iconPropsClassName;
+
+				if (isCurrentTab) {
+					buttonClassName += ' ' + styles.TAB_BG_CURRENT + 
+										' ' + styles.TAB_BG_CURRENT_HOVER;
+					iconClassName += ' ' + styles.TAB_ICON_COLOR_CURRENT;
+					textClassName += ' ' + styles.TAB_COLOR_CURRENT;
 				}
+
+				// overrides
+				if (tab._button?.className) {
+					buttonClassName += ' ' + tab._button.className;
+				}
+				if (tab._text?.className) {
+					textClassName += ' ' + tab._text.className;
+				}
+				if (tab._icon?.className) {
+					iconClassName += ' ' + tab._icon.className;
+				}
+
+				const
+					_icon = {
+						...iconPropsToPass,
+						...tabIcon,
+						className: iconClassName,
+					},
+					onPress = () => setCurrentTab(ix);
+
+				let button;
 				if (useIconButton) {
 					button = <IconButton
 								{...testProps(tab.path)}
-								key={'tabIconButton' + ix}
-								onPress={() => setCurrentTab(ix)}
-								{...buttonProps}
-								// {...thisButtonProps}
-								_icon={{
-									color: isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR,
-									...iconProps,
-									...tabIcon,
-								}}
-								_hover={{
-									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
-								}}
-								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
+								key={'tabIconBtn' + ix}
+								onPress={onPress}
+								{...buttonPropsToPass}
+								icon={tab.icon}
+								_icon={_icon}
+								className={buttonClassName}
 								tooltip={tab.title}
 							/>;
-					// button = <Row
-					// 			key={'tab' + ix}
-					// 		>
-					// 			{button}
-					// 		</Row>;
 				} else {
+					if (direction === VERTICAL) {
+						buttonClassName += ' w-[200px]';
+					}
+
+					let closeBtn = null;
+					if (onTabClose && !tab.disableCloseBox) {
+						closeBtn = <IconButton
+										{...testProps('tabCloseButton-' + ix)}
+										key={'tabCloseButton' + ix}
+										onPress={() => onTabClose(ix)}
+										icon={Xmark}
+										_icon={{
+											...iconProps,
+											className: iconClassName,
+										}}
+										tooltip="Close Tab"
+										className="p-0"
+									/>;
+					}
 					button = <Button
 								{...testProps(tab.path)}
-								key={'tabButton' + ix}
-								onPress={() => setCurrentTab(ix)}
-								leftIcon={<Icon
-											color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
-											{...iconProps}
-											{...tabIcon}
-										/>}
-								// endIcon={<Icon
-								// 			color={isCurrentTab ? styles.TAB_ACTIVE_ICON_COLOR : styles.TAB_ICON_COLOR}
-								// 			{...iconProps}
-								// 			{...tabIcon}
-								// 		/>}
-								endIcon={closeBtn}
-								{...buttonProps}
-								{...thisButtonProps}
-								_hover={{
-									bg: isCurrentTab? styles.TAB_ACTIVE_HOVER_BG : styles.TAB_HOVER_BG,
+								key={'tabBtn' + ix}
+								onPress={onPress}
+								{...buttonPropsToPass}
+								icon={tab.icon}
+								_icon={_icon}
+								rightIcon={closeBtn}
+								className={buttonClassName}
+								text={tab.title}
+								_text={{
+									className: textClassName,
+									...textPropsToPass,
 								}}
-								bg={isCurrentTab ? styles.TAB_ACTIVE_BG : styles.TAB_BG}
-								direction="row"
-							>
-								<Text
-									color={isCurrentTab ? styles.TAB_ACTIVE_COLOR : styles.TAB_COLOR}
-									fontSize={styles.TAB_FONTSIZE}
-									numberOfLines={1}
-									ellipsizeMode="head"
-									{...textProps}
-					 			>{tab.title}</Text>
-							</Button>;
+								action="none"
+								variant="none"
+							/>;
 				}
 				buttons.push(button);
 			});
@@ -288,63 +341,84 @@ function TabBar(props) {
 					if (!additionalButton._icon) {
 						throw new Error('additionalButton._icon required!');
 					}
-					let button;
-					const thisButtonProps = {};
+
+					const
+						useIconButton = (isCollapsed || !additionalButton.text),
+						additionalButtonIcon = _.clone(additionalButton._icon);
+
+					if (additionalButtonIcon.as && _.isString(additionalButtonIcon.as)) {
+						const Type = getComponentFromType(additionalButtonIcon.as);
+						if (Type) {
+							additionalButtonIcon.as = Type;
+						}
+					}
+
+					let buttonClassName = buttonPropsClassName,
+						textClassName = textPropsClassName,
+						iconClassName = iconPropsClassName;
+
+					// overrides
+					if (additionalButton._button?.className) {
+						buttonClassName += ' ' + additionalButton._button.className;
+					}
+					if (additionalButton._text?.className) {
+						textClassName += ' ' + additionalButton._text.className;
+					}
+					if (additionalButton._icon?.className) {
+						iconClassName += ' ' + additionalButton._icon.className;
+					}
+
 					if (!ix) {
-						// First button should have gap before it
+						// First button should have a gap before it
 						switch(direction) {
 							case VERTICAL:
-								thisButtonProps.mt = 6;
+								buttonClassName += ' mt-6';
 								break;
 							case HORIZONTAL:
-								thisButtonProps.ml = 6;
+								buttonClassName += ' ml-6';
 								break;
 							default:
 						}
 					}
-					let useIconButton = false;
-					if (isCollapsed || !additionalButton.text) {
-						useIconButton = true;
-					}
+
+					const
+						_icon = {
+							...iconPropsToPass,
+							...additionalButton._icon,
+							className: iconClassName,
+						},
+						onPress = additionalButton.onPress;
+
+					let button;
 					if (useIconButton) {
 						button = <IconButton
+									{...testProps('additionalBtn' + ix)}
 									key={'additionalBtn' + ix}
-									onPress={additionalButton.onPress}
-									{...buttonProps}
-									{...thisButtonProps}
-									_icon={{
-										...additionalButton._icon,
-										color: styles.TAB_ICON_COLOR,
-									}}
-									_hover={{
-										bg: styles.TAB_HOVER_BG,
-									}}
-									bg={styles.TAB_BG}
+									onPress={onPress}
+									{...buttonPropsToPass}
+									_icon={_icon}
+									className={buttonClassName}
 									tooltip={additionalButton.text}
 								/>;
 					} else {
+						if (direction === VERTICAL) {
+							buttonClassName += ' w-[200px]';
+						}
 						button = <Button
+									{...testProps('additionalBtn' + ix)}
 									key={'additionalBtn' + ix}
-									onPress={additionalButton.onPress}
-									leftIcon={<Icon
-												color={styles.TAB_ICON_COLOR}
-												{...additionalButton._icon}
-											/>}
-									_hover={{
-										bg: styles.TAB_HOVER_BG,
+									onPress={onPress}
+									{...buttonPropsToPass}
+									_icon={_icon}
+									className={buttonClassName}
+									text={additionalButton.text}
+									_text={{
+										className: textClassName,
+										...textPropsToPass,
 									}}
-									bg={styles.TAB_BG}
-									{...buttonProps}
-									{...thisButtonProps}
-								>
-									<Text
-										color={styles.TAB_COLOR}
-										fontSize={styles.TAB_FONTSIZE}
-										numberOfLines={1}
-										ellipsizeMode="head"
-										{...textProps}
-									>{additionalButton.text}</Text>
-								</Button>;
+									action="none"
+									variant="none"
+								/>;
 					}
 					buttons.push(button);
 				});
@@ -368,7 +442,7 @@ function TabBar(props) {
 				return tabs[currentTabIx].content;
 			}
 			return _.map(tabs[currentTabIx].items, (item, ix) => {
-				return React.cloneElement(item, { key: ix });
+				return cloneElement(item, { key: ix });
 			});
 		};
 
@@ -416,67 +490,63 @@ function TabBar(props) {
 
 	let tabBar = null;
 	if (direction === VERTICAL) {
-		tabBar = <Column
-						{...testProps('TabBar')}
-						alignItems="center"
-						justifyContent="flex-start"
-						py={2}
-						pl={isCollapsed ? 1 : 4}
-						bg={styles.TAB_BAR_BG}
-						w={isCollapsed ? '50px' : tabWidth}
-						{...propsToPass}
-					>
-						{renderedTabs}
-						<Column flex={1} w="100%" justifyContent="flex-end">
-							{renderedToggleButton}
-						</Column>
-					</Column>;
+		tabBar = <VStackNative
+					{...testProps('TabBar')}
+					{...propsToPass}
+					className={`
+						${isCollapsed ? 'w-[50px]' : 'w-[' + tabWidth + 'px]'}
+						${isCollapsed ? 'pl-1' : 'pl-4'}
+						items-center
+						justify-start
+						py-2
+						${styles.TAB_BAR_CLASSNAME}
+					`}
+				>
+					{renderedTabs}
+					<VStack className="flex-1 w-full justify-end">
+						{renderedToggleButton}
+					</VStack>
+				</VStackNative>;
 		if (renderedCurrentTabContent) {
-			tabBar = <Row flex={1} w="100%" {...propsToPass}>
+			tabBar = <HStackNative {...propsToPass} className="flex-1 w-full">
 						{tabBar}
-						<Column
-							alignItems="center"
-							justifyContent="flex-start"
-							flex={1}
-						>
+						<VStack className="items-center justify-start flex-1">
 							{renderedCurrentTabContent}
-						</Column>
-					</Row>;
+						</VStack>
+					</HStackNative>;
 		}
 	}
 	if (direction === HORIZONTAL) {
-		tabBar = <Row
+		tabBar = <HStackNative
 					{...testProps('TabBar')}
-					alignItems="center"
-					justifyContent="flex-start"
-					p={2}
-					pb={0}
-					bg={styles.TAB_BAR_BG}
-					h={isCollapsed ? '38px' : tabHeight}
+					className={`
+						${isCollapsed ? 'h-[38px]' : 'h-[' + tabHeight + 'px]'}
+						items-center
+						justify-start
+						p-1
+						pb-0
+						${styles.TAB_BAR_CLASSNAME}
+					`}
 				>
 					<ScrollView
 						horizontal={true}
-						h={isCollapsed ? '30px' : tabHeight}
+						className={` ${isCollapsed ? "h-[30px]" : 'h-[' + tabHeight + 'px]'} `}
 					>
 						{renderedTabs}
 					</ScrollView>
-					<Row flex={1} h="100%" justifyContent="flex-end">
-						<Row h="100%">
+					<HStack className="flex-1 h-full justify-end">
+						<HStack className="h-full">
 							{renderedToggleButton}
-						</Row>
-					</Row>
-				</Row>;
+						</HStack>
+					</HStack>
+				</HStackNative>;
 		if (renderedCurrentTabContent) {
-			tabBar = <Column flex={1} w="100%" {...propsToPass}>
+			tabBar = <VStackNative {...propsToPass} className="flex-1 w-full">
 						{tabBar}
-						<Column
-							alignItems="center"
-							justifyContent="flex-start"
-							flex={1}
-						>
+						<VStack className="items-center justify-start flex-1">
 							{renderedCurrentTabContent}
-						</Column>
-					</Column>;
+						</VStack>
+					</VStackNative>;
 		}
 	}
 	return tabBar;

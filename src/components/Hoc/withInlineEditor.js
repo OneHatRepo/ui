@@ -1,4 +1,4 @@
-import { useState, } from 'react';
+import { forwardRef, useState, } from 'react';
 import {
 	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
@@ -9,20 +9,21 @@ import _ from 'lodash';
 
 
 function withAdditionalProps(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
 					editorType={EDITOR_TYPE__INLINE}
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 }
 
 // NOTE: Effectivtly, the HOC composition is:
 // withAdditionalProps(withEditor(withInlineEditor))
 
 export default function withInlineEditor(WrappedComponent, skipWrappers = false) {
-	const Editor = (props) => {
+	const Editor = forwardRef((props, ref) => {
 		const {
 				isEditorShown = false,
 				setIsEditorShown,
@@ -58,8 +59,9 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 								/>}
 
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 	if (skipWrappers) {
 		return Editor; // this is for InlineSideEditor, not yet implemented
 	}

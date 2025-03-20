@@ -1,7 +1,7 @@
 import React from 'react';
 import {
 	Text,
-} from 'native-base';
+} from '@project-components/Gluestack';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
@@ -14,12 +14,18 @@ const
 				text = value,
 			} = props,
 			styles = UiGlobals.styles;
+		let className = `
+			DisplayField
+			flex-1
+			${styles.TEXT_FONTSIZE}
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
+		}
 		return <Text
 					ref={props.outerRef}
-					onChangeText={props.setValue}
-					flex={1}
-					fontSize={styles.TEXT_FONTSIZE}
-					{...props}
+					className={className}
+					style={props.style || {}}
 				>{text}</Text>;
 	},
 	DisplayField = withComponent(withValue(DisplayElement));

@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import {
 	EDITOR_TYPE__SIDE,
 } from '../../../Constants/Editor.js';
@@ -10,20 +11,21 @@ import _ from 'lodash';
 
 
 function withAdditionalProps(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
 					editorType={EDITOR_TYPE__SIDE}
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 }
 
 // NOTE: Effectivtly, the HOC composition is:
 // withAdditionalProps(withSecondaryEditor(withSecondarySideEditor))
 
 export default function withSecondarySideEditor(WrappedComponent, isTree = false) {
-	return withAdditionalProps(withSecondaryEditor((props) => {
+	const SideEditor = forwardRef((props, ref) => {
 		const {
 				SecondaryEditor,
 				secondaryEditorProps = {},
@@ -36,6 +38,7 @@ export default function withSecondarySideEditor(WrappedComponent, isTree = false
 				secondarySelectorId,
 				secondarySelectorSelected,
 				secondarySelectorSelectedField,
+				style,
 				
 				...propsToPass
 			} = props;
@@ -44,8 +47,23 @@ export default function withSecondarySideEditor(WrappedComponent, isTree = false
 			throw Error('SecondaryEditor is not defined');
 		}
 
+		if (isResizable) {
+			secondaryEditorProps.w = 500;
+			secondaryEditorProps.isResizable = true;
+		} else {
+			secondaryEditorProps.flex = secondarySideFlex;
+		}
+
+		if (!secondaryEditorProps.className) {
+			secondaryEditorProps.className = '';
+		}
+		secondaryEditorProps.className += ' border-l-1 border-l-grey-300';
+
 		return <Container
+					parent={self}
+					reference="SideEditor"
 					center={<WrappedComponent
+								ref={ref}
 								isTree={isTree}
 								isSideEditor={true}
 								{...props}
@@ -53,13 +71,11 @@ export default function withSecondarySideEditor(WrappedComponent, isTree = false
 					east={<Editor
 								{...propsToPass}
 								editorType={EDITOR_TYPE__SIDE}
-								flex={secondarySideFlex}
-								borderLeftWidth={1}
-								borderLeftColor="#ccc"
 								{...secondaryEditorProps}
 								parent={self}
 								reference="secondaryEditor"
 							/>}
 				/>;
-	}));
+	});
+	return withAdditionalProps(withSecondaryEditor(SideEditor, isTree));
 }

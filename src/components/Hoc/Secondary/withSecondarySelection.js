@@ -1,18 +1,18 @@
-import { useState, useEffect, } from 'react';
+import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
 	SELECT_UP,
 	SELECT_DOWN,
 } from '../../../Constants/Selection.js';
+import useForceUpdate from '../../../Hooks/useForceUpdate.js';
 import inArray from '../../../Functions/inArray.js';
 import _ from 'lodash';
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withSelection
-// This HOC will eventually get out of sync with that one, and may need to be updated.
 
 export default function withSelection(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.secondaryDisableWithSelection) {
 			return <WrappedComponent {...props} />;
@@ -25,8 +25,7 @@ export default function withSelection(WrappedComponent) {
 			return <WrappedComponent {...props} />;
 		}
 
-		const
-			{
+		const {
 				secondarySelection,
 				secondaryDefaultSelection,
 				secondaryOnChangeSelection,
@@ -49,20 +48,29 @@ export default function withSelection(WrappedComponent) {
 			} = props,
 			usesWithValue = !!secondarySetValue,
 			initialSelection = secondarySelection || secondaryDefaultSelection || [],
-			[secondaryLocalSelection, setLocalSelection] = useState(initialSelection),
+			forceUpdate = useForceUpdate(),
+			secondarySelectionRef = useRef(initialSelection),
+			SecondaryRepositoryRef = useRef(SecondaryRepository),
 			[isReady, setIsReady] = useState(secondarySelection || false), // if secondarySelection is already defined, or secondaryValue is not null and we don't need to load repository, it's ready
 			secondarySetSelection = (secondarySelection) => {
-				if (_.isEqual(secondarySelection, secondaryLocalSelection)) {
+				if (_.isEqual(secondarySelection, secondaryGetSelection())) {
 					return;
 				}
 
-				setLocalSelection(secondarySelection);
+				secondarySelectionRef.current = secondarySelection;
 				if (secondaryOnChangeSelection) {
 					secondaryOnChangeSelection(secondarySelection);
 				}
 				if (fireEvent) {
 					fireEvent('secondaryChangeSelection', secondarySelection);
 				}
+				forceUpdate();
+			},
+			secondaryGetSelection = () => {
+				return secondarySelectionRef.current;
+			},
+			secondaryGetRepository = () => {
+				return SecondaryRepositoryRef.current;
 			},
 			secondarySelectPrev = () => {
 				secondarySelectDirection(SELECT_UP);
@@ -103,21 +111,22 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			secondaryAddToSelection = (item) => {
-				const newSelection = _.clone(secondaryLocalSelection); // so we get a new object, so descendants rerender
+				const newSelection = _.clone(secondaryGetSelection()); // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				secondarySetSelection(newSelection);
 			},
 			secondaryRemoveFromSelection = (item) => {
+				const SecondaryRepository = secondaryGetRepository();
 				let newSelection = [];
 				if (SecondaryRepository) {
-					newSelection = _.remove(secondaryLocalSelection, (sel) => sel !== item);
+					newSelection = _.remove(secondaryGetSelection(), (sel) => sel !== item);
 				} else {
-					newSelection = _.remove(secondaryLocalSelection, (sel) => sel[secondaryIdIx] !== item[secondaryIdIx]);
+					newSelection = _.remove(secondaryGetSelection(), (sel) => sel[secondaryIdIx] !== item[secondaryIdIx]);
 				}
 				secondarySetSelection(newSelection);
 			},
 			secondaryDeselectAll = () => {
-				if (!_.isEmpty(secondaryLocalSelection)) {
+				if (!_.isEmpty(secondaryGetSelection())) {
 					secondarySetSelection([]);
 				}
 			},
@@ -128,7 +137,8 @@ export default function withSelection(WrappedComponent) {
 				// That way, after a load event, we'll keep the same selection, if possible.
 				const
 					newSelection = [],
-					ids = _.map(secondaryLocalSelection, (item) => item.id);
+					ids = _.map(secondaryGetSelection(), (item) => item.id),
+					SecondaryRepository = secondaryGetRepository();
 				_.each(ids, (id) => {
 					const found = SecondaryRepository.getById(id);
 					if (found) {
@@ -140,6 +150,7 @@ export default function withSelection(WrappedComponent) {
 			getMaxMinSelectionIndices = () => {
 				let items,
 					currentlySelectedRowIndices = [];
+				const SecondaryRepository = secondaryGetRepository();
 				if (SecondaryRepository) {
 					items = SecondaryRepository.getEntitiesOnPage();
 				} else {
@@ -162,9 +173,9 @@ export default function withSelection(WrappedComponent) {
 			secondarySelectRangeTo = (item) => {
 				// Select above max or below min to this one
 				const
-					currentSelectionLength = secondaryLocalSelection.length,
+					currentSelectionLength = secondaryGetSelection().length,
 					index = getIndexOfSelectedItem(item);
-				let newSelection = _.clone(secondaryLocalSelection); // so we get a new object, so descendants rerender
+				let newSelection = _.clone(secondaryGetSelection()); // so we get a new object, so descendants rerender
 
 				if (currentSelectionLength) {
 					const { items, max, min, } = getMaxMinSelectionIndices();
@@ -190,16 +201,19 @@ export default function withSelection(WrappedComponent) {
 				secondarySetSelection(newSelection);
 			},
 			secondaryIsInSelection = (item) => {
+				const SecondaryRepository = secondaryGetRepository();
 				if (SecondaryRepository) {
-					return inArray(item, secondaryLocalSelection);
+					return inArray(item, secondaryGetSelection());
 				}
 
-				const found = _.find(secondaryLocalSelection, (selectedItem) => {
+				const found = _.find(secondaryGetSelection(), (selectedItem) => {
 						return selectedItem[secondaryIdIx] === item[secondaryIdIx];
 					});
 				return !!found;
 			},
 			getIndexOfSelectedItem = (item) => {
+				const SecondaryRepository = secondaryGetRepository();
+
 				// Gets ix of entity on page, or element in secondaryData array
 				if (SecondaryRepository) {
 					const entities = SecondaryRepository.getEntitiesOnPage();
@@ -216,15 +230,17 @@ export default function withSelection(WrappedComponent) {
 				return found;
 			},
 			secondaryGetIdsFromLocalSelection = () => {
-				if (!secondaryLocalSelection[0]) {
+				if (!secondaryGetSelection()[0]) {
 					return null;
 				}
-				const secondaryValues = _.map(secondaryLocalSelection, (item) => {
-					if (SecondaryRepository) {
-						return item.id;
-					}
-					return item[secondaryIdIx];
-				});
+				const
+					SecondaryRepository = secondaryGetRepository(),
+					secondaryValues = _.map(secondaryGetSelection(), (item) => {
+						if (SecondaryRepository) {
+							return item.id;
+						}
+						return item[secondaryIdIx];
+					});
 				if (secondaryValues.length === 1) {
 					return secondaryValues[0];
 				}
@@ -235,6 +251,7 @@ export default function withSelection(WrappedComponent) {
 					return '';
 				}
 
+				const SecondaryRepository = secondaryGetRepository();
 				return _.map(secondarySelection, (item) => {
 							if (SecondaryRepository) {
 								return item.displayValue;
@@ -254,6 +271,7 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			conformSelectionToValue = async () => {
+				const SecondaryRepository = secondaryGetRepository();
 				let newSelection = [];
 				if (SecondaryRepository) {
 					if (SecondaryRepository.isLoading) {
@@ -303,7 +321,7 @@ export default function withSelection(WrappedComponent) {
 					}
 				}
 
-				if (!_.isEqual(newSelection, secondaryLocalSelection)) {
+				if (!_.isEqual(newSelection, secondaryGetSelection())) {
 					secondarySetSelection(newSelection);
 				}
 			};
@@ -321,6 +339,7 @@ export default function withSelection(WrappedComponent) {
 
 			(async () => {
 
+				const SecondaryRepository = secondaryGetRepository();
 				if (usesWithValue && SecondaryRepository?.isRemote 
 					&& !SecondaryRepository.isAutoLoad && !SecondaryRepository.isLoaded && !SecondaryRepository.isLoading && (!_.isNil(secondaryValue) || !_.isEmpty(secondarySelection)) || secondaryAutoSelectFirstItem) {
 					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
@@ -354,7 +373,7 @@ export default function withSelection(WrappedComponent) {
 		}, [secondaryValue]);
 
 		if (self) {
-			self.secondarySelection = secondaryLocalSelection;
+			self.secondarySelection = secondaryGetSelection();
 			self.secondarySetSelection = secondarySetSelection;
 			self.secondarySelectPrev = secondarySelectPrev;
 			self.secondarySelectNext = secondarySelectNext;
@@ -395,8 +414,10 @@ export default function withSelection(WrappedComponent) {
 		
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					secondaryDisableWithSelection={false}
-					secondarySelection={secondaryLocalSelection}
+					secondarySelection={secondaryGetSelection()}
+					secondaryGetSelection={secondaryGetSelection}
 					secondarySetSelection={secondarySetSelection}
 					secondarySelectionMode={secondarySelectionMode}
 					secondarySelectPrev={secondarySelectPrev}
@@ -411,5 +432,5 @@ export default function withSelection(WrappedComponent) {
 					secondaryGetIdsFromSelection={secondaryGetIdsFromLocalSelection}
 					secondaryGetDisplayValuesFromSelection={secondaryGetDisplayValuesFromLocalSelection}
 				/>;
-	};
+	});
 }

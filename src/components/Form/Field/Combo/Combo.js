@@ -1,29 +1,32 @@
-import React, { useState, useEffect, useRef, } from 'react';
+import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
+	Box,
+	HStack,
+	HStackNative,
 	Icon,
-	Modal,
-	Popover,
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
 	Pressable,
-	Row,
 	Text,
-	Tooltip,
-} from 'native-base';
+	TextNative,
+	VStackNative,
+} from '@project-components/Gluestack';
 import {
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../../../Constants/UiModes.js';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../../Constants/Editor.js';
+import testProps from '../../../../Functions/testProps.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
+import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
-import testProps from '../../../../Functions/testProps.js';
-import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
 import Check from '../../../Icons/Check.js';
@@ -33,12 +36,26 @@ import _ from 'lodash';
 
 const FILTER_NAME = 'q';
 
-export function ComboComponent(props) {
+/**
+ * isEmptyValue
+ * _.isEmpty returns true for all integers, so we need this instead
+ * @param {*} value 
+ * @returns boolean
+ */
+function isEmptyValue(value) {
+	// 
+	return value === null ||
+			value === undefined ||
+			value === '' ||
+			value === 0 ||
+			(_.isObject(value) && _.isEmpty(value));
+};
+
+export const ComboComponent = forwardRef((props, ref) => {
+
 	const {
 			additionalButtons,
 			autoFocus = false,
-			tooltipRef = null,
-			tooltip = null,
 			menuMinWidth,
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
@@ -50,7 +67,9 @@ export function ComboComponent(props) {
 			isEditor = false,
 			isDisabled = false,
 			isInTag = false,
-			tooltipPlacement = 'bottom',
+			minimizeForRow = false,
+			reloadOnTrigger = false,
+			menuHeight,
 			placeholder,
 			onRowPress,
 			icon,
@@ -58,7 +77,10 @@ export function ComboComponent(props) {
 			onGridAdd, // to hook into when menu adds (ComboEditor only)
 			onGridSave, // to hook into when menu saves (ComboEditor only)
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
+			onSubmit, // when Combo is used in a Tag, call this when the user submits the Combo value (i.e. presses Enter or clicks a row)
 			newEntityDisplayProperty,
+			tooltip = null,
+			tooltipPlacement = 'bottom',
 			testID,
 
 			// withComponent
@@ -80,6 +102,7 @@ export function ComboComponent(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		inputRef = useRef(),
+		inputCloneRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
 		displayValueRef = useRef(),
@@ -96,6 +119,7 @@ export function ComboComponent(props) {
 		[textInputValue, setTextInputValue] = useState(''),
 		[newEntityDisplayValue, setNewEntityDisplayValue] = useState(null),
 		[filteredData, setFilteredData] = useState(data),
+		[inputHeight, setInputHeight] = useState(0),
 		[width, setWidth] = useState(0),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
@@ -107,25 +131,14 @@ export function ComboComponent(props) {
 			if (isMenuShown) {
 				return;
 			}
-			if (UiGlobals.mode === UI_MODE_WEB && inputRef.current.getBoundingClientRect) {
+			if (UiGlobals.mode === UI_MODE_WEB && inputRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const
 					rect = inputRef.current.getBoundingClientRect(),
-					bodyRect = document.body.getBoundingClientRect(),
-					isUpper = rect.top < bodyRect.height / 2;
-					
-				if (isUpper) {
-					// Menu is below the combo
-					const rectTop = rect.top + rect.height;
-					if (rectTop !== top) {
-						setTop(rectTop);
-					}
-				} else {
-					// Menu is above the combo
-					const rectTop = rect.top - styles.FORM_COMBO_MENU_HEIGHT;
-					if (rectTop !== top) {
-						setTop(rectTop);
-					}
+					inputRect = inputRef.current.getBoundingClientRect();
+
+				if (rect.top !== top) {
+					setTop(rect.top);
 				}
 				if (rect.left !== left) {
 					setLeft(rect.left);
@@ -139,6 +152,8 @@ export function ComboComponent(props) {
 				if (widthToSet !== width) {
 					setWidth(widthToSet);
 				}
+
+				setInputHeight(inputRect.height);
 			}
 			if (Repository && !Repository.isLoaded) {
 				// await Repository.load(); // this breaks when the menu (Grid) has selectorSelected
@@ -170,19 +185,20 @@ export function ComboComponent(props) {
 			} else if (_.isArray(value)) {
 				displayValue = [];
 				if (Repository) {
-					if (!Repository.isLoaded) {
-						debugger;
-						throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
-					}
-					if (Repository.isLoading) {
-						await Repository.waitUntilDoneLoading();
-					}
-					displayValue = _.each(value, (id) => {
-						const entity = Repository.getById(id);
-						if (entity) {
-							displayValue.push(entity.displayValue)
+					if (!Repository.isDestroyed) {
+						if (!Repository.isLoaded) {
+							throw Error('Not yet implemented'); // Would a Combo ever have multiple remote selections? Shouldn't that be a Tag field??
 						}
-					});
+						if (Repository.isLoading) {
+							await Repository.waitUntilDoneLoading();
+						}
+						displayValue = _.each(value, (id) => {
+							const entity = Repository.getById(id);
+							if (entity) {
+								displayValue.push(entity.displayValue);
+							}
+						});
+					}
 				} else {
 					displayValue = _.each(value, (id) => {
 						const item = _.find(data, (datum) => datum[idIx] === id);
@@ -194,20 +210,31 @@ export function ComboComponent(props) {
 				displayValue = displayValue.join(', ');
 			} else {
 				if (Repository) {
-					let entity;
-					if (!Repository.isLoaded) {
-						entity = await Repository.getSingleEntityFromServer(value);
-					} else {
-						if (Repository.isLoading) {
-							await Repository.waitUntilDoneLoading();
+					if (!Repository.isDestroyed) {
+						let entity;
+						if (!isEmptyValue(value)) {
+							if (!Repository.isLoaded) {
+								entity = await Repository.getSingleEntityFromServer(value);
+							} else {
+								if (Repository.isLoading) {
+									await Repository.waitUntilDoneLoading();
+								}
+								entity = Repository.getById(value);
+								if (!entity) {
+									entity = await Repository.getSingleEntityFromServer(value);
+								}
+							}
 						}
-						entity = Repository.getById(value);
+						displayValue = entity?.displayValue || '';
 					}
-					displayValue = entity?.displayValue || '';
 				} else {
 					const item = _.find(data, (datum) => datum[idIx] === value);
 					displayValue = (item && item[displayIx]) || '';
 				}
+			}
+
+			if (isInTag) {
+				displayValue = '';
 			}
 
 			displayValueRef.current = displayValue;
@@ -243,10 +270,15 @@ export function ComboComponent(props) {
 					}
 
 					let id = null;
-					if (gridSelection.length && gridSelection[0].id) {
-						id = gridSelection[0].id;
+					if (gridSelection.length) {
+						id = Repository ? gridSelection[0].id : gridSelection[0][idIx];
 					}
-					setValue(id);
+					if (id !== value) {
+						setValue(id);
+					}
+					if (onSubmit) {
+						onSubmit(id);
+					}
 					hideMenu();
 					break;
 				case 'ArrowDown':
@@ -299,11 +331,14 @@ export function ComboComponent(props) {
 			resetTextInputValue();
 			hideMenu();
 		},
-		onTriggerPress = (e) => {
+		onTriggerPress = async (e) => {
 			if (!isRendered) {
 				return;
 			}
 			clearGridFilters();
+			if (reloadOnTrigger && Repository) {
+				await Repository.reload();
+			}
 			if (isMenuShown) {
 				hideMenu();
 			} else {
@@ -388,14 +423,16 @@ export function ComboComponent(props) {
 		},
 		clearGridFilters = async () => {
 			if (Repository) {
-				if (Repository.isLoading) {
-					await Repository.waitUntilDoneLoading();
-				}
-				const filterName = getFilterName();
-				if (Repository.hasFilter(filterName)) {
-					Repository.clearFilters(filterName);
-					if (Repository.isRemote && !Repository.isAutoLoad) {
-						await Repository.reload();
+				if (!Repository.isDestroyed) {
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
+					}
+					const filterName = getFilterName();
+					if (Repository.hasFilter(filterName)) {
+						Repository.clearFilters(filterName);
+						if (Repository.isRemote && !Repository.isAutoLoad) {
+							await Repository.reload();
+						}
 					}
 				}
 			} else {
@@ -410,45 +447,48 @@ export function ComboComponent(props) {
 		searchForMatches = async (value) => {
 			let found;
 			if (Repository) {
-				if (Repository.isLoading) {
-					await Repository.waitUntilDoneLoading();
-				}
-
-				if (_.isEmpty(value)) {
-					clearGridFilters();
-					return;
-				}
-
-				// Set filter
-				const
-					idRegex = /^id:(.*)$/,
-					isId = _.isString(value) && !!value.match(idRegex),
-					filterName = getFilterName(isId);
-				if (Repository.isRemote) {
-					// remote
-					const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : value + '%');
-					await Repository.filter(filterName, filterValue);
-					if (!Repository.isAutoLoad) {
-						await Repository.reload();
+				if (!Repository.isDestroyed) {
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
 					}
-				} else {
-					// local
-					Repository.filter({
-						name: filterName,
-						fn: (entity) => {
-							const
-								displayValue = entity.displayValue,
-								regex = new RegExp('^' + value, 'i'); // case-insensitive
-							return displayValue.match(regex);
-						},
-					});
-				}
 
-				setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
-			
+					if (_.isEmpty(value)) {
+						clearGridFilters();
+						return;
+					}
+
+					// Set filter
+					const
+						idRegex = /^id:(.*)$/,
+						isId = _.isString(value) && !!value.match(idRegex),
+						filterName = getFilterName(isId);
+					if (Repository.isRemote) {
+						// remote
+						const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : value + '%');
+						await Repository.filter(filterName, filterValue);
+						if (!Repository.isAutoLoad) {
+							await Repository.reload();
+						}
+					} else {
+						// local
+						Repository.filter({
+							name: filterName,
+							fn: (entity) => {
+								const
+									displayValue = entity.displayValue,
+									regex = new RegExp('^' + value, 'i'); // case-insensitive
+								return displayValue.match(regex);
+							},
+						});
+					}
+
+					if (!isId) {
+						setNewEntityDisplayValue(value); // capture the search query so we can tell Grid what to use for a new entity's displayValue
+					}
+				}
 			} else {
 				// Search through data
-				const regex = new RegExp('^' + value);
+				const regex = new RegExp('^' + value, 'i'); // case-insensitive
 				found = _.filter(data, (item) => {
 					if (_.isString(item[displayIx]) && _.isString(value)) {
 						return item[displayIx].match(regex);
@@ -495,186 +535,183 @@ export function ComboComponent(props) {
 		return null;
 	}
 
-	const inputIconElement = icon ? <Icon as={icon} color="trueGray.300" size="md" ml={2} mr={3} /> : null;
+	const inputIconElement = icon ? <Icon as={icon} size="md" className="text-grey-300 ml-1 mr-2" /> : null;
 	let xButton = null,
 		eyeButton = null,
-		inputAndTrigger = null,
+		trigger = null,
+		input = null,
+		inputClone = null,
 		checkButton = null,
 		grid = null,
 		dropdownMenu = null,
 		assembledComponents = null;
 	
-	if (showXButton && !_.isNil(value)) {
+	if (showXButton) {
 		xButton = <IconButton
 						{...testProps('xBtn')}
+						icon={Xmark}
 						_icon={{
-							as: Xmark,
-							color: 'trueGray.600',
 							size: 'sm',
+							className: 'text-grey-600',
 						}}
-						isDisabled={isDisabled}
+						isDisabled={isDisabled || _.isNil(value)}
 						onPress={onXButtonPress}
-						h="100%"
-						bg={styles.FORM_COMBO_TRIGGER_BG}
-						_hover={{
-							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-						}}
-						mr={1}
+						tooltip="Clear selection"
+						className={`
+							h-full
+							mr-1
+							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
+						`}
 					/>;
 	}
-	if (showEyeButton && Editor && !_.isNil(value)) {
+	if (showEyeButton && Editor) {
 		eyeButton = <IconButton
 						{...testProps('eyeBtn')}
+						icon={Eye}
 						_icon={{
-							as: Eye,
-							color: 'trueGray.600',
 							size: 'sm',
+							className: 'text-grey-600',
 						}}
-						isDisabled={isDisabled}
+						isDisabled={isDisabled || _.isNil(value)}
 						onPress={onEyeButtonPress}
-						h="100%"
-						bg={styles.FORM_COMBO_TRIGGER_BG}
-						_hover={{
-							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-						}}
-						mr={1}
+						tooltip="View selected record"
+						className={`
+							h-full
+							mr-1
+							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
+						`}
 					/>;
 	}
+	const triggerClassName = `
+		Combo-trigger
+		self-stretch
+		h-auto
+		border
+		border-l-0
+		border-gray-400
+		rounded-l-none
+		rounded-r-md
+		${styles.FORM_COMBO_TRIGGER_CLASSNAME}
+	`;
+	trigger = <IconButton
+				{...testProps('trigger')}
+				ref={triggerRef}
+				icon={CaretDown}
+				_icon={{
+					size: 'md',
+					className: 'text-grey-500',
+				}}
+				isDisabled={isDisabled}
+				onPress={onTriggerPress}
+				onBlur={onTriggerBlur}
+				className={triggerClassName}
+			/>;
 
 	if (UiGlobals.mode === UI_MODE_WEB) {
-		inputAndTrigger = <>
-							{disableDirectEntry ?
-								<Pressable
-									{...testProps('toggleMenuBtn')}
-									onPress={toggleMenu}
-									flex={1}
-									h="100%"
-									flexDirection="row"
-									justifyContent="center"
-									alignItems="center"
-									borderWidth={1}
-									borderColor="trueGray.400"
-									borderTopRightRadius={0}
-									borderBottomRightRadius={0}
-									bg={styles.FORM_COMBO_INPUT_BG}
-									m={0}
-									p={2}
-								>
-									{inputIconElement}
-									<Text
-										ref={inputRef}
-										flex={1}
-										h="100%"
-										numberOfLines={1}
-										ellipsizeMode="head"
-										fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-										color={_.isEmpty(textInputValue) ? 'trueGray.400' : '#000'}
-									>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</Text>
-								</Pressable> :
-								<Input
-									{...testProps('input')}
-									ref={inputRef}
-									reference="ComboInput"
-									value={textInputValue}
-									autoSubmit={true}
-									isDisabled={isDisabled}
-									onChangeValue={onInputChangeText}
-									onKeyPress={onInputKeyPress}
-									onFocus={onInputFocus}
-									onBlur={onInputBlur}
-									flex={1}
-									h="100%"
-									m={0}
-									InputLeftElement={inputIconElement}
-									autoSubmitDelay={500}
-									borderTopRightRadius={0}
-									borderBottomRightRadius={0}
-									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-									bg={styles.FORM_COMBO_INPUT_BG}
-									_focus={{
-										bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-									}}
-									placeholder={placeholder}
-									{..._input}
-								/>}
-							<IconButton
-								{...testProps('trigger')}
-								ref={triggerRef}
-								_icon={{
-									as: CaretDown,
-									color: 'primary.800',
-									size: 'sm',
-								}}
-								isDisabled={isDisabled}
-								onPress={onTriggerPress}
-								onBlur={onTriggerBlur}
-								h="100%"
-								borderWidth={1}
-								borderColor="#bbb"
-								borderLeftWidth={0}
-								borderLeftRadius={0}
-								borderRightRadius="md"
-								bg={styles.FORM_COMBO_TRIGGER_BG}
-								_hover={{
-									bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-								}}
-							/>
-						</>;
+		input = disableDirectEntry ?
+					<Pressable
+						{...testProps('toggleMenuBtn')}
+						ref={inputRef}
+						onPress={toggleMenu}
+						className={`
+							Combo-toggleMenuBtn
+							h-auto
+							self-stretch
+							flex-1
+							flex-row
+							justify-center
+							items-center
+							m-0
+							p-2
+							bg-white
+							border
+							border-grey-400
+							rounded-r-none
+							${styles.FORM_COMBO_INPUT_BG}
+						`}
+					>
+						{inputIconElement}
+						<TextNative
+							numberOfLines={1}
+							ellipsizeMode="head"
+							className={`
+								Combo-TextNative
+								flex-1
+								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
+								${styles.FORM_COMBO_INPUT_CLASSNAME}
+							`}
+						>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
+					</Pressable> :
+					<Input
+						{...testProps('input')}
+						ref={inputRef}
+						reference="ComboInput"
+						value={textInputValue}
+						autoSubmit={true}
+						isDisabled={isDisabled}
+						onChangeValue={onInputChangeText}
+						onKeyPress={onInputKeyPress}
+						onFocus={onInputFocus}
+						onBlur={onInputBlur}
+						InputLeftElement={inputIconElement}
+						autoSubmitDelay={500}
+						placeholder={placeholder}
+						tooltip={tooltip}
+						tooltipPlacement={tooltipPlacement}
+						tooltipClassName={`
+							grow
+							h-auto
+							self-stretch
+							flex-1
+						`}
+						className={`
+							Combo-Input
+							grow
+							h-auto
+							self-stretch
+							flex-1
+							m-0
+							rounded-tr-none
+							rounded-br-none
+							${styles.FORM_COMBO_INPUT_CLASSNAME}
+						`}
+						{..._input}
+					/>;
 	}
-
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+	if (UiGlobals.mode === UI_MODE_NATIVE) {
+		throw new Error('Migration to Gluestack not yet implemented on Native');
 		// This input and trigger are for show
 		// They just show the current getDisplayValue and open the menu
 		const displayValue = getDisplayValue();
-		inputAndTrigger = <>
-							<Pressable
-								{...testProps('showMenuBtn')}
-								onPress={showMenu}
-								flex={1}
-								flexDirection="row"
-								justifyContent="center"
-								alignItems="center"
-								borderWidth={1}
-								borderColor="trueGray.400"
-								borderTopRightRadius={0}
-								borderBottomRightRadius={0}
-								bg={styles.FORM_COMBO_INPUT_BG}
-								h="100%"
-							>
-								{inputIconElement}
-								<Text
-									flex={1}
-									h="100%"
-									numberOfLines={1}
-									ellipsizeMode="head"
-									m={0}
-									p={2}
-									color={_.isEmpty(displayValue) ? 'trueGray.400' : '#000'}
-									fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-								>{_.isEmpty(displayValue) ? placeholder : displayValue}</Text>
-							</Pressable>
-							<IconButton
-								{...testProps('trigger')}
-								ref={triggerRef}
-								_icon={{
-									as: CaretDown,
-									color: 'primary.800',
-									size: 'sm',
-								}}
-								isDisabled={isDisabled}
-								onPress={onTriggerPress}
-								h="100%"
-								borderWidth={1}
-								borderColor="#bbb"
-								borderLeftWidth={0}
-								borderLeftRadius={0}
-								borderRightRadius="md"
-								bg={styles.FORM_COMBO_TRIGGER_BG}
-								_hover={{
-									bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-								}}
-							/>
-						</>;
+		input = <Pressable
+					{...testProps('showMenuBtn')}
+					onPress={showMenu}
+					className={`
+						h-full
+						flex-1
+						flex-row
+						justify-center
+						items-center
+						border
+						border-grey-400
+						rounded-r-none
+						${styles.FORM_COMBO_INPUT_BG}
+					`}
+				>
+					{inputIconElement}
+					<TextNative
+						numberOfLines={1}
+						ellipsizeMode="head"
+						className={`
+							h-full
+							flex-1
+							m-0
+							p-1
+							${_.isEmpty(displayValue) ? "text-grey-400" : "text-black"}
+							${styles.FORM_COMBO_INPUT_CLASSNAME}
+						`}
+					>{_.isEmpty(displayValue) ? placeholder : displayValue}</TextNative>
+				</Pressable>;
 	}
 
 	if (isMenuShown) {
@@ -685,7 +722,7 @@ export function ComboComponent(props) {
 			// 'data',
 			'idIx',
 			'displayIx',
-			'value',
+			// 'value',
 			'disableView',
 			'disableCopy',
 			'disableDuplicate',
@@ -695,29 +732,33 @@ export function ComboComponent(props) {
 			'selectorSelectedField',
 			'usePermissions',
 		]);
+		if (!isInTag) {
+			gridProps.value = props.value;
+		}
 		if (!Repository) {
 			gridProps.data = filteredData;
 		}
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
+		const gridStyle = {};
+		if (UiGlobals.mode === UI_MODE_WEB) {
+			gridStyle.height = menuHeight || styles.FORM_COMBO_MENU_HEIGHT;
+		}
 		grid = <WhichGrid
 					showHeaders={false}
 					showHovers={true}
-					shadow={1}
 					getRowProps={() => {
 						return {
-							borderBottomWidth: 1,
-							borderBottomColor: 'trueGray.300',
-							py: 1,
-							pl: 4,
-							pr: 2,
-							w: '100%',
+							className: `
+								w-full
+								pl-4
+								pr-2
+								py-1
+								border-b-1
+								border-grey-300
+							`,
 						};
 					}}
 					autoAdjustPageSizeToHeight={false}
-					{...gridProps}
-					reference="grid"
-					parent={self}
-					h={UiGlobals.mode === UI_MODE_WEB ? styles.FORM_COMBO_MENU_HEIGHT + 'px' : null}
 					newEntityDisplayValue={newEntityDisplayValue}
 					newEntityDisplayProperty={newEntityDisplayProperty}
 					disablePresetButtons={!isEditor}
@@ -819,88 +860,140 @@ export function ComboComponent(props) {
 							hideMenu();
 							onInputFocus();
 						}
+						if (onSubmit) {
+							onSubmit(id);
+						}
 					}}
+					reference="grid"
+					parent={self}
+					className={`
+						h-full
+					`}
+					style={gridStyle}
+					{...gridProps}
 					{..._editor}
 				/>;
 		if (UiGlobals.mode === UI_MODE_WEB) {
+			if (!disableDirectEntry) {
+				inputClone = <Box
+								className="Combo-inputClone-Box"
+								style={{
+									height: inputHeight,
+								}}
+							>
+								<Input
+									{...testProps('input')}
+									ref={inputCloneRef}
+									reference="ComboInputClone"
+									value={textInputValue}
+									autoSubmit={true}
+									isDisabled={isDisabled}
+									onChangeValue={onInputChangeText}
+									onKeyPress={onInputKeyPress}
+									onFocus={onInputFocus}
+									onBlur={onInputBlur}
+									InputLeftElement={inputIconElement}
+									autoSubmitDelay={500}
+									placeholder={placeholder}
+									tooltip={tooltip}
+									tooltipPlacement={tooltipPlacement}
+									tooltipClassName={`
+										grow
+										h-full
+										flex-1
+									`}
+									className={`
+										Combo-inputClone-Input
+										grow
+										h-full
+										flex-1
+										m-0
+										rounded-tr-none
+										rounded-br-none
+										${styles.FORM_COMBO_INPUT_CLASSNAME}
+									`}
+									{..._input}
+								/>
+							</Box>;
+			}
 			dropdownMenu = <Popover
 								isOpen={isMenuShown}
 								onClose={() => {
 									hideMenu();
 								}}
 								trigger={emptyFn}
-								trapFocus={false}
-								placement={'auto'}
-								// _fade={{
-								// 	entryDuration: 0, // Doesn't work, as Popover doesn't have animation controls like Modal does. See node_modules/native-base/src/components/composites/Popover/Popover.tsx line 99 (vs .../composites/Modal/Modal.tsx line 113 which has ..._fade) I added a feature request to NativeBase https://github.com/GeekyAnts/NativeBase/issues/5651
-								// }}
-								{...props}
+								className="dropdownMenu-Popover block"
+								initialFocusRef={inputCloneRef}
 							>
-								<Popover.Content
-									position="absolute"
-									top={top + 'px'}
-									left={left + 'px'}
-									w={width + 'px'}
-									overflow="auto"
-									bg="#fff"
+								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
+								<Box
+									ref={menuRef}
+									className={`
+										dropdownMenu-Box
+										flex-1
+										overflow-auto
+										bg-white
+										p-0
+										rounded-none
+										border
+										border-grey-400
+										shadow-md
+										max-w-full
+									`}
+									style={{
+										top,
+										left,
+										width,
+										height: (menuHeight || styles.FORM_COMBO_MENU_HEIGHT) + inputHeight,
+										minWidth: 100,
+									}}
 								>
-									<Popover.Body
-										ref={menuRef}
-										borderWidth={1}
-										borderColor='trueGray.400'
-										borderTopWidth={0}
-										p={0}
-									>
-										{grid}
-									</Popover.Body>
-								</Popover.Content>
+									{inputClone}
+									{grid}
+								</Box>
 							</Popover>;
 		}
-		if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
+		if (UiGlobals.mode === UI_MODE_NATIVE) {
 			if (isEditor) {
 				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
 				checkButton = <IconButton
 								{...testProps('checkBtn')}
+								icon={Check}
 								_icon={{
-									as: Check,
-									color: 'trueGray.600',
 									size: 'sm',
+									className: 'text-grey-600',
 								}}
 								onPress={onCheckButtonPress}
 								isDisabled={!value}
-								h="100%"
-								borderWidth={1}
-								borderColor="#bbb"
-								borderRadius="md"
-								bg={styles.FORM_COMBO_TRIGGER_BG}
-								_hover={{
-									bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-								}}
+								className={`
+									h-full
+									border
+									border-grey-400
+									rounded-md
+									${styles.FORM_COMBO_TRIGGER_CLASSNAME}
+								`}
 							/>;
 			}
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
-				<Row h={10}>
+				<HStack className="h-[10px]">
 					{xButton}
 					{eyeButton}
 					{disableDirectEntry ?
-						<Text
+						<TextNative
 							ref={inputRef}
-							flex={1}
-							h="100%"
 							numberOfLines={1}
 							ellipsizeMode="head"
-							m={0}
-							p={2}
-							borderWidth={1}
-							borderColor="trueGray.400"
-							borderTopRightRadius={0}
-							borderBottomRightRadius={0}
-							fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-							bg={styles.FORM_COMBO_INPUT_BG}
-							_focus={{
-								bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-							}}
-						>{textInputValue}</Text> :
+							className={`
+								h-full
+								flex-1
+								m-0
+								p-1
+								border
+								border-grey-400
+								rounded-r-none
+								${styles.FORM_COMBO_INPUT_CLASSNAME}
+							`}
+						>{textInputValue}</TextNative> :
 						<Input
 							{...testProps('input')}
 							ref={inputRef}
@@ -912,87 +1005,116 @@ export function ComboComponent(props) {
 							onKeyPress={onInputKeyPress}
 							onFocus={onInputFocus}
 							onBlur={onInputBlur}
-							flex={1}
-							h="100%"
-							m={0}
 							InputLeftElement={inputIconElement}
 							autoSubmitDelay={500}
-							borderTopRightRadius={0}
-							borderBottomRightRadius={0}
-							fontSize={styles.FORM_COMBO_INPUT_FONTSIZE}
-							bg={styles.FORM_COMBO_INPUT_BG}
-							_focus={{
-								bg: styles.FORM_COMBO_INPUT_FOCUS_BG,
-							}}
 							placeholder={placeholder}
+							tooltip={tooltip}
+							tooltipPlacement={tooltipPlacement}
+							tooltipClassName={`
+								h-full
+								flex-1
+							`}
+							className={`
+								h-full
+								flex-1
+								m-0
+								rounded-r-none
+								${styles.FORM_COMBO_INPUT_CLASSNAME}
+							`}
 							{..._input}
 						/>}
 					<IconButton
 						{...testProps('hideMenuBtn')}
+						icon={CaretDown}
 						_icon={{
-							as: CaretDown,
-							color: 'primary.800',
 							size: 'sm',
+							className: 'text-primary-800',
 						}}
 						isDisabled={isDisabled}
 						onPress={() => hideMenu()}
-						h="100%"
-						borderWidth={1}
-						borderColor="#bbb"
-						borderLeftWidth={0}
-						borderLeftRadius={0}
-						borderRightRadius="md"
-						bg={styles.FORM_COMBO_TRIGGER_BG}
-						_hover={{
-							bg: styles.FORM_COMBO_TRIGGER_HOVER_BG,
-						}}
+						className={`
+							h-full
+							border
+							border-grey-400
+							rounded-l-none
+							rounded-r-md
+							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
+						`}
 					/>
 					{checkButton}
-				</Row>;
+				</HStack>;
 			dropdownMenu = <Modal
 								isOpen={true}
 								safeAreaTop={true}
 								onClose={() => setIsMenuShown(false)}
-								mt="auto"
-								mb="auto"
-								w="100%"
-								h={400}
-								p={5}
+								className={`
+									h-[400px]
+									w-full
+									my-auto
+									p-[5px]
+								`}
 							>
-								{inputAndTriggerClone}
-								{grid}
+								<ModalBackdrop />
+								<ModalContent>
+									<ModalBody>
+										{inputAndTriggerClone}
+										{grid}
+									</ModalBody>
+								</ModalContent>
 							</Modal>;
 		}
 	}
 
-	const refProps = {};
-	if (tooltipRef) {
-		refProps.ref = tooltipRef;
+	let className = `
+		Combo-HStack
+		flex-1
+		items-stretch
+		h-auto
+		self-stretch
+		justify-center
+		items-stretch
+	`;
+	if (props.className) {
+		className += ' ' + props.className;
 	}
-
+	if (minimizeForRow) {
+		className += ' h-auto min-h-0';
+	}
+	
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
-			<Column testID={testID}>
-				<Row {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%">
+			<VStackNative
+				testID={testID}
+				className="Combo-VStack"
+			>
+				<HStack
+					className={className}
+				>
 					{xButton}
 					{eyeButton}
-					{inputAndTrigger}
+					{input}
+					{trigger}
 					{dropdownMenu}
-				</Row>
-				<Row mt={2}>
+				</HStack>
+				<HStack className="mt-1">
 					{additionalButtons}
-				</Row>
-			</Column>;
+				</HStack>
+			</VStackNative>;
 	} else {
 		assembledComponents = 
-			<Row testID={testID} {...refProps} justifyContent="center" alignItems="center" flex={1} h="100%" onLayout={onLayout}>
+			<HStackNative
+				testID={testID}
+				onLayout={onLayout}
+				className={className}
+			>
 				{xButton}
 				{eyeButton}
-				{inputAndTrigger}
+				{input}
+				{trigger}
 				{additionalButtons}
 				{dropdownMenu}
-			</Row>;
+			</HStackNative>;
 	}
 	
 	if (isViewerShown && Editor) {
@@ -1020,30 +1142,26 @@ export function ComboComponent(props) {
 						onClose={onViewerClose}
 					>
 						<Editor
-							{...propsForViewer}
 							editorType={EDITOR_TYPE__WINDOWED}
 							isEditorViewOnly={true}
-							{...viewerProps}
-							px={0}
-							py={0}
-							w="100%"
 							parent={self}
 							reference="viewer"
 							selection={viewerSelection}
 							onEditorClose={onViewerClose}
+							className={`
+								w-full
+								p-0
+							`}
+							{...propsForViewer}
+							{...viewerProps}
 						/>
 					</Modal>
 				</>;
 	}
 	
-	if (tooltip) {
-		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement} h="100%">
-								{assembledComponents}
-							</Tooltip>;
-	}
-	
 	return assembledComponents;
-}
+	
+});
 
 export const Combo = withComponent(
 						withAlert(

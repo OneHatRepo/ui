@@ -12,6 +12,7 @@ import {
 //             /____/
 
 export function login(loginId = null, password = null) {
+	cy.log('login');
 	if (!loginId) {
 		loginId = Cypress.env('loginId');
 	}
@@ -34,6 +35,7 @@ export function login(loginId = null, password = null) {
 		});
 }
 export function logout() {
+	cy.log('logout');
 	const baseDir = Cypress.env('baseDir');
 	getDomNode(baseDir + 'logout').click({ force: true });
 }
@@ -47,6 +49,7 @@ export function logout() {
 //                     /____/
 
 export function navigateViaTabOrHomeButtonTo(url) {
+	cy.log('navigateViaTabOrHomeButtonTo ' + url);
 	// i.e. If we're on home screen, press the button.
 	// If we have a tab navigation, press the tab's button
 	const baseDir = Cypress.env('baseDir');
@@ -54,9 +57,11 @@ export function navigateViaTabOrHomeButtonTo(url) {
 	cy.url().should('include', url);
 }
 export function navigateToHome() {
+	cy.log('navigateToHome');
 	navigateToScreen('home');
 }
 export function navigateToScreen(path) {
+	cy.log('navigateToScreen ' + path);
 	const
 		baseUrl = Cypress.env('baseUrl'),
 		baseDir = Cypress.env('baseDir');

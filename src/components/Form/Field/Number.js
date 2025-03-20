@@ -1,21 +1,18 @@
 
 import React, { useState, useEffect, useRef, } from 'react';
 import {
-	Icon,
-	Input,
-	Row,
-} from 'native-base';
+	HStack,
+} from '@project-components/Gluestack';
+import Decimal from 'decimal.js';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
+import Input from './Input.js';
 import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
-import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
 import Plus from '../../Icons/Plus.js';
 import Minus from '../../Icons/Minus.js';
 import _ from 'lodash';
-
-const InputWithTooltip = withTooltip(Input);
 
 function NumberElement(props) {
 	let {
@@ -24,10 +21,10 @@ function NumberElement(props) {
 			minValue,
 			maxValue,
 			autoSubmitDelay = UiGlobals.autoSubmitDelay,
-			tooltip = null,
+			tooltip,
+			tooltipPlacement,
 			isDisabled = false,
 			testID,
-			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
 		debouncedSetValueRef = useRef(),
@@ -57,15 +54,16 @@ function NumberElement(props) {
 			}
 		},
 		onChangeText = (value) => {
-
-			if (value === '') {
-				value = null; // empty string makes value null
-			} else if (value.match(/\.$/)) { // value ends with a decimal point
-				// don't parseFloat, otherwise we'll lose the decimal point
-			} else if (value.match(/0$/)) { // value ends with a zero
-				// don't parseFloat, otherwise we'll lose the ability to do things like 1.03
-			} else {
-				value = parseFloat(value, 10);
+			if (!_.isNil(value)) {
+				if (value === '') {
+					value = null; // empty string makes value null
+				} else if (value.match(/\.$/)) { // value ends with a decimal point
+					// don't parseFloat, otherwise we'll lose the decimal point
+				} else if (value.match(/0$/)) { // value ends with a zero
+					// don't parseFloat, otherwise we'll lose the ability to do things like 1.03
+				} else {
+					value = parseFloat(value, 10);
+				}
 			}
 			setLocalValue(value);
 			debouncedSetValueRef.current(value);
@@ -78,7 +76,7 @@ function NumberElement(props) {
 			if (!localValue) {
 				localValue = 0;
 			}
-			localValue = parseFloat(localValue, 10) -1;
+			localValue = new Decimal(localValue).minus(1).toNumber();
 			setValue(localValue);
 		},
 		onIncrement = () => {
@@ -89,7 +87,7 @@ function NumberElement(props) {
 			if (!localValue) {
 				localValue = 0;
 			}
-			localValue = parseFloat(localValue, 10) +1;
+			localValue = new Decimal(localValue).plus(1).toNumber();
 			setValue(localValue);
 		};
 	
@@ -123,62 +121,79 @@ function NumberElement(props) {
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
 		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
 
-	return <Row
-				flex={1}
-				h="100%"
-				p={0}
-				borderWidth={1}
-				borderColor="trueGray.400"
-				borderRadius={6}
-				{...propsToPass}
+	let className = `
+		Number
+		flex
+		h-full
+		items-center
+		max-h-[40px]
+		p-0
+		border
+		border-grey-400
+		rounded-[6px]
+	`;
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+
+	return <HStack
+				className={className}
 			>
 				<IconButton
 					{...testProps('decrementBtn')}
-					icon={<Icon as={Minus} color={(isDecrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
+					icon={Minus}
+					_icon={{
+						className: 'text-grey-500',
+					}}
 					onPress={onDecrement}
 					isDisabled={isDecrementDisabled || isDisabled}
-					h="100%"
-					flex={1}
-					maxWidth={10}
-					_hover={{
-						bg: isDecrementDisabled ? null : 'trueGray.400',
+					className={`
+						decrementBtn
+						h-full
+						rounded-r-none
+					`}
+					style={{
+						width: 40,
 					}}
-					borderRightRadius={0}
-					zIndex={10}
 				/>
-				<InputWithTooltip
+				<Input
 					testID={testID}
 					value={inputValue}
 					onChangeText={onChangeText}
 					onKeyPress={onInputKeyPress}
-					flex={5}
-					h="100%"
-					fontSize={styles.FORM_INPUT_FONTSIZE}
-					bg={styles.FORM_INPUT_BG}
-					_focus={{
-						bg: styles.FORM_INPUT_FOCUS_BG,
-					}}
-					textAlign="center"
-					borderRadius={0}
-					tooltip={tooltip}
 					isDisabled={isDisabled}
+					tooltip={tooltip}
+					tooltipPlacement={tooltipPlacement}
+					tooltipClassName="flex-1"
+					className={`
+						h-full
+						text-center
+						rounded-none
+					`}
+					textAlignIsCenter={true}
+					style={{
+						flex: 3
+					}}
 					{...props._input}
 				/>
 				<IconButton
 					{...testProps('incrementBtn')}
-					icon={<Icon as={Plus} color={(isIncrementDisabled || isDisabled) ? 'disabled' : 'trueGray.500'} />}
+					icon={Plus}
+					_icon={{
+						className: 'text-grey-500',
+					}}
 					onPress={onIncrement}
 					isDisabled={isIncrementDisabled || isDisabled}
-					h="100%"
-					flex={1}
-					maxWidth={10}
-					_hover={{
-						bg: isIncrementDisabled ? null : 'trueGray.400',
+					className={`
+						incrementBtn
+						h-full
+						rounded-l-none
+					`}
+					style={{
+						width: 40,
 					}}
-					borderLeftRadius={0}
-					zIndex={10}
 				/>
-			</Row>;
+			</HStack>;
 }
 
 export default withComponent(withValue(NumberElement));

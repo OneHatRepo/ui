@@ -1,12 +1,10 @@
-import {
-} from 'native-base';
-import _ from 'lodash';
+import { forwardRef } from 'react';
 
 export default function withEvents(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		const {
 				onEvent,
 			} = props;
-		return <WrappedComponent fireEvent={onEvent} {...props} />;
-	};
+		return <WrappedComponent fireEvent={onEvent} {...props} ref={ref} />;
+	});
 }

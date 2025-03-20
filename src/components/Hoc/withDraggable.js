@@ -1,11 +1,11 @@
-import { useState, } from 'react';
+import { forwardRef, useState, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import {
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
 import useBlocking from '../../Hooks/useBlocking.js';
@@ -21,10 +21,10 @@ import getComponentFromType from '../../Functions/getComponentFromType.js';
 // VERTICAL means the component moves along the Y axis.
 
 export default function withDraggable(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (!props.isDraggable) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		const {
@@ -235,7 +235,7 @@ export default function withDraggable(WrappedComponent) {
 							{...draggableProps}
 						>
 							<div className="nsResize">
-								<WrappedComponent {...propsToPass} />
+								<WrappedComponent {...propsToPass} ref={ref} />
 							</div>
 						</Draggable>;
 			} else if (mode === HORIZONTAL) {
@@ -249,7 +249,7 @@ export default function withDraggable(WrappedComponent) {
 							{...draggableProps}
 						>
 							<div className="ewResize" style={{ height: '100%', }}>
-								<WrappedComponent {...propsToPass} />
+								<WrappedComponent {...propsToPass} ref={ref} />
 							</div>
 						</Draggable>;
 			}
@@ -264,15 +264,15 @@ export default function withDraggable(WrappedComponent) {
 						handle={handle}
 						{...draggableProps}
 					>
-						<WrappedComponent {...propsToPass} />
+						<WrappedComponent {...propsToPass} ref={ref} />
 					</Draggable>;
-		} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+		} else if (CURRENT_MODE === UI_MODE_NATIVE) {
 
 			// NOT YET IMPLEMENTED
 			// Really need to replace most of this, as much of it is web-centric.
 
-			return <WrappedComponent {...propsToPass} />; // TEMP
+			return <WrappedComponent {...propsToPass} ref={ref} />; // TEMP
 
 		}
-	};
+	});
 }

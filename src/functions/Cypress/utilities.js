@@ -6,10 +6,28 @@ import moment from 'moment';
 // / /_/ / /_/ / / / /_/ /  __(__  )
 // \____/\__/_/_/_/\__/_/\___/____/
 
-
+export function bootstrapRouteWaiters() {
+	cy.log('bootstrapRouteWaiters');
+	cy.intercept('GET', '**/get**').as('getWaiter');
+	cy.intercept('POST', '**/add**').as('addWaiter');
+	cy.intercept('POST', '**/edit**').as('editWaiter');
+	cy.intercept('POST', '**/delete**').as('deleteWaiter');
+	cy.intercept('GET', '**/getReport**').as('getReportWaiter');
+	cy.intercept('POST', '**/getReport**').as('postReportWaiter');
+	cy.intercept('POST', '**/emailModelPdf**').as('emailModelPdf');
+}
+export function stubWindowOpen() { // This needs to be called after the page in question has loaded. See https://docs.cypress.io/api/commands/stub#Replace-built-in-window-methods-like-prompt
+	cy.window().then((win) => {
+		cy.stub(win, 'open').as('windowOpen');
+	});
+}
 export function fixInflector(str) {
 	// inflector-js doesn't handle pluralization of 'equipment' correctly
 	str = str.replace(/quipments/, 'quipment');
+
+	// Don't pluralize 'SideA' or 'SideB'
+	str = str.replace(/SideAs/, 'SideA');
+	str = str.replace(/SideBs/, 'SideB');
 	return str;
 }
 export function getPropertyDefinitionFromSchema(fieldName, schema) {

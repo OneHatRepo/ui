@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@project-components/Gluestack';
 import Pagination from './Pagination.js'
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
@@ -10,11 +10,15 @@ export default function PaginationToolbar(props) {
 	const {
 			toolbarItems = [],
 			disablePageSize = false,
+			minimize,
 		} = props,
-		[minimize, setMinimize] = useState(false),
+		[minimizeLocal, setMinimizeLocal] = useState(minimize),
 		propsToPass = _.omit(props, 'toolbarItems'),
-		showPagination = props.Repository?.totalPages > 1,
+		showPagination = true,//props.Repository?.totalPages > 1,
 		onLayout = (e) => {
+			if (minimize) {
+				return; // skip if already minimized
+			}
 			// Note to future self: this is using hard-coded values.
 			// Eventually might want to make it responsive to actual sizes
 
@@ -28,28 +32,34 @@ export default function PaginationToolbar(props) {
 				shouldMinimize = width < threshold;
 
 			if (shouldMinimize !== minimize) {
-				setMinimize(shouldMinimize);
+				setMinimizeLocal(shouldMinimize);
 			}
 		};
 
-	let toolbarProps = {};
-	if (showPagination) {
-		toolbarProps = {
-			borderLeftWidth: 1,
-			borderLeftColor: 'trueGray.400',
-			pl: 3,
-			ml: 3,
-		};
-	}
-
 	return <Toolbar
-				bg="trueGray.200"
-				borderTopWidth={1}
-				borderTopColor="trueGray.400"
-				w="100%"
+				className={`
+					border-t
+					border-t-grey-400
+				`}
 				onLayout={(e) => onLayout(e)}
 			>
-				<Pagination {...propsToPass} showPagination={showPagination} w={toolbarItems.length ? null : '100%'} minimize={minimize} disablePageSize={disablePageSize} />
-				{toolbarItems.length ? <Row flex={1} {...toolbarProps}>{toolbarItems}</Row> : null}
+				{toolbarItems.length ?
+					<HStack
+						className={`
+							PaginationToolbar-HStack
+							shrink-0
+							border-r
+							border-r-grey-400
+							mr-3
+							pr-3
+						`}
+					>{toolbarItems}</HStack> : null}
+				<Pagination
+					{...propsToPass}
+					showPagination={showPagination}
+					w={toolbarItems.length ? null : '100%'}
+					minimize={minimizeLocal}
+					disablePageSize={disablePageSize}
+				/>
 			</Toolbar>;
 };

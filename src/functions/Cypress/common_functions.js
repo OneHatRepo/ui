@@ -5,6 +5,7 @@ import {
 
 
 export function markForPageReload() {
+	cy.log('markForPageReload');
 	// See https://github.com/cypress-io/cypress/issues/1805#issuecomment-525482440
 	cy.window()
 		.then((win) => {
@@ -12,11 +13,13 @@ export function markForPageReload() {
 		});
 }
 export function waitForPageReload() {
+	cy.log('waitForPageReload');
 	// See https://github.com/cypress-io/cypress/issues/1805#issuecomment-525482440
 	cy.window({ timeout: 30000 })
 		.should('not.have.prop', 'beforeReload');
 }
 export function waitForNavigationTo(url) {
+	cy.log('waitForNavigationTo ' + url);
 	return cy.location('pathname', { timeout: 30000 })
 		.should('include', url);
 }
@@ -30,10 +33,12 @@ export function waitForNavigationTo(url) {
 // /_/  /_/\___/____/____/\__,_/\__, /\___/_____/\____/_/|_|
 //                             /____/
 export function clickMessageBoxDefaultButton() {
-	getDomNode(['AlertDialogue', 'okBtn'])
+	cy.log('clickMessageBoxDefaultButton');
+	getDomNode(['AlertModal', 'okBtn'])
 		.click();
 }
 export function verifyNoErrorBox() {
+	cy.log('verifyNoErrorBox');
 	getDomNode('ErrorMessage', { timeout: 1000 })
 		.should('not.exist', 'Error dialogue popped up.');
 }

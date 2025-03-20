@@ -1,4 +1,4 @@
-import { useEffect, useRef, } from 'react';
+import { forwardRef, useEffect, useRef, } from 'react';
 import { useDrag, useDrop, useDragLayer } from 'react-dnd'; // https://react-dnd.github.io/react-dnd/about don't forget the wrapping <DndProvider /> as shown here: https://react-dnd.github.io/react-dnd/docs/api/dnd-provider
 
 
@@ -9,10 +9,10 @@ import { useDrag, useDrop, useDragLayer } from 'react-dnd'; // https://react-dnd
 // but it will lag behind, compared to what the native drag layer can do
 
 export function withDragSource(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		
 		if (!props.isDragSource) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		if (!props.dragSourceType) {
@@ -105,23 +105,24 @@ export function withDragSource(WrappedComponent) {
 			}, [layer]);
 		}
 
-		return <WrappedComponent 
+		return <WrappedComponent
 					{...props}
+					ref={ref}
 					canDrag={stateCanDrag}
 					isDragging={stateIsDragging}
 					dragSourceRef={dragSourceRef}
 					dragPreviewRef={dragPreviewRef}
 					dragState={dragState}
 				/>;
-	};
+	});
 }
 
 
 export function withDropTarget(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (!props.isDropTarget) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		if (!props.dropTargetAccept) {
@@ -181,13 +182,14 @@ export function withDropTarget(WrappedComponent) {
 			
 		dropTargetRef(localTargetRef); // register DOM node with react-dnd
 
-		return <WrappedComponent 
+		return <WrappedComponent
 					canDrop={stateCanDrop}
+					ref={ref}
 					isOver={isOver}
 					dropTargetRef={localTargetRef}
 					{...props}
 				/>;
-	};
+	});
 }
 
 

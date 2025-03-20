@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
-	Box,
-	Column,
-	Pressable,
-	Row,
+	HStack,
 	ScrollView,
-	Text,
-} from 'native-base';
+	Pressable,
+	VStack,
+	VStackNative,
+} from '@project-components/Gluestack';
 import inArray from '../../Functions/inArray.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import _ from 'lodash';
@@ -73,7 +72,7 @@ export default function Accordion(props) {
 				rowProps.overflow = 'hidden'; // otherwise some elements mistakenly show
 			}
 
-			return <Column key={ix}>
+			return <VStack key={ix}>
 						<Pressable
 							onPress={(e) => {
 								let newActiveSections = [];
@@ -94,10 +93,10 @@ export default function Accordion(props) {
 						>
 							{header}
 						</Pressable>
-						<Row {...rowProps} bg="#f00">
+						<HStack {...rowProps} className="bg-[#f00]">
 							{content}
-						</Row>
-					</Column>;
+						</HStack>
+					</VStack>;
 		});
 
 	useEffect(() => {
@@ -116,16 +115,24 @@ export default function Accordion(props) {
 		if (activeSections?.length && sections?.length) {
 			scrollTo = sectionHeight * activeIx;
 		}
-		setTimeout(()=> {
-			scrollView.scrollTo({ x: 0, y: scrollTo, animated: true });
-		}, 10); // delay so render can finish
+		if (scrollView) {
+			setTimeout(()=> {
+				scrollView.scrollTo({ x: 0, y: scrollTo, animated: true });
+			}, 10); // delay so render can finish
+		}
 
 	}, [activeSections, isRendered]);
 	
-	return <ScrollView ref={scrollViewRef} keyboardShouldPersistTaps="always" flex={1} w="100%">
-				<Column
+	return <ScrollView
+				ref={scrollViewRef}
+				keyboardShouldPersistTaps="always"
+				className="Accordion-ScrollView flex-1 w-full"
+				contentContainerStyle={{
+					height: '100%',
+				}}
+			>
+				<VStackNative
 					{...propsToPass}
-					pb={(onlyOne ? calculateExtraPadding() : 0) + 'px'}
 					onLayout={(e) => {
 						if (!containerInitialHeight) {
 							const { height } = e.nativeEvent.layout;
@@ -136,8 +143,9 @@ export default function Accordion(props) {
 						}
 						setIsRendered(true);
 					}}
+					className={` pb-${(onlyOne ? calculateExtraPadding() : 0) + 'px'} `}
 				>
 					{items}
-				</Column>
+				</VStackNative>
 			</ScrollView>;
 }

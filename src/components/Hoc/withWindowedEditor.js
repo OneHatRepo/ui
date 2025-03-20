@@ -1,8 +1,7 @@
+import { forwardRef } from 'react';
 import {
-	Column,
-	Modal,
-	Text,
-} from 'native-base';
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+} from '@project-components/Gluestack';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../Constants/Editor.js';
@@ -12,13 +11,14 @@ import _ from 'lodash';
 
 
 // function withAdditionalProps(WrappedComponent) {
-// 	return (props) => {
+// 	return forwardRef((props, ref) => {
 // 		return <WrappedComponent
 // 					mode="BOTH_AXES"
 // 					handle=".header"
 // 					{...props}
+// 					ref={ref}
 // 				/>;
-// 	};
+// 	});
 // }
 
 // In order to implement a draggable window, I'd need to switch the Column with DraggableColumn,
@@ -29,20 +29,21 @@ import _ from 'lodash';
 
 
 function withAdditionalProps(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
 					editorType={EDITOR_TYPE__WINDOWED}
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 }
 
 // NOTE: Effectivtly, the HOC composition is:
 // withAdditionalProps(withEditor(withWindowedEditor))
 
 export default function withWindowedEditor(WrappedComponent, isTree = false) {
-	const WindowedEditor = (props) => {
+	const WindowedEditor = forwardRef((props, ref) => {
 		const {
 				isEditorShown = false,
 				setIsEditorShown,
@@ -57,7 +58,8 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				selectorSelected,
 				selectorSelectedField,
 				h,
-
+				style,
+				
 				...propsToPass
 			} = props,
 			onEditorCancel = props.onEditorCancel;
@@ -67,21 +69,28 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 		}
 
 		return <>
-					<WrappedComponent {...props} />
+					<WrappedComponent {...props} ref={ref} />
 					{isEditorShown && 
 						<Modal
 							isOpen={true}
 							onClose={onEditorCancel}
+							className="withEditor-Modal"
 						>
+							<ModalBackdrop className="withEditor-ModalBackdrop" />
 							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
 								{...propsToPass}
 								{..._editor}
 								parent={self}
 								reference="editor"
+								className={`
+									bg-white
+									shadow-lg
+									rounded-lg
+								`}
 							/>
 						</Modal>}
 				</>;
-	};
+	});
 	return withAdditionalProps(withEditor(WindowedEditor, isTree));
 }

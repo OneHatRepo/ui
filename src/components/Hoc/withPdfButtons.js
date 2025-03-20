@@ -1,19 +1,20 @@
+import { forwardRef } from 'react';
 import {
 	VIEW,
 } from '../../Constants/Commands.js';
+import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
 import qs from 'qs';
-import inArray from '../../Functions/inArray.js';
-import Pdf from '../Icons/Pdf.js';
 import withModal from './withModal.js';
-import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
+import Form from '../Form/Form.js';
+import Pdf from '../Icons/Pdf.js';
 import UiGlobals from '../../UiGlobals.js';
+import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
 export default function withPdfButtons(WrappedComponent) {
-	return withModal((props) => {
-
+	return withModal(forwardRef((props, ref) => {
 		let showButtons = true;
 		if (!props.showPdfBtns) {
 			showButtons = false;
@@ -25,7 +26,7 @@ export default function withPdfButtons(WrappedComponent) {
 			// bypass everything.
 			// If we don't do this, we get an infinite recursion with Form
 			// because this HOC wraps Form and uses Form itself.
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		const {
@@ -54,6 +55,7 @@ export default function withPdfButtons(WrappedComponent) {
 				hideModal,
 
 			} = props,
+			styles = UiGlobals.styles,
 			propertyNames = [],
 			buildModalItems = () => {
 				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
@@ -81,8 +83,15 @@ export default function withPdfButtons(WrappedComponent) {
 
 				if (!_.isEmpty(ancillaryItems)) {
 					const
+						ancillaryItemsClone = _.cloneDeepWith(ancillaryItems, (value) => {
+							// Exclude the 'parent' property from being cloned, as it would introduce an infinitely recursive loop
+							if (value && value.parent) {
+								const { parent, ...rest } = value;
+								return rest;
+							}
+						}),
 						items = [];
-					_.each(ancillaryItems, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
+					_.each(ancillaryItemsClone, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
 						let name;
 						if (ancillaryItem.pdfModel) {
 							name = ancillaryItem.pdfModel;
@@ -109,7 +118,6 @@ export default function withPdfButtons(WrappedComponent) {
 						items,
 						showToggleAllCheckbox: true,
 						isCollapsible: false,
-						ml: 3, // since it's not in a column, which normally adds pl: 3
 					});
 				}
 	
@@ -133,6 +141,9 @@ export default function withPdfButtons(WrappedComponent) {
 					if (!_.isEmpty(items)) {
 						const defaults = item.defaults;
 						item.items = _.map(items, (item, ix) => {
+							if (!item){
+								return null;
+							}
 							return buildNextLayer(item, ix, defaults);
 						});
 					}
@@ -195,117 +206,114 @@ export default function withPdfButtons(WrappedComponent) {
 					title: 'PDF Fields to Show',
 					includeReset: true,
 					includeCancel: true,
-					onSubmit: () => {
-						hideModal();
-
-						const
-							form = self.children.ModalForm,
-							data = form.formGetValues();
-
-						if (userWantsToEmail) {
-							onChooseEmailAddress(data);
-						} else {
-							getPdf(data);
-						}
-					},
-					submitBtnLabel: userWantsToEmail ? 'Choose Email' : 'Get PDF',
-					w: 530, // 510 so it's over the stack threshold
 					h: 800,
-					self,
-					formProps: {
-						editorType: EDITOR_TYPE__PLAIN,
-						disableFooter: true,
-						columnDefaults: {
-							labelWidth: '100%',
-						},
-						items: [
-							{
-								name: 'instructions',
-								type: 'DisplayField',
-								text: 'Please select which fields to show in the PDF.',
-								mb: 10,
-							},
-							...modalItems,
-						],
-						Repository,
-						startingValues,
-						validator,
-					},
+					w: styles.FORM_STACK_ROW_THRESHOLD + 10,
+					body: <Form
+								parent={self}
+								reference="chooseFieldsForm"
+								editorType={EDITOR_TYPE__PLAIN}
+								alert={alert}
+								columnDefaults={{
+									labelWidth: '100px',
+								}}
+								items={[
+									{
+										name: 'instructions',
+										type: 'DisplayField',
+										text: 'Please select which fields to show in the PDF.',
+										className: 'mb-3',
+									},
+									...modalItems,
+								]}
+								Repository={Repository}
+								startingValues={startingValues}
+								validator={validator}
+								submitBtnLabel={userWantsToEmail ? 'Choose Email' : 'Get PDF'}
+								onSubmit={(values)=> {
+									hideModal();
+
+									if (userWantsToEmail) {
+										onChooseEmailAddress(values);
+									} else {
+										getPdf(values);
+									}
+								}}
+							/>,
 				});
 			},
 			onChooseEmailAddress = (data) => {
+
 				showModal({
 					title: 'Email To',
-					includeReset: true,
 					includeCancel: true,
-					onSubmit: () => {
-						hideModal();
-
-						const
-							fv = self.children.ModalForm.formGetValues(),
-							email = fv.email,
-							message = fv.message;
-
-						sendEmail({
-							...data,
-							email,
-							message,
-						});
-					},
-					submitBtnLabel: 'Email PDF',
 					w: 510, // 510 so it's over the stack threshold
 					h: 500,
-					self,
-					formProps: {
-						editorType: EDITOR_TYPE__PLAIN,
-						disableFooter: true,
-						columnDefaults: {
-							labelWidth: '100%',
-						},
-						items: [
-							{
-								name: 'instructions',
-								type: 'DisplayField',
-								text: 'Please enter one or more email addresses, separated by a comma.',
-							},
-							{
-								name: 'email',
-								label: 'Email Address',
-								type: 'Input',
-								tooltip: 'Separate multiple email addresses with a comma.',
-							},
-							{
-								name: 'message',
-								label: 'Message',
-								placeholder: 'Please see attached PDF.',
-								type: 'TextArea',
-								totalLines: 6,
-							},
-						],
-						validator: yup.object({
-							email: yup.string().required('Email is required').test({
-								name: 'csvEmails',
-								test: function(value) {
-									if (!value) {
-										return this.createError({
-											message: 'Email is required',
-										});
-									}
-									const firstInvalidEmail = value.split(",")
-																	.map(email => email.trim())
-																	.filter(v => !_.isEmpty(v))
-																	.find(v => !yup.string().email().isValidSync(v));
-									if (firstInvalidEmail) {
-										return this.createError({
-											message: `The email address '${firstInvalidEmail}' is invalid.`
-										});
-									}
-									return true;
-								},
-							}),
-							message: yup.string().notRequired(),
-						}),
-					},
+					body: <Form
+								parent={self}
+								reference="chooseEmailAddressForm"
+								submitBtnLabel='Email PDF'
+								onSubmit={(values)=> {
+									hideModal();
+			
+									const
+										email = values.email,
+										message = values.message;
+			
+									sendEmail({
+										...data,
+										email,
+										message,
+									});
+								}}
+								editorType={EDITOR_TYPE__PLAIN}
+								alert={alert}
+								columnDefaults={{
+									labelWidth: '100px',
+								}}
+								items={[
+									{
+										name: 'instructions',
+										type: 'DisplayField',
+										text: 'Please enter one or more email addresses, separated by a comma.',
+									},
+									{
+										name: 'email',
+										label: 'Email Address',
+										type: 'Input',
+										tooltip: 'Separate multiple email addresses with a comma.',
+									},
+									{
+										name: 'message',
+										label: 'Message',
+										placeholder: 'Please see attached PDF.',
+										type: 'TextArea',
+										totalLines: 6,
+									},
+								]}
+								validator={yup.object({
+									email: yup.string().required('Email is required').test({
+										name: 'csvEmails',
+										test: function(value) {
+											if (!value) {
+												return this.createError({
+													message: 'Email is required',
+												});
+											}
+											const firstInvalidEmail = value.split(",")
+																			.map(email => email.trim())
+																			.filter(v => !_.isEmpty(v))
+																			.find(v => !yup.string().email().isValidSync(v));
+											if (firstInvalidEmail) {
+												return this.createError({
+													message: `The email address '${firstInvalidEmail}' is invalid.`
+												});
+											}
+											return true;
+										},
+									}),
+									message: yup.string().notRequired(),
+								})}
+							/>,
 				});
 			},
 			getPdf = (data) => {
@@ -351,6 +359,7 @@ export default function withPdfButtons(WrappedComponent) {
 				icon: Pdf,
 				isDisabled: selection.length !== 1,
 				handler: () => onChooseFields(true),
+				tooltip: 'Email the selected item as a PDF.',
 			},
 			{
 				key: 'viewPdfBtn',
@@ -358,6 +367,7 @@ export default function withPdfButtons(WrappedComponent) {
 				icon: Pdf,
 				isDisabled: selection.length !== 1,
 				handler: () => onChooseFields(),
+				tooltip: 'View the selected item as a PDF.',
 			},
 		];
 		_.each(buttons, (button) => {
@@ -373,6 +383,7 @@ export default function withPdfButtons(WrappedComponent) {
 					{...props}
 					additionalEditButtons={additionalEditButtons}
 					additionalViewButtons={additionalViewButtons}
+					ref={ref}
 				/>;
-	});
+	}));
 }

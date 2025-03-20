@@ -1,11 +1,11 @@
 import React, { useRef, } from 'react';
 import {
+	HStack,
 	Icon,
 	Pressable,
-	Row,
 	Switch,
-	Text,
-} from 'native-base';
+	TextNative,
+} from '@project-components/Gluestack';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Na from '../../Icons/Na.js';
@@ -22,7 +22,6 @@ const
 				setValue,
 				onText = 'Yes',
 				offText = 'No',
-
 				flex, // flex doesn't work right on mobile
 				...propsToPass
 			} = props,
@@ -45,34 +44,51 @@ const
 				}
 			};
 
-		if (_.isNil(value)) {
-			return <IconButton
-						{...testProps('naBtn')}
-						ref={props.outerRef}
-						icon={<Icon as={Na} color="trueGray.400" />}
-						onPress={onToggle}
-						borderWidth={1}
-						borderColor="trueGray.700"
-					/>;
+		let className = `
+			Toggle
+			h-full
+			items-center
+			py-[2px]
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
 		}
 
-		return <Row alignItems="center">
+		if (_.isNil(value)) {
+			return <HStack className={className}>
+						<IconButton
+							{...testProps('naBtn')}
+							ref={props.outerRef}
+							icon={Na}
+							_icon={{
+								className: 'text-grey-400',
+							}}
+							onPress={onToggle}
+							className={`
+								border
+								border-grey-700
+							`}
+						/>
+					</HStack>;
+		}
+
+		return <HStack className={className}>
 					<Pressable
 						{...testProps('nullifyBtn')}
 						onPress={onNullify}
+						className="justify-start"
 					>
 						<Switch
 							ref={props.outerRef}
 							onToggle={onToggle}
-							isChecked={!!value}
-							bg={styles.FORM_TOGGLE_BG}
+							value={!!value}
 							size={styles.FORM_TOGGLE_SIZE}
-							onTrackColor={styles.FORM_TOGGLE_ON_COLOR}
-							offTrackColor={styles.FORM_TOGGLE_OFF_COLOR}
-							_hover={{
-								onTrackColor: styles.FORM_TOGGLE_ON_HOVER_COLOR,
-								offTrackColor: styles.FORM_TOGGLE_OFF_HOVER_COLOR,
+							trackColor={{
+								false: styles.FORM_TOGGLE_OFF_COLOR,
+								true: styles.FORM_TOGGLE_ON_COLOR,
 							}}
+							thumbColor="#eee"
+							activeThumbColor="#eee"
 							{...propsToPass}
 						/>
 					</Pressable>
@@ -80,14 +96,16 @@ const
 						{...testProps('readoutBtn')}
 						onPress={onToggle}
 					>
-						<Text
+						<TextNative
 							{...testProps('readout')}
-							ml={1}
-							mr={2}
-							fontSize={styles.FORM_TOGGLE_FONTSIZE}
-						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</Text>
+							className={`
+								ml-1
+								mr-2
+								${styles.FORM_TOGGLE_READOUT_CLASSNAME}
+							`}
+						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</TextNative>
 					</Pressable>
-				</Row>;
+				</HStack>;
 	},
 	ToggleField = withComponent(withValue(ToggleElement));
 

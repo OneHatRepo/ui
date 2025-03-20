@@ -1,15 +1,15 @@
-import { useState, useRef, } from 'react';
+import { useRef, } from 'react';
 import {
-	Column,
-	Modal,
-	Row,
-} from 'native-base';
+	HStack,
+	VStackNative,
+} from '@project-components/Gluestack';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../../Constants/Editor.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
+import withModal from '../../../Hoc/withModal.js';
 import withValue from '../../../Hoc/withValue.js';
 import ValueBox from './ValueBox.js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
@@ -23,9 +23,11 @@ function TagComponent(props) {
 			isValueAlwaysArray,
 			isValueAsStringifiedJson,
 			showEye = true,
+			minimizeForRow = false,
 			Editor,
 			_combo = {},
 			tooltip,
+			testID,
 
 			// parent Form
 			onChangeValue,
@@ -36,23 +38,21 @@ function TagComponent(props) {
 			// withComponent
 			self,
 
+			// withFilters
+			isInFilter,
+
 			// withValue
 			value = [],
 			setValue,
+
+			// withModal
+			showModal,
+			hideModal,
+
 			...propsToPass // break connection between Tag and Combo props
 		} = props,
 		styles = UiGlobals.styles,
 		valueRef = useRef(value),
-		ignoreNextComboValueChangeRef = useRef(false),
-		[isViewerShown, setIsViewerShown] = useState(false),
-		[viewerSelection, setViewerSelection] = useState([]),
-		getIgnoreNextComboValueChange = () => {
-			return ignoreNextComboValueChangeRef.current;
-		},
-		setIgnoreNextComboValueChange = (bool) => {
-			ignoreNextComboValueChangeRef.current = bool;
-		},
-		onViewerClose = () => setIsViewerShown(false),
 		onView = async (item, e) => {
 			const
 				id = item.id,
@@ -70,18 +70,27 @@ function TagComponent(props) {
 				return;
 			}
 
-			setViewerSelection([record]);
-			setIsViewerShown(true);
+			showModal({
+				body: <Editor
+							editorType={EDITOR_TYPE__WINDOWED}
+							parent={self}
+							reference="viewer"
+							Repository={repository}
+							isEditorViewOnly={true}
+							selection={[record]}
+							onEditorClose={hideModal}
+							className={`
+								w-full
+								p-0
+							`}
+						/>,
+				onCancel: hideModal,
+			});
 		},
 		clearComboValue = () => {
-			setIgnoreNextComboValueChange(true); // we're clearing out the value of the underlying Combo, so ignore it when this combo submits the new value change
 			self.children.combo.setValue(null);
 		},
 		onChangeComboValue = (comboValue) => {
-			if (getIgnoreNextComboValueChange()) {
-				setIgnoreNextComboValueChange(false);
-				return;
-			}
 
 			if (_.isNil(comboValue)) {
 				// NOTE: We *shouldn't* get here, but for some unknown reason, we *were* getting here on rare occasions.
@@ -118,11 +127,13 @@ function TagComponent(props) {
 			if (!id) {
 				displayValue = '';
 			} else if (Repository) {
-				item = Repository.getById(id);
-				if (!item) {
-					throw Error('item not found');
+				if (!Repository.isDestroyed) {
+					item = Repository.getById(id);
+					if (!item) {
+						throw Error('item not found');
+					}
+					displayValue = item.displayValue;
 				}
-				displayValue = item.displayValue;
 			} else {
 				item = _.find(data, (datum) => datum[idIx] === id);
 				if (!item) {
@@ -216,6 +227,7 @@ function TagComponent(props) {
 						onView={() => onView(val)}
 						onDelete={!isViewOnly ? () => onDelete(val) : null}
 						showEye={showEye}
+						minimizeForRow={minimizeForRow}
 					/>;
 		});
 	
@@ -226,77 +238,91 @@ function TagComponent(props) {
 		WhichCombo = ComboEditor;
 	}
 
-	const sizeProps = {};
-	if (!props.flex && !props.w) {
-		sizeProps.flex = 1;
-	} else {
-		if (props.w) {
-			sizeProps.w = props.w;
-		}
-		if (props.flex) {
-			sizeProps.flex = props.flex;
-		}
-	}
-
 	if (propsToPass.selectorId) {
 		_combo.selectorId = propsToPass.selectorId;
 		_combo.selectorSelected = propsToPass.selectorSelected;
 		_combo.selectorSelectedField = propsToPass.selectorSelectedField;
 	}
 
-	return <>
-				<Column
-					{...props}
-					{...sizeProps}
-					px={0}
-					py={0}
-				>
-					<Row
-						w="100%"
-						borderWidth={1}
-						borderColor="trueGray.300"
-						borderRadius="md"
-						bg="trueGray.100"
-						p={styles.FORM_TAG_PADDING}
-						mb={styles.FORM_TAG_MB}
-						minHeight={styles.FORM_TAG_MIN_HEIGHT}
-						flexWrap="wrap"
-					>{valueBoxes}</Row>
-					{!isViewOnly && <WhichCombo
-										Repository={props.Repository}
-										Editor={props.Editor}
-										onChangeValue={onChangeComboValue}
-										parent={self}
-										reference="combo"
-										isInTag={true}
-										onGridAdd={onGridAdd}
-										onGridSave={onGridSave}
-										onGridDelete={onGridDelete}
-										tooltip={tooltip}
-										usePermissions={props.usePermissions}
-										{..._combo}
-									/>}
-				</Column>
-				{isViewerShown && 
-					<Modal
-						isOpen={true}
-						onClose={onViewerClose}
-					>
-						<Editor
-							editorType={EDITOR_TYPE__WINDOWED}
-							{...propsToPass}
-							px={0}
-							py={0}
-							w="100%"
-							parent={self}
-							reference="viewer"
-
-							isEditorViewOnly={true}
-							selection={viewerSelection}
-							onEditorClose={onViewerClose}
-						/>
-					</Modal>}
-			</>;
+	let className = `
+		Tag
+		w-full
+		p-0
+	`;
+	if (isInFilter) {
+		className += ' max-w-[250px]';
+	}
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+	const style = {};
+	if (props.style) {
+		_.assign(style, props.style); // needed for grid; otherwise valuebox width can be too wide
+	}
+	if (!props.flex && !props.w && !style.width) {
+		style.flex = 1;
+	} else {
+		if (props.w && !style.width) {
+			style.width = props.w;
+		}
+		if (props.flex && !style.width) {
+			style.flex = props.flex;
+		}
+	}
+	let valueBoxesClassName = `
+		Tag-valueBoxes-container
+		w-full
+		min-h-[40px]
+		max-h-[200px]
+		mb-1
+		p-1
+		flex-wrap
+		overflow-auto
+		border
+		border-grey-300
+		rounded-md
+		bg-grey-100
+		${styles.FORM_TAG_CLASSNAME}
+	`,
+	comboClassName = '';
+	if (_combo.className) {
+		comboClassName = _combo.className;
+	}
+	if (minimizeForRow) {
+		if (isViewOnly) {
+			// combo is not shown, so allow valueBoxes to take up more space
+			valueBoxesClassName += ' min-h-[25px] h-full overflow-auto flex-1';
+		} else {
+			// shrink both down
+			valueBoxesClassName += ' Scott h-auto min-h-[25px] max-h-[35px] overflow-auto flex-1';
+			comboClassName += ' h-auto min-h-0 max-h-[25px] flex-1';
+		}
+	}
+	
+	return <VStackNative
+				testID={testID}
+				className={className}
+				style={style}
+			>
+				<HStack className={valueBoxesClassName}>{valueBoxes}</HStack>
+				
+				{!isViewOnly && 
+					<WhichCombo
+						Repository={props.Repository}
+						Editor={props.Editor}
+						onSubmit={onChangeComboValue}
+						parent={self}
+						reference="combo"
+						isInTag={true}
+						onGridAdd={onGridAdd}
+						onGridSave={onGridSave}
+						onGridDelete={onGridDelete}
+						tooltip={tooltip}
+						usePermissions={props.usePermissions}
+						{..._combo}
+						className={comboClassName}
+					/>}
+			</VStackNative>;
 	
 }
 

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
-	Column,
-	Checkbox,
-	Row,
-} from 'native-base';
+	Checkbox, CheckboxGroup,
+} from '@project-components/Gluestack';
 import testProps from '../../../../Functions/testProps.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
@@ -30,15 +28,17 @@ const
 			const checkboxProps = {
 			};
 			if (Repository) {
-				const entities = Repository.getEntitiesOnPage();
-				checkboxes = _.map(entities, (entity, ix) => {
-					return <Checkbox
-								{...testProps('checkbox-' + entity.id)}
-								key={ix}
-								value={entity.id}
-								{...checkboxProps}
-							>{entity.displayValue}</Checkbox>;
-				});
+				if (!Repository.isDestroyed) {
+					const entities = Repository.getEntitiesOnPage();
+					checkboxes = _.map(entities, (entity, ix) => {
+						return <Checkbox
+									{...testProps('checkbox-' + entity.id)}
+									key={ix}
+									value={entity.id}
+									{...checkboxProps}
+								>{entity.displayValue}</Checkbox>;
+					});
+				}
 			} else {
 				checkboxes = _.map(data, (datum, ix) => {
 					return <Checkbox
@@ -52,9 +52,14 @@ const
 			setCheckboxes(checkboxes);
 		}, [value]);
 
-		return <Checkbox.Group onChange={props.setValue} accessibilityLabel={props.name} ref={props.outerRef} {...props}>
+		return <CheckboxGroup
+					onChange={props.setValue}
+					accessibilityLabel={props.name}
+					ref={props.outerRef}
+					{...props}
+				>
 					{checkboxes}
-				</Checkbox.Group>;
+				</CheckboxGroup>;
 	},
 	CheckboxGroupField = withValue(withData(CheckboxGroupElement));
 

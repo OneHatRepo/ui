@@ -11,12 +11,23 @@ import _ from 'lodash';
 const $ = Cypress.$;
 
 
+// Get cells
+export function getGridCellValue(gridSelector, rowId, field) {
+	cy.log('getGridCellValue ' + gridSelector + ' ' + rowId + ' ' + field);
+	const rowSelector = getGridRowSelectorById(gridSelector, rowId);
+	return getDomNode([gridSelector, rowSelector, 'cell-' + field])
+				.invoke('text');
+}
+
+
 
 // Get rows
 export function hasRowWithFieldValue(gridSelector, field, value) {
+	cy.log('hasRowWithFieldValue ' + gridSelector + ' ' + field + ' ' + value);
 	return getDomNodes([gridSelector, 'row', 'cell-' + field]).contains(value);
 }
 export function getRowWithFieldValue(gridSelector, field, value) {
+	cy.log('getRowWithFieldValue ' + gridSelector + ' ' + field + ' ' + value);
 	return getDomNodes([gridSelector, 'row', 'cell-' + field]).contains(value).then((cells) => {
 		if (!cells.length) {
 			return null;
@@ -39,17 +50,13 @@ export function getRowWithFieldValue(gridSelector, field, value) {
 
 // Select rows
 export function selectGridRowById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'selectGridRowById ' + gridSelector + ' ' + id});
-	});
+	cy.log('selectGridRowById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNode([gridSelector, rowSelector])
 		.click();
 }
 export function selectGridRowIfNotAlreadySelectedById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'selectGridRowIfNotAlreadySelectedById ' + gridSelector + ' ' + id});
-	});
+	cy.log('selectGridRowIfNotAlreadySelectedById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNode([gridSelector, rowSelector]).then((row) => {
 		const found = row.find('[data-testid="row-selected"]')
@@ -58,11 +65,15 @@ export function selectGridRowIfNotAlreadySelectedById(gridSelector, id) {
 		}
 	})
 }
+export function selectGridRowByIx(gridSelector, ix) {
+	cy.log('selectGridRowByIx ' + gridSelector + ' ' + ix);
+	
+	ix++; // compensate for header row
+	getDomNode([gridSelector, '[data-ix=' + ix + ']'])
+		.click();
+}
 // export function selectRowWithText(grid, text) {
 // 	getRowWithText(grid, text).click(5, 5);
-// }
-// export function selectRowWithIx(grid, ix) {
-// 	getRowWithIx(grid, ix).click(5, 5);
 // }
 // export function cmdClickRowWithId(grid, id) {
 // 	getRowWithId(grid, id).click('left', { metaKey: true });
@@ -86,6 +97,7 @@ export function verifyGridRecordDoesNotExistByValue(gridSelector, fieldValues, s
 		field = schema.model.displayProperty,
 		value = fieldValues[field];
 		
+	cy.log('verifyGridRecordDoesNotExistByValue ' + gridSelector + ' ' + value);
 	getDomNodes([gridSelector, 'row', 'cell-' + field])
 		.contains(value, { timeout: 500 })
 		.should('not.exist');
@@ -95,31 +107,26 @@ export function verifyGridRecordExistsByValue(gridSelector, fieldValues, schema)
 		field = schema.model.displayProperty,
 		value = fieldValues[field];
 		
+	cy.log('verifyGridRecordExistsByValue ' + gridSelector + ' ' + value);
 	getDomNodes([gridSelector, 'row', 'cell-' + field])
 		.contains(value, { timeout: 500 })
 		.should('exist');
 }
 export function verifyGridRecordExistsById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyGridRecordExistsById ' + gridSelector + ' ' + id });
-	});
+	cy.log('verifyGridRecordExistsById ' + gridSelector + ' ' + id);
 	
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNodes([gridSelector, rowSelector])
 		.should('exist');
 }
 export function verifyGridRecordDoesNotExistById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyGridRecordDoesNotExistById ' + gridSelector + ' ' + id });
-	});
+	cy.log('verifyGridRecordDoesNotExistById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNodes([gridSelector, rowSelector])
 		.should('not.exist');
 }
 export function verifyGridRowIsSelectedById(gridSelector, id) {
-	cy.then(() => {
-		Cypress.log({ name: 'verifyGridRowIsSelectedById ' + gridSelector + ' ' + id});
-	});
+	cy.log('verifyGridRowIsSelectedById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNodes([gridSelector, rowSelector, 'row-selected'])
 		.should('exist');
@@ -240,12 +247,8 @@ export function getModelFromGridSelector(gridSelector) {
 }
 export function getGridRowSelectorById(gridSelector, id) {
 	const
-		model = getModelFromGridSelector(gridSelector);
-
-		if (!model) {
-			debugger;
-		}
-		const inflected = fixInflector(Inflector.camelize(Inflector.pluralize(model)));
+		model = getModelFromGridSelector(gridSelector),
+		inflected = fixInflector(Inflector.camelize(Inflector.pluralize(model)));
 	return inflected + '-' + id;
 }
 

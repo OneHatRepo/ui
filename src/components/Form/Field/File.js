@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
+	HStack,
 	Icon,
-	Row,
 	Text,
-	Tooltip,
-} from 'native-base';
+	TextNative,
+} from '@project-components/Gluestack';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 } from '../../../Constants/UiModes.js';
 import UiGlobals from '../../../UiGlobals.js';
 import {
@@ -162,18 +162,26 @@ function FileElement(props) {
 	// 	setLocalFilename(filename);
 	// }, []);
 
-	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 		
-	return <div ref={dragRef} style={{ flex: 1, height: '100%', }} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}>
-				<Tooltip label={tooltip} placement={tooltipPlacement}>
-					<Row flex={1} h={10} alignItems="center">
-						{isDropping && <Box position="absolute" borderWidth={isDropping ? 2 : 0} borderColor="primary.800" top={0} left={0} w="100%" h="100%" bg="trueGray.200" zIndex={10000} justifyContent="center" alignItems="center">
+	return <div
+				ref={dragRef}
+				style={{ flex: 1, height: '100%', }}
+				onDragEnter={onDragEnter}
+				onDragLeave={onDragLeave}
+				onDragOver={onDragOver}
+				onDrop={onDrop}
+			>
+				{/*<Tooltip label={tooltip} placement={tooltipPlacement}>*/}
+					<HStack className="flex-1 h-[10px] items-center">
+						{isDropping && <Box
+							className={` ${isDropping ? "border-[2px]" : "border-[0px]"} absolute border-primary-800 top-0 left-0 w-full h-full bg-grey-200 z-10000 justify-center items-center `}>
 											<Text>Set File</Text>
 										</Box>}
 						<IconButton
-							icon={<Icon as={File} color={styles.FORM_FILE_ICON_COLOR} />}
+							icon={<Icon as={File} className={` ${styles.FORM_FILE_ICON_COLOR} `} />}
 							onPress={onSelect}
 							h={10}
 							w={10}
@@ -183,7 +191,7 @@ function FileElement(props) {
 							}}
 						/>
 						<IconButton
-							icon={<Icon as={Trash} color={styles.FORM_FILE_ICON_COLOR} />}
+							icon={<Icon as={Trash} className={` ${styles.FORM_FILE_ICON_COLOR} `} />}
 							onPress={onClear}
 							h={10}
 							w={10}
@@ -194,29 +202,15 @@ function FileElement(props) {
 								bg: value?.dataUri ? styles.FORM_FILE_ICON_BG_HOVER : 'disabled',
 							}}
 						/>
-						{mode === FILE_MODE_FILE && <Text
-														flex={1}
-														ml={3}
-														fontSize={styles.FORM_FILE_READOUT_FONTSIZE}
-														fontStyle="italic"
-														numberOfLines={1}
-														ellipsizeMode="head"
-														bg={styles.FORM_FILE_READOUT_BG}
-													>{value.filename || 'No file'}</Text>}
+						{mode === FILE_MODE_FILE && <TextNative
+							numberOfLines={1}
+							ellipsizeMode="head"
+							className={` bg-${styles.FORM_FILE_READOUT_BG} ${styles.FORM_FILE_READOUT_FONTSIZE} flex-1 ml-2 italic-italic `}>{value.filename || 'No file'}</TextNative>}
 						{mode === FILE_MODE_IMAGE && <Box
-														flex={1}
-														h="100%"
-														ml={1}
-														bg={styles.FORM_FILE_READOUT_BG}
-														backgroundImage={value?.dataUri ? 'url(' + imagePath + encodeURIComponent(value.dataUri) + ')' : 'none'}
-														backgroundSize="contain"
-														backgroundRepeat="no-repeat"
-														borderRadius={4}
-														borderWidth={1}
-													/>}
+							className={` ${value?.dataUri ? 'url(' + imagePath + encodeURIComponent(value.dataUri) + ')' : "bg-none"} bg-${styles.FORM_FILE_READOUT_BG} flex-1 h-full ml-1 bg-contain bg-repeat-no-repeat rounded-[4px] border `} />}
 						<input type="file" ref={fileInputRef} name={name} onChange={onChangeFile} style={{ position: 'absolute', opacity: 0, height: 0, width: 0, }} />
-					</Row>
-				</Tooltip>
+					</HStack>
+				{/*</Tooltip>*/}
 			</div>;
 }
 

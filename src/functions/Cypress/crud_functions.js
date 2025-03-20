@@ -1,6 +1,8 @@
 import {
 	fixInflector,
 	getLastPartOfPath,
+	bootstrapRouteWaiters,
+	stubWindowOpen,
 } from './utilities.js';
 import {
 	login,
@@ -10,6 +12,7 @@ import {
 import {
 	getDomNode,
 	getDomNodes,
+	ifExists,
 } from './dom_functions.js';
 import {
 	hasRowWithFieldValue,
@@ -81,9 +84,7 @@ export const FULL = 'FULL';
 
 // Form fields
 export function crudCombo(selector, newData, editData, schema, ancillaryData, level = 0) {
-	cy.then(() => {
-		Cypress.log({ name: 'crudCombo' });
-	});
+	cy.log('crudCombo');
 
 	const
 		fieldName = selector[1].match(/^field-(.*)$/)[1],
@@ -96,9 +97,7 @@ export function crudCombo(selector, newData, editData, schema, ancillaryData, le
 	clickTrigger(selector);
 }
 export function crudTag(selector, newData, editData, schema, ancillaryData, level = 0) {
-	cy.then(() => {
-		Cypress.log({ name: 'crudTag' });
-	});
+	cy.log('crudTag');
 
 	const
 		fieldName = selector[1].match(/^field-(.*)$/)[1],
@@ -114,20 +113,49 @@ export function crudTag(selector, newData, editData, schema, ancillaryData, leve
 	clickTrigger(selector);
 }
 export function crudJson(selector, newData, editData, schema, ancillaryData, level = 0) {
-	cy.then(() => {
-		Cypress.log({ name: 'crudJson' });
-	});
+	cy.log('crudJson');
 
 	// do nothing for now
+}
+
+// Editor
+export function viewPdf(editorSelector, formSelector) {
+	ifExists(formSelector, 'viewPdfBtn', (btn) => {
+		clickButton(formSelector, 'viewPdfBtn');
+
+		cy.wait(1000); // allow time for modal to render
+		const modalSelector = editorSelector + '/chooseFieldsForm';
+		clickButton(modalSelector, 'submitBtn');
+		cy.wait(1000); // allow time for pdf to download
+		cy.get('@windowOpen').should('be.calledWithMatch', /viewModelPdf/);
+	});
+}
+export function emailPdf(editorSelector, formSelector) {
+	ifExists(formSelector, 'emailPdfBtn', (btn) => {
+		clickButton(formSelector, 'emailPdfBtn');
+	
+		cy.wait(1000); // allow time for modal to render
+		const modalSelector = editorSelector + '/chooseFieldsForm';
+		clickButton(modalSelector, 'submitBtn');
+		cy.wait(1000); // allow time for new modal to render
+	
+		// UI now shows the email modal
+		fillForm(modalSelector, { email: 'scott@onehat.com', message: 'Sample message', }, { email: 'Input', message: 'TextArea', });
+		clickButton(modalSelector, 'submitBtn');
+		cy.wait('@emailModelPdf');
+
+		getDomNode('InfoModal')
+			.should('exist')
+			.should('contain', 'Email sent successfully.');
+		clickButton('InfoModal', 'okBtn');
+	});
 }
 
 
 // Grid
 export function crudWindowedGridRecord(gridSelector, newData, editData, schema, ancillaryData, level = 0) {
 
-	cy.then(() => {
-		Cypress.log({ name: 'crudWindowedGridRecord ' + gridSelector });
-	});
+	cy.log('crudWindowedGridRecord ' + gridSelector);
 
 	getDomNode(gridSelector).scrollIntoView();
 
@@ -136,9 +164,7 @@ export function crudWindowedGridRecord(gridSelector, newData, editData, schema, 
 	
 	cy.get('@id' + level).then((id) => {
 
-		cy.then(() => {
-			Cypress.log({ name: 'crudWindowedGridRecord: continue thru CRUD ' + gridSelector });
-		});
+		cy.log('crudWindowedGridRecord: continue thru CRUD ' + gridSelector);
 
 		// read
 		clickReloadButton(gridSelector);
@@ -156,9 +182,7 @@ export function crudWindowedGridRecord(gridSelector, newData, editData, schema, 
 }
 export function crudInlineGridRecord(gridSelector, newData, editData, schema, ancillaryData, level = 0) {
 
-	cy.then(() => {
-		Cypress.log({ name: 'crudInlineGridRecord ' + gridSelector });
-	});
+	cy.log('crudInlineGridRecord ' + gridSelector);
 
 	getDomNode(gridSelector).scrollIntoView();
 
@@ -167,9 +191,7 @@ export function crudInlineGridRecord(gridSelector, newData, editData, schema, an
 	
 	cy.get('@id' + level).then((id) => {
 
-		cy.then(() => {
-			Cypress.log({ name: 'crudWindowedGridRecord: continue thru CRUD ' + gridSelector });
-		});
+		cy.log('crudWindowedGridRecord: continue thru CRUD ' + gridSelector);
 
 		// read
 		clickReloadButton(gridSelector);
@@ -189,9 +211,7 @@ export function crudSideGridRecord(gridSelector, newData, editData, schema, anci
 	// NOTE: the 'level' arg allows this fn to be called recursively 
 	// and to use the @id alias correctly, keeping track of the level of recursion
 	// so the CRUD operations don't step on each other at different levels.
-	cy.then(() => {
-		Cypress.log({ name: 'crudSideGridRecord ' + gridSelector });
-	});
+	cy.log('crudSideGridRecord ' + gridSelector);
 	
 	getDomNode(gridSelector).scrollIntoView();
 
@@ -216,16 +236,18 @@ export function crudSideGridRecord(gridSelector, newData, editData, schema, anci
 }
 export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, level = 0) {
 
-	cy.then(() => {
-		Cypress.log({ name: 'addGridRecord ' + gridSelector });
-	});
+	cy.log('addGridRecord ' + gridSelector);
 
 	const
 		editorSelector = gridSelector + '/editor',
 		viewerSelector = editorSelector + '/viewer',
-		formSelector = editorSelector + '/form';
+		formSelector = editorSelector + '/form',
+		isRemotePhantomMode = schema.repository.isRemotePhantomMode;
 
 	clickAddButton(gridSelector);
+	if (isRemotePhantomMode) {
+		cy.wait('@addWaiter');
+	}
 	getDomNode(formSelector).should('exist');
 
 	fillForm(formSelector, fieldValues, schema, level +1);
@@ -233,12 +255,11 @@ export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, 
 	// TODO: Change this to wait until save button is enabled
 
 	let method = 'add';
-	if (schema.repository.isRemotePhantomMode) {
+	if (isRemotePhantomMode) {
 		method = 'edit';
 	}
-	cy.intercept('POST', '**/' + method + '**').as('waiter');
 	clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
-	cy.wait('@waiter');
+	cy.wait('@' + method + 'Waiter');
 
 	verifyNoErrorBox();
 
@@ -262,8 +283,11 @@ export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, 
 				schema = data.schema,
 				newData = data.newData,
 				editData = data.editData,
-				ancillaryData = data.ancillaryData,
-				ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+				ancillaryData = data.ancillaryData;
+			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
+				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
+			}
 			crudWindowedGridRecord(ancillaryGridSelector, newData, editData, schema, ancillaryData, level+1);
 		});
 	}
@@ -271,15 +295,11 @@ export function addGridRecord(gridSelector, fieldValues, schema, ancillaryData, 
 export function addWindowedGridRecord(gridSelector, fieldValues, schema, ancillaryData, level = 0) {
 	// adds the record as normal, then closes the editor window
 
-	cy.then(() => {
-		Cypress.log({ name: 'addWindowedGridRecord ' + gridSelector });
-	});
+	cy.log('addWindowedGridRecord ' + gridSelector);
 
 	addGridRecord(gridSelector, fieldValues, schema, ancillaryData, level);
 
-	cy.then(() => {
-		Cypress.log({ name: 'addWindowedGridRecord: close window ' + gridSelector });
-	});
+	cy.log('addWindowedGridRecord: close window ' + gridSelector);
 	const formSelector = gridSelector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
@@ -288,25 +308,18 @@ export function addWindowedGridRecord(gridSelector, fieldValues, schema, ancilla
 export function addInlineGridRecord(gridSelector, fieldValues, schema, ancillaryData, level = 0) {
 	// adds the record as normal, then closes the editor window
 
-	cy.then(() => {
-		Cypress.log({ name: 'addInlineGridRecord ' + gridSelector });
-	});
+	cy.log('addInlineGridRecord ' + gridSelector);
 
-	addGridRecord(gridSelector, fieldValues, schema, ancillaryData, level);
+	addGridRecord(gridSelector, fieldValues, schema, [], level); // NOTE: ancillaryData is not passed to addGridRecord because can't edit ancillary data in an inline editor
 
-	cy.then(() => {
-		Cypress.log({ name: 'addWindowedGridRecord: close window ' + gridSelector });
-	});
+	cy.log('addWindowedGridRecord: close window ' + gridSelector);
 	const formSelector = gridSelector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
 }
 export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0, whichEditor = WINDOWED) {
-	
-	cy.then(() => {
-		Cypress.log({ name: 'editGridRecord ' + gridSelector + ' ' + id});
-	});
+	cy.log('editGridRecord ' + gridSelector + ' ' + id);
 	
 	selectGridRowIfNotAlreadySelectedById(gridSelector, id);
 
@@ -316,11 +329,11 @@ export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0,
 		formSelector = editorSelector + '/form';
 
 	if (whichEditor === SIDE) {
-		Cypress.log({ name: 'switch to Edit mode if necessary ' + viewerSelector});
+		cy.log('switch to Edit mode if necessary ' + viewerSelector);
 		clickToEditButtonIfExists(viewerSelector);
 	} else {
 		// windowed or inline editor
-		Cypress.log({ name: 'click editBtn ' + gridSelector});
+		cy.log('click editBtn ' + gridSelector);
 		clickEditButton(gridSelector);
 	}
 	cy.wait(1500); // allow form to build
@@ -329,21 +342,22 @@ export function editGridRecord(gridSelector, fieldValues, schema, id, level = 0,
 	fillForm(formSelector, fieldValues, schema, level +1);
 	cy.wait(500); // allow validator to enable save button
 	// TODO: Change this to wait until save button is enabled
-
-	cy.intercept('POST', '**/edit**').as('waiter');
+	
 	clickSaveButton(formSelector);
-	cy.wait('@waiter');
+	cy.wait('@editWaiter');
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
-	
+
+	if (whichEditor !== INLINE) {
+		viewPdf(editorSelector, formSelector);
+		emailPdf(editorSelector, formSelector);
+	}
 }
 export function editWindowedGridRecord(gridSelector, fieldValues, schema, id, level = 0) {
 	// edits the record as normal, then closes the editor window
 
-	cy.then(() => {
-		Cypress.log({ name: 'editWindowedGridRecord ' + gridSelector + ' ' + id});
-	});
+	cy.log('editWindowedGridRecord ' + gridSelector + ' ' + id);
 	
 	editGridRecord(gridSelector, fieldValues, schema, id, level, WINDOWED);
 
@@ -355,9 +369,7 @@ export function editWindowedGridRecord(gridSelector, fieldValues, schema, id, le
 export function editInlineGridRecord(gridSelector, fieldValues, schema, id, level = 0) {
 	// edits the record as normal, then closes the editor window
 
-	cy.then(() => {
-		Cypress.log({ name: 'editWindowedGridRecord ' + gridSelector + ' ' + id});
-	});
+	cy.log('editWindowedGridRecord ' + gridSelector + ' ' + id);
 	
 	editGridRecord(gridSelector, fieldValues, schema, id, level, INLINE);
 
@@ -367,27 +379,21 @@ export function editInlineGridRecord(gridSelector, fieldValues, schema, id, leve
 	// TODO: Change this to wait until window is closed
 }
 export function deleteGridRecord(gridSelector, id) {
-
-	cy.then(() => {
-		Cypress.log({ name: 'deleteGridRecord ' + gridSelector + ' ' + id });
-	});
+	cy.log('deleteGridRecord ' + gridSelector + ' ' + id);
 	
 	selectGridRowIfNotAlreadySelectedById(gridSelector, id);
 	clickDeleteButton(gridSelector);
 	cy.wait(500); // allow confirmation box to appear
 	
 	// Click OK on confirmation box
-	cy.intercept('POST', '**/delete**').as('waiter');
-	clickYesButton('AlertDialog');
-	cy.wait('@waiter');
+	clickYesButton('ConfirmModal');
+	cy.wait('@deleteWaiter');
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
 }
 export function switchToEditModeIfNecessary(editorSelector) {
-	cy.then(() => {
-		Cypress.log({ name: 'switchToEditModeIfNecessary ' + editorSelector });
-	});
+	cy.log('switchToEditModeIfNecessary ' + editorSelector);
 	
 	getDomNode(editorSelector).then((editor) => {
 		const btn = editor.find('.toEditBtn');
@@ -399,9 +405,7 @@ export function switchToEditModeIfNecessary(editorSelector) {
 	});
 }
 export function switchToViewModeIfNecessary(editorSelector) {
-	cy.then(() => {
-		Cypress.log({ name: 'switchToViewModeIfNecessary ' + editorSelector });
-	});
+	cy.log('switchToViewModeIfNecessary ' + editorSelector);
 
 	getDomNode(editorSelector).then((editor) => {
 		const btn = editor.find('.toViewBtn');
@@ -417,9 +421,7 @@ export function switchToViewModeIfNecessary(editorSelector) {
 // Tree
 export function crudWindowedTreeRecord(treeSelector, newData, editData, schema, ancillaryData, level = 0) {
 
-	cy.then(() => {
-		Cypress.log({ name: 'crudWindowedTreeRecord ' + treeSelector });
-	});
+	cy.log('crudWindowedTreeRecord ' + treeSelector);
 
 	getDomNode(treeSelector).scrollIntoView();
 
@@ -428,9 +430,7 @@ export function crudWindowedTreeRecord(treeSelector, newData, editData, schema, 
 	
 	cy.get('@id' + level).then((id) => {
 
-		cy.then(() => {
-			Cypress.log({ name: 'crudWindowedTreeRecord: continue thru CRUD ' + treeSelector });
-		});
+		cy.log('crudWindowedTreeRecord: continue thru CRUD ' + treeSelector);
 		
 		// read
 		clickReloadButton(treeSelector);
@@ -450,9 +450,7 @@ export function crudSideTreeRecord(treeSelector, newData, editData, schema, anci
 	// NOTE: the 'level' arg allows this fn to be called recursively 
 	// and to use the @id alias correctly, keeping track of the level of recursion
 	// so the CRUD operations don't step on each other at different levels.
-	cy.then(() => {
-		Cypress.log({ name: 'crudSideTreeRecord ' + treeSelector });
-	});
+	cy.log('crudSideTreeRecord ' + treeSelector);
 	
 	getDomNode(treeSelector).scrollIntoView();
 
@@ -477,9 +475,7 @@ export function crudSideTreeRecord(treeSelector, newData, editData, schema, anci
 }
 export function addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, level = 0) {
 
-	cy.then(() => {
-		Cypress.log({ name: 'addTreeRecord ' + treeSelector });
-	});
+	cy.log('addTreeRecord ' + treeSelector);
 
 	const
 		editorSelector = treeSelector + '/editor',
@@ -508,9 +504,8 @@ export function addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, 
 	if (schema.repository.isRemotePhantomMode) {
 		method = 'edit';
 	}
-	cy.intercept('POST', '**/' + method + '**').as('waiter');
 	clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
-	cy.wait('@waiter');
+	cy.wait('@' + method + 'Waiter');
 
 	verifyNoErrorBox();
 
@@ -534,8 +529,11 @@ export function addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, 
 				schema = data.schema,
 				newData = data.newData,
 				editData = data.editData,
-				ancillaryData = data.ancillaryData,
-				ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+				ancillaryData = data.ancillaryData;
+			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
+				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
+			}
 			crudWindowedGridRecord(ancillaryGridSelector, newData, editData, schema, ancillaryData, level+1);
 		});
 	}
@@ -543,15 +541,11 @@ export function addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, 
 export function addWindowedTreeRecord(treeSelector, fieldValues, schema, ancillaryData, level = 0) {
 	// adds the record as normal, then closes the editor window
 
-	cy.then(() => {
-		Cypress.log({ name: 'addWindowedTreeRecord ' + treeSelector });
-	});
+	cy.log('addWindowedTreeRecord ' + treeSelector);
 
 	addTreeRecord(treeSelector, fieldValues, schema, ancillaryData, level);
 
-	cy.then(() => {
-		Cypress.log({ name: 'addWindowedTreeRecord: close window ' + treeSelector });
-	});
+	cy.log('addWindowedTreeRecord: close window ' + treeSelector);
 	const formSelector = treeSelector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
@@ -559,9 +553,7 @@ export function addWindowedTreeRecord(treeSelector, fieldValues, schema, ancilla
 }
 export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0, whichEditor = WINDOWED) {
 	
-	cy.then(() => {
-		Cypress.log({ name: 'editTreeRecord ' + treeSelector + ' ' + id});
-	});
+	cy.log('editTreeRecord ' + treeSelector + ' ' + id);
 	
 	selectTreeNodeIfNotAlreadySelectedById(treeSelector, id);
 
@@ -571,10 +563,10 @@ export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0,
 		formSelector = editorSelector + '/form';
 
 	if (whichEditor === SIDE) {
-		Cypress.log({ name: 'switch to Edit mode if necessary ' + viewerSelector});
+		cy.log('switch to Edit mode if necessary ' + viewerSelector);
 		clickToEditButtonIfExists(viewerSelector);
 	} else {
-		Cypress.log({ name: 'click editBtn ' + treeSelector});
+		cy.log('click editBtn ' + treeSelector);
 		clickEditButton(treeSelector);
 	}
 	cy.wait(1500); // allow form to build
@@ -584,20 +576,22 @@ export function editTreeRecord(treeSelector, fieldValues, schema, id, level = 0,
 	cy.wait(500); // allow validator to enable save button
 	// TODO: Change this to wait until save button is enabled
 
-	cy.intercept('POST', '**/edit**').as('waiter');
 	clickSaveButton(formSelector);
-	cy.wait('@waiter');
+	cy.wait('@editWaiter');
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
+
+	if (whichEditor !== INLINE) {
+		viewPdf(editorSelector, formSelector);
+		emailPdf(editorSelector, formSelector);
+	}
 	
 }
 export function editWindowedTreeRecord(treeSelector, fieldValues, schema, id, level = 0) {
 	// edits the record as normal, then closes the editor window
 
-	cy.then(() => {
-		Cypress.log({ name: 'editWindowedTreeRecord ' + treeSelector + ' ' + id});
-	});
+	cy.log('editWindowedTreeRecord ' + treeSelector + ' ' + id);
 	
 	editTreeRecord(treeSelector, fieldValues, schema, id, level, WINDOWED);
 
@@ -608,18 +602,15 @@ export function editWindowedTreeRecord(treeSelector, fieldValues, schema, id, le
 }
 export function deleteTreeRecord(treeSelector, id) {
 
-	cy.then(() => {
-		Cypress.log({ name: 'deleteTreeRecord ' + treeSelector + ' ' + id });
-	});
+	cy.log('deleteTreeRecord ' + treeSelector + ' ' + id);
 	
 	selectTreeNodeIfNotAlreadySelectedById(treeSelector, id);
 	clickDeleteButton(treeSelector);
 	cy.wait(500); // allow confirmation box to appear
 	
 	// Click OK on confirmation box
-	cy.intercept('POST', '**/delete**').as('waiter');
-	clickYesButton('AlertDialog');
-	cy.wait('@waiter');
+	clickYesButton('ConfirmModal');
+	cy.wait('@deleteWaiter');
 
 	verifyNoErrorBox();
 	// cy.wait(1000);
@@ -636,6 +627,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -643,6 +635,7 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 		
 		afterEach(function () {
@@ -732,6 +725,7 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -739,6 +733,7 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 		
 		// afterEach(function () {
@@ -796,6 +791,7 @@ export function runManagerScreenCrudTests(args) {
 	describe(Models + 'Manager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -803,6 +799,7 @@ export function runManagerScreenCrudTests(args) {
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 		
 		// afterEach(function () {
@@ -854,21 +851,22 @@ export function runReportsManagerTests(reportData) {
 	describe('ReportsManager', () => {
 
 		beforeEach(function () {
+			bootstrapRouteWaiters();
 			login();
+			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
 					navigateViaTabOrHomeButtonTo(url);
 				}
 			});
+			stubWindowOpen();
 		});
 
 		_.each(reportData, (report) => {
 
 			it('Report ' + report.id, function() {
 
-				cy.then(() => {
-					Cypress.log({ name: 'report ' + report.id });
-				});
+				cy.log('report ' + report.id);
 
 				const selector = 'Report-' + report.id;
 
@@ -878,17 +876,15 @@ export function runReportsManagerTests(reportData) {
 
 
 				// Press Excel button
-				cy.intercept('GET', '**/getReport**').as('waiter');
 				clickButton(selector, 'excelBtn');
-				cy.wait('@waiter', { timeout: 10000 }).then((interception) => {
+				cy.wait('@getReportWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 				});
 
 
 				// Press PDF button
-				cy.intercept('POST', '**/getReport**').as('waiter');
 				clickButton(selector, 'pdfBtn');
-				cy.wait('@waiter', { timeout: 10000 }).then((interception) => {
+				cy.wait('@postReportWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('pdf');
 				});
 

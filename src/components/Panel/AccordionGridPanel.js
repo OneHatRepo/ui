@@ -1,8 +1,8 @@
 import { useState, } from 'react';
 import {
-	Column,
 	ScrollView,
-} from 'native-base';
+	VStack,
+} from '@project-components/Gluestack';
 import Accordion from 'react-native-collapsible/Accordion'; // https://www.npmjs.com/package/react-native-collapsible
 import testProps from '../../Functions/testProps';
 import Footer from '../Layout/Footer.js';
@@ -30,12 +30,12 @@ export default function AccordionGridPanel(props) {
 	// 		onChangeSelection = () => {},
 	// 		noneFoundText,
 	// 		containerStyle = {},
-	// 		hideRightColumn = false,
+	// 		hideRightVStack = false,
 	// 		activeSectionIndexes = [0],
 	// 	} = props,
 	// 	[activeSections, setActiveSections] = useState(activeSectionIndexes);
 
-	// return <Column
+	// return <VStack
 	// 			{...testProps('AccorionGridPanel')}
 	// 			flex={1}
 	// 			w="100%"
@@ -74,7 +74,7 @@ export default function AccordionGridPanel(props) {
 	// 									columns={columns}
 	// 									onChangeSelection={onChangeSelection}
 	// 									bottomToolbar={false}
-	// 									hideRightColumn={hideRightColumn}
+	// 									hideRightVStack={hideRightVStack}
 	// 								/>;
 	// 					}}
 	// 				/>
@@ -89,6 +89,6 @@ export default function AccordionGridPanel(props) {
 	// 					)}
 	// 				</Footer>
 	// 			)}
-	// 		</Column>;
+	// 		</VStack>;
 }
  

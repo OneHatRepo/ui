@@ -1,161 +1,123 @@
-import React, { useState, useRef } from 'react';
+import { forwardRef, useState, useRef } from 'react';
 import {
 	Box,
-	Button,
-	Column,
 	Icon,
-	Modal,
-	Row,
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
-} from 'native-base';
-import Form from '../Form/Form.js';
+} from '@project-components/Gluestack';
+import Button from '../Buttons/Button.js';
 import Panel from '../Panel/Panel.js';
-import IconButton from '../Buttons/IconButton.js';
-import Rotate from '../Icons/Rotate.js';
-import TriangleExclamation from '../Icons/TriangleExclamation.js';
+import Footer from '../Layout/Footer.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
-// This HOC enables easy usage of more complex dialogs in the wrapped component.
-// Add en embedded Form, 
-
-// Use withAlert for simple alerts, confirmations, and custom dialogs.
+// This HOC enables usage of more complex dialogs in the wrapped component.
+// Use withAlert for simple alerts, confirmations, and info dialogs.
 
 export default function withModal(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithModal || props.showModal) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		const
 			[title, setTitle] = useState(''),
-			[message, setMessage] = useState(''),
 			[canClose, setCanClose] = useState(true),
 			[includeCancel, setIncludeCancel] = useState(false),
-			[includeReset, setIncludeReset] = useState(false),
 			[isModalShown, setIsModalShown] = useState(false),
-			[isValid, setIsValid] = useState(false),
-			[isDirty, setIsDirty] = useState(false),
 			[h, setHeight] = useState(),
 			[w, setWidth] = useState(),
 			[onOk, setOnOk] = useState(),
 			[okBtnLabel, setOkBtnLabel] = useState(),
 			[onYes, setOnYes] = useState(),
 			[onNo, setOnNo] = useState(),
-			[onSubmit, setOnSubmit] = useState(),
-			[submitBtnLabel, setSubmitBtnLabel] = useState(),
+			[onCancel, setOnCancel] = useState(),
 			[customButtons, setCustomButtons] = useState(),
-			[formProps, setFormProps] = useState(),
-			[self, setSelf] = useState(),
-			[color, setColor] = useState(),
-			[body, setBody]	= useState(), 
-			useForm = !!formProps, // convenience flag
+			[body, setBody] = useState(),
+			[whichModal, setWhichModal] = useState(),
+			[testID, setTestID] = useState('Modal'),
 			autoFocusRef = useRef(null),
 			cancelRef = useRef(null),
-			[width, height] = useAdjustedWindowSize(w, h),
-			onValidityChange = (isValid) => {
-				setIsValid(isValid);
-			},
-			onDirtyChange = (isDirty) => {
-				setIsDirty(isDirty);
-			},
-			onReset = () => {
-				self?.children?.ModalForm?.reset();
-			},
-			onCancel = () => {
-				hideModal();
-			},
+			[windowWidth, windowHeight] = useAdjustedWindowSize(w, h),
 			hideModal = () => {
 				setIsModalShown(false);
 			},
 			showModal = (args) => {
 				let {
 					title = null,
-					message = null,
 					body = null,
-					canClose = true,
+					canClose = false,
 					includeCancel = false,
+					onCancel = null,
 					onOk = null,
 					okBtnLabel = null,
 					onYes = null,
 					onNo = null,
-					onSubmit = null,
-					submitBtnLabel = null,
 					customButtons = null,
-					includeReset = false,
-					formProps = null,
-					self = null,
-					color = null,
 					h = null,
 					w = null,
+					whichModal = null,
+					testID = null,
+					formProps = null, // deprecated
 				} = args;
-
-				if (!message && !body && !formProps) {
-					throw new Error('Either message, body, or formProps is required for showModal');
+				
+				if (formProps) {
+					// deprecated formProps bc we were getting circular dependencies
+					throw new Error('withModal: formProps is deprecated. Instead, insert the <Form> in "body" directly from the component that called showModal.');
 				}
-				if (includeReset && !self) {
-					throw new Error('self is required when using includeReset');
+				if (!body) {
+					throw new Error('withModal: body is required for showModal');
 				}
 
 				setTitle(title);
-				setMessage(message);
 				setBody(body);
 				setCanClose(canClose);
 				setIncludeCancel(includeCancel);
+				setOnCancel(() => onCancel);
 				setOnOk(onOk ? () => onOk : null);
 				setOkBtnLabel(okBtnLabel || 'OK');
 				setOnYes(onYes ? () => onYes : null);
 				setOnNo(onNo ? () => onNo : null);
-				setOnSubmit(onSubmit ? () => onSubmit : null);
-				setSubmitBtnLabel(submitBtnLabel);
 				setCustomButtons(customButtons);
-				setIncludeReset(includeReset);
-				setFormProps(formProps);
-				setSelf(self);
-				setColor(color || '#000');
-				setHeight(h || 250);
-				setWidth(w || 400);
-
+				setHeight(h); // || 250
+				setWidth(w); // || 400
+				setWhichModal(whichModal);
 				setIsModalShown(true);
+				if (testID) {
+					setTestID(testID);
+				}
+			},
+			updateModalBody = (newBody) => {
+				setBody(newBody);
 			};
 
-		let buttons = [];
+		let modalBody,
+			buttons = [];
 		if (isModalShown) {
 			// assemble buttons
-			if (includeReset) {
-				buttons.push(<IconButton
-								{...testProps('resetBtn')}
-								key="resetBtn"
-								onPress={onReset}
-								icon={Rotate}
-								_icon={{
-									color: !isDirty ? 'trueGray.400' : '#000',
-								}}
-								isDisabled={!isDirty}
-								mr={2}
-							/>);
-			}
 			if (includeCancel) {
 				buttons.push(<Button
 									{...testProps('cancelBtn')}
 									key="cancelBtn"
-									onPress={onCancel}
+									onPress={onCancel || hideModal}
 									colorScheme="coolGray"
-									variant="ghost" // or unstyled
 									ref={cancelRef}
-								>Cancel</Button>);
+									className="mr-2"
+									text="Cancel"
+									variant="outline" // or unstyled
+								/>);
 			}
 			if (onNo) {
 				buttons.push(<Button
 								{...testProps('noBtn')}
 								key="noBtn"
 								onPress={onNo}
-								color="trueGray.800"
-								variant="ghost"
-								mr={2}
-							>No</Button>);
+								className="text-grey-800 mr-2"
+								text="No"
+								variant="outline"
+							/>);
 			}
 			if (onOk) {
 				buttons.push(<Button
@@ -163,7 +125,9 @@ export default function withModal(WrappedComponent) {
 								key="okBtn"
 								ref={autoFocusRef}
 								onPress={onOk}
-							>{okBtnLabel}</Button>);
+								text={okBtnLabel}
+								className="text-white"
+							/>);
 			}
 			if (onYes) {
 				buttons.push(<Button
@@ -171,83 +135,68 @@ export default function withModal(WrappedComponent) {
 								key="yesBtn"
 								ref={autoFocusRef}
 								onPress={onYes}
-							>Yes</Button>);
-			}
-			if (useForm && onSubmit) {
-				buttons.push(<Button
-								{...testProps('submitBtn')}
-								key="submitBtn"
-								onPress={onSubmit}
-								isDisabled={!isValid}
-								color="#fff"
-							>{submitBtnLabel || 'Submit'}</Button>);
+								text="Yes"
+								className="text-white"
+							/>);
 			}
 			if (customButtons) {
 				_.each(customButtons, (button) => {
 					buttons.push(button);
 				});
 			}
-		}
-
-		let modalBody = null;
-		if (useForm) {
-			modalBody = <Form
-							{...formProps}
-							parent={self}
-							reference="ModalForm"
-							onValidityChange={onValidityChange} 
-							onDirtyChange={onDirtyChange}
-						/>;
-		} else if (body) {
+			
+			// assemble body
 			modalBody = body;
-		} else {
-			modalBody = <>
-							<Box w="50px" mx={2}>
-								<Icon as={TriangleExclamation} color={color} size="10" />
-							</Box>
-							<Text flex={1} color={color} fontSize="18px">{message}</Text>
-						</>;
+			if (h || w || title) {
+				let footer = null;
+				if (buttons && buttons.length > 0) {
+					footer = <Footer
+								className={`
+									justify-end
+									py-2
+									pr-4
+									bg-grey-100
+								`}
+							>{buttons}</Footer>;
+				}
+				modalBody =
+					<Panel
+						title={title}
+						isCollapsible={false}
+						className="withModal-Panel bg-white"
+						h={h > windowHeight ? windowHeight : h}
+						w={w > windowWidth ? windowWidth : w}
+						isWindow={true}
+						disableAutoFlex={true}
+						onClose={canClose ? hideModal : null}
+						footer={footer}
+						isScrollable={true}
+					>{modalBody}</Panel>
+			}
 		}
-
+		
 		return <>
 					<WrappedComponent
 						{...props}
 						disableWithModal={false}
 						showModal={showModal}
-						hideModal={onCancel}
+						hideModal={onCancel || hideModal}
+						updateModalBody={updateModalBody}
+						isModalShown={isModalShown}
+						whichModal={whichModal}
+						ref={ref}
 					/>
 					{isModalShown && 
 						<Modal
 							isOpen={true}
-							onClose={onCancel}
+							onClose={onCancel || (canClose ? hideModal : null)}
+							className="withModal-Modal"
+							{...testProps(testID)}
 						>
-							<Panel
-								reference="modal"
-								isCollapsible={false}
-								bg="#fff"
-								w={width}
-								h={height}
-								flex={null}
-							>
-								{canClose && <Modal.CloseButton />}
-								{title && <Modal.Header>{title}</Modal.Header>}
-								<Modal.Body
-									borderTopWidth={0}
-									bg="#fff"
-									p={3}
-									justifyContent=" center"
-									alignItems="center"
-									borderRadius={5}
-									flexDirection="row"
-								>
-									{modalBody}
-								</Modal.Body>
-								<Modal.Footer py={2} pr={4} justifyContent="flex-end">
-									{buttons}
-								</Modal.Footer>
-							</Panel>
+							<ModalBackdrop className="withModal-ModalBackdrop" />
+							{modalBody}
 						</Modal>}
 					
 				</>;
-	};
+	});
 }

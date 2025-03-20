@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, } from 'react';
 import {
 	Box,
-	Column,
 	FlatList,
-	Modal,
+	HStack,
 	Pressable,
-	Icon,
-	Row,
+	// ScrollView,
+	VStack,
+	VStackNative,
+} from '@project-components/Gluestack';
+import {
 	ScrollView,
-	Text,
-} from 'native-base';
+} from 'react-native';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
@@ -24,10 +25,17 @@ import {
 } from '../../Constants/Grid.js';
 import {
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
-import * as colourMixer from '@k-renwick/colour-mixer';
+import {
+	hasHeight,
+	hasWidth,
+	hasFlex,
+} from '../../Functions/tailwindFunctions.js';
+import * as yup from 'yup'; // https://github.com/jquense/yup#string
+import Inflector from 'inflector-js';
+import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
@@ -44,51 +52,58 @@ import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
+import Form from '../Form/Form.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import testProps from '../../Functions/testProps.js';
-import nbToRgb from '../../Functions/nbToRgb.js';
+import gsToHex from '../../Functions/gsToHex.js';
 import Loading from '../Messages/Loading.js';
 import isSerializable from '../../Functions/isSerializable.js';
 import inArray from '../../Functions/inArray.js';
-import ReloadPageButton from '../Buttons/ReloadPageButton.js';
+import ReloadButton from '../Buttons/ReloadButton.js';
+import CheckboxButton from '../Buttons/CheckboxButton.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';
-import IconButton from '../Buttons/IconButton.js';
+import Button from '../Buttons/Button.js';
 import ExpandButton from '../Buttons/ExpandButton.js';
+import IconButton from '../Buttons/IconButton.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from './NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
-import ColumnSelectorWindow from './ColumnSelectorWindow.js';
 import Unauthorized from '../Messages/Unauthorized.js';
 import _ from 'lodash';
 
 
 // This fn gets called many times per component
 // First call
-	// !isInited
-	// render a placeholder, to get container dimensions
-	// onInitialLayout()
-		// set initial pageSize
-		// setIsInited(true)
+// !isInited
+// render a placeholder, to get container dimensions
+// onInitialLayout()
+// set initial pageSize
+// setIsInited(true)
 // Second call
-	// !isReady
-	// set selectorSelected
-	// load Repo
+// !isReady
+// set selectorSelected
+// load Repo
 // Third call
-	// isReady
-	// render Grid,
+// isReady
+// render Grid,
 // subsequent calls due to changes of selectorSelected
-	// re-apply selectorSelected
+// re-apply selectorSelected
 // subsequent calls due to changes changes in onLayout
-	// adjust pageSize if needed
+// adjust pageSize if needed
 
 // TODO: account for various environments (mainly for optimization):
 // RN vs web
 // Repository vs data
+
+const
+	SINGLE_CLICK = 1,
+	DOUBLE_CLICK = 2,
+	TRIPLE_CLICK = 3;
 
 function GridComponent(props) {
 	const {
@@ -98,8 +113,10 @@ function GridComponent(props) {
 			defaultHiddenColumns = [],
 			getRowProps = (item) => {
 				return {
-					borderBottomWidth: 1,
-					borderBottomColor: 'trueGray.500',
+					className: `
+						border-bottom-1
+						border-bottom-grey-500
+					`,
 				};
 			},
 			flatListProps = {},
@@ -129,16 +146,16 @@ function GridComponent(props) {
 			disableBottomToolbar = false,
 			disablePagination = false,
 			bottomToolbar = 'pagination',
+			_paginationToolbarProps = {},
 			topToolbar = null,
 			additionalToolbarButtons = [],
-			h,
-			flex,
 			bg = '#fff',
 			canRecordBeEdited,
 			alternateRowBackgrounds = true,
 			alternatingInterval = 2,
 			defaultRowHeight = 48,
-
+			getRowTestId,
+			
 			// The selectorSelected mechanism allows us to filter results of the primary model, (e.g. WorkOrders)
 			//   by the selection on the secondary model (e.g. Equipment). It's used on Grids, Trees, Forms, etc.
 			// The 'selectorId' is the name of the primary model's filter (e.g. 'WorkOrders.equipment_id').
@@ -157,6 +174,10 @@ function GridComponent(props) {
 
 			// withComponent
 			self,
+
+			// withModal
+			showModal,
+			hideModal,
 
 			// withEditor
 			onAdd,
@@ -228,7 +249,6 @@ function GridComponent(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[isReorderMode, setIsReorderMode] = useState(false),
-		[isColumnSelectorShown, setIsColumnSelectorShown] = useState(false),
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
 		},
@@ -345,7 +365,10 @@ function GridComponent(props) {
 					parent={self}
 					reference="reorderBtn"
 					onPress={() => setIsReorderMode(!isReorderMode)}
-					icon={<Icon as={isReorderMode ? NoReorderRows : ReorderRows} color={styles.GRID_TOOLBAR_ITEMS_COLOR} />}
+					icon={isReorderMode ? NoReorderRows : ReorderRows}
+					_icon={{
+						className: styles.TOOLBAR_ITEMS_COLOR,
+					}}
 					tooltip="Reorder Rows"
 				/>);
 			}
@@ -369,7 +392,8 @@ function GridComponent(props) {
 
 			let rowComponent =
 				<Pressable
-					{...testProps((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id)}
+					dataSet={{ ix: index }}
+					{...testProps(getRowTestId ? getRowTestId(row) : ((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id))}
 					onPress={(e) => {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
@@ -379,13 +403,13 @@ function GridComponent(props) {
 						}
 						if (CURRENT_MODE === UI_MODE_WEB) {
 							switch (e.detail) {
-								case 1: // single click
+								case SINGLE_CLICK:
 									onRowClick(item, e); // sets selection
 									if (onEditorRowClick) {
 										onEditorRowClick(item, index, e);
 									}
 									break;
-								case 2: // double click
+								case DOUBLE_CLICK:
 									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
 										onRowClick(item, e); // so reselect it
 									}
@@ -395,7 +419,7 @@ function GridComponent(props) {
 											if (canUser && !canUser(VIEW)) { // permissions
 												return;
 											}
-											onView(true);
+											onView(!props.isEditorViewOnly);
 										}
 									} else {
 										if (onEdit) {
@@ -414,11 +438,11 @@ function GridComponent(props) {
 										}
 									}
 									break;
-								case 3: // triple click
+								case TRIPLE_CLICK:
 									break;
 								default:
 							}
-						} else if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
+						} else if (CURRENT_MODE === UI_MODE_NATIVE) {
 							onRowClick(item, e); // sets selection
 							if (onEditorRowClick) {
 								onEditorRowClick(item, index, e);
@@ -432,64 +456,54 @@ function GridComponent(props) {
 						if (isHeaderRow || isReorderMode) {
 							return
 						}
+						if (selection && selection[0] && selection[0].isRemotePhantom) {
+							return; // block context menu or changing selection when a remote phantom is already selected
+						}
 						
 						// context menu
-						const selection = [item];
+						const newSelection = [item];
 						if (!disableWithSelection) {
-							setSelection(selection);
+							setSelection(newSelection);
 						}
 						if (onEditorRowClick) { // e.g. inline editor
 							onEditorRowClick(item, index, e);
 						}
 						if (onContextMenu) {
-							onContextMenu(item, e, selection, setSelection);
+							onContextMenu(item, e, newSelection);
 						}
 					}}
-					flexDirection="row"
-					flexGrow={1}
-				>
+					className="Pressable Row flex-row grow">
 					{({
-						isHovered,
-						isFocused,
-						isPressed,
+						hovered,
+						focused,
+						pressed,
 					}) => {
 						if (isHeaderRow) {
-							return <GridHeaderRow
-										Repository={Repository}
-										columnsConfig={localColumnsConfig}
-										setColumnsConfig={setLocalColumnsConfig}
-										hideNavColumn={hideNavColumn}
-										canColumnsSort={canColumnsSort}
-										canColumnsReorder={canColumnsReorder}
-										canColumnsResize={canColumnsResize}
-										setSelection={setSelection}
-										gridRef={gridRef}
-										isHovered={isHovered}
-										isInlineEditorShown={isInlineEditorShown}
-										areRowsDragSource={areRowsDragSource}
-										showColumnsSelector={() => setIsColumnSelectorShown(true)}
-									/>;
+							let headerRow = <GridHeaderRow
+												Repository={Repository}
+												columnsConfig={localColumnsConfig}
+												setColumnsConfig={setLocalColumnsConfig}
+												hideNavColumn={hideNavColumn}
+												canColumnsSort={canColumnsSort}
+												canColumnsReorder={canColumnsReorder}
+												canColumnsResize={canColumnsResize}
+												setSelection={setSelection}
+												gridRef={gridRef}
+												isHovered={hovered}
+												isInlineEditorShown={isInlineEditorShown}
+												areRowsDragSource={areRowsDragSource}
+												showColumnsSelector={showColumnsSelector}
+											/>;
+							if (showRowExpander) {
+								// align the header row to content rows by adding a spacer that matches the width of the Grid-rowExpander-expandBtn
+								headerRow = <HStack className="">
+												<Box className="w-[40px]"></Box>
+												{headerRow}
+											</HStack>;
+							}
+							return headerRow;
 						}
 
-						let bg = rowProps.bg || styles.GRID_ROW_BG,
-							mixWith;
-						if (isSelected) {
-							if (showHovers && isHovered) {
-								mixWith = styles.GRID_ROW_SELECTED_HOVER_BG;
-							} else {
-								mixWith = styles.GRID_ROW_SELECTED_BG;
-							}
-						} else if (showHovers && isHovered) {
-							mixWith = styles.GRID_ROW_HOVER_BG;
-						} else if (alternateRowBackgrounds && index % alternatingInterval === 0) { // i.e. every second line, or every third line
-							mixWith = styles.GRID_ROW_ALTERNATE_BG;
-						}
-						if (mixWith) {
-							const
-								mixWithObj = nbToRgb(mixWith),
-								ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
-							bg = colourMixer.blend(bg, ratio, mixWithObj.color);
-						}
 						const
 							rowReorderProps = {},
 							rowDragProps = {};
@@ -554,6 +568,11 @@ function GridComponent(props) {
 									rowProps={rowProps}
 									hideNavColumn={hideNavColumn}
 									isSelected={isSelected}
+									isHovered={hovered}
+									showHovers={showHovers}
+									index={index}
+									alternatingInterval={alternatingInterval}
+									alternateRowBackgrounds={alternateRowBackgrounds}
 									bg={bg}
 									item={item}
 									isInlineEditorShown={isInlineEditorShown}
@@ -567,21 +586,39 @@ function GridComponent(props) {
 
 			if (showRowExpander && !isHeaderRow) {
 				const isExpanded = getIsExpanded(index);
-				rowComponent = <Column>
-									<Row>
+				let className = `
+					Grid-rowExpander
+					w-full
+					flex-none
+				`;
+				if (rowProps?.className) {
+					className += ' ' + rowProps.className;
+				}
+				rowComponent = <VStack className={className}>
+									<HStack
+										className={`
+											Grid-rowExpander-HStack
+											w-full
+											grow
+										`}
+									>
 										<ExpandButton
+											{...testProps((Repository ? Repository.schema.name : 'GridRow') + '-expandBtn-' + item?.id)}
 											isExpanded={isExpanded}
 											onToggle={() => setIsExpanded(index, !isExpanded)}
 											_icon={{
 												size: 'sm',
 											}}
-											py={0}
+											className={`
+												Grid-rowExpander-expandBtn
+												${styles.GRID_EXPAND_BTN_CLASSNAME}
+											`}
 											tooltip="Expand/Contract Row"
 										/>
 										{rowComponent}
-									</Row>
+									</HStack>
 									{isExpanded ? getExpandedRowContent(row) : null}
-								</Column>
+								</VStack>
 			}
 			return rowComponent;
 		},
@@ -708,10 +745,12 @@ function GridComponent(props) {
 				let dragRecord,
 					dropRecord;
 				if (Repository) {
-					dragRecord = Repository.getByIx(dragIx);
-					dropRecord = Repository.getByIx(dropIx);
-					if (dropRecord) {
-						Repository.reorder(dragRecord, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
+					if (!Repository.isDestroyed) {
+						dragRecord = Repository.getByIx(dragIx);
+						dropRecord = Repository.getByIx(dropIx);
+						if (dropRecord) {
+							Repository.reorder(dragRecord, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
+						}
 					}
 				} else {
 					function arrayMove(arr, fromIndex, toIndex) {
@@ -730,11 +769,13 @@ function GridComponent(props) {
 			const
 				headerHeight = showHeaders ? 50 : 0,
 				footerHeight = !disablePagination ? 50 : 0,
-				height = containerHeight - headerHeight - footerHeight,
-				rowsPerContainer = Math.floor(height / defaultRowHeight);
-			let pageSize = rowsPerContainer;
-			if (showHeaders) {
-				pageSize--;
+				availableHeight = containerHeight - headerHeight - footerHeight,
+				maxClassNormal = styles.GRID_ROW_MAX_HEIGHT_NORMAL, // e.g. max-h-[40px]
+				rowNormalHeight = parseInt(maxClassNormal.match(/\d+/)[0]);
+			
+			let pageSize = Math.floor(availableHeight / rowNormalHeight);
+			if (pageSize < 1) {
+				pageSize = 1;
 			}
 			return pageSize;
 		},
@@ -828,6 +869,68 @@ function GridComponent(props) {
 						break;
 				}
 			}
+		},
+		showColumnsSelector = () => {
+			const
+				modalItems = _.map(localColumnsConfig, (config, ix) => {
+					return {
+						name: config.id,
+						label: config.header,
+						type: config.isHidable ? 'Checkbox' : 'Text',
+						isEditable: config.isHidable ?? false,
+					};
+				}),
+				startingValues = (() => {
+					const startingValues = {};
+					_.each(localColumnsConfig, (config) => {
+						const value = !config.isHidden; // checkbox implies to show it, so flip the polarity
+						startingValues[config.id] = config.isHidable ? value : 'Always shown';
+					});
+					return startingValues;
+				})();
+			
+			showModal({
+				title: 'Column Selector',
+				includeReset: true,
+				includeCancel: true,
+				h: 800,
+				w: styles.FORM_STACK_ROW_THRESHOLD + 10,
+				body: <Form
+							editorType={EDITOR_TYPE__PLAIN}
+							columnDefaults={{
+								labelWidth: '250px',
+							}}
+							items={[
+								{
+									name: 'instructions',
+									type: 'DisplayField',
+									text: 'Please select which columns to show in the grid.',
+									className: 'mb-3',
+								},
+								{
+									type: 'FieldSet',
+									title: 'Columns',
+									reference: 'columns',
+									showToggleAllCheckbox: true,
+									items: [
+										...modalItems,
+									],
+								}
+							]}
+							startingValues={startingValues}
+							onSave={(values)=> {
+								hideModal();
+
+								const newColumnsConfig = _.cloneDeep(localColumnsConfig);
+								_.each(newColumnsConfig, (config, ix) => {
+									if (config.isHidable) {
+										newColumnsConfig[ix].isHidden = !values[config.id]; // checkbox implies to show it, so flip the polarity
+									}
+								});
+								setLocalColumnsConfig(newColumnsConfig);
+							}}
+						/>,
+			});
 		};
 
 	if (forceLoadOnRender && disableLoadOnRender) {
@@ -854,7 +957,8 @@ function GridComponent(props) {
 			// second call -- do other necessary setup
 
 			
-			let localColumnsConfig = [],
+			let columnsConfigVariable = columnsConfig,
+				localColumnsConfig = [],
 				savedLocalColumnsConfig,
 				calculateLocalColumnsConfig = false;
 			if (localColumnsConfigKey && !UiGlobals.disableSavedColumnsConfig) {
@@ -865,7 +969,10 @@ function GridComponent(props) {
 				calculateLocalColumnsConfig = true;
 			}
 			if (calculateLocalColumnsConfig) {
-				if (_.isEmpty(columnsConfig)) {
+				if (_.isFunction(columnsConfigVariable)) {
+					columnsConfigVariable = columnsConfigVariable();
+				}
+				if (_.isEmpty(columnsConfigVariable)) {
 					if (Repository) {
 						// create a column for the displayProperty
 						localColumnsConfig.push({
@@ -877,7 +984,7 @@ function GridComponent(props) {
 						});
 					}
 				} else {
-					_.each(columnsConfig, (columnConfig) => {
+					_.each(columnsConfigVariable, (columnConfig) => {
 						if (!_.isPlainObject(columnConfig)) {
 							localColumnsConfig.push(columnConfig);
 							return;
@@ -1008,13 +1115,12 @@ function GridComponent(props) {
 
 	if (!isInited) {
 		// first time through, render a placeholder so we can get container dimensions
-		return <Column
-					flex={1}
-					w="100%"
+		return <VStackNative
 					onLayout={(e) => {
 						adjustPageSizeToHeight(e);
 						setIsInited(true);
 					}}
+					className="w-full flex-1"
 				/>;
 	}
 	if (!isReady) {
@@ -1051,10 +1157,11 @@ function GridComponent(props) {
 										toolbarItems={footerToolbarItemComponents}
 										disablePageSize={disablePageSize}
 										showMoreOnly={showMoreOnly}
+										{..._paginationToolbarProps}
 									/>;
 		} else if (footerToolbarItemComponents.length) {
 			listFooterComponent = <Toolbar>
-										<ReloadPageButton Repository={Repository} self={self} />
+										<ReloadButton Repository={Repository} self={self} />
 										{footerToolbarItemComponents}
 									</Toolbar>;
 		}
@@ -1085,15 +1192,22 @@ function GridComponent(props) {
 					initialNumToRender={initialNumToRender}
 					initialScrollIndex={0}
 					renderItem={renderRow}
-					bg="trueGray.100"
+					className="bg-grey-100"
 					{...flatListProps}
-				/>
+				/>;
 	
 	if (CURRENT_MODE === UI_MODE_WEB) {
-		grid = <ScrollView horizontal={false} testID="ScrollView">{grid}</ScrollView>; // fix scrolling bug on nested FlatLists
+		// fix scrolling bug on nested FlatLists (inner one would not scroll without this)
+		grid = <ScrollView
+					horizontal={false}
+					className="ScrollView overflow-auto"
+					contentContainerStyle={{
+						height: '100%',
+					}}
+				>{grid}</ScrollView>;
 	} else
-	if (CURRENT_MODE === UI_MODE_REACT_NATIVE) {
-		grid = <ScrollView flex={1} w="100%">{grid}</ScrollView>
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
+		grid = <ScrollView className="flex-1 w-full">{grid}</ScrollView>
 	}
 
 	// placeholders in case no entities yet
@@ -1101,102 +1215,90 @@ function GridComponent(props) {
 		if (Repository?.isLoading) {
 			grid = <Loading isScreen={true} />;
 		} else {
-			grid = <NoRecordsFound text={noneFoundText} onRefresh={onRefresh} testID="NoRecordsFound" />;
+			grid = <NoRecordsFound 
+						text={noneFoundText}
+						onRefresh={onRefresh}
+					/>;
 		}
 	}
 
-	const gridContainerBorderProps = {};
+	let gridContainerBorderClassName = '';
 	if (isReorderMode) {
-		gridContainerBorderProps.borderWidth = styles.REORDER_BORDER_WIDTH;
-		gridContainerBorderProps.borderColor = styles.REORDER_BORDER_COLOR;
-		gridContainerBorderProps.borderStyle = styles.REORDER_BORDER_STYLE;
-		gridContainerBorderProps.borderTopWidth = null;
-		if (isLoading) {
-			gridContainerBorderProps.borderTopColor = '#f00';
-		} else {
-			gridContainerBorderProps.borderTopColor = null;
-		}
+		gridContainerBorderClassName += ' ' + styles.GRID_REORDER_BORDER_WIDTH;
+		gridContainerBorderClassName += ' ' + styles.GRID_REORDER_BORDER_COLOR;
+		gridContainerBorderClassName += ' ' + styles.GRID_REORDER_BORDER_STYLE;
 	} else if (isLoading) {
-		gridContainerBorderProps.borderTopWidth = 4;
-		gridContainerBorderProps.borderTopColor = '#f00';
+		gridContainerBorderClassName += ' border-t-4';
+		gridContainerBorderClassName += ' border-t-[#f00]';
 	} else {
-		gridContainerBorderProps.borderTopWidth = 1;
-		gridContainerBorderProps.borderTopColor = 'trueGray.300';
-	}
-
-	let columnSelector = null;
-	if (isColumnSelectorShown) {
-		const onCloseColumnSelector = () => {
-			setIsColumnSelectorShown(false);
-		};
-		columnSelector = <Modal
-							isOpen={true}
-							onClose={onCloseColumnSelector}
-						>
-							<ColumnSelectorWindow
-								onClose={onCloseColumnSelector}
-								columnsConfig={localColumnsConfig}
-								setColumnsConfig={setLocalColumnsConfig}
-							/>
-						</Modal>;
+		gridContainerBorderClassName += ' border-t-0';
 	}
 	
-	const sizeProps = {};
-	if (!_.isNil(h)) {
-		sizeProps.h = h;
-	} else {
-		sizeProps.flex = flex ?? 1;
+	const style = props.style || {};
+	style.backgroundColor = bg;
+	if (!hasHeight(props) && !hasWidth(props) && !hasFlex(props)) {
+		style.flex = 1;
+	}
+	let className = `
+		Grid-VStackNative
+		w-full
+		border
+		border-grey-300
+	`;
+	if (props.className) {
+		className += props.className;
 	}
 
-	grid = <Column
+	grid = <VStackNative
 				{...testProps(self)}
 				ref={containerRef}
 				tabIndex={0}
 				onKeyDown={onGridKeyDown}
-				w="100%"
-				bg={bg}
-				borderWidth={styles.GRID_BORDER_WIDTH}
-				borderColor={styles.GRID_BORDER_COLOR}
 				onLayout={(e) => debouncedAdjustPageSizeToHeight(e)}
-				{...sizeProps}
+				className={className}
+				style={style}
 			>
 				{topToolbar}
 
-				<Column
-					testID="gridContainer"
+				<VStack
 					ref={gridContainerRef}
-					w="100%"
-					flex={1}
-					minHeight={40}
-					{...gridContainerBorderProps}
 					onClick={() => {
 						if (!isReorderMode && !isInlineEditorShown && deselectAll) {
 							deselectAll();
 						}
 					}}
+					className={`
+						gridContainer
+						w-full
+						h-full
+						flex-1
+						min-h-[40px]
+						${gridContainerBorderClassName}
+					`}
 				>
 					{grid}
-				</Column>
+				</VStack>
 
 				{listFooterComponent}
 
-				{columnSelector}
-
-			</Column>
+			</VStackNative>
 
 	if (isDropTarget) {
-		grid = <Box
-					{...testProps('dropTarget')}
+		grid = <VStackNative
+					{...testProps(self, '-dropTarget')}
 					ref={dropTargetRef}
-					borderWidth={canDrop && isOver ? 4 : 0}
-					borderColor="#0ff"
-					w="100%"
-					{...sizeProps}
-				>{grid}</Box>
+					className={`
+						Grid-dropTarget
+						h-full
+						w-full
+						border-[#0ff]
+						${canDrop && isOver ? "border-[4px]" : "border-[0px]"}
+					`}
+				>{grid}</VStackNative>
 	}
 	return grid;
-
 }
+
 
 export const Grid = withComponent(
 						withAlert(

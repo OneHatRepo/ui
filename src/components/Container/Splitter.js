@@ -1,8 +1,7 @@
 import {
-	Column,
-	Row,
-	Text,
-} from 'native-base';
+	HStack,
+	VStack,
+} from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -21,28 +20,42 @@ function Splitter(props) {
 		} = props;
 
 	if (mode === VERTICAL) {
-		return <Row
-					testID="Splitter"
-					bg={isDragging ? 'secondary.600' : 'primary.600'}
-					h="3px"
-					w="100%"
-					alignItems="center"
-					justifyContent="center"
+		return <HStack
+					className={`
+						Splitter
+						h-[3px]
+						w-full
+						items-center
+						justify-center
+						${isDragging ? "bg-secondary-600" : "bg-primary-600"}
+					`}
 				>
-					<Row testID="handle" h="2px" w="10%" bg="#ccc"></Row>
-				</Row>;
+					<HStack className={`
+						handle
+						h-[2px]
+						w-[10%]
+						bg-[#ccc]
+					`}></HStack>
+				</HStack>;
 	}
-	return <Column
-				testID="Splitter"
-				bg={isDragging ? 'secondary.600' : 'primary.600'}
-				h="100%"
-				w="3px"
-				alignItems="center"
-				justifyContent="center"
+	return <VStack
 				style={styles.ewResize}
+				className={`
+					Splitter
+					h-full
+					w-[3px]
+					items-center
+					justify-center
+					${isDragging ? "bg-secondary-600" : "bg-primary-600"}
+				`}
 			>
-				<Column testID="handle" w="2px" h="10%" bg="#ccc"></Column>
-			</Column>;
+				<VStack className={`
+					handle
+					w-[2px]
+					h-[10%]
+					bg-[#ccc]
+				`}></VStack>
+			</VStack>;
 }
 
 function withAdditionalProps(WrappedComponent) {
@@ -61,9 +74,9 @@ function withParentNode(WrappedComponent) {
 				getParentNode = (node) => node.parentElement.parentElement,
 			} = props;
 		return <WrappedComponent
-			getParentNode={getParentNode}
-			{...props}
-		/>;
+					getParentNode={getParentNode}
+					{...props}
+				/>;
 	};
 }
 

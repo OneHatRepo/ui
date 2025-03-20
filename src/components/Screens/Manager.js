@@ -1,40 +1,37 @@
+import {
+	VStackNative,
+} from '@project-components/Gluestack';
 import React, { useState, useEffect, } from 'react';
 import {
-	Column,
-	Row,
-	Text,
-} from 'native-base';
+	SCREEN_MODES__FULL,
+	SCREEN_MODES__SIDE,
+} from '../../Constants/ScreenModes.js'
 import withComponent from '../Hoc/withComponent.js';
 import testProps from '../../Functions/testProps.js';
-import UiGlobals from '../../UiGlobals.js';
-import IconButton from '../Buttons/IconButton';
-import FullWidth from '../Icons/FullWidth';
-import SideBySide from '../Icons/SideBySide';
+import ScreenHeader from '../Layout/ScreenHeader';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import _ from 'lodash';
 
-const
-	MODE_FULL = 'MODE_FULL',
-	MODE_SIDE = 'MODE_SIDE';
-
 function ManagerScreen(props) {
 	const {
 			title,
+			icon,
 			sideModeComponent,
 			fullModeComponent,
+			onChangeMode,
 
 			// withComponent
 			self,
 		} = props,
-		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
 		[isRendered, setIsRendered] = useState(false),
 		[isModeSet, setIsModeSet] = useState(false),
 		[allowSideBySide, setAllowSideBySide] = useState(false),
-		[mode, setModeRaw] = useState(MODE_FULL),
+		[mode, setModeRaw] = useState(SCREEN_MODES__FULL),
+		actualMode = (!allowSideBySide || mode === SCREEN_MODES__FULL) ? SCREEN_MODES__FULL : SCREEN_MODES__SIDE,
 		setMode = (newMode) => {
-			if (!allowSideBySide && newMode === MODE_SIDE) {
+			if (!allowSideBySide && newMode === SCREEN_MODES__SIDE) {
 				return;
 			}
 			if (newMode === mode) {
@@ -43,6 +40,9 @@ function ManagerScreen(props) {
 			setModeRaw(newMode);
 			if (id) {
 				setSaved(id + '-mode', newMode);
+			}
+			if (onChangeMode) {
+				onChangeMode(newMode);
 			}
 		},
 		onLayout = (e) => {
@@ -74,56 +74,28 @@ function ManagerScreen(props) {
 		})();
 	}, [isRendered]);
 
-	let whichComponent;
-	if (!allowSideBySide || mode === MODE_FULL) {
-		whichComponent = fullModeComponent;
-	} else if (mode === MODE_SIDE) {
-		whichComponent = sideModeComponent;
+	if (self) {
+		self.mode = actualMode;
 	}
 
-	const textProps = {};
-	if (styles.MANAGER_SCREEN_TITLE) {
-		textProps.style = {
-			fontFamily: styles.MANAGER_SCREEN_TITLE,
-		};
-	}
+	const whichComponent = actualMode === SCREEN_MODES__FULL ? fullModeComponent : sideModeComponent;
 
-	return <Column {...testProps(self)} maxHeight="100vh" overflow="hidden" flex={1} w="100%" onLayout={onLayout}>
-				<Row
-					h="80px"
-					py={2}
-					borderBottomWidth={2}
-					borderBottomColor="#ccc"
-				>
-					<Text p={4} fontSize="26" fontWeight={700} {...textProps}>{title}</Text>
-					{allowSideBySide &&
-						<>
-							<IconButton
-								{...testProps('fullModeBtn')}
-								icon={FullWidth}
-								_icon={{
-									size: '25px',
-									color: mode === MODE_FULL ? 'primary.100' : '#000',
-								}}
-								disabled={mode === MODE_FULL}
-								onPress={() => setMode(MODE_FULL)}
-								tooltip="Full Width"
-							/>
-							<IconButton
-								{...testProps('sideModeBtn')}
-								icon={SideBySide}
-								_icon={{
-									size: '25px',
-									color: mode === MODE_SIDE ? 'primary.100' : '#000',
-								}}
-								disabled={mode === MODE_SIDE}
-								onPress={() => setMode(MODE_SIDE)}
-								tooltip="Side Editor"
-							/>
-						</>}
-				</Row>
+	return <VStackNative
+				{...testProps(self)}
+				onLayout={onLayout}
+				className="max-h-screen overflow-hidden flex-1 w-full"
+			>
+				<ScreenHeader
+					title={title}
+					icon={icon}
+					useModeIcons={true}
+					actualMode={actualMode}
+					allowSideBySide={allowSideBySide}
+					onFullWidth={() => setMode(SCREEN_MODES__FULL)}
+					onSideBySide={() => setMode(SCREEN_MODES__SIDE)}
+				/>
 				{isRendered && isModeSet && whichComponent}
-			</Column>;
+			</VStackNative>;
 }
 
 export default withComponent(ManagerScreen);

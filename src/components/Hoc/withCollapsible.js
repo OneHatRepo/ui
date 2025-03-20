@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 
 export default function withCollapsible(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		const
 			{
 				isCollapsed = false,
@@ -15,6 +15,7 @@ export default function withCollapsible(WrappedComponent) {
 					isCollapsed={bypass ? isCollapsed : localIsCollapsed}
 					setIsCollapsed={bypass ? setIsCollapsed : setLocalIsCollapsed}
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 }

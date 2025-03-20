@@ -1,9 +1,9 @@
 import {
-	Row,
+	HStack,
 	Tooltip,
-} from 'native-base';
+} from '@project-components/Gluestack';
 import {
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
 import UiGlobals from '../../../UiGlobals.js';
@@ -35,15 +35,23 @@ export function JsonElement(props) {
 
 	let assembledComponents = null;
 	
-	if (UiGlobals.mode === UI_MODE_WEB) {
-		const src = JSON.parse(value);
+	if (UiGlobals.mode === UI_MODE_NATIVE) {
+		throw new Error('JsonElement not yet implemented for React Native');
+	}
+
+	let className = `
+		Json
+		flex-1
+		justify-start
+		${testID}
+	`;
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+	// if (UiGlobals.mode === UI_MODE_WEB) {
+		const src = value ? JSON.parse(value) : {};
 		assembledComponents = 
-			<Row
-				flex={1}
-				{...propsToPass}
-				justifyContent="flex-start"
-				testID={testID}
-			>
+			<HStack style={props.style} className={className}>
 				<JsonEditor
 					width="100%"
 					editable={!isViewOnly}
@@ -55,19 +63,15 @@ export function JsonElement(props) {
 					}}
 					{...props}
 				/>
-			</Row>;
-
-	}
-	if (UiGlobals.mode === UI_MODE_REACT_NATIVE) {
-		throw new Error('JsonElement not yet implemented for React Native');
-	}
+			</HStack>;
+	// }
 	
 	if (tooltip) {
-		assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
-								{assembledComponents}
-							</Tooltip>;
+		// assembledComponents = <Tooltip label={tooltip} placement={tooltipPlacement}>
+		// 						{assembledComponents}
+		// 					</Tooltip>;
 	}
 	return assembledComponents;
-};
+}
 
 export default withComponent(withValue(JsonElement));

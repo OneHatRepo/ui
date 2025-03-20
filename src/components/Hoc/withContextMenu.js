@@ -1,26 +1,15 @@
-import React, { useState, useEffect, } from 'react';
+import { forwardRef, useRef, useState, useEffect, } from 'react';
 import {
-	Box,
-	Column,
-	FlatList,
-	Icon,
-	Modal,
-	Pressable,
-	Row,
-	Spacer,
 	Text,
-} from 'native-base';
-import {
-	UI_MODE_WEB,
-	CURRENT_MODE,
-} from '../../Constants/UiModes.js';
+	VStack,
+} from '@project-components/Gluestack';
+import UiGlobals from '../../UiGlobals.js';
+import Button from '../Buttons/Button.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
-const CONTEXT_MENU_WIDTH = 180;
-
 export default function withContextMenu(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		const {
 				// extract and pass
 				disableContextMenu = false,
@@ -30,14 +19,19 @@ export default function withContextMenu(WrappedComponent) {
 			{
 				// for local use
 				selection,
-				setSelection, // in case it's ever needed!
+				setSelection,
+
+				// withModal
+				showModal,
+				hideModal,
+				isModalShown,
+				whichModal,
 			} = props,
-			[isReady, setIsReady] = useState(false),
-			[isContextMenuShown, setIsContextMenuShown] = useState(false),
-			[contextMenuX, setContextMenuX] = useState(0),
-			[contextMenuY, setContextMenuY] = useState(0),
-			[contextMenuItemComponents, setContextMenuItemComponents] = useState([]),
-			onContextMenu = (entity, e, selection, setSelection) => {
+			styles = UiGlobals.styles,
+			[doShowContextMenu, setDoShowContextMenu] = useState(false),
+			[left, setLeft] = useState(0),
+			[top, setTop] = useState(0),
+			onContextMenu = (entity, e, selection) => {
 				if (disableContextMenu) {
 					return;
 				}
@@ -45,133 +39,129 @@ export default function withContextMenu(WrappedComponent) {
 					// No current selections, so select this row so operations apply to it
 					setSelection([entity]);
 				}
-				
-				setIsContextMenuShown(true);
-				setContextMenuX(e.nativeEvent.pageX);
-				setContextMenuY(e.nativeEvent.pageY);
+
+				setDoShowContextMenu(true);
+				setLeft(e.nativeEvent.pageX);
+				setTop(e.nativeEvent.pageY);
 			},
-			onLayout = (e) => {
-				if (CURRENT_MODE !== UI_MODE_WEB) {
+			createContextMenuItemComponents = () => {
+				const contextMenuItemComponents = _.map(contextMenuItems, (config, ix) => {
+					let {
+						text,
+						handler,
+						icon = null,
+						isDisabled = false,
+					} = config;
+	
+					return <Button
+								{...testProps('contextMenuBtn-' + text)}
+								key={ix}
+								onPress={() => {
+									hideModal();
+									handler(selection);
+								}}
+								isDisabled={isDisabled}
+								icon={icon}
+								_icon={{
+									className: `
+										ml-2
+										self-center
+									`,
+								}}
+								text={text}
+								_text={{
+									className: `
+										flex-1
+										select-none
+										text-black
+									`,
+								}}
+								className={`
+									flex-row
+									border-b-2
+									border-b-grey-200
+									py-2
+									px-4
+									select-none
+									rounded-none
+								`}
+								variant="outline"
+								action="secondary"
+							/>;
+				});
+				const showId = true; // TODO: This should only be for local dev
+				if (showId) {
+					contextMenuItemComponents.push(<Text key="idViewer" className="flex-1 py-2 px-4 select-none">id: {selection?.[0]?.id}</Text>);
+				}
+				return contextMenuItemComponents;
+			};
+			
+		useEffect(() => {
+			// First time after onContextMenu is called, doShowContextMenu will be true.
+			// Next times, it will be false, whichModal will be 'contextMenu'
+			if (!doShowContextMenu) {
+				if (!isModalShown) {
+					// Do not update if no modal is shown
 					return;
 				}
-
-				const
-					{
-						top,
-						left,
-						// width,
-						height,
-					} = e.nativeEvent.layout,
-					screenWidth = window.innerWidth,
-					screenHeight = window.innerHeight,
-					width = CONTEXT_MENU_WIDTH;
-
-				if (screenWidth - width < left) {
-					setContextMenuX(screenWidth - width);
+				if (whichModal !== 'contextMenu') {
+					// Do not update the contextMenu when other types of modals are shown
+					return;
 				}
-				if (screenHeight - height < top) {
-					setContextMenuY(screenHeight - height);
-				}
+			}
+
+			// useEffect() will be called once when doShowContextMenu is set,
+			// (this will show the context menu), and then again if the 
+			// contextMenuItems change. This is necessary because they
+			// may change based on the selection; and this is why we're using 
+			// useEffect to show the context menu instead of onContextMenu.
+
+			// show context menu
+			const
+				contextMenuItemComponents = createContextMenuItemComponents(),
+				className = `
+					context-menu-container
+					absolute
+					border
+					border-grey-400
+					shadow-lg
+					bg-white
+				`,
+				screenWidth = window.innerWidth,
+				screenHeight = window.innerHeight;
+			let l = left,
+				t = top;
+			if (screenWidth - styles.CONTEXT_MENU_WIDTH < l) {
+				l = screenWidth - styles.CONTEXT_MENU_WIDTH;
+			}
+			if (screenHeight - (contextMenuItemComponents.length * styles.CONTEXT_MENU_ITEM_HEIGHT) < t) {
+				t = screenHeight - (contextMenuItemComponents.length * styles.CONTEXT_MENU_ITEM_HEIGHT);
+			}
+			const style = {
+				left: l,
+				top: t,
+				width: styles.CONTEXT_MENU_WIDTH,
 			};
 
-		useEffect(() => {
-			const contextMenuItemComponents = _.map(contextMenuItems, (config, ix) => {
-				let {
-					text,
-					handler,
-					icon = null,
-					isDisabled = false,
-				} = config;
-				
-				if (icon) {
-					const iconProps = {
-						alignSelf: 'center',
-						size: 'sm',
-						color: isDisabled ? 'disabled' : 'trueGray.800',
-						h: 20,
-						w: 20,
-						mr: 2,
-					};
-					if (React.isValidElement(icon)) {
-						icon = React.cloneElement(icon, {...iconProps});
-					} else {
-						icon = <Icon as={icon} {...iconProps} />;
-					}
-				}
-
-				// <div style={{
-				// 	userSelect: 'none',
-				// }}>
-				// </div>
-
-				return <Pressable
-							{...testProps('contextMenuBtn-' + text)}
-							key={ix}
-							onPress={() => {
-								setIsContextMenuShown(false);
-								handler(selection);
-							}}
-							flexDirection="row"
-							borderBottomWidth={1}
-							borderBottomColor="trueGray.200"
-							py={2}
-							px={4}
-							_hover={{
-								bg: '#ffc',
-							}}
-							isDisabled={isDisabled}
-							style={{
-								userSelect: 'none',
-							}}
-							userSelect="none"
-						>
-							{icon}
-							<Text
-								flex={1}
-								color={isDisabled ? 'disabled' : 'trueGray.800'}
-								numberOfLines={1}
-								ellipsizeMode="head"
-								style={{
-									userSelect: 'none',
-								}}
-								userSelect="none"
-							>{text}</Text>
-						</Pressable>;
+			showModal({
+				body: <VStack
+							className={className}
+							style={style}
+						>{contextMenuItemComponents}</VStack>,
+				onCancel: hideModal,
+				whichModal: 'contextMenu',
 			});
-			const showId = true; // TODO: This should only be for local dev
-			if (showId) {
-				contextMenuItemComponents.push(<Text
-													key="idViewer"
-													flex={1}
-													py={2}
-													px={4}
-													userSelect="none"
-												>id: {selection?.[0]?.id}</Text>);
-			}
-			setContextMenuItemComponents(contextMenuItemComponents);
-			
-			if (!isReady) {
-				setIsReady(true);
-			}
-		}, [contextMenuItems, setIsContextMenuShown]);
 
-		if (!isReady) {
-			return null;
-		}
+			if (doShowContextMenu) {
+				setDoShowContextMenu(false);
+			}
+		
+		}, [doShowContextMenu, isModalShown, whichModal]); // don't include contextMenuItems, as it will cause infinite loop
 
-		return <>
-					<WrappedComponent
-						{...propsToPass}
-						onContextMenu={onContextMenu}
-					/>
-					<Modal
-						isOpen={isContextMenuShown && !disableContextMenu}
-						onClose={() => setIsContextMenuShown(false)}
-					>
-						<Column bg="#fff" w={CONTEXT_MENU_WIDTH} position="absolute" top={contextMenuY} left={contextMenuX} onLayout={onLayout}>
-							{contextMenuItemComponents}
-						</Column>
-					</Modal>
-				</>;
-	};
+		return <WrappedComponent
+					{...propsToPass}
+					ref={ref}
+					onContextMenu={onContextMenu}
+				/>;
+	});
 }

@@ -1,15 +1,15 @@
-import React, { useState, useEffect, } from 'react';
+import { cloneElement, useState, useEffect, } from 'react';
 import {
-	Column,
-	Row,
-} from 'native-base';
+	HStack,
+	VStack,
+} from '@project-components/Gluestack';
 import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions.js';
 import {
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
 import withComponent from '../Hoc/withComponent.js';
@@ -17,6 +17,45 @@ import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import Splitter from './Splitter.js';
 import _ from 'lodash';
+
+// function extractTokenFromClassName(token, className) {
+// 	const
+// 		regex = new RegExp(
+// 					'(?:^|\s)' + // match the beginning of the string or a space.
+// 					token + '-' +
+// 					'(\d+%?|full)' + // match a number, percentage, or 'full'
+// 					'(?=\s|$)' // match the end of the string or a space
+// 				),
+// 		match = className.match(regex);
+// 	let value = match ? match[1] : null;
+// 	if (value === 'full') {
+// 		value = '100%';
+// 	}
+// 	return value;
+// }
+// function extractTokenFromStyle(token, style) {
+// 	return style[token] || null;
+// }
+// function extractHeight(props) {
+// 	let height = null;
+// 	if (props.style) {
+// 		height = extractTokenFromStyle('height', props.style);
+// 	}
+// 	if (height === null && props.className) {
+// 		height = extractTokenFromClassName('h', props.className);
+// 	}
+// 	return height;
+// }
+// function extractWidth(props) {
+// 	let width = null;
+// 	if (props.style) {
+// 		width = extractTokenFromStyle('width', props.style);
+// 	}
+// 	if (width === null && props.className) {
+// 		width = extractTokenFromClassName('w', props.className);
+// 	}
+// 	return width;
+// }
 
 function Container(props) {
 	const {
@@ -188,7 +227,7 @@ function Container(props) {
 		westComponent = null,
 		westSplitter = null;
 
-	centerComponent = React.cloneElement(center, { isCollapsible: false, });
+	centerComponent = cloneElement(center, { isCollapsible: false, });
 	if (north) {
 		componentProps.collapseDirection = VERTICAL;
 		if (!north.props.h && !north.props.flex) {
@@ -210,7 +249,7 @@ function Container(props) {
 			};
 			northSplitter = <Splitter mode={VERTICAL} onDragStop={onNorthResize} />;
 		}
-		northComponent = React.cloneElement(north, { ...componentProps, w: '100%', });
+		northComponent = cloneElement(north, { ...componentProps, w: '100%', });
 		componentProps = {};
 	}
 	if (south) {
@@ -234,7 +273,7 @@ function Container(props) {
 			};
 			southSplitter = <Splitter mode={VERTICAL} onDragStop={onSouthResize} />;
 		}
-		southComponent = React.cloneElement(south, { ...componentProps, w: '100%', });
+		southComponent = cloneElement(south, { ...componentProps, w: '100%', });
 		componentProps = {};
 	}
 	if (east) {
@@ -258,7 +297,7 @@ function Container(props) {
 			};
 			eastSplitter = <Splitter mode={HORIZONTAL} onDragStop={onEastResize} />;
 		}
-		eastComponent = React.cloneElement(east, { ...componentProps, h: '100%', });
+		eastComponent = cloneElement(east, { ...componentProps, h: '100%', });
 		componentProps = {};
 	}
 	if (west) {
@@ -282,25 +321,25 @@ function Container(props) {
 			};
 			westSplitter = <Splitter mode={HORIZONTAL} onDragStop={onWestResize} />;
 		}
-		westComponent = React.cloneElement(west, { ...componentProps, h: '100%', });
+		westComponent = cloneElement(west, { ...componentProps, h: '100%', });
 		componentProps = {};
 	}
 	
-	return <Column w="100%" flex={1}>
+	return <VStack className="Container-all w-full flex-1">
 				{northComponent}
 				{(!isNorthCollapsed && !localIsNorthCollapsed) && northSplitter}
-				<Row w="100%" flex={100}>
+				<HStack className="Container-mid w-full" style={{ flex: 100 }}>
 					{westComponent}
 					{(!isWestCollapsed && !localIsWestCollapsed) && westSplitter}
-					<Column h="100%" flex={100}>
+					<VStack className="Container-center h-full overflow-auto" style={{ flex: 100 }}>
 						{centerComponent}
-					</Column>
+					</VStack>
 					{(!isEastCollapsed && !localIsEastCollapsed) && eastSplitter}
 					{eastComponent}
-				</Row>
+				</HStack>
 				{(!isSouthCollapsed && !localIsSouthCollapsed) && southSplitter}
 				{southComponent}
-			</Column>;
+			</VStack>;
 }
 
 export default withComponent(Container);

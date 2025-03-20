@@ -1,7 +1,4 @@
-import { useEffect, useState, useRef, } from 'react';
-import {
-	Button,
-} from 'native-base';
+import { forwardRef, useEffect, useState, useRef, } from 'react';
 import {
 	ADD,
 	EDIT,
@@ -16,17 +13,18 @@ import {
 	EDITOR_TYPE__SIDE,
 	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js'
+import Button from '../Buttons/Button.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 export default function withEditor(WrappedComponent, isTree = false) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithEditor) {
-			return <WrappedComponent {...props} isTree={isTree} />;
+			return <WrappedComponent {...props} ref={ref} isTree={isTree} />;
 		}
 
-		let [editorMode, setEditorMode] = useState(EDITOR_MODE__VIEW); // Can change below, so use 'let'
 		const {
 				userCanEdit = true, // not permissions, but capability
 				userCanView = true,
@@ -71,6 +69,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				// withSelection
 				selection,
+				getSelection,
 				setSelection,
 
 				// withAlert
@@ -78,28 +77,47 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				confirm,
 				hideAlert,
 			} = props,
+			forceUpdate = useForceUpdate(),
 			listeners = useRef({}),
 			editorStateRef = useRef(),
 			newEntityDisplayValueRef = useRef(),
+			editorModeRef = useRef(EDITOR_MODE__VIEW),
+			isIgnoreNextSelectionChangeRef = useRef(false),
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isAdding, setIsAdding] = useState(false),
 			[isSaving, setIsSaving] = useState(false),
 			[isEditorShown, setIsEditorShownRaw] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly), // current state of whether editor is in view-only mode
-			[isIgnoreNextSelectionChange, setIsIgnoreNextSelectionChange] = useState(false),
 			[lastSelection, setLastSelection] = useState(),
+			setIsIgnoreNextSelectionChange = (bool) => {
+				isIgnoreNextSelectionChangeRef.current = bool;
+			},
+			getIsIgnoreNextSelectionChange = () => {
+				return isIgnoreNextSelectionChangeRef.current;
+			},
 			setIsEditorShown = (bool) => {
 				setIsEditorShownRaw(bool);
 				if (!bool && onEditorClose) {
 					onEditorClose();
 				}
 			},
+			setIsWaitModalShown = (bool) => {
+				const
+					dispatch = UiGlobals.redux?.dispatch,
+					setIsWaitModalShownAction = UiGlobals.debugReducer?.setIsWaitModalShownAction;
+				if (setIsWaitModalShownAction) {
+					console.log('withEditor:setIsWaitModalShownAction', bool);
+					dispatch(setIsWaitModalShownAction(bool));
+				}
+			},
 			setSelectionDecorated = (newSelection) => {
 				function doIt() {
 					setSelection(newSelection);
 				}
-				const formState = editorStateRef.current;
-				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== selection && editorMode === EDITOR_MODE__EDIT) {
+				const
+					formState = editorStateRef.current,
+					selection = getSelection();
+				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== selection && getEditorMode() === EDITOR_MODE__EDIT) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
 				} else if (selection && selection[0] && !selection[0].isDestroyed && (selection[0]?.isPhantom || selection[0]?.isRemotePhantom)) {
 					confirm('This new record is unsaved. Are you sure you want to cancel editing? Changes will be lost.', async () => {
@@ -117,6 +135,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				listeners.current = obj;
 				// forceUpdate(); // we don't want to get into an infinite loop of renders. Simply directly assign the listeners in every child render
 			},
+			getEditorMode = () => {
+				return editorModeRef.current;
+			},
+			setEditorMode = (mode) => {
+				if (editorModeRef.current !== mode) {
+					editorModeRef.current = mode;
+					forceUpdate();
+				}
+			},
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
 			},
@@ -126,6 +153,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 
+				const selection = getSelection();
 				let addValues = values;
 
 				if (Repository?.isLoading) {
@@ -223,6 +251,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(EDIT);
 					return;
 				}
+				const selection = getSelection();
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
 				}
@@ -245,6 +274,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (_.isFunction(args)) {
 					cb = args;
 				}
+				const selection = getSelection();
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
 				}
@@ -267,12 +297,18 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
-							<Button colorScheme="danger" onPress={() => doMoveChildren(cb)} key="moveBtn">
-								Move Children
-							</Button>,
-							<Button colorScheme="danger" onPress={() => doDeleteChildren(cb)} key="deleteBtn">
-								Delete Children
-							</Button>
+							<Button
+								key="moveBtn"
+								colorScheme="danger"
+								onPress={() => doMoveChildren(cb)}
+								text="Move Children"
+							/>,
+							<Button
+								key="deleteBtn"
+								colorScheme="danger"
+								onPress={() => doDeleteChildren(cb)}
+								text="Delete Children"
+							/>
 						],
 						includeCancel: true,
 					});
@@ -297,6 +333,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(DELETE);
 					return;
 				}
+				const selection = getSelection();
 				if (getListeners().onBeforeDelete) {
 					const listenerResult = await getListeners().onBeforeDelete(selection);
 					if (listenerResult === false) {
@@ -337,6 +374,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				// check permissions for view
 
+				const selection = getSelection();
 				if (selection.length !== 1) {
 					return;
 				}
@@ -357,45 +395,78 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 
-				// check permissions for duplicate
-
-
+				const selection = getSelection();
 				if (selection.length !== 1) {
 					return;
 				}
+
 				if (useRemoteDuplicate) {
-					const results = await onRemoteDuplicate();
-					return results;
+					return await onRemoteDuplicate();
 				}
-				const
-					entity = selection[0],
-					idProperty = Repository.getSchema().model.idProperty,
-					rawValues = _.omit(entity.getOriginalData(), idProperty);
-				rawValues.id = null; // unset the id of the duplicate
-				const duplicate = await Repository.add(rawValues, false, true);
-				setIsIgnoreNextSelectionChange(true);
-				setSelection([duplicate]);
-				setEditorMode(EDITOR_MODE__EDIT);
-				setIsEditorShown(true);
+
+				let isSuccess = false,
+					duplicateEntity;
+				try {
+					const
+						entity = selection[0],
+						idProperty = Repository.getSchema().model.idProperty,
+						rawValues = _.omit(entity.getOriginalData(), idProperty);
+					rawValues.id = null; // unset the id of the duplicate
+
+					setIsWaitModalShown(true);
+
+					duplicateEntity = await Repository.add(rawValues, false, true);
+					isSuccess = true;
+
+				} catch(err) {
+					// do nothing
+				} finally {
+					setIsWaitModalShown(false);
+				}
+
+				if (isSuccess) {
+					setIsIgnoreNextSelectionChange(true);
+					setSelection([duplicateEntity]);
+					setEditorMode(EDITOR_MODE__EDIT);
+					setIsEditorShown(true);
+				}
 			},
 			onRemoteDuplicate = async () => {
-				const
-					entity = selection[0],
-					duplicateEntity = await Repository.remoteDuplicate(entity);
+				let isSuccess = false,
+					duplicateEntity;
+				try {
+					const
+						selection = getSelection(),
+						entity = selection[0];
+					
+					setIsWaitModalShown(true);
 
-				setIsIgnoreNextSelectionChange(true);
-				setSelection([duplicateEntity]);
-				doEdit();
+					duplicateEntity = await Repository.remoteDuplicate(entity);
+					isSuccess = true;
+					
+				} catch(err) {
+					// do nothing
+				} finally {
+					setIsWaitModalShown(false);
+				}
+				if (isSuccess) {
+					setIsIgnoreNextSelectionChange(true);
+					setSelection([duplicateEntity]);
+					doEdit();
+					return duplicateEntity;
+				}
 			},
 			doEditorSave = async (data, e) => {
-				let mode = editorMode === EDITOR_MODE__ADD ? ADD : EDIT;
+				let mode = getEditorMode() === EDITOR_MODE__ADD ? ADD : EDIT;
 				if (canUser && !canUser(mode)) {
 					showPermissionsError(mode);
 					return;
 				}
 
 				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
-				const isSingle = selection.length === 1;
+				const
+					selection = getSelection(),
+					isSingle = selection.length === 1;
 				let useStaged = false;
 				if (isSingle) {
 					// just update this one entity
@@ -429,20 +500,22 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				setIsSaving(true);
-				let success;
-				try {
-					await Repository.save(null, useStaged);
-					success = true;
-				} catch (e) {
-					success = e;
-				}
+				let success = true;
+				const tempListener = (msg, data) => {
+					success = { msg, data };
+				};
+
+				Repository.on('error', tempListener); // add a temporary listener for the error event
+				await Repository.save(null, useStaged);
+				Repository.off('error', tempListener); // remove the temporary listener
+				
 				setIsSaving(false);
 
 				if (_.isBoolean(success) && success) {
 					if (onChange) {
 						onChange(selection);
 					}
-					if (editorMode === EDITOR_MODE__ADD) {
+					if (getEditorMode() === EDITOR_MODE__ADD) {
 						if (onAdd) {
 							await onAdd(selection);
 						}
@@ -455,7 +528,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						} else {
 							setEditorMode(EDITOR_MODE__VIEW);
 						}
-					} else if (editorMode === EDITOR_MODE__EDIT) {
+					} else if (getEditorMode() === EDITOR_MODE__EDIT) {
 						if (getListeners().onAfterEdit) {
 							await getListeners().onAfterEdit(selection);
 						}
@@ -463,7 +536,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							onSave(selection);
 						}
 					}
-					// setIsEditorShown(false);
+					if (editorType === EDITOR_TYPE__INLINE) {
+						setIsEditorShown(false);
+					}
 				}
 
 				return success;
@@ -471,6 +546,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			doEditorCancel =  () => {
 				async function doIt() {
 					const
+						selection = getSelection(),
 						isSingle = selection.length === 1,
 						isPhantom = selection[0] && !selection[0]?.isDestroyed && selection[0].isPhantom;
 					if (isSingle && isPhantom) {
@@ -509,9 +585,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsEditorShown(false);
 				});
 			},
-			calculateEditorMode = (isIgnoreNextSelectionChange = false) => {
+			calculateEditorMode = () => {
 
-				let doStayInEditModeOnSelectionChange = stayInEditModeOnSelectionChange;
+				let isIgnoreNextSelectionChange = getIsIgnoreNextSelectionChange(),
+					doStayInEditModeOnSelectionChange = stayInEditModeOnSelectionChange;
 				if (!_.isNil(UiGlobals.stayInEditModeOnSelectionChange)) {
 					// allow global override to for this property
 					doStayInEditModeOnSelectionChange = UiGlobals.stayInEditModeOnSelectionChange;
@@ -521,13 +598,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				// calculateEditorMode gets called only on selection changes
+				const selection = getSelection();
 				let mode;
 				if (editorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
 					// special case: side editor is always edit mode
 					mode = EDITOR_MODE__EDIT;
 				} else {
 					if (isIgnoreNextSelectionChange) {
-						mode = editorMode;
+						mode = getEditorMode();
 						if (!canEditorViewOnly && userCanEdit) {
 							if (selection.length > 1) {
 								if (!disableEdit) {
@@ -573,7 +651,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
-			setEditorMode(calculateEditorMode(isIgnoreNextSelectionChange));
+			setEditorMode(calculateEditorMode());
 
 			setIsIgnoreNextSelectionChange(false);
 			setLastSelection(selection);
@@ -594,11 +672,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
 			// (basically redo what's in the useEffect, above)
-			editorMode = calculateEditorMode(isIgnoreNextSelectionChange);
+			setEditorMode(calculateEditorMode());
 		}
 
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					disableWithEditor={false}
 					currentRecord={currentRecord}
 					setCurrentRecord={setCurrentRecord}
@@ -606,11 +685,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isEditorViewOnly={isEditorViewOnly}
 					isAdding={isAdding}
 					isSaving={isSaving}
-					editorMode={editorMode}
+					editorMode={getEditorMode()}
+					getEditorMode={getEditorMode}
 					onEditMode={setEditMode}
 					onViewMode={setViewMode}
 					editorStateRef={editorStateRef}
 					setIsEditorShown={setIsEditorShown}
+					setIsIgnoreNextSelectionChange={setIsIgnoreNextSelectionChange}
 					onAdd={(!userCanEdit || disableAdd) ? null : doAdd}
 					onEdit={(!userCanEdit || disableEdit) ? null : doEdit}
 					onDelete={(!userCanEdit || disableDelete) ? null : doDelete}
@@ -632,5 +713,5 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setSelection={setSelectionDecorated}
 					isTree={isTree}
 				/>;
-	};
+	});
 }

@@ -1,16 +1,22 @@
 import {
-	Box,
-} from 'native-base';
+	Box
+} from '@project-components/Gluestack';
 
 export default function CenterBox(props) {
+	let className = `
+		CenterBox
+		w-full
+		flex-1
+		items-center
+		justify-center
+		p-2
+	`;
+	if (props.className) {
+		className += props.className;
+	}
 	return <Box
-				alignItems="center"
-				justifyContent="center"
-				flex={1}
-				w="100%"
-				p={2}
-				safeAreaBottom
 				{...props}
+				className={className}
 			>
 				{props.children}
 			</Box>;

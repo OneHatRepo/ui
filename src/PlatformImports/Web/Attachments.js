@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
-	Button,
-	Column,
+	HStack,
 	Pressable,
-	Row,
 	Spinner,
 	Text,
-} from 'native-base';
+	VStack,
+} from '@project-components/Gluestack';
+import Button from '../../Components/Buttons/Button';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
-	UI_MODE_REACT_NATIVE,
+	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import {
@@ -21,12 +21,17 @@ import {
 import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
 import inArray from '../../Functions/inArray.js';
 import IconButton from '../../Components/Buttons/IconButton.js';
-import Xmark from '../../Components/Icons/Xmark.js'
+import Xmark from '../../Components/Icons/Xmark.js';
+import Eye from '../../Components/Icons/Eye.js';
+import ChevronLeft from '../../Components/Icons/ChevronLeft.js';
+import ChevronRight from '../../Components/Icons/ChevronRight.js';
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withComponent from '../../Components/Hoc/withComponent.js';
 import withData from '../../Components/Hoc/withData.js';
+import CenterBox from '../../Components/Layout/CenterBox.js';
 import downloadInBackground from '../../Functions/downloadInBackground.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import _ from 'lodash';
 
 const
@@ -35,34 +40,31 @@ const
 	isPwa = !!window?.navigator?.standalone;
 
 function FileCardCustom(props) {
-	const
-		{
+	const {
 			id,
 			name: filename,
 			type: mimetype,
 			onDelete,
+			onSee,
 			downloadUrl,
 			uploadStatus,
 		} = props,
-		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']);
+		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']),
+		isPdf = mimetype === 'application/pdf';
+
 	return <Pressable
-				px={3}
-				py={1}
-				alignItems="center"
-				flexDirection="row"
-				borderRadius={5}
-				borderWidth={1}
-				borderColor="primary.700"
 				onPress={() => {
 					downloadInBackground(downloadUrl);
 				}}
+				className="px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700"
 			>
-				{isDownloading && <Spinner mr={2} />}
+				{isDownloading && <Spinner className="mr-2" />}
+				{onSee && isPdf && <IconButton mr={1} icon={Eye} onPress={() => onSee(null, id)} />}
 				<Text>{filename}</Text>
 				{onDelete && <IconButton ml={1} icon={Xmark} onPress={() => onDelete(id)} />}
 			</Pressable>;
 }
-	
+
 
 // Note this component uploads only one file per server request---
 // it doesn't upload multiple files simultaneously.
@@ -87,7 +89,7 @@ function AttachmentsElement(props) {
 			expandedMax = EXPANDED_MAX,
 			collapsedMax = COLLAPSED_MAX,
 			autoUpload = true,
-			onBeforeDropzoneChange,
+			onAfterDropzoneChange, // fn, should return true if it mutated the files array
 
 			// withComponent
 			self,
@@ -100,6 +102,8 @@ function AttachmentsElement(props) {
 			Repository,
 
 			// withAlert
+			showModal,
+			updateModalBody,
 			alert,
 			confirm,
 
@@ -108,6 +112,7 @@ function AttachmentsElement(props) {
 		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name,
 		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity[selectorSelectedField]) : selectorSelected?.[selectorSelectedField],
 		modelid = useRef(modelidCalc),
+		forceUpdate = useForceUpdate(),
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
 		[showAll, setShowAll] = useState(false),
@@ -141,7 +146,7 @@ function AttachmentsElement(props) {
 		toggleShowAll = () => {
 			setShowAll(!showAll);
 		},
-		onDropzoneChange = (files) => {
+		onDropzoneChange = async (files) => {
 			if (!files.length) {
 				alert('No files accepted. Perhaps they were too large or the wrong file type?');
 				return;
@@ -154,8 +159,11 @@ function AttachmentsElement(props) {
 					...extraUploadData,
 				};
 			});
-			if (onBeforeDropzoneChange) {
-				onBeforeDropzoneChange(files);
+			if (onAfterDropzoneChange) {
+				const isChanged = await onAfterDropzoneChange(files);
+				if (isChanged) {
+					forceUpdate();
+				}
 			}
 		},
 		onUploadStart = (files) => {
@@ -188,8 +196,9 @@ function AttachmentsElement(props) {
 			}
 		},
 		onFileDelete = (id) => {
+			const file = _.find(files, { id });
 			if (confirmBeforeDelete) {
-				confirm('Are you sure you want to delete the file?', () => doDelete(id));
+				confirm('Are you sure you want to delete the file "' + file.name + '"?', () => doDelete(id));
 			} else {
 				doDelete(id);
 			}
@@ -204,9 +213,120 @@ function AttachmentsElement(props) {
 				downloadInBackground(url);
 			}
 		},
+		buildModalBody = (url, id) => {
+			// This method was abstracted out so showModal/onPrev/onNext can all use it.
+			// url comes from FileMosaic, which passes in imageUrl,
+			// whereas FileCardCustom passes in id.
+
+			function findFile(url, id) {
+				if (id) {
+					return _.find(files, { id });
+				}
+				return _.find(files, (file) => file.imageUrl === url);
+			}
+			function findPrevFile(url, id) {
+				const
+					currentFile = findFile(url, id),
+					currentIx = _.findIndex(files, currentFile);
+				if (currentIx > 0) {
+					return files[currentIx - 1];
+				}
+				return null;
+			}
+			function findNextFile(url, id) {
+				const
+					currentFile = findFile(url, id),
+					currentIx = _.findIndex(files, currentFile);
+				if (currentIx < files.length - 1) {
+					return files[currentIx + 1];
+				}
+				return null;
+			}
+
+			const
+				prevFile = findPrevFile(url, id),
+				isPrevDisabled = !prevFile,
+				nextFile = findNextFile(url, id),
+				isNextDisabled = !nextFile,
+				onPrev = () => {
+					const { imageUrl, id } = prevFile;
+					updateModalBody(buildModalBody(imageUrl, id));
+				},
+				onNext = () => {
+					const { imageUrl, id } = nextFile;
+					updateModalBody(buildModalBody(imageUrl, id));
+				};
+
+			let isPdf = false,
+				body = null;
+
+			if (id) {
+				const file = _.find(files, { id });
+				url = file.imageUrl;
+				isPdf = true;
+			} else if (url?.match(/\.pdf$/)) {
+				isPdf = true;
+			}
+
+			if (isPdf) {
+				body = <iframe
+							src={url}
+							className="w-full h-full"
+						/>;
+			} else {
+				body = <CenterBox className="w-full h-full">
+							<img src={url} />
+						</CenterBox>;
+			}
+			return <HStack
+						className="w-full h-full"
+					>
+						<IconButton
+							onPress={onPrev}
+							className="Lightbox-prevBtn h-full w-[50px]"
+							icon={ChevronLeft}
+							isDisabled={isPrevDisabled}
+						/>
+						{body}
+						<IconButton
+							onPress={onNext}
+							className="Lightbox-prevBtn h-full w-[50px]"
+							icon={ChevronRight}
+							isDisabled={isNextDisabled}
+						/>
+					</HStack>;
+		},
+		onViewLightbox = (url, id) => {
+			if (!url && !id) {
+				alert('Cannot view lightbox until image is uploaded.');
+				return;
+			}
+			showModal({
+				title: 'Lightbox',
+				body: buildModalBody(url, id),
+				canClose: true,
+				includeCancel: true,
+				w: 1920,
+				h: 1080,
+			});
+		},
 		doDelete = (id) => {
-			Repository.deleteById(id);
-			Repository.save();
+			const file = Repository.getById(id);
+			if (file) {
+				// if the file exists in the repository, delete it there
+				Repository.deleteById(id);
+				Repository.save();
+
+			} else {
+				// simply remove it from the files array
+				const newFiles = [];
+				_.each(files, (file) => {
+					if (file.id !== id) {
+						newFiles.push(file);
+					}
+				});
+				setFiles(newFiles);
+			}
 		};
 
 	if (!_.isEqual(modelidCalc, modelid.current)) {
@@ -287,16 +407,29 @@ function AttachmentsElement(props) {
 	if (canCrud) {
 		_fileMosaic.onDelete = onFileDelete;
 	}
-	let content = <Column
-						w="100%"
-						p={2}
-						background={styles.ATTACHMENTS_BG}
-					>
-						<Row flexWrap="wrap">
+	let className = `
+		AttachmentsElement
+		w-full
+		h-full
+		p-1
+		rounded-[5px]
+	`;
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+	let content = <VStack className={className}>
+						<HStack className="AttachmentsElement-HStack flex-wrap">
+							{files.length === 0 && <Text className="text-grey-600 italic">No files</Text>}
 							{files.map((file) => {
+								let seeProps = {};
+								if (file.type && (file.type.match(/^image\//) || file.type === 'application/pdf')) {
+									seeProps = {
+										onSee: onViewLightbox,
+									};
+								}
 								return <Box
 											key={file.id}
-											marginRight={4}
+											className="mr-2"
 										>
 											{useFileMosaic &&
 												<FileMosaic
@@ -304,29 +437,34 @@ function AttachmentsElement(props) {
 													backgroundBlurImage={false}
 													onDownload={onDownload}
 													{..._fileMosaic}
+													{...seeProps}
 												/>}
 											{!useFileMosaic &&
 												<FileCardCustom
 													{...file}
 													backgroundBlurImage={false}
 													{..._fileMosaic}
+													{...seeProps}
 												/>}
 										</Box>;
 							})}
-						</Row>
+						</HStack>
 						{Repository.total <= collapsedMax ? null :
 							<Button
 								onPress={toggleShowAll}
-								mt={4}
+								className="AttachmentsElement-toggleShowAll mt-2"
+								text={'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}
 								_text={{
-									color: 'trueGray.600',
-									fontStyle: 'italic',
-									textAlign: 'left',
-									width: '100%',
+									className: `
+										text-grey-600
+										italic
+										text-left
+										w-full
+									`,
 								}}
-								variant="ghost"
-							>{'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}</Button>}
-					</Column>;
+								variant="outline"
+							/>}
+					</VStack>;
 	
 	if (canCrud) {
 		content = <Dropzone

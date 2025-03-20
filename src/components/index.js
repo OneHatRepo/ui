@@ -1,7 +1,7 @@
 import {
-	Column,
-	Row,
-} from 'native-base';
+	HStackNative,
+	VStackNative,
+} from '@project-components/Gluestack';
 import AddressBook from './Icons/AddressBook.js';
 import Alt from './Icons/Alt.js';
 import AngleLeft from './Icons/AngleLeft.js';
@@ -58,6 +58,7 @@ import Comments from './Icons/Comments.js';
 import CommentsRegular from './Icons/CommentsRegular.js';
 import Copyright from './Icons/Copyright.js';
 import Dot from './Icons/Dot.js';
+import Download from './Icons/Download.js';
 import Duplicate from './Icons/Duplicate.js';
 import Edit from './Icons/Edit.js';
 import EllipsisHorizontal from './Icons/EllipsisHorizontal.js';
@@ -69,7 +70,7 @@ import Exclamation from './Icons/Exclamation.js';
 import Expand from './Icons/Expand.js';
 import Eye from './Icons/Eye.js';
 import EyeSlash from './Icons/EyeSlash.js';
-import File from './Icons/File.js';
+import FileIcon from './Icons/File.js'; // note name change, since we have a File component
 import FloppyDiskRegular from './Icons/FloppyDiskRegular.js';
 import Folder from './Icons/Folder.js';
 import FolderClosed from './Icons/FolderClosed.js';
@@ -175,6 +176,7 @@ import TrashCan from './Icons/TrashCan.js';
 import TriangleExclamation from './Icons/TriangleExclamation.js';
 import Truck from './Icons/Truck.js';
 import TruckFast from './Icons/TruckFast.js';
+import Upload from './Icons/Upload.js';
 import UploadDownload from './Icons/UploadDownload.js';
 import User from './Icons/User.js';
 import UserGroup from './Icons/UserGroup.js';
@@ -216,6 +218,8 @@ import Input from './Form/Field/Input.js';
 import IntervalsCombo from './Form/Field/Combo/IntervalsCombo.js';
 import Json from './Form/Field/Json.js';
 import Label from './Form/Label.js';
+import MeterTypesCombo from './Form/Field/Combo/MeterTypesCombo.js';
+import MeterTypeText from './Viewer/MeterTypeText.js';
 import MonthsCombo from './Form/Field/Combo/MonthsCombo.js';
 import Number from './Form/Field/Number.js';
 import NumberRange from './Filter/NumberRange.js';
@@ -229,6 +233,7 @@ import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Tag/Tag.js';
 import TextArea from './Form/Field/TextArea.js';
 import Text from './Form/Field/Text.js';
+import TextWithLinks from './Viewer/TextWithLinks.js';
 import TimezonesCombo from './Form/Field/Combo/TimezonesCombo.js';
 import Toggle from './Form/Field/Toggle.js';
 import Toolbar from './Toolbar/Toolbar.js';
@@ -238,6 +243,8 @@ import YearsCombo from './Form/Field/Combo/YearsCombo.js';
 import _ from 'lodash';
 
 const components = {
+	Column: VStackNative,
+	Row: HStackNative,
 	AddressBook,
 	Alt,
 	AngleLeft,
@@ -294,6 +301,7 @@ const components = {
 	CommentsRegular,
 	Copyright,
 	Dot,
+	Download,
 	Duplicate,
 	Edit,
 	EllipsisHorizontal,
@@ -305,7 +313,7 @@ const components = {
 	Expand,
 	Eye,
 	EyeSlash,
-	File,
+	FileIcon,
 	FloppyDiskRegular,
 	Folder,
 	FolderClosed,
@@ -411,6 +419,7 @@ const components = {
 	TriangleExclamation,
 	Truck,
 	TruckFast,
+	Upload,
 	UploadDownload,
 	User,
 	UserGroup,
@@ -433,7 +442,6 @@ const components = {
 	CheckboxGroup,
 	// CKEditor,
 	Color,
-	Column,
 	Combo,
 	// ComboEditor,
 	Container,
@@ -453,6 +461,8 @@ const components = {
 	IntervalsCombo,
 	Json,
 	Label,
+	MeterTypesCombo,
+	MeterTypeText,
 	MonthsCombo,
 	Number,
 	NumberRange,
@@ -461,12 +471,12 @@ const components = {
 	PlusMinusButton,
 	RadioGroup,
 	Slider,
-	Row,
 	SquareButton,
 	TabPanel,
 	Tag,
 	Text,
 	TextArea,
+	TextWithLinks,
 	TimezonesCombo,
 	Toggle,
 	Toolbar,
@@ -474,5 +484,4 @@ const components = {
 	TreeNode,
 	YearsCombo,
 };
-
 export default components;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, } from 'react';
+import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
@@ -10,21 +10,20 @@ import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
 export default function withSelection(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithSelection) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		if (props.setSelection) {
 			// bypass everything, since we're already using withSelection() in hierarchy.
 			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
 			// but we only need it defined once for the whole thing.
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
-		const
-			{
+		const {
 				selection,
 				defaultSelection,
 				onChangeSelection,
@@ -48,14 +47,15 @@ export default function withSelection(WrappedComponent) {
 			usesWithValue = !!setValue,
 			initialSelection = selection || defaultSelection || [],
 			forceUpdate = useForceUpdate(),
-			localSelection = useRef(initialSelection),
+			selectionRef = useRef(initialSelection),
+			RepositoryRef = useRef(Repository),
 			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
 			setSelection = (selection) => {
-				if (_.isEqual(selection, localSelection.current)) {
+				if (_.isEqual(selection, getSelection())) {
 					return;
 				}
 
-				localSelection.current = selection;
+				selectionRef.current = selection;
 				if (onChangeSelection) {
 					onChangeSelection(selection);
 				}
@@ -63,6 +63,12 @@ export default function withSelection(WrappedComponent) {
 					fireEvent('changeSelection', selection);
 				}
 				forceUpdate();
+			},
+			getSelection = () => {
+				return selectionRef.current;
+			},
+			getRepository = () => {
+				return RepositoryRef.current;
 			},
 			selectPrev = () => {
 				selectDirection(SELECT_UP);
@@ -103,21 +109,24 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			addToSelection = (item) => {
-				const newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
+				const newSelection = _.clone(getSelection()); // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				setSelection(newSelection);
 			},
 			removeFromSelection = (item) => {
+				const Repository = getRepository();
 				let newSelection = [];
 				if (Repository) {
-					newSelection = _.remove(localSelection.current, (sel) => sel !== item);
+					newSelection = _.remove(getSelection(), (sel) => sel !== item);
 				} else {
-					newSelection = _.remove(localSelection.current, (sel) => sel[idIx] !== item[idIx]);
+					newSelection = _.remove(getSelection(), (sel) => sel[idIx] !== item[idIx]);
 				}
 				setSelection(newSelection);
 			},
 			deselectAll = () => {
-				setSelection([]);
+				if (!_.isEmpty(getSelection())) {
+					setSelection([]);
+				}
 			},
 			refreshSelection = () => {
 				// When Repository reloads, the entities get destroyed.
@@ -126,7 +135,8 @@ export default function withSelection(WrappedComponent) {
 				// That way, after a load event, we'll keep the same selection, if possible.
 				const
 					newSelection = [],
-					ids = _.map(localSelection.current, (item) => item.id);
+					ids = _.map(getSelection(), (item) => item.id),
+					Repository = getRepository();
 				_.each(ids, (id) => {
 					const found = Repository.getById(id);
 					if (found) {
@@ -138,8 +148,11 @@ export default function withSelection(WrappedComponent) {
 			getMaxMinSelectionIndices = () => {
 				let items,
 					currentlySelectedRowIndices = [];
+				const Repository = getRepository();
 				if (Repository) {
-					items = Repository.getEntitiesOnPage();
+					if (!Repository.isDestroyed) {
+						items = Repository.getEntitiesOnPage();
+					}
 				} else {
 					items = data;
 				}
@@ -160,9 +173,9 @@ export default function withSelection(WrappedComponent) {
 			selectRangeTo = (item) => {
 				// Select above max or below min to this one
 				const
-					currentSelectionLength = localSelection.current.length,
+					currentSelectionLength = getSelection().length,
 					index = getIndexOfSelectedItem(item);
-				let newSelection = _.clone(localSelection.current); // so we get a new object, so descendants rerender
+				let newSelection = _.clone(getSelection()); // so we get a new object, so descendants rerender
 
 				if (currentSelectionLength) {
 					const { items, max, min, } = getMaxMinSelectionIndices();
@@ -188,20 +201,27 @@ export default function withSelection(WrappedComponent) {
 				setSelection(newSelection);
 			},
 			isInSelection = (item) => {
+				const Repository = getRepository();
 				if (Repository) {
-					return inArray(item, localSelection.current);
+					return inArray(item, getSelection());
 				}
 
-				const found = _.find(localSelection.current, (selectedItem) => {
+				const found = _.find(getSelection(), (selectedItem) => {
 						return selectedItem[idIx] === item[idIx];
 					});
 				return !!found;
 			},
 			getIndexOfSelectedItem = (item) => {
+				const Repository = getRepository();
+
 				// Gets ix of entity on page, or element in data array
 				if (Repository) {
-					const entities = Repository.getEntitiesOnPage();
-					return entities.indexOf(item);
+					if (!Repository.isDestroyed) {
+						const entities = Repository.getEntitiesOnPage();
+						return entities.indexOf(item);
+					} else {
+						return -1;
+					}
 				}
 				
 				let found;
@@ -214,15 +234,17 @@ export default function withSelection(WrappedComponent) {
 				return found;
 			},
 			getIdsFromLocalSelection = () => {
-				if (!localSelection.current[0]) {
+				if (!getSelection()[0]) {
 					return null;
 				}
-				const values = _.map(localSelection.current, (item) => {
-					if (Repository) {
-						return item.id;
-					}
-					return item[idIx];
-				});
+				const
+					Repository = getRepository(),
+					values = _.map(getSelection(), (item) => {
+						if (Repository) {
+							return item.id;
+						}
+						return item[idIx];
+					});
 				if (values.length === 1) {
 					return values[0];
 				}
@@ -233,6 +255,7 @@ export default function withSelection(WrappedComponent) {
 					return '';
 				}
 
+				const Repository = getRepository();
 				return _.map(selection, (item) => {
 							if (Repository) {
 								return item.displayValue;
@@ -252,30 +275,33 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			conformSelectionToValue = async () => {
+				const Repository = getRepository();
 				let newSelection = [];
 				if (Repository) {
-					if (Repository.isLoading) {
-						await Repository.waitUntilDoneLoading();
-					}
-					// Get entity or entities that match value
-					if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
-						if (_.isArray(value)) {
-							newSelection = Repository.getBy((entity) => inArray(entity.id, value));
-						} else {
-							let found = Repository.getById(value);
-							if (found) {
-								newSelection.push(found);
-							// } else if (Repository?.isRemote && Repository?.entities.length) {
-
-							// 	// Value cannot be found in Repository, but actually exists on server
-							// 	// Try to get this value from the server directly
-							// 	Repository.filter(Repository.schema.model.idProperty, value);
-							// 	await Repository.load();
-							// 	found = Repository.getById(value);
-							// 	if (found) {
-							// 		newSelection.push(found);
-							// 	}
-
+					if (!Repository.isDestroyed) {
+						if (Repository.isLoading) {
+							await Repository.waitUntilDoneLoading();
+						}
+						// Get entity or entities that match value
+						if ((_.isArray(value) && !_.isEmpty(value)) || !!value) {
+							if (_.isArray(value)) {
+								newSelection = Repository.getBy((entity) => inArray(entity.id, value));
+							} else {
+								let found = Repository.getById(value);
+								if (found) {
+									newSelection.push(found);
+								// } else if (Repository?.isRemote && Repository?.entities.length) {
+	
+								// 	// Value cannot be found in Repository, but actually exists on server
+								// 	// Try to get this value from the server directly
+								// 	Repository.filter(Repository.schema.model.idProperty, value);
+								// 	await Repository.load();
+								// 	found = Repository.getById(value);
+								// 	if (found) {
+								// 		newSelection.push(found);
+								// 	}
+	
+								}
 							}
 						}
 					}
@@ -301,13 +327,16 @@ export default function withSelection(WrappedComponent) {
 					}
 				}
 
-				if (!_.isEqual(newSelection, localSelection.current)) {
+				if (!_.isEqual(newSelection, getSelection())) {
 					setSelection(newSelection);
 				}
 			};
 
 		if (Repository) {
 			useEffect(() => {
+				if (Repository.isDestroyed) {
+					return null;
+				}
 				Repository.on('load', refreshSelection);
 				return () => {
 					Repository.off('load', refreshSelection);
@@ -319,6 +348,7 @@ export default function withSelection(WrappedComponent) {
 
 			(async () => {
 
+				const Repository = getRepository();
 				if (usesWithValue && Repository?.isRemote 
 					&& !Repository.isAutoLoad && !Repository.isLoaded && !Repository.isLoading && (!_.isNil(value) || !_.isEmpty(selection)) || autoSelectFirstItem) {
 					// on initialization, we can't conformSelectionToValue if the repository is not yet loaded, 
@@ -337,8 +367,10 @@ export default function withSelection(WrappedComponent) {
 				} else if (autoSelectFirstItem) {
 					let newSelection = [];
 					if (Repository) {
-						const entitiesOnPage = Repository.getEntitiesOnPage();
-						newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
+						if (!Repository.isDestroyed) {
+							const entitiesOnPage = Repository.getEntitiesOnPage();
+							newSelection = entitiesOnPage[0] ? [entitiesOnPage[0]] : [];
+						}
 					} else {
 						newSelection = data[0] ? [data[0]] : [];
 					}
@@ -352,7 +384,7 @@ export default function withSelection(WrappedComponent) {
 		}, [value]);
 
 		if (self) {
-			self.selection = localSelection.current;
+			self.selection = getSelection();
 			self.setSelection = setSelection;
 			self.selectPrev = selectPrev;
 			self.selectNext = selectNext;
@@ -393,8 +425,10 @@ export default function withSelection(WrappedComponent) {
 		
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					disableWithSelection={false}
-					selection={localSelection.current}
+					selection={getSelection()}
+					getSelection={getSelection}
 					setSelection={setSelection}
 					selectionMode={selectionMode}
 					selectPrev={selectPrev}
@@ -409,5 +443,5 @@ export default function withSelection(WrappedComponent) {
 					getIdsFromSelection={getIdsFromLocalSelection}
 					getDisplayValuesFromSelection={getDisplayValuesFromSelection}
 				/>;
-	};
+	});
 }

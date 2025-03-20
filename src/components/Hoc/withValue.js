@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext, useCallback, } from 'react';
+import { forwardRef, useState, useEffect, useRef, useContext, useCallback, } from 'react';
 import natsort from 'natsort';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
@@ -7,21 +7,20 @@ import _ from 'lodash';
 // This HOC gives the component value props, primarily for a Form Field.
 
 export default function withValue(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 
 		if (props.disableWithValue) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		if (props.setValue) {
 			// bypass everything, since we're already using withValue() in hierarchy.
 			// For example, Combo has withValue(), and intenally it uses Input which also has withValue(),
 			// but we only need it defined once for the whole thing.
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
-		const
-			{
+		const {
 				onChangeValue,
 				value,
 				startingValue = null,
@@ -144,10 +143,11 @@ export default function withValue(WrappedComponent) {
 
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					disableWithValue={false}
 					value={convertedValue}
 					setValue={setValueRef.current}
 					onChangeSelection={onChangeSelection}
 				/>;
-	};
+	});
 }

@@ -12,6 +12,9 @@ import {
 	crudTag,
 	crudJson,
 } from './crud_functions.js';
+import {
+	clickXButtonIfEnabled
+} from './button_functions.js';
 import natsort from 'natsort';
 import _ from 'lodash';
 const $ = Cypress.$;
@@ -29,6 +32,7 @@ export function setCustomFormFunctions(fns) {
  * @param {object} schema - fieldName/fieldType pairs
  */
 export function fillForm(selector, fieldValues, schema, level = 0) {
+	cy.log('fillForm');
 	_.each(fieldValues, (value, fieldName) => {
 
 		const selectors = [selector, 'field-' + fieldName];
@@ -116,6 +120,7 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 // export function setFileValue(field, value) {
 // }
 export function setArrayComboValue(selectors, value) {
+	cy.log('setArrayComboValue ' + value);
 	getDomNode([...selectors, 'input']).then((field) => {
 		cy.get(field).clear({ force: true });
 		if (value) {
@@ -129,18 +134,20 @@ export function setArrayComboValue(selectors, value) {
 	});
 }
 export function setComboValue(selectors, value) {
+	cy.log('setComboValue ' + value);
 	getDomNode([...selectors, 'input']).then((field) => {
-		cy.get(field).clear({ force: true });
+		// cy.get(field).clear({ force: true });
+		clickXButtonIfEnabled(selectors); // clear current value
 		if (value) {
-			cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
 			cy.get(field)
 				.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 				.wait('@getWaiter'); // allow dropdown to load
 				
 			cy.get(field)
-				.wait(2000) // render
+				.wait(1000) // render
+
 				.type('{downarrow}')
-				.wait(1000) // allow time for selection
+				.wait(500) // allow time for selection
 
 				.type('{enter}')
 				.wait(250); // allow time to register enter key
@@ -148,6 +155,7 @@ export function setComboValue(selectors, value) {
 	});
 }
 export function setTagValue(selectors, value) {
+	cy.log('setTagValue ' + value);
 	const values = !_.isEmpty(value) ? JSON.parse(value) : null;
 
 	// Clear any previously selected tags
@@ -159,7 +167,7 @@ export function setTagValue(selectors, value) {
 				return;
 			}
 			cy.get(selector).eq(0)
-				.click()
+				.click({ force: true })
 				.then(() => {
 					clickButtonsWithRemove(selector); // Recursive call for the next element
 				});
@@ -173,15 +181,16 @@ export function setTagValue(selectors, value) {
 		if (!_.isEmpty(values)) {
 			_.each(values, (value) => {
 				const id = value.id;
-				cy.intercept('GET', '**/get**').as('getWaiter'); // set up waiter
 				cy.get(field)
 					.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 					.wait('@getWaiter'); // allow dropdown to load
 					
 				cy.get(field)
-					.wait(2000) // render
+					.wait(1000) // render
 					.type('{downarrow}')
-					.wait(1000); // allow time for selection
+					.wait(500) // allow time for selection
+					.type('{enter}')
+					.wait(250); // allow time to register enter key
 			});
 
 			// press trigger to hide dropdown
@@ -190,6 +199,7 @@ export function setTagValue(selectors, value) {
 	});
 }
 export function setDateValue(selectors, value) {
+	cy.log('setDateValue ' + value);
 	getDomNode(selectors).then((field) => {
 		cy.get(field).clear({ force: true });
 		if (value) {
@@ -200,6 +210,7 @@ export function setDateValue(selectors, value) {
 	});
 }
 export function setNumberValue(selectors, value) {
+	cy.log('setNumberValue ' + value);
 	// setTextValue(selectors, value);
 
 	getDomNode(selectors).clear({ force: true });
@@ -210,6 +221,7 @@ export function setNumberValue(selectors, value) {
 	}
 }
 export function setToggleValue(selectors, value) {
+	cy.log('setToggleValue ' + value);
 	selectors.push('input[role="switch"]');
 	if (value) {
 		getToggleState(selectors).then((isYes) => {
@@ -228,6 +240,7 @@ export function setToggleValue(selectors, value) {
 	}
 }
 export function getToggleState(selectors) {
+	cy.log('getToggleState');
 	return getDomNode(selectors).then((node) => {
 		if (!node.length) {
 			return null;
@@ -236,9 +249,11 @@ export function getToggleState(selectors) {
 	});
 }
 export function clickToggle(selectors, options = {}) {
+	cy.log('clickToggle');
 	getDomNode(selectors).click(options);
 }
 export function setTextValue(selectors, value) {
+	cy.log('setTextValue ' + value);
 	getDomNode(selectors).clear({ force: true });
 	if (value !== null && value !== '') {
 		getDomNode(selectors)
@@ -247,6 +262,7 @@ export function setTextValue(selectors, value) {
 	}
 }
 export function setTextAreaValue(selectors, value) {
+	cy.log('setTextAreaValue ' + value);
 	getDomNode(selectors).clear({ force: true });
 	if (value !== null && value !== '') {
 		getDomNode(selectors)
@@ -254,103 +270,104 @@ export function setTextAreaValue(selectors, value) {
 	}
 }
 export function setInputValue(selectors, value) {
+	cy.log('setInputValue ' + value);
 	setTextValue(selectors, value);
 }
 
+/**
+ * Given a form,
+ * return a url-encoded string representing all keys and values
+ *
+ * @param {jQuery} form
+ * @return {String}
+ * /
+export function formSerialize(form) {
+	'use strict';
+	var i, j, len, jLen, formElement, 
+		q = [],
+		theForm = form[0],
+		varCounters = {};
 
-// /**
-//  * Given a form,
-//  * return a url-encoded string representing all keys and values
-//  *
-//  * @param {jQuery} form
-//  * @return {String}
-//  */
-// export function formSerialize(form) {
-// 	'use strict';
-// 	var i, j, len, jLen, formElement, 
-// 		q = [],
-// 		theForm = form[0],
-// 		varCounters = {};
+	function addNameValue(name, value) { // create this function so I can use varCounters for 
+		var matches = name.match(/([\w\d]+)\[\]/i),
+			varName,
+			ix = 0;
+		if (matches && matches[1]) {
+			varName = matches[1];
+			if (typeof varCounters[varName] === 'undefined') {
+				varCounters[varName] = ix;
+			} else {
+				ix = ++varCounters[varName];
+			}
+			name = varName + '[' + ix + ']';
+		}
+		q.push(urlencode(name) + '=' + urlencode(value));
+	}
 
-// 	function addNameValue(name, value) { // create this function so I can use varCounters for 
-// 		var matches = name.match(/([\w\d]+)\[\]/i),
-// 			varName,
-// 			ix = 0;
-// 		if (matches && matches[1]) {
-// 			varName = matches[1];
-// 			if (typeof varCounters[varName] === 'undefined') {
-// 				varCounters[varName] = ix;
-// 			} else {
-// 				ix = ++varCounters[varName];
-// 			}
-// 			name = varName + '[' + ix + ']';
-// 		}
-// 		q.push(urlencode(name) + '=' + urlencode(value));
-// 	}
-
-// 	if (!theForm || !theForm.nodeName || theForm.nodeName.toLowerCase() !== 'form') {
-// 		throw 'You must supply a form element';
-// 	}
-// 	for (i = 0, len = theForm.elements.length; i < len; i++) {
-// 		formElement = theForm.elements[i];
-// 		if (formElement.name === '' || formElement.disabled) {
-// 			continue;
-// 		}
-// 		switch (formElement.nodeName.toLowerCase()) {
-// 			case 'input':
-// 				switch (formElement.type) {
-// 					case 'text':
-// 					case 'hidden':
-// 					case 'password':
-// 					case 'button': // Not submitted when submitting form manually, though jQuery does serialize this and it can be an HTML4 successful control
-// 					case 'submit':
-// 						addNameValue(formElement.name, formElement.value);
-// 						break;
-// 					case 'checkbox':
-// 					case 'radio':
-// 						if (formElement.checked) {
-// 							addNameValue(formElement.name, formElement.value);
-// 						} else if (formElement.value === '1') {
-// 							addNameValue(formElement.name, '0'); // Submit actual value of zero for booleans, instead of no value at all
-// 						}
-// 						break;
-// 					case 'file':
-// 						// addNameValue(formElement.name, formElement.value); // Will work and part of HTML4 "successful controls", but not used in jQuery
-// 						break;
-// 					case 'reset':
-// 						break;
-// 				}
-// 				break;
-// 			case 'textarea':
-// 				addNameValue(formElement.name, formElement.value);
-// 				break;
-// 			case 'select':
-// 				switch (formElement.type) {
-// 					case 'select-one':
-// 						addNameValue(formElement.name, formElement.value);
-// 						break;
-// 					case 'select-multiple':
-// 						for (j = 0, jLen = formElement.options.length; j < jLen; j++) {
-// 							if (formElement.options[j].selected) {
-// 								addNameValue(formElement.name, formElement.options[j].value);
-// 							}
-// 						}
-// 						break;
-// 				}
-// 				break;
-// 			case 'button': // jQuery does not submit these, though it is an HTML4 successful control
-// 				switch (formElement.type) {
-// 					case 'reset':
-// 					case 'submit':
-// 					case 'button':
-// 						addNameValue(formElement.name, formElement.value);
-// 						break;
-// 				}
-// 				break;
-// 		}
-// 	}
-// 	return q.join('&');
-// }
+	if (!theForm || !theForm.nodeName || theForm.nodeName.toLowerCase() !== 'form') {
+		throw 'You must supply a form element';
+	}
+	for (i = 0, len = theForm.elements.length; i < len; i++) {
+		formElement = theForm.elements[i];
+		if (formElement.name === '' || formElement.disabled) {
+			continue;
+		}
+		switch (formElement.nodeName.toLowerCase()) {
+			case 'input':
+				switch (formElement.type) {
+					case 'text':
+					case 'hidden':
+					case 'password':
+					case 'button': // Not submitted when submitting form manually, though jQuery does serialize this and it can be an HTML4 successful control
+					case 'submit':
+						addNameValue(formElement.name, formElement.value);
+						break;
+					case 'checkbox':
+					case 'radio':
+						if (formElement.checked) {
+							addNameValue(formElement.name, formElement.value);
+						} else if (formElement.value === '1') {
+							addNameValue(formElement.name, '0'); // Submit actual value of zero for booleans, instead of no value at all
+						}
+						break;
+					case 'file':
+						// addNameValue(formElement.name, formElement.value); // Will work and part of HTML4 "successful controls", but not used in jQuery
+						break;
+					case 'reset':
+						break;
+				}
+				break;
+			case 'textarea':
+				addNameValue(formElement.name, formElement.value);
+				break;
+			case 'select':
+				switch (formElement.type) {
+					case 'select-one':
+						addNameValue(formElement.name, formElement.value);
+						break;
+					case 'select-multiple':
+						for (j = 0, jLen = formElement.options.length; j < jLen; j++) {
+							if (formElement.options[j].selected) {
+								addNameValue(formElement.name, formElement.options[j].value);
+							}
+						}
+						break;
+				}
+				break;
+			case 'button': // jQuery does not submit these, though it is an HTML4 successful control
+				switch (formElement.type) {
+					case 'reset':
+					case 'submit':
+					case 'button':
+						addNameValue(formElement.name, formElement.value);
+						break;
+				}
+				break;
+		}
+	}
+	return q.join('&');
+}
+*/
 
 
 
@@ -360,94 +377,100 @@ export function setInputValue(selectors, value) {
 // / /_/ /  __/ /_/ /_/  __/ /  (__  )
 // \____/\___/\__/\__/\___/_/  /____/
 
-// /**
-//  * Get data from a form
-//  * @param {object} schema - fieldName/fieldType pairs
-//  * @returns {object} formValues - object of fieldName/value pairs
-//  */
-// export function getFormValues(editor, schema) {
-// 	const fields = editor.find('.x-form-field'),
-// 		formValues = {};
+/**
+ * Get data from a form
+ * @param {object} schema - fieldName/fieldType pairs
+ * @returns {object} formValues - object of fieldName/value pairs
+ * /
+export function getFormValues(editor, schema) {
+	const fields = editor.find('.x-form-field'),
+		formValues = {};
 
-// 	_.each(fields, (field) => {
-// 		const fieldType = schema[field.name];
-// 		switch(fieldType) {
-// 			case 'checkbox':
-// 				formValues[fieldName] = getCheckboxValue(fieldName);
-// 				break;
-// 			case 'combo':
-// 				formValues[fieldName] = getComboValue(fieldName);
-// 				break;
-// 			case 'date':
-// 				formValues[fieldName] = getDateValue(fieldName);
-// 				break;
-// 			case 'datetime':
-// 				formValues[fieldName] = getDatetimeValue(fieldName);
-// 				break;
-// 			case 'file':
-// 				formValues[fieldName] = getFileValue(fieldName);
-// 				break;
-// 			case 'number':
-// 				formValues[fieldName] = getNumberValue(fieldName);
-// 				break;
-// 			case 'radio':
-// 				formValues[fieldName] = getRadioValue(fieldName);
-// 				break;
-// 			case 'tag':
-// 				formValues[fieldName] = getTagValue(fieldName);
-// 				break;
-// 			case 'text':
-// 			case 'textarea':
-// 				formValues[fieldName] = getTextValue(fieldName);
-// 				break;
-// 			case 'time':
-// 				formValues[fieldName] = getTimeValue(fieldName);
-// 				break;
-// 		}
-// 	});
-// 	return formValues;
-// }
+	_.each(fields, (field) => {
+		const fieldType = schema[field.name];
+		switch(fieldType) {
+			case 'checkbox':
+				formValues[fieldName] = getCheckboxValue(fieldName);
+				break;
+			case 'combo':
+				formValues[fieldName] = getComboValue(fieldName);
+				break;
+			case 'date':
+				formValues[fieldName] = getDateValue(fieldName);
+				break;
+			case 'datetime':
+				formValues[fieldName] = getDatetimeValue(fieldName);
+				break;
+			case 'file':
+				formValues[fieldName] = getFileValue(fieldName);
+				break;
+			case 'number':
+				formValues[fieldName] = getNumberValue(fieldName);
+				break;
+			case 'radio':
+				formValues[fieldName] = getRadioValue(fieldName);
+				break;
+			case 'tag':
+				formValues[fieldName] = getTagValue(fieldName);
+				break;
+			case 'text':
+			case 'textarea':
+				formValues[fieldName] = getTextValue(fieldName);
+				break;
+			case 'time':
+				formValues[fieldName] = getTimeValue(fieldName);
+				break;
+		}
+	});
+	return formValues;
+}
+*/
 
 
-// /**
-//  * Validate that form values match what they're supposed to
-//  */
-// export function validateFormValues(data, schema) {
-// 	cy.wrap().then(() => { // Wrap this in a Cypress promise, so it executes in correct order, relative to other Cypress promises
+/**
+ * Validate that form values match what they're supposed to
+ * /
+export function validateFormValues(data, schema) {
+	cy.wrap().then(() => { // Wrap this in a Cypress promise, so it executes in correct order, relative to other Cypress promises
 
-// 		const formValues = getFormValues(schema);
-// 		let diff = deepDiffObj(formValues, data);
+		const formValues = getFormValues(schema);
+		let diff = deepDiffObj(formValues, data);
 
-// 		// SPECIAL CASE: Omit password fields from diff
-// 		const omitFields = [];
-// 		_.each(diff, (value, key) => {
-// 			if (key.match(/^password/i)) {
-// 				omitFields.push(key);
-// 			}
-// 		});
-// 		if (omitFields.length) {
-// 			diff = _.omit(diff, omitFields);
-// 		}
+		// SPECIAL CASE: Omit password fields from diff
+		const omitFields = [];
+		_.each(diff, (value, key) => {
+			if (key.match(/^password/i)) {
+				omitFields.push(key);
+			}
+		});
+		if (omitFields.length) {
+			diff = _.omit(diff, omitFields);
+		}
 		
-// 		// If there are still any differences, log them
-// 		if (_.keys(diff).length > 0) {
-// 			console.log('data', data);
-// 			console.log('formValues', formValues);
-// 			console.log('diff', diff);
-// 		}
+		// If there are still any differences, log them
+		if (_.keys(diff).length > 0) {
+			console.log('data', data);
+			console.log('formValues', formValues);
+			console.log('diff', diff);
+		}
 
-// 		expect(diff).to.deep.equal({});
-// 	});
-// }
+		expect(diff).to.deep.equal({});
+	});
+}
+*/
 
 
 
 // export function getCheckboxValue(fieldName) {
 
 // }
-// export function getComboValue(fieldName) {
-	
-// }
+export function getComboValue(selectors, fieldName) {
+	cy.log('getComboValue ' + fieldName);
+	return getDomNode([...selectors, 'field-' + fieldName, 'input']).then((field) => {
+		return cy.wrap(field)
+				.invoke('val');
+	});
+}
 // export function getDateValue(fieldName) {
 	
 // }

@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import {
 	EDITOR_TYPE__SIDE,
 } from '../../Constants/Editor.js';
@@ -7,20 +8,21 @@ import _ from 'lodash';
 
 
 function withAdditionalProps(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
 					editorType={EDITOR_TYPE__SIDE}
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 }
 
 // NOTE: Effectivtly, the HOC composition is:
 // withAdditionalProps(withEditor(withSideEditor))
 
 export default function withSideEditor(WrappedComponent, isTree = false) {
-	const SideEditor = (props) => {
+	const SideEditor = forwardRef((props, ref) => {
 		const {
 				Editor,
 				_editor = {},
@@ -34,6 +36,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 				selectorId,
 				selectorSelected,
 				selectorSelectedField,
+				style,
 				
 				...propsToPass
 			} = props;
@@ -49,10 +52,16 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 			_editor.flex = sideFlex;
 		}
 
+		if (!_editor.className) {
+			_editor.className = '';
+		}
+		_editor.className += ' border-l-1 border-l-grey-300';
+
 		return <Container
 					parent={self}
 					reference="SideEditor"
 					center={<WrappedComponent
+								ref={ref}
 								isTree={isTree}
 								isSideEditor={true}
 								{...props}
@@ -60,13 +69,11 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 					east={<Editor
 								{...propsToPass}
 								editorType={EDITOR_TYPE__SIDE}
-								borderLeftWidth={1}
-								borderLeftColor="#ccc"
 								{..._editor}
 								parent={self}
 								reference="editor"
 							/>}
 				/>;
-	};
+	});
 	return withAdditionalProps(withEditor(SideEditor, isTree));
 }

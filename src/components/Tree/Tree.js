@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef, useMemo, } from 'react';
 import {
-	Column,
-	FlatList,
-	Modal,
+	HStack,
 	Pressable,
-	Icon,
-	Row,
 	ScrollView,
-	Text,
-} from 'native-base';
+	VStack,
+	VStackNative,
+} from '@project-components/Gluestack';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
@@ -24,7 +21,6 @@ import {
 	EXPANDED,
 	LEAF,
 } from '../../Constants/Tree.js';
-import * as colourMixer from '@k-renwick/colour-mixer'
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
@@ -34,6 +30,7 @@ import withData from '../Hoc/withData.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
+import withModal from '../Hoc/withModal.js';
 import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withPermissions from '../Hoc/withPermissions.js';
@@ -42,9 +39,8 @@ import withWindowedEditor from '../Hoc/withWindowedEditor.js';
 import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import inArray from '../../Functions/inArray.js';
 import testProps from '../../Functions/testProps.js';
-import nbToRgb from '../../Functions/nbToRgb.js';
 import CenterBox from '../Layout/CenterBox.js';
-import ReloadTreeButton from '../Buttons/ReloadTreeButton.js';
+import ReloadButton from '../Buttons/ReloadButton.js';
 import TreeNode, { DraggableTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
@@ -54,6 +50,7 @@ import Collapse from '../Icons/Collapse.js';
 import Expand from '../Icons/Expand.js';
 import FolderClosed from '../Icons/FolderClosed.js';
 import FolderOpen from '../Icons/FolderOpen.js';
+import Gear from '../Icons/Gear.js';
 import MagnifyingGlass from '../Icons/MagnifyingGlass.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
@@ -64,13 +61,20 @@ import Loading from '../Messages/Loading.js';
 import Unauthorized from '../Messages/Unauthorized.js';
 import _ from 'lodash';
 
-const DEPTH_INDENT_PX = 25;
+const
+	DEPTH_INDENT_PX = 25,
+	SIMULATED_CLICK = 0,
+	SINGLE_CLICK = 1,
+	DOUBLE_CLICK = 2,
+	TRIPLE_CLICK = 3;
 
 function TreeComponent(props) {
 	const {
 			areRootsVisible = true,
 			autoLoadRootNodes = true,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
+			isNodeTextConfigurable = false,
+			editDisplaySettings, // fn
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
 				if (Repository) {
 					return item.displayValue;
@@ -117,7 +121,8 @@ function TreeComponent(props) {
 			initialSelection,
 			canRecordBeEdited,
 			onTreeLoad,
-
+			onLayout,
+			
 			selectorId,
 			selectorSelected,
 			selectorSelectedField = 'id',
@@ -129,6 +134,10 @@ function TreeComponent(props) {
 			alert,
 			confirm,
 			showInfo,
+
+			// withModal
+			showModal,
+			hideModal,
 		
 			// withEditor
 			onAdd,
@@ -170,7 +179,6 @@ function TreeComponent(props) {
 		treeNodeData = useRef(),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[isModalShown, setIsModalShown] = useState(false),
 		[rowToDatumMap, setRowToDatumMap] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
@@ -195,8 +203,7 @@ function TreeComponent(props) {
 				return;
 			}
 
-			const
-				{
+			const {
 					shiftKey,
 					metaKey,
 				 } = e;
@@ -292,8 +299,6 @@ function TreeComponent(props) {
 
 			// Update the datum with the new entity
 			return onAfterEdit(entities);
-			
-
 		},
 		onBeforeEditSave = (entities) => {
 			onBeforeSave(entities);
@@ -421,7 +426,51 @@ function TreeComponent(props) {
 			});
 			setSearchFormData(searchFormData);
 			setSearchResults(found);
-			setIsModalShown(true);
+			showChooseTreeNode();
+		},
+		showChooseTreeNode = () => {
+			showModal({
+				body: <VStack className="bg-white w-[300px]">
+						<FormPanel
+							_panel={{ 
+								title: 'Choose Tree Node',
+							}}
+							instructions="Multiple tree nodes matched your search. Please select which one to show."
+							_form={{ 
+								flex: 1,
+								items: [
+									{
+										type: 'Column',
+										flex: 1,
+										items: [
+											{
+												key: 'node_id',
+												name: 'node_id',
+												type: 'Combo',
+												label: 'Tree Node',
+												data: searchFormData,
+											}
+										],
+									},
+								],
+								onCancel: (e) => {
+									setHighlitedDatum(null);
+									hideModal();
+								},
+								onSave: (data, e) => {
+									const
+										treeNode = _.find(searchResults, (item) => {
+											return item.id === data.node_id;
+										}),
+										cPath = treeNode.cPath;
+									expandPath(cPath);
+									hideModal();
+								},
+							}}
+						/>
+					</VStack>,
+				onCancel: hideModal,
+			});
 		},
 
 		// utilities
@@ -463,11 +512,11 @@ function TreeComponent(props) {
 				datum = {
 					item: treeNode,
 					text: getNodeText(treeNode),
-					content: getNodeContent(treeNode),
+					content: getNodeContent ? getNodeContent(treeNode) : null,
 					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
 					iconExpanded: getNodeIcon(EXPANDED, treeNode),
 					iconLeaf: getNodeIcon(LEAF, treeNode),
-					isExpanded: defaultToExpanded || isRoot, // all non-root treeNodes are collapsed by default
+					isExpanded: treeNode.isExpanded || defaultToExpanded || isRoot, // all non-root treeNodes are collapsed by default
 					isVisible: isRoot ? areRootsVisible : true,
 					isLoading: false,
 					children,
@@ -485,10 +534,12 @@ function TreeComponent(props) {
 		buildAndSetTreeNodeData = async () => {
 			let nodes = [];
 			if (Repository) {
-				if (!Repository.areRootNodesLoaded) {
-					nodes = await Repository.loadRootNodes(1);
-				} else {
-					nodes = Repository.getRootNodes();
+				if (!Repository.isDestroyed) {
+					if (!Repository.areRootNodesLoaded) {
+						nodes = await Repository.loadRootNodes(1);
+					} else {
+						nodes = Repository.getRootNodes();
+					}
 				}
 			} else {
 				nodes = assembleDataTreeNodes();
@@ -500,7 +551,7 @@ function TreeComponent(props) {
 			buildRowToDatumMap();
 
 			if (onTreeLoad) {
-				onTreeLoad();
+				onTreeLoad(self);
 			}
 			return treeNodeData;
 		},
@@ -562,7 +613,9 @@ function TreeComponent(props) {
 		},
 		getTreeNodeByNodeId = (node_id) => {
 			if (Repository) {
-				return Repository.getById(node_id);
+				if (!Repository.isDestroyed) {
+					return Repository.getById(node_id);
+				}
 			}
 			return data[node_id]; // TODO: This is probably not right!
 		},
@@ -683,8 +736,8 @@ function TreeComponent(props) {
 				}
 
 				const
-					depthChildren = await datum.item.loadChildren(depth),
-					directChildren = _.filter(depthChildren, (child) => { // narrow list to only direct descendants, so buildTreeNodeData can work correctly
+					node = await datum.item.loadChildren(depth),
+					directChildren = _.filter(node.children, (child) => { // narrow list to only direct descendants, so buildTreeNodeData can work correctly
 						return child.depth === datum.item.depth + 1;
 					});
 
@@ -832,13 +885,13 @@ function TreeComponent(props) {
 		getHeaderToolbarItems = () => {
 			const
 				buttons = [
-					{
-						key: 'searchBtn',
-						text: 'Search tree',
-						handler: () => onSearchTree(treeSearchValue),
-						icon: MagnifyingGlass,
-						isDisabled: !treeSearchValue.length,
-					},
+					// {
+					// 	key: 'searchBtn',
+					// 	text: 'Search tree',
+					// 	handler: () => onSearchTree(treeSearchValue),
+					// 	icon: MagnifyingGlass,
+					// 	isDisabled: !treeSearchValue.length,
+					// },
 					{
 						key: 'collapseAllBtn',
 						text: 'Collapse whole tree',
@@ -865,33 +918,41 @@ function TreeComponent(props) {
 					isDisabled: false,
 				});
 			}
+			if (isNodeTextConfigurable && editDisplaySettings) {
+				buttons.push({
+					key: 'editNodeTextBtn',
+					text: 'Display Settings',
+					handler: () => editDisplaySettings(),
+					icon: Gear,
+				});
+			}
 			const items = _.map(buttons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 
-			items.unshift(<Input // Add text input to beginning of header items
-				key="searchNodes"
-				flex={1}
-				placeholder="Find tree node"
-				onChangeText={(val) => setTreeSearchValue(val)}
-				onKeyPress={(e) => {
-					if (e.key === 'Enter') {
-						onSearchTree(treeSearchValue);
-					}
-				}}
-				value={treeSearchValue}
-				autoSubmit={false}
-			/>);
+			// items.unshift(<Input // Add text input to beginning of header items
+			// 	key="searchNodes"
+			// 	className="flex-1"
+			// 	placeholder="Find tree node"
+			// 	onChangeText={(val) => setTreeSearchValue(val)}
+			// 	onKeyPress={(e) => {
+			// 		if (e.key === 'Enter') {
+			// 			onSearchTree(treeSearchValue);
+			// 		}
+			// 	}}
+			// 	value={treeSearchValue}
+			// 	autoSubmit={false}
+			// />);
 
-			if (treeSearchValue.length) {
-				// Add 'X' button to clear search
-				items.unshift(getIconButtonFromConfig({
-					key: 'xBtn',
-					handler: () => {
-						setHighlitedDatum(null);
-						setTreeSearchValue('');
-					},
-					icon: Xmark,
-				}, 0, self));
-			}
+			// if (treeSearchValue.length) {
+			// 	// Add 'X' button to clear search
+			// 	items.unshift(getIconButtonFromConfig({
+			// 		key: 'xBtn',
+			// 		handler: () => {
+			// 			setHighlitedDatum(null);
+			// 			setTreeSearchValue('');
+			// 		},
+			// 		icon: Xmark,
+			// 	}, 0, self));
+			// }
 
 			return items;
 		},
@@ -921,11 +982,11 @@ function TreeComponent(props) {
 								return
 							}
 							switch (e.detail) {
-								case 0: // simulated click
-								case 1: // single click
+								case SIMULATED_CLICK:
+								case SINGLE_CLICK:
 									onNodeClick(item, e); // sets selection
 									break;
-								case 2: // double click
+								case DOUBLE_CLICK:
 									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
 										onNodeClick(item, e); // so reselect it
 									}
@@ -944,7 +1005,7 @@ function TreeComponent(props) {
 										onView();
 									}
 									break;
-								case 3: // triple click
+								case TRIPLE_CLICK:
 									break;
 								default:
 							}
@@ -965,38 +1026,21 @@ function TreeComponent(props) {
 							const selection = [item];
 							setSelection(selection);
 							if (onContextMenu) {
-								onContextMenu(item, e, selection, setSelection);
+								onContextMenu(item, e, selection);
 							}
 						}}
-						flexDirection="row"
-						ml={((areRootsVisible ? depth : depth -1) * DEPTH_INDENT_PX) + 'px'}
+						className={`
+							flex-row
+						`}
+						style={{
+							paddingLeft: (areRootsVisible ? depth : depth -1) * DEPTH_INDENT_PX,
+						}}
 					>
 						{({
-							isHovered,
-							isFocused,
-							isPressed,
+							hovered,
+							focused,
+							pressed,
 						}) => {
-							let bg = nodeProps.bg || styles.TREE_NODE_BG,
-								mixWith;
-							if (!isDragMode) {
-								if (isSelected) {
-									if (showHovers && isHovered) {
-										mixWith = styles.TREE_NODE_SELECTED_HOVER_BG;
-									} else {
-										mixWith = styles.TREE_NODE_SELECTED_BG;
-									}
-								} else if (showHovers && isHovered) {
-									mixWith = styles.TREE_NODE_HOVER_BG;
-								}
-								if (mixWith) {
-									const
-										mixWithObj = nbToRgb(mixWith),
-										ratio = mixWithObj.alpha ? 1 - mixWithObj.alpha : 0.5;
-									bg = colourMixer.blend(bg, ratio, mixWithObj.color);
-								}
-							} else {
-
-							}
 							let WhichTreeNode = TreeNode,
 								dragProps = {};
 							if (canNodesReorder && isDragMode && !datum.item.isRoot) { // Can't drag root nodes
@@ -1011,18 +1055,18 @@ function TreeComponent(props) {
 									proxyParent: treeRef.current,
 									proxyPositionRelativeToParent: true,
 								};
-								nodeProps.width = '100%';
+								nodeProps.className = 'w-full';
 							}
 							
 							return <WhichTreeNode
-										nodeProps={nodeProps}
-										{...dragProps}
-										bg={bg}
 										datum={datum}
+										nodeProps={nodeProps}
 										onToggle={onToggle}
+										isSelected={isSelected}
+										isHovered={hovered}
 										isDragMode={isDragMode}
 										isHighlighted={highlitedDatum === datum}
-										isSelected={isSelected}
+										{...dragProps}
 
 										// fields={fields}
 									/>;
@@ -1177,11 +1221,11 @@ function TreeComponent(props) {
 				dropRowRecord = dropRowDatum.item;
 
 			if (Repository) {
-				
-				const commonAncestorId = await Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
-				const commonAncestorDatum = getDatumById(commonAncestorId);
-				reloadNode(commonAncestorDatum.item);
-
+				if (!Repository.isDestroyed) {
+					const commonAncestorId = await Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
+					const commonAncestorDatum = getDatumById(commonAncestorId);
+					reloadNode(commonAncestorDatum.item);
+				}
 			} else {
 
 				throw Error('Not yet implemented');
@@ -1215,7 +1259,7 @@ function TreeComponent(props) {
 		const
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false);
-
+		
 		if (Repository.isLoading) {
 			setTrue();
 		}
@@ -1282,6 +1326,8 @@ function TreeComponent(props) {
 		self.reloadTree = reloadTree;
 		self.expandPath = expandPath;
 		self.scrollToNode = scrollToNode;
+		self.buildAndSetTreeNodeData = buildAndSetTreeNodeData;
+		self.forceUpdate = forceUpdate;
 	}
 	
 	const
@@ -1307,105 +1353,71 @@ function TreeComponent(props) {
 									/>;
 		} else if (footerToolbarItemComponents.length) {
 			treeFooterComponent = <Toolbar>
-										<ReloadTreeButton Repository={Repository} self={self} />
+										<ReloadButton isTree={true} Repository={Repository} self={self} />
 										{footerToolbarItemComponents}
 									</Toolbar>;
 		}
 	}
 
-	const borderProps = {};
+	let className = `
+		Tree-VStack
+		flex-1
+		w-full
+		min-w-[300px]
+	`;
 	if (isDragMode) {
-		borderProps.borderWidth = isDragMode ? styles.REORDER_BORDER_WIDTH : 0;
-		borderProps.borderColor = isDragMode ? styles.REORDER_BORDER_COLOR : null;
-		borderProps.borderStyle = styles.REORDER_BORDER_STYLE;
+		className += `
+			${styles.GRID_REORDER_BORDER_COLOR}
+			${styles.GRID_REORDER_BORDER_WIDTH}
+			${styles.GRID_REORDER_BORDER_STYLE}
+		`;
 	} else {
-		borderProps.borderTopWidth = isLoading ? 2 : 1;
-		borderProps.borderTopColor = isLoading ? '#f00' : 'trueGray.300';
+		if (isLoading) {
+			className += ' border-t-2 border-[#f00]';
+		} else {
+			className += ' border-t-1 border-grey-300';
+		}
+	}
+	if (props.className) {
+		className += ' ' + props.className;
 	}
 
-	return <>
-				<Column
-					{...testProps(self)}
-					flex={1}
-					w="100%"
+	return <VStackNative
+				{...testProps(self)}
+				className={className}
+				onLayout={onLayout}
+			>
+				{topToolbar}
+
+				{headerToolbarItemComponents?.length && <HStack>{headerToolbarItemComponents}</HStack>}
+
+				<VStack
+					ref={treeRef}
+					onClick={() => {
+						if (!isDragMode) {
+							deselectAll();
+						}
+					}}
+					className="Tree-deselector w-full flex-1 p-1 bg-white"
 				>
-					{topToolbar}
-
-					{headerToolbarItemComponents?.length && <Row>{headerToolbarItemComponents}</Row>}
-
-					<Column
-						ref={treeRef}
-						w="100%"
-						flex={1}
-						p={2}
-						bg="#fff"
-						{...borderProps}
-						onClick={() => {
-							if (!isDragMode) {
-								deselectAll();
-							}
+					<ScrollView
+						{...testProps('ScrollView')}
+						className="Tree-ScrollView flex-1 w-full"
+						contentContainerStyle={{
+							height: '100%',
 						}}
 					>
-						<ScrollView {...testProps('ScrollView')} flex={1} w="100%">
-							{!treeNodes?.length ? 
-								<CenterBox>
-									{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />}
-								</CenterBox> :
-								treeNodes}
-						</ScrollView>
-					</Column>
+						{!treeNodes?.length ? 
+						<CenterBox>
+							{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />}
+						</CenterBox> :
+						treeNodes}
+					</ScrollView>
+				</VStack>
 
-					{treeFooterComponent}
+				{treeFooterComponent}
 
-				</Column>
-
-				<Modal
-					isOpen={isModalShown}
-					onClose={() => setIsModalShown(false)}
-				>
-					<Column bg="#fff" w={300}>
-						<FormPanel
-							_panel={{ 
-								title: 'Choose Tree Node',
-							}}
-							instructions="Multiple tree nodes matched your search. Please select which one to show."
-							_form={{ 
-								flex: 1,
-								items: [
-									{
-										type: 'Column',
-										flex: 1,
-										items: [
-											{
-												key: 'node_id',
-												name: 'node_id',
-												type: 'Combo',
-												label: 'Tree Node',
-												data: searchFormData,
-											}
-										],
-									},
-								],
-								onCancel: (e) => {
-									setHighlitedDatum(null);
-									setIsModalShown(false);
-								},
-								onSave: (data, e) => {
-									const
-										treeNode = _.find(searchResults, (item) => {
-											return item.id === data.node_id;
-										}),
-										cPath = treeNode.cPath;
-									expandPath(cPath);
-	
-									// Close the modal
-									setIsModalShown(false);
-								},
-							}}
-						/>
-					</Column>
-				</Modal>
-			</>;
+			</VStackNative>;
 
 }
 

@@ -1,20 +1,11 @@
-// Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc.
-import * as React from "react"
-import Svg, { Path } from "react-native-svg"
-import { Icon } from 'native-base';
+import { createIcon } from "../Gluestack/icon";
+// Font Awesome Pro 6.2.1 by @fontawimport { Path, Svg } from 'react-native-svg';
+import { Path, Svg } from 'react-native-svg';
 
-function SvgComponent(props) {
-  return (
-    <Icon
-      xmlns="http://www.w3.org/2000/svg"
-      height={16}
-      width={12}
-      viewBox="0 0 384 512"
-      {...props}
-    >
-      <Path d="M0 48v439.7C0 501.1 10.9 512 24.3 512c5 0 9.9-1.5 14-4.4L192 400l153.7 107.6c4.1 2.9 9 4.4 14 4.4 13.4 0 24.3-10.9 24.3-24.3V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48z" />
-    </Icon>
-  )
-}
+const SvgComponent = createIcon({
+	Root: Svg,
+	viewBox: '0 0 384 512',
+	path: <Path d="M0 48v439.7C0 501.1 10.9 512 24.3 512c5 0 9.9-1.5 14-4.4L192 400l153.7 107.6c4.1 2.9 9 4.4 14 4.4 13.4 0 24.3-10.9 24.3-24.3V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48z" />,
+});
 
 export default SvgComponent

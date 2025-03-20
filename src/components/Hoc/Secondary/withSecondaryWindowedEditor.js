@@ -1,8 +1,7 @@
+import { forwardRef } from 'react';
 import {
-	Column,
-	Modal,
-	Text,
-} from 'native-base';
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+} from '@project-components/Gluestack';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../Constants/Editor.js';
@@ -15,20 +14,21 @@ import _ from 'lodash';
 
 
 function withAdditionalProps(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
 					editorType={EDITOR_TYPE__WINDOWED}
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 }
 
 // NOTE: Effectivtly, the HOC composition is:
 // withAdditionalProps(withSecondaryEditor(withSecondaryWindowedEditor))
 
 export default function withSecondaryWindowedEditor(WrappedComponent, isTree = false) {
-	return withAdditionalProps(withSecondaryEditor((props) => {
+	const WindowedEditor = forwardRef((props, ref) => {
 		const {
 				secondaryIsEditorShown = false,
 				secondarySetIsEditorShown,
@@ -43,6 +43,7 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 				secondarySelectorSelected,
 				secondarySelectorSelectedField,
 				h,
+				style,
 
 				...propsToPass
 			} = props;
@@ -67,20 +68,28 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 		}
 
 		return <>
-					<WrappedComponent {...props} />
+					<WrappedComponent {...props} ref={ref} />
 					{secondaryIsEditorShown && 
 						<Modal
 							isOpen={true}
 							onClose={() => secondarySetIsEditorShown(false)}
+							className="withSecondaryEditor-Modal"
 						>
+							<ModalBackdrop className="withSecondaryEditor-ModalBackdrop" />
 							<SecondaryEditor
 								editorType={EDITOR_TYPE__WINDOWED}
 								{...propsToPass}
 								{...secondaryEditorProps}
 								parent={self}
 								reference="secondaryEditor"
+								className={`
+									bg-white
+									shadow-lg
+									rounded-lg
+								`}
 							/>
 						</Modal>}
 				</>;
-	}, isTree));
+	});
+	return withAdditionalProps(withSecondaryEditor(WindowedEditor, isTree));
 }

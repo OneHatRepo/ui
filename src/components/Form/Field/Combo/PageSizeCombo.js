@@ -1,7 +1,7 @@
 import { useMemo, } from 'react';
 import {
-	Row,
-} from 'native-base';
+	HStack,
+} from '@project-components/Gluestack';
 import ArrayCombo from './ArrayCombo.js';
 
 export default function PageSizeCombo(props) {
@@ -11,10 +11,7 @@ export default function PageSizeCombo(props) {
 		} = props;
 
 	return useMemo(() => {
-		return <Row
-					w="100px"
-					ml={2}
-				>
+		return <HStack className="w-[100px] ml-1">
 					<ArrayCombo
 						data={[
 							// [ 1, '1/pg', ],
@@ -27,10 +24,11 @@ export default function PageSizeCombo(props) {
 						value={pageSize}
 						onChangeValue={(value) => Repository.setPageSize(value)}
 						tooltip="Page Size"
+						tooltipClassName="w-[100px]"
 						allowNull={false}
 						disableDirectEntry={true}
 					/>
-				</Row>;
+				</HStack>;
 	}, [
 		Repository,
 		pageSize,
