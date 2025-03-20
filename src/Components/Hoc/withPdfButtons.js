@@ -92,6 +92,9 @@ export default function withPdfButtons(WrappedComponent) {
 						}),
 						items = [];
 					_.each(ancillaryItemsClone, (ancillaryItem) => { // clone, as we don't want to alter the item by reference
+						if (ancillaryItem.skipInPdfButtons) {
+							return;
+						}
 						let name;
 						if (ancillaryItem.pdfModel) {
 							name = ancillaryItem.pdfModel;
