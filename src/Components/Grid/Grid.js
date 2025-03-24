@@ -422,18 +422,18 @@ function GridComponent(props) {
 											onView(!props.isEditorViewOnly);
 										}
 									} else {
-										if (onEdit) {
-											if (canUser && !canUser(EDIT)) { // permissions
-												return;
-											}
-											if (canRecordBeEdited && !canRecordBeEdited(selection)) { // record can be edited
-												return;
-											}
+										let canDoEdit = false,
+											canDoView = false;
+										if (onEdit && canUser && canUser(EDIT) && canRecordBeEdited && canRecordBeEdited(selection)) {
+											canDoEdit = true;
+										}
+										if (onView && canUser && canUser(VIEW)) {
+											canDoView = true;
+										}
+
+										if (canDoEdit) {
 											onEdit();
-										} else if (onView) {
-											if (canUser && !canUser(VIEW)) { // permissions
-												return;
-											}
+										} else if (canDoView) {
 											onView();
 										}
 									}
