@@ -90,6 +90,8 @@ function AttachmentsElement(props) {
 			collapsedMax = COLLAPSED_MAX,
 			autoUpload = true,
 			onAfterDropzoneChange, // fn, should return true if it mutated the files array
+			onUpload,
+			onDelete,
 
 			// withComponent
 			self,
@@ -192,6 +194,9 @@ function AttachmentsElement(props) {
 				if (!isError) {
 					setIsUploading(false);
 					Repository.reload();
+					if (onUpload) {
+						onUpload(files);
+					}
 				}
 			}
 		},
@@ -326,6 +331,9 @@ function AttachmentsElement(props) {
 					}
 				});
 				setFiles(newFiles);
+			}
+			if (onDelete) {
+				onDelete(id);
 			}
 		};
 
