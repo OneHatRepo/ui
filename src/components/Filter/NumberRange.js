@@ -6,7 +6,7 @@ import {
 import Number from '../Form/Field/Number.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import _ from 'lodash';
 
 	const

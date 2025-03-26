@@ -4,7 +4,7 @@ import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,
 	EDITOR_TYPE__SIDE,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import _ from 'lodash';
 
 export function GridPanel(props) {

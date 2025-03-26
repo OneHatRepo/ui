@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import Inflector from 'inflector-js';
-import inArray from '../../Functions/inArray.js';
+import inArray from '../../functions/inArray.js';
 import {
 	ADD,
 	EDIT,
@@ -10,7 +10,7 @@ import {
 	DUPLICATE,
 	PRINT,
 	UPLOAD_DOWNLOAD,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import UiGlobals from '../../UiGlobals.js';
 import oneHatData from '@onehat/data';
 import _ from 'lodash';

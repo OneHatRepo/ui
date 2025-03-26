@@ -2,17 +2,17 @@ import { useState, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 	CURRENT_MODE,
-} from '../../Constants/UiModes.js';
-import useBlocking from '../../Hooks/useBlocking.js';
+} from '../../constants/UiModes.js';
+import useBlocking from '../../hooks/useBlocking.js';
 import {
 	v4 as uuid,
 } from 'uuid';
-import getComponentFromType from '../../Functions/getComponentFromType.js';
+import getComponentFromType from '../../functions/getComponentFromType.js';
 
 
 

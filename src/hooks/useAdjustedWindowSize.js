@@ -1,4 +1,4 @@
-import getComponentFromType from '../Functions/getComponentFromType.js';
+import getComponentFromType from '../functions/getComponentFromType.js';
 
 // This hook takes the submitted window size and adjusts it
 // to fit the actual screen size

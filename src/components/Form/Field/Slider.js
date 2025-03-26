@@ -6,7 +6,7 @@ import {
 import Input from './Input.js';
 import Slider from '@react-native-community/slider'; // https://www.npmjs.com/package/@react-native-community/slider
 import UiGlobals from '../../../UiGlobals.js';
-import testProps from '../../../Functions/testProps.js';
+import testProps from '../../../functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';

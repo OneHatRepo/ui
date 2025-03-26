@@ -10,12 +10,12 @@ import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../../Constants/UiModes.js';
+} from '../../../constants/UiModes.js';
 import UiGlobals from '../../../UiGlobals.js';
 import {
 	FILE_MODE_IMAGE,
 	FILE_MODE_FILE,
-} from '../../../Constants/File.js';
+} from '../../../constants/File.js';
 import IconButton from '../../Buttons/IconButton.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';

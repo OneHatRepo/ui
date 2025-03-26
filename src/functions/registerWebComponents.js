@@ -1,6 +1,6 @@
 import UiGlobals from '../UiGlobals.js';
 import Attachments from '../PlatformImports/Web/Attachments.js';
-// import CKEditor from '../Components/Form/Field/CKEditor/CKEditor.js';
+// import CKEditor from '../components/Form/Field/CKEditor/CKEditor.js';
 import Datetime from '../PlatformImports/Web/Datetime.js';
 import Draggable from '../PlatformImports/Web/Draggable.js';
 import File from '../PlatformImports/Web/File.js';

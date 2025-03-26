@@ -9,7 +9,7 @@ import {
 } from 'native-base';
 import {
 	VIEW,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import {
 	EDITOR_TYPE__INLINE,
 	EDITOR_TYPE__WINDOWED,
@@ -19,20 +19,20 @@ import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import { useForm, Controller } from 'react-hook-form'; // https://react-hook-form.com/api/
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import { yupResolver } from '@hookform/resolvers/yup';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
 import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import withEditor from '../Hoc/withEditor.js';
 import withPdfButtons from '../Hoc/withPdfButtons.js';
-import inArray from '../../Functions/inArray.js';
-import getComponentFromType from '../../Functions/getComponentFromType.js';
-import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
-import testProps from '../../Functions/testProps.js';
+import inArray from '../../functions/inArray.js';
+import getComponentFromType from '../../functions/getComponentFromType.js';
+import buildAdditionalButtons from '../../functions/buildAdditionalButtons.js';
+import testProps from '../../functions/testProps.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';

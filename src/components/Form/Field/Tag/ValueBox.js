@@ -2,7 +2,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import testProps from '../../../../Functions/testProps.js';
+import testProps from '../../../../functions/testProps.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import Eye from '../../../Icons/Eye.js';
 import Xmark from '../../../Icons/Xmark.js';

@@ -6,15 +6,15 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 	CURRENT_MODE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import withComponent from '../Hoc/withComponent.js';
-import getSaved from '../../Functions/getSaved.js';
-import setSaved from '../../Functions/setSaved.js';
+import getSaved from '../../functions/getSaved.js';
+import setSaved from '../../functions/setSaved.js';
 import Splitter from './Splitter.js';
 import _ from 'lodash';
 

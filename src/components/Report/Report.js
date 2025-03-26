@@ -5,22 +5,22 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor';
+import { EDITOR_TYPE__PLAIN } from '../../constants/Editor';
 import {
 	UI_MODE_WEB,
 	CURRENT_MODE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import {
 	REPORT_TYPES__EXCEL,
 	REPORT_TYPES__PDF,
-} from '../../Constants/ReportTypes.js';
+} from '../../constants/ReportTypes.js';
 import Form from '../Form/Form.js';
 import withComponent from '../Hoc/withComponent.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import ChartLine from '../Icons/ChartLine.js';
 import Pdf from '../Icons/Pdf.js';
 import Excel from '../Icons/Excel.js';
-import getReport from '../../Functions/getReport.js';
+import getReport from '../../functions/getReport.js';
 import _ from 'lodash';
 
 function Report(props) {

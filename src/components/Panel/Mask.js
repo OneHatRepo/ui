@@ -5,7 +5,7 @@ import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 
 export default function Mask(props) {
 	if (CURRENT_MODE === UI_MODE_WEB) {

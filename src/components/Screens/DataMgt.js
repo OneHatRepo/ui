@@ -2,18 +2,18 @@ import React, { useState, useEffect, useMemo, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
-} from '../../Constants/Selection.js';
-import getComponentFromType from '../../Functions/getComponentFromType.js';
+} from '../../constants/Selection.js';
+import getComponentFromType from '../../functions/getComponentFromType.js';
 import Container from '../Container/Container.js';
 import Panel from '../Panel/Panel.js';
 import TabPanel from '../Panel/TabPanel.js';
 import UploadDownload from '../Panel/UploadDownload.js';
-import getSaved from '../../Functions/getSaved.js';
-import setSaved from '../../Functions/setSaved.js';
+import getSaved from '../../functions/getSaved.js';
+import setSaved from '../../functions/setSaved.js';
 import _ from 'lodash';
 
 export default function DataMgt(props) {

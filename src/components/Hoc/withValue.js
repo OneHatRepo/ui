@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useContext, useCallback, } from 'react';
 import natsort from 'natsort';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import _ from 'lodash';
 

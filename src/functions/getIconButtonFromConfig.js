@@ -1,4 +1,4 @@
-import IconButton from '../Components/Buttons/IconButton.js';
+import IconButton from '../components/Buttons/IconButton.js';
 import testProps from './testProps.js';
 import UiGlobals from '../UiGlobals.js';
 

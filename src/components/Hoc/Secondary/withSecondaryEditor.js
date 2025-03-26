@@ -8,13 +8,13 @@ import {
 	DELETE,
 	VIEW,
 	DUPLICATE,
-} from '../../../Constants/Commands.js';
+} from '../../../constants/Commands.js';
 import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 	EDITOR_TYPE__SIDE,
-} from '../../../Constants/Editor.js';
+} from '../../../constants/Editor.js';
 import _ from 'lodash';
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withEditor

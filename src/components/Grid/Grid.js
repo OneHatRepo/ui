@@ -13,23 +13,23 @@ import {
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
-} from '../../Constants/Selection.js';
+} from '../../constants/Selection.js';
 import {
 	EDIT,
 	VIEW,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import {
 	DROP_POSITION_BEFORE,
 	DROP_POSITION_AFTER,
-} from '../../Constants/Grid.js';
+} from '../../constants/Grid.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
 	CURRENT_MODE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import * as colourMixer from '@k-renwick/colour-mixer';
 import UiGlobals from '../../UiGlobals.js';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
@@ -44,14 +44,14 @@ import withMultiSelection from '../Hoc/withMultiSelection.js';
 import withSelection from '../Hoc/withSelection.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
-import getSaved from '../../Functions/getSaved.js';
-import setSaved from '../../Functions/setSaved.js';
-import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
-import testProps from '../../Functions/testProps.js';
-import nbToRgb from '../../Functions/nbToRgb.js';
+import getSaved from '../../functions/getSaved.js';
+import setSaved from '../../functions/setSaved.js';
+import getIconButtonFromConfig from '../../functions/getIconButtonFromConfig.js';
+import testProps from '../../functions/testProps.js';
+import nbToRgb from '../../functions/nbToRgb.js';
 import Loading from '../Messages/Loading.js';
-import isSerializable from '../../Functions/isSerializable.js';
-import inArray from '../../Functions/inArray.js';
+import isSerializable from '../../functions/isSerializable.js';
+import inArray from '../../functions/inArray.js';
 import ReloadPageButton from '../Buttons/ReloadPageButton.js';
 import GridHeaderRow from './GridHeaderRow.js';
 import GridRow, { DragSourceDropTargetGridRow, DragSourceGridRow, DropTargetGridRow } from './GridRow.js';

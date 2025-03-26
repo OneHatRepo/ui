@@ -4,8 +4,8 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
-import testProps from '../../Functions/testProps.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
+import testProps from '../../functions/testProps.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
 import ReloadPageButton from '../Buttons/ReloadPageButton.js';

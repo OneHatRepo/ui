@@ -9,7 +9,7 @@ import {
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import _ from 'lodash';
 
 // This was broken out from Tree simply so we can memoize it

@@ -9,21 +9,21 @@ import {
 } from 'native-base';
 import {
 	EDITOR_TYPE__PLAIN,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import {
 	FILTER_TYPE_ANCILLARY
-} from '../../Constants/Filters.js';
+} from '../../constants/Filters.js';
 import Inflector from 'inflector-js';
-import inArray from '../../Functions/inArray.js';
-import testProps from '../../Functions/testProps.js';
-import getComponentFromType from '../../Functions/getComponentFromType.js';
+import inArray from '../../functions/inArray.js';
+import testProps from '../../functions/testProps.js';
+import getComponentFromType from '../../functions/getComponentFromType.js';
 import IconButton from '../Buttons/IconButton.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Ban from '../Icons/Ban.js';
 import Gear from '../Icons/Gear.js';
 import Toolbar from '../Toolbar/Toolbar.js';
-import getSaved from '../../Functions/getSaved.js';
-import setSaved from '../../Functions/setSaved.js';
+import getSaved from '../../functions/getSaved.js';
+import setSaved from '../../functions/setSaved.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 

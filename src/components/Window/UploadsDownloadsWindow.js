@@ -11,8 +11,8 @@ import {
 import Excel from '../Icons/Excel';
 import Panel from '../Panel/Panel.js';
 import Form from '../Form/Form.js';
-import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
-import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import useAdjustedWindowSize from '../../hooks/useAdjustedWindowSize.js';
+import downloadWithFetch from '../../functions/downloadWithFetch.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import Cookies from 'js-cookie';

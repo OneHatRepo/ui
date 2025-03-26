@@ -9,7 +9,7 @@ import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 // import {
 // 	FileAmountLimitValidator,
@@ -18,11 +18,11 @@ import UiGlobals from '../../UiGlobals.js';
 // 	ImageDimensionsValidator,
 // } from 'use-file-picker/validators';
 import { useFilePicker, useImperativeFilePicker } from 'use-file-picker'; // https://www.npmjs.com/package/use-file-picker
-import IconButton from '../../Components/Buttons/IconButton.js';
-import Xmark from '../../Components/Icons/Xmark.js'
-import withAlert from '../../Components/Hoc/withAlert.js';
-import withValue from '../../Components/Hoc/withValue.js';
-import Loading from '../../Components/Messages/Loading.js';
+import IconButton from '../../components/Buttons/IconButton.js';
+import Xmark from '../../components/Icons/Xmark.js'
+import withAlert from '../../components/Hoc/withAlert.js';
+import withValue from '../../components/Hoc/withValue.js';
+import Loading from '../../components/Messages/Loading.js';
 import _ from 'lodash';
 
 

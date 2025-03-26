@@ -4,8 +4,8 @@ import {
 	SELECTION_MODE_MULTI,
 	SELECT_UP,
 	SELECT_DOWN,
-} from '../../../Constants/Selection.js';
-import inArray from '../../../Functions/inArray.js';
+} from '../../../constants/Selection.js';
+import inArray from '../../../functions/inArray.js';
 import _ from 'lodash';
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withSelection

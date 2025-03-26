@@ -1,7 +1,7 @@
 import {
 	Icon,
 } from 'native-base';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import IconButton from './IconButton.js';
 import Rotate from '../Icons/Rotate.js';
 

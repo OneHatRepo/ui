@@ -5,7 +5,7 @@ import {
 	Modal,
 	Text,
 } from 'native-base';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 
 export default function ErrorMessage(props) {

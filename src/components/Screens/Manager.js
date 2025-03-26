@@ -5,13 +5,13 @@ import {
 	Text,
 } from 'native-base';
 import withComponent from '../Hoc/withComponent.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton';
 import FullWidth from '../Icons/FullWidth';
 import SideBySide from '../Icons/SideBySide';
-import getSaved from '../../Functions/getSaved.js';
-import setSaved from '../../Functions/setSaved.js';
+import getSaved from '../../functions/getSaved.js';
+import setSaved from '../../functions/setSaved.js';
 import _ from 'lodash';
 
 const

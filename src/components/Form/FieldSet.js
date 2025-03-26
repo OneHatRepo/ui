@@ -6,8 +6,8 @@ import {
 	Text,
 } from 'native-base';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
-import testProps from '../../Functions/testProps.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
+import testProps from '../../functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import IconButton from '../Buttons/IconButton.js';
 import CheckboxButton from '../Buttons/CheckboxButton.js';

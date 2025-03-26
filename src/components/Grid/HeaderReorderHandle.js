@@ -4,7 +4,7 @@ import {
 	Row,
 	Text,
 } from 'native-base';
-import styles from '../../Styles/StyleSheets.js';
+import styles from '../../styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripVertical from '../Icons/GripVertical.js';
 

@@ -1,6 +1,6 @@
 import {
 	EDITOR_TYPE__SIDE,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import Container from '../Container/Container.js';
 import withEditor from './withEditor.js';
 import _ from 'lodash';

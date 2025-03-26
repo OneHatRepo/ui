@@ -1,4 +1,4 @@
-import { CURRENT_MODE } from './Constants/UiModes.js';
+import { CURRENT_MODE } from './constants/UiModes.js';
 import _ from 'lodash';
 
 

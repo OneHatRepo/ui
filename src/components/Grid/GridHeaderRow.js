@@ -9,16 +9,16 @@ import {
 import {
 	SORT_ASCENDING,
 	SORT_DESCENDING,
-} from '../../Constants/Grid.js';
+} from '../../constants/Grid.js';
 import {
 	HORIZONTAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import {
 	UI_MODE_WEB,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
-import useBlocking from '../../Hooks/useBlocking.js';
-import testProps from '../../Functions/testProps.js';
+import useBlocking from '../../hooks/useBlocking.js';
+import testProps from '../../functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import HeaderReorderHandle from './HeaderReorderHandle.js';
 import HeaderResizeHandle from './HeaderResizeHandle.js';

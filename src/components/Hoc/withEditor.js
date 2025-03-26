@@ -8,14 +8,14 @@ import {
 	DELETE,
 	VIEW,
 	DUPLICATE,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import {
 	EDITOR_MODE__VIEW,
 	EDITOR_MODE__ADD,
 	EDITOR_MODE__EDIT,
 	EDITOR_TYPE__SIDE,
 	EDITOR_TYPE__INLINE,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 

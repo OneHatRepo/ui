@@ -8,17 +8,17 @@ import {
 } from 'native-base';
 import {
 	EDIT,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import {
 	EDITOR_TYPE__SIDE,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
 import withPdfButtons from '../Hoc/withPdfButtons.js';
-import inArray from '../../Functions/inArray.js';
-import getComponentFromType from '../../Functions/getComponentFromType.js';
-import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
-import testProps from '../../Functions/testProps.js';
+import inArray from '../../functions/inArray.js';
+import getComponentFromType from '../../functions/getComponentFromType.js';
+import buildAdditionalButtons from '../../functions/buildAdditionalButtons.js';
+import testProps from '../../functions/testProps.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';

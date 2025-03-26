@@ -4,7 +4,7 @@ import {
 	Row,
 } from 'native-base';
 import Container from '../Container/Container.js';
-import emptyFn from '../../Functions/emptyFn.js';
+import emptyFn from '../../functions/emptyFn.js';
 import _ from 'lodash';
 
 export default function EditorWindow(props) {

@@ -1,13 +1,13 @@
 import {
 	VIEW,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import Inflector from 'inflector-js';
 import qs from 'qs';
-import inArray from '../../Functions/inArray.js';
+import inArray from '../../functions/inArray.js';
 import Pdf from '../Icons/Pdf.js';
 import withModal from './withModal.js';
-import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
+import { EDITOR_TYPE__PLAIN } from '../../constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 

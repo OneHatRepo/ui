@@ -14,8 +14,8 @@ import {
 	ALERT_MODE_YES_NO,
 	ALERT_MODE_CUSTOM,
 	ALERT_MODE_INFO,
-} from '../../Constants/Alert.js';
-import testProps from '../../Functions/testProps.js';
+} from '../../constants/Alert.js';
+import testProps from '../../functions/testProps.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import CircleInfo from '../Icons/CircleInfo.js';
 import _ from 'lodash';

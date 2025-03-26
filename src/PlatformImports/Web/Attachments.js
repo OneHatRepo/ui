@@ -12,21 +12,21 @@ import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import {
 	FILE_MODE_IMAGE,
 	FILE_MODE_FILE,
-} from '../../Constants/File.js';
+} from '../../constants/File.js';
 import { Avatar, Dropzone, FileMosaic, FileCard, FileInputButton, } from "@files-ui/react";
-import inArray from '../../Functions/inArray.js';
-import IconButton from '../../Components/Buttons/IconButton.js';
-import Xmark from '../../Components/Icons/Xmark.js'
-import withAlert from '../../Components/Hoc/withAlert.js';
-import withComponent from '../../Components/Hoc/withComponent.js';
-import withData from '../../Components/Hoc/withData.js';
-import downloadInBackground from '../../Functions/downloadInBackground.js';
-import downloadWithFetch from '../../Functions/downloadWithFetch.js';
+import inArray from '../../functions/inArray.js';
+import IconButton from '../../components/Buttons/IconButton.js';
+import Xmark from '../../components/Icons/Xmark.js'
+import withAlert from '../../components/Hoc/withAlert.js';
+import withComponent from '../../components/Hoc/withComponent.js';
+import withData from '../../components/Hoc/withData.js';
+import downloadInBackground from '../../functions/downloadInBackground.js';
+import downloadWithFetch from '../../functions/downloadWithFetch.js';
 import _ from 'lodash';
 
 const

@@ -8,14 +8,14 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import Inflector from 'inflector-js';
 import Header from './Header.js';
 import Mask from './Mask.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import withCollapsible from '../Hoc/withCollapsible.js';
 import withComponent from '../Hoc/withComponent.js';
-import emptyFn from '../../Functions/emptyFn.js';
+import emptyFn from '../../functions/emptyFn.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 

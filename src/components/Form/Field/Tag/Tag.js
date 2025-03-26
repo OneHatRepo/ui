@@ -6,7 +6,7 @@ import {
 } from 'native-base';
 import {
 	EDITOR_TYPE__WINDOWED,
-} from '../../../../Constants/Editor.js';
+} from '../../../../constants/Editor.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';

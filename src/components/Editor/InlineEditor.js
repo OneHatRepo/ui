@@ -9,11 +9,11 @@ import withComponent from '../Hoc/withComponent.js';
 import {
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import {
 	EDITOR_TYPE__INLINE,
-} from '../../Constants/Editor.js';
-import testProps from '../../Functions/testProps.js';
+} from '../../constants/Editor.js';
+import testProps from '../../functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import Form from '../Form/Form.js';
 import _ from 'lodash';

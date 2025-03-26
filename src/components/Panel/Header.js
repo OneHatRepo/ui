@@ -9,17 +9,17 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_REACT_NATIVE,
-} from '../../Constants/UiModes.js';
+} from '../../constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import Minus from '../Icons/Minus.js';
 import Plus from '../Icons/Plus.js';
 import Xmark from '../Icons/Xmark.js';
-import emptyFn from '../../Functions/emptyFn.js';
+import emptyFn from '../../functions/emptyFn.js';
 import IconButton from '../Buttons/IconButton.js';
 
 export default function Header(props) {

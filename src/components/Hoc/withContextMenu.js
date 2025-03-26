@@ -13,8 +13,8 @@ import {
 import {
 	UI_MODE_WEB,
 	CURRENT_MODE,
-} from '../../Constants/UiModes.js';
-import testProps from '../../Functions/testProps.js';
+} from '../../constants/UiModes.js';
+import testProps from '../../functions/testProps.js';
 import _ from 'lodash';
 
 const CONTEXT_MENU_WIDTH = 180;

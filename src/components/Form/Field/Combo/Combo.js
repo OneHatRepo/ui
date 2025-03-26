@@ -11,18 +11,18 @@ import {
 import {
 	UI_MODE_REACT_NATIVE,
 	UI_MODE_WEB,
-} from '../../../../Constants/UiModes.js';
+} from '../../../../constants/UiModes.js';
 import {
 	EDITOR_TYPE__WINDOWED,
-} from '../../../../Constants/Editor.js';
+} from '../../../../constants/Editor.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';
-import emptyFn from '../../../../Functions/emptyFn.js';
-import testProps from '../../../../Functions/testProps.js';
+import emptyFn from '../../../../functions/emptyFn.js';
+import testProps from '../../../../functions/testProps.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';

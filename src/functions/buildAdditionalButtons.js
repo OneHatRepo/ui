@@ -1,7 +1,7 @@
 import {
 	Icon,
 } from 'native-base';
-import Button from '../Components/Buttons/Button.js';
+import Button from '../components/Buttons/Button.js';
 import testProps from './testProps.js';
 import _ from 'lodash';
 

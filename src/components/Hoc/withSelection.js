@@ -4,9 +4,9 @@ import {
 	SELECTION_MODE_MULTI,
 	SELECT_UP,
 	SELECT_DOWN,
-} from '../../Constants/Selection.js';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
-import inArray from '../../Functions/inArray.js';
+} from '../../constants/Selection.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
+import inArray from '../../functions/inArray.js';
 import _ from 'lodash';
 
 export default function withSelection(WrappedComponent) {

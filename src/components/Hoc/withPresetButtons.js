@@ -11,7 +11,7 @@ import {
 	DUPLICATE,
 	PRINT,
 	UPLOAD_DOWNLOAD,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import Clipboard from '../Icons/Clipboard.js';
 import Duplicate from '../Icons/Duplicate.js';
 import Edit from '../Icons/Edit.js';
@@ -20,7 +20,7 @@ import Trash from '../Icons/Trash.js';
 import Plus from '../Icons/Plus.js';
 import Print from '../Icons/Print.js';
 import UploadDownload from '../Icons/UploadDownload.js';
-import inArray from '../../Functions/inArray.js';
+import inArray from '../../functions/inArray.js';
 import UploadsDownloadsWindow from '../Window/UploadsDownloadsWindow.js';
 import _ from 'lodash';
 

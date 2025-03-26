@@ -1,6 +1,6 @@
 import {
 	SELECTION_MODE_MULTI,
-} from '../../Constants/Selection.js';
+} from '../../constants/Selection.js';
 
 export default function withMultiSelection(WrappedComponent) {
 	return (props) => {

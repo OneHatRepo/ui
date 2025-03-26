@@ -4,8 +4,8 @@ import CheckboxButton from '../Buttons/CheckboxButton.js';
 import Grid from './Grid.js';
 import Panel from '../Panel/Panel.js';
 import Toolbar from '../Toolbar/Toolbar.js';
-import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import useAdjustedWindowSize from '../../hooks/useAdjustedWindowSize.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
 import _ from 'lodash';
 
 // helper for Grid

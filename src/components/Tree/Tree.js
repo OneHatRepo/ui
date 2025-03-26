@@ -12,21 +12,21 @@ import {
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
-} from '../../Constants/Selection.js';
+} from '../../constants/Selection.js';
 import {
 	EDIT,
-} from '../../Constants/Commands.js';
+} from '../../constants/Commands.js';
 import {
 	VERTICAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import {
 	COLLAPSED,
 	EXPANDED,
 	LEAF,
-} from '../../Constants/Tree.js';
+} from '../../constants/Tree.js';
 import * as colourMixer from '@k-renwick/colour-mixer'
 import UiGlobals from '../../UiGlobals.js';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import useForceUpdate from '../../hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
@@ -39,10 +39,10 @@ import withPresetButtons from '../Hoc/withPresetButtons.js';
 import withPermissions from '../Hoc/withPermissions.js';
 import withSelection from '../Hoc/withSelection.js';
 import withWindowedEditor from '../Hoc/withWindowedEditor.js';
-import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
-import inArray from '../../Functions/inArray.js';
-import testProps from '../../Functions/testProps.js';
-import nbToRgb from '../../Functions/nbToRgb.js';
+import getIconButtonFromConfig from '../../functions/getIconButtonFromConfig.js';
+import inArray from '../../functions/inArray.js';
+import testProps from '../../functions/testProps.js';
+import nbToRgb from '../../functions/nbToRgb.js';
 import CenterBox from '../Layout/CenterBox.js';
 import ReloadTreeButton from '../Buttons/ReloadTreeButton.js';
 import TreeNode, { DraggableTreeNode } from './TreeNode.js';

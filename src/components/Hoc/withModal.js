@@ -13,8 +13,8 @@ import Panel from '../Panel/Panel.js';
 import IconButton from '../Buttons/IconButton.js';
 import Rotate from '../Icons/Rotate.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
-import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
-import testProps from '../../Functions/testProps.js';
+import useAdjustedWindowSize from '../../hooks/useAdjustedWindowSize.js';
+import testProps from '../../functions/testProps.js';
 import _ from 'lodash';
 
 // This HOC enables easy usage of more complex dialogs in the wrapped component.

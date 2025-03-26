@@ -4,7 +4,7 @@ import {
 	Text,
 } from 'native-base';
 import Date from '../Form/Field/Date.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
 import _ from 'lodash';

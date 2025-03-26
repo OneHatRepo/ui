@@ -1,7 +1,7 @@
 import { useState, } from 'react';
 import {
 	EDITOR_TYPE__INLINE,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import InlineEditor from '../Editor/InlineEditor.js';
 import withEditor from './withEditor.js';
 import _ from 'lodash';

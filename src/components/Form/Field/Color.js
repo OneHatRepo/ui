@@ -9,12 +9,12 @@ import {
 import { SketchPicker } from 'react-color';
 import {
 	UI_MODE_WEB,
-} from '../../../Constants/UiModes.js';
+} from '../../../constants/UiModes.js';
 import UiGlobals from '../../../UiGlobals.js';
 import Input from '../Field/Input.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
-import emptyFn from '../../../Functions/emptyFn.js';
+import emptyFn from '../../../functions/emptyFn.js';
 import _ from 'lodash';
 
 export function ColorElement(props) {

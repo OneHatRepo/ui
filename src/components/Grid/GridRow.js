@@ -6,11 +6,11 @@ import {
 } from 'native-base';
 import {
 	UI_MODE_WEB,
-} from '../../Constants/UiModes.js';
-import getComponentFromType from '../../Functions/getComponentFromType.js';
+} from '../../constants/UiModes.js';
+import getComponentFromType from '../../functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
-import testProps from '../../Functions/testProps.js';
+import testProps from '../../functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import _ from 'lodash';

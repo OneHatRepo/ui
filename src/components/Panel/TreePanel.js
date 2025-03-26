@@ -3,7 +3,7 @@ import Tree, { WindowedTreeEditor, SideTreeEditor, } from '../Tree/Tree.js';
 import {
 	EDITOR_TYPE__WINDOWED,
 	EDITOR_TYPE__SIDE,
-} from '../../Constants/Editor.js';
+} from '../../constants/Editor.js';
 import _ from 'lodash';
 
 export function TreePanel(props) {

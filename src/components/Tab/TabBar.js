@@ -10,16 +10,16 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions.js';
+} from '../../constants/Directions.js';
 import UiGlobals from '../../UiGlobals.js';
-import getComponentFromType from '../../Functions/getComponentFromType.js';
-import testProps from '../../Functions/testProps.js';
+import getComponentFromType from '../../functions/getComponentFromType.js';
+import testProps from '../../functions/testProps.js';
 import withComponent from '../Hoc/withComponent.js';
 import IconButton from '../Buttons/IconButton.js';
 import Minimize from '../Icons/Minimize.js';
 import Maximize from '../Icons/Maximize.js';
-import getSaved from '../../Functions/getSaved.js';
-import setSaved from '../../Functions/setSaved.js';
+import getSaved from '../../functions/getSaved.js';
+import setSaved from '../../functions/setSaved.js';
 import Xmark from '../Icons/Xmark.js';
 import _ from 'lodash';
 

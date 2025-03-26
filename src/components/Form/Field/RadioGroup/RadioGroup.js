@@ -4,7 +4,7 @@ import {
 	Radio,
 	Row,
 } from 'native-base';
-import testProps from '../../../../Functions/testProps.js';
+import testProps from '../../../../functions/testProps.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withValue from '../../../Hoc/withValue.js';

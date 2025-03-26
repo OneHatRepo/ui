@@ -1,7 +1,7 @@
 import {
 	REPORT_TYPES__EXCEL,
 	REPORT_TYPES__PDF,
-} from '../Constants/ReportTypes.js';
+} from '../constants/ReportTypes.js';
 import downloadInBackground from './downloadInBackground.js';
 import downloadWithFetch from './downloadWithFetch.js';
 import UiGlobals from '../UiGlobals.js';

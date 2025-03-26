@@ -6,8 +6,8 @@ import {
 import {
 	HORIZONTAL,
 	VERTICAL,
-} from '../../Constants/Directions.js';
-import styles from '../../Styles/StyleSheets.js';
+} from '../../constants/Directions.js';
+import styles from '../../styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 
 // Note on modes:

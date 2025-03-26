@@ -1,8 +1,8 @@
 /** @module OneHatUi */
 
 import EventEmitter from '@onehat/events';
-import Components from './Components/index.js';
-import Styles from './Constants/Styles.js';
+import Components from './components/index.js';
+import Styles from './constants/Styles.js';
 import UiGlobals from './UiGlobals.js';
 import _ from 'lodash';
 

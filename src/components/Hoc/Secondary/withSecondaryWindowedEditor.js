@@ -5,7 +5,7 @@ import {
 } from 'native-base';
 import {
 	EDITOR_TYPE__WINDOWED,
-} from '../../../Constants/Editor.js';
+} from '../../../constants/Editor.js';
 import withSecondaryEditor from './withSecondaryEditor.js';
 // import withDraggable from './withDraggable.js';
 import _ from 'lodash';

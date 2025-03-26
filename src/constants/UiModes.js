@@ -1,4 +1,4 @@
-import { isReactNative, isBrowser, isWebWorker, } from '../Functions/PlatformDetector.js';
+import { isReactNative, isBrowser, isWebWorker, } from '../functions/PlatformDetector.js';
 
 
 export const UI_MODE_WEB = 'Web';

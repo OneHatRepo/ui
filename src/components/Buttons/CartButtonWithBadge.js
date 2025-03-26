@@ -7,7 +7,7 @@ import {
 import {
 	Ionicons,
 } from '@expo/vector-icons';
-import testProps from '../../Functions/testProps';
+import testProps from '../../functions/testProps';
 
 export default function CartButtonWithBadge(props) {
 	const {
