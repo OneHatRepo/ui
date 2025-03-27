@@ -1069,7 +1069,7 @@ function GridComponent(props) {
 						overflow: 'auto',
 						height: '100%',
 					}}
-					refreshing={isLoading}
+					refreshing={false}
 					onRefresh={pullToRefresh ? onRefresh : null}
 					progressViewOffset={100}
 					data={rowData}
