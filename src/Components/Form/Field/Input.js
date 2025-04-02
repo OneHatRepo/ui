@@ -1,4 +1,4 @@
-import { forwardRef, useState, useEffect, useRef, } from 'react';
+import { cloneElement, forwardRef, isValidElement, useState, useEffect, useRef, } from 'react';
 import {
 	Input, InputField, InputIcon, InputSlot,
 } from '@project-components/Gluestack';
@@ -13,7 +13,7 @@ import withValue from '../../Hoc/withValue.js';
 import _ from 'lodash';
 
 const InputElement = forwardRef((props, ref) => {
-	let { // so localValue can be changed, if needed
+	let {
 			value,
 			setValue,
 			maxLength,
@@ -22,11 +22,13 @@ const InputElement = forwardRef((props, ref) => {
 			disableAutoFlex = false,
 			onKeyPress,
 			onChangeText,
-			leftElement,
-			leftIcon,
+			leftElement = null,
+			leftIcon = null,
+			_leftIcon,
 			leftIconHandler,
-			rightElement,
-			rightIcon,
+			rightElement = null,
+			rightIcon = null,
+			_rightIcon,
 			rightIconHandler,
 			placeholder,
 			textAlignIsCenter = false,
@@ -127,24 +129,63 @@ const InputElement = forwardRef((props, ref) => {
 	if (className) {
 		inputClassName += className;
 	}
+
+
+	if (leftElement) {
+		leftElement = <InputSlot className="leftElementInputSlot">{leftElement}</InputSlot>;
+	}
+	if (leftIcon) {
+		if (!_leftIcon) {
+			_leftIcon = {};
+		}
+		if (!_leftIcon.className) {
+			_leftIcon.className = '';
+		}
+		_leftIcon.className = 'leftInputIcon mr-2 ' + _leftIcon.className; // prepend the margin, so it can potentially be overridden
+		if (isValidElement(leftIcon)) {
+			if (_leftIcon) {
+				leftIcon = cloneElement(leftIcon, {..._leftIcon});
+			}
+		} else {
+			leftIcon = <InputIcon as={leftIcon} {..._leftIcon} />;
+		}
+		if (leftIconHandler) {
+			leftIcon = <InputSlot onPress={leftIconHandler} className="LeftInputSlot">
+							{leftIcon}
+						</InputSlot>;
+		}
+	}
+	if (rightElement) {
+		rightElement = <InputSlot className="rightElementInputSlot">{rightElement}</InputSlot>;
+	}
+	if (rightIcon) {
+		if (!_rightIcon) {
+			_rightIcon = {};
+		}
+		if (!_rightIcon.className) {
+			_rightIcon.className = '';
+		}
+		_rightIcon.className = 'rightInputIcon ml-2 ' + _rightIcon.className; // prepend the margin, so it can potentially be overridden
+		if (isValidElement(rightIcon)) {
+			if (_rightIcon) {
+				rightIcon = cloneElement(rightIcon, {..._rightIcon});
+			}
+		} else {
+			rightIcon = <InputIcon as={rightIcon} {..._rightIcon} />;
+		}
+		if (rightIconHandler) {
+			rightIcon = <InputSlot onPress={rightIconHandler} className="RightInputSlot">
+							{rightIcon}
+						</InputSlot>;
+		}
+	}
 	
 	return <Input
 				className={inputClassName}
 				style={style}
 			>
-				{leftElement &&
-					<InputSlot className="leftElementInputSlot">{leftElement}</InputSlot>}
-				
-				{leftIcon && leftIconHandler && 
-					<InputSlot onPress={leftIconHandler} className="InputSlot">
-						<InputIcon className="leftInputIconWithHandler ml-2">
-							{leftIcon}
-						</InputIcon>
-					</InputSlot>}
-				{leftIcon && !leftIconHandler && 
-					<InputIcon className="leftInputIcon ml-2">
-						{leftIcon}
-					</InputIcon>}
+				{leftElement}
+				{leftIcon}
 
 				<InputField
 					ref={ref}
@@ -158,19 +199,8 @@ const InputElement = forwardRef((props, ref) => {
 					{...propsToPass}
 				/>
 
-				{rightElement &&
-					<InputSlot className="rightElementInputSlot">{rightElement}</InputSlot>}
-
-				{rightIcon && rightIconHandler && 
-					<InputSlot onPress={rightIconHandler} className="InputSlot">
-						<InputIcon className="rightInputIconWithHandler mr-2">
-							{rightIcon}
-						</InputIcon>
-					</InputSlot>}
-				{rightIcon && !rightIconHandler && 
-					<InputIcon className="rightInputIcon mr-2">
-						{rightIcon}
-					</InputIcon>}
+				{rightElement}
+				{rightIcon}
 			</Input>;
 });
 
