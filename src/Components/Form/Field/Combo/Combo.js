@@ -64,6 +64,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			viewerProps = {}, // popup for eyeButton
 			_input = {},
 			_editor = {},
+			_grid = {},
 			isEditor = false,
 			isDisabled = false,
 			isInTag = false,
@@ -732,6 +733,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 			'selectorSelectedField',
 			'usePermissions',
 		]);
+		if (!_.isEmpty(_grid)){
+			_.assign(gridProps, _grid);
+		}
 		if (!isInTag) {
 			gridProps.value = props.value;
 		}
