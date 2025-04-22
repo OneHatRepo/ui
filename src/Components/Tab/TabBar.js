@@ -30,12 +30,13 @@ function TabBar(props) {
 			content, // e.g. Expo Router slot
 			direction = HORIZONTAL,
 			tabWidth = 150, // used on VERTICAL mode only
-			tabHeight = '47px', // used on HORIZONTAL mode only
+			tabHeight = 47, // used on HORIZONTAL mode only
 			additionalButtons,
 			initialTabIx = 0,
 			currentTabIx,
 			disableCollapse = false,
 			startsCollapsed = true,
+			canToggleCollapse = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
 			onPressTab,
@@ -126,7 +127,7 @@ function TabBar(props) {
 						/>;
 			} else {
 				buttonClassName += `
-					w-[200px]
+					${direction === VERTICAL ? 'w-[200px]' : ''}
 					pr-0
 					mr-0
 				`;
@@ -294,6 +295,7 @@ function TabBar(props) {
 								_icon={_icon}
 								className={buttonClassName}
 								tooltip={tab.title}
+								isDisabled={tab.isDisabled}
 							/>;
 				} else {
 					if (direction === VERTICAL) {
@@ -329,6 +331,7 @@ function TabBar(props) {
 									className: textClassName,
 									...textPropsToPass,
 								}}
+								isDisabled={tab.isDisabled}
 								action="none"
 								variant="none"
 							/>;
@@ -503,9 +506,10 @@ function TabBar(props) {
 					`}
 				>
 					{renderedTabs}
-					<VStack className="flex-1 w-full justify-end">
-						{renderedToggleButton}
-					</VStack>
+					{canToggleCollapse ? 
+						<VStack className="flex-1 w-full justify-end">
+							{renderedToggleButton}
+						</VStack> : null}
 				</VStackNative>;
 		if (renderedCurrentTabContent) {
 			tabBar = <HStackNative {...propsToPass} className="flex-1 w-full">
@@ -520,7 +524,7 @@ function TabBar(props) {
 		tabBar = <HStackNative
 					{...testProps('TabBar')}
 					className={`
-						${isCollapsed ? 'h-[38px]' : 'h-[' + tabHeight + 'px]'}
+						${'h-[' + tabHeight + 'px]'}
 						items-center
 						justify-start
 						p-1
@@ -530,15 +534,16 @@ function TabBar(props) {
 				>
 					<ScrollView
 						horizontal={true}
-						className={` ${isCollapsed ? "h-[30px]" : 'h-[' + tabHeight + 'px]'} `}
+						className={'h-[' + tabHeight + 'px]'}
 					>
 						{renderedTabs}
 					</ScrollView>
-					<HStack className="flex-1 h-full justify-end">
-						<HStack className="h-full">
-							{renderedToggleButton}
-						</HStack>
-					</HStack>
+					{canToggleCollapse ? 
+						<HStack className="flex-1 h-full justify-end">
+							<HStack className="h-full">
+								{renderedToggleButton}
+							</HStack>
+						</HStack> : null}
 				</HStackNative>;
 		if (renderedCurrentTabContent) {
 			tabBar = <VStackNative {...propsToPass} className="flex-1 w-full">

@@ -75,11 +75,11 @@ export default function withComponent(WrappedComponent) {
 			});
 
 		useEffect(() => {
-			if (parent && !parent?.hasChild(selfRef.current)) {
+			if (parent?.hasChild && !parent.hasChild(selfRef.current)) {
 				parent.registerChild(selfRef.current);
 			}
 			return () => {
-				if (parent) {
+				if (parent?.unregisterChild) {
 					parent.unregisterChild(selfRef.current);
 				}
 				childrenRef.current = {};
