@@ -1,8 +1,10 @@
 import { useState, } from 'react';
 import {
+	Box,
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import isJson from '../../Functions/isJson.js';
 import Form from '../Form/Form.js';
 import Button from '../Buttons/Button.js';
 import CenterBox from '../Layout/CenterBox.js';
@@ -52,16 +54,19 @@ function AsyncOperation(props) {
 				return;
 			}
 			
-			let results = <CenterBox><Text>Success</Text></CenterBox>;
+			let results = <Text>Success</Text>;
 			if (response.message) {
-				const decodedMessage = JSON.parse(response.message);
-				results = _.isArray(decodedMessage) ? 
+				let message = response.message;
+				if (isJson(message)) {
+					message = JSON.parse(message);
+				}
+				results = _.isArray(message) ? 
 								<VStack>
-									{decodedMessage?.map((line, ix)=> {
+									{message?.map((line, ix)=> {
 										return <Text key={ix}>{line}</Text>;
 									})}
-								</VStack> : 
-								<Text>{decodedMessage}</Text>;
+								</VStack> :
+								<Text>{message}</Text>;
 			}
 			showResults(results);
 		},
@@ -125,7 +130,7 @@ function AsyncOperation(props) {
 							title: 'Results',
 							icon: Stop,
 							isDisabled: currentTabIx !== 1,
-							content: results,
+							content: <Box className="p-2">{results}</Box>,
 						},
 					]}
 					currentTabIx={currentTabIx}
