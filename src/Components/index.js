@@ -165,6 +165,7 @@ import SquareCheck from './Icons/SquareCheck.js';
 import SquareCheckRegular from './Icons/SquareCheckRegular.js';
 import SquareMinus from './Icons/SquareMinus.js';
 import SquareRegular from './Icons/SquareRegular.js';
+import Stop from './Icons/Stop.js';
 import Store from './Icons/Store.js';
 import Table from './Icons/Table.js';
 import ThumbsDown from './Icons/ThumbsDown.js';
@@ -408,6 +409,7 @@ const components = {
 	SquareCheckRegular,
 	SquareMinus,
 	SquareRegular,
+	Stop,
 	Store,
 	Table,
 	ThumbsDown,
