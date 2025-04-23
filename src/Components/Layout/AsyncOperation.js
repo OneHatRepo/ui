@@ -7,7 +7,6 @@ import {
 import isJson from '../../Functions/isJson.js';
 import Form from '../Form/Form.js';
 import Button from '../Buttons/Button.js';
-import CenterBox from '../Layout/CenterBox.js';
 import withComponent from '../Hoc/withComponent.js';
 import withAlert from '../Hoc/withAlert.js';
 import ChevronLeft from '../Icons/ChevronLeft.js';
@@ -25,6 +24,7 @@ function AsyncOperation(props) {
 			action,
 			Repository,
 			formItems = [],
+			formStartingValues = {},
 
 			// withComponent
 			self,
@@ -42,7 +42,7 @@ function AsyncOperation(props) {
 			setFooter(getFooter('processing'));
 			
 			const
-				method = Repository.methods.post,
+				method = Repository.methods.edit,
 				uri = Repository.getModel() + '/' + action,
 				formValues = self.children.form.formGetValues(),
 				result = await Repository._send(method, uri, formValues);
@@ -124,6 +124,7 @@ function AsyncOperation(props) {
 										className="w-full h-full flex-1"
 										disableFooter={true}
 										items={formItems}
+										startingValues={formStartingValues}
 									/>,
 						},
 						{
@@ -135,6 +136,7 @@ function AsyncOperation(props) {
 					]}
 					currentTabIx={currentTabIx}
 					canToggleCollapse={false}
+					tabsAreButtons={false}
 				/>
 			</Panel>;
 }
