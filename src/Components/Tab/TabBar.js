@@ -1,7 +1,9 @@
 import { cloneElement, useState, useEffect, } from 'react';
 import {
+	Box,
 	HStack,
 	HStackNative,
+	Icon,
 	ScrollView,
 	VStack,
 	VStackNative,
@@ -10,6 +12,8 @@ import {
 	HORIZONTAL,
 	VERTICAL,
 } from '../../Constants/Directions.js';
+import Tab from './Tab.js';
+import TabButton from './TabButton.js';
 import Button from '../Buttons/Button.js';
 import UiGlobals from '../../UiGlobals.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
@@ -20,7 +24,6 @@ import Minimize from '../Icons/Minimize.js';
 import Maximize from '../Icons/Maximize.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
-import Xmark from '../Icons/Xmark.js';
 import _ from 'lodash';
 
 
@@ -37,6 +40,7 @@ function TabBar(props) {
 			disableCollapse = false,
 			startsCollapsed = true,
 			canToggleCollapse = true,
+			tabsAreButtons = true,
 			onChangeCurrentTab,
 			onChangeIsCollapsed,
 			onPressTab,
@@ -88,9 +92,9 @@ function TabBar(props) {
 		},
 		renderToggleButton = () => {
 			const {
-					buttonProps: {
-						className: buttonPropsClassName,
-						...buttonPropsToPass
+					tabProps: {
+						className: tabPropsClassName,
+						...tabPropsToPass
 					},
 					textProps: {
 						className: textPropsClassName,
@@ -100,9 +104,9 @@ function TabBar(props) {
 						className: iconPropsClassName,
 						...iconPropsToPass
 					},
-				} = getButtonProps();
+				} = getTabProps();
 
-			let buttonClassName = buttonPropsClassName,
+			let tabClassName = tabPropsClassName,
 				textClassName = textPropsClassName,
 				iconClassName = iconPropsClassName;
 			
@@ -119,14 +123,14 @@ function TabBar(props) {
 							{...testProps('toggleBtn')}
 							key="toggleBtn"
 							onPress={onPress}
-							{...buttonPropsToPass}
+							{...tabPropsToPass}
 							icon={icon}
 							_icon={_icon}
-							className={buttonClassName}
+							className={tabClassName}
 							tooltip={isCollapsed ? 'Expand' : 'Collapse'}
 						/>;
 			} else {
-				buttonClassName += `
+				tabClassName += `
 					${direction === VERTICAL ? 'w-[200px]' : ''}
 					pr-0
 					mr-0
@@ -136,10 +140,10 @@ function TabBar(props) {
 							{...testProps('toggleBtn')}
 							key="toggleBtn"
 							onPress={onPress}
-							{...buttonPropsToPass}
+							{...tabPropsToPass}
 							icon={icon}
 							_icon={_icon}
-							className={buttonClassName}
+							className={tabClassName}
 							text="Collapse"
 							_text={{
 								className: textClassName,
@@ -151,15 +155,12 @@ function TabBar(props) {
 			}
 			return button;
 		},
-		getButtonProps = () => {
+		getTabProps = () => {
 			const
-				buttonProps = {
+				tabProps = {
 					className: `
 						${styles.TAB_BG}
 						${isCollapsed ? 'justify-center' : 'justify-start'}
-						${styles.TAB_BG_HOVER}
-						${styles.TAB_BG_ACTIVE}
-						${styles.TAB_BG_DISABLED}
 					`,
 				},
 				textProps = {
@@ -174,14 +175,11 @@ function TabBar(props) {
 					// size: 'md',
 					className: `
 						${styles.TAB_ICON_COLOR}
-						${styles.TAB_ICON_COLOR_HOVER}
-						${styles.TAB_ICON_COLOR_ACTIVE}
-						${styles.TAB_ICON_COLOR_DISABLED}
 					`,
 				};
 			switch(direction) {
 				case VERTICAL:
-					buttonProps.className += `
+					tabProps.className += `
 						rounded-l-lg
 						rounded-r-none
 						w-full
@@ -202,7 +200,7 @@ function TabBar(props) {
 					`;
 					break;
 				case HORIZONTAL:
-					buttonProps.className += `
+					tabProps.className += `
 						rounded-t
 						rounded-b-none
 						mr-1
@@ -217,16 +215,16 @@ function TabBar(props) {
 				default:
 			}
 			return {
-				buttonProps,
+				tabProps,
 				textProps,
 				iconProps,
 			};
 		},
 		renderTabs = () => {
 			const {
-					buttonProps: {
-						className: buttonPropsClassName,
-						...buttonPropsToPass
+					tabProps: {
+						className: tabPropsClassName,
+						...tabPropsToPass
 					},
 					textProps: {
 						className: textPropsClassName,
@@ -236,8 +234,8 @@ function TabBar(props) {
 						className: iconPropsClassName,
 						...iconPropsToPass
 					},
-				} = getButtonProps(),
-				buttons = [];
+				} = getTabProps(),
+				tabComponents = [];
 				
 			_.each(tabs, (tab, ix) => {
 				if (!tab.icon) {
@@ -245,7 +243,7 @@ function TabBar(props) {
 				}
 				const
 					isCurrentTab = ix === getCurrentTab(),
-					useIconButton = (isCollapsed || !tab.title),
+					useIconTab = (isCollapsed || !tab.title),
 					tabIcon = tab._icon ? _.clone(tab._icon) : {};
 				if (tabIcon.as && _.isString(tabIcon.as)) {
 					const Type = getComponentFromType(tabIcon.as);
@@ -254,20 +252,13 @@ function TabBar(props) {
 					}
 				}
 
-				let buttonClassName = buttonPropsClassName,
+				let tabClassName = tabPropsClassName,
 					textClassName = textPropsClassName,
 					iconClassName = iconPropsClassName;
 
-				if (isCurrentTab) {
-					buttonClassName += ' ' + styles.TAB_BG_CURRENT + 
-										' ' + styles.TAB_BG_CURRENT_HOVER;
-					iconClassName += ' ' + styles.TAB_ICON_COLOR_CURRENT;
-					textClassName += ' ' + styles.TAB_COLOR_CURRENT;
-				}
-
 				// overrides
 				if (tab._button?.className) {
-					buttonClassName += ' ' + tab._button.className;
+					tabClassName += ' ' + tab._button.className;
 				}
 				if (tab._text?.className) {
 					textClassName += ' ' + tab._text.className;
@@ -284,59 +275,28 @@ function TabBar(props) {
 					},
 					onPress = () => setCurrentTab(ix);
 
-				let button;
-				if (useIconButton) {
-					button = <IconButton
-								{...testProps(tab.path)}
-								key={'tabIconBtn' + ix}
-								onPress={onPress}
-								{...buttonPropsToPass}
-								icon={tab.icon}
-								_icon={_icon}
-								className={buttonClassName}
-								tooltip={tab.title}
-								isDisabled={tab.isDisabled}
-							/>;
-				} else {
-					if (direction === VERTICAL) {
-						buttonClassName += ' w-[200px]';
-					}
-
-					let closeBtn = null;
-					if (onTabClose && !tab.disableCloseBox) {
-						closeBtn = <IconButton
-										{...testProps('tabCloseButton-' + ix)}
-										key={'tabCloseButton' + ix}
-										onPress={() => onTabClose(ix)}
-										icon={Xmark}
-										_icon={{
-											...iconProps,
-											className: iconClassName,
+				const WhichTabType = tabsAreButtons ? TabButton : Tab
+				tabComponents.push(<WhichTabType
+										{...testProps(tab.path)}
+										key={'tab' + ix}
+										onPress={onPress}
+										{...tabPropsToPass}
+										icon={tab.icon}
+										_icon={_icon}
+										className={tabClassName}
+										tooltip={tab.title}
+										text={tab.title}
+										_text={{
+											className: textClassName,
+											...textPropsToPass,
 										}}
-										tooltip="Close Tab"
-										className="p-0"
-									/>;
-					}
-					button = <Button
-								{...testProps(tab.path)}
-								key={'tabBtn' + ix}
-								onPress={onPress}
-								{...buttonPropsToPass}
-								icon={tab.icon}
-								_icon={_icon}
-								rightIcon={closeBtn}
-								className={buttonClassName}
-								text={tab.title}
-								_text={{
-									className: textClassName,
-									...textPropsToPass,
-								}}
-								isDisabled={tab.isDisabled}
-								action="none"
-								variant="none"
-							/>;
-				}
-				buttons.push(button);
+										isDisabled={tab.isDisabled}
+										isCurrentTab={isCurrentTab}
+										useIconOnly={useIconTab}
+										direction={direction}
+										useCloseBtn={onTabClose && !tab.disableCloseBox}
+										onClose={() => onTabClose(ix)}
+									/>);
 			});
 
 			if (additionalButtons) {
@@ -346,7 +306,7 @@ function TabBar(props) {
 					}
 
 					const
-						useIconButton = (isCollapsed || !additionalButton.text),
+						useIconTab = (isCollapsed || !additionalButton.text),
 						additionalButtonIcon = _.clone(additionalButton._icon);
 
 					if (additionalButtonIcon.as && _.isString(additionalButtonIcon.as)) {
@@ -356,13 +316,13 @@ function TabBar(props) {
 						}
 					}
 
-					let buttonClassName = buttonPropsClassName,
+					let tabClassName = tabPropsClassName,
 						textClassName = textPropsClassName,
 						iconClassName = iconPropsClassName;
 
 					// overrides
 					if (additionalButton._button?.className) {
-						buttonClassName += ' ' + additionalButton._button.className;
+						tabClassName += ' ' + additionalButton._button.className;
 					}
 					if (additionalButton._text?.className) {
 						textClassName += ' ' + additionalButton._text.className;
@@ -375,10 +335,10 @@ function TabBar(props) {
 						// First button should have a gap before it
 						switch(direction) {
 							case VERTICAL:
-								buttonClassName += ' mt-6';
+								tabClassName += ' mt-6';
 								break;
 							case HORIZONTAL:
-								buttonClassName += ' ml-6';
+								tabClassName += ' ml-6';
 								break;
 							default:
 						}
@@ -393,27 +353,27 @@ function TabBar(props) {
 						onPress = additionalButton.onPress;
 
 					let button;
-					if (useIconButton) {
+					if (useIconTab) {
 						button = <IconButton
 									{...testProps('additionalBtn' + ix)}
 									key={'additionalBtn' + ix}
 									onPress={onPress}
-									{...buttonPropsToPass}
+									{...tabPropsToPass}
 									_icon={_icon}
-									className={buttonClassName}
+									className={tabClassName}
 									tooltip={additionalButton.text}
 								/>;
 					} else {
 						if (direction === VERTICAL) {
-							buttonClassName += ' w-[200px]';
+							tabClassName += ' w-[200px]';
 						}
 						button = <Button
 									{...testProps('additionalBtn' + ix)}
 									key={'additionalBtn' + ix}
 									onPress={onPress}
-									{...buttonPropsToPass}
+									{...tabPropsToPass}
 									_icon={_icon}
-									className={buttonClassName}
+									className={tabClassName}
 									text={additionalButton.text}
 									_text={{
 										className: textClassName,
@@ -423,11 +383,11 @@ function TabBar(props) {
 									variant="none"
 								/>;
 					}
-					buttons.push(button);
+					tabComponents.push(button);
 				});
 			}
 
-			return buttons;
+			return tabComponents;
 		},
 		renderCurrentTabContent = () => {
 			if (content) {
