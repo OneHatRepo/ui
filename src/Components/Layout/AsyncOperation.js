@@ -1,4 +1,4 @@
-import { useState, useRef, } from 'react';
+import { useState, useRef, useEffect, } from 'react';
 import {
 	Box,
 	ScrollView,
@@ -205,6 +205,13 @@ function AsyncOperation(props) {
 			setIntervalRef(null);
 		},
 		unchangedProgressCount = getUnchangedProgressCount();
+
+	useEffect(() => {
+		return () => {
+			// Cleanup function to clear the interval when the component unmounts
+			clearInterval(getInterval());
+		};
+	}, []);
 
 	return <Panel {...props} footer={footer}>
 				<TabBar
