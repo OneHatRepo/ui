@@ -1,10 +1,12 @@
 import { useState, useRef, } from 'react';
 import {
 	Box,
+	ScrollView,
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
 import { PROGRESS_COMPLETED } from '../../Constants/Progress.js';
+import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import isJson from '../../Functions/isJson.js';
 import Form from '../Form/Form.js';
 import Button from '../Buttons/Button.js';
@@ -13,18 +15,13 @@ import withAlert from '../Hoc/withAlert.js';
 import ChevronLeft from '../Icons/ChevronLeft.js';
 import ChevronRight from '../Icons/ChevronRight.js';
 import Play from '../Icons/Play.js';
+import EllipsisHorizontal from '../Icons/EllipsisHorizontal.js';
 import Stop from '../Icons/Stop.js';
 import TabBar from '../Tab/TabBar.js';
 import Panel from '../Panel/Panel.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
-
-// LEFT OFF HERE
-// For one, the interval is not unique to this component, but needs to be.
-// Secondly, I want to change the tab[1] icon to indicate in progress or stopped.
-
-let interval = null;
 
 function AsyncOperation(props) {
 	const {
@@ -33,7 +30,9 @@ function AsyncOperation(props) {
 			formItems = [],
 			formStartingValues = {},
 			getProgressUpdates = false,
+			parseProgress, // optional fn, accepts 'response' as arg and returns progress string
 			progressStuckThreshold = null, // e.g. 3, if left blank, doesn't check for stuck state
+			updateInterval = 10000, // ms
 
 			// withComponent
 			self,
@@ -47,8 +46,9 @@ function AsyncOperation(props) {
 				alert('AsyncOperation: Repository and action are required!');
 				return;
 			}
-
+			clearProgress();
 			setFooter(getFooter('processing'));
+			setIsInProgress(true);
 			
 			const
 				method = Repository.methods.edit,
@@ -61,7 +61,7 @@ function AsyncOperation(props) {
 			const response = Repository._processServerResponse(result);
 			if (!response.success) {
 				alert(result.message);
-				reset();
+				resetToInitialState();
 				return;
 			}
 			
@@ -104,36 +104,46 @@ function AsyncOperation(props) {
 								<Button
 									text="Reset"
 									icon={ChevronLeft}
-									onPress={() => reset()}
+									onPress={() => resetToInitialState()}
 								/>
 							</Toolbar>;
 			}
 		},
+		forceUpdate = useForceUpdate(),
 		[footer, setFooter] = useState(getFooter()),
 		[results, setResults] = useState(null),
 		[progress, setProgress] = useState(null),
+		[isInProgress, setIsInProgress] = useState(false),
 		[isStuck, setIsStuck] = useState(false),
 		[currentTabIx, setCurrentTab] = useState(0),
-		previousProgress = useRef(null),
-		unchangedProgressCount = useRef(0),
-		formValues = useRef(null),
+		previousProgressRef = useRef(null),
+		unchangedProgressCountRef = useRef(0),
+		intervalRef = useRef(null),
+		formValuesRef = useRef(null),
 		getPreviousProgress = () => {
-			return previousProgress.current;
+			return previousProgressRef.current;
 		},
 		setPreviousProgress = (progress) => {
-			previousProgress.current = progress;
+			previousProgressRef.current = progress;
 		},
 		getUnchangedProgressCount = () => {
-			return unchangedProgressCount.current;
+			return unchangedProgressCountRef.current;
 		},
 		setUnchangedProgressCount = (count) => {
-			unchangedProgressCount.current = count;
+			unchangedProgressCountRef.current = count;
+			forceUpdate();
+		},
+		getInterval = () => {
+			return intervalRef.current;
+		},
+		setIntervalRef = (interval) => { // 'setInterval' is a reserved name
+			intervalRef.current = interval;
 		},
 		getFormValues = () => {
-			return formValues.current;
+			return formValuesRef.current;
 		},
 		setFormValues = (values) => {
-			formValues.current = values;
+			formValuesRef.current = values;
 		},
 		showResults = (results) => {
 			setCurrentTab(1);
@@ -141,7 +151,7 @@ function AsyncOperation(props) {
 			setResults(results);
 
 			if (getProgressUpdates) {
-				interval = setInterval(async () => {
+				const interval = setInterval(async () => {
 					const
 						method = Repository.methods.edit,
 						progressAction = 'get' + action.charAt(0).toUpperCase() + action.slice(1) + 'Progress',
@@ -151,42 +161,50 @@ function AsyncOperation(props) {
 					const response = Repository._processServerResponse(result);
 					if (!response.success) {
 						alert(result.message);
-						setProgress(null);
-						clearInterval(interval);
+						clearProgress();
 						return;
 					}
 
-					const progress = response.message
-					setProgress(progress);
+					const progress = parseProgress ? parseProgress(response) : response.message
 					if (progress === PROGRESS_COMPLETED) {
-						clearInterval(interval);
+						clearProgress();
+						setProgress(progress);
 					} else {
+						// in process
 						let newUnchangedProgressCount = getUnchangedProgressCount();
 						if (progress === getPreviousProgress()) {
 							newUnchangedProgressCount++;
+							setUnchangedProgressCount(newUnchangedProgressCount);
+							if (progressStuckThreshold !== null && newUnchangedProgressCount >= progressStuckThreshold) {
+								clearProgress();
+								setProgress('The operation appears to be stuck.');
+								setIsStuck(true);
+							}
 						} else {
 							setPreviousProgress(progress);
-							newUnchangedProgressCount = 0;
-						}
-						setUnchangedProgressCount(newUnchangedProgressCount);
-						if (newUnchangedProgressCount && progressStuckThreshold !== null && newUnchangedProgressCount >= progressStuckThreshold) {
-							clearInterval(interval);
-							setProgress('The operation appears to be stuck.');
-							setIsStuck(true);
+							setProgress(progress);
+							setUnchangedProgressCount(0);
 						}
 					}
-				}, 10000);
+				}, updateInterval);
+				setIntervalRef(interval);
 			}
 		},
-		reset = () => {
-			setProgress(null);
-			setIsStuck(false);
-			setPreviousProgress(null);
-			setUnchangedProgressCount(0);
-			clearInterval(interval);
+		resetToInitialState = () => {
 			setCurrentTab(0);
 			setFooter(getFooter());
-		};
+			clearProgress();
+		},
+		clearProgress = () => {
+			setIsInProgress(false);
+			setIsStuck(false);
+			setProgress(null);
+			setPreviousProgress(null);
+			setUnchangedProgressCount(0);
+			clearInterval(getInterval());
+			setIntervalRef(null);
+		},
+		unchangedProgressCount = getUnchangedProgressCount();
 
 	return <Panel {...props} footer={footer}>
 				<TabBar
@@ -206,11 +224,15 @@ function AsyncOperation(props) {
 						},
 						{
 							title: 'Results',
-							icon: Stop,
+							icon: isInProgress ? EllipsisHorizontal : Stop,
 							isDisabled: currentTabIx !== 1,
-							content: <Box className={`p-2 ${isStuck ? 'text-red-400 font-bold' : ''}`}>
-										{progress || results}
-									</Box>,
+							content: <ScrollView className="ScrollView h-full w-full">
+										<Box className={`p-2 ${isStuck ? 'text-red-400 font-bold' : ''}`}>
+											{progress ? 
+											progress + (unchangedProgressCount > 0 ? ' (unchanged x' + unchangedProgressCount + ')' : '') : 
+											results}
+										</Box>
+									</ScrollView>,
 						},
 					]}
 					currentTabIx={currentTabIx}
