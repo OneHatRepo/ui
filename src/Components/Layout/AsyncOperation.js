@@ -5,6 +5,7 @@ import {
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import { useSelector, useDispatch, } from 'react-redux';
 import { PROGRESS_COMPLETED } from '../../Constants/Progress.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import isJson from '../../Functions/isJson.js';
@@ -22,6 +23,8 @@ import Panel from '../Panel/Panel.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
+// NOTE: This component assumes you have an AppSlice, that has 
+// an 'operationsInProgress' state var and a 'setOperationsInProgress' action.
 
 function AsyncOperation(props) {
 	const {
@@ -40,6 +43,7 @@ function AsyncOperation(props) {
 			// withAlert
 			alert,
 		} = props,
+		dispatch = useDispatch(),
 		initiate = async () => {
 
 			if (!Repository || !action) {
@@ -109,13 +113,14 @@ function AsyncOperation(props) {
 							</Toolbar>;
 			}
 		},
+		operationsInProgress = useSelector((state) => state.app.operationsInProgress),
+		isInProgress = operationsInProgress.includes(action),
 		forceUpdate = useForceUpdate(),
 		[footer, setFooter] = useState(getFooter()),
-		[results, setResults] = useState(null),
+		[results, setResults] = useState(isInProgress ? 'Checking progress...' : null),
 		[progress, setProgress] = useState(null),
-		[isInProgress, setIsInProgress] = useState(false),
 		[isStuck, setIsStuck] = useState(false),
-		[currentTabIx, setCurrentTab] = useState(0),
+		[currentTabIx, setCurrentTab] = useState(isInProgress ? 1 : 0),
 		previousProgressRef = useRef(null),
 		unchangedProgressCountRef = useRef(0),
 		intervalRef = useRef(null),
@@ -149,9 +154,12 @@ function AsyncOperation(props) {
 			setCurrentTab(1);
 			setFooter(getFooter('results'));
 			setResults(results);
-
+			getProgress();
+		},
+		getProgress = (immediately = false) => {
 			if (getProgressUpdates) {
-				const interval = setInterval(async () => {
+
+				async function fetchProgress() {
 					const
 						method = Repository.methods.edit,
 						progressAction = 'get' + action.charAt(0).toUpperCase() + action.slice(1) + 'Progress',
@@ -186,7 +194,13 @@ function AsyncOperation(props) {
 							setUnchangedProgressCount(0);
 						}
 					}
-				}, updateInterval);
+				};
+				
+				if (immediately) {
+					fetchProgress();
+				}
+		
+				const interval = setInterval(fetchProgress, updateInterval);
 				setIntervalRef(interval);
 			}
 		},
@@ -204,11 +218,25 @@ function AsyncOperation(props) {
 			clearInterval(getInterval());
 			setIntervalRef(null);
 		},
+		setIsInProgress = (isInProgress) => {
+			dispatch({
+				type: 'app/setOperationsInProgress',
+				payload: {
+					operation: action,
+					isInProgress,
+				},
+			});
+		},
 		unchangedProgressCount = getUnchangedProgressCount();
 
 	useEffect(() => {
+		
+		if (isInProgress) {
+			getProgress(true); // true to fetch immediately
+		}
+
 		return () => {
-			// Cleanup function to clear the interval when the component unmounts
+			// clear the interval when the component unmounts
 			clearInterval(getInterval());
 		};
 	}, []);
