@@ -90,7 +90,7 @@ function AsyncOperation(props) {
 				case 'initiate':
 					return <Toolbar>
 								<Button
-									text="Initiate"
+									text="Start"
 									rightIcon={ChevronRight}
 									onPress={() => initiate()}
 								/>
@@ -245,7 +245,7 @@ function AsyncOperation(props) {
 				<TabBar
 					tabs={[
 						{
-							title: 'Initiate',
+							title: 'Start',
 							icon: Play,
 							isDisabled: currentTabIx !== 0,
 							content: <Form
@@ -262,7 +262,7 @@ function AsyncOperation(props) {
 							icon: isInProgress ? EllipsisHorizontal : Stop,
 							isDisabled: currentTabIx !== 1,
 							content: <ScrollView className="ScrollView h-full w-full">
-										<Box className={`p-2 ${isStuck ? 'text-red-400 font-bold' : ''}`}>
+										<Box className={`p-4 ${isStuck ? 'text-red-400 font-bold' : ''}`}>
 											{progress ? 
 											progress + (unchangedProgressCount > 0 ? ' (unchanged x' + unchangedProgressCount + ')' : '') : 
 											results}
