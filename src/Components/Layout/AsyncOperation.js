@@ -27,6 +27,11 @@ import _ from 'lodash';
 // an 'operationsInProgress' state var and a 'setOperationsInProgress' action.
 
 function AsyncOperation(props) {
+
+	if (!props.Repository || !props.action) {
+		throw Error('AsyncOperation: Repository and action are required!');
+	}
+
 	const {
 			action,
 			Repository,
@@ -46,10 +51,6 @@ function AsyncOperation(props) {
 		dispatch = useDispatch(),
 		initiate = async () => {
 
-			if (!Repository || !action) {
-				alert('AsyncOperation: Repository and action are required!');
-				return;
-			}
 			clearProgress();
 			setFooter(getFooter('processing'));
 			setIsInProgress(true);
@@ -64,7 +65,6 @@ function AsyncOperation(props) {
 			
 			const response = Repository._processServerResponse(result);
 			if (!response.success) {
-				alert(result.message);
 				resetToInitialState();
 				return;
 			}
