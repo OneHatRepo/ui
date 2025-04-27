@@ -44,6 +44,12 @@ import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
 import Rotate from '../Icons/Rotate.js';
 import Pencil from '../Icons/Pencil.js';
+import Plus from '../Icons/Plus.js';
+import FloppyDiskRegular from '../Icons/FloppyDiskRegular.js';
+import Trash from '../Icons/Trash.js';
+import Xmark from '../Icons/Xmark.js';
+import Check from '../Icons/Check.js';
+
 import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
@@ -1216,6 +1222,7 @@ function Form(props) {
 							{...testProps('deleteBtn')}
 							key="deleteBtn"
 							onPress={onDelete}
+							icon={Trash}
 							className={`
 								bg-warning-500
 								hover:bg-warning-700
@@ -1239,6 +1246,7 @@ function Form(props) {
 						{...testProps('cancelBtn')}
 						key="cancelBtn"
 						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
+						icon={Xmark}
 						onPress={onCancel}
 						className="text-white"
 						text="Cancel"
@@ -1249,6 +1257,7 @@ function Form(props) {
 						{...testProps('closeBtn')}
 						key="closeBtn"
 						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
+						icon={Xmark}
 						onPress={onClose}
 						className="text-white"
 						text="Close"
@@ -1259,6 +1268,7 @@ function Form(props) {
 						{...testProps('saveBtn')}
 						key="saveBtn"
 						onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+						icon={getEditorMode() === EDITOR_MODE__ADD ? Plus : FloppyDiskRegular}
 						isDisabled={isSaveDisabled}
 						className="text-white"
 						text={getEditorMode() === EDITOR_MODE__ADD ? 'Add' : 'Save'}
@@ -1268,6 +1278,7 @@ function Form(props) {
 					<Button
 						{...testProps('submitBtn')}
 						key="submitBtn"
+						icon={Check}
 						onPress={(e) => handleSubmit(onSubmitDecorated, onSubmitError)(e)}
 						isDisabled={isSubmitDisabled}
 						className="text-white"
@@ -1283,6 +1294,7 @@ function Form(props) {
 								{...testProps('additionalFooterBtn-' + props.key)}
 								{...props}
 								onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
+								icon={props.icon || null}
 								text={props.text}
 								isDisabled={isDisabled}
 							/>;
