@@ -9,6 +9,7 @@ import AngleRight from './Icons/AngleRight.js';
 import AnglesLeft from './Icons/AnglesLeft.js';
 import AnglesRight from './Icons/AnglesRight.js';
 import Asterisk from './Icons/Asterisk.js';
+import ArrowUp from './Icons/ArrowUp.js';
 import Ban from './Icons/Ban.js';
 import Bars from './Icons/Bars.js';
 import BarsStaggered from './Icons/BarsStaggered.js';
@@ -253,6 +254,7 @@ const components = {
 	AnglesLeft,
 	AnglesRight,
 	Asterisk,
+	ArrowUp,
 	Ban,
 	Bars,
 	BarsStaggered,

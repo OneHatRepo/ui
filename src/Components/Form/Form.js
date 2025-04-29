@@ -40,6 +40,7 @@ import testProps from '../../Functions/testProps.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
+import DynamicFab from '../Buttons/DynamicFab.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
 import Rotate from '../Icons/Rotate.js';
@@ -47,9 +48,9 @@ import Pencil from '../Icons/Pencil.js';
 import Plus from '../Icons/Plus.js';
 import FloppyDiskRegular from '../Icons/FloppyDiskRegular.js';
 import Trash from '../Icons/Trash.js';
+import ArrowUp from '../Icons/ArrowUp.js';
 import Xmark from '../Icons/Xmark.js';
 import Check from '../Icons/Check.js';
-
 import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import _ from 'lodash';
@@ -138,6 +139,8 @@ function Form(props) {
 			
 		} = props,
 		formRef = useRef(),
+		ancillaryItemsRef = useRef({}),
+		ancillaryFabs = useRef([]),
 		styles = UiGlobals.styles,
 		record = props.record?.length === 1 ? props.record[0] : props.record;
 
@@ -899,18 +902,35 @@ function Form(props) {
 		},
 		buildAncillary = () => {
 			const components = [];
+			ancillaryFabs.current = [];
 			if (ancillaryItems.length) {
+
+				// add the "scroll to top" button
+				ancillaryFabs.current.push({
+					icon: ArrowUp,
+					onPress: () => scrollToAncillaryItem(0),
+				});
+
 				_.each(ancillaryItems, (item, ix) => {
 					let {
 						type,
 						title = null,
 						description = null,
+						icon,
 						selectorId,
 						selectorSelectedField,
 						...itemPropsToPass
 					} = item;
 					if (isMultiple && type !== 'Attachments') {
 						return;
+					}
+					if (icon) {
+						// TODO: this assumes that if one Ancillary item has an icon, they all do.
+						// If they don't, the ix will be wrong.
+						ancillaryFabs.current.push({
+							icon,
+							onPress: () => scrollToAncillaryItem(ix +1), // offset for the "scroll to top" button
+						});
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
 						itemPropsToPass.h = 400;
@@ -938,6 +958,9 @@ function Form(props) {
 										${styles.FORM_ANCILLARY_TITLE_CLASSNAME}
 									`}
 								>{title}</Text>;
+						if (icon) {
+							title = <HStack className="items-center"><Icon as={icon} size="lg" className="mr-2" />{title}</HStack>
+						}
 					}
 					if (description) {
 						description = <Text
@@ -949,6 +972,7 @@ function Form(props) {
 									>{description}</Text>;
 					}
 					components.push(<VStack
+										ref={(el) => (ancillaryItemsRef.current[ix +1 /* offset for "scroll to top" */] = el)}
 										key={'ancillary-' + ix}
 										className={`
 											Form-VStack12
@@ -963,6 +987,12 @@ function Form(props) {
 				});
 			}
 			return components;
+		},
+		scrollToAncillaryItem = (ix) => {
+			ancillaryItemsRef.current[ix]?.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start',
+			});
 		},
 		onSubmitError = (errors, e) => {
 			if (editorType === EDITOR_TYPE__INLINE) {
@@ -1088,6 +1118,7 @@ function Form(props) {
 		formComponents,
 		editor,
 		additionalButtons,
+		fab = null,
 		isSaveDisabled = false,
 		isSubmitDisabled = false,
 		showDeleteBtn = false,
@@ -1101,13 +1132,13 @@ function Form(props) {
 		// create editor
 		if (editorType === EDITOR_TYPE__INLINE) {
 			editor = buildFromColumnsConfig();
-		// } else if (editorType === EDITOR_TYPE__PLAIN) {
-		// 	formComponents = buildFromItems();
-		// 	const formAncillaryComponents = buildAncillary();
-		// 	editor = <>
-		// 				<VStack className="p-4">{formComponents}</VStack>
-		// 				<VStack className="pt-4">{formAncillaryComponents}</VStack>
-		// 			</>;
+			// } else if (editorType === EDITOR_TYPE__PLAIN) {
+			// 	formComponents = buildFromItems();
+			// 	const formAncillaryComponents = buildAncillary();
+			// 	editor = <>
+			// 				<VStack className="p-4">{formComponents}</VStack>
+			// 				<VStack className="pt-4">{formAncillaryComponents}</VStack>
+			// 			</>;
 		} else {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
@@ -1161,9 +1192,14 @@ function Form(props) {
 									{additionalButtons}
 								</Toolbar>)
 			}
+			if (!_.isEmpty(ancillaryFabs.current)) {
+				fab = <DynamicFab
+							fabs={ancillaryFabs.current}
+							collapseOnPress={false}
+							className="bottom-[55px]"
+						/>;
+			}
 		}
-
-
 
 		// create footer
 		if (!formState.isValid) {
@@ -1356,6 +1392,7 @@ function Form(props) {
 	
 	let className = props.className || '';
 	className += ' Form-VStackNative';
+	const scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />;
 	return <VStackNative
 				ref={formRef}
 				{...testProps(self)}
@@ -1379,6 +1416,7 @@ function Form(props) {
 								// height: '100%',
 							}}
 						>
+							{scrollToTopAnchor}
 							{modeHeader}
 							{formHeader}
 							{formButtons}
@@ -1386,6 +1424,7 @@ function Form(props) {
 						</ScrollView>}
 
 					{footer}
+					{fab}
 
 				</>}
 			</VStackNative>;

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, isValidElement, } from 'react';
 import {
+	Box,
 	HStack,
+	Icon,
 	ScrollView,
 	Text,
 	VStack,
@@ -24,7 +26,9 @@ import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import testProps from '../../Functions/testProps.js';
+import DynamicFab from '../Buttons/DynamicFab.js';
 import Toolbar from '../Toolbar/Toolbar.js';
+import ArrowUp from '../Icons/ArrowUp.js';
 import Button from '../Buttons/Button.js';
 import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
@@ -66,6 +70,8 @@ function Viewer(props) {
 
 		} = props,
 		scrollViewRef = useRef(),
+		ancillaryItemsRef = useRef({}),
+		ancillaryFabs = useRef([]),
 		isMultiple = _.isArray(record),
 		[containerWidth, setContainerWidth] = useState(),
 		isSideEditor = editorType === EDITOR_TYPE__SIDE,
@@ -295,16 +301,33 @@ function Viewer(props) {
 		},
 		buildAncillary = () => {
 			const components = [];
+			ancillaryFabs.current = [];
 			if (ancillaryItems.length) {
+
+				// add the "scroll to top" button
+				ancillaryFabs.current.push({
+					icon: ArrowUp,
+					onPress: () => scrollToAncillaryItem(0),
+				});
+
 				_.each(ancillaryItems, (item, ix) => {
 					let {
 						type,
 						title = null,
+						icon,
 						selectorId = null,
 						...itemPropsToPass
 					} = item;
 					if (isMultiple && type !== 'Attachments') {
 						return;
+					}
+					if (icon) {
+						// NOTE: this assumes that if one Ancillary item has an icon, they all do.
+						// If they don't, the ix will be wrong.
+						ancillaryFabs.current.push({
+							icon,
+							onPress: () => scrollToAncillaryItem(ix +1), // offset for the "scroll to top" button
+						});
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
 						itemPropsToPass.h = 400;
@@ -334,11 +357,27 @@ function Viewer(props) {
 							title += ' for ' + record.displayValue;
 						}
 						title = <Text className={`${styles.VIEWER_ANCILLARY_FONTSIZE} font-bold`}>{title}</Text>;
+						if (icon) {
+							title = <HStack className="items-center"><Icon as={icon} size="lg" className="mr-2" />{title}</HStack>
+						}
 					}
-					components.push(<VStack key={'ancillary-' + ix} className="my-3">{title}{element}</VStack>);
+					components.push(<VStack
+										ref={(el) => (ancillaryItemsRef.current[ix +1 /* offset for "scroll to top" */] = el)}
+										key={'ancillary-' + ix}
+										className="my-3"
+									>
+										{title}
+										{element}
+									</VStack>);
 				});
 			}
 			return components;
+		},
+		scrollToAncillaryItem = (ix) => {
+			ancillaryItemsRef.current[ix]?.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start',
+			});
 		},
 		onLayout = (e) => {
 			setContainerWidth(e.nativeEvent.layout.width);
@@ -356,15 +395,25 @@ function Viewer(props) {
 
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
-		showCloseBtn = !isSideEditor;
+		showCloseBtn = !isSideEditor,
+		showFooter = (showDeleteBtn || showCloseBtn);
 	let additionalButtons = null,
 		viewerComponents = null,
-		ancillaryComponents = null;
+		ancillaryComponents = null,
+		fab = null;
 	
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 		additionalButtons = buildAdditionalButtons(additionalViewButtons);
 		viewerComponents = buildFromItems();
 		ancillaryComponents = buildAncillary();
+
+		if (!_.isEmpty(ancillaryFabs.current)) {
+			fab = <DynamicFab
+						fabs={ancillaryFabs.current}
+						collapseOnPress={false}
+						verticalOffset={showFooter ? 15 : 0}
+					/>;
+		}
 	}
 
 	let canEdit = true;
@@ -385,6 +434,33 @@ function Viewer(props) {
 		className += ' ' + props.className;
 	}
 
+	const footer = showFooter ? 
+			<Footer className="justify-end">
+				{showDeleteBtn && 
+					<HStack className="flex-1 justify-start">
+						<Button
+							{...testProps('deleteBtn')}
+							key="deleteBtn"
+							onPress={onDelete}
+							className={`
+								text-white
+								bg-warning-500
+								hover:bg-warning-600
+							`}
+							text="Delete"
+						/>
+					</HStack>}
+				{onClose && showCloseBtn &&
+					<Button
+						{...testProps('closeBtn')}
+						key="closeBtn"
+						onPress={onClose}
+						className="text-white"
+						text="Close"
+					/>}
+			</Footer> : null;
+
+	const scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />;
 	return <VStackNative
 				{...testProps(self)}
 				style={style}
@@ -403,6 +479,7 @@ function Viewer(props) {
 							flex-1
 						`}
 					>
+						{scrollToTopAnchor}
 						{canEdit && onEditMode &&
 							<Toolbar className="justify-end">
 								<HStack className="flex-1 items-center">
@@ -434,31 +511,8 @@ function Viewer(props) {
 						<VStack className="Viewer-AncillaryComponents m-2 pt-4 px-2">{ancillaryComponents}</VStack>
 					</ScrollView>
 
-					{(showDeleteBtn || showCloseBtn) && 
-						<Footer className="justify-end">
-							{showDeleteBtn && 
-								<HStack className="flex-1 justify-start">
-									<Button
-										{...testProps('deleteBtn')}
-										key="deleteBtn"
-										onPress={onDelete}
-										className={`
-											text-white
-											bg-warning-500
-											hover:bg-warning-600
-										`}
-										text="Delete"
-									/>
-								</HStack>}
-							{onClose && showCloseBtn &&
-								<Button
-									{...testProps('closeBtn')}
-									key="closeBtn"
-									onPress={onClose}
-									className="text-white"
-									text="Close"
-								/>}
-						</Footer>}
+					{footer}
+					{fab}
 
 				</>}
 			</VStackNative>;
