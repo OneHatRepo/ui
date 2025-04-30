@@ -26,7 +26,7 @@ import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
 import testProps from '../../Functions/testProps.js';
-import DynamicFab from '../Buttons/DynamicFab.js';
+import DynamicFab from '../Fab/DynamicFab.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import ArrowUp from '../Icons/ArrowUp.js';
 import Button from '../Buttons/Button.js';
@@ -308,6 +308,8 @@ function Viewer(props) {
 				ancillaryFabs.current.push({
 					icon: ArrowUp,
 					onPress: () => scrollToAncillaryItem(0),
+					tooltip: 'Scroll to top',
+					tooltipTriggerClassName: 'w-[50px]',
 				});
 
 				_.each(ancillaryItems, (item, ix) => {
@@ -327,6 +329,8 @@ function Viewer(props) {
 						ancillaryFabs.current.push({
 							icon,
 							onPress: () => scrollToAncillaryItem(ix +1), // offset for the "scroll to top" button
+							tooltip: title,
+							tooltipTriggerClassName: 'w-[50px]',
 						});
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
@@ -411,7 +415,7 @@ function Viewer(props) {
 			fab = <DynamicFab
 						fabs={ancillaryFabs.current}
 						collapseOnPress={false}
-						verticalOffset={showFooter ? 15 : 0}
+						tooltip="Scroll to Ancillary Item"
 					/>;
 		}
 	}

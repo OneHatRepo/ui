@@ -40,7 +40,7 @@ import testProps from '../../Functions/testProps.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import Button from '../Buttons/Button.js';
 import IconButton from '../Buttons/IconButton.js';
-import DynamicFab from '../Buttons/DynamicFab.js';
+import DynamicFab from '../Fab/DynamicFab.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
 import Rotate from '../Icons/Rotate.js';
@@ -909,6 +909,8 @@ function Form(props) {
 				ancillaryFabs.current.push({
 					icon: ArrowUp,
 					onPress: () => scrollToAncillaryItem(0),
+					tooltip: 'Scroll to top',
+					tooltipTriggerClassName: 'w-[50px]',
 				});
 
 				_.each(ancillaryItems, (item, ix) => {
@@ -930,6 +932,8 @@ function Form(props) {
 						ancillaryFabs.current.push({
 							icon,
 							onPress: () => scrollToAncillaryItem(ix +1), // offset for the "scroll to top" button
+							tooltip: title,
+							tooltipTriggerClassName: 'w-[50px]',
 						});
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
@@ -1197,6 +1201,7 @@ function Form(props) {
 							fabs={ancillaryFabs.current}
 							collapseOnPress={false}
 							className="bottom-[55px]"
+							tooltip="Scroll to Ancillary Item"
 						/>;
 			}
 		}

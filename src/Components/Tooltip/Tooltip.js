@@ -17,8 +17,8 @@ const TooltipElement = forwardRef((props, ref) => {
 	}
 
 	let triggerClassName = 'Tooltip-trigger';
-	if (props.className) {
-		triggerClassName += ' ' + props.className;
+	if (props.triggerClassName) {
+		triggerClassName += ' ' + props.triggerClassName;
 	}
 	
 	return <Tooltip

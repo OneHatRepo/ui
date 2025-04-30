@@ -11,6 +11,7 @@ export default function withTooltip(WrappedComponent) {
 				tooltip,
 				tooltipPlacement = 'bottom',
 				tooltipClassName,
+				tooltipTriggerClassName,
 				_tooltip = {},
 				...propsToPass
 			} = props;
@@ -22,6 +23,7 @@ export default function withTooltip(WrappedComponent) {
 							label={tooltip}
 							placement={tooltipPlacement}
 							className={tooltipClassName}
+							triggerClassName={tooltipTriggerClassName}
 							{..._tooltip}
 						>
 							{component}
