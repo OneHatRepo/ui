@@ -84,6 +84,7 @@ function Form(props) {
 			startingValues = {},
 			items = [], // Columns, FieldSets, Fields, etc to define the form
 			ancillaryItems = [], // additional items which are not controllable form elements, but should appear in the form
+			showAncillaryButtons = false,
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			columnsConfig, // Which columns are shown in Grid, so the inline editor can match. Used only for EDITOR_TYPE__INLINE
 			validator, // custom validator, mainly for EDITOR_TYPE__PLAIN
@@ -1053,6 +1054,9 @@ function Form(props) {
 		},
 		onScroll = useCallback(
 			_.debounce((e) => {
+				if (!showAncillaryButtons) {
+					return;
+				}
 				const
 					scrollY = e.nativeEvent.contentOffset.y,
 					isFabVisible = scrollY > 50;
@@ -1232,7 +1236,7 @@ function Form(props) {
 									{additionalButtons}
 								</Toolbar>;
 			}
-			if (!_.isEmpty(getAncillaryButtons())) {
+			if (showAncillaryButtons && !_.isEmpty(getAncillaryButtons())) {
 				fab = <Animated.View style={fabAnimatedStyle}>
 						<DynamicFab
 							buttons={getAncillaryButtons()}
@@ -1465,7 +1469,7 @@ function Form(props) {
 							{modeHeader}
 							{formHeader}
 							{formButtons}
-							{!_.isEmpty(getAncillaryButtons()) && 
+							{showAncillaryButtons && !_.isEmpty(getAncillaryButtons()) && 
 								<Toolbar className="justify-start flex-wrap gap-2">
 									<Text>Scroll:</Text>
 									{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}

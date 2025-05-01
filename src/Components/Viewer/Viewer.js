@@ -47,6 +47,7 @@ function Viewer(props) {
 			viewerCanDelete = false,
 			items = [], // Columns, FieldSets, Fields, etc to define the form
 			ancillaryItems = [], // additional items which are not controllable form elements, but should appear in the form
+			showAncillaryButtons = false,
 			columnDefaults = {}, // defaults for each Column defined in items (above)
 			record,
 			additionalViewButtons,
@@ -410,6 +411,9 @@ function Viewer(props) {
 		},
 		onScroll = useCallback(
 			_.debounce((e) => {
+				if (!showAncillaryButtons) {
+					return;
+				}
 				const
 					scrollY = e.nativeEvent.contentOffset.y,
 					isFabVisible = scrollY > 50;
@@ -448,14 +452,14 @@ function Viewer(props) {
 		viewerComponents = buildFromItems();
 		ancillaryComponents = buildAncillary();
 
-		if (!_.isEmpty(getAncillaryButtons())) {
-				fab = <Animated.View style={fabAnimatedStyle}>
-						<DynamicFab
-							buttons={getAncillaryButtons()}
-							collapseOnPress={false}
-							tooltip="Scroll to Ancillary Item"
-						/>
-					</Animated.View>;
+		if (showAncillaryButtons && !_.isEmpty(getAncillaryButtons())) {
+			fab = <Animated.View style={fabAnimatedStyle}>
+					<DynamicFab
+						buttons={getAncillaryButtons()}
+						collapseOnPress={false}
+						tooltip="Scroll to Ancillary Item"
+					/>
+				</Animated.View>;
 		}
 	}
 
@@ -551,7 +555,7 @@ function Viewer(props) {
 								{additionalButtons}
 							</Toolbar>}
 						
-						{!_.isEmpty(getAncillaryButtons()) && 
+						{showAncillaryButtons && !_.isEmpty(getAncillaryButtons()) && 
 							<Toolbar className="justify-start flex-wrap gap-2">
 								<Text>Scroll:</Text>
 								{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
