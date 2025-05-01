@@ -15,7 +15,6 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 				color = '#fff',
 			} = config,
 			buttonProps = {
-				key,
 				parent: self,
 				reference: key,
 				text,
@@ -31,6 +30,7 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 		additionalButtons.push(<Button
 			{...testProps(key)}
 			{...buttonProps}
+			key={key}
 		/>);
 	});
 	return additionalButtons;
