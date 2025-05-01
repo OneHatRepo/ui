@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, isValidElement, } from 'react';
+import { useEffect, useCallback, useRef, useState, isValidElement, } from 'react';
 import {
 	Box,
 	HStack,
@@ -8,6 +8,11 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import Animated, {
+	useSharedValue,
+	useAnimatedStyle,
+	withTiming,
+} from 'react-native-reanimated';
 import {
 	EDIT,
 } from '../../Constants/Commands.js';
@@ -34,6 +39,8 @@ import Label from '../Form/Label.js';
 import Pencil from '../Icons/Pencil.js';
 import Footer from '../Layout/Footer.js';
 import _ from 'lodash';
+
+const FAB_FADE_TIME = 300; // ms
 
 function Viewer(props) {
 	const {
@@ -71,9 +78,23 @@ function Viewer(props) {
 		} = props,
 		scrollViewRef = useRef(),
 		ancillaryItemsRef = useRef({}),
-		ancillaryFabs = useRef([]),
+		ancillaryButtons = useRef([]),
+		setAncillaryButtons = (array) => {
+			ancillaryButtons.current = array;
+		},
+		getAncillaryButtons = () => {
+			return ancillaryButtons.current;
+		},
 		isMultiple = _.isArray(record),
 		[containerWidth, setContainerWidth] = useState(),
+		[isFabVisible, setIsFabVisible] = useState(false),
+		fabOpacity = useSharedValue(0),
+		fabAnimatedStyle = useAnimatedStyle(() => {
+			return {
+				opacity: withTiming(fabOpacity.value, { duration: FAB_FADE_TIME }), // Smooth fade animation
+				pointerEvents: fabOpacity.value > 0 ? 'auto' : 'none', // Disable interaction when invisible
+			};
+		}),
 		isSideEditor = editorType === EDITOR_TYPE__SIDE,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
@@ -301,15 +322,16 @@ function Viewer(props) {
 		},
 		buildAncillary = () => {
 			const components = [];
-			ancillaryFabs.current = [];
+			setAncillaryButtons([]);
 			if (ancillaryItems.length) {
 
 				// add the "scroll to top" button
-				ancillaryFabs.current.push({
+				getAncillaryButtons().push({
 					icon: ArrowUp,
+					key: 'scrollToTop',
+					reference: 'scrollToTop',
 					onPress: () => scrollToAncillaryItem(0),
 					tooltip: 'Scroll to top',
-					tooltipTriggerClassName: 'w-[50px]',
 				});
 
 				_.each(ancillaryItems, (item, ix) => {
@@ -326,11 +348,11 @@ function Viewer(props) {
 					if (icon) {
 						// NOTE: this assumes that if one Ancillary item has an icon, they all do.
 						// If they don't, the ix will be wrong.
-						ancillaryFabs.current.push({
+						getAncillaryButtons().push({
 							icon,
-							onPress: () => scrollToAncillaryItem(ix +1), // offset for the "scroll to top" button
+							key: 'ancillary-' + ix,
+							onPress: () => { scrollToAncillaryItem(ix +1)}, // offset for the "scroll to top" button
 							tooltip: title,
-							tooltipTriggerClassName: 'w-[50px]',
 						});
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
@@ -377,15 +399,30 @@ function Viewer(props) {
 			}
 			return components;
 		},
+		onLayout = (e) => {
+			setContainerWidth(e.nativeEvent.layout.width);
+		},
 		scrollToAncillaryItem = (ix) => {
 			ancillaryItemsRef.current[ix]?.scrollIntoView({
 				behavior: 'smooth',
 				block: 'start',
 			});
 		},
-		onLayout = (e) => {
-			setContainerWidth(e.nativeEvent.layout.width);
-		};
+		onScroll = useCallback(
+			_.debounce((e) => {
+				const
+					scrollY = e.nativeEvent.contentOffset.y,
+					isFabVisible = scrollY > 50;
+				fabOpacity.value = isFabVisible ? 1 : 0;
+				if (isFabVisible) {
+					setIsFabVisible(true);
+				} else {
+					// delay removal from DOM until fade-out is complete
+					setTimeout(() => setIsFabVisible(isFabVisible), FAB_FADE_TIME);
+				}
+			}, 100), // delay
+			[]
+		);
 
 	useEffect(() => {
 		if (viewerSetup && record?.getSubmitValues) {
@@ -411,12 +448,14 @@ function Viewer(props) {
 		viewerComponents = buildFromItems();
 		ancillaryComponents = buildAncillary();
 
-		if (!_.isEmpty(ancillaryFabs.current)) {
-			fab = <DynamicFab
-						fabs={ancillaryFabs.current}
-						collapseOnPress={false}
-						tooltip="Scroll to Ancillary Item"
-					/>;
+		if (!_.isEmpty(getAncillaryButtons())) {
+				fab = <Animated.View style={fabAnimatedStyle}>
+						<DynamicFab
+							buttons={getAncillaryButtons()}
+							collapseOnPress={false}
+							tooltip="Scroll to Ancillary Item"
+						/>
+					</Animated.View>;
 		}
 	}
 
@@ -476,6 +515,8 @@ function Viewer(props) {
 					<ScrollView
 						_web={{ height: 1 }}
 						ref={scrollViewRef}
+						onScroll={onScroll}
+						scrollEventThrottle={16 /* ms */}
 						className={`
 							Viewer-ScrollView
 							w-full
@@ -506,8 +547,14 @@ function Viewer(props) {
 							</Toolbar>}
 						
 						{!_.isEmpty(additionalButtons) && 
-							<Toolbar className="justify-end flex-wrap">
+							<Toolbar className="justify-end flex-wrap gap-2">
 								{additionalButtons}
+							</Toolbar>}
+						
+						{!_.isEmpty(getAncillaryButtons()) && 
+							<Toolbar className="justify-start flex-wrap gap-2">
+								<Text>Scroll:</Text>
+								{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
 							</Toolbar>}
 						
 						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD ? <HStack className="Viewer-formComponents-HStack p-4 gap-4 justify-center">{viewerComponents}</HStack> : null}
@@ -516,7 +563,7 @@ function Viewer(props) {
 					</ScrollView>
 
 					{footer}
-					{fab}
+					{isFabVisible && fab}
 
 				</>}
 			</VStackNative>;

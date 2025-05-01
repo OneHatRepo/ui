@@ -7,24 +7,17 @@ export default function buildAdditionalButtons(configs, self, handlerArgs = {}) 
 	_.each(configs, (config) => {
 		const {
 				key,
-				text,
-				handler,
-				icon,
-				isDisabled,
-				tooltip,
 				color = '#fff',
+				...configToPass
 			} = config,
 			buttonProps = {
-				parent: self,
-				reference: key,
-				text,
-				icon,
-				isDisabled,
-				tooltip,
-				color,
+				...configToPass,
 			};
-		if (handler) {
-			buttonProps.onPress = () => handler(handlerArgs);
+			buttonProps.parent = config.self;
+			buttonProps.color = color;
+
+		if (!config.onPress && config.handler) {
+			buttonProps.onPress = () => config.handler(handlerArgs);
 		}
 		
 		additionalButtons.push(<Button

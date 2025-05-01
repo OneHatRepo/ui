@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, isValidElement, } from 'react';
+import { useEffect, useCallback, useState, useRef, isValidElement, } from 'react';
 import {
 	Box,
 	HStack,
@@ -8,6 +8,11 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import Animated, {
+	useSharedValue,
+	useAnimatedStyle,
+	withTiming,
+} from 'react-native-reanimated';
 import {
 	VIEW,
 } from '../../Constants/Commands.js';
@@ -70,6 +75,8 @@ import _ from 'lodash';
 //
 // EDITOR_TYPE__PLAIN
 // Form is embedded on screen in some other way. Mainly use startingValues, items, validator
+
+const FAB_FADE_TIME = 300; // ms
 
 function Form(props) {
 	const {
@@ -140,7 +147,13 @@ function Form(props) {
 		} = props,
 		formRef = useRef(),
 		ancillaryItemsRef = useRef({}),
-		ancillaryFabs = useRef([]),
+		ancillaryButtons = useRef([]),
+		setAncillaryButtons = (array) => {
+			ancillaryButtons.current = array;
+		},
+		getAncillaryButtons = () => {
+			return ancillaryButtons.current;
+		},
 		styles = UiGlobals.styles,
 		record = props.record?.length === 1 ? props.record[0] : props.record;
 
@@ -158,6 +171,14 @@ function Form(props) {
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
 		[containerWidth, setContainerWidth] = useState(),
+		[isFabVisible, setIsFabVisible] = useState(false),
+		fabOpacity = useSharedValue(0),
+		fabAnimatedStyle = useAnimatedStyle(() => {
+			return {
+				opacity: withTiming(fabOpacity.value, { duration: FAB_FADE_TIME }), // Smooth fade animation
+				pointerEvents: fabOpacity.value > 0 ? 'auto' : 'none', // Disable interaction when invisible
+			};
+		}),
 		initialValues = _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		validatorToUse = validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object(),
@@ -902,15 +923,15 @@ function Form(props) {
 		},
 		buildAncillary = () => {
 			const components = [];
-			ancillaryFabs.current = [];
+			setAncillaryButtons([]);
 			if (ancillaryItems.length) {
 
 				// add the "scroll to top" button
-				ancillaryFabs.current.push({
+				getAncillaryButtons().push({
 					icon: ArrowUp,
+					reference: 'scrollToTop',
 					onPress: () => scrollToAncillaryItem(0),
 					tooltip: 'Scroll to top',
-					tooltipTriggerClassName: 'w-[50px]',
 				});
 
 				_.each(ancillaryItems, (item, ix) => {
@@ -927,13 +948,12 @@ function Form(props) {
 						return;
 					}
 					if (icon) {
-						// TODO: this assumes that if one Ancillary item has an icon, they all do.
-						// If they don't, the ix will be wrong.
-						ancillaryFabs.current.push({
+						// NOTE: this assumes that if one Ancillary item has an icon, they all do.
+						// If they don't, the ix will be wrong!
+						getAncillaryButtons().push({
 							icon,
 							onPress: () => scrollToAncillaryItem(ix +1), // offset for the "scroll to top" button
 							tooltip: title,
-							tooltipTriggerClassName: 'w-[50px]',
 						});
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
@@ -992,12 +1012,6 @@ function Form(props) {
 			}
 			return components;
 		},
-		scrollToAncillaryItem = (ix) => {
-			ancillaryItemsRef.current[ix]?.scrollIntoView({
-				behavior: 'smooth',
-				block: 'start',
-			});
-		},
 		onSubmitError = (errors, e) => {
 			if (editorType === EDITOR_TYPE__INLINE) {
 				alert(errors.message);
@@ -1030,7 +1044,28 @@ function Form(props) {
 			}
 
 			setContainerWidth(e.nativeEvent.layout.width);
-		};
+		},
+		scrollToAncillaryItem = (ix) => {
+			ancillaryItemsRef.current[ix]?.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start',
+			});
+		},
+		onScroll = useCallback(
+			_.debounce((e) => {
+				const
+					scrollY = e.nativeEvent.contentOffset.y,
+					isFabVisible = scrollY > 50;
+				fabOpacity.value = isFabVisible ? 1 : 0;
+				if (isFabVisible) {
+					setIsFabVisible(true);
+				} else {
+					// delay removal from DOM until fade-out is complete
+					setTimeout(() => setIsFabVisible(isFabVisible), FAB_FADE_TIME);
+				}
+			}, 100), // delay
+			[]
+		);
 
 	useEffect(() => {
 		if (skipAll) {
@@ -1115,8 +1150,9 @@ function Form(props) {
 		style.maxHeight = maxHeight;
 	}
 
-	const formButtons = [];
 	let modeHeader = null,
+		formButtons = null,
+		scrollButtons = null,
 		footer = null,
 		footerButtons = null,
 		formComponents,
@@ -1192,17 +1228,19 @@ function Form(props) {
 							</Toolbar>;
 			}
 			if (getEditorMode() === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
-				formButtons.push(<Toolbar key="additionalButtonsToolbar" className="justify-end flex-wrap gap-2">
+				formButtons = <Toolbar className="justify-end flex-wrap gap-2">
 									{additionalButtons}
-								</Toolbar>)
+								</Toolbar>;
 			}
-			if (!_.isEmpty(ancillaryFabs.current)) {
-				fab = <DynamicFab
-							fabs={ancillaryFabs.current}
+			if (!_.isEmpty(getAncillaryButtons())) {
+				fab = <Animated.View style={fabAnimatedStyle}>
+						<DynamicFab
+							buttons={getAncillaryButtons()}
 							collapseOnPress={false}
 							className="bottom-[55px]"
 							tooltip="Scroll to Ancillary Item"
-						/>;
+						/>
+					</Animated.View>;
 			}
 		}
 
@@ -1417,6 +1455,8 @@ function Form(props) {
 								pb-1
 								web:min-h-[${minHeight}px]
 							`}
+							onScroll={onScroll}
+							scrollEventThrottle={16 /* ms */}
 							contentContainerStyle={{
 								// height: '100%',
 							}}
@@ -1425,11 +1465,16 @@ function Form(props) {
 							{modeHeader}
 							{formHeader}
 							{formButtons}
+							{!_.isEmpty(getAncillaryButtons()) && 
+								<Toolbar className="justify-start flex-wrap gap-2">
+									<Text>Scroll:</Text>
+									{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
+								</Toolbar>}
 							{editor}
 						</ScrollView>}
 
 					{footer}
-					{fab}
+					{isFabVisible && fab}
 
 				</>}
 			</VStackNative>;
