@@ -18,6 +18,7 @@ import {
 } from '../../Constants/Commands.js';
 import {
 	EDITOR_TYPE__SIDE,
+	EDITOR_TYPE__SMART,
 } from '../../Constants/Editor.js';
 import {
 	extractCssPropertyFromClassName,
@@ -97,6 +98,7 @@ function Viewer(props) {
 			};
 		}),
 		isSideEditor = editorType === EDITOR_TYPE__SIDE,
+		isSmartEditor = editorType === EDITOR_TYPE__SMART,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
 		buildFromItems = () => {
@@ -440,7 +442,7 @@ function Viewer(props) {
 
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
-		showCloseBtn = !isSideEditor,
+		showCloseBtn = !isSideEditor && !isSmartEditor && onClose,
 		showFooter = (showDeleteBtn || showCloseBtn);
 	let additionalButtons = null,
 		viewerComponents = null,
@@ -497,7 +499,7 @@ function Viewer(props) {
 							text="Delete"
 						/>
 					</HStack>}
-				{onClose && showCloseBtn &&
+				{showCloseBtn &&
 					<Button
 						{...testProps('closeBtn')}
 						key="closeBtn"
