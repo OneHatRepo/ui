@@ -1,2 +1,0 @@
-export const EDITOR_MODE_ADD = 'EDITOR_MODE_ADD';
-export const EDITOR_MODE_EDIT = 'EDITOR_MODE_EDIT';
