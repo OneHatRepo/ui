@@ -462,6 +462,8 @@ function TabBar(props) {
 						items-center
 						justify-start
 						py-2
+						overflow-x-hidden
+						overflow-y-auto
 						${styles.TAB_BAR_CLASSNAME}
 					`}
 				>
@@ -487,6 +489,8 @@ function TabBar(props) {
 						${'h-[' + tabHeight + 'px]'}
 						items-center
 						justify-start
+						overflow-x-auto
+						overflow-y-hidden
 						p-1
 						pb-0
 						${styles.TAB_BAR_CLASSNAME}
