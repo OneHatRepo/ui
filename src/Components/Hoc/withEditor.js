@@ -50,6 +50,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				newEntityDisplayValue,
 				newEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				defaultValues,
+				initialEditorMode = EDITOR_MODE__VIEW,
 				stayInEditModeOnSelectionChange = false,
 
 				// withComponent
@@ -81,7 +82,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			listeners = useRef({}),
 			editorStateRef = useRef(),
 			newEntityDisplayValueRef = useRef(),
-			editorModeRef = useRef(EDITOR_MODE__VIEW),
+			editorModeRef = useRef(initialEditorMode),
 			isIgnoreNextSelectionChangeRef = useRef(false),
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isAdding, setIsAdding] = useState(false),
