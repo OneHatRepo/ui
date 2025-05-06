@@ -57,6 +57,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				canRecordBeEdited,
 				canRecordBeDeleted,
 				canRecordBeDuplicated,
+				canProceedWithCrud, // fn returns bool on if the CRUD operation can proceed
 				...propsToPass
 			} = props,
 			{
@@ -209,7 +210,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case ADD:
 						key = 'addBtn';
 						text = 'Add';
-						handler = (parent, e) => onAdd();
+						handler = (parent, e) => {
+							if (canProceedWithCrud && !canProceedWithCrud()) {
+								return;
+							}
+							onAdd();
+						};
 						icon = Plus;
 						if (isNoSelectorSelected() ||
 							(isTree && isEmptySelection())
@@ -220,7 +226,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case EDIT:
 						key = 'editBtn';
 						text = 'Edit';
-						handler = (parent, e) => onEdit();
+						handler = (parent, e) => {
+							if (canProceedWithCrud && !canProceedWithCrud()) {
+								return;
+							}
+							onEdit();
+						};
 						icon = Edit;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
@@ -235,7 +246,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'deleteBtn';
 						text = 'Delete';
 						handler = onDelete;
-						handler = (parent, e) => onDelete();
+						handler = (parent, e) => {
+							if (canProceedWithCrud && !canProceedWithCrud()) {
+								return;
+							}
+							onDelete();
+						};
 						icon = Trash;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
@@ -280,7 +296,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case DUPLICATE:
 						key = 'duplicateBtn';
 						text = 'Duplicate';
-						handler = (parent, e) => onDuplicate();
+						handler = (parent, e) => {
+							if (canProceedWithCrud && !canProceedWithCrud()) {
+								return;
+							}
+							onDuplicate();
+						};
 						icon = Duplicate;
 						isDisabled = !selection.length || selection.length !== 1;
 						if (isNoSelectorSelected() ||
