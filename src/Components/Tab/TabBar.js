@@ -398,13 +398,16 @@ function TabBar(props) {
 			if (!tabs[currentTabIx]) {
 				return null;
 			}
-			if (!tabs[currentTabIx].content && !tabs[currentTabIx].items) {
+
+			const currentTab = tabs[currentTabIx];
+			if (!currentTab.content && !currentTab.items) {
 				return null;
 			}
-			if (tabs[currentTabIx].content) {
-				return tabs[currentTabIx].content;
+			
+			if (currentTab.content) {
+				return currentTab.content;
 			}
-			return _.map(tabs[currentTabIx].items, (item, ix) => {
+			return _.map(currentTab.items, (item, ix) => {
 				return cloneElement(item, { key: ix });
 			});
 		};
