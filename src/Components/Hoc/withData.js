@@ -100,10 +100,11 @@ export default function withData(WrappedComponent) {
 		}, []);
 
 		useEffect(() => {
-			if (!LocalRepository) {
+			if (!baseParams || !LocalRepository) {
 				return;
 			}
 		
+			// If baseParams changes, re-load the Repository
 			if (LocalRepository.isLoaded && !_.isEqual(LocalRepository.getBaseParams(), baseParams)) {
 				LocalRepository.setBaseParams(baseParams);
 	
