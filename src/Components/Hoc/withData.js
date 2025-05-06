@@ -99,6 +99,21 @@ export default function withData(WrappedComponent) {
 
 		}, []);
 
+		useEffect(() => {
+			if (!LocalRepository) {
+				return;
+			}
+		
+			if (LocalRepository.isLoaded && !_.isEqual(LocalRepository.getBaseParams(), baseParams)) {
+				LocalRepository.setBaseParams(baseParams);
+	
+				if (LocalRepository.isRemote && !LocalRepository.isLoading) {
+					LocalRepository.load();
+				}
+			}
+		
+		}, [baseParams, LocalRepository]);
+
 		if (!isReady) {
 			return null;
 		}
