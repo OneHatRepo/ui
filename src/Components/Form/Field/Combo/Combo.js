@@ -659,7 +659,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						placeholder={placeholder}
 						tooltip={tooltip}
 						tooltipPlacement={tooltipPlacement}
-						tooltipClassName={`
+						tooltipTriggerClassName={`
 							grow
 							h-auto
 							self-stretch
@@ -901,7 +901,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 									placeholder={placeholder}
 									tooltip={tooltip}
 									tooltipPlacement={tooltipPlacement}
-									tooltipClassName={`
+									tooltipTriggerClassName={`
 										grow
 										h-full
 										flex-1
@@ -1014,7 +1014,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 							placeholder={placeholder}
 							tooltip={tooltip}
 							tooltipPlacement={tooltipPlacement}
-							tooltipClassName={`
+							tooltipTriggerClassName={`
 								h-full
 								flex-1
 							`}

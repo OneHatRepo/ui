@@ -366,7 +366,7 @@ export const DateElement = forwardRef((props, ref) => {
 				isDisabled={isDisabled}
 				tooltip={tooltip}
 				tooltipPlacement={tooltipPlacement}
-				tooltipClassName={`
+				tooltipTriggerClassName={`
 					flex-1
 					h-full
 				`}

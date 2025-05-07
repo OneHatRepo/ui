@@ -164,7 +164,10 @@ function NumberElement(props) {
 					isDisabled={isDisabled}
 					tooltip={tooltip}
 					tooltipPlacement={tooltipPlacement}
-					tooltipClassName="flex-1"
+					tooltipTriggerClassName={`
+						flex-1
+						h-full
+					`}
 					className={`
 						h-full
 						text-center
