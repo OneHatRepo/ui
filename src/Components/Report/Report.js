@@ -18,6 +18,7 @@ import {
 } from '../../Constants/ReportTypes.js';
 import Form from '../Form/Form.js';
 import withComponent from '../Hoc/withComponent.js';
+import withAlert from '../Hoc/withAlert.js';
 import testProps from '../../Functions/testProps.js';
 import ChartLine from '../Icons/ChartLine.js';
 import Pdf from '../Icons/Pdf.js';
@@ -36,8 +37,13 @@ function Report(props) {
 			disablePdf = false,
 			disableExcel = false,
 			showReportHeaders = true,
+			alert,
 		} = props,
-		buttons = [];
+		buttons = [],
+		downloadReport = (args) => {
+			getReport(args);
+			alert('Download started');
+		};
 
 	const propsIcon = props._icon || {};
 	propsIcon.className = 'w-full h-full text-primary-500';
@@ -59,7 +65,7 @@ function Report(props) {
 			key: 'excelBtn',
 			text: 'Download Excel',
 			icon: Excel,
-			onPress: (data) => getReport({
+			onPress: (data) => downloadReport({
 				reportId,
 				data,
 				reportType: REPORT_TYPES__EXCEL,
@@ -74,7 +80,7 @@ function Report(props) {
 			key: 'pdfBtn',
 			text: 'Download PDF',
 			icon: Pdf,
-			onPress: (data) => getReport({
+			onPress: (data) => downloadReport({
 				reportId,
 				data,
 				reportType: REPORT_TYPES__PDF,
@@ -113,4 +119,4 @@ function Report(props) {
 			</VStackNative>;
 }
 
-export default withComponent(Report);
+export default withComponent(withAlert(Report));
