@@ -984,7 +984,7 @@ function Form(props) {
 									`}
 								>{title}</Text>;
 						if (icon) {
-							title = <HStack className="items-center"><Icon as={icon} size="lg" className="mr-2" />{title}</HStack>
+							title = <HStack className="items-center"><Icon as={icon} className="w-[32px] h-[32px] mr-2" />{title}</HStack>
 						}
 					}
 					if (description) {
