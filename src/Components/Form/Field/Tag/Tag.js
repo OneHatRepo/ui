@@ -61,8 +61,8 @@ function TagComponent(props) {
 				await repository.waitUntilDoneLoading();
 			}
 			let record = repository.getById(id); // first try to get from entities in memory
-			if (!record && repository.getSingleEntityFromServer) {
-				record = await repository.getSingleEntityFromServer(id);
+			if (!record && repository.loadOneAdditionalEntity) {
+				record = await repository.loadOneAdditionalEntity(id);
 			}
 
 			if (!record) {
