@@ -25,6 +25,7 @@ function UploadsDownloadsWindow(props) {
 			downloadHeaders,
 			uploadParams = {},
 			downloadParams = {},
+			isDownloadOnly = false,
 			onUpload,
 
 			// withComponent
@@ -124,6 +125,61 @@ function UploadsDownloadsWindow(props) {
 				}
 			}
 		};
+
+		const items = [
+			{
+				type: 'DisplayField',
+				text: 'Download an Excel file of the current grid contents.',
+			},
+			{
+				type: 'Button',
+				text: 'Download',
+				isEditable: false,
+				icon: Excel,
+				_icon: {
+					size: 'md',
+				},
+				onPress: () => onDownload(),
+				className: 'mb-5',
+			},
+		];
+		if (!isDownloadOnly) {
+			items.push({
+				type: 'DisplayField',
+				text: 'Upload an Excel file to the current grid.',
+			});
+			items.push({
+				type: 'File',
+				name: 'file',
+				onChangeValue: setImportFile,
+				accept: '.xlsx',
+			});
+			items.push({
+				type: 'Row',
+				className: 'mt-2',
+				items: [
+					{
+						type: 'Button',
+						text: 'Upload',
+						isEditable: false,
+						icon: Upload,
+						_icon: {
+							size: 'md',
+						},
+						isDisabled: !importFile,
+						onPress: onUploadLocal,
+					},
+					{
+						type: 'Button',
+						text: 'Get Template',
+						icon: Download,
+						isEditable: false,
+						onPress: onDownloadTemplate,
+					},
+
+				],
+			});
+		}
 	
 	return <Panel
 				{...props}
@@ -151,58 +207,7 @@ function UploadsDownloadsWindow(props) {
 							"type": "Column",
 							"flex": 1,
 							"defaults": {},
-							"items": [
-								{
-									type: 'DisplayField',
-									text: 'Download an Excel file of the current grid contents.',
-								},
-								{
-									type: 'Button',
-									text: 'Download',
-									isEditable: false,
-									icon: Excel,
-									_icon: {
-										size: 'md',
-									},
-									onPress: () => onDownload(),
-									className: 'mb-5',
-								},
-								{
-									type: 'DisplayField',
-									text: 'Upload an Excel file to the current grid.',
-								},
-								{
-									type: 'File',
-									name: 'file',
-									onChangeValue: setImportFile,
-									accept: '.xlsx',
-								},
-								{
-									type: 'Row',
-									className: 'mt-2',
-									items: [
-										{
-											type: 'Button',
-											text: 'Upload',
-											isEditable: false,
-											icon: Upload,
-											_icon: {
-												size: 'md',
-											},
-											isDisabled: !importFile,
-											onPress: onUploadLocal,
-										},
-										{
-											type: 'Button',
-											text: 'Get Template',
-											icon: Download,
-											isEditable: false,
-											onPress: onDownloadTemplate,
-										},
-
-									],
-								},
-							]
+							"items": items,
 						},
 					]}
 					// record={selection}

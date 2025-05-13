@@ -8,6 +8,7 @@ import {
 	DUPLICATE,
 	PRINT,
 	UPLOAD_DOWNLOAD,
+	DOWNLOAD,
 } from '../../Constants/Commands.js';
 import Clipboard from '../Icons/Clipboard.js';
 import Duplicate from '../Icons/Duplicate.js';
@@ -17,6 +18,7 @@ import Trash from '../Icons/Trash.js';
 import Plus from '../Icons/Plus.js';
 import Print from '../Icons/Print.js';
 import UploadDownload from '../Icons/UploadDownload.js';
+import Download from '../Icons/Download.js';
 import inArray from '../../Functions/inArray.js';
 import UploadsDownloadsWindow from '../Window/UploadsDownloadsWindow.js';
 import _ from 'lodash';
@@ -33,6 +35,7 @@ const presetButtons = [
 	DUPLICATE,
 	// PRINT,
 	UPLOAD_DOWNLOAD,
+	DOWNLOAD,
 ];
 
 export default function withPresetButtons(WrappedComponent, isGrid = false) {
@@ -48,6 +51,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				contextMenuItems = [],
 				additionalToolbarButtons = [],
 				useUploadDownload = false,
+				useDownload = false,
 				uploadHeaders,
 				uploadParams,
 				onUpload,
@@ -174,6 +178,13 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						if (!useUploadDownload) {
 							isDisabled = true;
 						} else if (canUser && !canUser(UPLOAD_DOWNLOAD)) { // check Permissions
+							isDisabled = true;
+						}
+						break;
+					case DOWNLOAD:
+						if (!useDownload) {
+							isDisabled = true;
+						} else if (canUser && !(canUser(DOWNLOAD) || canUser(UPLOAD_DOWNLOAD))) { // check Permissions
 							isDisabled = true;
 						}
 						break;
@@ -323,6 +334,12 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						handler = (parent, e) => onUploadDownload();
 						icon = UploadDownload;
 						break;
+					case DOWNLOAD:
+						key = 'downloadBtn';
+						text = 'Download';
+						handler = (parent, e) => onDownload();
+						icon = Download;
+						break;
 					default:
 				}
 				return {
@@ -392,6 +409,20 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 								uploadHeaders={uploadHeaders}
 								uploadParams={uploadParams}
 								onUpload={onUpload}
+								downloadHeaders={downloadHeaders}
+								downloadParams={downloadParams}
+							/>,
+					onCancel: hideModal,
+				});
+			},
+			onDownload = () => {
+				showModal({
+					body: <UploadsDownloadsWindow
+								reference="downloads"
+								onClose={hideModal}
+								isDownloadOnly={true}
+								Repository={Repository}
+								columnsConfig={props.columnsConfig}
 								downloadHeaders={downloadHeaders}
 								downloadParams={downloadParams}
 							/>,
