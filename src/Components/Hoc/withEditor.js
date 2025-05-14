@@ -29,6 +29,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				userCanEdit = true, // not permissions, but capability
 				userCanView = true,
 				canEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
+				canProceedWithCrud, // fn returns bool on if the CRUD operation can proceed
 				disableAdd = false,
 				disableEdit = false,
 				disableDelete = false,
@@ -153,6 +154,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(ADD);
 					return;
 				}
+				if (canProceedWithCrud && !canProceedWithCrud()) {
+					return;
+				}
 
 				const selection = getSelection();
 				let addValues = values;
@@ -252,6 +256,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(EDIT);
 					return;
 				}
+				if (canProceedWithCrud && !canProceedWithCrud()) {
+					return;
+				}
 				const selection = getSelection();
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
@@ -269,6 +276,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			doDelete = async (args) => {
 				if (canUser && !canUser(DELETE)) {
 					showPermissionsError(DELETE);
+					return;
+				}
+				if (canProceedWithCrud && !canProceedWithCrud()) {
 					return;
 				}
 				let cb = null;
@@ -368,6 +378,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(VIEW);
 					return;
 				}
+				if (canProceedWithCrud && !canProceedWithCrud()) {
+					return;
+				}
 				if (editorType === EDITOR_TYPE__INLINE) {
 					alert('Cannot view in inline editor.');
 					return; // inline editor doesn't have a view mode
@@ -393,6 +406,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				if (canUser && !canUser(DUPLICATE)) {
 					showPermissionsError(DUPLICATE);
+					return;
+				}
+				if (canProceedWithCrud && !canProceedWithCrud()) {
 					return;
 				}
 

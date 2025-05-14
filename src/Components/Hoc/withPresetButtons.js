@@ -61,7 +61,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				canRecordBeEdited,
 				canRecordBeDeleted,
 				canRecordBeDuplicated,
-				canProceedWithCrud, // fn returns bool on if the CRUD operation can proceed
 				...propsToPass
 			} = props,
 			{
@@ -222,9 +221,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'addBtn';
 						text = 'Add';
 						handler = (parent, e) => {
-							if (canProceedWithCrud && !canProceedWithCrud()) {
-								return;
-							}
 							onAdd();
 						};
 						icon = Plus;
@@ -238,9 +234,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'editBtn';
 						text = 'Edit';
 						handler = (parent, e) => {
-							if (canProceedWithCrud && !canProceedWithCrud()) {
-								return;
-							}
 							onEdit();
 						};
 						icon = Edit;
@@ -258,9 +251,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						text = 'Delete';
 						handler = onDelete;
 						handler = (parent, e) => {
-							if (canProceedWithCrud && !canProceedWithCrud()) {
-								return;
-							}
 							onDelete();
 						};
 						icon = Trash;
@@ -308,9 +298,6 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						key = 'duplicateBtn';
 						text = 'Duplicate';
 						handler = (parent, e) => {
-							if (canProceedWithCrud && !canProceedWithCrud()) {
-								return;
-							}
 							onDuplicate();
 						};
 						icon = Duplicate;
