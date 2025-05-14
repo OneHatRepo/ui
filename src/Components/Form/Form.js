@@ -83,6 +83,7 @@ function Form(props) {
 			editorType = EDITOR_TYPE__WINDOWED, // EDITOR_TYPE__INLINE | EDITOR_TYPE__WINDOWED | EDITOR_TYPE__SIDE | EDITOR_TYPE__SMART | EDITOR_TYPE__PLAIN
 			startingValues = {},
 			items = [], // Columns, FieldSets, Fields, etc to define the form
+			isItemsCustomLayout = false,
 			ancillaryItems = [], // additional items which are not controllable form elements, but should appear in the form
 			showAncillaryButtons = false,
 			columnDefaults = {}, // defaults for each Column defined in items (above)
@@ -1187,8 +1188,8 @@ function Form(props) {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
 			editor = <>
-						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD ? <HStack className="Form-formComponents-HStack p-4 gap-4 justify-center">{formComponents}</HStack> : null}
-						{containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD ? <VStack className="Form-formComponents-VStack p-4">{formComponents}</VStack> : null}
+						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD && !isItemsCustomLayout ? <HStack className="Form-formComponents-HStack p-4 gap-4 justify-center">{formComponents}</HStack> : null}
+						{containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD || isItemsCustomLayout ? <VStack className="Form-formComponents-VStack p-4">{formComponents}</VStack> : null}
 						{formAncillaryComponents.length ? <VStack className="Form-AncillaryComponents m-2 pt-4 px-2">{formAncillaryComponents}</VStack> : null}
 					</>;
 
