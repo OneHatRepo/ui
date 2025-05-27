@@ -23,6 +23,11 @@ import Panel from '../Panel/Panel.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import _ from 'lodash';
 
+const
+	INITIATE = 'INITIATE',
+	PROCESSING = 'PROCESSING',
+	RESULTS = 'RESULTS';
+
 // NOTE: This component assumes you have an AppSlice, that has 
 // an 'operationsInProgress' state var and a 'setOperationsInProgress' action.
 
@@ -37,6 +42,7 @@ function AsyncOperation(props) {
 			Repository,
 			formItems = [],
 			formStartingValues = {},
+			_form = {},
 			getProgressUpdates = false,
 			parseProgress, // optional fn, accepts 'response' as arg and returns progress string
 			progressStuckThreshold = null, // e.g. 3, if left blank, doesn't check for stuck state
@@ -49,10 +55,25 @@ function AsyncOperation(props) {
 			alert,
 		} = props,
 		dispatch = useDispatch(),
+		isValid = useRef(true),
+		setIsValid = (valid) => {
+			isValid.current = valid;
+		},
+		getIsValid = () => {
+			return isValid.current;
+		},
+		mode = useRef(INITIATE),
+		setMode = (newMode) => {
+			mode.current = newMode;
+		},
+		getMode = () => {
+			return mode.current;
+		},
 		initiate = async () => {
 
 			clearProgress();
-			setFooter(getFooter('processing'));
+			setMode(PROCESSING);
+			setFooter(getFooter());
 			setIsInProgress(true);
 			
 			const
@@ -85,17 +106,18 @@ function AsyncOperation(props) {
 			}
 			showResults(results);
 		},
-		getFooter = (which = 'initiate') => {
+		getFooter = (which = getMode()) => {
 			switch(which) {
-				case 'initiate':
+				case INITIATE:
 					return <Toolbar>
 								<Button
 									text="Start"
 									rightIcon={ChevronRight}
 									onPress={() => initiate()}
+									isDisabled={!getIsValid()}
 								/>
 							</Toolbar>;
-				case 'processing':
+				case PROCESSING:
 					return <Toolbar>
 								<Button
 									text="Please wait"
@@ -103,7 +125,7 @@ function AsyncOperation(props) {
 									variant="link"
 								/>
 							</Toolbar>;
-				case 'results':
+				case RESULTS:
 					return <Toolbar>
 								<Button
 									text="Reset"
@@ -152,7 +174,8 @@ function AsyncOperation(props) {
 		},
 		showResults = (results) => {
 			setCurrentTab(1);
-			setFooter(getFooter('results'));
+			setMode(RESULTS);
+			setFooter(getFooter());
 			setResults(results);
 			getProgress();
 		},
@@ -206,6 +229,7 @@ function AsyncOperation(props) {
 		},
 		resetToInitialState = () => {
 			setCurrentTab(0);
+			setMode(INITIATE);
 			setFooter(getFooter());
 			clearProgress();
 		},
@@ -226,6 +250,10 @@ function AsyncOperation(props) {
 					isInProgress,
 				},
 			});
+		},
+		onValidityChange = (isValid) => {
+			setIsValid(isValid);
+			setFooter(getFooter());
 		},
 		unchangedProgressCount = getUnchangedProgressCount();
 
@@ -255,6 +283,8 @@ function AsyncOperation(props) {
 										disableFooter={true}
 										items={formItems}
 										startingValues={formStartingValues}
+										onValidityChange={onValidityChange}
+										{..._form}
 									/>,
 						},
 						{
