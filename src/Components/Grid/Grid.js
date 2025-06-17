@@ -424,10 +424,10 @@ function GridComponent(props) {
 									} else {
 										let canDoEdit = false,
 											canDoView = false;
-										if (onEdit && canUser && canUser(EDIT) && (!canRecordBeEdited || canRecordBeEdited(selection))) {
+										if (onEdit && canUser && canUser(EDIT) && (!canRecordBeEdited || canRecordBeEdited(selection)) && !props.disableEdit) {
 											canDoEdit = true;
 										} else
-										if (onView && canUser && canUser(VIEW)) {
+										if (onView && canUser && canUser(VIEW) && !props.disableView) {
 											canDoView = true;
 										}
 
