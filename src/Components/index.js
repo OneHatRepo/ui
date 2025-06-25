@@ -204,6 +204,7 @@ import Color from './Form/Field/Color.js';
 import Combo from './Form/Field/Combo/Combo.js';
 // import { ComboEditor } from './Form/Field/Combo/Combo.js';
 import Container from './Container/Container.js';
+import ContainerColumn from './Container/ContainerColumn.js';
 import DataMgt from './Screens/DataMgt.js';
 import Date from './Form/Field/Date.js';
 import DateRange from './Filter/DateRange.js';
@@ -449,6 +450,7 @@ const components = {
 	Combo,
 	// ComboEditor,
 	Container,
+	ContainerColumn,
 	DataMgt,
 	Date,
 	DateRange,

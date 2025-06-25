@@ -3,6 +3,7 @@ import {
 	Box,
 	HStack,
 	Icon,
+	Pressable,
 	Text,
 	VStack,
 	VStackNative,
@@ -17,6 +18,7 @@ import {
 	REPORT_TYPES__PDF,
 } from '../../Constants/ReportTypes.js';
 import Form from '../Form/Form.js';
+import IconButton from '../Buttons/IconButton.js';
 import withComponent from '../Hoc/withComponent.js';
 import withAlert from '../Hoc/withAlert.js';
 import testProps from '../../Functions/testProps.js';
@@ -37,9 +39,19 @@ function Report(props) {
 			disablePdf = false,
 			disableExcel = false,
 			showReportHeaders = true,
+			isQuickReport = false,
+			quickReportData = {},
 			alert,
 		} = props,
 		buttons = [],
+		onPressQuickReport = () => {
+			downloadReport({
+				reportId,
+				reportType: REPORT_TYPES__EXCEL,
+				showReportHeaders,
+				data: quickReportData,
+			});
+		},
 		downloadReport = (args) => {
 			getReport(args);
 			alert('Download started');
@@ -57,6 +69,55 @@ function Report(props) {
 		}
 	} else {
 		icon = <Icon as={icon} {...propsIcon} />;
+	}
+
+	if (isQuickReport) {
+		return <VStackNative
+					{...testProps('QuickReport-' + reportId)}
+					className={`
+						w-full
+						border
+						border-primary-300
+						p-4
+						mb-3
+						bg-white
+						rounded-lg
+						shadow-sm
+					`}
+				>
+					<Pressable
+						onPress={onPressQuickReport}
+						className={`
+							flex-1
+							items-center
+							justify-center
+							flex-col
+							bg-primary-700
+							p-3
+							mx-2
+							rounded-lg
+							hover:bg-primary-300
+						`}
+					>
+						{icon}
+						<Text
+							className={`
+								text-white
+								text-center
+								text-[25px]
+							`}
+							style={{
+								fontFamily: 'OpenSansCondensed_700Bold',
+							}}
+						>{title}</Text>
+					</Pressable>
+					{/* <IconButton
+						icon={icon}
+						onPress={onPressQuickReport}
+						text={title}
+						className="w-full"
+					/> */}
+				</VStackNative>;
 	}
 
 	if (!disableExcel) {

@@ -46,12 +46,12 @@ export function JsonElement(props) {
 		${testID}
 	`;
 	if (props.className) {
-		className += ' ' + props.className;
+		className += ' ' + propsToPass.className;
 	}
 	// if (UiGlobals.mode === UI_MODE_WEB) {
 		const src = value ? JSON.parse(value) : {};
 		assembledComponents = 
-			<HStack style={props.style} className={className}>
+			<HStack style={propsToPass.style} className={className}>
 				<JsonEditor
 					width="100%"
 					editable={!isViewOnly}
@@ -61,7 +61,7 @@ export function JsonElement(props) {
 					onEdit={(obj) => {
 						setValue(JSON.stringify(obj.updated_src));
 					}}
-					{...props}
+					{...propsToPass}
 				/>
 			</HStack>;
 	// }
