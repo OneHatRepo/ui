@@ -72,18 +72,17 @@ function Report(props) {
 	}
 
 	if (isQuickReport) {
+		let className = `
+			Report
+			max-w-[100px]
+			m-2
+		`;
+		if (props.className) {
+			className += ' ' + props.className;
+		}
 		return <VStackNative
 					{...testProps('QuickReport-' + reportId)}
-					className={`
-						w-full
-						border
-						border-primary-300
-						p-4
-						mb-3
-						bg-white
-						rounded-lg
-						shadow-sm
-					`}
+					className={className}
 				>
 					<Pressable
 						onPress={onPressQuickReport}
@@ -92,31 +91,25 @@ function Report(props) {
 							items-center
 							justify-center
 							flex-col
-							bg-primary-700
+							bg-white
 							p-3
-							mx-2
 							rounded-lg
+							border
+							border-primary-300
 							hover:bg-primary-300
 						`}
 					>
 						{icon}
 						<Text
 							className={`
-								text-white
+								text-black
 								text-center
-								text-[25px]
+								text-[17px]
+								leading-tight
+								mt-2
 							`}
-							style={{
-								fontFamily: 'OpenSansCondensed_700Bold',
-							}}
 						>{title}</Text>
 					</Pressable>
-					{/* <IconButton
-						icon={icon}
-						onPress={onPressQuickReport}
-						text={title}
-						className="w-full"
-					/> */}
 				</VStackNative>;
 	}
 
