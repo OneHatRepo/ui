@@ -87,7 +87,8 @@ function GridRow(props) {
 					}
 					const
 						propsToPass = columnProps[key] || {},
-						colStyle = {};
+						colStyle = {},
+						whichCursor = showSelectHandle ? 'cursor-text' : 'cursor-pointer'; // when using rowSelectHandle, indicate that the row text is selectable, otherwise indicate that the row itself is selectable
 					let colClassName = `
 						GridRow-column
 						p-1
@@ -95,6 +96,7 @@ function GridRow(props) {
 						border-r-black-100
 						block
 						overflow-auto
+						${whichCursor}
 						${styles.GRID_ROW_MAX_HEIGHT_EXTRA}
 					`;
 					if (isOnlyOneVisibleColumn) {
