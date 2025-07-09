@@ -132,6 +132,7 @@ function GridComponent(props) {
 			getExpandedRowContent,
 			showHeaders = true,
 			showHovers = true,
+			showSelectHandle = true,
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
@@ -493,6 +494,7 @@ function GridComponent(props) {
 												isInlineEditorShown={isInlineEditorShown}
 												areRowsDragSource={areRowsDragSource}
 												showColumnsSelector={showColumnsSelector}
+												showSelectHandle={showSelectHandle}
 											/>;
 							if (showRowExpander) {
 								// align the header row to content rows by adding a spacer that matches the width of the Grid-rowExpander-expandBtn
@@ -570,6 +572,7 @@ function GridComponent(props) {
 									isSelected={isSelected}
 									isHovered={hovered}
 									showHovers={showHovers}
+									showSelectHandle={showSelectHandle}
 									index={index}
 									alternatingInterval={alternatingInterval}
 									alternateRowBackgrounds={alternateRowBackgrounds}

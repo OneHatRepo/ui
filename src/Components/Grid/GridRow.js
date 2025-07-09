@@ -16,6 +16,7 @@ import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
 import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
+import RowSelectHandle from './RowSelectHandle.js';
 import _ from 'lodash';
 
 // This was broken out from Grid simply so we can memoize it
@@ -27,6 +28,7 @@ function GridRow(props) {
 			fields,
 			rowProps,
 			hideNavColumn,
+			showSelectHandle,
 			isSelected,
 			isHovered,
 			bg,
@@ -265,6 +267,8 @@ function GridRow(props) {
 
 		let rowContents = <>
 							{(isDragSource || isDraggable) && <RowDragHandle />}
+							{showSelectHandle && <RowSelectHandle />}
+							
 							{isPhantom && 
 								<Box
 									className={`

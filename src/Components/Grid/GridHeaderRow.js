@@ -20,6 +20,7 @@ import UiGlobals from '../../UiGlobals.js';
 import useBlocking from '../../Hooks/useBlocking.js';
 import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
+import ArrowPointer from '../Icons/ArrowPointer.js';
 import HeaderReorderHandle from './HeaderReorderHandle.js';
 import HeaderResizeHandle from './HeaderResizeHandle.js';
 import HeaderColumnSelectorHandle from './HeaderColumnSelectorHandle.js';
@@ -46,6 +47,7 @@ export default function GridHeaderRow(props) {
 			isInlineEditorShown,
 			areRowsDragSource,
 			showColumnsSelector,
+			showSelectHandle,
 		} = props,
 		styles = UiGlobals.styles,
 		sortFn = Repository && Repository.getSortFn(),
@@ -462,6 +464,14 @@ export default function GridHeaderRow(props) {
 										/>}
 							</Pressable>;
 				});
+				if (showSelectHandle) {
+					headerColumns.unshift(<Box
+						key="RowSelectHandle"
+						className="Spacer-RowSelectHandle px-2 items-center justify-center flex-none w-[40px]"
+					>
+						<Icon as={ArrowPointer} className={`ArrowPointer w-[20px] h-[20px] text-[#aaa]`} />
+					</Box>);
+				}
 				if (areRowsDragSource) {
 					headerColumns.unshift(<Box
 						key="spacer"

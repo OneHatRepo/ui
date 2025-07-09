@@ -767,6 +767,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 					newEntityDisplayProperty={newEntityDisplayProperty}
 					disablePresetButtons={!isEditor}
 					alternateRowBackgrounds={false}
+					showSelectHandle={false}
 					onChangeSelection={(selection) => {
 
 						if (Repository && selection[0]?.isPhantom) {
