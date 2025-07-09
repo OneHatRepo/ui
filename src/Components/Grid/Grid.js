@@ -133,6 +133,8 @@ function GridComponent(props) {
 			showHeaders = true,
 			showHovers = true,
 			showSelectHandle = true,
+			isRowSelectable = true,
+			isRowHoverable = true,
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
@@ -569,6 +571,8 @@ function GridComponent(props) {
 									fields={fields}
 									rowProps={rowProps}
 									hideNavColumn={hideNavColumn}
+									isRowSelectable={isRowSelectable}
+									isRowHoverable={isRowHoverable}
 									isSelected={isSelected}
 									isHovered={hovered}
 									showHovers={showHovers}

@@ -29,6 +29,8 @@ function GridRow(props) {
 			rowProps,
 			hideNavColumn,
 			showSelectHandle,
+			isRowSelectable,
+			isRowHoverable,
 			isSelected,
 			isHovered,
 			bg,
@@ -57,13 +59,13 @@ function GridRow(props) {
 
 		let bg = rowProps.bg || props.bg || styles.GRID_ROW_BG,
 			mixWith;
-		if (isSelected) {
+		if (isRowSelectable && isSelected) {
 			if (showHovers && isHovered) {
 				mixWith = styles.GRID_ROW_SELECTED_BG_HOVER;
 			} else {
 				mixWith = styles.GRID_ROW_SELECTED_BG;
 			}
-		} else if (showHovers && isHovered) {
+		} else if (isRowHoverable && showHovers && isHovered) {
 			mixWith = styles.GRID_ROW_BG_HOVER;
 		} else if (alternateRowBackgrounds && index % alternatingInterval === 0) { // i.e. every second line, or every third line
 			mixWith = styles.GRID_ROW_ALTERNATE_BG;
