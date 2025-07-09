@@ -7,7 +7,7 @@ import GripVertical from '../Icons/GripVertical.js';
 
 function RowDragHandle(props) {	return <VStack
 			style={styles.ewResize}
-			className="RowDragHandle bg-grey-100 w-[3px] items-center justify-center select-none"
+			className="RowDragHandle bg-grey-100 w-[7px] items-center justify-center select-none"
 		>
 				<Icon
 					as={GripVertical}

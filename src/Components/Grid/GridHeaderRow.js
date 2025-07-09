@@ -475,7 +475,7 @@ export default function GridHeaderRow(props) {
 				if (areRowsDragSource) {
 					headerColumns.unshift(<Box
 						key="spacer"
-						className="Spacer w-[3px]"
+						className="Spacer w-[7px]"
 					/>);
 				}
 				if (!hideNavColumn) {
