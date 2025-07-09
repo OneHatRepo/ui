@@ -27,6 +27,7 @@ import withContextMenu from '../Hoc/withContextMenu.js';
 import withAlert from '../Hoc/withAlert.js';
 import withComponent from '../Hoc/withComponent.js';
 import withData from '../Hoc/withData.js';
+import { withDropTarget } from '../Hoc/withDnd.js';
 import withEvents from '../Hoc/withEvents.js';
 import withSideEditor from '../Hoc/withSideEditor.js';
 import withFilters from '../Hoc/withFilters.js';
@@ -1426,15 +1427,17 @@ export const Tree = withComponent(
 							withEvents(
 								withData(
 									withPermissions(
-										// withMultiSelection(
-											withSelection(
-												withFilters(
-													withContextMenu(
-														TreeComponent
+										withDropTarget(
+											// withMultiSelection(
+												withSelection(
+													withFilters(
+														withContextMenu(
+															TreeComponent
+														)
 													)
 												)
-											)
-										// )
+											// )
+										)
 									)
 								)
 							)
@@ -1446,20 +1449,22 @@ export const SideTreeEditor = withComponent(
 										withEvents(
 											withData(
 												withPermissions(
-													// withMultiSelection(
-														withSelection(
-															withSideEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			TreeComponent
+													withDropTarget(
+														// withMultiSelection(
+															withSelection(
+																withSideEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				TreeComponent
+																			)
 																		)
-																	)
-																),
-																true // isTree
+																	),
+																	true // isTree
+																)
 															)
-														)
-													// )
+														// )
+													)
 												)
 											)
 										)
@@ -1471,20 +1476,22 @@ export const WindowedTreeEditor = withComponent(
 										withEvents(
 											withData(
 												withPermissions(
-													// withMultiSelection(
-														withSelection(
-															withWindowedEditor(
-																withFilters(
-																	withPresetButtons(
-																		withContextMenu(
-																			TreeComponent
+													withDropTarget(
+														// withMultiSelection(
+															withSelection(
+																withWindowedEditor(
+																	withFilters(
+																		withPresetButtons(
+																			withContextMenu(
+																				TreeComponent
+																			)
 																		)
-																	)
-																),
-																true // isTree
+																	),
+																	true // isTree
+																)
 															)
-														)
-													// )
+														// )
+													)
 												)
 											)
 										)
