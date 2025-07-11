@@ -292,7 +292,7 @@ function TreeComponent(props) {
 			}
 			const
 				parent = selection[0],
-				parentDatum = getNodeData(parent.id);
+				parentDatum = getDatumById(parent.id);
 
 			if (parent.hasChildren && !parent.areChildrenLoaded) {
 				await loadChildren(parentDatum);
@@ -306,7 +306,7 @@ function TreeComponent(props) {
 			// Add the entity to the tree, show parent as hasChildren and expanded
 			const
 				parent = selection[0],
-				parentDatum = getNodeData(parent.id);
+				parentDatum = getDatumById(parent.id);
 			if (!parent.hasChildren) {
 				parent.hasChildren = true; // since we're adding a new child
 			}
@@ -328,7 +328,7 @@ function TreeComponent(props) {
 			// Refresh the node's display
 			const
 				node = entities[0],
-				existingDatum = getNodeData(node.id), // TODO: Make this work for >1 entity
+				existingDatum = getDatumById(node.id), // TODO: Make this work for >1 entity
 				newDatum = buildTreeNodeDatum(node);
 
 			// copy the updated data to existingDatum
@@ -338,7 +338,7 @@ function TreeComponent(props) {
 
 			if (node.parent?.id) {
 				const
-					existingParentDatum = getNodeData(node.parent.id),
+					existingParentDatum = getDatumById(node.parent.id),
 					newParentDatum = buildTreeNodeDatum(node.parent);
 				_.assign(existingParentDatum, newParentDatum);
 				existingParentDatum.isExpanded = true;
@@ -352,7 +352,7 @@ function TreeComponent(props) {
 		onBeforeSave = (entities) => {
 			const
 				node = entities[0],
-				datum = getNodeData(node.id); // TODO: Make this work for >1 entity
+				datum = getDatumById(node.id); // TODO: Make this work for >1 entity
 			
 			datum.isLoading = true;
 			forceUpdate();
@@ -491,35 +491,50 @@ function TreeComponent(props) {
 			});
 		},
 
-		// utilities
-		getNodeData = (id) => {
-			function findNodeById(node) {
-				if (node.item.id === id) {
-					return node;
-				}
-				if (!_.isEmpty(node.children)) {
-					let found1 = null;
-					_.each(node.children, (node2) => {
-						const found2 = findNodeById(node2);
-						if (found2) {
-							found1 = found2;
-							return false; // break loop
-						}
-					})
-					return found1
-				}
-				return false;
+		// internal DND
+		onInternalNodeDrop = async (droppedOn, droppedItem) => {
+			let selectedNodes = [];
+			if (droppedItem.getSelection) {
+				selectedNodes = droppedItem.getSelection();
 			}
-			let found = null;
-			_.each(getTreeNodeData(), (node) => {
-				const foundNode = findNodeById(node);
-				if (foundNode) {
-					found = foundNode;
-					return false;
-				}
+			if (_.isEmpty(selectedNodes)) {
+				selectedNodes = [droppedItem.item];
+			}
+
+			// filter out nodes that would already be moved by others in the selection
+			const selectedNodesClone = [...selectedNodes];
+			selectedNodes = selectedNodes.filter((node) => {
+				let isDescendant = false;
+				_.each(selectedNodesClone, (otherNode) => {
+					if (node.id === otherNode.id) {
+						return false; // skip self
+					}
+					isDescendant = isDescendantOf(node, otherNode);
+					if (isDescendant) {
+						return false; // found descendant; break loop
+					}
+					isDescendant = isDescendantOf(otherNode, node);
+					if (isDescendant) {
+						return false; // found ancestor; break loop
+					}
+				});
+				return !isDescendant;
 			});
-			return found;
+			
+			const isMultiSelection = selectedNodes.length > 1;
+			if (isMultiSelection) {
+				alert('moving multiple disparate nodes not yet implemented');
+				return;
+			}
+
+			const selectedNode = selectedNodes[0];
+			const commonAncestorId = await Repository.moveTreeNode(selectedNode, droppedOn.id);
+			const commonAncestorDatum = getDatumById(commonAncestorId);
+			reloadNode(commonAncestorDatum);
+
 		},
+
+		// utilities
 		buildTreeNodeDatum = (treeNode, defaultToExpanded = false) => {
 			// Build the data-representation of one node and its children,
 			// caching text & icon, keeping track of the state for whole tree
@@ -691,16 +706,10 @@ function TreeComponent(props) {
 			return treeNodes;
 		},
 		belongsToThisTree = (treeNode) => {
-			// TODO: I don't think this is doing exactly what I want it to do
-			// I'm going to have both internal and external DND integrations, potentially at the same time.
-			// When passed a treeNode, this method should be able to instantly recognize whether the node
-			// is internal to itself or not.
-			// Is treeNode.id a UUID?
-
 			if (!treeNode) {
 				return false;
 			}
-			const datum = getNodeData(treeNode.id);
+			const datum = getDatumById(treeNode.id);
 			if (!datum) {
 				return false;
 			}
@@ -724,7 +733,7 @@ function TreeComponent(props) {
 		},
 		reloadNode = async (node) => {
 			// mark node as loading
-			const existingDatum = getNodeData(node.id);
+			const existingDatum = getDatumById(node.id);
 			existingDatum.isLoading = true;
 			forceUpdate();
 
@@ -892,14 +901,6 @@ function TreeComponent(props) {
 
 			// ... Not sure how to do this with NativeBase, as I've had trouble assigning IDs
 			// Maybe I first collapse the tree, then expand just the cPath?
-		},
-
-		// internal DND
-		onInternalNodeDrop = (droppedOn, droppedItem) => {
-			// Get all selected nodes that need to be moved
-			const selectedNodes = droppedItem.getSelection ? droppedItem.getSelection() : [droppedItem.item];
-			
-			alert(`Would move ${selectedNodes.length} node(s) to "${droppedOn.displayValue || droppedOn.id}". Implementation pending.`);
 		},
 
 		// render
