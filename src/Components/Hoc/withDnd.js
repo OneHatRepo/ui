@@ -1,6 +1,13 @@
 import { forwardRef, useEffect, useRef, } from 'react';
 import { useDrag, useDrop, useDragLayer } from 'react-dnd'; // https://react-dnd.github.io/react-dnd/about don't forget the wrapping <DndProvider /> as shown here: https://react-dnd.github.io/react-dnd/docs/api/dnd-provider
-
+import {
+	Box,
+} from '@project-components/Gluestack';
+import {
+	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+	CURRENT_MODE,
+} from '../../Constants/UiModes.js';
 
 // This HOC allows components to be dragged and dropped onto another component.
 // It can't contrain the movement of the preview item, because react-dnd uses 
@@ -32,6 +39,7 @@ export function withDragSource(WrappedComponent) {
 				onDragEnd = null,
 				canDrag = null,
 				isDragging = null,
+				getDragProxy,
 				dragCollect = (monitor, props2) => { // Optional. The collecting function. It should return a plain object of the props to return for injection into your component. It receives two parameters, monitor and props. Read the overview for an introduction to the monitors and the collecting function. See the collecting function described in detail in the next section.
 					// monitor fn determines which props from dnd state get passed
 					return {
@@ -54,7 +62,10 @@ export function withDragSource(WrappedComponent) {
 
 				return {
 					type: dragSourceType, // Required. This must be either a string or a symbol. Only the drop targets registered for the same type will react to this item.
-					item: dragSourceItem, // Required (object or function).
+					item: {
+						...dragSourceItem,
+						getDragProxy,
+					}, // Required (object or function).
 						// When an object, it is a plain JavaScript object describing the data being dragged. This is the only information available to the drop targets about the drag source so it's important to pick the minimal data they need to know. You may be tempted to put a complex reference here, but you should try very hard to avoid doing this because it couples the drag sources and drop targets. It's a good idea to use something like { id }.
 						// When a function, it is fired at the beginning of the drag operation and returns an object representing the drag operation (see first bullet). If null is returned, the drag operation is cancelled.
 					previewOptions: dragPreviewOptions, // Optional. A plain JavaScript object describing drag preview options.
@@ -139,6 +150,7 @@ export function withDropTarget(WrappedComponent) {
 					return {
 						canDrop: !!monitor.canDrop(),
 						isOver: !!monitor.isOver(),
+						draggedItem: monitor.getItem(), // Pass the dragged item so TreeNode can evaluate custom logic
 					};
 				},
 			} = props,
@@ -171,6 +183,7 @@ export function withDropTarget(WrappedComponent) {
 			{
 				canDrop: stateCanDrop,
 				isOver,
+				draggedItem,
 				// didDrop,
 				// clientOffset,
 				// differenceFromInitialOffset,
@@ -187,64 +200,48 @@ export function withDropTarget(WrappedComponent) {
 					ref={ref}
 					isOver={isOver}
 					dropTargetRef={localTargetRef}
+					draggedItem={draggedItem} // Pass the dragged item
 					{...props}
 				/>;
 	});
 }
 
 
-// export function CustomDragLayer(props) {
+export function GlobalDragProxy() {
+	const {
+		isDragging,
+		item,
+		currentOffset,
+	} = useDragLayer((monitor) => ({
+		isDragging: monitor.isDragging(),
+		item: monitor.getItem(),
+		currentOffset: monitor.getSourceClientOffset(),
+	}));
 
-// 	// if (CURRENT_MODE !== UI_MODE_WEB) {
-// 	// 	throw Error('CustomDragLayer only works in web mode');
-// 	// }
+	if (!isDragging || !currentOffset || CURRENT_MODE !== UI_MODE_WEB) { // Native uses a native drag layer, so we don't need to render a custom proxy
+		return null;
+	}
 
-// 	const
-// 		{
-// 			onDrag,
-// 			axis = null,
-// 		} = props,
-// 		layer = useDragLayer((monitor) => ({
-// 			isDragging: monitor.isDragging(),
-// 			item: monitor.getItem(),
-// 			currentOffset: monitor.getSourceClientOffset(),
-// 		})),
-// 		{ isDragging, item, currentOffset } = layer;
+	const getDragProxy = item?.getDragProxy;
+	if (!getDragProxy) {
+		// Only render a custom proxy if one is provided - let React DnD handle default case
+		return null;
+	}
 
-// 	useEffect(() => {
-// 		if (layer.isDragging) {
-// 			onDrag(layer);
-// 		}
-// 	}, [layer]);
+	let proxyContent = null;
+	try {
+		proxyContent = getDragProxy(item);
+	} catch (error) {
+		console.warn('Failed to render custom drag proxy:', error);
+		return null; // use default React DnD proxy
+	}
 
-// 	return null;
-
-// 	if (!isDragging || !currentOffset) {
-// 		return null;
-// 	}
-
-// 	let transform;
-// 	if (axis === 'x') {
-// 		transform = `translate(${currentOffset.x}px, 0)`;
-// 	} else if (axis === 'y') {
-// 		transform = `translate(0, ${currentOffset.y}px)`;
-// 	} else {
-// 		transform = `translate(${currentOffset.x}px, ${currentOffset.y}px)`;
-// 	}
-
-// 	return (
-// 		<div id="dragLayer" style={{
-// 			background: '#f00',
-// 			position: 'fixed',
-// 			pointerEvents: 'none',
-// 			zIndex: 10000,
-// 			width: '200px',
-// 			height: '10px',
-// 			left: 0,
-// 			top: 0,
-// 			transform,
-// 		}}>
-// 			{children}
-// 		</div>
-// 	);
-// }
+	return <Box
+				className="fixed pointer-events-none z-[10000] left-0 top-0"
+				style={{
+					transform: `translate(${currentOffset.x}px, ${currentOffset.y}px)`,
+				}}
+			>
+				{proxyContent}
+			</Box>;
+}

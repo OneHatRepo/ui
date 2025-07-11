@@ -475,7 +475,13 @@ function GridComponent(props) {
 							onContextMenu(item, e, newSelection);
 						}
 					}}
-					className="Pressable Row flex-row grow">
+					className={`
+						Pressable
+						Row
+						flex-row
+						grow
+					`}
+				>
 					{({
 						hovered,
 						focused,
@@ -507,12 +513,11 @@ function GridComponent(props) {
 							}
 							return headerRow;
 						}
-
 						const
 							rowReorderProps = {},
 							rowDragProps = {};
 						let WhichRow = GridRow;
-						if (CURRENT_MODE === UI_MODE_WEB) { // DND is currrently web-only  TODO: implement for RN
+						if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
 							// Create a method that gets an always-current copy of the selection ids
 							dragSelectionRef.current = selection;
 							const getSelection = () => dragSelectionRef.current;

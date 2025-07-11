@@ -21,6 +21,11 @@ import {
 	EXPANDED,
 	LEAF,
 } from '../../Constants/Tree.js';
+import {
+	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+	CURRENT_MODE,
+} from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
@@ -42,7 +47,7 @@ import inArray from '../../Functions/inArray.js';
 import testProps from '../../Functions/testProps.js';
 import CenterBox from '../Layout/CenterBox.js';
 import ReloadButton from '../Buttons/ReloadButton.js';
-import TreeNode, { DraggableTreeNode } from './TreeNode.js';
+import TreeNode, { DragSourceDropTargetTreeNode, DragSourceTreeNode, DropTargetTreeNode } from './TreeNode.js';
 import FormPanel from '../Panel/FormPanel.js';
 import Input from '../Form/Field/Input.js';
 import Xmark from '../Icons/Xmark.js';
@@ -53,8 +58,6 @@ import FolderClosed from '../Icons/FolderClosed.js';
 import FolderOpen from '../Icons/FolderOpen.js';
 import Gear from '../Icons/Gear.js';
 import MagnifyingGlass from '../Icons/MagnifyingGlass.js';
-import NoReorderRows from '../Icons/NoReorderRows.js';
-import ReorderRows from '../Icons/ReorderRows.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
 import NoRecordsFound from '../Grid/NoRecordsFound.js';
 import Toolbar from '../Toolbar/Toolbar.js';
@@ -68,6 +71,8 @@ const
 	SINGLE_CLICK = 1,
 	DOUBLE_CLICK = 2,
 	TRIPLE_CLICK = 3;
+
+// NOTE: If using TreeComponent with getCustomDragProxy, ensure that <GlobalDragProxy /> exists in App.js
 
 function TreeComponent(props) {
 	const {
@@ -111,7 +116,21 @@ function TreeComponent(props) {
 			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
 			showHovers = true,
-			canNodesReorder = false,
+			showSelectHandle = true,
+			isNodeSelectable = true,
+			isNodeHoverable = true,
+			canNodesMoveInternally = false,
+			canNodeMoveInternally, // optional fn to customize whether each node can be dragged INternally
+			canNodeMoveExternally, // optional fn to customize whether each node can be dragged EXternally
+			canNodeAcceptDrop, // optional fn to customize whether each node can accept a dropped item: (targetItem, draggedItem) => boolean
+			getCustomDragProxy, // optional fn to render custom drag preview: (item, selection) => ReactElement
+			dragPreviewOptions, // optional object for drag preview positioning options
+			areNodesDragSource = false,
+			nodeDragSourceType,
+			getNodeDragSourceItem,
+			areNodesDropTarget = false,
+			dropTargetAccept,
+			onNodeDrop,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the node clicked on
 			disableBottomToolbar = false,
 			bottomToolbar = null,
@@ -162,6 +181,12 @@ function TreeComponent(props) {
 			// withPermissions
 			canUser,
 
+			// withDnd
+			isDropTarget,
+			canDrop,
+			isOver,
+			dropTargetRef,
+
 			// withSelection
 			selection,
 			setSelection,
@@ -174,19 +199,15 @@ function TreeComponent(props) {
 			noSelectorMeansNoResults = false,
 
 		} = props,
-		styles = UiGlobals.styles,
 		forceUpdate = useForceUpdate(),
 		treeRef = useRef(),
 		treeNodeData = useRef(),
+		dragSelectionRef = useRef([]),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
-		[rowToDatumMap, setRowToDatumMap] = useState({}),
 		[searchResults, setSearchResults] = useState([]),
 		[searchFormData, setSearchFormData] = useState([]),
 		[highlitedDatum, setHighlitedDatum] = useState(null),
-		[isDragMode, setIsDragMode] = useState(false),
-		[dragNodeId, setDragNodeId] = useState(null),
-		[dropRowIx, setDropRowIx] = useState(null),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
 
 		// state getters & setters
@@ -293,7 +314,6 @@ function TreeComponent(props) {
 				parentDatum.isExpanded = true;
 			}
 
-			buildRowToDatumMap();
 			forceUpdate();
 		},
 		onAfterAddSave = (entities) => {
@@ -340,9 +360,7 @@ function TreeComponent(props) {
 		onAfterDelete = async (entities) => {
 			const parent = entities[0].parent;
 			if (parent) {
-				await reloadNode(parent); // includes buildRowToDatumMap
-			} else {
-				buildRowToDatumMap();
+				await reloadNode(parent);
 			}
 		},
 		onToggle = async (datum, e) => {
@@ -377,7 +395,6 @@ function TreeComponent(props) {
 			}
 			
 			forceUpdate();
-			buildRowToDatumMap();
 		},
 		onCollapseAll = () => {
 			const newTreeNodeData = _.clone(getTreeNodeData());
@@ -512,6 +529,7 @@ function TreeComponent(props) {
 				children = buildTreeNodeData(treeNode.children, defaultToExpanded), // recursively get data for children
 				datum = {
 					item: treeNode,
+					treeRef,
 					text: getNodeText(treeNode),
 					content: getNodeContent ? getNodeContent(treeNode) : null,
 					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
@@ -549,37 +567,10 @@ function TreeComponent(props) {
 			const treeNodeData = buildTreeNodeData(nodes);
 			setTreeNodeData(treeNodeData);
 
-			buildRowToDatumMap();
-
 			if (onTreeLoad) {
 				onTreeLoad(self);
 			}
 			return treeNodeData;
-		},
-		buildRowToDatumMap = () => {
-			const rowToDatumMap = {};
-			let ix = 0;
-
-			function walkTree(datum) {
-				if (!datum.isVisible) {
-					return;
-				}
-
-				// Add this datum's id
-				rowToDatumMap[ix] = datum;
-				ix++;
-
-				if (datum.isExpanded) {
-					_.each(datum.children, (child) => {
-						walkTree(child);
-					});
-				}
-			}
-			_.each(getTreeNodeData(), (rootDatum) => {
-				walkTree(rootDatum);
-			});
-			
-			setRowToDatumMap(rowToDatumMap);
 		},
 		datumContainsSelection = (datum) => {
 			if (_.isEmpty(selection)) {
@@ -699,6 +690,34 @@ function TreeComponent(props) {
 
 			return treeNodes;
 		},
+		belongsToThisTree = (treeNode) => {
+			// TODO: I don't think this is doing exactly what I want it to do
+			// I'm going to have both internal and external DND integrations, potentially at the same time.
+			// When passed a treeNode, this method should be able to instantly recognize whether the node
+			// is internal to itself or not.
+			// Is treeNode.id a UUID?
+
+			if (!treeNode) {
+				return false;
+			}
+			const datum = getNodeData(treeNode.id);
+			if (!datum) {
+				return false;
+			}
+			return datum.treeRef === treeRef;
+		},
+		isDescendantOf = (potentialDescendant, potentialAncestor) => {
+			// Check if potentialDescendant is a descendant of potentialAncestor
+			// by walking up the parent chain from potentialDescendant
+			let currentTreeNode = potentialDescendant;
+			while(currentTreeNode) {
+				if (currentTreeNode.id === potentialAncestor.id) {
+					return true;
+				}
+				currentTreeNode = currentTreeNode.parent;
+			}
+			return false;
+		},
 		reloadTree = () => {
 			Repository.areRootNodesLoaded = false;
 			return buildAndSetTreeNodeData();
@@ -719,8 +738,6 @@ function TreeComponent(props) {
 			_.assign(existingDatum, _.omit(newDatum, ['isExpanded']));
 			existingDatum.isLoading = false;
 			forceUpdate();
-
-			buildRowToDatumMap();
 		},
 		loadChildren = async (datum, depth = 1) => {
 
@@ -756,12 +773,9 @@ function TreeComponent(props) {
 			// Hide loading indicator
 			datum.isLoading = false;
 			forceUpdate();
-			
-			buildRowToDatumMap();
 		},
 		collapseNodes = (nodes) => {
 			collapseNodesRecursive(nodes);
-			buildRowToDatumMap();
 		},
 		collapseNodesRecursive = (nodes) => {
 			_.each(nodes, (node) => {
@@ -780,7 +794,6 @@ function TreeComponent(props) {
 
 			// expand them in UI
 			expandNodesRecursive(nodes);
-			buildRowToDatumMap();
 		},
 		expandNodesRecursive = (nodes) => {
 			_.each(nodes, (node) => {
@@ -847,7 +860,6 @@ function TreeComponent(props) {
 			}
 
 			setTreeNodeData(newTreeNodeData);
-			buildRowToDatumMap();
 		},
 		scrollToNode = (node) => {
 			// Helper for expandPath
@@ -882,6 +894,14 @@ function TreeComponent(props) {
 			// Maybe I first collapse the tree, then expand just the cPath?
 		},
 
+		// internal DND
+		onInternalNodeDrop = (droppedOn, droppedItem) => {
+			// Get all selected nodes that need to be moved
+			const selectedNodes = droppedItem.getSelection ? droppedItem.getSelection() : [droppedItem.item];
+			
+			alert(`Would move ${selectedNodes.length} node(s) to "${droppedOn.displayValue || droppedOn.id}". Implementation pending.`);
+		},
+
 		// render
 		getHeaderToolbarItems = () => {
 			const
@@ -908,17 +928,6 @@ function TreeComponent(props) {
 						isDisabled: false,
 					},
 				];
-			if (canNodesReorder) {
-				buttons.push({
-					key: 'reorderBtn',
-					text: (isDragMode ? 'Exit' : 'Enter') + ' reorder mode',
-					handler: () => {
-						setIsDragMode(!isDragMode);
-					},
-					icon: isDragMode ? NoReorderRows : ReorderRows,
-					isDisabled: false,
-				});
-			}
 			if (isNodeTextConfigurable && editDisplaySettings) {
 				buttons.push({
 					key: 'editNodeTextBtn',
@@ -979,9 +988,6 @@ function TreeComponent(props) {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
-							if (isDragMode) {
-								return
-							}
 							switch (e.detail) {
 								case SIMULATED_CLICK:
 								case SINGLE_CLICK:
@@ -1015,9 +1021,6 @@ function TreeComponent(props) {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();
 							}
-							if (isDragMode) {
-								return;
-							}
 
 							if (!setSelection) {
 								return;
@@ -1031,6 +1034,8 @@ function TreeComponent(props) {
 							}
 						}}
 						className={`
+							Pressable
+							Node
 							flex-row
 						`}
 						style={{
@@ -1042,32 +1047,171 @@ function TreeComponent(props) {
 							focused,
 							pressed,
 						}) => {
-							let WhichTreeNode = TreeNode,
-								dragProps = {};
-							if (canNodesReorder && isDragMode && !datum.item.isRoot) { // Can't drag root nodes
-								WhichTreeNode = DraggableTreeNode;
-								dragProps = {
-									mode: VERTICAL,
-									onDrag,
-									onDragStop,
-									getParentNode: (node) => node.parentElement.parentElement,
-									getDraggableNodeFromNode: (node) => node.parentElement,
-									getProxy: getDragProxy,
-									proxyParent: treeRef.current,
-									proxyPositionRelativeToParent: true,
-								};
-								nodeProps.className = 'w-full';
+							const nodeDragProps = {};
+							let WhichNode = TreeNode;
+							if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
+								// Create a method that gets an always-current copy of the selection ids
+								dragSelectionRef.current = selection;
+								const getSelection = () => dragSelectionRef.current;
+
+								const userHasPermissionToDrag = (!canUser || canUser(EDIT));
+								if (userHasPermissionToDrag) {
+									// NOTE: The Tree can either drag nodes internally or externally, but not both at the same time!
+
+									// assign event handlers
+									if (canNodesMoveInternally) {
+										// internal drag/drop
+										const nodeDragSourceType = 'internal';
+										WhichNode = DragSourceDropTargetTreeNode;
+										nodeDragProps.isDragSource = !item.isRoot; // Root nodes cannot be dragged
+										nodeDragProps.dragSourceType = nodeDragSourceType;
+										nodeDragProps.dragSourceItem = {
+											id: item.id,
+											item,
+											getSelection,
+											type: nodeDragSourceType,
+										};
+
+										// Prevent root nodes from being dragged, and use custom logic if provided
+										nodeDragProps.canDrag = (monitor) => {
+											const currentSelection = getSelection();
+											
+											// Check if any selected node is a root node (can't drag root nodes)
+											const hasRootNode = currentSelection.some(node => node.isRoot);
+											if (hasRootNode) {
+												return false;
+											}
+											
+											// Use custom drag validation if provided
+											if (canNodeMoveInternally) {
+												// In multi-selection, all nodes must be draggable
+												return currentSelection.every(node => canNodeMoveInternally(node));
+											}
+											
+											return true;
+										};
+
+										// Add custom drag preview options
+										if (dragPreviewOptions) {
+											nodeDragProps.dragPreviewOptions = dragPreviewOptions;
+										}
+
+										// Add drag preview rendering
+										nodeDragProps.getDragProxy = getCustomDragProxy ? 
+											(dragItem) => getCustomDragProxy(item, getSelection()) :
+											null; // Let GlobalDragProxy handle the default case
+
+										const dropTargetAccept = 'internal';
+										nodeDragProps.isDropTarget = true;
+										nodeDragProps.dropTargetAccept = dropTargetAccept;
+										
+										// Define validation logic once for reuse
+										const validateDrop = (droppedItem) => {
+											if (!droppedItem) {
+												return false;
+											}
+											
+											const currentSelection = getSelection();
+
+											// Always include the dragged item itself in validation
+											// If no selection exists, the dragged item is what we're moving
+											const nodesToValidate = currentSelection.length > 0 ? currentSelection : [droppedItem.item];
+											
+											// Validate that none of the nodes being moved can be dropped into the target location
+											for (const nodeToMove of nodesToValidate) {
+												if (nodeToMove.id === item.id) {
+													// Cannot drop a node onto itself
+													return false;
+												}
+												if (isDescendantOf(item, nodeToMove)) {
+													// Cannot drop a node into its own descendants
+													return false;
+												}
+											}
+											
+											if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
+												// custom business logic
+												return canNodeAcceptDrop(item, droppedItem);
+											}
+											return true;
+										};
+										
+										// Use the validation function for React DnD
+										nodeDragProps.canDrop = (droppedItem, monitor) => validateDrop(droppedItem);
+										
+										// Pass the same validation function for visual feedback
+										nodeDragProps.validateDrop = validateDrop;
+										
+										nodeDragProps.onDrop = (droppedItem) => {
+											if (belongsToThisTree(droppedItem)) {
+												onInternalNodeDrop(item, droppedItem);
+											}
+										};
+									} else {
+										// external drag/drop
+										if (areNodesDragSource) {
+											WhichNode = DragSourceTreeNode;
+											nodeDragProps.isDragSource = !item.isRoot; // Root nodes cannot be dragged
+											nodeDragProps.dragSourceType = nodeDragSourceType;
+											if (getNodeDragSourceItem) {
+												nodeDragProps.dragSourceItem = getNodeDragSourceItem(item, getSelection, nodeDragSourceType);
+											} else {
+												nodeDragProps.dragSourceItem = {
+													id: item.id,
+													getSelection,
+													type: nodeDragSourceType,
+												};
+											}
+											if (canNodeMoveExternally) {
+												nodeDragProps.canDrag = canNodeMoveExternally;
+											}
+
+											// Add custom drag preview options
+											if (dragPreviewOptions) {
+												nodeDragProps.dragPreviewOptions = dragPreviewOptions;
+											}
+
+											// Add drag preview rendering
+											nodeDragProps.getDragProxy = getCustomDragProxy ? 
+												(dragItem) => getCustomDragProxy(item, getSelection()) :
+												null; // Let GlobalDragProxy handle the default case
+										}
+										if (areNodesDropTarget) {
+											WhichNode = DropTargetTreeNode;
+											nodeDragProps.isDropTarget = true;
+											nodeDragProps.dropTargetAccept = dropTargetAccept;
+											nodeDragProps.canDrop = (droppedItem, monitor) => {
+												// Check if the drop operation would be valid based on business rules
+												if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
+													return canNodeAcceptDrop(item, droppedItem);
+												}
+												// Default: allow external drops
+												return true;
+											};
+											nodeDragProps.onDrop = (droppedItem) => {
+												// NOTE: item is sometimes getting destroyed, but it still has the id, so you can still use it
+												onNodeDrop(item, droppedItem);
+											};
+										}
+										if (areNodesDragSource && areNodesDropTarget) {
+											WhichNode = DragSourceDropTargetTreeNode;
+										}
+									}
+								}
 							}
 							
-							return <WhichTreeNode
+							return <WhichNode
 										datum={datum}
 										nodeProps={nodeProps}
 										onToggle={onToggle}
+										isNodeSelectable={isNodeSelectable}
+										isNodeHoverable={isNodeHoverable}
 										isSelected={isSelected}
 										isHovered={hovered}
-										isDragMode={isDragMode}
+										showHovers={showHovers}
+										showSelectHandle={showSelectHandle}
 										isHighlighted={highlitedDatum === datum}
-										{...dragProps}
+										{...nodeDragProps}
 
 										// fields={fields}
 									/>;
@@ -1089,154 +1233,6 @@ function TreeComponent(props) {
 				}
 			});
 			return nodes;
-		},
-
-		// drag/drop
-		getDragProxy = (node) => {
-
-			// TODO: Maybe the proxy should grab itself and all descendants??
-
-			const
-				row = node,
-				rowRect = row.getBoundingClientRect(),
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				proxy = row.cloneNode(true),
-				top = rowRect.top - parentRect.top,
-				rows = _.filter(parent.children, (childNode) => {
-					if (childNode.getBoundingClientRect().height === 0 && childNode.style.visibility !== 'hidden') {
-						return false; // Skip zero-height children
-					}
-					if (childNode === proxy) {
-						return false;
-					}
-					return true;
-				}),
-				dragRowIx = Array.from(rows).indexOf(row),
-				dragRowRecord = rowToDatumMap[dragRowIx].item;
-			
-			setDragNodeId(dragRowRecord.id); // the id of which record is being dragged
-
-			proxy.style.top = top + 'px';
-			proxy.style.left = (dragRowRecord.depth * DEPTH_INDENT_PX) + 'px';
-			proxy.style.height = rowRect.height + 'px';
-			proxy.style.width = rowRect.width + 'px';
-			proxy.style.display = 'flex';
-			proxy.style.position = 'absolute';
-			proxy.style.border = '1px solid #bbb';
-			return proxy;
-		},
-		onDrag = (info, e, proxy, node) => {
-			// console.log('onDrag', info, e, proxy, node);
-			const
-				proxyRect = proxy.getBoundingClientRect(),
-				row = node,
-				parent = row.parentElement,
-				parentRect = parent.getBoundingClientRect(),
-				rows = _.filter(parent.children, (childNode) => {
-					if (childNode.getBoundingClientRect().height === 0 && childNode.style.visibility !== 'hidden') {
-						return false; // Skip zero-height children
-					}
-					if (childNode === proxy) {
-						return false;
-					}
-					return true;
-				}),
-				currentY = proxyRect.top - parentRect.top; // top position of pointer, relative to page
-
-			// Figure out which row the user wants as a parentId
-			let newIx = 0; // default to root being new parentId
-			_.each(rows, (child, ix, all) => {
-				const
-					rect = child.getBoundingClientRect(), // rect of the row of this iteration
-					{
-						top,
-						bottom,
-						height,
-					} = rect,
-					compensatedBottom = bottom - parentRect.top;
-
-				if (child === proxy) {
-					return;
-				}
-				if (ix === 0) {
-					// first row
-					if (currentY < compensatedBottom) {
-						newIx = 0;
-						return false;
-					}
-					return;
-				} else if (ix === all.length -1) {
-					// last row
-					if (currentY < compensatedBottom) {
-						newIx = ix;
-						return false;
-					}
-					return;
-				}
-				
-				// all other rows
-				if (currentY < compensatedBottom) {
-					newIx = ix;
-					return false;
-				}
-			});
-
-
-			const
-				dragDatum = getDatumById(dragNodeId),
-				dragDatumChildIds = getDatumChildIds(dragDatum),
-				dropRowDatum = rowToDatumMap[newIx],
-				dropRowRecord = dropRowDatum.item,
-				dropNodeId = dropRowRecord.id,
-				dragNodeContainsDropNode = inArray(dropNodeId, dragDatumChildIds) || dropRowRecord.id === dragNodeId;
-			
-			if (dragNodeContainsDropNode) {
-				// the node can be a child of any node except itself or its own descendants
-				setDropRowIx(null);
-				setHighlitedDatum(null);
-
-			} else {
-				// console.log('setDropRowIx', newIx);
-				setDropRowIx(newIx);
-
-				// highlight the drop node
-				setHighlitedDatum(dropRowDatum);
-
-				// shift proxy's depth
-				const depth = (dropRowRecord.id === dragNodeId) ? dropRowRecord.depth : dropRowRecord.depth + 1;
-				proxy.style.left = (depth * DEPTH_INDENT_PX) + 'px';
-			}
-		},
-		onDragStop = async (delta, e, config) => {
-			// console.log('onDragStop', delta, e, config);
-
-			if (_.isNil(dropRowIx)) {
-				return;
-			}
-			
-			const
-				dragDatum = getDatumById(dragNodeId),
-				dragRowRecord = dragDatum.item,
-				dropRowDatum = rowToDatumMap[dropRowIx],
-				dropRowRecord = dropRowDatum.item;
-
-			if (Repository) {
-				if (!Repository.isDestroyed) {
-					const commonAncestorId = await Repository.moveTreeNode(dragRowRecord, dropRowRecord.id);
-					const commonAncestorDatum = getDatumById(commonAncestorId);
-					reloadNode(commonAncestorDatum.item);
-				}
-			} else {
-
-				throw Error('Not yet implemented');
-				// function arrayMove(arr, fromIndex, toIndex) {
-				// 	var element = arr[fromIndex];
-				// 	arr.splice(fromIndex, 1);
-				// 	arr.splice(toIndex, 0, element);
-				// }
-				// arrayMove(data, dragNodeIx, finalDropIx);
-			}
 		};
 
 	useEffect(() => {
@@ -1332,8 +1328,8 @@ function TreeComponent(props) {
 	}
 	
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, isDragMode, getTreeNodeData()]),
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isDragMode, getTreeNodeData()]);
+		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, getTreeNodeData()]),
+		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, getTreeNodeData()]);
 
 	if (!isReady) {
 		return <CenterBox>
@@ -1366,18 +1362,10 @@ function TreeComponent(props) {
 		w-full
 		min-w-[300px]
 	`;
-	if (isDragMode) {
-		className += `
-			${styles.GRID_REORDER_BORDER_COLOR}
-			${styles.GRID_REORDER_BORDER_WIDTH}
-			${styles.GRID_REORDER_BORDER_STYLE}
-		`;
+	if (isLoading) {
+		className += ' border-t-2 border-[#f00]';
 	} else {
-		if (isLoading) {
-			className += ' border-t-2 border-[#f00]';
-		} else {
-			className += ' border-t-1 border-grey-300';
-		}
+		className += ' border-t-1 border-grey-300';
 	}
 	if (props.className) {
 		className += ' ' + props.className;
@@ -1395,9 +1383,7 @@ function TreeComponent(props) {
 				<VStack
 					ref={treeRef}
 					onClick={() => {
-						if (!isDragMode) {
-							deselectAll();
-						}
+						deselectAll();
 					}}
 					className="Tree-deselector w-full flex-1 p-1 bg-white"
 				>

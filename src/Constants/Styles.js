@@ -126,6 +126,8 @@ const defaults = {
 	TREE_NODE_SELECTED_BG: '#ff0', // must be hex
 	TREE_NODE_SELECTED_BG_HOVER: '#cc0', // must be hex
 	TREE_NODE_HIGHLIGHTED_BG: '#0f0', // must be hex
+	TREE_NODE_DROP_VALID_BG: '#4ade80', // must be hex - green-400 for valid drop targets
+	TREE_NODE_DROP_INVALID_BG: '#f87171', // must be hex - red-400 for invalid drop targets
 	TOOLBAR_CLASSNAME: 'bg-grey-200',
 	TOOLBAR_ITEMS_COLOR: 'text-grey-800',
 	TOOLBAR_ITEMS_ICON_SIZE: 'sm',
