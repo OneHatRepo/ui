@@ -63,6 +63,10 @@ function withAlert(WrappedComponent) {
 									text-[18px]
 									flex-none
 									mr-2
+									w-full
+									break-words
+									whitespace-normal
+									overflow-wrap-anywhere
 								`}>{message}</Text>
 							</Box>
 						</HStack>;
