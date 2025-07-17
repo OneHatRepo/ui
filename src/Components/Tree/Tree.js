@@ -727,6 +727,9 @@ function TreeComponent(props) {
 			}
 			return false;
 		},
+		isChildOf = (potentialChild, potentialParent) => {
+			return potentialChild.parent?.id === potentialParent.id;
+		},
 		reloadTree = () => {
 			Repository.areRootNodesLoaded = false;
 			return buildAndSetTreeNodeData();
@@ -1118,6 +1121,11 @@ function TreeComponent(props) {
 											// If no selection exists, the dragged item is what we're moving
 											const nodesToValidate = currentSelection.length > 0 ? currentSelection : [droppedItem.item];
 											
+											// validate that the dropped item is not already a direct child of the target node
+											if (isChildOf(droppedItem.item, item)) {
+												return false;
+											}
+
 											// Validate that none of the nodes being moved can be dropped into the target location
 											for (const nodeToMove of nodesToValidate) {
 												if (nodeToMove.id === item.id) {
