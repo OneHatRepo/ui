@@ -118,7 +118,14 @@ function AttachmentsElement(props) {
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
 		[showAll, setShowAll] = useState(false),
-		[files, setFiles] = useState([]),
+		setFilesRaw = useRef([]),
+		setFiles = (files) => {
+			setFilesRaw.current = files;
+			forceUpdate();
+		},
+		getFiles = () => {
+			return setFilesRaw.current;
+		},
 		buildFiles = () => {
 			const files = _.map(Repository.entities, (entity) => {
 				return {
@@ -201,7 +208,9 @@ function AttachmentsElement(props) {
 			}
 		},
 		onFileDelete = (id) => {
-			const file = _.find(files, { id });
+			const
+				files = getFiles(),
+				file = _.find(files, { id });
 			if (confirmBeforeDelete) {
 				confirm('Are you sure you want to delete the file "' + file.name + '"?', () => doDelete(id));
 			} else {
@@ -219,6 +228,7 @@ function AttachmentsElement(props) {
 			}
 		},
 		buildModalBody = (url, id) => {
+			const files = getFiles();
 			// This method was abstracted out so showModal/onPrev/onNext can all use it.
 			// url comes from FileMosaic, which passes in imageUrl,
 			// whereas FileCardCustom passes in id.
@@ -316,7 +326,9 @@ function AttachmentsElement(props) {
 			});
 		},
 		doDelete = (id) => {
-			const file = Repository.getById(id);
+			const 
+				files = getFiles(),
+				file = Repository.getById(id);
 			if (file) {
 				// if the file exists in the repository, delete it there
 				Repository.deleteById(id);
@@ -409,7 +421,9 @@ function AttachmentsElement(props) {
 	}
 
 	if (self) {
-		self.files = files;
+		self.getFiles = getFiles;
+		self.setFiles = setFiles;
+		self.clearFiles = clearFiles;
 	}
 
 	if (canCrud) {
@@ -425,6 +439,7 @@ function AttachmentsElement(props) {
 	if (props.className) {
 		className += ' ' + props.className;
 	}
+	const files = getFiles();
 	let content = <VStack className={className}>
 						<HStack className="AttachmentsElement-HStack flex-wrap">
 							{files.length === 0 && <Text className="text-grey-600 italic">No files</Text>}
