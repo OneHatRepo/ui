@@ -8,6 +8,7 @@ import AngleLeft from './Icons/AngleLeft.js';
 import AngleRight from './Icons/AngleRight.js';
 import AnglesLeft from './Icons/AnglesLeft.js';
 import AnglesRight from './Icons/AnglesRight.js';
+import Arcs from './Icons/Arcs.js';
 import Asterisk from './Icons/Asterisk.js';
 import ArrowPointer from './Icons/ArrowPointer.js';
 import ArrowUp from './Icons/ArrowUp.js';
@@ -255,6 +256,7 @@ const components = {
 	AngleRight,
 	AnglesLeft,
 	AnglesRight,
+	Arcs,
 	Asterisk,
 	ArrowPointer,
 	ArrowUp,

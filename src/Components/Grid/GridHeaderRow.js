@@ -20,7 +20,7 @@ import UiGlobals from '../../UiGlobals.js';
 import useBlocking from '../../Hooks/useBlocking.js';
 import testProps from '../../Functions/testProps.js';
 import AngleRight from '../Icons/AngleRight.js';
-import ArrowPointer from '../Icons/ArrowPointer.js';
+import Arcs from '../Icons/Arcs.js';
 import HeaderReorderHandle from './HeaderReorderHandle.js';
 import HeaderResizeHandle from './HeaderResizeHandle.js';
 import HeaderColumnSelectorHandle from './HeaderColumnSelectorHandle.js';
@@ -469,7 +469,7 @@ export default function GridHeaderRow(props) {
 						key="RowSelectHandle"
 						className="Spacer-RowSelectHandle px-2 items-center justify-center flex-none w-[40px]"
 					>
-						<Icon as={ArrowPointer} className={`ArrowPointer w-[20px] h-[20px] text-[#aaa]`} />
+						<Icon as={Arcs} className={`Arcs w-[20px] h-[20px] text-[#aaa]`} />
 					</Box>);
 				}
 				if (areRowsDragSource) {

@@ -530,7 +530,7 @@ function TreeComponent(props) {
 			const selectedNode = selectedNodes[0];
 			const commonAncestorId = await Repository.moveTreeNode(selectedNode, droppedOn.id);
 			const commonAncestorDatum = getDatumById(commonAncestorId);
-			reloadNode(commonAncestorDatum);
+			reloadNode(commonAncestorDatum.item);
 
 		},
 

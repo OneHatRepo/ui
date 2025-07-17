@@ -10,14 +10,14 @@ import * as colourMixer from '@k-renwick/colour-mixer';
 import {
 	UI_MODE_WEB,
 	CURRENT_MODE,
-} from '../../constants/UiModes.js';
+} from '../../Constants/UiModes.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
 import TreeNodeDragHandle from './TreeNodeDragHandle.js';
-import testProps from '../../functions/testProps.js';
+import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
 // This was broken out from Tree simply so we can memoize it
