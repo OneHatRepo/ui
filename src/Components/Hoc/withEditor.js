@@ -670,8 +670,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 		useEffect(() => {
 			setEditorMode(calculateEditorMode());
 
-			setIsIgnoreNextSelectionChange(false);
 			setLastSelection(selection);
+			
+			// Push isIgnoreNextSelectionChange until after a microtask to ensure all
+			// synchronous operations (including listener callbacks) are complete
+			// (this is to prevent the editor from immediately switching modes on doAdd in Tree)
+			Promise.resolve().then(() => {
+				setIsIgnoreNextSelectionChange(false);
+			});
 		}, [selection]);
 
 		if (self) {
