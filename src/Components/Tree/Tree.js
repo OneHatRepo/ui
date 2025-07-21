@@ -54,8 +54,6 @@ import Xmark from '../Icons/Xmark.js';
 import Dot from '../Icons/Dot.js';
 import Collapse from '../Icons/Collapse.js';
 import Expand from '../Icons/Expand.js';
-import FolderClosed from '../Icons/FolderClosed.js';
-import FolderOpen from '../Icons/FolderOpen.js';
 import Gear from '../Icons/Gear.js';
 import MagnifyingGlass from '../Icons/MagnifyingGlass.js';
 import PaginationToolbar from '../Toolbar/PaginationToolbar.js';
@@ -93,21 +91,9 @@ function TreeComponent(props) {
 			getDisplayTextFromSearchResults = (item) => {
 				return item.id
 			},
-			getNodeIcon = (which, item) => { // decides what icon to show for this node
+			getNodeIcon = (item) => {
 				// TODO: Allow for dynamic props on the icon (e.g. special color for some icons)
-				let icon;
-				switch(which) {
-					case COLLAPSED:
-						icon = FolderClosed;
-						break;
-					case EXPANDED:
-						icon = FolderOpen;
-						break;
-					case LEAF:
-						icon = Dot;
-						break;
-				}
-				return icon;
+				return Dot;
 			},
 			getNodeProps = (item) => {
 				return {};
@@ -547,9 +533,7 @@ function TreeComponent(props) {
 					treeRef,
 					text: getNodeText(treeNode),
 					content: getNodeContent ? getNodeContent(treeNode) : null,
-					iconCollapsed: getNodeIcon(COLLAPSED, treeNode),
-					iconExpanded: getNodeIcon(EXPANDED, treeNode),
-					iconLeaf: getNodeIcon(LEAF, treeNode),
+					icon: getNodeIcon(treeNode),
 					isExpanded: treeNode.isExpanded || defaultToExpanded || isRoot, // all non-root treeNodes are collapsed by default
 					isVisible: isRoot ? areRootsVisible : true,
 					isLoading: false,

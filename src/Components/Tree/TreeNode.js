@@ -18,6 +18,8 @@ import IconButton from '../Buttons/IconButton.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
 import TreeNodeDragHandle from './TreeNodeDragHandle.js';
 import testProps from '../../Functions/testProps.js';
+import ChevronRight from '../Icons/ChevronRight.js';
+import ChevronDown from '../Icons/ChevronDown.js';
 import _ from 'lodash';
 
 // This was broken out from Tree simply so we can memoize it
@@ -51,9 +53,7 @@ export default function TreeNode(props) {
 		depth = item.depth,
 		text = datum.text,
 		content = datum.content,
-		iconCollapsed = datum.iconCollapsed,
-		iconExpanded = datum.iconExpanded,
-		iconLeaf = datum.iconLeaf,
+		icon = datum.icon,
 		hash = item?.hash || item;
 
 	// Hide the default drag preview only when using custom drag proxy (and only on web)
@@ -65,7 +65,6 @@ export default function TreeNode(props) {
 	}, [dragPreviewRef, getDragProxy]);
 
 	return useMemo(() => {
-		const icon = hasChildren ? (isExpanded ? iconExpanded : iconCollapsed) : iconLeaf;
 		let bg = props.nodeProps?.bg || props.bg || styles.TREE_NODE_BG,
 			mixWith;
 		
@@ -148,18 +147,19 @@ export default function TreeNode(props) {
 					{isPhantom && <Box t={0} l={0} className="absolute bg-[#f00] h-[2px] w-[2px]" />}
 					
 					{isDragSource && <TreeNodeDragHandle />}
-					
-					{isLoading ? 
-						<Spinner className="px-2" /> : 
-						(icon && hasChildren ? 
-							<IconButton
-								{...testProps('expandBtn')}
-								icon={icon}
-								onPress={(e) => onToggle(datum, e)}
-							/> : 
-							<Icon as={icon} className="ml-4 mr-1" />)}
 
-					{text ? <TextNative
+					{hasChildren && <IconButton
+										{...testProps('expandBtn')}
+										icon={isExpanded ? ChevronDown : ChevronRight}
+										onPress={(e) => onToggle(datum, e)}
+										className="ml-2"
+									/>}
+					
+					{isLoading && <Spinner className="px-2" />}
+
+					{!isLoading && icon && <Icon as={icon} className="ml-2 mr-1" />}
+
+					{text && <TextNative
 								numberOfLines={1}
 								ellipsizeMode="head"
 								// {...propsToPass}
@@ -176,7 +176,7 @@ export default function TreeNode(props) {
 								style={{
 									userSelect: 'none',
 								}}
-							>{text}</TextNative> : null}
+							>{text}</TextNative>}
 
 					{content}
 
