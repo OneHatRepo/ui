@@ -549,6 +549,7 @@ function GridComponent(props) {
 										} else {
 											rowDragProps.dragSourceItem = {
 												id: item.id,
+												item,
 												getSelection,
 												type: rowDragSourceType,
 											};
