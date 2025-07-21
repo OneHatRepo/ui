@@ -162,9 +162,9 @@ function Form(props) {
 	let skipAll = false;
 	if (record?.isDestroyed) {
 		skipAll = true; // if record is destroyed, skip render, but allow hooks to still be called
-		if (self?.parent?.parent?.setIsEditorShown) {
-			self.parent.parent.setIsEditorShown(false); // close the editor
-		}
+		// if (self?.parent?.parent?.setIsEditorShown) {
+		// 	self.parent.parent.setIsEditorShown(false); // close the editor
+		// }
 	}
 	const
 		isMultiple = _.isArray(record),
