@@ -1123,8 +1123,8 @@ function TreeComponent(props) {
 										nodeDragProps.dropTargetAccept = dropTargetAccept;
 										
 										// Define validation logic once for reuse
-										const validateDrop = (droppedItem) => {
-											if (!droppedItem) {
+										const validateDrop = (draggedItem) => {
+											if (!draggedItem) {
 												return false;
 											}
 											
@@ -1132,10 +1132,10 @@ function TreeComponent(props) {
 
 											// Always include the dragged item itself in validation
 											// If no selection exists, the dragged item is what we're moving
-											const nodesToValidate = currentSelection.length > 0 ? currentSelection : [droppedItem.item];
+											const nodesToValidate = currentSelection.length > 0 ? currentSelection : [draggedItem.item];
 											
 											// validate that the dropped item is not already a direct child of the target node
-											if (isChildOf(droppedItem.item, item)) {
+											if (isChildOf(draggedItem.item, item)) {
 												return false;
 											}
 
@@ -1153,13 +1153,13 @@ function TreeComponent(props) {
 											
 											if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
 												// custom business logic
-												return canNodeAcceptDrop(item, droppedItem);
+												return canNodeAcceptDrop(item, draggedItem);
 											}
 											return true;
 										};
 										
 										// Use the validation function for React DnD
-										nodeDragProps.canDrop = (droppedItem, monitor) => validateDrop(droppedItem);
+										nodeDragProps.canDrop = (draggedItem, monitor) => validateDrop(draggedItem);
 										
 										// Pass the same validation function for visual feedback
 										nodeDragProps.validateDrop = validateDrop;
@@ -1202,14 +1202,34 @@ function TreeComponent(props) {
 											WhichNode = DropTargetTreeNode;
 											nodeDragProps.isDropTarget = true;
 											nodeDragProps.dropTargetAccept = dropTargetAccept;
-											nodeDragProps.canDrop = (droppedItem, monitor) => {
+											nodeDragProps.canDrop = (draggedItem, monitor) => {
 												// Check if the drop operation would be valid based on business rules
 												if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
-													return canNodeAcceptDrop(item, droppedItem);
+													return canNodeAcceptDrop(item, draggedItem);
 												}
 												// Default: allow external drops
 												return true;
 											};
+
+											// Define validation logic once for reuse
+											const validateDrop = (draggedItem) => {
+												if (!draggedItem) {
+													return false;
+												}
+												
+												if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
+													// custom business logic
+													return canNodeAcceptDrop(item, draggedItem);
+												}
+												return true;
+											};
+
+											// Use the validation function for React DnD
+											nodeDragProps.canDrop = (draggedItem, monitor) => validateDrop(draggedItem);
+											
+											// Pass the same validation function for visual feedback
+											nodeDragProps.validateDrop = validateDrop;
+
 											nodeDragProps.onDrop = (droppedItem) => {
 												// NOTE: item is sometimes getting destroyed, but it still has the id, so you can still use it
 												onNodeDrop(item, droppedItem);
