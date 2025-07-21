@@ -587,6 +587,35 @@ function TreeComponent(props) {
 			}
 			return treeNodeData;
 		},
+		buildAndSetOneTreeNodeData = (entity) => {
+			
+			if (!entity || !entity.parent) {
+				// If no parent, it might be a root node, so rebuild the tree
+				buildAndSetTreeNodeData();
+				return;
+			}
+
+			const parentDatum = getDatumById(entity.parent.id);
+			if (!parentDatum) {
+				// Parent not found in current tree structure, rebuild
+				buildAndSetTreeNodeData();
+				return;
+			}
+
+			// Create datum for the new entity and add it to parent's children
+			const newDatum = buildTreeNodeDatum(entity);
+			parentDatum.children.push(newDatum);
+			
+			// Update parent to show it has children and expand if needed
+			if (!entity.parent.hasChildren) {
+				entity.parent.hasChildren = true;
+			}
+			if (!parentDatum.isExpanded) {
+				parentDatum.isExpanded = true;
+			}
+
+			forceUpdate();
+		},
 		datumContainsSelection = (datum) => {
 			if (_.isEmpty(selection)) {
 				return false;
@@ -1274,7 +1303,7 @@ function TreeComponent(props) {
 		Repository.on('load', setFalse);
 		Repository.on('loadRootNodes', setFalse);
 		Repository.on('loadRootNodes', buildAndSetTreeNodeData);
-		Repository.on('add', buildAndSetTreeNodeData);
+		Repository.on('add', buildAndSetOneTreeNodeData);
 		Repository.on('changeFilters', reloadTree);
 		Repository.on('changeSorters', reloadTree);
 
@@ -1290,7 +1319,7 @@ function TreeComponent(props) {
 			Repository.off('load', setFalse);
 			Repository.off('loadRootNodes', setFalse);
 			Repository.off('loadRootNodes', buildAndSetTreeNodeData);
-			Repository.off('add', buildAndSetTreeNodeData);
+			Repository.off('add', buildAndSetOneTreeNodeData);
 			Repository.off('changeFilters', reloadTree);
 			Repository.off('changeSorters', reloadTree);
 		};
