@@ -105,6 +105,22 @@ function TreeComponent(props) {
 			showSelectHandle = true,
 			isNodeSelectable = true,
 			isNodeHoverable = true,
+			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the node clicked on
+			disableBottomToolbar = false,
+			bottomToolbar = null,
+			topToolbar = null,
+			additionalToolbarButtons = [],
+			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
+			parentIdIx,
+			initialSelection,
+			canRecordBeEdited,
+			onTreeLoad,
+			onLayout,
+			selectorId,
+			selectorSelected,
+			selectorSelectedField = 'id',
+
+			// DND
 			canNodesMoveInternally = false,
 			canNodeMoveInternally, // optional fn to customize whether each node can be dragged INternally
 			canNodeMoveExternally, // optional fn to customize whether each node can be dragged EXternally
@@ -117,21 +133,6 @@ function TreeComponent(props) {
 			areNodesDropTarget = false,
 			dropTargetAccept,
 			onNodeDrop,
-			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the node clicked on
-			disableBottomToolbar = false,
-			bottomToolbar = null,
-			topToolbar = null,
-			additionalToolbarButtons = [],
-			reload = null, // Whenever this value changes after initial render, the tree will reload from scratch
-			parentIdIx,
-			initialSelection,
-			canRecordBeEdited,
-			onTreeLoad,
-			onLayout,
-			
-			selectorId,
-			selectorSelected,
-			selectorSelectedField = 'id',
 
 			// withComponent
 			self,
@@ -1180,6 +1181,7 @@ function TreeComponent(props) {
 											} else {
 												nodeDragProps.dragSourceItem = {
 													id: item.id,
+													item,
 													getSelection,
 													type: nodeDragSourceType,
 												};
@@ -1202,10 +1204,10 @@ function TreeComponent(props) {
 											WhichNode = DropTargetTreeNode;
 											nodeDragProps.isDropTarget = true;
 											nodeDragProps.dropTargetAccept = dropTargetAccept;
-											nodeDragProps.canDrop = (draggedItem, monitor) => {
+											nodeDragProps.canDrop = (droppedItem, monitor) => {
 												// Check if the drop operation would be valid based on business rules
 												if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
-													return canNodeAcceptDrop(item, draggedItem);
+													return canNodeAcceptDrop(item, droppedItem);
 												}
 												// Default: allow external drops
 												return true;

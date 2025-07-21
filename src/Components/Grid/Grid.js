@@ -138,13 +138,6 @@ function GridComponent(props) {
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
-			canRowsReorder = false,
-			areRowsDragSource = false,
-			rowDragSourceType,
-			getRowDragSourceItem,
-			areRowsDropTarget = false,
-			dropTargetAccept,
-			onRowDrop,
 			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
@@ -174,6 +167,18 @@ function GridComponent(props) {
 			selectorSelectedField = 'id',
 			noSelectorMeansNoResults = false,
 			disableSelectorSelected = false,
+
+			// DND
+			canRowsReorder = false,
+			canRowAcceptDrop, // optional fn to customize whether each node can accept a dropped item: (targetItem, draggedItem) => boolean
+			getCustomDragProxy, // optional fn to render custom drag preview: (item, selection) => ReactElement
+			dragPreviewOptions, // optional object for drag preview positioning options
+			areRowsDragSource = false,
+			rowDragSourceType,
+			getRowDragSourceItem,
+			areRowsDropTarget = false,
+			dropTargetAccept,
+			onRowDrop,
 
 			// withComponent
 			self,
@@ -554,6 +559,16 @@ function GridComponent(props) {
 												type: rowDragSourceType,
 											};
 										}
+										
+										// Add custom drag preview options
+										if (dragPreviewOptions) {
+											rowDragProps.dragPreviewOptions = dragPreviewOptions;
+										}
+
+										// Add drag preview rendering
+										rowDragProps.getDragProxy = getCustomDragProxy ? 
+											(dragItem) => getCustomDragProxy(item, getSelection()) :
+											null; // Let GlobalDragProxy handle the default case
 									}
 									if (areRowsDropTarget) {
 										WhichRow = DropTargetGridRow;
@@ -562,6 +577,14 @@ function GridComponent(props) {
 										rowDragProps.onDrop = (droppedItem) => {
 											// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
 											onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
+										};
+										rowDragProps.canDrop = (droppedItem, monitor) => {
+											// Check if the drop operation would be valid based on business rules
+											if (canRowAcceptDrop && typeof canRowAcceptDrop === 'function') {
+												return canRowAcceptDrop(item, droppedItem);
+											}
+											// Default: allow all drops
+											return true;
 										};
 									}
 									if (areRowsDragSource && areRowsDropTarget) {

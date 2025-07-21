@@ -43,14 +43,28 @@ function GridRow(props) {
 			isDraggable = false, // withDraggable
 			isDragSource = false, // withDnd
 			isOver = false, // drop target
+			canDrop,
+			draggedItem,
+			validateDrop, // same as canDrop (for visual feedback)
+			getDragProxy,
 			dragSourceRef,
+			dragPreviewRef,
 			dropTargetRef,
+			...propsToPass
 		} = props,
 		styles = UiGlobals.styles;
 
 	if (item.isDestroyed) {
 		return null;
 	}
+	
+	// Hide the default drag preview only when using custom drag proxy (and only on web)
+	useEffect(() => {
+		if (dragPreviewRef && typeof dragPreviewRef === 'function' && getDragProxy && CURRENT_MODE === UI_MODE_WEB) {
+			// Only suppress default drag preview when we have a custom one and we're on web
+			dragPreviewRef(getEmptyImage(), { captureDraggingState: true });
+		}
+	}, [dragPreviewRef, getDragProxy]);
 
 	const
 		isPhantom = item.isPhantom,
@@ -59,6 +73,15 @@ function GridRow(props) {
 
 		let bg = rowProps.bg || props.bg || styles.GRID_ROW_BG,
 			mixWith;
+
+		// TODO: Finish Drop styling
+
+		// Use custom validation for enhanced visual feedback, fallback to React DnD's canDrop
+		let actualCanDrop = canDrop;
+		if (isOver && draggedItem && validateDrop) {
+			actualCanDrop = validateDrop(draggedItem);
+		}
+
 		if (isRowSelectable && isSelected) {
 			if (showHovers && isHovered) {
 				mixWith = styles.GRID_ROW_SELECTED_BG_HOVER;
@@ -368,7 +391,11 @@ function GridRow(props) {
 		isHovered,
 		isOver,
 		index,
+		canDrop,
+		draggedItem,
+		validateDrop,
 		dragSourceRef,
+		dragPreviewRef,
 		dropTargetRef,
 	]);
 }
