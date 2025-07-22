@@ -1,4 +1,4 @@
-import { forwardRef, useState, } from 'react';
+import { forwardRef, useState, useRef, } from 'react';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -50,6 +50,7 @@ export default function withDraggable(WrappedComponent) {
 			[isDragging, setIsDraggingRaw] = useState(false),
 			[node, setNode] = useState(false),
 			[bounds, setBounds] = useState(null),
+			nodeRef = useRef(null), // to get around React Draggable bug // https://stackoverflow.com/a/63603903
 			{ block } = useBlocking(),
 			setIsDragging = (value) => {
 				setIsDraggingRaw(value);
@@ -231,10 +232,11 @@ export default function withDraggable(WrappedComponent) {
 							onDrag={handleDrag}
 							onStop={handleStop}
 							position={{ x: 0, y: 0, /* reset to dropped position */ }}
+							nodeRef={nodeRef}
 							// bounds={bounds}
 							{...draggableProps}
 						>
-							<div className="nsResize">
+							<div ref={nodeRef} className="nsResize">
 								<WrappedComponent {...propsToPass} ref={ref} />
 							</div>
 						</Draggable>;
@@ -246,9 +248,10 @@ export default function withDraggable(WrappedComponent) {
 							onStop={handleStop}
 							position={{ x: 0, y: 0, /* reset to dropped position */ }}
 							// bounds={bounds}
+							nodeRef={nodeRef}
 							{...draggableProps}
 						>
-							<div className="ewResize" style={{ height: '100%', }}>
+							<div ref={nodeRef} className="ewResize" style={{ height: '100%', }}>
 								<WrappedComponent {...propsToPass} ref={ref} />
 							</div>
 						</Draggable>;
@@ -262,9 +265,10 @@ export default function withDraggable(WrappedComponent) {
 						onStop={handleStop}
 						position={{ x: 0, y: 0, /* reset to dropped position */ }}
 						handle={handle}
+						nodeRef={nodeRef}
 						{...draggableProps}
 					>
-						<WrappedComponent {...propsToPass} ref={ref} />
+						<WrappedComponent {...propsToPass} ref={nodeRef} />
 					</Draggable>;
 		} else if (CURRENT_MODE === UI_MODE_NATIVE) {
 
