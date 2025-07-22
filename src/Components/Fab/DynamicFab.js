@@ -1,14 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
+	Box,
 	Fab, FabIcon, FabLabel,
 	VStack,
 } from '@project-components/Gluestack';
-import Animated, {
-	useSharedValue,
-	useAnimatedStyle,
-	useDerivedValue,
-	withTiming,
-} from 'react-native-reanimated';
 import IconButton from '../Buttons/IconButton.js';
 import FabWithTooltip from './FabWithTooltip.js';
 import EllipsisVertical from '../Icons/EllipsisVertical.js';
@@ -20,7 +15,7 @@ import Xmark from '../Icons/Xmark.js';
 export default function DynamicFab(props) {
 	const {
 			icon,
-			buttons, // to show when expanded
+			buttons = [], // to show when expanded
 			label,
 			tooltip,
 			tooltipPlacement = 'left',
@@ -28,21 +23,13 @@ export default function DynamicFab(props) {
 			tooltipTriggerClassName,
 			collapseOnPress = true,
 		} = props,
-		isExpanded = useSharedValue(0),
+		[isExpanded, setIsExpanded] = useState(false),
 		toggleFab = useCallback(() => {
-			isExpanded.value = isExpanded.value ? 0 : 1;
+			setIsExpanded(prev => !prev);
 		}, []),
 		buttonSpacing = 45,
 		verticalOffset = 50; // to shift the entire expanded group up
-		buttonAnimatedStyle = useAnimatedStyle(() => {
-			return {
-				opacity: withTiming(isExpanded.value, { duration: 200 }),
-				pointerEvents: isExpanded.value ? 'auto' : 'none', // Disable interaction when collapsed
-			};
-		}),
-		isExpandedForRender = useDerivedValue(() => { // Use useDerivedValue to safely read the shared value during render
-			return isExpanded.value > 0;
-		});
+
 
 	let className = `
 		DynamicFab
@@ -67,16 +54,17 @@ export default function DynamicFab(props) {
 								...btnConfigToPass
 							} = btnConfig;
 
-						return <Animated.View
+						if (!isExpanded) {
+							return null;
+						}
+
+						return <Box
 									key={ix}
-									style={[
-										buttonAnimatedStyle,
-										{
-											position: 'absolute',
-											bottom: buttonSpacing * (ix + 1) + verticalOffset, // Static vertical positioning
-											right: 0,
-										},
-									]}
+									style={{
+										position: 'absolute',
+										bottom: buttonSpacing * (ix + 1) + verticalOffset, // Static vertical positioning
+										right: 0,
+									}}
 								>
 									<IconButton
 										className={`
@@ -89,12 +77,12 @@ export default function DynamicFab(props) {
 										onPress={() => {
 											onPress();
 											if (collapseOnPress) {
-												isExpanded.value = 0;
+												setIsExpanded(false);
 											}
 										}}
 										{...btnConfigToPass}
 									/>
-								</Animated.View>;
+								</Box>;
 					})}
 				<FabWithTooltip
 					size="lg"
@@ -105,9 +93,7 @@ export default function DynamicFab(props) {
 					tooltipClassName={tooltipClassName}
 					tooltipTriggerClassName={tooltipTriggerClassName}
 				>
-					<Animated.View>
-						<FabIcon as={isExpandedForRender.value ? Xmark : icon || EllipsisVertical} />
-					</Animated.View>
+					<FabIcon as={isExpanded ? Xmark : icon || EllipsisVertical} />
 					{label ? <FabLabel>{label}</FabLabel> : null}
 				</FabWithTooltip>
 			</VStack>;
