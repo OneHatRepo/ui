@@ -363,7 +363,7 @@ function Form(props) {
 						style.width = boxW;
 					}
 					elements.push(<Box
-										key={ix}
+										key={fieldName + '-' + ix}
 										className={columnClassName}
 										style={style}
 									>{element}</Box>);
@@ -467,7 +467,7 @@ function Form(props) {
 																`}
 															/> : null;
 										return <HStack
-													key={ix}
+													key={fieldName + '-HStack-' + ix}
 													className={`
 														Form-HStack1
 														flex-${flex}
@@ -624,7 +624,7 @@ function Form(props) {
 					itemDefaultsToPass = itemDefaults;
 				}
 				return <Element
-							key={ix}
+							key={'column-Element-' + type + '-' + ix}
 							title={title}
 							{...defaultsToPass}
 							{...itemDefaultsToPass}
@@ -697,7 +697,7 @@ function Form(props) {
 									</VStack>;
 					}
 				}
-				return <HStack key={ix} className="Form-HStack3 w-full px-2 pb-1">{element}</HStack>;
+				return <HStack key={'Form-HStack3-' + ix} className="Form-HStack3 w-full px-2 pb-1">{element}</HStack>;
 			}
 
 		
@@ -908,7 +908,7 @@ function Form(props) {
 													`}
 												/> : null;
 							return <HStack
-										key={ix}
+										key={'Controller-HStack-' + ix}
 										className={`
 											Form-HStack11
 											min-h-[50px]
@@ -930,6 +930,7 @@ function Form(props) {
 
 				// add the "scroll to top" button
 				getAncillaryButtons().push({
+					key: 'scrollToTop',
 					icon: ArrowUp,
 					reference: 'scrollToTop',
 					onPress: () => scrollToAncillaryItem(0),
@@ -938,14 +939,15 @@ function Form(props) {
 
 				_.each(ancillaryItems, (item, ix) => {
 					let {
-						type,
-						title = null,
-						description = null,
-						icon,
-						selectorId,
-						selectorSelectedField,
-						...itemPropsToPass
-					} = item;
+							type,
+							title = null,
+							description = null,
+							icon,
+							selectorId,
+							selectorSelectedField,
+							...itemPropsToPass
+						} = item,
+						titleElement;
 					if (isMultiple && type !== 'Attachments') {
 						return;
 					}
@@ -953,6 +955,7 @@ function Form(props) {
 						// NOTE: this assumes that if one Ancillary item has an icon, they all do.
 						// If they don't, the ix will be wrong!
 						getAncillaryButtons().push({
+							key: 'ancillaryBtn-' + ix,
 							icon,
 							onPress: () => scrollToAncillaryItem(ix +1), // offset for the "scroll to top" button
 							tooltip: title,
@@ -977,15 +980,15 @@ function Form(props) {
 						if (record?.displayValue) {
 							title += ' for ' + record.displayValue;
 						}
-						title = <Text
-									className={`
-										Form-Ancillary-Title
-										font-bold
-										${styles.FORM_ANCILLARY_TITLE_CLASSNAME}
-									`}
-								>{title}</Text>;
+						titleElement = <Text
+											className={`
+												Form-Ancillary-Title
+												font-bold
+												${styles.FORM_ANCILLARY_TITLE_CLASSNAME}
+											`}
+										>{title}</Text>;
 						if (icon) {
-							title = <HStack className="items-center"><Icon as={icon} className="w-[32px] h-[32px] mr-2" />{title}</HStack>
+							titleElement = <HStack className="items-center"><Icon as={icon} className="w-[32px] h-[32px] mr-2" />{titleElement}</HStack>
 						}
 					}
 					if (description) {
@@ -1006,7 +1009,7 @@ function Form(props) {
 											my-3
 										`}
 									>
-										{title}
+										{titleElement}
 										{description}
 										{element}
 									</VStack>);
@@ -1369,13 +1372,15 @@ function Form(props) {
 						text={submitBtnLabel || 'Submit'}
 					/>}
 			
-				{additionalFooterButtons && _.map(additionalFooterButtons, (props) => {
+				{additionalFooterButtons && _.map(additionalFooterButtons, (props, ix) => {
 					let isDisabled = false;
 					if (props.disableOnInvalid) {
 						isDisabled = !formState.isValid;
 					}
+					const key = 'additionalFooterBtn-' + ix;
 					return <Button
-								{...testProps('additionalFooterBtn-' + props.key)}
+								{...testProps(key)}
+								key={key}
 								{...props}
 								onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
 								icon={props.icon || null}
