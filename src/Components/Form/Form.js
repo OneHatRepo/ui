@@ -1358,7 +1358,7 @@ function Form(props) {
 						icon={getEditorMode() === EDITOR_MODE__ADD ? Plus : FloppyDiskRegular}
 						isDisabled={isSaveDisabled}
 						className="text-white"
-						text={getEditorMode() === EDITOR_MODE__ADD ? 'Add' : 'Save'}
+						text={(getEditorMode() === EDITOR_MODE__ADD ? 'Add' : 'Save') + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
 					/>}
 				
 				{showSubmitBtn && 
