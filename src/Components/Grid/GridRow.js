@@ -11,7 +11,6 @@ import {
 	UI_MODE_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import * as colourMixer from '@k-renwick/colour-mixer';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -21,6 +20,16 @@ import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import RowSelectHandle from './RowSelectHandle.js';
 import _ from 'lodash';
+
+// Conditional import for web only
+let getEmptyImage;
+if (CURRENT_MODE === UI_MODE_WEB) {
+	import('react-dnd-html5-backend').then((module) => {
+		getEmptyImage = module.getEmptyImage;
+	}).catch(() => {
+		getEmptyImage = null;
+	});
+}
 
 // This was broken out from Grid simply so we can memoize it
 

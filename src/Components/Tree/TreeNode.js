@@ -11,7 +11,6 @@ import {
 	UI_MODE_WEB,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
@@ -21,6 +20,16 @@ import testProps from '../../Functions/testProps.js';
 import ChevronRight from '../Icons/ChevronRight.js';
 import ChevronDown from '../Icons/ChevronDown.js';
 import _ from 'lodash';
+
+// Conditional import for web only
+let getEmptyImage;
+if (CURRENT_MODE === UI_MODE_WEB) {
+	import('react-dnd-html5-backend').then((module) => {
+		getEmptyImage = module.getEmptyImage;
+	}).catch(() => {
+		getEmptyImage = null;
+	});
+}
 
 // This was broken out from Tree simply so we can memoize it
 
