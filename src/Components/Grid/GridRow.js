@@ -8,7 +8,10 @@ import {
 } from '@project-components/Gluestack';
 import {
 	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 import * as colourMixer from '@k-renwick/colour-mixer';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
