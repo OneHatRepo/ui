@@ -266,7 +266,7 @@ function GridComponent(props) {
 		},
 		setLocalColumnsConfig = (config) => {
 			if (localColumnsConfigKey) {
-				const localConfig = _.clone(config); // clone it so we don't alter the original
+				const localConfig = [...config]; // clone it so we don't alter the original
 				if (hasUnserializableColumns) {
 					// just save the data needed to later reconstruct the columns
 					const usedIds = [];
@@ -1166,7 +1166,7 @@ function GridComponent(props) {
 
 	// Actual data to show in the grid
 	const entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data;
-	let rowData = _.clone(entities); // don't use the original array, make a new one so alterations to it are temporary
+	let rowData = [...entities]; // don't use the original array, make a new one so alterations to it are temporary
 	if (showHeaders) {
 		rowData.unshift({ id: 'headerRow' });
 	}

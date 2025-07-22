@@ -228,7 +228,7 @@ export default function withFilters(WrappedComponent) {
 			filterById = (id, cb) => {
 				onClearFilters();
 				filterCallbackRef.current = cb; // store the callback, so we can call it the next time this HOC renders with new filters
-				const newFilters = _.clone(filters);
+				const newFilters = [...filters];
 				_.remove(newFilters, (filter) => {
 					return filter.field === 'q';
 				});
@@ -410,8 +410,8 @@ export default function withFilters(WrappedComponent) {
 						data,
 						onChange: (value) => {
 							const
-								newFilters = _.clone(modalFilters),
-								newSlots = _.clone(modalSlots),
+								newFilters = [...modalFilters],
+								newSlots = [...modalSlots],
 								i = ix;//searchAllText ? ixPlusOne : ix; // compensate for 'q' filter's possible presence
 
 							newFilters[i] = getFormattedFilter(value);
@@ -447,7 +447,7 @@ export default function withFilters(WrappedComponent) {
 							if (!canAddSlot) {
 								return;
 							}
-							const newSlots = _.clone(modalSlots);
+							const newSlots = [...modalSlots];
 							newSlots.push(null);
 							rebuildModalBody(modalFilters, newSlots);
 						},
@@ -456,8 +456,8 @@ export default function withFilters(WrappedComponent) {
 								return;
 							}
 							const
-								newFilters = _.clone(modalFilters),
-								newSlots = _.clone(modalSlots);
+								newFilters = [...modalFilters],
+								newSlots = [...modalSlots];
 							newFilters.pop();
 							newSlots.pop();
 							rebuildModalBody(newFilters, newSlots);

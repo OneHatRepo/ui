@@ -109,7 +109,7 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			addToSelection = (item) => {
-				const newSelection = _.clone(getSelection()); // so we get a new object, so descendants rerender
+				const newSelection = [...getSelection()]; // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				setSelection(newSelection);
 			},
@@ -175,7 +175,7 @@ export default function withSelection(WrappedComponent) {
 				const
 					currentSelectionLength = getSelection().length,
 					index = getIndexOfSelectedItem(item);
-				let newSelection = _.clone(getSelection()); // so we get a new object, so descendants rerender
+				let newSelection = [...getSelection()]; // so we get a new object, so descendants rerender
 
 				if (currentSelectionLength) {
 					const { items, max, min, } = getMaxMinSelectionIndices();

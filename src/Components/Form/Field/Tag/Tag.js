@@ -144,7 +144,7 @@ function TagComponent(props) {
 
 
 			// add new value
-			const newValue = _.clone(value); // so we trigger a re-render
+			const newValue = [...value]; // clone, so we trigger a re-render
 			newValue.push({
 				id,
 				text: displayValue,
@@ -165,7 +165,7 @@ function TagComponent(props) {
 			const
 				entity = selection[0],
 				id = entity.id,
-				newValue = _.clone(valueRef.current);
+				newValue = [...valueRef.current]; // clone
 			newValue.push({
 				id,
 				text: entity.displayValue,
@@ -190,7 +190,7 @@ function TagComponent(props) {
 				return;
 			}
 			
-			const newValue = _.clone(valueRef.current);
+			const newValue = [...valueRef.current]; // clone
 			newValue[ix] = {
 				id,
 				text: entity.displayValue,

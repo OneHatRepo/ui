@@ -86,7 +86,7 @@ export default function GridHeaderRow(props) {
 			if (isDragging) {
 				return;
 			}
-			const columnsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
+			const columnsConfig = [...localColumnsConfig]; // work with a copy, so that setter forces rerender
 			columnsConfig[ix].isOver = true;
 			setLocalColumnsConfig(columnsConfig);
 		},
@@ -94,7 +94,7 @@ export default function GridHeaderRow(props) {
 			if (isDragging) {
 				return;
 			}
-			const columnsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
+			const columnsConfig = [...localColumnsConfig]; // work with a copy, so that setter forces rerender
 			columnsConfig[ix].isOver = false;
 			setLocalColumnsConfig(columnsConfig);
 		},
@@ -240,7 +240,7 @@ export default function GridHeaderRow(props) {
 			setDragColumnSlot({ ix: newIx, marker, });
 		},
 		onColumnReorderDragStop = (delta, e, config) => {
-			const columnsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
+			const columnsConfig = [...localColumnsConfig]; // work with a copy, so that setter forces rerender
 
 			 _.pull(columnsConfig, config);
 
@@ -256,7 +256,7 @@ export default function GridHeaderRow(props) {
 			setDragColumnSlot(null);
 		},
 		onColumnResize = (delta, e, node, config) => {
-			const columnsConfig = _.clone(localColumnsConfig); // work with a copy, so that setter forces rerender
+			const columnsConfig = [...localColumnsConfig]; // work with a copy, so that setter forces rerender
 			if (config.w) {
 				config.w = Math.round(config.w + delta);
 			} else if (config.flex) {

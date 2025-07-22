@@ -244,7 +244,7 @@ function TabBar(props) {
 				const
 					isCurrentTab = ix === getCurrentTab(),
 					useIconTab = (isCollapsed || !tab.title),
-					tabIcon = tab._icon ? _.clone(tab._icon) : {};
+					tabIcon = tab._icon ? [...tab._icon] : {};
 				if (tabIcon.as && _.isString(tabIcon.as)) {
 					const Type = getComponentFromType(tabIcon.as);
 					if (Type) {
@@ -307,7 +307,7 @@ function TabBar(props) {
 
 					const
 						useIconTab = (isCollapsed || !additionalButton.text),
-						additionalButtonIcon = _.clone(additionalButton._icon);
+						additionalButtonIcon = [...additionalButton._icon];
 
 					if (additionalButtonIcon.as && _.isString(additionalButtonIcon.as)) {
 						const Type = getComponentFromType(additionalButtonIcon.as);

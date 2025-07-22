@@ -84,7 +84,7 @@ export default function Accordion(props) {
 									if (isActive) {
 										newActiveSections = _.without(activeSections, ix);
 									} else {
-										newActiveSections = _.clone(activeSections);
+										newActiveSections = [...activeSections]; // clone
 										newActiveSections.push(ix);
 									}
 								}

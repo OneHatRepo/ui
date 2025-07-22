@@ -384,13 +384,13 @@ function TreeComponent(props) {
 			forceUpdate();
 		},
 		onCollapseAll = () => {
-			const newTreeNodeData = _.clone(getTreeNodeData());
+			const newTreeNodeData = [...getTreeNodeData()];
 			collapseNodes(newTreeNodeData);
 			setTreeNodeData(newTreeNodeData);
 		},
 		onExpandAll = () => {
 			confirm('Are you sure you want to expand the whole tree? This may take a while.', async () => {
-				const newTreeNodeData = _.clone(getTreeNodeData());
+				const newTreeNodeData = [...getTreeNodeData()];
 				await expandNodes(newTreeNodeData);
 				setTreeNodeData(newTreeNodeData);
 			});
@@ -678,7 +678,7 @@ function TreeComponent(props) {
 			// NOTE: This is only for 'data', not for Repositories!
 			// 'data' is essentially an Adjacency List, not a ClosureTable.
 
-			const clonedData = _.clone(data);
+			const clonedData = [...data];
 
 			// Reset all parent/child relationships
 			_.each(clonedData, (treeNode) => {
@@ -831,7 +831,7 @@ function TreeComponent(props) {
 		},
 		expandPath = async (cPath, highlight = true) => {
 			// First, close the whole tree.
-			let newTreeNodeData = _.clone(getTreeNodeData());
+			let newTreeNodeData = [...getTreeNodeData()];
 			collapseNodes(newTreeNodeData);
 
 			// As it navigates down, it will expand the appropriate branches,
