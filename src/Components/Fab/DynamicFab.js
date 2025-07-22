@@ -6,6 +6,7 @@ import {
 import Animated, {
 	useSharedValue,
 	useAnimatedStyle,
+	useDerivedValue,
 	withTiming,
 } from 'react-native-reanimated';
 import IconButton from '../Buttons/IconButton.js';
@@ -33,6 +34,15 @@ export default function DynamicFab(props) {
 		}, []),
 		buttonSpacing = 45,
 		verticalOffset = 50; // to shift the entire expanded group up
+		buttonAnimatedStyle = useAnimatedStyle(() => {
+			return {
+				opacity: withTiming(isExpanded.value, { duration: 200 }),
+				pointerEvents: isExpanded.value ? 'auto' : 'none', // Disable interaction when collapsed
+			};
+		}),
+		isExpandedForRender = useDerivedValue(() => { // Use useDerivedValue to safely read the shared value during render
+			return isExpanded.value > 0;
+		});
 
 	let className = `
 		DynamicFab
@@ -55,18 +65,12 @@ export default function DynamicFab(props) {
 								onPress,
 								key,
 								...btnConfigToPass
-							} = btnConfig,
-							animatedStyle = useAnimatedStyle(() => {
-								return {
-									opacity: withTiming(isExpanded.value, { duration: 200 }),
-									pointerEvents: isExpanded.value ? 'auto' : 'none', // Disable interaction when collapsed
-								};
-							});
+							} = btnConfig;
 
 						return <Animated.View
 									key={ix}
 									style={[
-										animatedStyle,
+										buttonAnimatedStyle,
 										{
 											position: 'absolute',
 											bottom: buttonSpacing * (ix + 1) + verticalOffset, // Static vertical positioning
@@ -101,8 +105,10 @@ export default function DynamicFab(props) {
 					tooltipClassName={tooltipClassName}
 					tooltipTriggerClassName={tooltipTriggerClassName}
 				>
-					<FabIcon as={isExpanded.value ? Xmark : icon || EllipsisVertical} />
+					<Animated.View>
+						<FabIcon as={isExpandedForRender.value ? Xmark : icon || EllipsisVertical} />
+					</Animated.View>
 					{label ? <FabLabel>{label}</FabLabel> : null}
 				</FabWithTooltip>
 			</VStack>;
-};
+}
