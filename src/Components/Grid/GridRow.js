@@ -1,9 +1,10 @@
-import { useMemo, useEffect, } from 'react';
+import { useMemo, useState, useEffect, } from 'react';
 import {
 	Box,
 	HStack,
 	HStackNative,
 	Icon,
+	Text,
 	TextNative,
 } from '@project-components/Gluestack';
 import {
@@ -16,9 +17,11 @@ import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
 import testProps from '../../Functions/testProps.js';
+import Loading from '../Messages/Loading.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import RowSelectHandle from './RowSelectHandle.js';
+import useAsyncRenderers from '../../Hooks/useAsyncRenderers.js';
 import _ from 'lodash';
 
 // Conditional import for web only
@@ -64,7 +67,11 @@ function GridRow(props) {
 			dropTargetRef,
 			...propsToPass
 		} = props,
-		styles = UiGlobals.styles;
+		styles = UiGlobals.styles,
+		{
+			results: asyncResults,
+			loading: asyncLoading,
+		} = useAsyncRenderers(columnsConfig, item);
 
 	if (item.isDestroyed) {
 		return null;
@@ -159,21 +166,25 @@ function GridRow(props) {
 					}
 					if (_.isPlainObject(config)) {
 						if (config.renderer) {
-							const extraProps = _.omit(config, [
-								'header',
-								'fieldName',
-								'type',
-								'isEditable',
-								'editor',
-								'format',
-								'renderer',
-								'isReorderable',
-								'isResizable',
-								'isSortable',
-								'w',
-								'flex',
-								'isOver',
-							]);
+							const
+								asyncResult = asyncResults.get(key),
+								isLoading = asyncLoading.has(key),
+								extraProps = _.omit(config, [
+									'header',
+									'fieldName',
+									'type',
+									'isEditable',
+									'editor',
+									'format',
+									'renderer',
+									'isAsync',
+									'isReorderable',
+									'isResizable',
+									'isSortable',
+									'w',
+									'flex',
+									'isOver',
+								]);
 
 							if (!extraProps._web) {
 								extraProps._web = {};
@@ -185,6 +196,31 @@ function GridRow(props) {
 								// userSelect: 'none',
 							};
 
+							let content = null;
+							if (config.isAsync) {
+								// Async renderer
+								if (isLoading) {
+									content = <Loading />;
+								} else if (asyncResult) {
+									if (asyncResult.error) {
+										content = <Text>Render Error: {asyncResult.error.message || String(asyncResult.error)}</Text>;
+									} else {
+										content = asyncResult.result;
+									}
+								}
+							} else {
+								// Synchronous renderer
+								try {
+									const result = config.renderer(item);
+									if (result && typeof result.then === 'function') {
+										content = <Text>Error: Async renderer not properly configured</Text>;
+									} else {
+										content = result;
+									}
+								} catch (error) {
+									content = <Text>Render Error: {error}</Text>;
+								}
+							}
 							return <HStackNative
 										key={key}
 										{...testProps('rendererCol-' + key)}
@@ -192,7 +228,7 @@ function GridRow(props) {
 										{...propsToPass}
 										{...extraProps}
 										style={colStyle}
-									>{config.renderer(item)}</HStackNative>;
+									>{content}</HStackNative>;
 						}
 						if (config.fieldName) {
 
@@ -390,6 +426,8 @@ function GridRow(props) {
 				>{rowContents}</HStackNative>;
 	}, [
 		columnsConfig,
+		asyncResults,
+		asyncLoading,
 		columnProps,
 		fields,
 		rowProps,
