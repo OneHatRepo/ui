@@ -61,6 +61,7 @@ export function JsonElement(props) {
 					onEdit={(obj) => {
 						setValue(JSON.stringify(obj.updated_src));
 					}}
+					collapseStringsAfterLength={500}
 					{...propsToPass}
 				/>
 			</HStack>;
