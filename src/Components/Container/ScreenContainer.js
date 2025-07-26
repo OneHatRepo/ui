@@ -35,17 +35,21 @@ function ScreenContainer(props) {
 	if (safeArea !== false) {
 		safeAreaProps.safeArea = true;
 	}
+	let className = `
+		items-center
+		justify-start
+		flex-1
+		w-full
+		overflow-visible
+	`;
+	if (props.className) {
+		className += ` ${props.className}`;
+	}
 
 	const column = <VStackNative
 						onLayout={onLayout}
 						{...safeAreaProps}
-						className={`
-							items-center
-							justify-start
-							flex-1
-							w-full
-							overflow-visible
-						`}
+						className={className}
 						style={{
 							padding: p,
 							backgroundColor: bg,
