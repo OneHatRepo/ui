@@ -16,9 +16,7 @@ import withComponent from '../Hoc/withComponent.js';
 function ScreenContainer(props) {
 	const {
 			screenName = 'ScreenContainer',
-			p = 0,
 			safeArea = false,
-			bg = '#fff',
 			scrollEnabled = false,
 			keyboardAvoiding = false,
 			subtractHeaderHeight = true,
@@ -36,6 +34,7 @@ function ScreenContainer(props) {
 		safeAreaProps.safeArea = true;
 	}
 	let className = `
+		${screenName}
 		items-center
 		justify-start
 		flex-1
@@ -50,10 +49,6 @@ function ScreenContainer(props) {
 						onLayout={onLayout}
 						{...safeAreaProps}
 						className={className}
-						style={{
-							padding: p,
-							backgroundColor: bg,
-						}}
 					>
 						{props.children}
 					</VStackNative>;
