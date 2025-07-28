@@ -179,7 +179,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (defaultValues) {
 						_.merge(defaultValuesToUse, defaultValues);
 					}
-					addValues = [...defaultValuesToUse];
+					addValues = {...defaultValuesToUse};
 				}
 
 				if (selectorId && !_.isEmpty(selectorSelected)) {
