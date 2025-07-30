@@ -3,6 +3,7 @@ import {
 	HStack,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	hasWidth,
 	hasFlex,
@@ -147,20 +148,20 @@ function SliderElement(props) {
 		sliderValue = FAKE_ZERO; // Slider doesn't like zero
 	}
 
-	let className = `
-			Slider
-			w-full
-			items-center
-		`,
-		inputClassName = `
-			Input
-			h-full
-			w-[60px]
-			mr-4
-			text-center
-			rounded-md
-			${styles.SLIDER_READOUT_FONTSIZE}
-		`;
+	let className = clsx(
+			'Slider',
+			'w-full',
+			'items-center',
+		),
+		inputClassName = clsx(
+			'Input',
+			'h-full',
+			'w-[60px]',
+			'mr-4',
+			'text-center',
+			'rounded-md',
+			styles.SLIDER_READOUT_FONTSIZE,
+		);
 	if (props.className) {
 		className += ' ' + props.className;
 	}

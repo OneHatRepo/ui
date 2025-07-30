@@ -8,6 +8,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Animated, {
 	useSharedValue,
 	useAnimatedStyle,
@@ -222,16 +223,16 @@ function Form(props) {
 			// Build the fields that match the current columnsConfig in the grid
 			const
 				elements = [],
-				columnClassName = `
-					Form-column
-					justify-center
-					items-center
-					h-[60px]
-					border-r-1
-					border-r-grey-200
-					px-1
-					${styles.INLINE_EDITOR_MIN_WIDTH}
-				`;
+				columnClassName = clsx(
+					'Form-column',
+					'justify-center',
+					'items-center',
+					'h-[60px]',
+					'border-r-1',
+					'border-r-grey-200',
+					'px-1',
+					styles.INLINE_EDITOR_MIN_WIDTH,
+				);
 			_.each(columnsConfig, (config, ix) => {
 				let {
 						fieldName,
@@ -459,21 +460,21 @@ function Form(props) {
 															<Icon
 																as={Pencil}
 																size="2xs"
-																className={`
-																	absolute
-																	top-[2px]
-																	left-[2px]
-																	text-grey-300
-																`}
+																className={clsx(
+																	'absolute',
+																	'top-[2px]',
+																	'left-[2px]',
+																	'text-grey-300',
+																)}
 															/> : null;
 										return <HStack
 													key={fieldName + '-HStack-' + ix}
-													className={`
-														Form-HStack1
-														flex-${flex}
-														${error ? "bg-[#fdd]" : "bg-white"}
-														${columnClassName}
-													`}
+													className={clsx(
+														'Form-HStack1',
+														`flex-${flex}`,
+														error ? 'bg-[#fdd]' : 'bg-white',
+														columnClassName,
+													)}
 													style={{ 
 														width: w,
 													}}
@@ -851,13 +852,13 @@ function Form(props) {
 								}
 								if (isRequired) {
 									requiredIndicator = <Text
-															className={`
-																Form-requiredIndicator
-																self-center
-																text-[#f00]
-																text-[30px]
-																pr-1
-															`}
+															className={clsx(
+																'Form-requiredIndicator',
+																'self-center',
+																'text-[#f00]',
+																'text-[30px]',
+																'pr-1',
+															)}
 														>*</Text>;
 								}
 							}
@@ -900,22 +901,22 @@ function Form(props) {
 												<Icon
 													as={Pencil}
 													size="2xs"
-													className={`
-														absolute
-														top-[2px]
-														left-[2px]
-														text-grey-300
-													`}
+													className={clsx(
+														'absolute',
+														'top-[2px]',
+														'left-[2px]',
+														'text-grey-300',
+													)}
 												/> : null;
 							return <HStack
 										key={'Controller-HStack-' + ix}
-										className={`
-											Form-HStack11
-											min-h-[50px]
-											w-full
-											flex-none
-											${error ? 'bg-[#fdd]' : ''}
-										`}
+										className={clsx(
+											'Form-HStack11',
+											'min-h-[50px]',
+											'w-full',
+											'flex-none',
+											error ? 'bg-[#fdd]' : '',
+										)}
 									>
 										{dirtyIcon}
 										{element}
@@ -981,11 +982,11 @@ function Form(props) {
 							title += ' for ' + record.displayValue;
 						}
 						titleElement = <Text
-											className={`
-												Form-Ancillary-Title
-												font-bold
-												${styles.FORM_ANCILLARY_TITLE_CLASSNAME}
-											`}
+											className={clsx(
+												'Form-Ancillary-Title',
+												'font-bold',
+												styles.FORM_ANCILLARY_TITLE_CLASSNAME
+											)}
 										>{title}</Text>;
 						if (icon) {
 							titleElement = <HStack className="items-center"><Icon as={icon} className="w-[32px] h-[32px] mr-2" />{titleElement}</HStack>
@@ -993,21 +994,21 @@ function Form(props) {
 					}
 					if (description) {
 						description = <Text
-										className={`
-											Form-Ancillary-Description
-											italic
-											${styles.FORM_ANCILLARY_DESCRIPTION_CLASSNAME}
-										`}
+										className={clsx(
+											'Form-Ancillary-Description',
+											'italic',
+											styles.FORM_ANCILLARY_DESCRIPTION_CLASSNAME
+										)}
 									>{description}</Text>;
 					}
 					components.push(<VStack
 										ref={(el) => (ancillaryItemsRef.current[ix +1 /* offset for "scroll to top" */] = el)}
 										key={'ancillary-' + ix}
-										className={`
-											Form-VStack12
-											mx-1
-											my-3
-										`}
+										className={clsx(
+											'Form-VStack12',
+											'mx-1',
+											'my-3'
+										)}
 									>
 										{titleElement}
 										{description}
@@ -1213,9 +1214,9 @@ function Form(props) {
 												size: 'sm',
 												className: 'text-white',
 											}}
-											className={`
-												mr-4
-											`}
+											className={clsx(
+												'mr-4'
+											)}
 											text="Back"
 										/>}
 									<Text className="text-[20px] ml-1 text-grey-500">Edit Mode</Text>
@@ -1310,11 +1311,11 @@ function Form(props) {
 							key="deleteBtn"
 							onPress={onDelete}
 							icon={Trash}
-							className={`
-								bg-warning-500
-								hover:bg-warning-700
-								text-white
-							`}
+							className={clsx(
+								'bg-warning-500',
+								'hover:bg-warning-700',
+								'text-white',
+							)}
 							text="Delete"
 						/>
 					</HStack>}
@@ -1393,44 +1394,44 @@ function Form(props) {
 		if (editorType === EDITOR_TYPE__INLINE) {
 			footer =
 				<Box
-					className={`
-						Form-inlineFooter-container
-						relative
-						w-full
-					`}
+					className={clsx(
+						'Form-inlineFooter-container',
+						'relative',
+						'w-full',
+					)}
 				>
 					<HStack
-						className={`
-							Form-inlineFooter
-							absolute
-							top-[5px]
-							left-[40px]
-							w-[100px]
-							min-w-[300px]
-							py-2
-							gap-2
-							justify-center
-							items-center
-							rounded-b-lg
-							bg-primary-700
-						`}
+						className={clsx(
+							'Form-inlineFooter',
+							'absolute',
+							'top-[5px]',
+							'left-[40px]',
+							'w-[100px]',
+							'min-w-[300px]',
+							'py-2',
+							'gap-2',
+							'justify-center',
+							'items-center',
+							'rounded-b-lg',
+							'bg-primary-700',
+						)}
 					>{footerButtons}</HStack>
 				</Box>;
 		} else {
 			if (!disableFooter) {
-				let footerClassName = `
-					Form-Footer
-					justify-end
-					gap-2
-				`;
+				let footerClassName = clsx(
+					'Form-Footer',
+					'justify-end',
+					'gap-2',
+				);
 				if (editorType === EDITOR_TYPE__INLINE) {
-					footerClassName += `
-						sticky
-						self-start
-						justify-center
-						bg-primary-100
-						rounded-b-lg
-					`;
+					footerClassName += clsx(
+						'sticky',
+						'self-start',
+						'justify-center',
+						'bg-primary-100',
+						'rounded-b-lg',
+					);
 				}
 				if (isSaving) {
 					footerClassName += ' border-t-2 border-t-[#f00]'
@@ -1458,13 +1459,13 @@ function Form(props) {
 						editor}
 					{editorType !== EDITOR_TYPE__INLINE &&
 						<ScrollView
-							className={`
-								Form-ScrollView
-								w-full
-								flex-1
-								pb-1
-								web:min-h-[${minHeight}px]
-							`}
+							className={clsx(
+								'Form-ScrollView',
+								'w-full',
+								'flex-1',
+								'pb-1',
+								`web:min-h-[${minHeight}px]`,
+							)}
 							onScroll={onScroll}
 							scrollEventThrottle={16 /* ms */}
 							contentContainerStyle={{

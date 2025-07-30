@@ -5,6 +5,7 @@ import {
 	Text,
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';
@@ -76,17 +77,17 @@ export default function FieldSet(props) {
 			}
 		};
 
-	let className = `
-		FieldSet-Box
-		mb-4
-		mx-0
-		p-1
-		pb-2
-		gap-2
-		border
-		border-grey-400
-		${styles.FORM_FIELDSET_BG}
-	`;
+	let className = clsx(
+		'FieldSet-Box',
+		'mb-4',
+		'mx-0',
+		'p-1',
+		'pb-2',
+		'gap-2',
+		'border',
+		'border-grey-400',
+		styles.FORM_FIELDSET_BG,
+	);
 	if (props.className) {
 		className += props.className;
 	}
@@ -99,25 +100,25 @@ export default function FieldSet(props) {
 				{title &&
 					<HStack
 						style={{ userSelect: 'none', }}
-						className={`
-							FieldSet-title-HStack
-							w-full
-							mb-1
-							border
-							border-b-grey-200
-						`}
+						className={clsx(
+							'FieldSet-title-HStack',
+							'w-full',
+							'mb-1',
+							'border',
+							'border-b-grey-200',
+						)}
 					>
 						<TextNative
 							numberOfLines={1}
 							ellipsizeMode="head"
-							className={`
-								FieldSet-title-TextNative
-								flex-1
-								py-1
-								px-3
-								font-bold
-								${styles.FORM_FIELDSET_FONTSIZE}
-							`}
+							className={clsx(
+								'FieldSet-title-TextNative',
+								'flex-1',
+								'py-1',
+								'px-3',
+								'font-bold',
+								styles.FORM_FIELDSET_FONTSIZE,
+							)}
 						>{title}</TextNative>
 
 						{showToggleAllCheckbox && 

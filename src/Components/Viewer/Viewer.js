@@ -8,6 +8,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Animated, {
 	useSharedValue,
 	useAnimatedStyle,
@@ -264,12 +265,12 @@ function Viewer(props) {
 				}
 			}
 
-			let elementClassName = `
-				Viewer-field
-				basis-auto
-				grow
-				shrink
-			`;
+			let elementClassName = clsx(
+				'Viewer-field',
+				'basis-auto',
+				'grow',
+				'shrink',
+			);
 			const defaultsClassName = defaults.className;
 			if (defaultsClassName) {
 				elementClassName += ' ' + defaultsClassName;
@@ -474,11 +475,11 @@ function Viewer(props) {
 	if (!hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	let className = `
-		Viewer-VStackNative
-		h-full
-		bg-white
-	`;
+	let className = clsx(
+		'Viewer-VStackNative',
+		'h-full',
+		'bg-white',
+	);
 	if (props.className) {
 		className += ' ' + props.className;
 	}
@@ -491,11 +492,11 @@ function Viewer(props) {
 							{...testProps('deleteBtn')}
 							key="deleteBtn"
 							onPress={onDelete}
-							className={`
-								text-white
-								bg-warning-500
-								hover:bg-warning-600
-							`}
+							className={clsx(
+								'text-white',
+								'bg-warning-500',
+								'hover:bg-warning-600',
+							)}
 							text="Delete"
 						/>
 					</HStack>}
@@ -523,12 +524,12 @@ function Viewer(props) {
 						ref={scrollViewRef}
 						onScroll={onScroll}
 						scrollEventThrottle={16 /* ms */}
-						className={`
-							Viewer-ScrollView
-							w-full
-							pb-1
-							flex-1
-						`}
+						className={clsx(
+							'Viewer-ScrollView',
+							'w-full',
+							'pb-1',
+							'flex-1',
+						)}
 					>
 						{scrollToTopAnchor}
 						{canEdit && onEditMode &&

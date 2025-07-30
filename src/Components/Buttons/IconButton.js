@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import clsx from 'clsx';
 import Button from './Button';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
@@ -12,14 +13,14 @@ const IconButtonElement = forwardRef((props, ref) => {
 		throw Error('IconButton requires an icon prop');
 	}
 
-	let buttonClassName = `
-		IconButton
-		rounded-md
-		self-center
-		px-[10px]
-		py-[10px]
-		${styles.ICON_BUTTON_CLASSNAME}
-	`;
+	let buttonClassName = clsx(
+		'IconButton',
+		'rounded-md',
+		'self-center',
+		'px-[10px]',
+		'py-[10px]',
+		styles.ICON_BUTTON_CLASSNAME,
+	);
 	if (props.className) {
 		buttonClassName += ' ' + props.className;
 	}

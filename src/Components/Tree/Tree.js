@@ -6,6 +6,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	SELECTION_MODE_SINGLE,
 	SELECTION_MODE_MULTI,
@@ -1051,11 +1052,11 @@ function TreeComponent(props) {
 								onContextMenu(item, e, selection);
 							}
 						}}
-						className={`
-							Pressable
-							Node
-							flex-row
-						`}
+						className={clsx(
+							'Pressable',
+							'Node',
+							'flex-row',
+						)}
 						style={{
 							paddingLeft: (areRootsVisible ? depth : depth -1) * DEPTH_INDENT_PX,
 						}}
@@ -1400,12 +1401,12 @@ function TreeComponent(props) {
 		}
 	}
 
-	let className = `
-		Tree-VStack
-		flex-1
-		w-full
-		min-w-[300px]
-	`;
+	let className = clsx(
+		'Tree-VStack',
+		'flex-1',
+		'w-full',
+		'min-w-[300px]',
+	);
 	if (isLoading) {
 		className += ' border-t-2 border-[#f00]';
 	} else {

@@ -9,6 +9,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 // import { useHeaderHeight } from '@react-navigation/elements';
 // import testProps from '../OneHat/functions/testProps';
@@ -33,14 +34,14 @@ function ScreenContainer(props) {
 	if (safeArea !== false) {
 		safeAreaProps.safeArea = true;
 	}
-	let className = `
-		${screenName}
-		items-center
-		justify-start
-		flex-1
-		w-full
-		overflow-visible
-	`;
+	let className = clsx(
+		screenName,
+		'items-center',
+		'justify-start',
+		'flex-1',
+		'w-full',
+		'overflow-visible'
+	);
 	if (props.className) {
 		className += ` ${props.className}`;
 	}

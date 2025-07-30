@@ -2,6 +2,7 @@ import {
 	Icon,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Arcs from '../Icons/Arcs.js';
 
 function RowSelectHandle(props) {

@@ -2,6 +2,7 @@ import { cloneElement, forwardRef, isValidElement, useState, useEffect, useRef, 
 import {
 	Input, InputField, InputIcon, InputSlot,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	hasWidth,
 	hasFlex,
@@ -112,20 +113,20 @@ const InputElement = forwardRef((props, ref) => {
 	if (!disableAutoFlex && !hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	let inputClassName = `
-			Input
-			${styles.FORM_INPUT_CLASSNAME}
-		`,
-		inputFieldClassName = `
-			InputField
-			self-stretch
-			h-auto
-			w-full
-			p-2
-			${textAlignIsCenter ? 'text-center' : 'text-left'}
-			${styles.FORM_INPUT_CLASSNAME}
-			${styles.FORM_INPUT_FIELD_CLASSNAME}
-		`;
+	let inputClassName = clsx(
+			'Input',
+			styles.FORM_INPUT_CLASSNAME,
+		),
+		inputFieldClassName = clsx(
+			'InputField',
+			'self-stretch',
+			'h-auto',
+			'w-full',
+			'p-2',
+			textAlignIsCenter ? 'text-center' : 'text-left',
+			styles.FORM_INPUT_CLASSNAME,
+			styles.FORM_INPUT_FIELD_CLASSNAME,
+		);
 	if (className) {
 		inputClassName += className;
 	}

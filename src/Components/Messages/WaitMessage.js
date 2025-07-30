@@ -4,6 +4,7 @@ import {
 	Spinner,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import testProps from '../../Functions/testProps.js';
 
 export default function WaitMessage(props) {
@@ -22,25 +23,25 @@ export default function WaitMessage(props) {
 			>
 				<ModalBackdrop />
 				<ModalContent
-					className={`
-						ModalContent
-						w-[200px]
-						h-[50px]
-						shadow-lg
-					`}
+					className={clsx(
+						'ModalContent',
+						'w-[200px]',
+						'h-[50px]',
+						'shadow-lg',
+					)}
 				>
 					<HStack
-						className={`
-							HStack
-							items-center
-							justify-center
-						`}
+						className={clsx(
+							'HStack',
+							'items-center',
+							'justify-center',
+						)}
 					>
 						<Spinner
-							className={`
-								mr-2
-								focus:outline-none
-							`}
+							className={clsx(
+								'mr-2',
+								'focus:outline-none',
+							)}
 						/>
 						<Text className="text-black">{text}</Text>
 					</HStack>

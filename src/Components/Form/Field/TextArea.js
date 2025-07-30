@@ -2,6 +2,7 @@ import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	Textarea, TextareaInput,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
@@ -79,14 +80,14 @@ const TextAreaElement = forwardRef((props, ref) => {
 	if (localValue === null || typeof localValue === 'undefined') {
 		localValue = ''; // If the value is null or undefined, don't let this be an uncontrolled input
 	}
-	let textareaClassName = `
-			Textarea
-		`,
-		inputClassName = `
-			TextAreaInput
-			flex-1
-			${styles.FORM_TEXTAREA_CLASSNAME}
-		`;
+	let textareaClassName = clsx(
+			'Textarea',
+		),
+		inputClassName = clsx(
+			'TextAreaInput',
+			'flex-1',
+			styles.FORM_TEXTAREA_CLASSNAME,
+		);
 	if (className) {
 		inputClassName += ' ' + className;
 	}

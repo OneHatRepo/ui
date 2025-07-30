@@ -2,6 +2,7 @@ import {
 	HStackNative,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import testProps from '../../../../Functions/testProps.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import Eye from '../../../Icons/Eye.js';
@@ -20,17 +21,17 @@ export default function ValueBox(props) {
 		styles = UiGlobals.styles;
 	return <HStackNative
 				{...testProps('valueBox-' + text)}
-				className={`
-					ValueBox-HStackNative
-					max-w-full
-					items-center
-					mr-1
-					bg-grey-100
-					border
-					border-grey-400
-					rounded-md
-					${!onDelete && 'pr-4'}
-				`}
+				className={clsx(
+					'ValueBox-HStackNative',
+					'max-w-full',
+					'items-center',
+					'mr-1',
+					'bg-grey-100',
+					'border',
+					'border-grey-400',
+					'rounded-md',
+					!onDelete ? 'pr-4' : '',
+				)}
 			>
 				{showEye &&
 					<IconButton
@@ -41,22 +42,22 @@ export default function ValueBox(props) {
 							className: 'text-grey-600',
 						}}
 						onPress={onView}
-						className={`
-							ValueBox-eyeBtn
-							h-full
-							${minimizeForRow ? 'py-0' : ''}
-							${styles.FORM_TAG_BTN_CLASSNAME}
-						`}
+						className={clsx(
+							'ValueBox-eyeBtn',
+							'h-full',
+							minimizeForRow ? 'py-0' : '',
+							styles.FORM_TAG_BTN_CLASSNAME,
+						)}
 					/>}
 				<Text
-					className={`
-						ValueBox-Text
-						text-grey-600
-						${styles.FORM_TAG_VALUEBOX_CLASSNAME}
-						${showEye ? 'ml-0' : 'ml-1'}
-						${onDelete ? 'mr-0' : 'mr-1'}
-						${minimizeForRow ? 'py-0' : ''}
-					`}
+					className={clsx(
+						'ValueBox-Text',
+						'text-grey-600',
+						styles.FORM_TAG_VALUEBOX_CLASSNAME,
+						showEye ? 'ml-0' : 'ml-1',
+						onDelete ? 'mr-0' : 'mr-1',
+						minimizeForRow ? 'py-0' : '',
+					)}
 				>{text}</Text>
 				{onDelete &&
 					<IconButton
@@ -67,12 +68,12 @@ export default function ValueBox(props) {
 							className: 'text-grey-600',
 						}}
 						onPress={onDelete}
-						className={`
-							ValueBox-xBtn
-							h-full
-							${minimizeForRow ? 'py-0' : ''}
-							${styles.FORM_TAG_BTN_CLASSNAME}
-						`}
+						className={clsx(
+							'ValueBox-xBtn',
+							'h-full',
+							minimizeForRow ? 'py-0' : '',
+							styles.FORM_TAG_BTN_CLASSNAME,
+						)}
 					/>}
 			</HStackNative>;
 }

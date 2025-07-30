@@ -3,6 +3,7 @@ import {
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import UiGlobals from '../../UiGlobals.js';
 import Button from '../Buttons/Button.js';
 import testProps from '../../Functions/testProps.js';
@@ -63,28 +64,28 @@ export default function withContextMenu(WrappedComponent) {
 								isDisabled={isDisabled}
 								icon={icon}
 								_icon={{
-									className: `
-										ml-2
-										self-center
-									`,
+									className: clsx(
+										'ml-2',
+										'self-center',
+									),
 								}}
 								text={text}
 								_text={{
-									className: `
-										flex-1
-										select-none
-										text-black
-									`,
+									className: clsx(
+										'flex-1',
+										'select-none',
+										'text-black',
+									),
 								}}
-								className={`
-									flex-row
-									border-b-2
-									border-b-grey-200
-									py-2
-									px-4
-									select-none
-									rounded-none
-								`}
+								className={clsx(
+									'flex-row',
+									'border-b-2',
+									'border-b-grey-200',
+									'py-2',
+									'px-4',
+									'select-none',
+									'rounded-none',
+								)}
 								variant="outline"
 								action="secondary"
 							/>;
@@ -119,14 +120,14 @@ export default function withContextMenu(WrappedComponent) {
 			// show context menu
 			const
 				contextMenuItemComponents = createContextMenuItemComponents(),
-				className = `
-					context-menu-container
-					absolute
-					border
-					border-grey-400
-					shadow-lg
-					bg-white
-				`,
+				className = clsx(
+					'context-menu-container',
+					'absolute',
+					'border',
+					'border-grey-400',
+					'shadow-lg',
+					'bg-white',
+				),
 				screenWidth = window.innerWidth,
 				screenHeight = window.innerHeight;
 			let l = left,

@@ -3,6 +3,7 @@ import {
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import IconButton from '../Buttons/IconButton.js';
 import Rotate from '../Icons/Rotate.js';
 
@@ -23,9 +24,9 @@ export default function NoRecordsFound(props) {
 							icon={Rotate}
 							_icon={{
 								size: 'md',
-								className: `
-									text-grey-400
-								`,
+								className: clsx(
+									'text-grey-400',
+								),
 							}}
 							onPress={onRefresh}
 							variant="outline"

@@ -2,6 +2,7 @@ import {
 	HStack,
 	Tooltip,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,
@@ -39,12 +40,12 @@ export function JsonElement(props) {
 		throw new Error('JsonElement not yet implemented for React Native');
 	}
 
-	let className = `
-		Json
-		flex-1
-		justify-start
-		${testID}
-	`;
+	let className = clsx(
+		'Json',
+		'flex-1',
+		'justify-start',
+		testID,
+	);
 	if (props.className) {
 		className += ' ' + propsToPass.className;
 	}

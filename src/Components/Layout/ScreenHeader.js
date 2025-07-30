@@ -4,6 +4,7 @@ import {
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	SCREEN_MODES__FULL,
 	SCREEN_MODES__SIDE,
@@ -36,10 +37,10 @@ export default function ScreenHeader(props) {
 				{icon &&
 					<Icon
 						as={icon}
-						className={`
-							ml-5
-							text-black
-						`}
+						className={clsx(
+							'ml-5',
+							'text-black',
+						)}
 						size="xl"
 					/>}
 				<Text {...textProps} className="ScreenHeader-Text pl-4 text-[26px] font-[700]">{title}</Text>

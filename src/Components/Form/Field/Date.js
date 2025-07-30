@@ -8,6 +8,7 @@ import {
 	Pressable,
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	DATE,
 	TIME,
@@ -296,11 +297,11 @@ export const DateElement = forwardRef((props, ref) => {
 						}}
 						isDisabled={isDisabled}
 						onPress={onClearBtn}
-						className={`
-							Date-xBtn
-							h-full
-							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
-						`}
+						className={clsx(
+							'Date-xBtn',
+							'h-full',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME,
+						)}
 					/>;
 	}
 	trigger = <IconButton
@@ -314,16 +315,16 @@ export const DateElement = forwardRef((props, ref) => {
 				onPress={onTriggerPress}
 				onBlur={onTriggerBlur}
 				isDisabled={isDisabled}
-				className={`
-					Date-trigger
-					h-10
-					w-10
-					border
-					border-grey-400
-					rounded-l-md
-					rounded-r-none
-					${styles.FORM_DATE_TRIGGER_CLASSNAME}
-				`}
+				className={clsx(
+					'Date-trigger',
+					'h-10',
+					'w-10',
+					'border',
+					'border-grey-400',
+					'rounded-l-md',
+					'rounded-r-none',
+					styles.FORM_DATE_TRIGGER_CLASSNAME,
+				)}
 			/>;
 
 	if (UiGlobals.mode === UI_MODE_WEB) {
@@ -337,20 +338,20 @@ export const DateElement = forwardRef((props, ref) => {
 					ref={inputRef}
 					numberOfLines={1}
 					ellipsizeMode="head"
-					className={`
-						Date-TextNative
-						flex-1
-						h-full
-						m-0
-						p-2
-						border
-						border-grey-400
-						border-l-[0px]
-						rounded-l-none
-						rounded-r-md
-						${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
-						${styles.FORM_DATE_INPUT_CLASSNAME}
-					`}
+					className={clsx(
+						'Date-TextNative',
+						'flex-1',
+						'h-full',
+						'm-0',
+						'p-2',
+						'border',
+						'border-grey-400',
+						'border-l-[0px]',
+						'rounded-l-none',
+						'rounded-r-md',
+						_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
+						styles.FORM_DATE_INPUT_CLASSNAME,
+					)}
 				>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
 			</Pressable> :
 			<Input
@@ -366,10 +367,10 @@ export const DateElement = forwardRef((props, ref) => {
 				isDisabled={isDisabled}
 				tooltip={tooltip}
 				tooltipPlacement={tooltipPlacement}
-				tooltipTriggerClassName={`
-					flex-1
-					h-full
-				`}
+				tooltipTriggerClassName={clsx(
+					'flex-1',
+					'h-full',
+				)}
 				// onLayout={(e) => {
 				// 	const {
 				// 			height,
@@ -378,15 +379,15 @@ export const DateElement = forwardRef((props, ref) => {
 				// 	setWidth(Math.round(width));
 				// 	setTop(Math.round(height));
 				// }}
-				className={`
-					Date-Input
-					flex-1
-					h-full
-					m-0
-					rounded-r-lg
-					${styles.FORM_DATE_INPUT_CLASSNAME}
-					${_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black'}
-				`}
+				className={clsx(
+					'Date-Input',
+					'flex-1',
+					'h-full',
+					'm-0',
+					'rounded-r-lg',
+					styles.FORM_DATE_INPUT_CLASSNAME,
+					_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
+				)}
 				autoSubmitDelay={1000}
 				placeholder={placeholder}
 				textAlignIsCenter={true}
@@ -405,21 +406,21 @@ export const DateElement = forwardRef((props, ref) => {
 					<TextNative
 						numberOfLines={1}
 						ellipsizeMode="head"
-						className={`
-							flex-1
-							h-full
-							m-0
-							p-2
-							border
-							border-grey-400
-							border-l-[0px]
-							rounded-l-none
-							rounded-r-md
-							${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"} 
-							${styles.FORM_DATE_READOUT_FONTSIZE} 
-							${styles.FORM_DATE_INPUT_CLASSNAME}
-							${styles.FORM_DATE_INPUT_CLASSNAME_FOCUS}
-						`}
+						className={clsx(
+							'flex-1',
+							'h-full',
+							'm-0',
+							'p-2',
+							'border',
+							'border-grey-400',
+							'border-l-[0px]',
+							'rounded-l-none',
+							'rounded-r-md',
+							_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
+							styles.FORM_DATE_READOUT_FONTSIZE,
+							styles.FORM_DATE_INPUT_CLASSNAME,
+							styles.FORM_DATE_INPUT_CLASSNAME_FOCUS,
+						)}
 					>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
 				</Pressable>;
 	}
@@ -437,9 +438,9 @@ export const DateElement = forwardRef((props, ref) => {
 								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
 								<PopoverContent
 									ref={pickerRef}
-									className={`
-										Date-PopoverContent
-									`}
+									className={clsx(
+										'Date-PopoverContent',
+									)}
 									style={{
 										top,
 										left,
@@ -449,10 +450,10 @@ export const DateElement = forwardRef((props, ref) => {
 									}}
 								>
 									<PopoverBody
-										className={`
-											Date-PopoverBody
-											overflow-hidden
-										`}
+										className={clsx(
+											'Date-PopoverBody',
+											'overflow-hidden',
+										)}
 									>
 										<Datetime
 											{...testProps('picker')}
@@ -468,9 +469,9 @@ export const DateElement = forwardRef((props, ref) => {
 											{...testProps('todayBtn')}
 											key="todayBtn"
 											onPress={onToday}
-											className={`
-												mt-2
-											`}
+											className={clsx(
+												'mt-2',
+											)}
 											text="Today"
 										/>
 									</PopoverBody>
@@ -489,34 +490,34 @@ export const DateElement = forwardRef((props, ref) => {
 						}}
 						isDisabled={isDisabled}
 						onPress={() => hidePicker()}
-						className={`
-							h-full
-							w-10
-							border
-							border-grey-400
-							rounded-l-md
-							rounded-r-none
-							${styles.FORM_DATE_TRIGGER_CLASSNAME}
-						`}
+						className={clsx(
+							'h-full',
+							'w-10',
+							'border',
+							'border-grey-400',
+							'rounded-l-md',
+							'rounded-r-none',
+							styles.FORM_DATE_TRIGGER_CLASSNAME,
+						)}
 					/>
 					{disableDirectEntry ?
 						<TextNative
 							ref={inputRef}
 							numberOfLines={1}
 							ellipsizeMode="head"
-							className={`
-								flex-1
-								h-full
-								m-0
-								p-2
-								border
-								border-grey-400
-								border-l-0
-								rounded-l-none
-								rounded-r-md
-								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
-								${styles.FORM_DATE_INPUT_CLASSNAME}
-							`}
+							className={clsx(
+								'flex-1',
+								'h-full',
+								'm-0',
+								'p-2',
+								'border',
+								'border-grey-400',
+								'border-l-0',
+								'rounded-l-none',
+								'rounded-r-md',
+								_.isEmpty(textInputValue) ? "text-grey-400" : "text-black",
+								styles.FORM_DATE_INPUT_CLASSNAME,
+							)}
 						>{textInputValue}</TextNative> :
 						<Input
 							{...testProps('input')}
@@ -532,19 +533,19 @@ export const DateElement = forwardRef((props, ref) => {
 							placeholder={placeholder}
 							tooltip={tooltip}
 							tooltipPlacement={tooltipPlacement}
-							tooltipClassName={`
-								flex-1
-								h-full
-							`}
-							className={`
-								flex-1
-								h-full
-								m-0
-								rounded-tr-none
-								rounded-br-none
-								${_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black'}
-								${styles.FORM_DATE_INPUT_CLASSNAME}
-							`}
+							tooltipClassName={clsx(
+								'flex-1',
+								'h-full',
+							)}
+							className={clsx(
+								'flex-1',
+								'h-full',
+								'm-0',
+								'rounded-tr-none',
+								'rounded-br-none',
+								_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
+								styles.FORM_DATE_INPUT_CLASSNAME,
+							)}
 							{..._input}
 						/>}
 				</HStack>;
@@ -552,13 +553,13 @@ export const DateElement = forwardRef((props, ref) => {
 								isOpen={true}
 								safeAreaTop={true}
 								onClose={() => setIsPickerShown(false)}
-								className={`
-									Date-Modal
-									my-auto
-									w-full
-									h-[400px]
-									p-3
-								`}
+								className={clsx(
+									'Date-Modal',
+									'my-auto',
+									'w-full',
+									'h-[400px]',
+									'p-3',
+								)}
 							>
 								<ModalBackdrop />
 								<ModalContent>
@@ -591,13 +592,13 @@ export const DateElement = forwardRef((props, ref) => {
 		}
 	}
 
-	let className = `
-		Date-HStackNative
-		flex-1
-		justify-center
-		items-center
-		${styles.FORM_DATE_CLASSNAME}
-	`;
+	let className = clsx(
+		'Date-HStackNative',
+		'flex-1',
+		'justify-center',
+		'items-center',
+		styles.FORM_DATE_CLASSNAME,
+	);
 	if (props.className) {
 		className += props.className;
 	}

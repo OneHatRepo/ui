@@ -2,6 +2,7 @@ import { useMemo, } from 'react';
 import {
 	HStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import ArrayCombo from './ArrayCombo.js';
 
 export default function PageSizeCombo(props) {

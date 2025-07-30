@@ -2,6 +2,7 @@ import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	Select, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectInput, SelectIcon,  SelectItem,  SelectPortal, SelectTrigger,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	hasWidth,
 	hasFlex,
@@ -66,14 +67,14 @@ const SelectElement = forwardRef((props, ref) => {
 	if (!disableAutoFlex && !hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	let className = `
-		Select
-		min-h-[40px]
-		w-full
-		text-left
-		rounded-lg
-		${styles.FORM_SELECT_CLASSNAME}
-	`;
+	let className = clsx(
+		'Select',
+		'min-h-[40px]',
+		'w-full',
+		'text-left',
+		'rounded-lg',
+		styles.FORM_SELECT_CLASSNAME,
+	);
 	if (props.className) {
 		className += props.className;
 	}

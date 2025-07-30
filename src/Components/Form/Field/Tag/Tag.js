@@ -3,6 +3,7 @@ import {
 	HStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../../Constants/Editor.js';
@@ -79,10 +80,10 @@ function TagComponent(props) {
 							isEditorViewOnly={true}
 							selection={[record]}
 							onEditorClose={hideModal}
-							className={`
-								w-full
-								p-0
-							`}
+							className={clsx(
+								'w-full',
+								'p-0',
+							)}
 						/>,
 				onCancel: hideModal,
 			});
@@ -244,11 +245,11 @@ function TagComponent(props) {
 		_combo.selectorSelectedField = propsToPass.selectorSelectedField;
 	}
 
-	let className = `
-		Tag
-		w-full
-		p-0
-	`;
+	let className = clsx(
+		'Tag',
+		'w-full',
+		'p-0',
+	);
 	if (isInFilter) {
 		className += ' max-w-[250px]';
 	}
@@ -269,21 +270,21 @@ function TagComponent(props) {
 			style.flex = props.flex;
 		}
 	}
-	let valueBoxesClassName = `
-		Tag-valueBoxes-container
-		w-full
-		min-h-[40px]
-		max-h-[200px]
-		mb-1
-		p-1
-		flex-wrap
-		overflow-auto
-		border
-		border-grey-300
-		rounded-md
-		bg-grey-100
-		${styles.FORM_TAG_CLASSNAME}
-	`,
+	let valueBoxesClassName = clsx(
+		'Tag-valueBoxes-container',
+		'w-full',
+		'min-h-[40px]',
+		'max-h-[200px]',
+		'mb-1',
+		'p-1',
+		'flex-wrap',
+		'overflow-auto',
+		'border',
+		'border-grey-300',
+		'rounded-md',
+		'bg-grey-100',
+		styles.FORM_TAG_CLASSNAME,
+	),
 	comboClassName = '';
 	if (_combo.className) {
 		comboClassName = _combo.className;

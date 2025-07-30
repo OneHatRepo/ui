@@ -5,6 +5,7 @@
  * "LICENSE.txt" file, which is part of this source code package.
  */
 import { useState, } from 'react';
+import clsx from 'clsx';
 import Excel from '../Icons/Excel';
 import Panel from '../Panel/Panel.js';
 import Form from '../Form/Form.js';
@@ -187,11 +188,11 @@ function UploadsDownloadsWindow(props) {
 				reference="UploadsDownloadsWindow"
 				isCollapsible={false}
 				title="Uploads & Downloads"
-				className={`
-					flex-none
-					bg-white
-					shadow-lg
-				`}
+				className={clsx(
+					'flex-none',
+					'bg-white',
+					'shadow-lg',
+				)}
 				style={{
 					height,
 					width,

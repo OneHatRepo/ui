@@ -1,6 +1,7 @@
 import {
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Panel from './Panel.js';
 import Form, { FormEditor } from '../Form/Form.js';
 import withData from '../Hoc/withData.js';

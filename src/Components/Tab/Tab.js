@@ -3,6 +3,7 @@ import {
 	HStack,
 	Icon,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	HORIZONTAL,
 	VERTICAL,

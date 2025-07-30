@@ -2,6 +2,7 @@ import {
 	HStack,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -21,40 +22,44 @@ function Splitter(props) {
 
 	if (mode === VERTICAL) {
 		return <HStack
-					className={`
-						Splitter
-						h-[3px]
-						w-full
-						items-center
-						justify-center
-						${isDragging ? "bg-secondary-600" : "bg-primary-600"}
-					`}
+					className={clsx(
+						'Splitter',
+						'h-[3px]',
+						'w-full',
+						'items-center',
+						'justify-center',
+						isDragging ? 'bg-secondary-600' : 'bg-primary-600'
+					)}
 				>
-					<HStack className={`
-						handle
-						h-[2px]
-						w-[10%]
-						bg-[#ccc]
-					`}></HStack>
+					<HStack
+						className={clsx(
+							'handle',
+							'h-[2px]',
+							'w-[10%]',
+							'bg-[#ccc]'
+						)}
+					/>
 				</HStack>;
 	}
 	return <VStack
 				style={styles.ewResize}
-				className={`
-					Splitter
-					h-full
-					w-[3px]
-					items-center
-					justify-center
-					${isDragging ? "bg-secondary-600" : "bg-primary-600"}
-				`}
+				className={clsx(
+					'Splitter',
+					'h-full',
+					'w-[3px]',
+					'items-center',
+					'justify-center',
+					isDragging ? 'bg-secondary-600' : 'bg-primary-600',
+				)}
 			>
-				<VStack className={`
-					handle
-					w-[2px]
-					h-[10%]
-					bg-[#ccc]
-				`}></VStack>
+				<VStack
+					className={clsx(
+						'handle',
+						'h-[2px]',
+						'w-[10%]',
+						'bg-[#ccc]'
+					)}
+				/>
 			</VStack>;
 }
 

@@ -6,6 +6,7 @@ import {
 	Switch,
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
 import Na from '../../Icons/Na.js';
@@ -44,12 +45,12 @@ const
 				}
 			};
 
-		let className = `
-			Toggle
-			h-full
-			items-center
-			py-[2px]
-		`;
+		let className = clsx(
+			'Toggle',
+			'h-full',
+			'items-center',
+			'py-[2px]',
+		);
 		if (props.className) {
 			className += ' ' + props.className;
 		}
@@ -64,10 +65,10 @@ const
 								className: 'text-grey-400',
 							}}
 							onPress={onToggle}
-							className={`
-								border
-								border-grey-700
-							`}
+							className={clsx(
+								'border',
+								'border-grey-700',
+							)}
 						/>
 					</HStack>;
 		}
@@ -98,11 +99,11 @@ const
 					>
 						<TextNative
 							{...testProps('readout')}
-							className={`
-								ml-1
-								mr-2
-								${styles.FORM_TOGGLE_READOUT_CLASSNAME}
-							`}
+							className={clsx(
+								'ml-1',
+								'mr-2',
+								styles.FORM_TOGGLE_READOUT_CLASSNAME,
+							)}
 						>{_.isNil(value) ? 'N/A' : (!!value ? onText : offText)}</TextNative>
 					</Pressable>
 				</HStack>;

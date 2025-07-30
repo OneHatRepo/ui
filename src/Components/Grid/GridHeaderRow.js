@@ -6,6 +6,7 @@ import {
 	Pressable,
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	SORT_ASCENDING,
 	SORT_DESCENDING,
@@ -309,10 +310,10 @@ export default function GridHeaderRow(props) {
 						isSorter = isSortable && canColumnsSort && sortField === fieldName,
 						isReorderable = canColumnsReorder && configIsReorderable,
 						isResizable = canColumnsResize && configIsResizable,
-						rowClassName = `
-							border-r-2
-							border-r-white
-						`;
+						rowClassName = clsx(
+							'border-r-2',
+							'border-r-white',
+						);
 					if (isHidden) {
 						return null;
 					}
@@ -357,16 +358,16 @@ export default function GridHeaderRow(props) {
 								}}
 								onMouseEnter={(e) => onHeaderMouseEnter(e, ix)}
 								onMouseLeave={(e) => onHeaderMouseLeave(e, ix)}
-								className={`
-									GridHeaderRow-Pressable
-									h-full
-									flex-row
-									p-0
-									items-center
-									justify-center
-									${rowClassName}
-									${styles.GRID_HEADER_PRESSABLE_CLASSNAME}
-								`}
+								className={clsx(
+									'GridHeaderRow-Pressable',
+									'h-full',
+									'flex-row',
+									'p-0',
+									'items-center',
+									'justify-center',
+									rowClassName,
+									styles.GRID_HEADER_PRESSABLE_CLASSNAME,
+								)}
 								style={rowStyle}
 							>
 								{isReorderable && isOver && 
@@ -395,20 +396,20 @@ export default function GridHeaderRow(props) {
 								<TextNative
 									key="Text"
 									numberOfLines={1}
-									className={`
-										GridHeaderRow-TextNative
-										h-auto
-										flex-1
-										items-center
-										justify-center
-										leading-tight
-										text-center
-										overflow-hidden
-										text-ellipsis
-										px-2
-										py-3
-										${styles.GRID_HEADER_CLASSNAME}
-									`}
+									className={clsx(
+										'GridHeaderRow-TextNative',
+										'h-auto',
+										'flex-1',
+										'items-center',
+										'justify-center',
+										'leading-tight',
+										'text-center',
+										'overflow-hidden',
+										'text-ellipsis',
+										'px-2',
+										py-3,
+										styles.GRID_HEADER_CLASSNAME,
+									)}
 								>{header}</TextNative>
 								
 								{isSorter && 
@@ -416,12 +417,13 @@ export default function GridHeaderRow(props) {
 										key="Icon"
 										as={isSortDirectionAsc ? SortUp : SortDown}
 										size={styles.GRID_HEADER_ICON_SIZE}
-										className={`
-											GridHeaderRow-Icon
-											text-center
-											text-grey-500
-											${styles.GRID_HEADER_ICON_CLASSNAME}
-										`} />}
+										className={clsx(
+											'GridHeaderRow-Icon',
+											'text-center',
+											'text-grey-500',
+											styles.GRID_HEADER_ICON_CLASSNAME,
+										)}
+									/>}
 								
 								{isOver && UiGlobals.mode === UI_MODE_WEB && // only works for web for now 
 										<HeaderColumnSelectorHandle
@@ -488,12 +490,12 @@ export default function GridHeaderRow(props) {
 					style={{
 						scrollbarWidth: 'none',
 					}}
-					className={`
-						GridHeaderRow-HStack
-						w-full
-						h-[40px]
-						bg-grey-200
-					`}
+					className={clsx(
+						'GridHeaderRow-HStack',
+						'w-full',
+						'h-[40px]',
+						'bg-grey-200',
+					)}
 				> 
 					{renderHeaders()}
 				</HStack>;

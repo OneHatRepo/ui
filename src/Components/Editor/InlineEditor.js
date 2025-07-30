@@ -3,6 +3,7 @@ import {
 	Box,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 import {
 	UI_MODE_WEB,
@@ -112,29 +113,30 @@ function InlineEditor(props) {
 							onEditorCancel();
 						}
 					}}
-					className={`
-						InlineEditor-mask
-						fixed
-						w-screen
-						h-screen
-						top-0
-						left-0
-						bg-black
-						opacity-30 z-0
-					`} 
+					className={clsx(
+						'InlineEditor-mask',
+						'fixed',
+						'w-screen',
+						'h-screen',
+						'top-0',
+						'left-0',
+						'bg-black',
+						'opacity-30',
+						'z-0',
+					)}
 				/>
 				<VStack
 					ref={inlineEditorRef}
 					{...testProps('inlineEditor')}
-					className={`
-						InlineEditor-VStack
-						absolute
-						z-10
-						min-w-full
-						inline-block
-						max-h-[100px]
-						${isEditorShown ? "h-[100px]" : "h-[0px]"}
-					`}
+					className={clsx(
+						'InlineEditor-VStack',
+						'absolute',
+						'z-10',
+						'min-w-full',
+						'inline-block',
+						'max-h-[100px]',
+						isEditorShown ? 'h-[100px]' : 'h-[0px]',
+					)}
 				>
 					<Form
 						editorType={EDITOR_TYPE__INLINE}
@@ -149,17 +151,17 @@ function InlineEditor(props) {
 						onClose={onEditorClose}
 						parent={self}
 						reference="form"
-						className={`
-							InlineEditor-Form
-							flex-1
-							bg-white
-							px-0
-							py-1
-							border-t-4
-							border-b-4
-							border-t-primary-100
-							border-b-primary-100
-						`}
+						className={clsx(
+							'InlineEditor-Form',
+							'flex-1',
+							'bg-white',
+							'px-0',
+							'py-1',
+							'border-t-4',
+							'border-b-4',
+							'border-t-primary-100',
+							'border-b-primary-100',
+						)}
 					/>
 				</VStack>
 			</>;

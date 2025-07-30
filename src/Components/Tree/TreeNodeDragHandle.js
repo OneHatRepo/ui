@@ -2,20 +2,21 @@ import {
 	Icon,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import styles from '../../Styles/StyleSheets.js';
 import GripVertical from '../Icons/GripVertical.js';
 
 function TreeNodeDragHandle(props) {
-	let className = `
-		TreeNodeDragHandle
-		h-full
-		w-[14px]
-		px-[2px]
-		border-l-2
-		items-center
-		justify-center
-		select-none
-	`;
+	let className = clsx(
+		'TreeNodeDragHandle',
+		'h-full',
+		'w-[14px]',
+		'px-[2px]',
+		'border-l-2',
+		'items-center',
+		'justify-center',
+		'select-none',
+	);
 	if (props.className) {
 		className += ' ' + props.className;
 	}

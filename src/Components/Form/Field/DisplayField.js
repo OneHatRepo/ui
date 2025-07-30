@@ -2,6 +2,7 @@ import React from 'react';
 import {
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
@@ -14,11 +15,11 @@ const
 				text = value,
 			} = props,
 			styles = UiGlobals.styles;
-		let className = `
-			DisplayField
-			flex-1
-			${styles.TEXT_FONTSIZE}
-		`;
+		let className = clsx(
+			'DisplayField',
+			'flex-1',
+			styles.TEXT_FONTSIZE,
+		);
 		if (props.className) {
 			className += ' ' + props.className;
 		}

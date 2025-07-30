@@ -2,6 +2,7 @@ import {
 	TextNative,
 	Tooltip, TooltipContent, TooltipText,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 
 export default function TextWithTooltip(props) {
 	const {

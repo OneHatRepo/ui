@@ -3,6 +3,7 @@ import {
 	HStack,
 	HStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import IconButton from './IconButton.js';
 import Plus from '../Icons/Plus.js';
 import Minus from '../Icons/Minus.js';
@@ -22,10 +23,10 @@ const PlusMinusButton = React.forwardRef((props, ref) => {
 			className: 'text-black',
 		};
 
-		let className = `
-			PlusMinusButton-HStack
-			items-center
-		`;
+		let className = clsx(
+			'PlusMinusButton-HStack',
+			'items-center',
+		);
 		if (props.className) {
 			className += ' ' + props.className
 		}

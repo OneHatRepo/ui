@@ -6,6 +6,7 @@ import {
 	Text,
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
@@ -48,11 +49,11 @@ function TextWithLinksElement(props) {
 			});
 
 			const
-				textClassName = `
-					TextWithLinks-Text
-					text-base
-					overflow-hidden
-				`,
+				textClassName = clsx(
+					'TextWithLinks-Text',
+					'text-base',
+					'overflow-hidden',
+				),
 				textSegments = modifiedText.split(/(link_\d+)/);
 			if (textSegments.length === 1) {
 				return <Text className={textClassName}>{modifiedText}</Text>;
@@ -65,10 +66,10 @@ function TextWithLinksElement(props) {
 				if (foundLink) {
 					ret = <TextNative
 								key={foundLink.key}
-								className={`
-									text-blue-600
-									${textClassName}
-								`}
+								className={clsx(
+									'text-blue-600',
+									textClassName,
+								)}
 								onPress={() => openLink(foundLink.link)}
 							>{foundLink.link}</TextNative>;
 				}
@@ -80,12 +81,12 @@ function TextWithLinksElement(props) {
 	if (UiGlobals.mode === UI_MODE_WEB) {
 		elementProps.textOverflow = 'ellipsis';
 	}
-	let className = `
-		overflow-auto
-		min-h-[40px]
-		px-3
-		py-2
-	`;
+	let className = clsx(
+		'overflow-auto',
+		'min-h-[40px]',
+		'px-3',
+		'py-2',
+	);
 	if (props.className) {
 		className += ` ${props.className}`;
 	}

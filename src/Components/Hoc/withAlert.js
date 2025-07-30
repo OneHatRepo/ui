@@ -5,6 +5,7 @@ import {
 	Icon,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import withModal from './withModal.js';
 import CircleInfo from '../Icons/CircleInfo.js';
 import CircleQuestion from '../Icons/CircleQuestion.js';
@@ -33,41 +34,41 @@ function withAlert(WrappedComponent) {
 					color = 'black',
 				} = args;
 				return <HStack className="withAlert-HStack flex-1 w-full">
-							<Box className={`
-								withAlert-Box1
-								h-full
-								w-[100px]
-								flex
-								items-end
-								justify-center 
-								pr-3
-							`}>
-								<Icon as={icon} className={`
-									withAlert-Icon
-									h-[40px]
-									w-[40px]
-									text-${color}
-								`} />
+							<Box className={clsx(
+								'withAlert-Box1',
+								'h-full',
+								'w-[100px]',
+								'flex',
+								'items-end',
+								'justify-center',
+								'pr-3',
+							)}>
+								<Icon as={icon} className={clsx(
+									'withAlert-Icon',
+									'h-[40px]',
+									'w-[40px]',
+									`text-${color}`,
+								)} />
 							</Box>
-							<Box className={`
-								withAlert-Box2
-								h-full
-								flex
-								flex-1
-								items-start
-								justify-center
-							`}>
-								<Text className={`
-									withAlert-Text
-									text-${color}
-									text-[18px]
-									flex-none
-									mr-2
-									w-full
-									break-words
-									whitespace-normal
-									overflow-wrap-anywhere
-								`}>{message}</Text>
+							<Box className={clsx(
+								'withAlert-Box2',
+								'h-full',
+								'flex',
+								'flex-1',
+								'items-start',
+								'justify-center',
+							)}>
+								<Text className={clsx(
+									'withAlert-Text',
+									`text-${color}`,
+									'text-[18px]',
+									'flex-none',
+									'mr-2',
+									'w-full',
+									'break-words',
+									'whitespace-normal',
+									'overflow-wrap-anywhere',
+								)}>{message}</Text>
 							</Box>
 						</HStack>;
 			},

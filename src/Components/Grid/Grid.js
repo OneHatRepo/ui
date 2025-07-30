@@ -8,6 +8,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	ScrollView,
 } from 'react-native';
@@ -113,10 +114,10 @@ function GridComponent(props) {
 			defaultHiddenColumns = [],
 			getRowProps = (item) => {
 				return {
-					className: `
-						border-bottom-1
-						border-bottom-grey-500
-					`,
+					className: clsx(
+						'border-bottom-1',
+						'border-bottom-grey-500',
+					),
 				};
 			},
 			flatListProps = {},
@@ -481,12 +482,12 @@ function GridComponent(props) {
 							onContextMenu(item, e, newSelection);
 						}
 					}}
-					className={`
-						Pressable
-						Row
-						flex-row
-						grow
-					`}
+					className={clsx(
+						'Pressable',
+						'Row',
+						'flex-row',
+						'grow',
+					)}
 				>
 					{({
 						hovered,
@@ -623,21 +624,21 @@ function GridComponent(props) {
 
 			if (showRowExpander && !isHeaderRow) {
 				const isExpanded = getIsExpanded(index);
-				let className = `
-					Grid-rowExpander
-					w-full
-					flex-none
-				`;
+				let className = clsx(
+					'Grid-rowExpander',
+					'w-full',
+					'flex-none',
+				);
 				if (rowProps?.className) {
 					className += ' ' + rowProps.className;
 				}
 				rowComponent = <VStack className={className}>
 									<HStack
-										className={`
-											Grid-rowExpander-HStack
-											w-full
-											grow
-										`}
+										className={clsx(
+											'Grid-rowExpander-HStack',
+											'w-full',
+											'grow',
+										)}
 									>
 										<ExpandButton
 											{...testProps((Repository ? Repository.schema.name : 'GridRow') + '-expandBtn-' + item?.id)}
@@ -646,10 +647,10 @@ function GridComponent(props) {
 											_icon={{
 												size: 'sm',
 											}}
-											className={`
-												Grid-rowExpander-expandBtn
-												${styles.GRID_EXPAND_BTN_CLASSNAME}
-											`}
+											className={clsx(
+												'Grid-rowExpander-expandBtn',
+												styles.GRID_EXPAND_BTN_CLASSNAME,
+											)}
 											tooltip="Expand/Contract Row"
 										/>
 										{rowComponent}
@@ -1276,12 +1277,12 @@ function GridComponent(props) {
 	if (!hasHeight(props) && !hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	let className = `
-		Grid-VStackNative
-		w-full
-		border
-		border-grey-300
-	`;
+	let className = clsx(
+		'Grid-VStackNative',
+		'w-full',
+		'border',
+		'border-grey-300',
+	);
 	if (props.className) {
 		className += props.className;
 	}
@@ -1304,14 +1305,14 @@ function GridComponent(props) {
 							deselectAll();
 						}
 					}}
-					className={`
-						gridContainer
-						w-full
-						h-full
-						flex-1
-						min-h-[40px]
-						${gridContainerBorderClassName}
-					`}
+					className={clsx(
+						'gridContainer',
+						'w-full',
+						'h-full',
+						'flex-1',
+						'min-h-[40px]',
+						gridContainerBorderClassName,
+					)}
 				>
 					{grid}
 				</VStack>
@@ -1324,13 +1325,13 @@ function GridComponent(props) {
 		grid = <VStackNative
 					{...testProps(self, '-dropTarget')}
 					ref={dropTargetRef}
-					className={`
-						Grid-dropTarget
-						h-full
-						w-full
-						border-[#0ff]
-						${canDrop && isOver ? "border-[4px]" : "border-[0px]"}
-					`}
+					className={clsx(
+						'Grid-dropTarget',
+						'h-full',
+						'w-full',
+						'border-[#0ff]',
+						canDrop && isOver ? 'border-[4px]' : 'border-[0px]',
+					)}
 				>{grid}</VStackNative>
 	}
 	return grid;

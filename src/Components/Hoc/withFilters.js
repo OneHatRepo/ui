@@ -4,6 +4,7 @@ import {
 	// ScrollView,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	ScrollView,
 	Platform,
@@ -327,17 +328,17 @@ export default function withFilters(WrappedComponent) {
 					// add a container for each filter
 					filterElement = <HStack
 										key={'filter-' + ix}
-										className={`
-											Filter-container-HStack
-											h-full
-											px-1
-											mx-1
-											bg-grey-100
-											rounded-[6px]
-											border
-											border-l-white
-											items-center
-										`}
+										className={clsx(
+											'Filter-container-HStack',
+											'h-full',
+											'px-1',
+											'mx-1',
+											'bg-grey-100',
+											'rounded-[6px]',
+											'border',
+											'border-l-white',
+											'items-center',
+										)}
 									>
 										{filterElement}
 									</HStack>;
@@ -660,13 +661,13 @@ export default function withFilters(WrappedComponent) {
 								onContentSizeChange={onContentSizeChange}
 							>
 								<Text
-									className={`
-										withFilters-filtersLabel
-										italic-italic
-										pr-2
-										select-none
-										${hasFilters ? 'flex-1' : 'italic'}
-									`}>{hasFilters ? 'Filters:' : 'No Filters'}</Text>
+									className={clsx(
+										'withFilters-filtersLabel',
+										'italic-italic',
+										'pr-2',
+										'select-none',
+										hasFilters ? 'flex-1' : 'italic',
+									)}>{hasFilters ? 'Filters:' : 'No Filters'}</Text>
 								{renderedFilters}
 							</ScrollView>
 						</HStack>

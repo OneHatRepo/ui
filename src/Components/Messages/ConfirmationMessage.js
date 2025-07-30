@@ -2,6 +2,7 @@ import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Button from '../Buttons/Button';
 import emptyFn from '../../Functions/emptyFn.js';
 
@@ -17,11 +18,11 @@ export default function ConfirmationMessage(props) {
 				<ModalContent maxWidth="400px">
 					<ModalHeader>Confirm</ModalHeader>
 					<ModalBody
-						className={`
-							p-5
-							pb-0
-							border-t-0
-						`}
+						className={clsx(
+							'p-5',
+							'pb-0',
+							'border-t-0',
+						)}
 					>
 						<Text className="text-black">{textMessage}</Text>
 					</ModalBody>

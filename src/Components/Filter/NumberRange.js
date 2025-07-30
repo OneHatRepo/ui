@@ -3,6 +3,7 @@ import {
 	HStack,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Number from '../Form/Field/Number.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import withValue from '../Hoc/withValue.js';
@@ -63,13 +64,13 @@ const
 
 		}, [value]);
 
-		let className = `
-			flex-1
-			justify-center
-			items-center
-			px-1
-			py-[2px]
-		`;
+		let className = clsx(
+			'flex-1',
+			'justify-center',
+			'items-center',
+			'px-1',
+			'py-[2px]',
+		);
 		if (props.className) {
 			className += ' ' + props.className;
 		}

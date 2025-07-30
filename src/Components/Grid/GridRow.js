@@ -7,6 +7,7 @@ import {
 	Text,
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	UI_MODE_WEB,
 	UI_MODE_NATIVE,
@@ -133,16 +134,16 @@ function GridRow(props) {
 						propsToPass = columnProps[key] || {},
 						colStyle = {},
 						whichCursor = showSelectHandle ? 'cursor-text' : 'cursor-pointer'; // when using rowSelectHandle, indicate that the row text is selectable, otherwise indicate that the row itself is selectable
-					let colClassName = `
-						GridRow-column
-						p-1
-						justify-center
-						border-r-black-100
-						block
-						overflow-auto
-						${whichCursor}
-						${styles.GRID_ROW_MAX_HEIGHT_EXTRA}
-					`;
+					let colClassName = clsx(
+						'GridRow-column',
+						'p-1',
+						'justify-center',
+						'border-r-black-100',
+						'block',
+						'overflow-auto',
+						whichCursor,
+						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
+					);
 					if (isOnlyOneVisibleColumn) {
 						colClassName = ' w-full';
 					} else {
@@ -248,18 +249,18 @@ function GridRow(props) {
 									if (config.getCellProps) {
 										_.assign(cellProps, config.getCellProps(item));
 									}
-									let elementClassName = `
-										GridRow-Element
-										self-center
-										text-ellipsis
-										px-2
-										py-3
-										block
-										overflow-scroll
-										${colClassName}
-										${styles.GRID_CELL_CLASSNAME}
-										${styles.GRID_ROW_MAX_HEIGHT_NORMAL}
-									`;
+									let elementClassName = clsx(
+										'GridRow-Element',
+										'self-center',
+										'text-ellipsis',
+										'px-2',
+										'py-3',
+										'block',
+										'overflow-scroll',
+										colClassName,
+										styles.GRID_CELL_CLASSNAME,
+										styles.GRID_ROW_MAX_HEIGHT_NORMAL,
+									);
 									if (config.className) {
 										elementClassName += ' ' + config.className;
 									}
@@ -309,14 +310,14 @@ function GridRow(props) {
 					if (config.getCellProps) {
 						_.assign(elementProps, config.getCellProps(item));
 					}
-					let textClassName = `
-						GridRow-TextNative
-						self-center
-						overflow-hidden
-						${colClassName}
-						${styles.GRID_CELL_CLASSNAME}
-						${styles.GRID_ROW_MAX_HEIGHT_EXTRA}
-					`;
+					let textClassName = clsx(
+						'GridRow-TextNative',
+						'self-center',
+						'overflow-hidden',
+						colClassName,
+						styles.GRID_CELL_CLASSNAME,
+						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
+					);
 					if (config.className) {
 						textClassName += ' ' + config.className;
 					}
@@ -346,15 +347,15 @@ function GridRow(props) {
 							
 							{isPhantom && 
 								<Box
-									className={`
-										GridRow-phantom
-										absolute
-										h-2
-										w-2
-										top-0
-										left-0
-										bg-[#f00]
-									`}
+									className={clsx(
+										'GridRow-phantom',
+										'absolute',
+										'h-2',
+										'w-2',
+										'top-0',
+										'left-0',
+										'bg-[#f00]',
+									)}
 								/>}
 							
 							{renderColumns(item)}
@@ -363,25 +364,25 @@ function GridRow(props) {
 								<Icon
 									as={AngleRight}
 									variant="outline"
-									className={`
-										GridRow-Icon
-										w-30
-										self-center
-										mx-3
-										${styles.GRID_NAV_COLUMN_COLOR}
-									`}
+									className={clsx(
+										'GridRow-Icon',
+										'w-30',
+										'self-center',
+										'mx-3',
+										styles.GRID_NAV_COLUMN_COLOR,
+									)}
 								/>}
 						</>;
 
 		if (dragSourceRef) {
 			rowContents = <HStack
 								ref={dragSourceRef}
-								className={`
-									GridRow-dragSourceRef
-									w-full
-									flex-1
-									grow-1
-								`}
+								className={clsx(
+									'GridRow-dragSourceRef',
+									'w-full',
+									'flex-1',
+									'grow-1',
+								)}
 								style={{
 									backgroundColor: bg,
 								}}
@@ -390,22 +391,22 @@ function GridRow(props) {
 		if (dropTargetRef) {
 			rowContents = <HStack
 								ref={dropTargetRef}
-								className={`
-									GridRow-dropTargetRef
-									w-full
-									flex-1
-									grow-1
-								`}
+								className={clsx(
+									'GridRow-dropTargetRef',
+									'w-full',
+									'flex-1',
+									'grow-1',
+								)}
 								style={{
 									backgroundColor: bg,
 								}}
 							>{rowContents}</HStack>;
 		}
 
-		let rowClassName = `
-			GridRow-HStackNative
-			items-center
-		`;
+		let rowClassName = clsx(
+			'GridRow-HStackNative',
+			'items-center',
+		);
 		if (isOnlyOneVisibleColumn) {
 			rowClassName += ' w-full';
 		}

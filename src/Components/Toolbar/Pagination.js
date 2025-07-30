@@ -4,6 +4,7 @@ import {
 	HStackNative,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button.js';
@@ -154,25 +155,25 @@ export default function Pagination(props) {
 									onChangeValue={(value) => Repository.setPage(value)}
 									maxValue={totalPages}
 									isDisabled={totalPages === 1}
-									className={`
-										Pagination-pageInput
-										min-w-[40px]
-										w-[40px]
-										text-center
-										bg-grey-100
-									`}
+									className={clsx(
+										'Pagination-pageInput',
+										'min-w-[40px]',
+										'w-[40px]',
+										'text-center',
+										'bg-grey-100',
+									)}
 									textAlignIsCenter={true}
 									tooltip="Set Page"
 									tooltipClassName="w-[40px]"
 								/>);
 					items.push(<Text
 									key="totalPages"
-									className={`
-										Pagination-totalPages
-										whitespace-nowrap
-										inline-flex
-										mx-1
-									`}
+									className={clsx(
+										'Pagination-totalPages',
+										'whitespace-nowrap',
+										'inline-flex',
+										'mx-1',
+									)}
 								>{`of ${totalPages}`}</Text>);
 				}
 			}
@@ -194,12 +195,12 @@ export default function Pagination(props) {
 				}
 				items.push(<Text
 								key="pageDisplay"
-								className={`
-									Pagination-pageDisplay
-									whitespace-nowrap
-									inline-flex
-									mx-1
-								`}
+								className={clsx(
+									'Pagination-pageDisplay',
+									'whitespace-nowrap',
+									'inline-flex',
+									'mx-1',
+								)}
 							>{`Displaying ${pageSpan} of ${total}`}</Text>);
 			}
 		}
@@ -207,12 +208,12 @@ export default function Pagination(props) {
 					style={{
 						userSelect: 'none',
 					}}
-					className={`
-						Pagination
-						items-center
-						shrink-0
-						gap-2
-					`}
+					className={clsx(
+						'Pagination',
+						'items-center',
+						'shrink-0',
+						'gap-2',
+					)}
 				>
 					{items}
 				</HStack>;

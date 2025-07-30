@@ -5,6 +5,7 @@ import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import Button from '../Buttons/Button.js';
 import Panel from '../Panel/Panel.js';
@@ -33,12 +34,12 @@ export default function ErrorMessage(props) {
 					disableAutoFlex={true}
 					onClose={onOk}
 					footer={<Footer
-								className={`
-									justify-end
-									py-2
-									px-4
-									bg-grey-100
-								`}
+								className={clsx(
+									'justify-end',
+									'py-2',
+									'px-4',
+									'bg-grey-100',
+								)}
 							>
 								<Button
 									{...testProps('okBtn')}
@@ -50,40 +51,40 @@ export default function ErrorMessage(props) {
 							</Footer>}
 				>
 					<HStack className="ErrorMessage-HStack flex-1 w-full p-4">
-						<Box className={`
-							ErrorMessage-Box1
-							h-full
-							w-[100px]
-							flex
-							items-center
-							justify-center 
-							pr-3
-						`}>
-							<Icon as={TriangleExclamation} className={`
-								ErrorMessage-Icon
-								h-[40px]
-								w-[40px]
-								text-${color}
-							`} />
+						<Box className={clsx(
+							'ErrorMessage-Box1',
+							'h-full',
+							'w-[100px]',
+							'flex',
+							'items-center',
+							'justify-center',
+							'pr-3',
+						)}>
+							<Icon as={TriangleExclamation} className={clsx(
+								'ErrorMessage-Icon',
+								'h-[40px]',
+								'w-[40px]',
+								`text-${color}`,
+							)} />
 						</Box>
-						<Box className={`
-							ErrorMessage-Box2
-							h-full
-							flex
-							flex-1
-							items-start
-							justify-center
-							overflow-hidden
-						`}>
-							<Text className={`
-								ErrorMessage-Text
-								text-${color}
-								text-[18px]
-								break-words
-								whitespace-normal
-								w-full
-								overflow-auto
-							`}>{text}</Text>
+						<Box className={clsx(
+							'ErrorMessage-Box2',
+							'h-full',
+							'flex',
+							'flex-1',
+							'items-start',
+							'justify-center',
+							'overflow-hidden',
+						)}>
+							<Text className={clsx(
+								'ErrorMessage-Text',
+								`text-${color}`,
+								'text-[18px]',
+								'break-words',
+								'whitespace-normal',
+								'w-full',
+								'overflow-auto',
+							)}>{text}</Text>
 						</Box>
 					</HStack>
 				</Panel>

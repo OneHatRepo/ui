@@ -6,6 +6,7 @@ import {
 	ButtonIcon,
 	ButtonGroup,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../Hoc/withTooltip.js';
 import _ from 'lodash';
@@ -51,10 +52,10 @@ const ButtonComponent = forwardRef((props, ref) => {
 		self.ref = ref.current;
 	}
 
-	let className = `
-		Button
-		flex
-	`;
+	let className = clsx(
+		'Button',
+		'flex',
+	);
 	if (propsToPass.className) {
 		className += ' ' + propsToPass.className;
 	}

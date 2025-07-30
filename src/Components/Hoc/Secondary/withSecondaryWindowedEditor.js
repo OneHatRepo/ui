@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../Constants/Editor.js';
@@ -82,11 +83,11 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 								{...secondaryEditorProps}
 								parent={self}
 								reference="secondaryEditor"
-								className={`
-									bg-white
-									shadow-lg
-									rounded-lg
-								`}
+								className={clsx(
+									'bg-white',
+									'shadow-lg',
+									'rounded-lg',
+								)}
 							/>
 						</Modal>}
 				</>;

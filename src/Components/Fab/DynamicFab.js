@@ -4,6 +4,7 @@ import {
 	Fab, FabIcon, FabLabel,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import IconButton from '../Buttons/IconButton.js';
 import FabWithTooltip from './FabWithTooltip.js';
 import EllipsisVertical from '../Icons/EllipsisVertical.js';
@@ -31,13 +32,13 @@ export default function DynamicFab(props) {
 		verticalOffset = 50; // to shift the entire expanded group up
 
 
-	let className = `
-		DynamicFab
-		fixed
-		pb-[20px]
-		bottom-4
-		right-4
-	`;
+	let className = clsx(
+		'DynamicFab',
+		'fixed',
+		'pb-[20px]',
+		'bottom-4',
+		'right-4',
+	);
 	if (props.className) {
 		className += ` ${props.className}`;
 	}
@@ -67,12 +68,12 @@ export default function DynamicFab(props) {
 									}}
 								>
 									<IconButton
-										className={`
-											bg-primary-600
-											text-white
-											hover:bg-primary-700
-											active:bg-primary-800
-										`}
+										className={clsx(
+											'bg-primary-600',
+											'text-white',
+											'hover:bg-primary-700',
+											'active:bg-primary-800',
+										)}
 										tooltipPlacement={tooltipPlacement}
 										onPress={() => {
 											onPress();

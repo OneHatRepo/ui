@@ -3,6 +3,7 @@ import {
 	BoxNative as Box,
 	Tooltip, TooltipContent, TooltipText,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 
 const TooltipElement = forwardRef((props, ref) => {
 	const {

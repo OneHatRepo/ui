@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, } from 'react';
 import {
 	HStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Decimal from 'decimal.js';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';
@@ -121,17 +122,17 @@ function NumberElement(props) {
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
 		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
 
-	let className = `
-		Number
-		flex
-		h-full
-		items-center
-		max-h-[40px]
-		p-0
-		border
-		border-grey-400
-		rounded-[6px]
-	`;
+	let className = clsx(
+		'Number',
+		'flex',
+		'h-full',
+		'items-center',
+		'max-h-[40px]',
+		'p-0',
+		'border',
+		'border-grey-400',
+		'rounded-[6px]',
+	);
 	if (props.className) {
 		className += ' ' + props.className;
 	}
@@ -147,11 +148,11 @@ function NumberElement(props) {
 					}}
 					onPress={onDecrement}
 					isDisabled={isDecrementDisabled || isDisabled}
-					className={`
-						decrementBtn
-						h-full
-						rounded-r-none
-					`}
+					className={clsx(
+						'decrementBtn',
+						'h-full',
+						'rounded-r-none',
+					)}
 					style={{
 						width: 40,
 					}}
@@ -164,15 +165,15 @@ function NumberElement(props) {
 					isDisabled={isDisabled}
 					tooltip={tooltip}
 					tooltipPlacement={tooltipPlacement}
-					tooltipTriggerClassName={`
-						flex-1
-						h-full
-					`}
-					className={`
-						h-full
-						text-center
-						rounded-none
-					`}
+					tooltipTriggerClassName={clsx(
+						'flex-1',
+						'h-full',
+					)}
+					className={clsx(
+						'h-full',
+						'text-center',
+						'rounded-none',
+					)}
 					textAlignIsCenter={true}
 					style={{
 						flex: 3
@@ -187,11 +188,11 @@ function NumberElement(props) {
 					}}
 					onPress={onIncrement}
 					isDisabled={isIncrementDisabled || isDisabled}
-					className={`
-						incrementBtn
-						h-full
-						rounded-l-none
-					`}
+					className={clsx(
+						'incrementBtn',
+						'h-full',
+						'rounded-l-none',
+					)}
 					style={{
 						width: 40,
 					}}

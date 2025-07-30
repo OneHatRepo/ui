@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import {
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
@@ -10,14 +11,14 @@ const
 	TextElement = (props) => {
 		const styles = UiGlobals.styles;
 
-		let className = `
-			Text
-			flex-1
-			min-h-[40px]
-			px-3
-			py-2
-			${styles.FORM_TEXT_CLASSNAME}
-		`;
+		let className = clsx(
+			'Text',
+			'flex-1',
+			'min-h-[40px]',
+			'px-3',
+			'py-2',
+			styles.FORM_TEXT_CLASSNAME,
+		);
 		if (props.className) {
 			className += ' ' + props.className;
 		}

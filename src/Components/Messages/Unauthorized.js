@@ -2,6 +2,7 @@ import {
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 
 export default function Unauthorized(props) {
 	const 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
 	HStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Pagination from './Pagination.js'
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
@@ -37,22 +38,22 @@ export default function PaginationToolbar(props) {
 		};
 
 	return <Toolbar
-				className={`
-					border-t
-					border-t-grey-400
-				`}
+				className={clsx(
+					'border-t',
+					'border-t-grey-400',
+				)}
 				onLayout={(e) => onLayout(e)}
 			>
 				{toolbarItems.length ?
 					<HStack
-						className={`
-							PaginationToolbar-HStack
-							shrink-0
-							border-r
-							border-r-grey-400
-							mr-3
-							pr-3
-						`}
+						className={clsx(
+							'PaginationToolbar-HStack',
+							'shrink-0',
+							'border-r',
+							'border-r-grey-400',
+							'mr-3',
+							'pr-3',
+						)}
 					>{toolbarItems}</HStack> : null}
 				<Pagination
 					{...propsToPass}

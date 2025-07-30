@@ -4,6 +4,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -136,12 +137,12 @@ function Panel(props) {
 				{!isCollapsed && <>
 					{topToolbar}
 					<VStack
-						className={`
-							Panel-VSstack
-							flex-1
-							w-full
-							overflow-hidden
-						`}
+						className={clsx(
+							'Panel-VSstack',
+							'flex-1',
+							'w-full',
+							'overflow-hidden',
+						)}
 					>
 						{isScrollable ?
 							<ScrollView

@@ -8,6 +8,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor';
 import {
 	UI_MODE_WEB,
@@ -72,11 +73,11 @@ function Report(props) {
 	}
 
 	if (isQuickReport) {
-		let className = `
-			Report
-			max-w-[100px]
-			m-2
-		`;
+		let className = clsx(
+			'Report',
+			'max-w-[100px]',
+			'm-2',
+		);
 		if (props.className) {
 			className += ' ' + props.className;
 		}
@@ -86,28 +87,28 @@ function Report(props) {
 				>
 					<Pressable
 						onPress={onPressQuickReport}
-						className={`
-							flex-1
-							items-center
-							justify-center
-							flex-col
-							bg-white
-							p-3
-							rounded-lg
-							border
-							border-primary-300
-							hover:bg-primary-300
-						`}
+						className={clsx(
+							'flex-1',
+							'items-center',
+							'justify-center',
+							'flex-col',
+							'bg-white',
+							'p-3',
+							'rounded-lg',
+							'border',
+							'border-primary-300',
+							'hover:bg-primary-300',
+						)}
 					>
 						{icon}
 						<Text
-							className={`
-								text-black
-								text-center
-								text-[17px]
-								leading-tight
-								mt-2
-							`}
+							className={clsx(
+								'text-black',
+								'text-center',
+								'text-[17px]',
+								'leading-tight',
+								'mt-2',
+							)}
 						>{title}</Text>
 					</Pressable>
 				</VStackNative>;
@@ -145,16 +146,16 @@ function Report(props) {
 	}
 	return <VStackNative
 				{...testProps('Report-' + reportId)}
-				className={`
-					w-full
-					border
-					border-primary-300
-					p-4
-					mb-3
-					bg-white
-					rounded-lg
-					shadow-sm
-				`}
+				className={clsx(
+					'w-full',
+					'border',
+					'border-primary-300',
+					'p-4',
+					'mb-3',
+					'bg-white',
+					'rounded-lg',
+					'shadow-sm',
+				)}
 			>
 				<HStack>
 					<Box className="w-[50px] mr-4">

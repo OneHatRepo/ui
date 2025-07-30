@@ -2,6 +2,7 @@ import {
 	Icon,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import styles from '../../Styles/StyleSheets.js';
 import GripVertical from '../Icons/GripVertical.js';
 

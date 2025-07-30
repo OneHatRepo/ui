@@ -2,6 +2,7 @@ import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Button from '../Buttons/Button';
 
 export default function OkMessage(props) {
@@ -14,20 +15,20 @@ export default function OkMessage(props) {
 				<ModalBackdrop />
 				<ModalContent maxWidth="400px">
 					<ModalBody
-						className={`
-							p-5
-							pb-0
-							border-t-0
-						`}
+						className={clsx(
+							'p-5',
+							'pb-0',
+							'border-t-0',
+						)}
 					>
 						<Text className="text-black">{textMessage}</Text>
 					</ModalBody>
 					<ModalFooter
-						className={`
-							p-0
-							pr-4
-							border-t-0
-						`}
+						className={clsx(
+							'p-0',
+							'pr-4',
+							'border-t-0',
+						)}
 					>
 						<Button
 							variant="outline"

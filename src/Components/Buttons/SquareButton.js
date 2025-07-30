@@ -1,4 +1,5 @@
 import IconButton from './IconButton.js';
+import clsx from 'clsx';
 
 // This component is used to create a square button with an icon and text
 // For example, the Gingerich app uses this for EqStatusesSwitch and WoPrioritiesSwitch
@@ -23,20 +24,20 @@ export default function SquareButton(props) {
 		throw Error('text missing. If you want to hide the text, use showText={false}');
 	}
 
-	let className = `
-		SquareButton
-		rounded-md
-		p-2
-		h-[100px]
-		w-[100px]
-		flex
-		flex-col
-		justify-center
-		items-center
-		bg-grey-200
-		hover:bg-grey-400
-		disabled:bg-grey-100
-	`;
+	let className = clsx(
+		'SquareButton',
+		'rounded-md',
+		'p-2',
+		'h-[100px]',
+		'w-[100px]',
+		'flex',
+		'flex-col',
+		'justify-center',
+		'items-center',
+		'bg-grey-200',
+		'hover:bg-grey-400',
+		'disabled:bg-grey-100',
+	);
 	if (isActive && activeClassName) {
 		className += ' ' + activeClassName;
 	}
@@ -47,10 +48,10 @@ export default function SquareButton(props) {
 					// backgroundColor: bg,
 				}}
 				_icon={{
-					className: `
-						h-[40px]
-						w-[40px]
-					`,
+					className: clsx(
+						'h-[40px]',
+						'w-[40px]',
+					),
 					style: {
 						color,
 					}

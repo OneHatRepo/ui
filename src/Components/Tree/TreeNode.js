@@ -6,6 +6,7 @@ import {
 	Spinner,
 	TextNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import * as colourMixer from '@k-renwick/colour-mixer';
 import {
 	UI_MODE_WEB,
@@ -114,15 +115,15 @@ export default function TreeNode(props) {
 			bg = colourMixer.blend(bg, 0.5, mixWith);
 		}
 
-		let className = `
-			TreeNode
-			items-center
-			flex-1
-			grow-1
-			select-none
-			cursor-pointer
-		`;
-		
+		let className = clsx(
+			'TreeNode',
+			'items-center',
+			'flex-1',
+			'grow-1',
+			'select-none',
+			'cursor-pointer',
+		);
+
 		// Add drop state classes for additional styling
 		if (isOver && actualCanDrop) {
 			className += ' TreeNode--dropValid border-2 border-green-400';
@@ -172,16 +173,16 @@ export default function TreeNode(props) {
 								numberOfLines={1}
 								ellipsizeMode="head"
 								// {...propsToPass}
-								className={`
-									TreeNode-TextNative
-									self-center
-									overflow-hidden
-									flex
-									flex-1
-									text-ellipsis
-									select-none
-									${styles.TREE_NODE_CLASSNAME}
-								`}
+								className={clsx(
+									'TreeNode-TextNative',
+									'self-center',
+									'overflow-hidden',
+									'flex',
+									'flex-1',
+									'text-ellipsis',
+									'select-none',
+									styles.TREE_NODE_CLASSNAME,
+								)}
 								style={{
 									userSelect: 'none',
 								}}

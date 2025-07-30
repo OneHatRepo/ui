@@ -2,6 +2,7 @@ import {
 	Icon,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripVertical from '../Icons/GripVertical.js';
@@ -13,14 +14,14 @@ function HeaderReorderHandle(props) {
 
 	return <VStack
 				style={styles.ewResize}
-				className={`
-					HeaderReorderHandle
-					h-full
-					w-3
-					items-center
-					justify-center
-					${isDragging ? 'bg-grey-300' : 'bg-grey-100'}
-				`}
+				className={clsx(
+					'HeaderReorderHandle',
+					'h-full',
+					'w-3',
+					'items-center',
+					'justify-center',
+					isDragging ? 'bg-grey-300' : 'bg-grey-100',
+				)}
 			>
 				<Icon
 					as={GripVertical}

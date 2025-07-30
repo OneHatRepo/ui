@@ -5,6 +5,7 @@ import {
 	TextNative,
 	VStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -41,17 +42,17 @@ export default function Header(props) {
 	let closeBtn = null,
 		collapseBtn = null;
 	if (onClose) {
-		let closeClassName = `
-			Header-closeBtn
-			self-center
-			border
-			border-grey-400
-			h-[20px]
-			w-[20px]
-			px-[2px]
-			py-[2px]
-			${styles.PANEL_HEADER_BG}
-		`;
+		let closeClassName = clsx(
+			'Header-closeBtn',
+			'self-center',
+			'border',
+			'border-grey-400',
+			'h-[20px]',
+			'w-[20px]',
+			'px-[2px]',
+			'py-[2px]',
+			styles.PANEL_HEADER_BG,
+		);
 		if (collapseDirection === HORIZONTAL && isCollapsed) {
 			closeClassName += ' mb-1';
 		}
@@ -67,17 +68,17 @@ export default function Header(props) {
 					/>;
 	}
 	if (isCollapsible) {
-		let collapseClassName = `
-			Header-collapseBtn
-			self-center
-			border
-			border-grey-400
-			h-[20px]
-			w-[20px]
-			px-[2px]
-			py-[2px]
-			${styles.PANEL_HEADER_BG}
-		`;
+		let collapseClassName = clsx(
+			'Header-collapseBtn',
+			'self-center',
+			'border',
+			'border-grey-400',
+			'h-[20px]',
+			'w-[20px]',
+			'px-[2px]',
+			'py-[2px]',
+			styles.PANEL_HEADER_BG,
+		);
 		if (collapseDirection === HORIZONTAL && isCollapsed) {
 			collapseClassName += ' mb-1';
 		}
@@ -97,17 +98,17 @@ export default function Header(props) {
 		doubleClickStyle.cursor = 'pointer';
 	}
 
-	let panelClassName = `
-		Header
-		bg-grey-300
-		items-center
-		justify-start
-		py-1
-		border-b-grey-400
-		border-b-1
-		${isWindow ? 'rounded-t-lg' : ''}
-		${styles.PANEL_HEADER_BG}
-	`;
+	let panelClassName = clsx(
+		'Header',
+		'bg-grey-300',
+		'items-center',
+		'justify-start',
+		'py-1',
+		'border-b-grey-400',
+		'border-b-1',
+		isWindow ? 'rounded-t-lg' : '',
+		styles.PANEL_HEADER_BG,
+	);
 	if (CURRENT_MODE === UI_MODE_WEB) {
 
 		if (isCollapsed) {
@@ -137,12 +138,12 @@ export default function Header(props) {
 									<TextNative
 										numberOfLines={1}
 										ellipsizeMode="head"
-										className={`
-											Header-TextNative1
-											flex-1
-											font-bold
-											${styles.PANEL_HEADER_TEXT_CLASSNAME}
-										`}>{title}</TextNative>
+										className={clsx(
+											'Header-TextNative1',
+											'flex-1',
+											'font-bold',
+											styles.PANEL_HEADER_TEXT_CLASSNAME,
+										)}>{title}</TextNative>
 								</div>
 							</VStack>
 						</div>;
@@ -175,12 +176,12 @@ export default function Header(props) {
 						<TextNative
 							numberOfLines={1}
 							ellipsizeMode="head"
-							className={`
-								Header-TextNative2
-								flex-1
-								font-bold
-								${styles.PANEL_HEADER_TEXT_CLASSNAME}
-							`}
+							className={clsx(
+								'Header-TextNative2',
+								'flex-1',
+								'font-bold',
+								styles.PANEL_HEADER_TEXT_CLASSNAME,
+							)}
 						>{title}</TextNative>
 						{collapseBtn}
 					</HStack>
@@ -215,13 +216,13 @@ export default function Header(props) {
 										numberOfLines={1}
 										ellipsizeMode="head"
 										style={{ transform: [{ rotate: '-90deg'}] }}
-										className={`
-											Header-TextNative3
-											font-bold
-											w-[200px]
-											text-right
-											${styles.PANEL_HEADER_TEXT_CLASSNAME}
-										`}
+										className={clsx(
+											'Header-TextNative3',
+											'font-bold',
+											'w-[200px]',
+											'text-right',
+											styles.PANEL_HEADER_TEXT_CLASSNAME,
+										)}
 									>{title}</TextNative>
 								</VStack>
 							</VStack>
@@ -251,12 +252,12 @@ export default function Header(props) {
 						<TextNative
 							numberOfLines={1}
 							ellipsizeMode="head"
-							className={`
-								Header-TextNative4
-								font-bold
-								flex-1
-								${styles.PANEL_HEADER_TEXT_CLASSNAME}
-							`}>{title}</TextNative>
+							className={clsx(
+								'Header-TextNative4',
+								'font-bold',
+								'flex-1',
+								styles.PANEL_HEADER_TEXT_CLASSNAME,
+							)}>{title}</TextNative>
 						{collapseBtn}
 					</HStack>
 				</Pressable>;

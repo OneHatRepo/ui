@@ -5,6 +5,7 @@ import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Button from '../Buttons/Button.js';
 import Panel from '../Panel/Panel.js';
 import Footer from '../Layout/Footer.js';
@@ -151,12 +152,12 @@ export default function withModal(WrappedComponent) {
 				let footer = null;
 				if (buttons && buttons.length > 0) {
 					footer = <Footer
-								className={`
-									justify-end
-									py-2
-									pr-4
-									bg-grey-100
-								`}
+								className={clsx(
+									'justify-end',
+									'py-2',
+									'pr-4',
+									'bg-grey-100',
+								)}
 							>{buttons}</Footer>;
 				}
 				modalBody =

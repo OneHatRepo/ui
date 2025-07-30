@@ -8,6 +8,7 @@ import {
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	HORIZONTAL,
 	VERTICAL,
@@ -130,11 +131,11 @@ function TabBar(props) {
 							tooltip={isCollapsed ? 'Expand' : 'Collapse'}
 						/>;
 			} else {
-				tabClassName += `
-					${direction === VERTICAL ? 'w-[200px]' : ''}
-					pr-0
-					mr-0
-				`;
+				tabClassName += clsx(
+					direction === VERTICAL ? 'w-[200px]' : '',
+					'pr-0',
+					'mr-0',
+				);
 				_icon.as = Minimize;
 				button = <Button
 							{...testProps('toggleBtn')}
@@ -158,59 +159,59 @@ function TabBar(props) {
 		getTabProps = () => {
 			const
 				tabProps = {
-					className: `
-						${styles.TAB_BG}
-						${isCollapsed ? 'justify-center' : 'justify-start'}
-					`,
+					className: clsx(
+						styles.TAB_BG,
+						isCollapsed ? 'justify-center' : 'justify-start',
+					),
 				},
 				textProps = {
 					// numberOfLines: 1,
 					// ellipsizeMode: 'head',
-					className: `
-						${styles.TAB_FONTSIZE}
-						${styles.TAB_COLOR}
-					`,
+					className: clsx(
+						styles.TAB_FONTSIZE,
+						styles.TAB_COLOR,
+					),
 				},
 				iconProps = {
 					// size: 'md',
-					className: `
-						${styles.TAB_ICON_COLOR}
-					`,
+					className: clsx(
+						styles.TAB_ICON_COLOR,
+					),
 				};
 			switch(direction) {
 				case VERTICAL:
-					tabProps.className += `
-						rounded-l-lg
-						rounded-r-none
-						w-full
-						ml-2
-						mr-0
-						mb-1
-						px-4
-					`;
-					textProps.className += `
-						w-full
-						mr-0
-						mb-1
-						py-0
-						pl-3
-						pr-0
-						flex-1
-						text-left
-					`;
+					tabProps.className += clsx(
+						'rounded-l-lg',
+						'rounded-r-none',
+						'w-full',
+						'ml-2',
+						'mr-0',
+						'mb-1',
+						'px-4',
+					);
+					textProps.className += clsx(
+						'w-full',
+						'mr-0',
+						'mb-1',
+						'py-0',
+						'pl-3',
+						'pr-0',
+						'flex-1',
+						'text-left',
+					);
 					break;
 				case HORIZONTAL:
-					tabProps.className += `
-						rounded-t
-						rounded-b-none
-						mr-1
-						py-1
-					`;
-					textProps.className += `
-						px-1
-						py-0
-						mr-1
-					`;
+					tabProps.className += clsx(
+						'rounded-t',
+						'rounded-b-none',
+						'mr-1',
+						'py-1',
+					);
+					textProps.className += clsx(
+						'px-1',
+						'py-0',
+						'mr-1',
+					);
 					break;
 				default:
 			}
@@ -459,16 +460,16 @@ function TabBar(props) {
 		tabBar = <VStackNative
 					{...testProps('TabBar')}
 					{...propsToPass}
-					className={`
-						${isCollapsed ? 'w-[50px]' : 'w-[' + tabWidth + 'px]'}
-						${isCollapsed ? 'pl-1' : 'pl-4'}
-						items-center
-						justify-start
-						py-2
-						overflow-x-hidden
-						overflow-y-auto
-						${styles.TAB_BAR_CLASSNAME}
-					`}
+					className={clsx(
+						isCollapsed ? 'w-[50px]' : 'w-[' + tabWidth + 'px]',
+						isCollapsed ? 'pl-1' : 'pl-4',
+						'items-center',
+						'justify-start',
+						'py-2',
+						'overflow-x-hidden',
+						'overflow-y-auto',
+						styles.TAB_BAR_CLASSNAME
+					)}
 				>
 					{renderedTabs}
 					{canToggleCollapse ? 
@@ -488,16 +489,16 @@ function TabBar(props) {
 	if (direction === HORIZONTAL) {
 		tabBar = <HStackNative
 					{...testProps('TabBar')}
-					className={`
-						${'h-[' + tabHeight + 'px]'}
-						items-center
-						justify-start
-						overflow-x-auto
-						overflow-y-hidden
-						p-1
-						pb-0
-						${styles.TAB_BAR_CLASSNAME}
-					`}
+					className={clsx(
+						'h-[' + tabHeight + 'px]',
+						'items-center',
+						'justify-start',
+						'overflow-x-auto',
+						'overflow-y-hidden',
+						'p-1',
+						'pb-0',
+						styles.TAB_BAR_CLASSNAME
+					)}
 				>
 					<ScrollView
 						horizontal={true}

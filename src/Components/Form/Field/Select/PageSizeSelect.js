@@ -2,6 +2,7 @@ import { useMemo, } from 'react';
 import {
 	HStack,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import Select from './Select.js';
 
 export default function PageSizeSelect(props) {

@@ -11,6 +11,7 @@ import {
 	TextNative,
 	VStackNative,
 } from '@project-components/Gluestack';
+import clsx from 'clsx';
 import {
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,
@@ -558,11 +559,11 @@ export const ComboComponent = forwardRef((props, ref) => {
 						isDisabled={isDisabled || _.isNil(value)}
 						onPress={onXButtonPress}
 						tooltip="Clear selection"
-						className={`
-							h-full
-							mr-1
-							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
-						`}
+						className={clsx(
+							'h-full',
+							'mr-1',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME
+						)}
 					/>;
 	}
 	if (showEyeButton && Editor) {
@@ -576,24 +577,24 @@ export const ComboComponent = forwardRef((props, ref) => {
 						isDisabled={isDisabled || _.isNil(value)}
 						onPress={onEyeButtonPress}
 						tooltip="View selected record"
-						className={`
-							h-full
-							mr-1
-							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
-						`}
+						className={clsx(
+							'h-full',
+							'mr-1',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME
+						)}
 					/>;
 	}
-	const triggerClassName = `
-		Combo-trigger
-		self-stretch
-		h-auto
-		border
-		border-l-0
-		border-gray-400
-		rounded-l-none
-		rounded-r-md
-		${styles.FORM_COMBO_TRIGGER_CLASSNAME}
-	`;
+	const triggerClassName = clsx(
+		'Combo-trigger',
+		'self-stretch',
+		'h-auto',
+		'border',
+		'border-l-0',
+		'border-gray-400',
+		'rounded-l-none',
+		'rounded-r-md',
+		styles.FORM_COMBO_TRIGGER_CLASSNAME,
+	);
 	trigger = <IconButton
 				{...testProps('trigger')}
 				ref={triggerRef}
@@ -614,33 +615,33 @@ export const ComboComponent = forwardRef((props, ref) => {
 						{...testProps('toggleMenuBtn')}
 						ref={inputRef}
 						onPress={toggleMenu}
-						className={`
-							Combo-toggleMenuBtn
-							h-auto
-							self-stretch
-							flex-1
-							flex-row
-							justify-center
-							items-center
-							m-0
-							p-2
-							bg-white
-							border
-							border-grey-400
-							rounded-r-none
-							${styles.FORM_COMBO_INPUT_BG}
-						`}
+						className={clsx(
+							'Combo-toggleMenuBtn',
+							'h-auto',
+							'self-stretch',
+							'flex-1',
+							'flex-row',
+							'justify-center',
+							'items-center',
+							'm-0',
+							'p-2',
+							'bg-white',
+							'border',
+							'border-grey-400',
+							'rounded-r-none',
+							styles.FORM_COMBO_INPUT_BG
+						)}
 					>
 						{inputIconElement}
 						<TextNative
 							numberOfLines={1}
 							ellipsizeMode="head"
-							className={`
-								Combo-TextNative
-								flex-1
-								${_.isEmpty(textInputValue) ? "text-grey-400" : "text-black"}
-								${styles.FORM_COMBO_INPUT_CLASSNAME}
-							`}
+							className={clsx(
+								'Combo-TextNative',
+								'flex-1',
+								_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
+								styles.FORM_COMBO_INPUT_CLASSNAME
+							)}
 						>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
 					</Pressable> :
 					<Input
@@ -659,23 +660,23 @@ export const ComboComponent = forwardRef((props, ref) => {
 						placeholder={placeholder}
 						tooltip={tooltip}
 						tooltipPlacement={tooltipPlacement}
-						tooltipTriggerClassName={`
-							grow
-							h-auto
-							self-stretch
-							flex-1
-						`}
-						className={`
-							Combo-Input
-							grow
-							h-auto
-							self-stretch
-							flex-1
-							m-0
-							rounded-tr-none
-							rounded-br-none
-							${styles.FORM_COMBO_INPUT_CLASSNAME}
-						`}
+						tooltipTriggerClassName={clsx(
+							'grow',
+							'h-auto',
+							'self-stretch',
+							'flex-1'
+						)}
+						className={clsx(
+							'Combo-Input',
+							'grow',
+							'h-auto',
+							'self-stretch',
+							'flex-1',
+							'm-0',
+							'rounded-tr-none',
+							'rounded-br-none',
+							styles.FORM_COMBO_INPUT_CLASSNAME
+						)}
 						{..._input}
 					/>;
 	}
@@ -687,30 +688,30 @@ export const ComboComponent = forwardRef((props, ref) => {
 		input = <Pressable
 					{...testProps('showMenuBtn')}
 					onPress={showMenu}
-					className={`
-						h-full
-						flex-1
-						flex-row
-						justify-center
-						items-center
-						border
-						border-grey-400
-						rounded-r-none
-						${styles.FORM_COMBO_INPUT_BG}
-					`}
+					className={clsx(
+						'h-full',
+						'flex-1',
+						'flex-row',
+						'justify-center',
+						'items-center',
+						'border',
+						'border-grey-400',
+						'rounded-r-none',
+						styles.FORM_COMBO_INPUT_BG,
+					)}
 				>
 					{inputIconElement}
 					<TextNative
 						numberOfLines={1}
 						ellipsizeMode="head"
-						className={`
-							h-full
-							flex-1
-							m-0
-							p-1
-							${_.isEmpty(displayValue) ? "text-grey-400" : "text-black"}
-							${styles.FORM_COMBO_INPUT_CLASSNAME}
-						`}
+						className={clsx(
+							'h-full',
+							'flex-1',
+							'm-0',
+							'p-1',
+							_.isEmpty(displayValue) ? 'text-grey-400' : 'text-black',
+							styles.FORM_COMBO_INPUT_CLASSNAME,
+						)}
 					>{_.isEmpty(displayValue) ? placeholder : displayValue}</TextNative>
 				</Pressable>;
 	}
@@ -752,14 +753,14 @@ export const ComboComponent = forwardRef((props, ref) => {
 					showHovers={true}
 					getRowProps={() => {
 						return {
-							className: `
-								w-full
-								pl-4
-								pr-2
-								py-1
-								border-b-1
-								border-grey-300
-							`,
+							className: clsx(
+								'w-full',
+								'pl-4',
+								'pr-2',
+								'py-1',
+								'border-b-1',
+								'border-grey-300',
+							),
 						};
 					}}
 					autoAdjustPageSizeToHeight={false}
@@ -871,9 +872,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 					}}
 					reference="grid"
 					parent={self}
-					className={`
-						h-full
-					`}
+					className={clsx(
+						'h-full',
+					)}
 					style={gridStyle}
 					{...gridProps}
 					{..._editor}
@@ -902,21 +903,21 @@ export const ComboComponent = forwardRef((props, ref) => {
 									placeholder={placeholder}
 									tooltip={tooltip}
 									tooltipPlacement={tooltipPlacement}
-									tooltipTriggerClassName={`
-										grow
-										h-full
-										flex-1
-									`}
-									className={`
-										Combo-inputClone-Input
-										grow
-										h-full
-										flex-1
-										m-0
-										rounded-tr-none
-										rounded-br-none
-										${styles.FORM_COMBO_INPUT_CLASSNAME}
-									`}
+									tooltipTriggerClassName={clsx(
+										'grow',
+										'h-full',
+										'flex-1'
+									)}
+									className={clsx(
+										'Combo-inputClone-Input',
+										'grow',
+										'h-full',
+										'flex-1',
+										'm-0',
+										'rounded-tr-none',
+										'rounded-br-none',
+										styles.FORM_COMBO_INPUT_CLASSNAME,
+									)}
 									{..._input}
 								/>
 							</Box>;
@@ -933,18 +934,18 @@ export const ComboComponent = forwardRef((props, ref) => {
 								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
 								<Box
 									ref={menuRef}
-									className={`
-										dropdownMenu-Box
-										flex-1
-										overflow-auto
-										bg-white
-										p-0
-										rounded-none
-										border
-										border-grey-400
-										shadow-md
-										max-w-full
-									`}
+									className={clsx(
+										'dropdownMenu-Box',
+										'flex-1',
+										'overflow-auto',
+										'bg-white',
+										'p-0',
+										'rounded-none',
+										'border',
+										'border-grey-400',
+										'shadow-md',
+										'max-w-full',
+									)}
 									style={{
 										top,
 										left,
@@ -970,13 +971,13 @@ export const ComboComponent = forwardRef((props, ref) => {
 								}}
 								onPress={onCheckButtonPress}
 								isDisabled={!value}
-								className={`
-									h-full
-									border
-									border-grey-400
-									rounded-md
-									${styles.FORM_COMBO_TRIGGER_CLASSNAME}
-								`}
+								className={clsx(
+									'h-full',
+									'border',
+									'border-grey-400',
+									'rounded-md',
+									styles.FORM_COMBO_TRIGGER_CLASSNAME,
+								)}
 							/>;
 			}
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
@@ -988,16 +989,16 @@ export const ComboComponent = forwardRef((props, ref) => {
 							ref={inputRef}
 							numberOfLines={1}
 							ellipsizeMode="head"
-							className={`
-								h-full
-								flex-1
-								m-0
-								p-1
-								border
-								border-grey-400
-								rounded-r-none
-								${styles.FORM_COMBO_INPUT_CLASSNAME}
-							`}
+							className={clsx(
+								'h-full',
+								'flex-1',
+								'm-0',
+								'p-1',
+								'border',
+								'border-grey-400',
+								'rounded-r-none',
+								styles.FORM_COMBO_INPUT_CLASSNAME
+							)}
 						>{textInputValue}</TextNative> :
 						<Input
 							{...testProps('input')}
@@ -1015,17 +1016,17 @@ export const ComboComponent = forwardRef((props, ref) => {
 							placeholder={placeholder}
 							tooltip={tooltip}
 							tooltipPlacement={tooltipPlacement}
-							tooltipTriggerClassName={`
-								h-full
-								flex-1
-							`}
-							className={`
-								h-full
-								flex-1
-								m-0
-								rounded-r-none
-								${styles.FORM_COMBO_INPUT_CLASSNAME}
-							`}
+							tooltipTriggerClassName={clsx(
+								'h-full',
+								'flex-1'
+							)}
+							className={clsx(
+								'h-full',
+								'flex-1',
+								'm-0',
+								'rounded-r-none',
+								styles.FORM_COMBO_INPUT_CLASSNAME,
+							)}
 							{..._input}
 						/>}
 					<IconButton
@@ -1037,14 +1038,14 @@ export const ComboComponent = forwardRef((props, ref) => {
 						}}
 						isDisabled={isDisabled}
 						onPress={() => hideMenu()}
-						className={`
-							h-full
-							border
-							border-grey-400
-							rounded-l-none
-							rounded-r-md
-							${styles.FORM_COMBO_TRIGGER_CLASSNAME}
-						`}
+						className={clsx(
+							'h-full',
+							'border',
+							'border-grey-400',
+							'rounded-l-none',
+							'rounded-r-md',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME,
+						)}
 					/>
 					{checkButton}
 				</HStack>;
@@ -1052,12 +1053,12 @@ export const ComboComponent = forwardRef((props, ref) => {
 								isOpen={true}
 								safeAreaTop={true}
 								onClose={() => setIsMenuShown(false)}
-								className={`
-									h-[400px]
-									w-full
-									my-auto
-									p-[5px]
-								`}
+								className={clsx(
+									'h-[400px]',
+									'w-full',
+									'my-auto',
+									'p-[5px]'
+								)}
 							>
 								<ModalBackdrop />
 								<ModalContent>
@@ -1070,15 +1071,15 @@ export const ComboComponent = forwardRef((props, ref) => {
 		}
 	}
 
-	let className = `
-		Combo-HStack
-		flex-1
-		items-stretch
-		h-auto
-		self-stretch
-		justify-center
-		items-stretch
-	`;
+	let className = clsx(
+		'Combo-HStack',
+		'flex-1',
+		'items-stretch',
+		'h-auto',
+		'self-stretch',
+		'justify-center',
+		'items-stretch'
+	);
 	if (props.className) {
 		className += ' ' + props.className;
 	}
@@ -1153,10 +1154,10 @@ export const ComboComponent = forwardRef((props, ref) => {
 							reference="viewer"
 							selection={viewerSelection}
 							onEditorClose={onViewerClose}
-							className={`
-								w-full
-								p-0
-							`}
+							className={clsx(
+								'w-full',
+								'p-0',
+							)}
 							{...propsForViewer}
 							{...viewerProps}
 						/>
