@@ -8,6 +8,7 @@ import {
 	hasFlex,
 } from '../../../Functions/tailwindFunctions.js';
 import UiGlobals from '../../../UiGlobals.js';
+import addIconProps from '../../../Functions/addIconProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
@@ -145,10 +146,10 @@ const InputElement = forwardRef((props, ref) => {
 		_leftIcon.className = 'leftInputIcon mr-2 ' + _leftIcon.className; // prepend the margin, so it can potentially be overridden
 		if (isValidElement(leftIcon)) {
 			if (_leftIcon) {
-				leftIcon = cloneElement(leftIcon, {..._leftIcon});
+				leftIcon = cloneElement(leftIcon, addIconProps(_leftIcon || {}));
 			}
 		} else {
-			leftIcon = <InputIcon as={leftIcon} {..._leftIcon} />;
+			leftIcon = <InputIcon as={leftIcon} {...addIconProps(_leftIcon || {})} />;
 		}
 		if (leftIconHandler) {
 			leftIcon = <InputSlot onPress={leftIconHandler} className="LeftInputSlot">
@@ -169,10 +170,10 @@ const InputElement = forwardRef((props, ref) => {
 		_rightIcon.className = 'rightInputIcon ml-2 ' + _rightIcon.className; // prepend the margin, so it can potentially be overridden
 		if (isValidElement(rightIcon)) {
 			if (_rightIcon) {
-				rightIcon = cloneElement(rightIcon, {..._rightIcon});
+				rightIcon = cloneElement(rightIcon, addIconProps(_rightIcon || {}));
 			}
 		} else {
-			rightIcon = <InputIcon as={rightIcon} {..._rightIcon} />;
+			rightIcon = <InputIcon as={rightIcon} {...addIconProps(_rightIcon || {})} />;
 		}
 		if (rightIconHandler) {
 			rightIcon = <InputSlot onPress={rightIconHandler} className="RightInputSlot">

@@ -50,6 +50,7 @@ function ScreenContainer(props) {
 						onLayout={onLayout}
 						{...safeAreaProps}
 						className={className}
+						style={{ minHeight: height - headerHeight }}
 					>
 						{props.children}
 					</VStackNative>;

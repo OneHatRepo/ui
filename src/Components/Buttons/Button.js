@@ -6,11 +6,7 @@ import {
 	ButtonIcon,
 	ButtonGroup,
 } from '@project-components/Gluestack';
-import {
-	UI_MODE_WEB,
-	UI_MODE_NATIVE,
-	CURRENT_MODE,
-} from '../../Constants/UiModes.js';
+import addIconProps from '../../Functions/addIconProps.js';
 import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../Hoc/withTooltip.js';
@@ -29,44 +25,6 @@ const ButtonComponent = forwardRef((props, ref) => {
 			_text = {}, // props for ButtonText
 			...propsToPass
 		} = props;
-	
-
-	function addIconProps(iconProps = {}) {
-
-		iconProps.className = clsx(
-			'ButtonIcon',
-			iconProps.className,
-		);
-
-		if (CURRENT_MODE === UI_MODE_WEB) {
-			return iconProps;
-		}
-
-		// native only
-
-		// marginx
-		iconProps.style = {
-			marginRight: 8,
-			marginLeft: 8,
-			...iconProps.style,
-		};
-
-		// On native, react-native-svg ignores className and will only size the icon based on 
-		// explicit width / height props (or size if the wrapper supports it).
-		// If no size set, it falls back to the full intrinsic viewBox size, so we need to ensure we set a default size.
-		// If you want to override the size, pass width and height props to the icon.
-		if (iconProps.width || iconProps.height) {
-			return iconProps;
-		}
-		const nativeDefaults = {
-			width: 24,
-			height: 24,
-		};
-		return {
-			...nativeDefaults,
-			...iconProps,
-		};
-	};
 
 	if (icon) {
 		if (isValidElement(icon)) {
