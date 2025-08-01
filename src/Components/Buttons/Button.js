@@ -56,6 +56,8 @@ const ButtonComponent = forwardRef((props, ref) => {
 	let className = clsx(
 		'Button',
 		'flex',
+		'flex-row',
+		'items-center',
 	);
 	if (propsToPass.className) {
 		className += ' ' + propsToPass.className;
@@ -65,7 +67,6 @@ const ButtonComponent = forwardRef((props, ref) => {
 				{...propsToPass}
 				className={className}
 				ref={ref}
-				style={[{ flexDirection: 'row', alignItems: 'center' }, propsToPass.style]}
 			>
 				{isLoading && <ButtonSpinner className="ButtonSpinner" {..._spinner} />}
 				{icon}
