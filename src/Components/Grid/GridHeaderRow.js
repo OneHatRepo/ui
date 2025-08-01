@@ -407,7 +407,7 @@ export default function GridHeaderRow(props) {
 										'overflow-hidden',
 										'text-ellipsis',
 										'px-2',
-										py-3,
+										'py-3',
 										styles.GRID_HEADER_CLASSNAME,
 									)}
 								>{header}</TextNative>
