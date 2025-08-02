@@ -7,7 +7,7 @@ export default function useAsyncRenderers(columnsConfig, item) {
 
 	useEffect(() => {
 		const asyncConfigs = columnsConfig.filter(config => 
-			config.renderer && typeof config.renderer === 'function'
+			config.isAsync && config.renderer && typeof config.renderer === 'function'
 		);
 
 		if (asyncConfigs.length === 0) {

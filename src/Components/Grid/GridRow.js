@@ -22,7 +22,7 @@ import Loading from '../Messages/Loading.js';
 import AngleRight from '../Icons/AngleRight.js';
 import RowDragHandle from './RowDragHandle.js';
 import RowSelectHandle from './RowSelectHandle.js';
-import useAsyncRenderers from '../../Hooks/useAsyncRenderers.js';
+import useAsyncRenderers from './useAsyncRenderers.js';
 import _ from 'lodash';
 
 // Conditional import for web only
@@ -198,13 +198,33 @@ function GridRow(props) {
 							};
 
 							let content = null;
+							let textClassName = clsx(
+								'GridRow-TextNative',
+								'self-center',
+								'overflow-hidden',
+								colClassName,
+								styles.GRID_CELL_CLASSNAME,
+								styles.GRID_ROW_MAX_HEIGHT_EXTRA,
+							);
+							if (config.className) {
+								textClassName += ' ' + config.className;
+							}
+							const rendererProps = {
+								...testProps('rendererCol-' + config.fieldName),
+								className: textClassName,
+								...propsToPass,
+								...extraProps,
+								style: colStyle,
+							};
 							if (config.isAsync) {
+								// TODO: Figure out how to pass the rendererProps to the async renderer function
+								throw Error('Not yet working correctly!');
 								// Async renderer
 								if (isLoading) {
 									content = <Loading />;
 								} else if (asyncResult) {
 									if (asyncResult.error) {
-										content = <Text>Render Error: {asyncResult.error.message || String(asyncResult.error)}</Text>;
+										content = <Text key={key}>Render Error: {asyncResult.error.message || String(asyncResult.error)}</Text>;
 									} else {
 										content = asyncResult.result;
 									}
@@ -212,24 +232,17 @@ function GridRow(props) {
 							} else {
 								// Synchronous renderer
 								try {
-									const result = config.renderer(item);
+									const result = config.renderer(item, config.fieldName, rendererProps, key);
 									if (result && typeof result.then === 'function') {
-										content = <Text>Error: Async renderer not properly configured</Text>;
+										content = <Text key={key}>Error: Async renderer not properly configured</Text>;
 									} else {
 										content = result;
 									}
 								} catch (error) {
-									content = <Text>Render Error: {error}</Text>;
+									content = <Text key={key}>Render Error: {error}</Text>;
 								}
 							}
-							return <HStackNative
-										key={key}
-										{...testProps('rendererCol-' + key)}
-										className={colClassName}
-										{...propsToPass}
-										{...extraProps}
-										style={colStyle}
-									>{content}</HStackNative>;
+							return content;
 						}
 						if (config.fieldName) {
 
