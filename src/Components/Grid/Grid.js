@@ -35,7 +35,6 @@ import {
 	hasFlex,
 } from '../../Functions/tailwindFunctions.js';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
-import Inflector from 'inflector-js';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';

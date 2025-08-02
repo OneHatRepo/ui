@@ -16,7 +16,7 @@ import UiGlobals from '../../UiGlobals.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import IconButton from '../Buttons/IconButton.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
-import TreeNodeDragHandle from './TreeNodeDragHandle.js';
+import RowHandle from '../Grid/RowHandle.js';
 import testProps from '../../Functions/testProps.js';
 import ChevronRight from '../Icons/ChevronRight.js';
 import ChevronDown from '../Icons/ChevronDown.js';
@@ -40,11 +40,13 @@ export default function TreeNode(props) {
 			nodeProps = {},
 			onToggle,
 			bg,
+			isDraggable,
 			isDragSource,
 			isHovered,
 			isHighlighted,
 			isOver,
 			isSelected,
+			showSelectHandle,
 			canDrop,
 			draggedItem,
 			validateDrop, // same as canDrop (for visual feedback)
@@ -144,19 +146,21 @@ export default function TreeNode(props) {
 						backgroundColor: bg,
 					}}
 					ref={(element) => {
-						// Attach both drag and drop refs to the same element
-						if (dragSourceRef && typeof dragSourceRef === 'function') {
-							dragSourceRef(element);
-						}
 						if (dropTargetRef && dropTargetRef.current !== undefined) {
 							// dropTargetRef is a ref object, not a callback
 							dropTargetRef.current = element;
 						}
 					}}
 				>
-					{isPhantom && <Box t={0} l={0} className="absolute bg-[#f00] h-[2px] w-[2px]" />}
+					{isPhantom && <Box className="absolute t-0 l-0 bg-[#f00] h-[2px] w-[2px]" />}
 					
-					{isDragSource && <TreeNodeDragHandle />}
+					{(isDragSource || showSelectHandle) &&
+						<RowHandle
+							ref={dragSourceRef}
+							isDragSource={isDragSource}
+							isDraggable={isDraggable}
+							showSelectHandle={showSelectHandle}
+						/>}
 
 					{hasChildren && <IconButton
 										{...testProps('expandBtn')}
@@ -180,12 +184,8 @@ export default function TreeNode(props) {
 									'flex',
 									'flex-1',
 									'text-ellipsis',
-									'select-none',
 									styles.TREE_NODE_CLASSNAME,
 								)}
-								style={{
-									userSelect: 'none',
-								}}
 							>{text}</TextNative>}
 
 					{content}

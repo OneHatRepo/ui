@@ -20,8 +20,7 @@ import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
 import testProps from '../../Functions/testProps.js';
 import Loading from '../Messages/Loading.js';
 import AngleRight from '../Icons/AngleRight.js';
-import RowDragHandle from './RowDragHandle.js';
-import RowSelectHandle from './RowSelectHandle.js';
+import RowHandle from './RowHandle.js';
 import useAsyncRenderers from './useAsyncRenderers.js';
 import _ from 'lodash';
 
@@ -45,7 +44,6 @@ function GridRow(props) {
 			rowProps,
 			hideNavColumn,
 			showSelectHandle,
-			isRowSelectable,
 			isRowHoverable,
 			isSelected,
 			isHovered,
@@ -102,7 +100,7 @@ function GridRow(props) {
 			actualCanDrop = validateDrop(draggedItem);
 		}
 
-		if (isRowSelectable && isSelected) {
+		if (showSelectHandle && isSelected) {
 			if (showHovers && isHovered) {
 				mixWith = styles.GRID_ROW_SELECTED_BG_HOVER;
 			} else {
@@ -355,8 +353,13 @@ function GridRow(props) {
 		};
 
 		let rowContents = <>
-							{(isDragSource || isDraggable) && <RowDragHandle />}
-							{showSelectHandle && <RowSelectHandle />}
+							{(isDragSource || isDraggable || showSelectHandle) &&
+								<RowHandle
+									ref={dragSourceRef}
+									isDragSource={isDragSource}
+									isDraggable={isDraggable}
+									showSelectHandle={showSelectHandle}
+								/>}
 							
 							{isPhantom && 
 								<Box
@@ -386,21 +389,6 @@ function GridRow(props) {
 									)}
 								/>}
 						</>;
-
-		if (dragSourceRef) {
-			rowContents = <HStack
-								ref={dragSourceRef}
-								className={clsx(
-									'GridRow-dragSourceRef',
-									'w-full',
-									'flex-1',
-									'grow-1',
-								)}
-								style={{
-									backgroundColor: bg,
-								}}
-							>{rowContents}</HStack>;
-		}
 		if (dropTargetRef) {
 			rowContents = <HStack
 								ref={dropTargetRef}
