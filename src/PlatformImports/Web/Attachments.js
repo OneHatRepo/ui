@@ -37,7 +37,7 @@ import _ from 'lodash';
 const
 	EXPANDED_MAX = 100,
 	COLLAPSED_MAX = 4,
-	isPwa = !!window?.navigator?.standalone;
+	isPwa = typeof window !== 'undefined' && !!window?.navigator?.standalone;
 
 function FileCardCustom(props) {
 	const {

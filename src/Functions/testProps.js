@@ -22,7 +22,7 @@ export default function testProps(id, suffix) {
 	if (suffix) {
 		id += suffix; // this is used in conjunction with 'self' object
 	}
-	if (!window && Platform.OS === 'android') {
+	if (typeof window === 'undefined' && Platform.OS === 'android') {
 		return {
 			accessibilityLabel: id,
 			accessible: true,
