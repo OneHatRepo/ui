@@ -8,7 +8,7 @@ import _ from 'lodash';
 export default function withSecondaryData(WrappedComponent) {
 	return (props) => {
 
-		if (props.secondaryDisableWithData) {
+		if (props.secondaryDisableWithData || props.secondaryAlreadyHasWithData) {
 			return <WrappedComponent {...props} />;
 		}
 		
@@ -104,6 +104,7 @@ export default function withSecondaryData(WrappedComponent) {
 		return <WrappedComponent
 					{...propsToPass}
 					secondaryDisableWithData={false}
+					secondaryAlreadyHasWithData={true}
 					SecondaryRepository={LocalSecondaryRepository}
 					secondaryModel={secondaryModel}
 					secondaryData={secondaryData}

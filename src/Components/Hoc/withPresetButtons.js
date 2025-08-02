@@ -41,7 +41,7 @@ const presetButtons = [
 export default function withPresetButtons(WrappedComponent, isGrid = false) {
 	return forwardRef((props, ref) => {
 
-		if (props.disablePresetButtons) {
+		if (props.disablePresetButtons || props.alreadyHasWithPresetButtons) {
 			// bypass everything
 			return <WrappedComponent {...props} ref={ref} />;
 		}
@@ -433,8 +433,9 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 
 		return <WrappedComponent
 					{...propsToPass}
-					ref={ref}
 					disablePresetButtons={false}
+					alreadyHasWithPresetButtons={true}
+					ref={ref}
 					contextMenuItems={[
 						...localContextMenuItems,
 						...contextMenuItems,

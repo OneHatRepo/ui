@@ -9,14 +9,7 @@ import _ from 'lodash';
 export default function withValue(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithValue) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
-
-		if (props.setValue) {
-			// bypass everything, since we're already using withValue() in hierarchy.
-			// For example, Combo has withValue(), and intenally it uses Input which also has withValue(),
-			// but we only need it defined once for the whole thing.
+		if (props.disableWithValue || props.alreadyHasWithValue) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -143,8 +136,9 @@ export default function withValue(WrappedComponent) {
 
 		return <WrappedComponent
 					{...props}
-					ref={ref}
 					disableWithValue={false}
+					alreadyHasWithValue={true}
+					ref={ref}
 					value={convertedValue}
 					setValue={setValueRef.current}
 					onChangeSelection={onChangeSelection}

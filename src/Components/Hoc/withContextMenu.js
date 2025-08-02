@@ -11,6 +11,11 @@ import _ from 'lodash';
 
 export default function withContextMenu(WrappedComponent) {
 	return forwardRef((props, ref) => {
+
+		if (props.alreadyHasWithContextMenu) {
+			return <WrappedComponent {...props} ref={ref} />;
+		}
+		
 		const {
 				// extract and pass
 				disableContextMenu = false,
@@ -161,6 +166,7 @@ export default function withContextMenu(WrappedComponent) {
 
 		return <WrappedComponent
 					{...propsToPass}
+					alreadyHasWithContextMenu={true}
 					ref={ref}
 					onContextMenu={onContextMenu}
 				/>;

@@ -19,7 +19,7 @@ import _ from 'lodash';
 function withAlert(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithAlert || props.alert) {
+		if (props.disableWithAlert || props.alreadyHasWithAlert) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -170,6 +170,8 @@ function withAlert(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					ref={ref}
+					disableWithAlert={false}
+					alreadyHasWithAlert={true}
 					alert={onAlert}
 					confirm={onConfirm}
 					hideAlert={hideModal}

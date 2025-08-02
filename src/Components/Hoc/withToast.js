@@ -13,7 +13,7 @@ import _ from 'lodash';
 export default function withToast(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithToast || props.showToast) {
+		if (props.disableWithToast || props.alreadyHasWithToast) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -80,8 +80,10 @@ export default function withToast(WrappedComponent) {
 		
 		return <WrappedComponent
 					{...props}
-					showToast={showToast}
+					alreadyHasWithToast={true}
+					disableWithToast={false}
 					ref={ref}
+					showToast={showToast}
 				/>;
 	});
 }

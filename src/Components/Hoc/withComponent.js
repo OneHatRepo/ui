@@ -14,6 +14,10 @@ import _ from 'lodash';
 export default function withComponent(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
+		if (props.disableWithComponent || props.alreadyHasWithComponent) {
+			return <WrappedComponent {...props} ref={ref} />;
+		}
+
 		props = _.clone(props); // without cloning, I couldn't write to props
 
 		// translate h, w, and flex tokens to styles
@@ -90,6 +94,8 @@ export default function withComponent(WrappedComponent) {
 					self={selfRef.current}
 					{...propsToPass}
 					ref={ref}
+					disableWithComponent={false}
+					alreadyHasWithComponent={true}
 				/>;
 	});
 }

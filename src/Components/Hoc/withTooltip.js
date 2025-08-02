@@ -7,6 +7,11 @@ import _ from 'lodash';
 
 export default function withTooltip(WrappedComponent) {
 	return forwardRef((props, ref) => {
+
+		if (props.alreadyHasWithTooltip) {
+			return <WrappedComponent {...props} ref={ref} />;
+		}
+		
 		const {
 				tooltip,
 				tooltipPlacement = 'bottom',
@@ -16,7 +21,11 @@ export default function withTooltip(WrappedComponent) {
 				...propsToPass
 			} = props;
 		
-		let component = <WrappedComponent {...propsToPass} ref={ref} />;
+		let component = <WrappedComponent
+							{...propsToPass}
+							alreadyHasWithTooltip={true}
+							ref={ref}
+						/>;
 
 		if (tooltip || !_.isEmpty(_tooltip)) {
 			component = <Tooltip

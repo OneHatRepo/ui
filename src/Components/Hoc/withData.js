@@ -12,7 +12,7 @@ import _ from 'lodash';
 export default function withData(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithData) {
+		if (props.disableWithData || props.alreadyHasWithData) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 		
@@ -121,8 +121,9 @@ export default function withData(WrappedComponent) {
 
 		return <WrappedComponent
 					{...props}
-					ref={ref}
 					disableWithData={false}
+					alreadyHasWithData={true}
+					ref={ref}
 					Repository={LocalRepository}
 					fields={fields}
 					idField={idField}

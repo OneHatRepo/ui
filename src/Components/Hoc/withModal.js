@@ -19,7 +19,7 @@ import _ from 'lodash';
 export default function withModal(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithModal || props.showModal) {
+		if (props.disableWithModal || props.alreadyHasWithModal) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -180,12 +180,13 @@ export default function withModal(WrappedComponent) {
 					<WrappedComponent
 						{...props}
 						disableWithModal={false}
+						alreadyHasWithModal={true}
+						ref={ref}
 						showModal={showModal}
 						hideModal={onCancel || hideModal}
 						updateModalBody={updateModalBody}
 						isModalShown={isModalShown}
 						whichModal={whichModal}
-						ref={ref}
 					/>
 					{isModalShown && 
 						<Modal

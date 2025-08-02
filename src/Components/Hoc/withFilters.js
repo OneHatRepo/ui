@@ -42,7 +42,7 @@ const isWindows = Platform.OS === 'windows';
 export default function withFilters(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (!props.useFilters) {
+		if (!props.useFilters || props.alreadyHasWithFilters) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -695,7 +695,12 @@ export default function withFilters(WrappedComponent) {
 							</HStack>}
 					</Toolbar>;
 		
-		return <WrappedComponent {...props} topToolbar={toolbar} ref={ref} />;
+		return <WrappedComponent
+					{...props}
+					ref={ref}
+					alreadyHasWithFilters={true}
+					topToolbar={toolbar}
+				/>;
 
 	});
 }

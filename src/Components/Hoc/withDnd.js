@@ -18,8 +18,8 @@ import {
 
 export function withDragSource(WrappedComponent) {
 	return forwardRef((props, ref) => {
-		
-		if (!props.isDragSource) {
+
+		if (!props.isDragSource || props.alreadyHasDragSource) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -119,6 +119,7 @@ export function withDragSource(WrappedComponent) {
 
 		return <WrappedComponent
 					{...props}
+					alreadyHasDragSource={true}
 					ref={ref}
 					canDrag={stateCanDrag}
 					isDragging={stateIsDragging}
@@ -133,7 +134,7 @@ export function withDragSource(WrappedComponent) {
 export function withDropTarget(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (!props.isDropTarget) {
+		if (!props.isDropTarget || props.alreadyHasDropTarget) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -197,8 +198,9 @@ export function withDropTarget(WrappedComponent) {
 		dropTargetRef(localTargetRef); // register DOM node with react-dnd
 
 		return <WrappedComponent
-					canDrop={stateCanDrop}
+					alreadyHasDropTarget={true}
 					ref={ref}
+					canDrop={stateCanDrop}
 					isOver={isOver}
 					dropTargetRef={localTargetRef}
 					draggedItem={draggedItem} // Pass the dragged item

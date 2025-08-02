@@ -14,7 +14,7 @@ import _ from 'lodash';
 export default function withSelection(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.secondaryDisableWithSelection) {
+		if (props.secondaryDisableWithSelection || props.secondaryAlreadyHasWithSelection) {
 			return <WrappedComponent {...props} />;
 		}
 
@@ -414,8 +414,9 @@ export default function withSelection(WrappedComponent) {
 		
 		return <WrappedComponent
 					{...props}
-					ref={ref}
 					secondaryDisableWithSelection={false}
+					secondaryAlreadyHasWithSelection={true}
+					ref={ref}
 					secondarySelection={secondaryGetSelection()}
 					secondaryGetSelection={secondaryGetSelection}
 					secondarySetSelection={secondarySetSelection}

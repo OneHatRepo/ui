@@ -12,14 +12,7 @@ import _ from 'lodash';
 export default function withSelection(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithSelection) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
-
-		if (props.setSelection) {
-			// bypass everything, since we're already using withSelection() in hierarchy.
-			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
-			// but we only need it defined once for the whole thing.
+		if (props.disableWithSelection || props.alreadyHasWithSelection) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -427,6 +420,7 @@ export default function withSelection(WrappedComponent) {
 					{...props}
 					ref={ref}
 					disableWithSelection={false}
+					alreadyHasWithSelection={true}
 					selection={getSelection()}
 					getSelection={getSelection}
 					setSelection={setSelection}

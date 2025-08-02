@@ -10,7 +10,7 @@ import _ from 'lodash';
 export default function withSecondaryValue(WrappedComponent) {
 	return (props) => {
 
-		if (props.secondaryDisableWithValue) {
+		if (props.secondaryDisableWithValue || props.secondaryAlreadyHasWithValue) {
 			return <WrappedComponent {...props} />;
 		}
 
@@ -146,6 +146,7 @@ export default function withSecondaryValue(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					secondaryDisableWithValue={false}
+					secondaryAlreadyHasWithValue={true}
 					secondaryValue={convertedValue}
 					secondarySetValue={secondarySetValue}
 					secondaryOnChangeSelection={secondaryOnChangeSelection}

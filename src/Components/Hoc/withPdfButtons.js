@@ -22,7 +22,7 @@ export default function withPdfButtons(WrappedComponent) {
 		if (props.canUser && !props.canUser(VIEW)) { // permissions
 			showButtons = false;
 		}
-		if (!showButtons) {
+		if (!showButtons || props.alreadyHasWithPdfButtons) {
 			// bypass everything.
 			// If we don't do this, we get an infinite recursion with Form
 			// because this HOC wraps Form and uses Form itself.
@@ -384,9 +384,10 @@ export default function withPdfButtons(WrappedComponent) {
 	
 		return <WrappedComponent
 					{...props}
+					ref={ref}
+					alreadyHasWithPdfButtons={true}
 					additionalEditButtons={additionalEditButtons}
 					additionalViewButtons={additionalViewButtons}
-					ref={ref}
 				/>;
 	}));
 }

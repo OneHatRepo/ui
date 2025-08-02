@@ -21,7 +21,7 @@ import _ from 'lodash';
 export default function withEditor(WrappedComponent, isTree = false) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithEditor) {
+		if (props.disableWithEditor || props.alreadyHasWithEditor) {
 			return <WrappedComponent {...props} ref={ref} isTree={isTree} />;
 		}
 
@@ -702,6 +702,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					{...props}
 					ref={ref}
 					disableWithEditor={false}
+					alreadyHasWithEditor={true}
 					currentRecord={currentRecord}
 					setCurrentRecord={setCurrentRecord}
 					isEditorShown={isEditorShown}

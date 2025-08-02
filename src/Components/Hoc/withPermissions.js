@@ -97,7 +97,7 @@ export function canUser(permission, modelToCheck = null) {
 export default function withPermissions(WrappedComponent, forceUsePermissions = false) {
 	return forwardRef((props, ref) => {
 
-		if (!props.usePermissions && !forceUsePermissions) {
+		if ((!props.usePermissions && !forceUsePermissions) || props.alreadyHasWithPermissions) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -126,9 +126,10 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 
 		return <WrappedComponent
 					{...props}
+					alreadyHasWithPermissions={true}
+					ref={ref}
 					canUser={canUserDecorator}
 					showPermissionsError={showPermissionsError}
-					ref={ref}
 				/>;
 	});
 }

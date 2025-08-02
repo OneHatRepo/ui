@@ -23,7 +23,7 @@ import getComponentFromType from '../../Functions/getComponentFromType.js';
 export default function withDraggable(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (!props.isDraggable) {
+		if (!props.isDraggable || props.alreadyHasDraggable) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -237,7 +237,11 @@ export default function withDraggable(WrappedComponent) {
 							{...draggableProps}
 						>
 							<div ref={nodeRef} className="nsResize">
-								<WrappedComponent {...propsToPass} ref={ref} />
+								<WrappedComponent
+									{...propsToPass}
+									alreadyHasDraggable={true}
+									ref={ref}
+								/>
 							</div>
 						</Draggable>;
 			} else if (mode === HORIZONTAL) {
@@ -252,7 +256,11 @@ export default function withDraggable(WrappedComponent) {
 							{...draggableProps}
 						>
 							<div ref={nodeRef} className="ewResize" style={{ height: '100%', }}>
-								<WrappedComponent {...propsToPass} ref={ref} />
+								<WrappedComponent
+									{...propsToPass}
+									alreadyHasDraggable={true}
+									ref={ref}
+								/>
 							</div>
 						</Draggable>;
 			}
@@ -268,14 +276,22 @@ export default function withDraggable(WrappedComponent) {
 						nodeRef={nodeRef}
 						{...draggableProps}
 					>
-						<WrappedComponent {...propsToPass} ref={nodeRef} />
+						<WrappedComponent
+							{...propsToPass}
+							alreadyHasDraggable={true}
+							ref={nodeRef}
+						/>
 					</Draggable>;
 		} else if (CURRENT_MODE === UI_MODE_NATIVE) {
 
 			// NOT YET IMPLEMENTED
 			// Really need to replace most of this, as much of it is web-centric.
 
-			return <WrappedComponent {...propsToPass} ref={ref} />; // TEMP
+			return <WrappedComponent
+						{...propsToPass}
+						alreadyHasDraggable={true}
+						ref={ref}
+					/>;
 
 		}
 	});
