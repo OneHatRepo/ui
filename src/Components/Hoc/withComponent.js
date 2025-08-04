@@ -14,9 +14,9 @@ import _ from 'lodash';
 export default function withComponent(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
-		if (props.disableWithComponent || props.alreadyHasWithComponent) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
+		// if (props.disableWithComponent || props.alreadyHasWithComponent) {
+		// 	return <WrappedComponent {...props} ref={ref} />;
+		// }
 
 		props = _.clone(props); // without cloning, I couldn't write to props
 
@@ -95,7 +95,7 @@ export default function withComponent(WrappedComponent) {
 					{...propsToPass}
 					ref={ref}
 					disableWithComponent={false}
-					alreadyHasWithComponent={true}
+					// alreadyHasWithComponent={true}
 				/>;
 	});
 }
