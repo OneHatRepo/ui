@@ -170,6 +170,7 @@ function GridComponent(props) {
 
 			// DND
 			canRowsReorder = false,
+			canRowDrag, // optional fn to customize whether each row can be dragged
 			canRowAcceptDrop, // optional fn to customize whether each node can accept a dropped item: (targetItem, draggedItem) => boolean
 			getCustomDragProxy, // optional fn to render custom drag preview: (item, selection) => ReactElement
 			dragPreviewOptions, // optional object for drag preview positioning options
@@ -539,6 +540,7 @@ function GridComponent(props) {
 									rowReorderProps.dragSourceItem = {
 										id: item.id,
 										getSelection,
+										isInSelection,
 										onDrag: (dragState) => {
 											onRowReorderDrag(dragState, dragIx);
 										},
@@ -546,19 +548,29 @@ function GridComponent(props) {
 									rowReorderProps.onDragEnd = onRowReorderEnd;
 								} else {
 									// Don't allow drag/drop from withDnd while reordering
-									if (areRowsDragSource) {
+									if (areRowsDragSource && (!canRowDrag || canRowDrag(item))) {
 										WhichRow = DragSourceGridRow;
 										rowDragProps.isDragSource = true;
 										rowDragProps.dragSourceType = rowDragSourceType;
 										if (getRowDragSourceItem) {
-											rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, rowDragSourceType);
+											rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, isInSelection, rowDragSourceType);
 										} else {
 											rowDragProps.dragSourceItem = {
 												id: item.id,
 												item,
 												getSelection,
+												isInSelection,
 												type: rowDragSourceType,
 											};
+										}
+										rowDragProps.dragSourceItem.onDragStart = () => {
+											if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
+												// reset the selection to just this one node if it's not already selected
+												setSelection([item]);
+											}
+										};
+										if (canRowDrag) {
+											rowDragProps.canDrag = () => canRowDrag(item, rowDragProps.dragSourceItem);
 										}
 										
 										// Add custom drag preview options
@@ -696,8 +708,7 @@ function GridComponent(props) {
 			};
 		},
 		buildCachedDragElements = (dragState) => {
-			const
-				{
+			const {
 					canDrag,
 					isDragging,
 					clientOffset,
@@ -746,8 +757,7 @@ function GridComponent(props) {
 				cachedDragElements.current = buildCachedDragElements(dragState);
 			}
 
-			const
-				{
+			const {
 					canDrag,
 					isDragging,
 					clientOffset,

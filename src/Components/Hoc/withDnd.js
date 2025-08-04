@@ -37,6 +37,7 @@ export function withDragSource(WrappedComponent) {
 				dragOptions = null,
 				dropEffect = null,
 				// onDrag,
+				onDragStart = null,
 				onDragEnd = null,
 				canDrag = null,
 				isDragging = null,
@@ -63,10 +64,15 @@ export function withDragSource(WrappedComponent) {
 
 				return {
 					type: dragSourceType, // Required. This must be either a string or a symbol. Only the drop targets registered for the same type will react to this item.
-					item: {
-						...dragSourceItem,
-						getDragProxy,
-					}, // Required (object or function).
+					item: () => { // Required (object or function). If a function, it runs only once at the start of a drag.
+						if (dragSourceItem.onDragStart) {
+							dragSourceItem.onDragStart();
+						}
+						return {
+							...dragSourceItem,
+							getDragProxy,
+						};
+					},
 						// When an object, it is a plain JavaScript object describing the data being dragged. This is the only information available to the drop targets about the drag source so it's important to pick the minimal data they need to know. You may be tempted to put a complex reference here, but you should try very hard to avoid doing this because it couples the drag sources and drop targets. It's a good idea to use something like { id }.
 						// When a function, it is fired at the beginning of the drag operation and returns an object representing the drag operation (see first bullet). If null is returned, the drag operation is cancelled.
 					previewOptions: dragPreviewOptions, // Optional. A plain JavaScript object describing drag preview options.

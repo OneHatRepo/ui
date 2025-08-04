@@ -1088,17 +1088,26 @@ function TreeComponent(props) {
 											id: item.id,
 											item,
 											getSelection,
+											isInSelection,
 											type: nodeDragSourceType,
+											onDragStart: () => {
+												if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
+													// reset the selection to just this one node if it's not already selected
+													setSelection([item]);
+												}
+											},
 										};
 
 										// Prevent root nodes from being dragged, and use custom logic if provided
 										nodeDragProps.canDrag = (monitor) => {
 											const currentSelection = getSelection();
 											
-											// Check if any selected node is a root node (can't drag root nodes)
-											const hasRootNode = currentSelection.some(node => node.isRoot);
-											if (hasRootNode) {
-												return false;
+											if (isInSelection(item)) {
+												// make sure root node is not selected (can't drag root nodes)
+												const hasRootNode = currentSelection.some(node => node.isRoot);
+												if (hasRootNode) {
+													return false;
+												}
 											}
 											
 											// Use custom drag validation if provided
@@ -1118,7 +1127,7 @@ function TreeComponent(props) {
 										// Add drag preview rendering
 										nodeDragProps.getDragProxy = getCustomDragProxy ? 
 											(dragItem) => getCustomDragProxy(item, getSelection()) :
-											null; // Let GlobalDragProxy handle the default case
+											null; // let GlobalDragProxy handle the default case
 
 										const dropTargetAccept = 'internal';
 										nodeDragProps.isDropTarget = true;
@@ -1178,15 +1187,22 @@ function TreeComponent(props) {
 											nodeDragProps.isDragSource = !item.isRoot; // Root nodes cannot be dragged
 											nodeDragProps.dragSourceType = nodeDragSourceType;
 											if (getNodeDragSourceItem) {
-												nodeDragProps.dragSourceItem = getNodeDragSourceItem(item, getSelection, nodeDragSourceType);
+												nodeDragProps.dragSourceItem = getNodeDragSourceItem(item, getSelection, isInSelection, nodeDragSourceType);
 											} else {
 												nodeDragProps.dragSourceItem = {
 													id: item.id,
 													item,
 													getSelection,
+													isInSelection,
 													type: nodeDragSourceType,
 												};
 											}
+											nodeDragProps.dragSourceItem.onDragStart = () => {
+												if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
+													// reset the selection to just this one node if it's not already selected
+													setSelection([item]);
+												}
+											};
 											if (canNodeMoveExternally) {
 												nodeDragProps.canDrag = canNodeMoveExternally;
 											}
