@@ -9,11 +9,13 @@ import ArrayCombo from './ArrayCombo.js';
 import {
 	METER_TYPES__HOURS,
 	METER_TYPES__MILES,
+	METER_TYPES__HOURS_TEXT,
+	METER_TYPES__MILES_TEXT,
 } from '../../../../Constants/MeterTypes.js';
 
 const data = [
-	[METER_TYPES__HOURS, 'Time (hrs)'],
-	[METER_TYPES__MILES, 'Distance (mi/km)'],
+	[METER_TYPES__HOURS, METER_TYPES__HOURS_TEXT],
+	[METER_TYPES__MILES, METER_TYPES__MILES_TEXT],
 ];
 function MeterTypesCombo(props) {
 	return <ArrayCombo
