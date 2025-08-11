@@ -16,6 +16,23 @@ import {
 // If you need constraints, you can potentially use a CustomDragLayer (see code at bottom)
 // but it will lag behind, compared to what the native drag layer can do
 
+function defaultDragCollect(monitor, props2) { // Optional. The collecting function. It should return a plain object of the props to return for injection into your component. It receives two parameters, monitor and props. Read the overview for an introduction to the monitors and the collecting function. See the collecting function described in detail in the next section.
+	// monitor fn determines which props from dnd state get passed
+	return {
+		// canDrag: !!monitor.canDrag(), // Returns trueif no drag operation is in progress, and the owner's canDrag() returns true or is not defined.
+		isDragging: !!monitor.isDragging(), // Returns trueif a drag operation is in progress, and either the owner initiated the drag, or its isDragging() is defined and returns true.
+		type: monitor.getItemType(), // Returns a string or a symbol identifying the type of the current dragged item. Returns null if no item is being dragged.
+		item: monitor.getItem(), // Returns a plain object representing the currently dragged item. Every drag source must specify it by returning an object from its beginDrag() method. Returns nullif no item is being dragged.
+		dropResult: monitor.getDropResult(), // Returns a plain object representing the last recorded drop result. The drop targets may optionally specify it by returning an object from their drop()methods. When a chain of drop()is dispatched for the nested targets, bottom up, any parent that explicitly returns its own result from drop()overrides the child drop result previously set by the child. Returns nullif called outside endDrag().
+		didDrop: !!monitor.didDrop(), // Returns trueif some drop target has handled the drop event, falseotherwise. Even if a target did not return a drop result, didDrop() returns true. Use it inside endDrag()to test whether any drop target has handled the drop. Returns falseif called outside endDrag().
+		initialClientOffset: monitor.getInitialClientOffset(), // Returns the { x, y }client offset of the pointer at the time when the current drag operation has started. Returns nullif no item is being dragged.
+		initialSourceClientOffset: monitor.getInitialSourceClientOffset(), // Returns the { x, y }client offset of the drag source component's root DOM node at the time when the current drag operation has started. Returns nullif no item is being dragged.
+		clientOffset: monitor.getClientOffset(), // Returns the last recorded { x, y }client offset of the pointer while a drag operation is in progress. Returns nullif no item is being dragged.
+		differenceFromInitialOffset: monitor.getDifferenceFromInitialOffset(), // Returns the { x, y }difference between the last recorded client offset of the pointer and the client offset when the current drag operation has started. Returns nullif no item is being dragged.
+		sourceClientOffset: monitor.getSourceClientOffset(), // Returns the projected { x, y }client offset of the drag source component's root DOM node, based on its position at the time when the current drag operation has started, and the movement difference. Returns nullif no item is being dragged.
+	};
+};
+
 export function withDragSource(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
@@ -42,22 +59,7 @@ export function withDragSource(WrappedComponent) {
 				canDrag = null,
 				isDragging = null,
 				getDragProxy,
-				dragCollect = (monitor, props2) => { // Optional. The collecting function. It should return a plain object of the props to return for injection into your component. It receives two parameters, monitor and props. Read the overview for an introduction to the monitors and the collecting function. See the collecting function described in detail in the next section.
-					// monitor fn determines which props from dnd state get passed
-					return {
-						// canDrag: !!monitor.canDrag(), // Returns trueif no drag operation is in progress, and the owner's canDrag() returns true or is not defined.
-						isDragging: !!monitor.isDragging(), // Returns trueif a drag operation is in progress, and either the owner initiated the drag, or its isDragging() is defined and returns true.
-						type: monitor.getItemType(), // Returns a string or a symbol identifying the type of the current dragged item. Returns null if no item is being dragged.
-						item: monitor.getItem(), // Returns a plain object representing the currently dragged item. Every drag source must specify it by returning an object from its beginDrag() method. Returns nullif no item is being dragged.
-						dropResult: monitor.getDropResult(), // Returns a plain object representing the last recorded drop result. The drop targets may optionally specify it by returning an object from their drop()methods. When a chain of drop()is dispatched for the nested targets, bottom up, any parent that explicitly returns its own result from drop()overrides the child drop result previously set by the child. Returns nullif called outside endDrag().
-						didDrop: !!monitor.didDrop(), // Returns trueif some drop target has handled the drop event, falseotherwise. Even if a target did not return a drop result, didDrop() returns true. Use it inside endDrag()to test whether any drop target has handled the drop. Returns falseif called outside endDrag().
-						initialClientOffset: monitor.getInitialClientOffset(), // Returns the { x, y }client offset of the pointer at the time when the current drag operation has started. Returns nullif no item is being dragged.
-						initialSourceClientOffset: monitor.getInitialSourceClientOffset(), // Returns the { x, y }client offset of the drag source component's root DOM node at the time when the current drag operation has started. Returns nullif no item is being dragged.
-						clientOffset: monitor.getClientOffset(), // Returns the last recorded { x, y }client offset of the pointer while a drag operation is in progress. Returns nullif no item is being dragged.
-						differenceFromInitialOffset: monitor.getDifferenceFromInitialOffset(), // Returns the { x, y }difference between the last recorded client offset of the pointer and the client offset when the current drag operation has started. Returns nullif no item is being dragged.
-						sourceClientOffset: monitor.getSourceClientOffset(), // Returns the projected { x, y }client offset of the drag source component's root DOM node, based on its position at the time when the current drag operation has started, and the movement difference. Returns nullif no item is being dragged.
-					};
-				},
+				dragCollect = defaultDragCollect,
 			} = props,
 			[dragState, dragSourceRef, dragPreviewRef] = useDrag(() => { // A specification object or a function that creates a specification object.
 				// The useDrag hook provides a way to wire your component into the DnD system as a drag source. By passing in a specification into useDrag, you declaratively describe the typeof draggable being generated, the itemobject representing the drag source, what props to collect, and more. The useDraghooks returns a few key items: a set of collected props, and refs that may be attached to drag source and drag preview elements
@@ -98,7 +100,7 @@ export function withDragSource(WrappedComponent) {
 						};
 					},*/
 				};
-			}),
+			}, [dragSourceItem, getDragProxy, dragSourceType, dragPreviewOptions, dragOptions, dropEffect, onDragEnd, canDrag, isDragging, dragCollect]),
 			{
 				canDrag: stateCanDrag,
 				isDragging: stateIsDragging,
@@ -120,7 +122,7 @@ export function withDragSource(WrappedComponent) {
 				if (layer.isDragging && dragSourceItem?.id === layer.item.id) {
 					dragSourceItem.onDrag(layer);
 				}
-			}, [layer]);
+			}, [layer, dragSourceItem]);
 		}
 
 		return <WrappedComponent
@@ -136,7 +138,13 @@ export function withDragSource(WrappedComponent) {
 	});
 }
 
-
+function defaultDropCollect(monitor, props) {
+	return {
+		canDrop: !!monitor.canDrop(),
+		isOver: !!monitor.isOver(),
+		draggedItem: monitor.getItem(), // Pass the dragged item so TreeNode can evaluate custom logic
+	};
+}
 export function withDropTarget(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
@@ -154,13 +162,7 @@ export function withDropTarget(WrappedComponent) {
 				onDrop = null,
 				onDropHover = null,
 				canDrop = null,
-				dropCollect = (monitor, props) => {
-					return {
-						canDrop: !!monitor.canDrop(),
-						isOver: !!monitor.isOver(),
-						draggedItem: monitor.getItem(), // Pass the dragged item so TreeNode can evaluate custom logic
-					};
-				},
+				dropCollect = defaultDropCollect,
 			} = props,
 			localTargetRef = useRef(null),
 			[dropState, dropTargetRef] = useDrop(() => { // A specification object or a function that creates a specification object.
@@ -187,7 +189,7 @@ export function withDropTarget(WrappedComponent) {
 						};
 					},*/
 				};
-			}),
+			}, [dropTargetAccept, dropOptions, onDrop, onDropHover, canDrop, dropCollect]),
 			{
 				canDrop: stateCanDrop,
 				isOver,
@@ -221,11 +223,13 @@ export function GlobalDragProxy() {
 		isDragging,
 		item,
 		currentOffset,
-	} = useDragLayer((monitor) => ({
-		isDragging: monitor.isDragging(),
-		item: monitor.getItem(),
-		currentOffset: monitor.getSourceClientOffset(),
-	}));
+	} = useDragLayer((monitor) => {
+		return {
+			isDragging: monitor.isDragging(),
+			item: monitor.getItem(),
+			currentOffset: monitor.getSourceClientOffset(),
+		};
+	});
 
 	if (!isDragging || !currentOffset || CURRENT_MODE !== UI_MODE_WEB) { // Native uses a native drag layer, so we don't need to render a custom proxy
 		return null;
