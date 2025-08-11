@@ -89,7 +89,7 @@ export default function FieldSet(props) {
 		styles.FORM_FIELDSET_BG,
 	);
 	if (props.className) {
-		className += ' ' props.className;
+		className += ' ' + props.className;
 	}
 
 	
