@@ -601,7 +601,7 @@ function Form(props) {
 					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
 				});
 
-				let elementClassName = ' Form-ElementFromItem gap-2'; // not sure why, but needed space at beginning!
+				let elementClassName = 'Form-ElementFromItem gap-2';
 				const defaultsClassName = defaults.className;
 				if (defaultsClassName) {
 					elementClassName += ' ' + defaultsClassName;
