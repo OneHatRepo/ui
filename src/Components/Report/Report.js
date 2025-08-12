@@ -41,6 +41,7 @@ function Report(props) {
 			disableExcel = false,
 			showReportHeaders = true,
 			isQuickReport = false,
+			additionalData = {},
 			quickReportData = {},
 			alert,
 		} = props,
@@ -50,7 +51,10 @@ function Report(props) {
 				reportId,
 				reportType: REPORT_TYPES__EXCEL,
 				showReportHeaders,
-				data: quickReportData,
+				data: {
+					...additionalData,
+					...quickReportData,
+				},
 			});
 		},
 		downloadReport = (args) => {
@@ -122,7 +126,10 @@ function Report(props) {
 			icon: Excel,
 			onPress: (data) => downloadReport({
 				reportId,
-				data,
+				data: {
+					...data,
+					...additionalData,
+				},
 				reportType: REPORT_TYPES__EXCEL,
 				showReportHeaders,
 			}),
@@ -137,7 +144,10 @@ function Report(props) {
 			icon: Pdf,
 			onPress: (data) => downloadReport({
 				reportId,
-				data,
+				data: {
+					...data,
+					...additionalData,
+				},
 				reportType: REPORT_TYPES__PDF,
 				showReportHeaders,
 			}),
