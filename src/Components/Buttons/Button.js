@@ -71,8 +71,8 @@ const ButtonComponent = forwardRef((props, ref) => {
 			>
 				{isLoading && <ButtonSpinner className="ButtonSpinner" {..._spinner} />}
 				{icon}
-				{content}
 				{text && <ButtonText className="ButtonText" {..._text}>{text}</ButtonText>}
+				{content}
 				{rightIcon}
 			</Button>;
 });
