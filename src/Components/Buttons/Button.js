@@ -16,6 +16,7 @@ const ButtonComponent = forwardRef((props, ref) => {
 	let {
 			self,
 			text, // the text to display on the button
+			content, // the content to display on the button
 			isLoading = false, // show a spinner?
 			icon = null, // an actual icon element
 			rightIcon = null, // an actual icon element
@@ -70,6 +71,7 @@ const ButtonComponent = forwardRef((props, ref) => {
 			>
 				{isLoading && <ButtonSpinner className="ButtonSpinner" {..._spinner} />}
 				{icon}
+				{content}
 				{text && <ButtonText className="ButtonText" {..._text}>{text}</ButtonText>}
 				{rightIcon}
 			</Button>;
