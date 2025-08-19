@@ -1,5 +1,6 @@
 export default function trackEngagementHit(repository, data) {
-	const method = 'POST',
+	const
+		method = 'POST',
 		url = 'Engagements/trackEngagementHit';
 
 	return repository._send(method, url, data)

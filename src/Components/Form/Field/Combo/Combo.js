@@ -681,7 +681,6 @@ export const ComboComponent = forwardRef((props, ref) => {
 					/>;
 	}
 	if (UiGlobals.mode === UI_MODE_NATIVE) {
-		throw new Error('Migration to Gluestack not yet implemented on Native');
 		// This input and trigger are for show
 		// They just show the current getDisplayValue and open the menu
 		const displayValue = getDisplayValue();
