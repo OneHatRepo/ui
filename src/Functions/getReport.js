@@ -4,6 +4,7 @@ import {
 } from '../Constants/ReportTypes.js';
 import downloadInBackground from './downloadInBackground.js';
 import downloadWithFetch from './downloadWithFetch.js';
+import getTokenHeaders from './getTokenHeaders.js';
 import UiGlobals from '../UiGlobals.js';
 
 export default function getReport(args) {
@@ -25,15 +26,17 @@ export default function getReport(args) {
 			outputFileType: reportType,
 			showReportHeaders,
 			...data,
-		};
+		},
+		authHeaders = getTokenHeaders();
 
 	if (reportType === REPORT_TYPES__EXCEL) {
-		downloadInBackground(url, params);
+		downloadInBackground(url, params, authHeaders);
 	} else {
 		const options = {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				...authHeaders,
 			},
 			body: JSON.stringify(params),
 		};
