@@ -18,6 +18,7 @@ const ButtonComponent = forwardRef((props, ref) => {
 			text, // the text to display on the button
 			content, // the content to display on the button
 			isLoading = false, // show a spinner?
+			isExpandToFillVertical = false,
 			icon = null, // an actual icon element
 			rightIcon = null, // an actual icon element
 			_spinner = {}, // props for ButtonSpinner
@@ -60,6 +61,10 @@ const ButtonComponent = forwardRef((props, ref) => {
 		'flex-row',
 		'items-center',
 	);
+	if (isExpandToFillVertical) {
+		// IMPORTANT! Otherwise the button will cut off the vertical content due to size classes automatically added by Gluestack (e.g. h-10)
+		className += ' h-auto';
+	}
 	if (propsToPass.className) {
 		className += ' ' + propsToPass.className;
 	}
