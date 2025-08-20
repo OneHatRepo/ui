@@ -1436,7 +1436,10 @@ function Form(props) {
 				if (isSaving) {
 					footerClassName += ' border-t-2 border-t-[#f00]'
 				}
-				footer = <Footer className={footerClassName} {...footerProps}>
+				if (footerProps.className) {
+					footerClassName += ' ' + footerProps.className;
+				}
+				footer = <Footer {...footerProps} className={footerClassName}>
 							{footerButtons}
 						</Footer>;
 			}
