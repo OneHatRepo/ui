@@ -31,7 +31,8 @@ function withAlert(WrappedComponent) {
 				const {
 					icon,
 					message,
-					color = 'black',
+					textColor = 'text-black',
+					fillColor = 'fill-black',
 				} = args;
 				return <HStack className="withAlert-HStack flex-1 w-full">
 							<Box className={clsx(
@@ -43,12 +44,15 @@ function withAlert(WrappedComponent) {
 								'justify-center',
 								'pr-3',
 							)}>
-								<Icon as={icon} className={clsx(
-									'withAlert-Icon',
-									'h-[40px]',
-									'w-[40px]',
-									`text-${color}`,
-								)} />
+								<Icon
+									as={icon}
+									className={clsx(
+										'withAlert-Icon',
+										'h-[40px]',
+										'w-[40px]',
+										fillColor,
+									)}
+								/>
 							</Box>
 							<Box className={clsx(
 								'withAlert-Box2',
@@ -60,7 +64,7 @@ function withAlert(WrappedComponent) {
 							)}>
 								<Text className={clsx(
 									'withAlert-Text',
-									`text-${color}`,
+									textColor,
 									'text-[18px]',
 									'flex-none',
 									'mr-2',
@@ -108,7 +112,8 @@ function withAlert(WrappedComponent) {
 					body: getBody({
 						icon: TriangleExclamation,
 						message,
-						color: 'red',
+						textColor: 'text-red-500',
+						fillColor: 'fill-red',
 					}),
 					onOk: () => {
 						hideModal();
@@ -121,6 +126,7 @@ function withAlert(WrappedComponent) {
 					customButtons: buttons ?? null,
 					h: 250,
 					w: 400,
+					whichModal: 'alert',
 				});
 			},
 			onConfirm = (message, onYes, includeCancel = false, onNo) => {
@@ -145,6 +151,7 @@ function withAlert(WrappedComponent) {
 					includeCancel,
 					h: 250,
 					w: 400,
+					whichModal: 'confirm',
 				});
 			},
 			onInfo = (message) => {
@@ -160,6 +167,7 @@ function withAlert(WrappedComponent) {
 					canClose: true,
 					h: 200,
 					w: 400,
+					whichModal: 'info',
 				});
 			};
 
