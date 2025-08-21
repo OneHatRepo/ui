@@ -44,13 +44,29 @@ const FILTER_NAME = 'q';
  * @returns boolean
  */
 function isEmptyValue(value) {
-	// 
 	return value === null ||
 			value === undefined ||
 			value === '' ||
 			value === 0 ||
 			(_.isObject(value) && _.isEmpty(value));
 };
+
+function getRowProps() {
+	return {
+		className: clsx(
+			'w-full',
+			'pl-4',
+			'pr-2',
+			'py-1',
+			'border-b-1',
+			'border-grey-300',
+			UiGlobals.mode === UI_MODE_NATIVE ? {
+				'min-h-[50px]': true,
+				'h-[50px]': true,
+			} : {},
+		),
+	};
+}
 
 export const ComboComponent = forwardRef((props, ref) => {
 
@@ -693,6 +709,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						'flex-row',
 						'justify-center',
 						'items-center',
+						'bg-white',
 						'border',
 						'border-grey-400',
 						'rounded-r-none',
@@ -704,10 +721,10 @@ export const ComboComponent = forwardRef((props, ref) => {
 						numberOfLines={1}
 						ellipsizeMode="head"
 						className={clsx(
-							'h-full',
-							'flex-1',
+							// 'h-full',
+							// 'flex-1',
 							'm-0',
-							'p-1',
+							'p-2',
 							_.isEmpty(displayValue) ? 'text-grey-400' : 'text-black',
 							styles.FORM_COMBO_INPUT_CLASSNAME,
 						)}
@@ -747,21 +764,17 @@ export const ComboComponent = forwardRef((props, ref) => {
 		if (UiGlobals.mode === UI_MODE_WEB) {
 			gridStyle.height = menuHeight || styles.FORM_COMBO_MENU_HEIGHT;
 		}
+		let gridClassName = clsx(
+			'h-full',
+			'w-full',
+		);
+		if (UiGlobals.mode === UI_MODE_NATIVE) {
+			gridClassName += ' h-[400px] max-h-[100%]';
+		}
 		grid = <WhichGrid
 					showHeaders={false}
 					showHovers={true}
-					getRowProps={() => {
-						return {
-							className: clsx(
-								'w-full',
-								'pl-4',
-								'pr-2',
-								'py-1',
-								'border-b-1',
-								'border-grey-300',
-							),
-						};
-					}}
+					getRowProps={getRowProps}
 					autoAdjustPageSizeToHeight={false}
 					newEntityDisplayValue={newEntityDisplayValue}
 					newEntityDisplayProperty={newEntityDisplayProperty}
@@ -871,9 +884,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 					}}
 					reference="grid"
 					parent={self}
-					className={clsx(
-						'h-full',
-					)}
+					className={gridClassName}
 					style={gridStyle}
 					{...gridProps}
 					{..._editor}
@@ -980,7 +991,12 @@ export const ComboComponent = forwardRef((props, ref) => {
 							/>;
 			}
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
-				<HStack className="h-[10px]">
+				<HStack
+					className={clsx(
+						'h-[40px]',
+						'bg-white',
+					)}
+				>
 					{xButton}
 					{eyeButton}
 					{disableDirectEntry ?
@@ -992,7 +1008,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 								'h-full',
 								'flex-1',
 								'm-0',
-								'p-1',
+								'p-2',
 								'border',
 								'border-grey-400',
 								'rounded-r-none',
@@ -1053,19 +1069,21 @@ export const ComboComponent = forwardRef((props, ref) => {
 								safeAreaTop={true}
 								onClose={() => setIsMenuShown(false)}
 								className={clsx(
-									'h-[400px]',
+									'h-full',
 									'w-full',
-									'my-auto',
-									'p-[5px]'
 								)}
 							>
 								<ModalBackdrop />
-								<ModalContent>
-									<ModalBody>
-										{inputAndTriggerClone}
-										{grid}
-									</ModalBody>
-								</ModalContent>
+								<VStackNative
+									className={clsx(
+										'h-[400px]',
+										'w-[80%]',
+										'max-w-[400px]',
+									)}
+								>
+									{inputAndTriggerClone}
+									{grid}
+								</VStackNative>
 							</Modal>;
 		}
 	}

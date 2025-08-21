@@ -89,7 +89,7 @@ const TextAreaElement = forwardRef((props, ref) => {
 			styles.FORM_TEXTAREA_CLASSNAME,
 		);
 	if (className) {
-		inputClassName += ' ' + className;
+		textareaClassName += ' ' + className;
 	}
 	if (minimizeForRow) {
 		textareaClassName += ' h-auto min-h-0 max-h-[40px] overflow-auto';
