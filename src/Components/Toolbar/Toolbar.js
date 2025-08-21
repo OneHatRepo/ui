@@ -1,11 +1,12 @@
 import {
-	Platform,
-} from 'react-native';
-import {
 	HStackNative,
 	ScrollView,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import {
+	CURRENT_MODE,
+	UI_MODE_NATIVE,
+} from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 
 export default function Toolbar(props) {
@@ -34,7 +35,7 @@ export default function Toolbar(props) {
 						{props.children}
 					</HStackNative>;	
 
-	if (Platform.OS === 'ios' || Platform.OS === 'android') {
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		toolbar = <ScrollView
 						horizontal={true}
 						className={clsx(

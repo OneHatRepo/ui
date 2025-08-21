@@ -8,6 +8,7 @@ import {
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import {
+	CURRENT_MODE,
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -78,7 +79,7 @@ function TextWithLinksElement(props) {
 		};
   
 	const elementProps = {};
-	if (UiGlobals.mode === UI_MODE_WEB) {
+	if (CURRENT_MODE === UI_MODE_WEB) {
 		elementProps.textOverflow = 'ellipsis';
 	}
 	let className = clsx(

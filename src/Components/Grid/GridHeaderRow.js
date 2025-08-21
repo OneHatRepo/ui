@@ -15,6 +15,7 @@ import {
 	HORIZONTAL,
 } from '../../Constants/Directions.js';
 import {
+	CURRENT_MODE,
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -280,7 +281,7 @@ export default function GridHeaderRow(props) {
 		}
 	}, [columnsConfig]);
 	
-	if (UiGlobals.mode !== UI_MODE_WEB) {
+	if (CURRENT_MODE !== UI_MODE_WEB) {
 		canColumnsReorder = false;
 		canColumnsResize = false;
 	}
@@ -425,7 +426,7 @@ export default function GridHeaderRow(props) {
 										)}
 									/>}
 								
-								{isOver && UiGlobals.mode === UI_MODE_WEB && // only works for web for now 
+								{isOver && CURRENT_MODE === UI_MODE_WEB && // only works for web for now 
 										<HeaderColumnSelectorHandle
 											key="HeaderColumnSelectorHandle"
 											showColumnsSelector={showColumnsSelector}

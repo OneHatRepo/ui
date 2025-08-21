@@ -15,6 +15,7 @@ import {
 	DATETIME,
 } from '../../../Constants/Date.js';
 import {
+	CURRENT_MODE,
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
@@ -103,7 +104,7 @@ export const DateElement = forwardRef((props, ref) => {
 			return value;
 		},
 		showPicker = () => {
-			if (UiGlobals.mode === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
+			if (CURRENT_MODE === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const 
 					// triggerRect = triggerRef.current.getBoundingClientRect(),
@@ -124,7 +125,7 @@ export const DateElement = forwardRef((props, ref) => {
 			if (disableDirectEntry) {
 				return;
 			}
-			if (UiGlobals.mode !== UI_MODE_WEB) {
+			if (CURRENT_MODE !== UI_MODE_WEB) {
 				return;
 			}
 			switch(e.key) {
@@ -136,7 +137,7 @@ export const DateElement = forwardRef((props, ref) => {
 			}
 		},
 		onInputBlur = (e) => {
-			// if (UiGlobals.mode !== UI_MODE_WEB) {
+			// if (CURRENT_MODE !== UI_MODE_WEB) {
 			// 	return;
 			// }
 			// const {
@@ -191,7 +192,7 @@ export const DateElement = forwardRef((props, ref) => {
 			inputRef.current?.focus();
 		},
 		onTriggerBlur = (e) => {
-			if (!isPickerShown || UiGlobals.mode !== UI_MODE_WEB) {
+			if (!isPickerShown || CURRENT_MODE !== UI_MODE_WEB) {
 				return;
 			}
 			const {
@@ -327,7 +328,7 @@ export const DateElement = forwardRef((props, ref) => {
 				)}
 			/>;
 
-	if (UiGlobals.mode === UI_MODE_WEB) {
+	if (CURRENT_MODE === UI_MODE_WEB) {
 		input = disableDirectEntry ?
 			<Pressable
 				{...testProps('togglePickerBtn')}
@@ -394,7 +395,7 @@ export const DateElement = forwardRef((props, ref) => {
 				{..._input}
 			/>;
 	}
-	if (UiGlobals.mode === UI_MODE_NATIVE) {
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		throw new Error('Migration to Gluestack not yet implemented for Native mode');
 		// This input and trigger are for show
 		// The just show the current value and open the menu
@@ -426,7 +427,7 @@ export const DateElement = forwardRef((props, ref) => {
 	}
 
 	if (isPickerShown) {
-		if (UiGlobals.mode === UI_MODE_WEB) {
+		if (CURRENT_MODE === UI_MODE_WEB) {
 			dropdownMenu = <Popover
 								isOpen={isPickerShown}
 								onClose={() => {
@@ -478,7 +479,7 @@ export const DateElement = forwardRef((props, ref) => {
 								</PopoverContent>
 							</Popover>;
 		}
-		if (UiGlobals.mode === UI_MODE_NATIVE) {
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
 			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
 				<HStack className="h-[10px]">
 					<IconButton

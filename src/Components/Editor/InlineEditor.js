@@ -6,6 +6,7 @@ import {
 import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 import {
+	CURRENT_MODE,
 	UI_MODE_WEB,
 	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
@@ -19,7 +20,7 @@ import _ from 'lodash';
 
 function InlineEditor(props) {
 
-	if (UiGlobals.mode === UI_MODE_NATIVE) {
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		throw new Error('Not yet implemented for RN.');
 	}
 	

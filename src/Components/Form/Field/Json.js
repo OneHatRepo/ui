@@ -4,6 +4,7 @@ import {
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import {
+	CURRENT_MODE,
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
@@ -36,7 +37,7 @@ export function JsonElement(props) {
 
 	let assembledComponents = null;
 	
-	if (UiGlobals.mode === UI_MODE_NATIVE) {
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		throw new Error('JsonElement not yet implemented for React Native');
 	}
 
@@ -49,7 +50,7 @@ export function JsonElement(props) {
 	if (props.className) {
 		className += ' ' + propsToPass.className;
 	}
-	// if (UiGlobals.mode === UI_MODE_WEB) {
+	// if (CURRENT_MODE === UI_MODE_WEB) {
 		const src = value ? JSON.parse(value) : {};
 		assembledComponents = 
 			<HStack style={propsToPass.style} className={className}>

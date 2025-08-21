@@ -13,6 +13,7 @@ import {
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import {
+	CURRENT_MODE,
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../../../Constants/UiModes.js';
@@ -60,7 +61,7 @@ function getRowProps() {
 			'py-1',
 			'border-b-1',
 			'border-grey-300',
-			UiGlobals.mode === UI_MODE_NATIVE ? {
+			CURRENT_MODE === UI_MODE_NATIVE ? {
 				'min-h-[50px]': true,
 				'h-[50px]': true,
 			} : {},
@@ -149,7 +150,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			if (isMenuShown) {
 				return;
 			}
-			if (UiGlobals.mode === UI_MODE_WEB && inputRef.current?.getBoundingClientRect) {
+			if (CURRENT_MODE === UI_MODE_WEB && inputRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const
 					rect = inputRef.current.getBoundingClientRect(),
@@ -625,7 +626,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 				className={triggerClassName}
 			/>;
 
-	if (UiGlobals.mode === UI_MODE_WEB) {
+	if (CURRENT_MODE === UI_MODE_WEB) {
 		input = disableDirectEntry ?
 					<Pressable
 						{...testProps('toggleMenuBtn')}
@@ -696,7 +697,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						{..._input}
 					/>;
 	}
-	if (UiGlobals.mode === UI_MODE_NATIVE) {
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// This input and trigger are for show
 		// They just show the current getDisplayValue and open the menu
 		const displayValue = getDisplayValue();
@@ -761,14 +762,14 @@ export const ComboComponent = forwardRef((props, ref) => {
 		}
 		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
 		const gridStyle = {};
-		if (UiGlobals.mode === UI_MODE_WEB) {
+		if (CURRENT_MODE === UI_MODE_WEB) {
 			gridStyle.height = menuHeight || styles.FORM_COMBO_MENU_HEIGHT;
 		}
 		let gridClassName = clsx(
 			'h-full',
 			'w-full',
 		);
-		if (UiGlobals.mode === UI_MODE_NATIVE) {
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
 			gridClassName += ' h-[400px] max-h-[100%]';
 		}
 		grid = <WhichGrid
@@ -889,7 +890,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 					{...gridProps}
 					{..._editor}
 				/>;
-		if (UiGlobals.mode === UI_MODE_WEB) {
+		if (CURRENT_MODE === UI_MODE_WEB) {
 			if (!disableDirectEntry) {
 				inputClone = <Box
 								className="Combo-inputClone-Box"
@@ -969,7 +970,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 								</Box>
 							</Popover>;
 		}
-		if (UiGlobals.mode === UI_MODE_NATIVE) {
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
 			if (isEditor) {
 				// in RN, an editor has no way to accept the selection of the grid, so we need to add a check button to do this
 				checkButton = <IconButton

@@ -8,6 +8,7 @@ import {
 import clsx from 'clsx';
 import { SketchPicker } from 'react-color';
 import {
+	CURRENT_MODE,
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
 import UiGlobals from '../../../UiGlobals.js';
@@ -39,7 +40,7 @@ export function ColorElement(props) {
 				return;
 			}
 
-			if (UiGlobals.mode === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
+			if (CURRENT_MODE === UI_MODE_WEB && triggerRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
 				const 
 					triggerRect = triggerRef.current.getBoundingClientRect(),
