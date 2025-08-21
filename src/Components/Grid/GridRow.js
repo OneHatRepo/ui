@@ -100,7 +100,7 @@ function GridRow(props) {
 			actualCanDrop = validateDrop(draggedItem);
 		}
 
-		if (showSelectHandle && isSelected) {
+		if (isSelected) {
 			if (showHovers && isHovered) {
 				mixWith = styles.GRID_ROW_SELECTED_BG_HOVER;
 			} else {

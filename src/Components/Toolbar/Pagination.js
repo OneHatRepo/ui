@@ -212,7 +212,7 @@ export default function Pagination(props) {
 						'Pagination',
 						'items-center',
 						'shrink-0',
-						'gap-2',
+						'gap-1',
 					)}
 				>
 					{items}

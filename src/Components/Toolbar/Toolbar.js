@@ -1,5 +1,9 @@
 import {
+	Platform,
+} from 'react-native';
+import {
 	HStackNative,
+	ScrollView,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import UiGlobals from '../../UiGlobals.js';
@@ -23,10 +27,21 @@ export default function Toolbar(props) {
 	if (props.className) {
 		className += ' ' + props.className
 	}
-	return <HStackNative
-				className={className}
-				style={props.style || {}}
-			>
-				{props.children}
-			</HStackNative>;
+	let toolbar = <HStackNative
+						className={className}
+						style={props.style || {}}
+					>
+						{props.children}
+					</HStackNative>;	
+
+	if (Platform.OS === 'ios' || Platform.OS === 'android') {
+		toolbar = <ScrollView
+						horizontal={true}
+						className={clsx(
+							'max-h-[50px]',
+						)}
+					>{toolbar}</ScrollView>;
+	}
+
+	return toolbar;
 };
