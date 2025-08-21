@@ -29,7 +29,7 @@ function withAlert(WrappedComponent) {
 			} = props,
 			getBody = (args) => {
 				const {
-					icon,
+					icon = TriangleExclamation,
 					message,
 					textColor = 'text-black',
 					fillColor = 'fill-black',
@@ -180,6 +180,7 @@ function withAlert(WrappedComponent) {
 					disableWithAlert={false}
 					alreadyHasWithAlert={true}
 					alert={onAlert}
+					getAlertBody={getBody}
 					confirm={onConfirm}
 					hideAlert={hideModal}
 					showInfo={onInfo}
