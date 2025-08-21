@@ -5,6 +5,11 @@ import {
 	Text,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import {
+	CURRENT_MODE,
+	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+} from '../../Constants/UiModes.js';
 import testProps from '../../Functions/testProps.js';
 
 export default function WaitMessage(props) {
@@ -26,7 +31,7 @@ export default function WaitMessage(props) {
 					className={clsx(
 						'ModalContent',
 						'w-[200px]',
-						'h-[50px]',
+						CURRENT_MODE === UI_MODE_WEB ? 'h-[50px]' : '',
 						'shadow-lg',
 					)}
 				>
