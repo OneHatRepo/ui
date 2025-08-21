@@ -160,7 +160,11 @@ const checkboxLabelStyle = tva({
 });
 
 const checkboxIconStyle = tva({
-  base: 'text-typography-50 fill-none',
+// BEGIN SKOTE MOD
+// See https://github.com/gluestack/gluestack-ui/issues/2385#issuecomment-3141973446
+//   base: 'text-typography-50 fill-none',
+  base: 'text-typography-50 fill-black',
+// END SKOTE MOD
 
   parentVariants: {
     size: {

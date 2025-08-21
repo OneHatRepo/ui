@@ -115,7 +115,11 @@ const inputStyle = tva({
 });
 
 const inputIconStyle = tva({
-  base: 'justify-center items-center text-typography-400 fill-none',
+// BEGIN SKOTE MOD
+// See https://github.com/gluestack/gluestack-ui/issues/2385#issuecomment-3141973446
+//   base: 'justify-center items-center text-typography-400 fill-none',
+  base: 'justify-center items-center text-typography-400 fill-black',
+// END SKOTE MOD
   parentVariants: {
     size: {
       '2xs': 'h-3 w-3',

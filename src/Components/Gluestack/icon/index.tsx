@@ -19,7 +19,11 @@ export const UIIcon = createIcon({
 >;
 
 const iconStyle = tva({
-  base: 'text-typography-950 fill-none pointer-events-none',
+// BEGIN SKOTE MOD
+// See https://github.com/gluestack/gluestack-ui/issues/2385#issuecomment-3141973446
+//   base: 'text-typography-950 fill-none pointer-events-none',
+  base: 'text-typography-950 fill-black pointer-events-none',
+// END SKOTE MOD
   variants: {
     size: {
       '2xs': 'h-3 w-3',

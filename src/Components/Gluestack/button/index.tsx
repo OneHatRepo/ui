@@ -282,7 +282,11 @@ const buttonTextStyle = tva({
 });
 
 const buttonIconStyle = tva({
-  base: 'fill-none',
+// BEGIN SKOTE MOD
+// See https://github.com/gluestack/gluestack-ui/issues/2385#issuecomment-3141973446
+//   base: 'fill-none',
+  base: 'fill-black',
+// END SKOTE MOD
   parentVariants: {
     variant: {
       link: 'data-[hover=true]:underline data-[active=true]:underline',

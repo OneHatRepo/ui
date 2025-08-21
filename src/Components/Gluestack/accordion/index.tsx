@@ -50,7 +50,11 @@ const accordionTitleTextStyle = tva({
   },
 });
 const accordionIconStyle = tva({
-  base: 'text-typography-900 fill-none',
+// BEGIN SKOTE MOD
+// See https://github.com/gluestack/gluestack-ui/issues/2385#issuecomment-3141973446
+//   base: 'text-typography-900 fill-none',
+  base: 'text-typography-900 fill-black',
+// END SKOTE MOD
   parentVariants: {
     size: {
       '2xs': 'h-3 w-3',

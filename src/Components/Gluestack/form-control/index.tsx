@@ -80,7 +80,11 @@ const formControlStyle = tva({
 });
 
 const formControlErrorIconStyle = tva({
-  base: 'text-error-700 fill-none',
+// BEGIN SKOTE MOD
+// See https://github.com/gluestack/gluestack-ui/issues/2385#issuecomment-3141973446
+//   base: 'text-error-700 fill-none',
+  base: 'text-error-700 fill-none fill-black',
+// END SKOTE MOD
   variants: {
     size: {
       '2xs': 'h-3 w-3',

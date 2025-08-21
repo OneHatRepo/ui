@@ -83,7 +83,11 @@ const alertTextStyle = tva({
 });
 
 const alertIconStyle = tva({
-  base: 'fill-none',
+// BEGIN SKOTE MOD
+// See https://github.com/gluestack/gluestack-ui/issues/2385#issuecomment-3141973446
+//   base: 'fill-none',
+  base: 'fill-black',
+// END SKOTE MOD
   variants: {
     size: {
       '2xs': 'h-3 w-3',
