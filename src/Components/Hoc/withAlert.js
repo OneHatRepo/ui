@@ -112,8 +112,7 @@ function withAlert(WrappedComponent) {
 					body: getBody({
 						icon: TriangleExclamation,
 						message,
-						textColor: 'text-red-500',
-						fillColor: 'fill-red',
+						fillColor: 'fill-red-500',
 					}),
 					onOk: () => {
 						hideModal();
