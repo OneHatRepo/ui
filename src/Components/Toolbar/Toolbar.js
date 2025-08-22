@@ -25,6 +25,9 @@ export default function Toolbar(props) {
 		'border-b-grey-400',
 		styles.TOOLBAR_CLASSNAME,
 	);
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
+		className += ' min-w-[100%]';
+	}
 	if (props.className) {
 		className += ' ' + props.className
 	}
@@ -39,6 +42,7 @@ export default function Toolbar(props) {
 		toolbar = <ScrollView
 						horizontal={true}
 						className={clsx(
+							'min-w-[100%]',
 							'max-h-[50px]',
 						)}
 					>{toolbar}</ScrollView>;
