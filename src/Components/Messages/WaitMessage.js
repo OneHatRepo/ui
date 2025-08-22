@@ -24,7 +24,7 @@ export default function WaitMessage(props) {
 				{...testProps('WaitMessage')}
 				isOpen={true}
 				className="Modal"
-				aria-disabled="true"
+				aria-disabled={true}
 			>
 				<ModalBackdrop />
 				<ModalContent
