@@ -79,6 +79,7 @@ function Report(props) {
 	if (isQuickReport) {
 		let className = clsx(
 			'QuickReport',
+			'flex-1',
 			'm-2',
 		);
 		if (props.className) {
