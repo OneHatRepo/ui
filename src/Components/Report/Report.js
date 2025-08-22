@@ -78,8 +78,7 @@ function Report(props) {
 
 	if (isQuickReport) {
 		let className = clsx(
-			'Report',
-			'max-w-[100px]',
+			'QuickReport',
 			'm-2',
 		);
 		if (props.className) {
