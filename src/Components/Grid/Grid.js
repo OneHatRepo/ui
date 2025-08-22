@@ -112,11 +112,15 @@ function GridComponent(props) {
 			columnProps = {},
 			defaultHiddenColumns = [],
 			getRowProps = (item) => {
+				let className = clsx(
+					'border-bottom-1',
+					'border-bottom-grey-500',
+				);
+				if (CURRENT_MODE === UI_MODE_NATIVE) {
+					className += ' py-4';
+				}
 				return {
-					className: clsx(
-						'border-bottom-1',
-						'border-bottom-grey-500',
-					),
+					className,
 				};
 			},
 			flatListProps = {},
