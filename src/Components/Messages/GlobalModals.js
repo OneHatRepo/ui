@@ -9,9 +9,12 @@ import {
 	setAlertMessage,
 	setDebugMessage,
 	setInfoMessage,
+	selectProgressMessage,
+	selectProgressPercentage,
 } from '@src/models/Slices/DebugSlice';
 import WaitMessage from './WaitMessage';
 import ErrorMessage from './ErrorMessage';
+import ProgressModal from './ProgressModal';
 
 
 
@@ -22,7 +25,9 @@ export default function GlobalModals() {
 		alertMessage = useSelector(selectAlertMessage),
 		debugMessage = useSelector(selectDebugMessage),
 		infoMessage = useSelector(selectInfoMessage),
-		waitMessage = useSelector(selectWaitMessage);
+		waitMessage = useSelector(selectWaitMessage),
+		progressMessage = useSelector(selectProgressMessage),
+		progressPercentage = useSelector(selectProgressPercentage);
 
 	return <>
 				{isWaitModalShown && <WaitMessage text={waitMessage} />}
@@ -42,6 +47,11 @@ export default function GlobalModals() {
 						text={infoMessage}
 						color="#000"
 						onOk={() => dispatch(setInfoMessage(null))}
+					/>}
+				{progressMessage && progressPercentage !== 100 && 
+					<ProgressModal
+						progressMessage={progressMessage}
+						progressPercentage={progressPercentage}
 					/>}
 			</>;
 }
