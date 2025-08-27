@@ -18,7 +18,8 @@ export default function ProgressModal(props) {
 			progressPercentage,
 			color = '#666',
 		} = props,
-		[progressBarWidth, setProgressBarWidth] = useState(175);
+		[progressBarWidth, setProgressBarWidth] = useState(175),
+		[isInited, setIsInited] = useState(false);
 
 	return <Modal
 				{...testProps('ProgressModal')}

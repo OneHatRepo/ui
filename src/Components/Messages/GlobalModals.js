@@ -18,8 +18,10 @@ import ProgressModal from './ProgressModal';
 
 
 
-export default function GlobalModals() {
-	const
+export default function GlobalModals(props) {
+	const {
+			progressColor = '#666',
+		} = props,
 		dispatch = useDispatch(),
 		isWaitModalShown = useSelector(selectIsWaitModalShown),
 		alertMessage = useSelector(selectAlertMessage),
@@ -52,6 +54,7 @@ export default function GlobalModals() {
 					<ProgressModal
 						progressMessage={progressMessage}
 						progressPercentage={progressPercentage}
+						color={progressColor}
 					/>}
 			</>;
 }
