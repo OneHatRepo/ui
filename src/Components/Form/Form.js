@@ -112,6 +112,7 @@ function Form(props) {
 			additionalFooterButtons,
 			disableFooter = false,
 			hideResetButton = false,
+			showSelectHandle = false,
 			
 			// sizing of outer container
 			maxHeight,
@@ -414,6 +415,9 @@ function Form(props) {
 										}
 
 										let elementClassName = 'Form-Element';
+										if (showSelectHandle && ix === 0) {
+											elementClassName += ' ml-[40px]';
+										}
 										if (type.match(/Tag/)) {
 											elementClassName += ' overflow-auto';
 										}

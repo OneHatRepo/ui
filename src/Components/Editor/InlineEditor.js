@@ -33,6 +33,7 @@ function InlineEditor(props) {
 			onEditorSave,
 			onEditorClose,
 			editorStateRef,
+			showSelectHandle = true,
 
 			// withComponent
 			self,
@@ -152,6 +153,7 @@ function InlineEditor(props) {
 						onClose={onEditorClose}
 						parent={self}
 						reference="form"
+						showSelectHandle={showSelectHandle}
 						className={clsx(
 							'InlineEditor-Form',
 							'flex-1',
