@@ -31,30 +31,39 @@ export default function GlobalModals(props) {
 		progressMessage = useSelector(selectProgressMessage),
 		progressPercentage = useSelector(selectProgressPercentage);
 
-	return <>
-				{isWaitModalShown && <WaitMessage text={waitMessage} />}
-				{!isWaitModalShown && alertMessage && 
-					<ErrorMessage
-						text={alertMessage}
-						onOk={() => dispatch(setAlertMessage(null))}
-					/>}
-				{!isWaitModalShown && debugMessage && 
-					<ErrorMessage
-						text={debugMessage}
-						color="green"
-						onOk={() => dispatch(setDebugMessage(null))}
-					/>}
-				{!isWaitModalShown && infoMessage && 
-					<ErrorMessage
-						text={infoMessage}
-						color="#000"
-						onOk={() => dispatch(setInfoMessage(null))}
-					/>}
-				{progressMessage && progressPercentage !== 100 && 
-					<ProgressModal
-						progressMessage={progressMessage}
-						progressPercentage={progressPercentage}
-						color={progressColor}
-					/>}
-			</>;
+	let moduleToShow = null;
+
+	if (debugMessage) {
+		moduleToShow =
+			<ErrorMessage
+				text={debugMessage}
+				onOk={() => dispatch(setDebugMessage(null))}
+				color="green"
+			/>;
+	} else if (alertMessage) {
+		moduleToShow = 
+			<ErrorMessage
+				text={alertMessage}
+				onOk={() => dispatch(setAlertMessage(null))}
+			/>;
+	} else if (infoMessage) {
+		moduleToShow =
+			<ErrorMessage
+				text={infoMessage}
+				onOk={() => dispatch(setInfoMessage(null))}
+				color="#000"
+			/>;
+	}
+	if (isWaitModalShown) {
+		moduleToShow = <WaitMessage text={waitMessage} />;
+	}
+	if (progressMessage && progressPercentage !== 100) {
+		moduleToShow = <ProgressModal
+							progressMessage={progressMessage}
+							progressPercentage={progressPercentage}
+							color={progressColor}
+						/>;
+	}
+	return moduleToShow;
 }
+

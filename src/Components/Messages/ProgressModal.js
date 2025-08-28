@@ -38,7 +38,6 @@ export default function ProgressModal(props) {
 					<VStack
 						className={clsx(
 							'VStack',
-							'h-[12px]',
 							'w-[90%]',
 							'items-center',
 							'justify-center',
@@ -49,7 +48,7 @@ export default function ProgressModal(props) {
 							setIsInited(true);
 						}}
 					>
-						<Text className="text-black">{progressMessage}</Text>
+						<Text className="text-black mb-2">{progressMessage}</Text>
 						{isInited && 
 							<Progress.Bar
 								animated={false}
