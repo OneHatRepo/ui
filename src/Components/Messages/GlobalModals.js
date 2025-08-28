@@ -57,13 +57,14 @@ export default function GlobalModals(props) {
 	if (isWaitModalShown) {
 		moduleToShow = <WaitMessage text={waitMessage} />;
 	}
-	if (progressMessage && progressPercentage !== 100) {
+	if (progressMessage && progressPercentage < 100) {
 		moduleToShow = <ProgressModal
 							progressMessage={progressMessage}
 							progressPercentage={progressPercentage}
 							color={progressColor}
 						/>;
 	}
+	
 	return moduleToShow;
 }
 
