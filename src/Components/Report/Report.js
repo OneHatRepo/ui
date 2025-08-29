@@ -133,7 +133,7 @@ function Report(props) {
 				reportType: REPORT_TYPES__EXCEL,
 				showReportHeaders,
 			}),
-			disabledOnInvalid: true,
+			disableOnInvalid: true,
 		});
 	}
 	if (!disablePdf) {
