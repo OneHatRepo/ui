@@ -88,6 +88,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			isInTag = false,
 			minimizeForRow = false,
 			reloadOnTrigger = false,
+			searchHasInitialPercent = false,
 			menuHeight,
 			placeholder,
 			onRowPress,
@@ -483,7 +484,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						filterName = getFilterName(isId);
 					if (Repository.isRemote) {
 						// remote
-						const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : value + '%');
+						const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : (searchHasInitialPercent ? '%' : '') + value + '%');
 						await Repository.filter(filterName, filterValue);
 						if (!Repository.isAutoLoad) {
 							await Repository.reload();
