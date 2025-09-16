@@ -185,7 +185,27 @@ function Form(props) {
 		}),
 		initialValues = _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
-		validatorToUse = validator || (isMultiple ? disableRequiredYupFields(Repository?.schema?.model?.validator) : Repository?.schema?.model?.validator) || yup.object(),
+		validatorToUse = (() => {
+			// If a custom validator is provided, use it
+			if (validator) {
+				return validator;
+			}
+			
+			// If we have a Repository with a schema, use it (with modifications for multiple records)
+			if (Repository?.schema?.model?.validator) {
+				return isMultiple 
+					? disableRequiredYupFields(Repository.schema.model.validator)
+					: Repository.schema.model.validator;
+			}
+			
+			// For forms with no fields (like reports), create a schema that defaults to valid
+			if (!items || items.length === 0) {
+				return yup.object().default({}); // This will make the form valid by default
+			}
+			
+			// Fallback to empty schema that allows any fields and defaults to valid
+			return yup.object().noUnknown(false).default({});
+		})(),
 		{
 			control,
 			formState,
@@ -1130,6 +1150,20 @@ function Form(props) {
 			onDirtyChange(formState.isDirty);
 		}, [formState.isDirty]);
 	}
+
+	useEffect(() => {
+		// For forms with no items (like some reports), manually trigger validation to set valid state
+		if ((!items || items.length === 0) && !columnsConfig) {
+			setTimeout(() => { // ensure the form is fully initialized
+				trigger().then(() => {
+					// Force validity to true for empty forms
+					if (onValidityChange) {
+						onValidityChange(true);
+					}
+				});
+			}, 0);
+		}
+	}, [items, columnsConfig, trigger, onValidityChange]);
 
 	if (skipAll) {
 		return null;
