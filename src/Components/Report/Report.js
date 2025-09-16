@@ -41,6 +41,8 @@ function Report(props) {
 			disableExcel = false,
 			showReportHeaders = true,
 			isQuickReport = false,
+			isDisabled = false,
+			disabledMessage = 'Report is Disabled',
 			additionalData = {},
 			quickReportData = {},
 			alert,
@@ -90,8 +92,9 @@ function Report(props) {
 					className={className}
 				>
 					<Pressable
-						onPress={onPressQuickReport}
+						onPress={!isDisabled ? onPressQuickReport : null}
 						className={clsx(
+							'relative', // creates the positioning context for absolute children
 							'flex-1',
 							'items-center',
 							'justify-center',
@@ -101,7 +104,7 @@ function Report(props) {
 							'rounded-lg',
 							'border',
 							'border-primary-300',
-							'hover:bg-primary-300',
+							!isDisabled ? 'hover:bg-primary-300' : null,
 						)}
 					>
 						{icon}
@@ -114,6 +117,46 @@ function Report(props) {
 								'mt-2',
 							)}
 						>{title}</Text>
+						{isDisabled &&
+							<Box
+								className={clsx(
+									'absolute',
+									'h-full',
+									'w-full',
+									'z-1000',
+									'flex',
+									'items-center',
+									'justify-center',
+								)}
+							>
+								<Box
+									className={clsx(
+										'absolute',
+										'h-full',
+										'w-full',
+										'rounded-lg',
+										'z-0',
+										'bg-white',
+										'opacity-[0.8]',
+									)}
+								/>
+								<Text
+									className={clsx(
+										'absolute',
+										'h-full',
+										'w-full',
+										'z-1000',
+										'flex',
+										'items-center',
+										'justify-center',
+										'px-[20px]',
+										'text-center',
+										'text-[23px]',
+										'text-red-500',
+										'italic',
+									)}
+								>Disabled</Text>
+							</Box>}
 					</Pressable>
 				</VStackNative>;
 	}
@@ -157,30 +200,76 @@ function Report(props) {
 	return <VStackNative
 				{...testProps('Report-' + reportId)}
 				className={clsx(
+					'relative', // creates the positioning context for absolute children
 					'w-full',
 					'border',
 					'border-primary-300',
-					'p-4',
 					'mb-3',
 					'bg-white',
 					'rounded-lg',
 					'shadow-sm',
 				)}
 			>
-				<HStack>
-					<Box className="w-[50px] mr-4">
-						{icon}
-					</Box>
-					<VStack className="flex-1">
-						<Text className="text-2xl max-w-full">{title}</Text>
-						<Text className="text-sm">{description}</Text>
-					</VStack>
-				</HStack>
-				<Form
-					type={EDITOR_TYPE__PLAIN}
-					additionalFooterButtons={buttons}
-					{...props._form}
-				/>
+				<Box
+					className={clsx(
+						'p-4',
+					)}
+				>
+					<HStack>
+						<Box className="w-[50px] mr-4">
+							{icon}
+						</Box>
+						<VStack className="flex-1">
+							<Text className="text-2xl max-w-full">{title}</Text>
+							<Text className="text-sm">{description}</Text>
+						</VStack>
+					</HStack>
+					<Form
+						type={EDITOR_TYPE__PLAIN}
+						additionalFooterButtons={buttons}
+						{...props._form}
+					/>
+				</Box>
+				{isDisabled &&
+					<Box
+						className={clsx(
+							'absolute',
+							'h-full',
+							'w-full',
+							'z-1000',
+							'flex',
+							'items-center',
+							'justify-center',
+						)}
+					>
+						<Box
+							className={clsx(
+								'absolute',
+								'h-full',
+								'w-full',
+								'rounded-lg',
+								'z-0',
+								'bg-white',
+								'opacity-[0.8]',
+							)}
+						/>
+						<Text
+							className={clsx(
+								'absolute',
+								'h-full',
+								'w-full',
+								'z-1000',
+								'flex',
+								'items-center',
+								'justify-center',
+								'px-[20px]',
+								'text-center',
+								'text-[23px]',
+								'text-red-500',
+								'italic',
+							)}
+						>{disabledMessage}</Text>
+					</Box>}
 			</VStackNative>;
 }
 
