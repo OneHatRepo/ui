@@ -10,6 +10,7 @@ import {
 	UPLOAD_DOWNLOAD,
 	DOWNLOAD,
 } from '../../Constants/Commands.js';
+import Inflector from 'inflector-js';
 import Clipboard from '../Icons/Clipboard.js';
 import Duplicate from '../Icons/Duplicate.js';
 import Edit from '../Icons/Edit.js';
@@ -78,7 +79,10 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				disableDuplicate = !isEditor,
 				disablePrint = !isGrid,
 				protectedValues, // records with these values cannot be edited or deleted
-			
+				addDisplayMsg,
+				editDisplayMsg,
+				deleteDisplayMsg,
+
 				// withAlert
 				showInfo,
 
@@ -90,6 +94,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				self,
 
 				// withData
+				model,
 				Repository,
 
 				// withPermissions
@@ -219,7 +224,16 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				switch(type) {
 					case ADD:
 						key = 'addBtn';
-						text = 'Add';
+						if (addDisplayMsg) {
+							text = addDisplayMsg;
+						} else {
+							text = 'Add';
+							if (model) {
+								let inflected = Inflector.singularize(model); // can only add one at a time
+								inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
+								text += ' ' + inflected;
+							}
+						}
 						handler = (parent, e) => {
 							onAdd();
 						};
@@ -232,7 +246,21 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						break;
 					case EDIT:
 						key = 'editBtn';
-						text = 'Edit';
+						if (editDisplayMsg) {
+							text = editDisplayMsg;
+						} else {
+							text = 'Edit';
+							if (model) {
+								let inflected = model;
+								if (selection.length <= 1) {
+									inflected = Inflector.singularize(inflected);
+								} else {
+									inflected = Inflector.pluralize(inflected);
+								}
+								inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
+								text += ' ' + inflected;
+							}
+						}
 						handler = (parent, e) => {
 							onEdit();
 						};
@@ -248,7 +276,21 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 						break;
 					case DELETE:
 						key = 'deleteBtn';
-						text = 'Delete';
+						if (deleteDisplayMsg) {
+							text = deleteDisplayMsg;
+						} else {
+							text = 'Delete';
+							if (model) {
+								let inflected = model;
+								if (selection.length <= 1) {
+									inflected = Inflector.singularize(inflected);
+								} else {
+									inflected = Inflector.pluralize(inflected);
+								}
+								inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
+								text += ' ' + inflected;
+							}
+						}
 						handler = onDelete;
 						handler = (parent, e) => {
 							onDelete();
