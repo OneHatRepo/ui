@@ -11,11 +11,10 @@ import {
 	setInfoMessage,
 	selectProgressMessage,
 	selectProgressPercentage,
-} from '@src/models/Slices/DebugSlice';
+} from '../../Slices/SystemSlice';
 import WaitMessage from './WaitMessage';
 import ErrorMessage from './ErrorMessage';
 import ProgressModal from './ProgressModal';
-
 
 
 export default function GlobalModals(props) {

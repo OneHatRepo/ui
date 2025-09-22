@@ -106,7 +106,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			setIsWaitModalShown = (bool) => {
 				const
 					dispatch = UiGlobals.redux?.dispatch,
-					setIsWaitModalShownAction = UiGlobals.debugReducer?.setIsWaitModalShownAction;
+					setIsWaitModalShownAction = UiGlobals.systemReducer?.setIsWaitModalShownAction;
 				if (setIsWaitModalShownAction) {
 					console.log('withEditor:setIsWaitModalShownAction', bool);
 					dispatch(setIsWaitModalShownAction(bool));

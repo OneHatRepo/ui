@@ -332,7 +332,7 @@ export default function withPdfButtons(WrappedComponent) {
 
 				const
 					dispatch = UiGlobals.redux.dispatch,
-					setIsWaitModalShownAction = UiGlobals.debugReducer.setIsWaitModalShownAction;
+					setIsWaitModalShownAction = UiGlobals.systemReducer.setIsWaitModalShownAction;
 
 				dispatch(setIsWaitModalShownAction(true));
 
