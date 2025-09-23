@@ -6,14 +6,24 @@ import {
 	VStack,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
-import { useSelector, useDispatch, } from 'react-redux';
-import { PROGRESS_COMPLETED } from '../../Constants/Progress.js';
-import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import * as Progress from 'react-native-progress';
+import useForceUpdate from '@onehat/ui/src/Hooks/useForceUpdate';
+import {
+	PROGRESS__NONE_FOUND,
+	PROGRESS__IN_PROCESS,
+	PROGRESS__COMPLETED,
+	PROGRESS__FAILED,
+	PROGRESS__STUCK,
+} from '../../Constants/Progress.js';
+import {
+	MOMENT_DATE_FORMAT_2,
+} from '../../Constants/Dates.js';
 import isJson from '../../Functions/isJson.js';
 import Form from '../Form/Form.js';
 import Button from '../Buttons/Button.js';
 import withComponent from '../Hoc/withComponent.js';
 import withAlert from '../Hoc/withAlert.js';
+import Loading from '../Messages/Loading.js';
 import ChevronLeft from '../Icons/ChevronLeft.js';
 import ChevronRight from '../Icons/ChevronRight.js';
 import Play from '../Icons/Play.js';
@@ -22,31 +32,35 @@ import Stop from '../Icons/Stop.js';
 import TabBar from '../Tab/TabBar.js';
 import Panel from '../Panel/Panel.js';
 import Toolbar from '../Toolbar/Toolbar.js';
+import moment from 'moment';
 import _ from 'lodash';
 
 const
-	INITIATE = 'INITIATE',
-	PROCESSING = 'PROCESSING',
-	RESULTS = 'RESULTS';
+	INIT = 'INIT', // no footer shown; used when component initially loads, to see if operation is already in progress
+	START = 'START', // shows the start form
+	PROCESSING = 'PROCESSING', // shows the loading indicator while starting the operation
+	RESULTS = 'RESULTS'; // shows the results of the operation, or any in-progress updates
 
-// NOTE: This component assumes you have an AppSlice, that has 
-// an 'operationsInProgress' state var and a 'setOperationsInProgress' action.
+// If getProgressUpdates is false, the component will show the start form initially.
+// If getProgressUpdates is true, the component will initially query the server to see if
+// 		an operation is already in progress. 
+// 		If so, it will automatically poll the server for progress updates
+// 		If not, it will show the start form.
 
 function AsyncOperation(props) {
 
-	if (!props.Repository || !props.action) {
-		throw Error('AsyncOperation: Repository and action are required!');
+	if (!props.Repository || !props.process) {
+		throw Error('AsyncOperation: Repository and process are required!');
 	}
 
 	const {
-			action,
+			process,
 			Repository,
 			formItems = [],
 			formStartingValues = {},
 			_form = {},
 			getProgressUpdates = false,
-			parseProgress, // optional fn, accepts 'response' as arg and returns progress string
-			progressStuckThreshold = null, // e.g. 3, if left blank, doesn't check for stuck state
+			parseProgress, // optional fn, accepts 'response' as arg and returns an object like this: { status, errors, started, lastUpdated, timeElapsed, count, current, total, percentage }
 			updateInterval = 10000, // ms
 
 			// withComponent
@@ -55,7 +69,7 @@ function AsyncOperation(props) {
 			// withAlert
 			alert,
 		} = props,
-		dispatch = useDispatch(),
+		forceUpdate = useForceUpdate(),
 		isValid = useRef(true),
 		setIsValid = (valid) => {
 			isValid.current = valid;
@@ -63,31 +77,103 @@ function AsyncOperation(props) {
 		getIsValid = () => {
 			return isValid.current;
 		},
-		mode = useRef(INITIATE),
+		mode = useRef(INIT),
 		setMode = (newMode) => {
 			mode.current = newMode;
 		},
 		getMode = () => {
 			return mode.current;
 		},
-		initiate = async () => {
-
-			clearProgress();
+		isInProcess = getMode() === PROCESSING,
+		currentTabIx = (getMode() === PROCESSING ? 1 : (getMode() === RESULTS ? 2 : 0)),
+		intervalRef = useRef(null),
+		getInterval = () => {
+			return intervalRef.current;
+		},
+		setIntervalRef = (interval) => { // 'setInterval' is a reserved name
+			intervalRef.current = interval;
+		},
+		formValuesRef = useRef(null),
+		getFormValues = () => {
+			return formValuesRef.current;
+		},
+		setFormValues = (values) => {
+			formValuesRef.current = values;
+		},
+		getFooter = () => {
+			switch(getMode()) {
+				case INIT:
+					return null;
+				case START:
+					return <Toolbar>
+								<Button
+									text="Start"
+									rightIcon={ChevronRight}
+									onPress={() => startProcess()}
+									isDisabled={!getIsValid()}
+								/>
+							</Toolbar>;
+				case PROCESSING:
+					// TODO: Add a cancellation option to the command.
+					// would require a backend controller action to support it
+					return null;
+					// return <Toolbar>
+					// 			<Button
+					// 				text="Please wait"
+					// 				isLoading={true}
+					// 				variant="link"
+					// 			/>
+					// 		</Toolbar>;
+				case RESULTS:
+					return <Toolbar>
+								<Button
+									text="Reset"
+									icon={ChevronLeft}
+									onPress={() => resetToInitialState()}
+								/>
+							</Toolbar>;
+			}
+		},
+		[footer, setFooter] = useState(getFooter()),
+		[results, setResults] = useState(null),
+		[progress, setProgress] = useState(null),
+		[isStuck, setIsStuck] = useState(false),
+		[isReady, setIsReady] = useState(false),
+		showResults = (results) => {
+			setMode(RESULTS);
+			setFooter(getFooter());
+			setResults(results);
+		},
+		startProcess = async () => {
+			stopGettingProgress();
 			setMode(PROCESSING);
 			setFooter(getFooter());
-			setIsInProgress(true);
 			
 			const
 				method = Repository.methods.edit,
-				uri = Repository.getModel() + '/' + action,
-				formValues = self?.children?.form?.formGetValues() || {},
+				uri = Repository.getModel() + '/startProcess',
+				formValues = self?.children?.form?.formGetValues() || {};
+			formValues.process = process;
+			const
 				result = await Repository._send(method, uri, formValues);
 
 			setFormValues(formValues);
 			
 			const response = Repository._processServerResponse(result);
-			if (!response.success) {
+			if (!response?.success) {
+				alert(response.message || 'Error starting process on server.');
 				resetToInitialState();
+				return;
+			}
+
+			if (getProgressUpdates) {
+				setProgress(<VStack className="p-4">
+								<Text className="text-lg" key="status">
+									Process has started. Progress updates will appear here momentarily.
+								</Text>
+								<Loading />
+							</VStack>);
+				getProgress();
 				return;
 			}
 			
@@ -106,205 +192,223 @@ function AsyncOperation(props) {
 								<Text>{message}</Text>;
 			}
 			showResults(results);
-		},
-		getFooter = (which = getMode()) => {
-			switch(which) {
-				case INITIATE:
-					return <Toolbar>
-								<Button
-									text="Start"
-									rightIcon={ChevronRight}
-									onPress={() => initiate()}
-									isDisabled={!getIsValid()}
-								/>
-							</Toolbar>;
-				case PROCESSING:
-					return <Toolbar>
-								<Button
-									text="Please wait"
-									isLoading={true}
-									variant="link"
-								/>
-							</Toolbar>;
-				case RESULTS:
-					return <Toolbar>
-								<Button
-									text="Reset"
-									icon={ChevronLeft}
-									onPress={() => resetToInitialState()}
-								/>
-							</Toolbar>;
-			}
-		},
-		operationsInProgress = useSelector((state) => state.app.operationsInProgress),
-		isInProgress = operationsInProgress.includes(action),
-		forceUpdate = useForceUpdate(),
-		[footer, setFooter] = useState(getFooter()),
-		[results, setResults] = useState(isInProgress ? 'Checking progress...' : null),
-		[progress, setProgress] = useState(null),
-		[isStuck, setIsStuck] = useState(false),
-		[currentTabIx, setCurrentTab] = useState(isInProgress ? 1 : 0),
-		previousProgressRef = useRef(null),
-		unchangedProgressCountRef = useRef(0),
-		intervalRef = useRef(null),
-		formValuesRef = useRef(null),
-		getPreviousProgress = () => {
-			return previousProgressRef.current;
-		},
-		setPreviousProgress = (progress) => {
-			previousProgressRef.current = progress;
-		},
-		getUnchangedProgressCount = () => {
-			return unchangedProgressCountRef.current;
-		},
-		setUnchangedProgressCount = (count) => {
-			unchangedProgressCountRef.current = count;
-			forceUpdate();
-		},
-		getInterval = () => {
-			return intervalRef.current;
-		},
-		setIntervalRef = (interval) => { // 'setInterval' is a reserved name
-			intervalRef.current = interval;
-		},
-		getFormValues = () => {
-			return formValuesRef.current;
-		},
-		setFormValues = (values) => {
-			formValuesRef.current = values;
-		},
-		showResults = (results) => {
-			setCurrentTab(1);
-			setMode(RESULTS);
-			setFooter(getFooter());
-			setResults(results);
-			getProgress();
+
 		},
 		getProgress = (immediately = false) => {
-			if (getProgressUpdates) {
+			if (!getProgressUpdates) {
+				return;
+			}
 
-				async function fetchProgress() {
-					const
-						method = Repository.methods.edit,
-						progressAction = 'get' + action.charAt(0).toUpperCase() + action.slice(1) + 'Progress',
-						uri = Repository.getModel() + '/' + progressAction,
-						result = await Repository._send(method, uri, getFormValues());
-						
-					const response = Repository._processServerResponse(result);
-					if (!response.success) {
-						alert(result.message);
-						clearProgress();
-						return;
-					}
+			async function fetchProgress(isInitial = false) {
 
-					const progress = parseProgress ? parseProgress(response) : response.message
-					if (progress === PROGRESS_COMPLETED) {
-						clearProgress();
-						setProgress(progress);
-					} else {
-						// in process
-						let newUnchangedProgressCount = getUnchangedProgressCount();
-						if (progress === getPreviousProgress()) {
-							newUnchangedProgressCount++;
-							setUnchangedProgressCount(newUnchangedProgressCount);
-							if (progressStuckThreshold !== null && newUnchangedProgressCount >= progressStuckThreshold) {
-								clearProgress();
-								setProgress('The operation appears to be stuck.');
-								setIsStuck(true);
-							}
-						} else {
-							setPreviousProgress(progress);
-							setProgress(progress);
-							setUnchangedProgressCount(0);
-						}
-					}
-				};
+				setIsStuck(false);
 				
-				if (immediately) {
-					fetchProgress();
+				const
+					method = Repository.methods.edit,
+					uri = Repository.getModel() + '/getProcessProgress',
+					data = {
+						process,
+						...getFormValues(), // in case options submitted when starting the process affect the progress updates
+					},
+					result = await Repository._send(method, uri, data);
+
+				const response = Repository._processServerResponse(result);
+				if (!response.success) {
+					alert(response.message || 'Error getting progress info from server.');
+					stopGettingProgress();
+					return;
 				}
-		
-				const interval = setInterval(fetchProgress, updateInterval);
-				setIntervalRef(interval);
+
+				const
+					progress = parseProgress ? parseProgress(response.root) : response.root,
+					{
+						status,
+						errors,
+						started,
+						lastUpdated,
+						timeElapsed,
+						count,
+						current,
+						total,
+						percentage,
+						message,
+					} = progress || {},
+					renderItems = [];
+				if (status === PROGRESS__NONE_FOUND) {
+					resetToInitialState();
+					setIsReady(true);
+					forceUpdate();
+					return;
+				}
+
+				let color = 'text-black',
+					statusMessage = '',
+					errorMessage = null;
+				if (status === PROGRESS__IN_PROCESS) {
+					setMode(PROCESSING);
+					color = 'text-green-600';
+					statusMessage = 'In process...';
+				} else {
+					setMode(RESULTS);
+					stopGettingProgress();
+					if (status === PROGRESS__COMPLETED) {
+						statusMessage = 'Completed';
+					} else if (status === PROGRESS__FAILED) {
+						color = 'text-red-400 font-bold';
+						statusMessage = 'Failed';
+					} else if (status === PROGRESS__STUCK) {
+						color = 'text-red-400 font-bold';
+						setIsStuck(true);
+						statusMessage = 'Stuck';
+					}
+				}
+
+				const className = 'text-lg';
+				renderItems.push(<Text className={className + ' ' + color} key="status">Status: {statusMessage}</Text>);
+				if (!_.isNil(percentage)) {
+					renderItems.push(<HStack className="mb-2" key="progress">
+											<Progress.Bar
+												animated={true}
+												progress={percentage / 100}
+												width={175}
+												height={20}
+												color="#666"
+											/>
+											<Text className={className + ' pl-1'}>{percentage}%</Text>
+										</HStack>);
+				}
+				if (started) {
+					const startedMoment = moment(started);
+					if (startedMoment.isValid()) {
+						renderItems.push(<Text className={className} key="started">Started: {startedMoment.format(MOMENT_DATE_FORMAT_2)}</Text>);
+					}
+				}
+				if (lastUpdated) {
+					const updatedMoment = moment(lastUpdated);
+					if (updatedMoment.isValid()) {
+						renderItems.push(<Text className={className} key="lastUpdated">Last Updated: {updatedMoment.format(MOMENT_DATE_FORMAT_2)}</Text>);
+					}
+				}
+				if (timeElapsed) {
+					renderItems.push(<Text className={className} key="timeElapsed">Time Elapsed: {timeElapsed}</Text>);
+				}
+				if (!_.isNil(count) && count !== 0) {
+					renderItems.push(<Text className={className} key="count">Count: {count}</Text>);
+				}
+				if (!_.isNil(current) && !_.isNil(total) && current !== 0 && total !== 0) {
+					renderItems.push(<Text className={className} key="currentTotal">Current/Total: {current} / {total}</Text>);
+				}
+				if (!_.isNil(message)) {
+					renderItems.push(<Text className={className} key="message">{message}</Text>);
+				}
+				if (!_.isNil(errors)) {
+					renderItems.push(<VStack key="errors">
+										<Text className="text-red-400 font-bold">Errors:</Text>
+										{errors?.map((line, ix)=> {
+											return <Text key={ix}>{line}</Text>;
+										})}
+									</VStack>);
+				}
+				if (getMode() === PROCESSING) {
+					setProgress(renderItems);
+				} else {
+					setResults(renderItems);
+				}
+
+				setIsReady(true);
+				setFooter(getFooter());
+				forceUpdate();
+			};
+	
+			let interval = getInterval();
+			if (interval) {
+				clearInterval(interval);
+			}
+			setIntervalRef(setInterval(fetchProgress, updateInterval));
+			
+			if (immediately) {
+				fetchProgress(true); // isInitial
 			}
 		},
 		resetToInitialState = () => {
-			setCurrentTab(0);
-			setMode(INITIATE);
+			setMode(START);
 			setFooter(getFooter());
-			clearProgress();
-		},
-		clearProgress = () => {
-			setIsInProgress(false);
 			setIsStuck(false);
-			setProgress(null);
-			setPreviousProgress(null);
-			setUnchangedProgressCount(0);
+			stopGettingProgress();
+		},
+		stopGettingProgress = () => {
 			clearInterval(getInterval());
 			setIntervalRef(null);
-		},
-		setIsInProgress = (isInProgress) => {
-			dispatch({
-				type: 'app/setOperationsInProgress',
-				payload: {
-					operation: action,
-					isInProgress,
-				},
-			});
 		},
 		onValidityChange = (isValid) => {
 			setIsValid(isValid);
 			setFooter(getFooter());
-		},
-		unchangedProgressCount = getUnchangedProgressCount();
+		};
 
 	useEffect(() => {
-		
-		if (isInProgress) {
-			getProgress(true); // true to fetch immediately
+		if (getProgressUpdates) {
+			getProgress(true);
+		} else {
+			setMode(START);
+			setIsReady(true);
 		}
-
 		return () => {
 			// clear the interval when the component unmounts
-			clearInterval(getInterval());
+			const interval = getInterval();
+			if (interval) {
+				clearInterval(interval);
+			}
 		};
 	}, []);
 
-	return <Panel {...props} footer={footer}>
-				<TabBar
-					tabs={[
-						{
-							title: 'Start',
-							icon: Play,
-							isDisabled: currentTabIx !== 0,
-							content: <Form
-										reference="form"
-										parent={self}
-										className="w-full h-full flex-1"
-										disableFooter={true}
-										items={formItems}
-										startingValues={formStartingValues}
-										onValidityChange={onValidityChange}
-										{..._form}
-									/>,
-						},
-						{
-							title: 'Results',
-							icon: isInProgress ? EllipsisHorizontal : Stop,
-							isDisabled: currentTabIx !== 1,
-							content: <ScrollView className="ScrollView h-full w-full">
-										<Box className={`p-4 ${isStuck ? 'text-red-400 font-bold' : ''}`}>
-											{progress ? 
-											progress + (unchangedProgressCount > 0 ? ' (unchanged x' + unchangedProgressCount + ')' : '') : 
-											results}
-										</Box>
-									</ScrollView>,
-						},
-					]}
-					currentTabIx={currentTabIx}
-					canToggleCollapse={false}
-					tabsAreButtons={false}
-				/>
+	return <Panel
+				{...props}
+				footer={footer}
+			>
+				{!isReady && <Loading />}
+				{isReady &&
+					<TabBar
+						tabs={[
+							{
+								title: 'Start',
+								icon: Play,
+								isDisabled: currentTabIx !== 0,
+								content: getMode() === INIT ? 
+										<Loading /> :
+										<ScrollView className="ScrollView h-full w-full">
+											<Form
+												reference="form"
+												parent={self}
+												className="w-full h-full flex-1"
+												disableFooter={true}
+												items={formItems}
+												startingValues={formStartingValues}
+												onValidityChange={onValidityChange}
+												{..._form}
+											/>
+										</ScrollView>,
+							},
+							{
+								title: 'Progress',
+								icon: EllipsisHorizontal,
+								isDisabled: currentTabIx !== 1,
+								content: <ScrollView className="ScrollView h-full w-full p-4">
+											{progress}
+										</ScrollView>,
+							},
+							{
+								title: 'Results',
+								icon: Stop,
+								isDisabled: currentTabIx !== 2,
+								content: <ScrollView className="ScrollView h-full w-full p-4">
+											{results}
+										</ScrollView>,
+							},
+						]}
+						currentTabIx={currentTabIx}
+						canToggleCollapse={false}
+						tabsAreButtons={false}
+					/>}
 			</Panel>;
 }
 

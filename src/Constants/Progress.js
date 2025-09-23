@@ -1,1 +1,5 @@
-export const PROGRESS_COMPLETED = 'Completed';
+export const PROGRESS__NONE_FOUND = 'NONE_FOUND';
+export const PROGRESS__IN_PROCESS = 'IN_PROCESS';
+export const PROGRESS__COMPLETED = 'COMPLETED';
+export const PROGRESS__FAILED = 'FAILED';
+export const PROGRESS__STUCK = 'STUCK';
