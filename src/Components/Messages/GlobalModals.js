@@ -11,7 +11,7 @@ import {
 	setInfoMessage,
 	selectProgressMessage,
 	selectProgressPercentage,
-} from '../../Slices/SystemSlice';
+} from '../../Models/Slices/SystemSlice';
 import WaitMessage from './WaitMessage';
 import ErrorMessage from './ErrorMessage';
 import ProgressModal from './ProgressModal';
