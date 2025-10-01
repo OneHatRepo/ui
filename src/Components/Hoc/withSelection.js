@@ -42,8 +42,24 @@ export default function withSelection(WrappedComponent) {
 			forceUpdate = useForceUpdate(),
 			selectionRef = useRef(initialSelection),
 			RepositoryRef = useRef(Repository),
+			isSelectionChangesEnabledRef = useRef(true),
 			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
+			getIsSelectionChangesEnabled = () => {
+				return isSelectionChangesEnabledRef.current;
+			},
+			setIsSelectionChangesEnabled = (bool) => {
+				isSelectionChangesEnabledRef.current = bool;
+			},
+			disableSelectionChanges = () => {
+				setIsSelectionChangesEnabled(false);
+			},
+			enableSelectionChanges = () => {
+				setIsSelectionChangesEnabled(true);
+			},
 			setSelection = (selection) => {
+				if (!getIsSelectionChangesEnabled()) {
+					return;
+				}
 				if (_.isEqual(selection, getSelection())) {
 					return;
 				}
@@ -195,13 +211,16 @@ export default function withSelection(WrappedComponent) {
 			},
 			isInSelection = (item) => {
 				const Repository = getRepository();
+				let found = null;
 				if (Repository) {
-					return inArray(item, getSelection());
-				}
-
-				const found = _.find(getSelection(), (selectedItem) => {
+					found = _.find(getSelection(), (selectedItem) => {
+						return selectedItem.id === item.id;
+					});
+				} else {
+					found = _.find(getSelection(), (selectedItem) => {
 						return selectedItem[idIx] === item[idIx];
 					});
+				}
 				return !!found;
 			},
 			getIndexOfSelectedItem = (item) => {
@@ -436,6 +455,9 @@ export default function withSelection(WrappedComponent) {
 					isInSelection={isInSelection}
 					getIdsFromSelection={getIdsFromLocalSelection}
 					getDisplayValuesFromSelection={getDisplayValuesFromSelection}
+					disableSelectionChanges={disableSelectionChanges}
+					enableSelectionChanges={enableSelectionChanges}
+					refreshSelection={refreshSelection}
 				/>;
 	});
 }

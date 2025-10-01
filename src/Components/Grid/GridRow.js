@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, } from 'react';
+import { useMemo, useState, useEffect, forwardRef, isValidElement, cloneElement, } from 'react';
 import {
 	Box,
 	HStack,
@@ -25,25 +25,20 @@ import useAsyncRenderers from './useAsyncRenderers.js';
 import _ from 'lodash';
 
 // Conditional import for web only
-let getEmptyImage;
-if (CURRENT_MODE === UI_MODE_WEB) {
-	import('react-dnd-html5-backend').then((module) => {
-		getEmptyImage = module.getEmptyImage;
-	}).catch(() => {
-		getEmptyImage = null;
-	});
-}
+let getEmptyImage = null;
 
 // This was broken out from Grid simply so we can memoize it
 
-function GridRow(props) {
+const GridRow = forwardRef(function GridRow(props, ref) {
 	const {
 			columnsConfig,
 			columnProps,
 			fields,
 			rowProps,
 			hideNavColumn,
-			showSelectHandle,
+			showRowHandle,
+			rowCanSelect,
+			rowCanDrag,
 			isRowHoverable,
 			isSelected,
 			isHovered,
@@ -79,8 +74,15 @@ function GridRow(props) {
 	// Hide the default drag preview only when using custom drag proxy (and only on web)
 	useEffect(() => {
 		if (dragPreviewRef && typeof dragPreviewRef === 'function' && getDragProxy && CURRENT_MODE === UI_MODE_WEB) {
-			// Only suppress default drag preview when we have a custom one and we're on web
-			dragPreviewRef(getEmptyImage(), { captureDraggingState: true });
+			// Load getEmptyImage dynamically and apply it
+			import('react-dnd-html5-backend').then((module) => {
+				const getEmptyImage = module.getEmptyImage;
+				if (getEmptyImage) {
+					dragPreviewRef(getEmptyImage(), { captureDraggingState: true });
+				}
+			}).catch((error) => {
+				console.warn('Failed to load react-dnd-html5-backend:', error);
+			});
 		}
 	}, [dragPreviewRef, getDragProxy]);
 
@@ -126,12 +128,13 @@ function GridRow(props) {
 			if (_.isArray(columnsConfig)) {
 				return _.map(columnsConfig, (config, key, all) => {
 					if (config.isHidden) {
-						return null;
+						// every element needs a key, so return an empty element with a key
+						return <Box key={key} style={{ display: 'none' }} />;
 					}
 					const
 						propsToPass = columnProps[key] || {},
 						colStyle = {},
-						whichCursor = showSelectHandle ? 'cursor-text' : 'cursor-pointer'; // when using rowSelectHandle, indicate that the row text is selectable, otherwise indicate that the row itself is selectable
+						whichCursor = showRowHandle ? 'cursor-text' : 'cursor-pointer'; // when using rowSelectHandle, indicate that the row text is selectable, otherwise indicate that the row itself is selectable
 					let colClassName = clsx(
 						'GridRow-column',
 						'p-1',
@@ -161,7 +164,12 @@ function GridRow(props) {
 
 					let value;
 					if (_.isFunction(config)) {
-						return config(item, key);
+						const element = config(item, key);
+						if (isValidElement(element)) {
+							// ensure element has a key
+							return element.key != null ? element : cloneElement(element, { key });
+						}
+						return <Box key={key}>{element}</Box>; // create a box (with key) to wrap non-elements
 					}
 					if (_.isPlainObject(config)) {
 						if (config.renderer) {
@@ -219,7 +227,7 @@ function GridRow(props) {
 								throw Error('Not yet working correctly!');
 								// Async renderer
 								if (isLoading) {
-									content = <Loading />;
+									content = <Loading key={key} />;
 								} else if (asyncResult) {
 									if (asyncResult.error) {
 										content = <Text key={key}>Render Error: {asyncResult.error.message || String(asyncResult.error)}</Text>;
@@ -240,7 +248,15 @@ function GridRow(props) {
 									content = <Text key={key}>Render Error: {error}</Text>;
 								}
 							}
-							return content;
+							
+							
+							
+							// Ensure content has a key prop
+							if (isValidElement(content)) {
+								// ensure element has a key
+								return content.key != null ? content : cloneElement(content, { key });
+							}
+							return <Box key={key}>{content}</Box>; // create a box (with key) to wrap non-elements
 						}
 						if (config.fieldName) {
 
@@ -315,7 +331,13 @@ function GridRow(props) {
 						}
 					}
 					if (_.isFunction(value)) {
-						return value(key);
+						const result = value(key);
+						// Ensure the result has a key prop
+						if (isValidElement(result)) {
+							// Only clone if the result doesn't already have a key
+							return result.key != null ? result : cloneElement(result, { key });
+						}
+						return <Box key={key}>{result}</Box>;
 					}
 					const elementProps = {};
 					if (config.getCellProps) {
@@ -353,12 +375,13 @@ function GridRow(props) {
 		};
 
 		let rowContents = <>
-							{(isDragSource || isDraggable || showSelectHandle) &&
+							{showRowHandle &&
 								<RowHandle
 									ref={dragSourceRef}
 									isDragSource={isDragSource}
 									isDraggable={isDraggable}
-									showSelectHandle={showSelectHandle}
+									canSelect={rowCanSelect}
+									canDrag={rowCanDrag}
 								/>}
 							
 							{isPhantom && 
@@ -418,6 +441,7 @@ function GridRow(props) {
 			rowClassName += ' border-4 border-[#0ff]';
 		}
 		return <HStackNative
+					ref={ref}
 					{...testProps('Row ' + (isSelected ? 'row-selected' : ''))}
 					{...rowProps}
 					key={hash}
@@ -449,8 +473,11 @@ function GridRow(props) {
 		dragSourceRef,
 		dragPreviewRef,
 		dropTargetRef,
+		showRowHandle,
+		rowCanSelect,
+		rowCanDrag,
 	]);
-}
+});
 
 // export default withDraggable(withDragSource(withDropTarget(GridRow)));
 export default GridRow;

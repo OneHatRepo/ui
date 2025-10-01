@@ -69,7 +69,8 @@ const
 	SIMULATED_CLICK = 0,
 	SINGLE_CLICK = 1,
 	DOUBLE_CLICK = 2,
-	TRIPLE_CLICK = 3;
+	TRIPLE_CLICK = 3,
+	TREE_NODE_INTERNAL = 'TREE_NODE_INTERNAL';
 
 // NOTE: If using TreeComponent with getCustomDragProxy, ensure that <GlobalDragProxy /> exists in App.js
 
@@ -77,6 +78,7 @@ function TreeComponent(props) {
 	const {
 			areRootsVisible = true,
 			autoLoadRootNodes = true,
+			autoSelectRootNode = false,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
 			isNodeTextConfigurable = false,
 			editDisplaySettings, // fn
@@ -102,11 +104,15 @@ function TreeComponent(props) {
 			noneFoundText,
 			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
+			hideReloadBtn = false,
+			showHeaderToolbar = true,
 			showHovers = true,
 			showSelectHandle = true,
 			isNodeSelectable = true,
 			isNodeHoverable = true,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the node clicked on
+			allowDeselectAll = true, // allow deselecting all nodes by clicking on empty space in tree
+			forceSelectionOnCollapse = false, // when true, maintains selection by auto-selecting appropriate nodes when collapse would hide current selection
 			disableBottomToolbar = false,
 			bottomToolbar = null,
 			topToolbar = null,
@@ -185,6 +191,9 @@ function TreeComponent(props) {
 			selectRangeTo,
 			isInSelection,
 			noSelectorMeansNoResults = false,
+			disableSelectionChanges,
+			enableSelectionChanges,
+			refreshSelection,
 
 		} = props,
 		forceUpdate = useForceUpdate(),
@@ -197,7 +206,7 @@ function TreeComponent(props) {
 		[searchFormData, setSearchFormData] = useState([]),
 		[highlitedDatum, setHighlitedDatum] = useState(null),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
-
+		showNodeHandle = showSelectHandle || areNodesDragSource,
 		// state getters & setters
 		getTreeNodeData = () => {
 			return treeNodeData.current;
@@ -378,7 +387,12 @@ function TreeComponent(props) {
 			} else {
 				// closing
 				if (datumContainsSelection(datum)) {
-					deselectAll();
+					if (forceSelectionOnCollapse) {
+						// Select the node being collapsed instead of deselecting all
+						setSelection([datum.item]);
+					} else {
+						deselectAll();
+					}
 				}
 			}
 			
@@ -386,8 +400,24 @@ function TreeComponent(props) {
 		},
 		onCollapseAll = () => {
 			const newTreeNodeData = [...getTreeNodeData()];
+			
+			// Check if current selection will be hidden after collapse
+			let willSelectionBeHidden = false;
+			if (forceSelectionOnCollapse && selection.length > 0) {
+				// After collapse, only root nodes will be visible
+				const rootNodeIds = newTreeNodeData.map(datum => datum.item.id);
+				willSelectionBeHidden = !selection.some(selectedItem => 
+					rootNodeIds.includes(selectedItem.id)
+				);
+			}
+			
 			collapseNodes(newTreeNodeData);
 			setTreeNodeData(newTreeNodeData);
+			
+			// If selection will be hidden and we have root nodes, select the first root
+			if (willSelectionBeHidden && newTreeNodeData.length > 0) {
+				setSelection([newTreeNodeData[0].item]);
+			}
 		},
 		onExpandAll = () => {
 			confirm('Are you sure you want to expand the whole tree? This may take a while.', async () => {
@@ -515,10 +545,34 @@ function TreeComponent(props) {
 				return;
 			}
 
-			const selectedNode = selectedNodes[0];
-			const commonAncestorId = await Repository.moveTreeNode(selectedNode, droppedOn.id);
+			// Check if drop target had no children before the move
+			const
+				hadNoChildrenBefore = !droppedOn.hasChildren,
+				selectedNode = selectedNodes[0],
+				commonAncestorId = await Repository.moveTreeNode(selectedNode, droppedOn.id);
 			const commonAncestorDatum = getDatumById(commonAncestorId);
-			reloadNode(commonAncestorDatum.item);
+
+			disableSelectionChanges(); // the reloadNode() commands change the selection. We don't want this when dragging and dropping the tree
+
+			await reloadNode(commonAncestorDatum.item); // **selectionChange to [] bc child node no longer exists
+
+			// If drop target gained its first children, reload it specifically and expand it
+			if (hadNoChildrenBefore) {
+				const refreshedDroppedOn = Repository.getById(droppedOn.id);
+				if (refreshedDroppedOn && refreshedDroppedOn.hasChildren) {
+					// Reload the drop target to get its new children
+					await reloadNode(refreshedDroppedOn); // **selectionChange
+					
+					// Now expand it to show the moved node
+					const dropTargetDatum = getDatumById(refreshedDroppedOn.id);
+					if (dropTargetDatum) {
+						dropTargetDatum.isExpanded = true;
+						forceUpdate();
+					}
+				}
+			}
+			enableSelectionChanges();
+			refreshSelection();
 
 		},
 
@@ -1068,28 +1122,59 @@ function TreeComponent(props) {
 						}) => {
 							const nodeDragProps = {};
 							let WhichNode = TreeNode;
+								nodeCanSelect = true,
+								nodeCanDrag = false;
 							if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
-								// Create a method that gets an always-current copy of the selection ids
 								dragSelectionRef.current = selection;
-								const getSelection = () => dragSelectionRef.current;
-
-								const userHasPermissionToDrag = (!canUser || canUser(EDIT));
+								const
+									getSelection = () => dragSelectionRef.current,
+									userHasPermissionToDrag = (!canUser || canUser(EDIT));
 								if (userHasPermissionToDrag) {
-									// NOTE: The Tree can either drag nodes internally or externally, but not both at the same time!
+									const
+										shouldSupportInternalDrag = canNodesMoveInternally,
+										shouldSupportExternalDrag = areNodesDragSource,
+										shouldSupportExternalDrop = areNodesDropTarget,
+										supportedDragTypes = [],
+										acceptedDropTypes = [];
+									
+									if (shouldSupportInternalDrag) {
+										supportedDragTypes.push(TREE_NODE_INTERNAL);
+									}
+									if (shouldSupportExternalDrag) {
+										supportedDragTypes.push(nodeDragSourceType);
+									}
+									if (shouldSupportInternalDrag) {
+										acceptedDropTypes.push(TREE_NODE_INTERNAL);
+									}
+									if (shouldSupportExternalDrop) {
+										acceptedDropTypes.push(dropTargetAccept);
+									}
 
-									// assign event handlers
-									if (canNodesMoveInternally) {
-										// internal drag/drop
-										const nodeDragSourceType = 'internal';
-										WhichNode = DragSourceDropTargetTreeNode;
-										nodeDragProps.isDragSource = !item.isRoot; // Root nodes cannot be dragged
-										nodeDragProps.dragSourceType = nodeDragSourceType;
-										nodeDragProps.dragSourceItem = {
+									// Set up drag source if needed
+									if (supportedDragTypes.length > 0) {
+										// If only internal drag is supported, root nodes cannot be dragged
+										// since they cannot be dropped anywhere valid within the tree
+										const canDragRootNode = shouldSupportExternalDrag || !shouldSupportInternalDrag;
+										nodeDragProps.isDragSource = canDragRootNode || !item.isRoot;
+										
+										// Use the primary drag type (external takes precedence if both are supported)
+										// This is what react-dnd will use as the main type for drag operations
+										nodeDragProps.dragSourceType = shouldSupportExternalDrag ? supportedDragTypes.find(type => type !== TREE_NODE_INTERNAL) || supportedDragTypes[0] : supportedDragTypes[0];
+										
+										// Create unified drag source item
+										const baseDragSourceItem = {
 											id: item.id,
 											item,
 											getSelection,
 											isInSelection,
-											type: nodeDragSourceType,
+											type: nodeDragProps.dragSourceType, // Primary drag type
+											supportedDragTypes, // Include all supported types
+											sourceComponentRef: treeRef, // Reference to the originating component
+											dragContext: {
+												isInternal: shouldSupportInternalDrag,
+												isExternal: shouldSupportExternalDrag,
+												sourceComponent: treeRef
+											},
 											onDragStart: () => {
 												if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
 													// reset the selection to just this one node if it's not already selected
@@ -1097,23 +1182,31 @@ function TreeComponent(props) {
 												}
 											},
 										};
+										
+										// Add external drag properties if needed
+										if (shouldSupportExternalDrag && getNodeDragSourceItem) {
+											const externalDragItem = getNodeDragSourceItem(item, getSelection, isInSelection, nodeDragSourceType);
+											Object.assign(baseDragSourceItem, externalDragItem);
+										}
+										
+										nodeDragProps.dragSourceItem = baseDragSourceItem;
 
-										// Prevent root nodes from being dragged, and use custom logic if provided
+										// Unified canDrag logic
 										nodeDragProps.canDrag = (monitor) => {
 											const currentSelection = getSelection();
 											
-											if (isInSelection(item)) {
-												// make sure root node is not selected (can't drag root nodes)
-												const hasRootNode = currentSelection.some(node => node.isRoot);
-												if (hasRootNode) {
-													return false;
-												}
-											}
+											// Root nodes can be dragged - restriction is handled in drop validation
 											
 											// Use custom drag validation if provided
-											if (canNodeMoveInternally) {
+											if (shouldSupportInternalDrag && canNodeMoveInternally) {
 												// In multi-selection, all nodes must be draggable
-												return currentSelection.every(node => canNodeMoveInternally(node));
+												const internalValid = currentSelection.every(node => canNodeMoveInternally(node));
+												if (!internalValid) return false;
+											}
+											
+											if (shouldSupportExternalDrag && canNodeMoveExternally) {
+												const externalValid = canNodeMoveExternally(monitor);
+												if (!externalValid) return false;
 											}
 											
 											return true;
@@ -1129,134 +1222,92 @@ function TreeComponent(props) {
 											(dragItem) => getCustomDragProxy(item, getSelection()) :
 											null; // let GlobalDragProxy handle the default case
 
-										const dropTargetAccept = 'internal';
+										nodeCanDrag = true;
+									}
+
+									// Set up drop target if needed
+									if (acceptedDropTypes.length > 0) {
 										nodeDragProps.isDropTarget = true;
-										nodeDragProps.dropTargetAccept = dropTargetAccept;
+										nodeDragProps.dropTargetAccept = acceptedDropTypes;
 										
-										// Define validation logic once for reuse
+										// drop validation
 										const validateDrop = (draggedItem) => {
 											if (!draggedItem) {
 												return false;
 											}
 											
-											const currentSelection = getSelection();
-
-											// Always include the dragged item itself in validation
-											// If no selection exists, the dragged item is what we're moving
-											const nodesToValidate = currentSelection.length > 0 ? currentSelection : [draggedItem.item];
+											// Determine if this is an internal drop based on component reference
+											// If sourceComponentRef is undefined, treat as external drop
+											const isInternalDrop = draggedItem.sourceComponentRef && 
+																   draggedItem.sourceComponentRef === treeRef;
 											
-											// validate that the dropped item is not already a direct child of the target node
-											if (isChildOf(draggedItem.item, item)) {
-												return false;
-											}
+											if (isInternalDrop && shouldSupportInternalDrag) {
+												// Internal drop validation
+												const currentSelection = getSelection();
 
-											// Validate that none of the nodes being moved can be dropped into the target location
-											for (const nodeToMove of nodesToValidate) {
-												if (nodeToMove.id === item.id) {
-													// Cannot drop a node onto itself
-													return false;
-												}
-												if (isDescendantOf(item, nodeToMove)) {
-													// Cannot drop a node into its own descendants
-													return false;
-												}
-											}
-											
-											if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
-												// custom business logic
-												return canNodeAcceptDrop(item, draggedItem);
-											}
-											return true;
-										};
-										
-										// Use the validation function for React DnD
-										nodeDragProps.canDrop = (draggedItem, monitor) => validateDrop(draggedItem);
-										
-										// Pass the same validation function for visual feedback
-										nodeDragProps.validateDrop = validateDrop;
-										
-										nodeDragProps.onDrop = (droppedItem) => {
-											if (belongsToThisTree(droppedItem)) {
-												onInternalNodeDrop(item, droppedItem);
-											}
-										};
-									} else {
-										// external drag/drop
-										if (areNodesDragSource) {
-											WhichNode = DragSourceTreeNode;
-											nodeDragProps.isDragSource = !item.isRoot; // Root nodes cannot be dragged
-											nodeDragProps.dragSourceType = nodeDragSourceType;
-											if (getNodeDragSourceItem) {
-												nodeDragProps.dragSourceItem = getNodeDragSourceItem(item, getSelection, isInSelection, nodeDragSourceType);
-											} else {
-												nodeDragProps.dragSourceItem = {
-													id: item.id,
-													item,
-													getSelection,
-													isInSelection,
-													type: nodeDragSourceType,
-												};
-											}
-											nodeDragProps.dragSourceItem.onDragStart = () => {
-												if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
-													// reset the selection to just this one node if it's not already selected
-													setSelection([item]);
-												}
-											};
-											if (canNodeMoveExternally) {
-												nodeDragProps.canDrag = canNodeMoveExternally;
-											}
-
-											// Add custom drag preview options
-											if (dragPreviewOptions) {
-												nodeDragProps.dragPreviewOptions = dragPreviewOptions;
-											}
-
-											// Add drag preview rendering
-											nodeDragProps.getDragProxy = getCustomDragProxy ? 
-												(dragItem) => getCustomDragProxy(item, getSelection()) :
-												null; // Let GlobalDragProxy handle the default case
-										}
-										if (areNodesDropTarget) {
-											WhichNode = DropTargetTreeNode;
-											nodeDragProps.isDropTarget = true;
-											nodeDragProps.dropTargetAccept = dropTargetAccept;
-											nodeDragProps.canDrop = (droppedItem, monitor) => {
-												// Check if the drop operation would be valid based on business rules
-												if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
-													return canNodeAcceptDrop(item, droppedItem);
-												}
-												// Default: allow external drops
-												return true;
-											};
-
-											// Define validation logic once for reuse
-											const validateDrop = (draggedItem) => {
-												if (!draggedItem) {
+												// Always include the dragged item itself in validation
+												// If no selection exists, the dragged item is what we're moving
+												const nodesToValidate = currentSelection.length > 0 ? currentSelection : [draggedItem.item];
+												
+												// Root nodes cannot be moved internally within the same tree
+												const hasRootNode = nodesToValidate.some(node => node.isRoot);
+												if (hasRootNode) {
 													return false;
 												}
 												
+												// validate that the dropped item is not already a direct child of the target node
+												if (isChildOf(draggedItem.item, item)) {
+													return false;
+												}
+
+												// Validate that none of the nodes being moved can be dropped into the target location
+												for (const nodeToMove of nodesToValidate) {
+													if (nodeToMove.id === item.id) {
+														// Cannot drop a node onto itself
+														return false;
+													}
+													if (isDescendantOf(item, nodeToMove)) {
+														// Cannot drop a node into its own descendants
+														return false;
+													}
+												}
+												
+												// Internal drops are allowed if they pass the above validations
+												return true;
+											} else {
+												// External drop validation - use custom business logic
 												if (canNodeAcceptDrop && typeof canNodeAcceptDrop === 'function') {
-													// custom business logic
 													return canNodeAcceptDrop(item, draggedItem);
 												}
+												
+												// Allow external drops by default if no custom validation is provided
 												return true;
-											};
-
-											// Use the validation function for React DnD
-											nodeDragProps.canDrop = (draggedItem, monitor) => validateDrop(draggedItem);
+											}
+										};
+										nodeDragProps.canDrop = (draggedItem, monitor) => validateDrop(draggedItem); // for React DnD
+										nodeDragProps.validateDrop = validateDrop; // for visual feedback
+										
+										// drop handler
+										nodeDragProps.onDrop = (droppedItem) => {
+											// Determine if this is an internal drop based on component reference
+											// If sourceComponentRef is undefined, treat as external drop
+											const isInternalDrop = droppedItem.sourceComponentRef && 
+																   droppedItem.sourceComponentRef === treeRef;
 											
-											// Pass the same validation function for visual feedback
-											nodeDragProps.validateDrop = validateDrop;
-
-											nodeDragProps.onDrop = (droppedItem) => {
-												// NOTE: item is sometimes getting destroyed, but it still has the id, so you can still use it
+											if (isInternalDrop && shouldSupportInternalDrag) {
+												onInternalNodeDrop(item, droppedItem);
+											} else if (shouldSupportExternalDrop && onNodeDrop) {
 												onNodeDrop(item, droppedItem);
-											};
-										}
-										if (areNodesDragSource && areNodesDropTarget) {
-											WhichNode = DragSourceDropTargetTreeNode;
-										}
+											}
+										};
+									}
+
+									if (nodeDragProps.isDragSource && nodeDragProps.isDropTarget) {
+										WhichNode = DragSourceDropTargetTreeNode;
+									} else if (nodeDragProps.isDragSource) {
+										WhichNode = DragSourceTreeNode;
+									} else if (nodeDragProps.isDropTarget) {
+										WhichNode = DropTargetTreeNode;
 									}
 								}
 							}
@@ -1270,7 +1321,9 @@ function TreeComponent(props) {
 										isSelected={isSelected}
 										isHovered={hovered}
 										showHovers={showHovers}
-										showSelectHandle={showSelectHandle}
+										showNodeHandle={showNodeHandle}
+										nodeCanSelect={nodeCanSelect}
+										nodeCanDrag={nodeCanDrag}
 										isHighlighted={highlitedDatum === datum}
 										{...nodeDragProps}
 
@@ -1334,6 +1387,12 @@ function TreeComponent(props) {
 			if (autoLoadRootNodes) {
 				await reloadTree();
 			}
+			if (autoSelectRootNode) {
+				const rootNodes = Repository.getRootNodes();
+				if (rootNodes.length) {
+					setSelection([rootNodes[0]]);
+				}
+			}
 			setIsReady(true);
 		})();
 
@@ -1389,7 +1448,7 @@ function TreeComponent(props) {
 	}
 	
 	const
-		headerToolbarItemComponents = useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, getTreeNodeData()]),
+		headerToolbarItemComponents = showHeaderToolbar ? useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, getTreeNodeData()]) : null,
 		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, getTreeNodeData()]);
 
 	if (!isReady) {
@@ -1411,7 +1470,7 @@ function TreeComponent(props) {
 									/>;
 		} else if (footerToolbarItemComponents.length) {
 			treeFooterComponent = <Toolbar>
-										<ReloadButton isTree={true} Repository={Repository} self={self} />
+										{!hideReloadBtn && <ReloadButton isTree={true} Repository={Repository} self={self} />}
 										{footerToolbarItemComponents}
 									</Toolbar>;
 		}
@@ -1444,22 +1503,34 @@ function TreeComponent(props) {
 				<VStack
 					ref={treeRef}
 					onClick={() => {
-						deselectAll();
+						if (allowDeselectAll) {
+							deselectAll();
+						}
 					}}
 					className="Tree-deselector w-full flex-1 p-1 bg-white"
 				>
 					<ScrollView
-						{...testProps('ScrollView')}
+						{...testProps('ScrollView-Vertical')}
 						className="Tree-ScrollView flex-1 w-full"
 						contentContainerStyle={{
-							height: '100%',
+							minHeight: '100%',
 						}}
 					>
-						{!treeNodes?.length ? 
-						<CenterBox>
-							{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />}
-						</CenterBox> :
-						treeNodes}
+						<ScrollView
+							{...testProps('ScrollView-Horizontal')}
+							horizontal={true}
+							className="w-full"
+							contentContainerStyle={{
+								minWidth: '100%',
+								flexDirection: 'column', // Keep vertical stacking
+							}}
+						>
+							{!treeNodes?.length ? 
+							<CenterBox>
+								{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />}
+							</CenterBox> :
+							treeNodes}
+						</ScrollView>
 					</ScrollView>
 				</VStack>
 

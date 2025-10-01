@@ -1341,6 +1341,23 @@ function Form(props) {
 		}
 		footerButtons =
 			<>
+			
+				{additionalFooterButtons && _.map(additionalFooterButtons, (props, ix) => {
+					let isDisabled = false;
+					if (props.disableOnInvalid) {
+						isDisabled = !formState.isValid;
+					}
+					const key = 'additionalFooterBtn-' + ix;
+					return <Button
+								{...testProps(key)}
+								key={key}
+								{...props}
+								onPress={(e) => props.skipSubmit ? props.onPress() : handleSubmit(props.onPress, onSubmitError)(e)}
+								icon={props.icon || null}
+								text={props.text}
+								isDisabled={isDisabled}
+							/>;
+				})}
 				{onDelete && getEditorMode() === EDITOR_MODE__EDIT && isSingle &&
 
 					<HStack className="flex-1 justify-start">
@@ -1410,23 +1427,6 @@ function Form(props) {
 						className="text-white"
 						text={submitBtnLabel || 'Submit'}
 					/>}
-			
-				{additionalFooterButtons && _.map(additionalFooterButtons, (props, ix) => {
-					let isDisabled = false;
-					if (props.disableOnInvalid) {
-						isDisabled = !formState.isValid;
-					}
-					const key = 'additionalFooterBtn-' + ix;
-					return <Button
-								{...testProps(key)}
-								key={key}
-								{...props}
-								onPress={(e) => handleSubmit(props.onPress, onSubmitError)(e)}
-								icon={props.icon || null}
-								text={props.text}
-								isDisabled={isDisabled}
-							/>;
-				})}
 			</>;
 
 		if (editorType === EDITOR_TYPE__INLINE) {

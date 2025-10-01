@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, } from 'react';
+import { useState, useEffect, useMemo, forwardRef, } from 'react';
 import {
 	Box,
 	HStack,
@@ -30,9 +30,7 @@ import SortDown from '../Icons/SortDown.js';
 import SortUp from '../Icons/SortUp.js';
 import _ from 'lodash';
 
-// This was broken out from Grid simply so we can memoize it
-
-export default function GridHeaderRow(props) {
+export default forwardRef(function GridHeaderRow(props, ref) {
 	let {
 			canColumnsReorder,
 			canColumnsResize,
@@ -49,7 +47,7 @@ export default function GridHeaderRow(props) {
 			isInlineEditorShown,
 			areRowsDragSource,
 			showColumnsSelector,
-			showSelectHandle,
+			showRowHandle,
 		} = props,
 		styles = UiGlobals.styles,
 		sortFn = Repository && Repository.getSortFn(),
@@ -467,18 +465,10 @@ export default function GridHeaderRow(props) {
 										/>}
 							</Pressable>;
 				});
-				if (showSelectHandle) {
+				if (showRowHandle) {
 					headerColumns.unshift(<Box
-						key="RowSelectHandle"
-						className="Spacer-RowSelectHandle px-2 items-center justify-center flex-none w-[40px]"
-					>
-						<Icon as={Arcs} className={`Arcs w-[20px] h-[20px] text-[#aaa]`} />
-					</Box>);
-				}
-				if (areRowsDragSource) {
-					headerColumns.unshift(<Box
-						key="spacer"
-						className="Spacer w-[7px]"
+						key="RowHandleSpacer"
+						className="Spacer-RowHandle w-[40px] flex-none"
 					/>);
 				}
 				if (!hideNavColumn) {
@@ -488,6 +478,7 @@ export default function GridHeaderRow(props) {
 			};
 
 		return <HStack
+					ref={ref}
 					style={{
 						scrollbarWidth: 'none',
 					}}
@@ -515,6 +506,8 @@ export default function GridHeaderRow(props) {
 		sortFn,
 		sortField,
 		isInlineEditorShown,
+		areRowsDragSource,
+		showRowHandle,
 	]);
-}
+});
 

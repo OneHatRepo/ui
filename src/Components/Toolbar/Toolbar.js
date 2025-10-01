@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import {
 	HStackNative,
 	ScrollView,
@@ -9,7 +10,7 @@ import {
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 
-export default function Toolbar(props) {
+export default forwardRef(function Toolbar(props, ref) {
 	
 	const styles = UiGlobals.styles;
 	
@@ -18,7 +19,7 @@ export default function Toolbar(props) {
 		'overflow-auto',
 		'items-center',
 		'justify-start',
-		'gap-2',
+		'gap-1',
 		'p-2',
 		'border-b',
 		'border-solid',
@@ -32,8 +33,10 @@ export default function Toolbar(props) {
 		className += ' ' + props.className
 	}
 	let toolbar = <HStackNative
+						ref={ref}
 						className={className}
 						style={props.style || {}}
+						onLayout={props.onLayout}
 					>
 						{props.children}
 					</HStackNative>;	
@@ -49,4 +52,4 @@ export default function Toolbar(props) {
 	}
 
 	return toolbar;
-};
+});

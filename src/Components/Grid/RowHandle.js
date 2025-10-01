@@ -7,7 +7,7 @@ import withTooltip from '@onehat/ui/src/Components/Hoc/withTooltip';
 import clsx from 'clsx';
 import Arcs from '../Icons/Arcs.js';
 
-const RowHandle = forwardRef(function RowHandle(props, ref) {
+const RowHandle = forwardRef((props, ref) => {
 	const {
 			isDragSource,
 			isDraggable
@@ -31,25 +31,27 @@ const RowHandle = forwardRef(function RowHandle(props, ref) {
 });
 
 function withAdditionalProps(WrappedComponent) {
-	return (props) => {
+	return forwardRef((props, ref) => {
 		const {
-				showSelectHandle,
+				canSelect,
+				canDrag,
 				isDragSource,
 				isDraggable
 			} = props;
 		let tooltipParts = [];
-		if (showSelectHandle) {
+		if (canSelect) {
 			tooltipParts.push('Select');
 		}
-		if (isDragSource || isDraggable) {
+		if (canDrag) {
 			tooltipParts.push('Drag');
 		}
 		const tooltip = tooltipParts.length === 2 ? tooltipParts.join(' or ') : tooltipParts[0];
 		return <WrappedComponent
 					tooltip={tooltip}
 					{...props}
+					ref={ref}
 				/>;
-	};
+	});
 }
 
 export default withAdditionalProps(withTooltip(RowHandle));

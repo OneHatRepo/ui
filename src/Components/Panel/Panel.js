@@ -1,5 +1,6 @@
 import { useEffect, useState, } from 'react';
 import {
+	Box,
 	ScrollView,
 	VStack,
 	VStackNative,
@@ -110,11 +111,22 @@ function Panel(props) {
 	if (maxHeight) {
 		style.maxHeight = maxHeight;
 	}
+	
+	// Handle collapsed state and filter conflicting classes
+	let filteredClassName = props.className;
 	if (isCollapsed) {
 		if (collapseDirection === HORIZONTAL) {
+			if (filteredClassName) {
+				// Remove any width-related classes from props.className to prevent conflicts
+				filteredClassName = filteredClassName.replace(/\b(w-\S+|width-\S+|min-w-\S+|max-w-\S+)\b/g, '').trim();
+			}
 			className += ' w-[33px]';
 			delete style.width;
 		} else {
+			if (filteredClassName) {
+				// Remove any height-related classes from props.className to prevent conflicts
+				filteredClassName = filteredClassName.replace(/\b(h-\S+|height-\S+|min-h-\S+|max-h-\S+)\b/g, '').trim();
+			}
 			className += ' h-[33px]';
 			delete style.height;
 		}
@@ -123,8 +135,8 @@ function Panel(props) {
 	// frame
 	className += ' border-grey-300' + (isWindow ? ' rounded-lg shadow-lg ' : '') + (frame ? ' border-2' : ' border-none');
 
-	if (props.className) {
-		className += ' ' + props.className;
+	if (filteredClassName) {
+		className += ' ' + filteredClassName;
 	}
 
 	return <VStackNative

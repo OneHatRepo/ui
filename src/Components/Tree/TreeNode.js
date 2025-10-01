@@ -23,18 +23,14 @@ import ChevronDown from '../Icons/ChevronDown.js';
 import _ from 'lodash';
 
 // Conditional import for web only
-let getEmptyImage;
-if (CURRENT_MODE === UI_MODE_WEB) {
-	import('react-dnd-html5-backend').then((module) => {
-		getEmptyImage = module.getEmptyImage;
-	}).catch(() => {
-		getEmptyImage = null;
-	});
-}
+let getEmptyImage = null;
 
 // This was broken out from Tree simply so we can memoize it
 
 export default function TreeNode(props) {
+	if (props.datum?.item?.isDestroyed) {
+		return null;
+	}
 	const {
 			datum,
 			nodeProps = {},
@@ -46,7 +42,9 @@ export default function TreeNode(props) {
 			isHighlighted,
 			isOver,
 			isSelected,
-			showSelectHandle,
+			showNodeHandle,
+			nodeCanSelect,
+			nodeCanDrag,
 			canDrop,
 			draggedItem,
 			validateDrop, // same as canDrop (for visual feedback)
@@ -68,11 +66,19 @@ export default function TreeNode(props) {
 		icon = datum.icon,
 		hash = item?.hash || item;
 
+	
 	// Hide the default drag preview only when using custom drag proxy (and only on web)
 	useEffect(() => {
 		if (dragPreviewRef && typeof dragPreviewRef === 'function' && getDragProxy && CURRENT_MODE === UI_MODE_WEB) {
-			// Only suppress default drag preview when we have a custom one and we're on web
-			dragPreviewRef(getEmptyImage(), { captureDraggingState: true });
+			// Load getEmptyImage dynamically and apply it
+			import('react-dnd-html5-backend').then((module) => {
+				const getEmptyImage = module.getEmptyImage;
+				if (getEmptyImage) {
+					dragPreviewRef(getEmptyImage(), { captureDraggingState: true });
+				}
+			}).catch((error) => {
+				console.warn('Failed to load react-dnd-html5-backend:', error);
+			});
 		}
 	}, [dragPreviewRef, getDragProxy]);
 
@@ -154,12 +160,13 @@ export default function TreeNode(props) {
 				>
 					{isPhantom && <Box className="absolute t-0 l-0 bg-[#f00] h-[2px] w-[2px]" />}
 					
-					{(isDragSource || showSelectHandle) &&
+					{showNodeHandle &&
 						<RowHandle
 							ref={dragSourceRef}
 							isDragSource={isDragSource}
 							isDraggable={isDraggable}
-							showSelectHandle={showSelectHandle}
+							canSelect={nodeCanSelect}
+							canDrag={nodeCanDrag}
 						/>}
 
 					{hasChildren && <IconButton

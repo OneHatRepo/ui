@@ -25,7 +25,7 @@ export function TreePanel(props) {
 	}
 
 	return <Panel {...props._panel}>
-				<WhichTree {...props} />
+				<WhichTree {...props} {...props._tree} />
 			</Panel>;
 }
 

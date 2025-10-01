@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import {
 	HStack,
 } from '@project-components/Gluestack';
@@ -7,7 +7,7 @@ import Pagination from './Pagination.js'
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
 
-export default function PaginationToolbar(props) {
+export default forwardRef(function PaginationToolbar(props, ref) {
 	const {
 			toolbarItems = [],
 			disablePageSize = false,
@@ -38,6 +38,7 @@ export default function PaginationToolbar(props) {
 		};
 
 	return <Toolbar
+				ref={ref}
 				className={clsx(
 					'border-t',
 					'border-t-grey-400',
@@ -63,4 +64,4 @@ export default function PaginationToolbar(props) {
 					disablePageSize={disablePageSize}
 				/>
 			</Toolbar>;
-};
+});

@@ -103,7 +103,10 @@ import _ from 'lodash';
 const
 	SINGLE_CLICK = 1,
 	DOUBLE_CLICK = 2,
-	TRIPLE_CLICK = 3;
+	TRIPLE_CLICK = 3,
+	PHASES_INITIAL = 'initial',
+	PHASES_MEASURING = 'measuring',
+	PHASES_OPTIMIZED = 'optimized';
 
 function GridComponent(props) {
 	const {
@@ -184,6 +187,8 @@ function GridComponent(props) {
 			areRowsDropTarget = false,
 			dropTargetAccept,
 			onRowDrop,
+			onDragStart,
+			onDragEnd,
 
 			// withComponent
 			self,
@@ -263,6 +268,7 @@ function GridComponent(props) {
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[isReorderMode, setIsReorderMode] = useState(false),
+		showRowHandle = showSelectHandle || areRowsDragSource || (canRowsReorder && isReorderMode),
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
 		},
@@ -491,6 +497,7 @@ function GridComponent(props) {
 						'Row',
 						'flex-row',
 						'grow',
+						'max-h-[80px]',
 					)}
 				>
 					{({
@@ -500,6 +507,7 @@ function GridComponent(props) {
 					}) => {
 						if (isHeaderRow) {
 							let headerRow = <GridHeaderRow
+												ref={headerRowRef}
 												Repository={Repository}
 												columnsConfig={localColumnsConfig}
 												setColumnsConfig={setLocalColumnsConfig}
@@ -513,7 +521,7 @@ function GridComponent(props) {
 												isInlineEditorShown={isInlineEditorShown}
 												areRowsDragSource={areRowsDragSource}
 												showColumnsSelector={showColumnsSelector}
-												showSelectHandle={showSelectHandle}
+												showRowHandle={showRowHandle}
 											/>;
 							if (showRowExpander) {
 								// align the header row to content rows by adding a spacer that matches the width of the Grid-rowExpander-expandBtn
@@ -527,7 +535,9 @@ function GridComponent(props) {
 						const
 							rowReorderProps = {},
 							rowDragProps = {};
-						let WhichRow = GridRow;
+						let WhichRow = GridRow,
+							rowCanSelect = true,
+							rowCanDrag = false;
 						if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
 							// Create a method that gets an always-current copy of the selection ids
 							dragSelectionRef.current = selection;
@@ -545,11 +555,13 @@ function GridComponent(props) {
 										id: item.id,
 										getSelection,
 										isInSelection,
+										sourceComponentRef: gridRef, // Reference to the originating component
 										onDrag: (dragState) => {
 											onRowReorderDrag(dragState, dragIx);
 										},
 									};
 									rowReorderProps.onDragEnd = onRowReorderEnd;
+									rowCanDrag = true;
 								} else {
 									// Don't allow drag/drop from withDnd while reordering
 									if (areRowsDragSource && (!canRowDrag || canRowDrag(item))) {
@@ -558,6 +570,10 @@ function GridComponent(props) {
 										rowDragProps.dragSourceType = rowDragSourceType;
 										if (getRowDragSourceItem) {
 											rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, isInSelection, rowDragSourceType);
+											// Ensure all drag items have a component reference
+											if (!rowDragProps.dragSourceItem.sourceComponentRef) {
+												rowDragProps.dragSourceItem.sourceComponentRef = gridRef;
+											}
 										} else {
 											rowDragProps.dragSourceItem = {
 												id: item.id,
@@ -565,12 +581,16 @@ function GridComponent(props) {
 												getSelection,
 												isInSelection,
 												type: rowDragSourceType,
+												sourceComponentRef: gridRef, // Reference to the originating component
 											};
 										}
 										rowDragProps.dragSourceItem.onDragStart = () => {
 											if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
 												// reset the selection to just this one node if it's not already selected
 												setSelection([item]);
+											}
+											if (onDragStart) {
+												onDragStart(item, rowDragProps.dragSourceItem);
 											}
 										};
 										if (canRowDrag) {
@@ -582,10 +602,17 @@ function GridComponent(props) {
 											rowDragProps.dragPreviewOptions = dragPreviewOptions;
 										}
 
+										// Add onDragEnd callback
+										if (onDragEnd) {
+											rowDragProps.onDragEnd = onDragEnd;
+										}
+
 										// Add drag preview rendering
 										rowDragProps.getDragProxy = getCustomDragProxy ? 
 											(dragItem) => getCustomDragProxy(item, getSelection()) :
 											null; // Let GlobalDragProxy handle the default case
+
+										rowCanDrag = true;
 									}
 									if (areRowsDropTarget) {
 										WhichRow = DropTargetGridRow;
@@ -611,7 +638,20 @@ function GridComponent(props) {
 							}
 
 						}
+						
+						// Use pre-created ref for row height measurement (sample first few rows)
+						let rowRef = null;
+						if (autoAdjustPageSizeToHeight && measurementPhase === PHASES_MEASURING && 
+							!isHeaderRow && index >= 1 && index <= 5) { // Sample first 5 data rows (index 1-5)
+							const refIndex = index - 1; // Convert to 0-based index
+							rowRef = rowRefs[refIndex];
+							if (rowRef && !sampleRowsRef.current.includes(rowRef)) {
+								sampleRowsRef.current.push(rowRef);
+							}
+						}
+						
 						return <WhichRow
+									ref={rowRef}
 									columnsConfig={localColumnsConfig}
 									columnProps={columnProps}
 									fields={fields}
@@ -622,7 +662,9 @@ function GridComponent(props) {
 									isSelected={isSelected}
 									isHovered={hovered}
 									showHovers={showHovers}
-									showSelectHandle={showSelectHandle}
+									showRowHandle={showRowHandle}
+									rowCanSelect={rowCanSelect}
+									rowCanDrag={rowCanDrag}
 									index={index}
 									alternatingInterval={alternatingInterval}
 									alternateRowBackgrounds={alternateRowBackgrounds}
@@ -816,19 +858,107 @@ function GridComponent(props) {
 			marker.remove();
 			cachedDragElements.current = null;
 		},
-		calculatePageSize = (containerHeight) => {
-			const
-				headerHeight = showHeaders ? 50 : 0,
-				footerHeight = !disablePagination ? 50 : 0,
-				availableHeight = containerHeight - headerHeight - footerHeight,
-				maxClassNormal = styles.GRID_ROW_MAX_HEIGHT_NORMAL, // e.g. max-h-[40px]
-				rowNormalHeight = parseInt(maxClassNormal.match(/\d+/)[0]);
-			
-			let pageSize = Math.floor(availableHeight / rowNormalHeight);
-			if (pageSize < 1) {
-				pageSize = 1;
+		// Refs for measuring actual row heights
+		headerRowRef = useRef(null),
+		paginationToolbarRef = useRef(null),
+		sampleRowsRef = useRef([]),
+		
+		// Pre-create refs for first 5 rows for measurement
+		rowRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)],
+		
+		// State for tracking measurement phases
+		[measurementPhase, setMeasurementPhase] = useState(PHASES_INITIAL), // 
+		[lastMeasuredContainerHeight, setLastMeasuredContainerHeight] = useState(0),
+		[measuredRowHeight, setMeasuredRowHeight] = useState(null),
+		calculatePageSize = (containerHeight, useActualMeasurements = false) => {
+			// Phase 1: Initial calculation using estimated heights
+			if (!useActualMeasurements || measurementPhase === PHASES_INITIAL) {
+				const
+					headerHeight = showHeaders ? 50 : 0,
+					footerHeight = !disablePagination ? 50 : 0,
+					availableHeight = containerHeight - headerHeight - footerHeight,
+					maxClassNormal = styles.GRID_ROW_MAX_HEIGHT_NORMAL, // e.g. max-h-[40px]
+					rowNormalHeight = parseInt(maxClassNormal.match(/\d+/)[0]);
+				
+				let pageSize = Math.floor(availableHeight / rowNormalHeight);
+				// Add 20% buffer for better measurement accuracy
+				pageSize = Math.floor(pageSize * 1.2);
+				if (pageSize < 1) {
+					pageSize = 1;
+				}
+				return pageSize;
 			}
-			return pageSize;
+			
+			// Phase 3: Optimized calculation using actual measurements
+			if (useActualMeasurements && measurementPhase === PHASES_OPTIMIZED && measuredRowHeight) {
+				let actualHeaderHeight = 0;
+				let actualFooterHeight = 0;
+				let actualRowHeight = measuredRowHeight;
+				
+				// Measure actual header height
+				if (showHeaders && headerRowRef.current) {
+					actualHeaderHeight = headerRowRef.current.offsetHeight || headerRowRef.current.clientHeight || 50;
+				}
+				
+				// Measure actual pagination toolbar height
+				if (!disablePagination && paginationToolbarRef.current) {
+					actualFooterHeight = paginationToolbarRef.current.offsetHeight || paginationToolbarRef.current.clientHeight || 50;
+				}
+				
+				const availableHeight = containerHeight - actualHeaderHeight - actualFooterHeight;
+				let pageSize = Math.floor(availableHeight / actualRowHeight);
+				
+				if (pageSize < 1) {
+					pageSize = 1;
+				}
+				return pageSize;
+			}
+			
+			// Fallback to Phase 1 logic
+			return calculatePageSize(containerHeight, false);
+		},
+		measureActualRowHeights = () => {
+			if (CURRENT_MODE !== UI_MODE_WEB || !gridContainerRef.current) {
+				return;
+			}
+			
+			// Measure a sample of rendered rows to get average height
+			const sampleRows = sampleRowsRef.current.filter(ref => ref && ref.current);
+			if (sampleRows.length === 0) {
+				return;
+			}
+			
+			let totalHeight = 0;
+			let measuredCount = 0;
+			
+			sampleRows.forEach(rowRef => {
+				if (rowRef.current) {
+					const height = rowRef.current.offsetHeight || rowRef.current.clientHeight;
+					if (height > 0) {
+						totalHeight += height;
+						measuredCount++;
+					}
+				}
+			});
+			
+			if (measuredCount > 0) {
+				const averageHeight = totalHeight / measuredCount;
+				console.log(`[Grid] Measured actual row height: ${averageHeight}px from ${measuredCount} sample rows`);
+				setMeasuredRowHeight(averageHeight);
+				setMeasurementPhase(PHASES_OPTIMIZED);
+				
+				// Clear sample refs for next measurement cycle
+				sampleRowsRef.current = [];
+				
+				// Recalculate pageSize with actual measurements
+				if (lastMeasuredContainerHeight > 0) {
+					const newPageSize = calculatePageSize(lastMeasuredContainerHeight, true);
+					console.log(`[Grid] Optimized pageSize: ${newPageSize} (was ${Repository.pageSize})`);
+					if (newPageSize !== Repository.pageSize) {
+						Repository.setPageSize(newPageSize);
+					}
+				}
+			}
 		},
 		adjustPageSizeToHeight = (e) => {
 			if (CURRENT_MODE !== UI_MODE_WEB) { // TODO: Remove this conditional, and don't even do the double render for RN
@@ -846,9 +976,19 @@ function GridComponent(props) {
 			if (doAdjustment) {
 				const containerHeight = e.nativeEvent.layout.height;
 				if (containerHeight > 0) {
-					const pageSize = calculatePageSize(containerHeight);
+					setLastMeasuredContainerHeight(containerHeight);
+					
+					// Phase 1: Initial calculation with buffer
+					const pageSize = calculatePageSize(containerHeight, false);
+					console.log(`[Grid] Adjusting pageSize: containerHeight=${containerHeight}, phase=${measurementPhase}, calculatedPageSize=${pageSize}, currentPageSize=${Repository.pageSize}`);
+					
 					if (pageSize !== Repository.pageSize) {
 						Repository.setPageSize(pageSize);
+						
+						// Trigger Phase 2: Enable measurement mode after render
+						if (measurementPhase === PHASES_INITIAL) {
+							setMeasurementPhase(PHASES_MEASURING);
+						}
 					}
 				}
 			}
@@ -1006,8 +1146,6 @@ function GridComponent(props) {
 		(async () => {
 
 			// second call -- do other necessary setup
-
-			
 			let columnsConfigVariable = columnsConfig,
 				localColumnsConfig = [],
 				savedLocalColumnsConfig,
@@ -1100,6 +1238,20 @@ function GridComponent(props) {
 				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
+				
+				// Reset measurement phase and recalculate pageSize if auto-adjust is enabled
+				if (autoAdjustPageSizeToHeight && lastMeasuredContainerHeight > 0) {
+					console.log(`[Grid] Filters changed - resetting pageSize measurement`);
+					setMeasurementPhase(PHASES_INITIAL);
+					setMeasuredRowHeight(null);
+					sampleRowsRef.current = [];
+					
+					// Recalculate pageSize with fresh measurements
+					const pageSize = calculatePageSize(lastMeasuredContainerHeight, false);
+					if (pageSize !== Repository.pageSize) {
+						Repository.setPageSize(pageSize);
+					}
+				}
 			},
 			onChangeSorters = () => {
 				if (!Repository.isAutoLoad) {
@@ -1150,6 +1302,26 @@ function GridComponent(props) {
 		applySelectorSelected();
 
 	}, [selectorId, selectorSelected]);
+
+	// Effect to trigger row height measurement after render
+	useEffect(() => {
+		if (measurementPhase === PHASES_MEASURING && data && data.length > 0) {
+			// Small delay to ensure DOM is fully rendered
+			const timer = setTimeout(() => {
+				measureActualRowHeights();
+			}, 100);
+			return () => clearTimeout(timer);
+		}
+	}, [measurementPhase, data]);
+
+	// Effect to reset measurement state when autoAdjustPageSizeToHeight changes
+	useEffect(() => {
+		if (autoAdjustPageSizeToHeight) {
+			setMeasurementPhase(PHASES_INITIAL);
+			setMeasuredRowHeight(null);
+			sampleRowsRef.current = [];
+		}
+	}, [autoAdjustPageSizeToHeight]);
 
 	if (canUser && !canUser('view')) {
 		return <Unauthorized />;
@@ -1203,6 +1375,7 @@ function GridComponent(props) {
 				showMoreOnly = true;
 			}
 			listFooterComponent = <PaginationToolbar
+										ref={paginationToolbarRef}
 										Repository={Repository}
 										self={self}
 										toolbarItems={footerToolbarItemComponents}
@@ -1297,7 +1470,7 @@ function GridComponent(props) {
 		'border-grey-300',
 	);
 	if (props.className) {
-		className += props.className;
+		className += ' ' + props.className;
 	}
 
 	grid = <VStackNative
@@ -1321,7 +1494,7 @@ function GridComponent(props) {
 					className={clsx(
 						'gridContainer',
 						'w-full',
-						'h-full',
+						// 'h-full',
 						'flex-1',
 						'min-h-[40px]',
 						gridContainerBorderClassName,
