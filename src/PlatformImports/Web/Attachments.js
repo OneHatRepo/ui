@@ -58,7 +58,7 @@ import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import Folder from '../../Components/Icons/Folder.js';
 import Plus from '../../Components/Icons/Plus.js';
-import Minus from '../../Components/Icons/Minus.js';
+import Trash from '../../Components/Icons/Trash.js';
 import Edit from '../../Components/Icons/Edit.js';
 import delay from '../../Functions/delay.js';
 import _ from 'lodash';
@@ -1122,10 +1122,10 @@ function AttachmentsElement(props) {
 										isDisabled: !treeSelection.length, // disabled if no selection
 									},
 									{
-										key: 'Minus',
+										key: 'Trash',
 										text: 'Delete Directory',
 										handler: onDeleteDirectory,
-										icon: Minus,
+										icon: Trash,
 										isDisabled: !treeSelection.length || !treeSelection[0].parentId, // disabled if selection is root or none
 									},
 								] : [],
