@@ -693,7 +693,7 @@ function AttachmentsElement(props) {
 					}
 					if (doReload) {
 						// setTreeSelection([]); // clear it; otherwise we get stale nodes after reloading AttachmentDirectories
-						await AttachmentDirectories.reload();
+						await AttachmentDirectories.loadRootNodes(2);
 						if (wasAlreadyLoaded) {
 							const rootNodes = AttachmentDirectories.getRootNodes();
 							if (rootNodes) {

@@ -609,7 +609,7 @@ function TreeComponent(props) {
 			let nodes = [];
 			if (Repository) {
 				if (!Repository.isDestroyed) {
-					if (!Repository.areRootNodesLoaded) {
+					if (!Repository.isLoaded) {
 						nodes = await Repository.loadRootNodes(1);
 					} else {
 						nodes = Repository.getRootNodes();

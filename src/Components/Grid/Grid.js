@@ -1277,7 +1277,7 @@ function GridComponent(props) {
 		applySelectorSelected();
 		Repository.resumeEvents();
 
-		if (((Repository.isRemote && !Repository.isLoaded) || forceLoadOnRender) && !disableLoadOnRender) { // default remote repositories to load on render, optionally force or disable load on render
+		if (((Repository.isRemote && !Repository.isLoaded && !Repository.isLoading) || forceLoadOnRender) && !disableLoadOnRender) { // default remote repositories to load on render, optionally force or disable load on render
 			Repository.load();
 		}
 
