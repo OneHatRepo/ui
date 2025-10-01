@@ -45,6 +45,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				editorType,
 				onAdd,
 				onChange, // any kind of crud change
+				onBeforeDelete,
 				onDelete,
 				onSave, // this could also be called 'onEdit'
 				onEditorClose,
@@ -289,7 +290,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
 					return;
 				}
+				if (onBeforeDelete) {
+					// This listener is set by parent components using a prop
+					const listenerResult = await onBeforeDelete(selection);
+					if (listenerResult === false) {
+						return;
+					}
+				}
 				if (getListeners().onBeforeDelete) {
+					// This listener is set by child components using setWithEditListeners()
 					const listenerResult = await getListeners().onBeforeDelete();
 					if (listenerResult === false) {
 						return;
@@ -345,7 +354,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 				const selection = getSelection();
+				if (onBeforeDelete) {
+					// This listener is set by parent components using a prop
+					const listenerResult = await onBeforeDelete(selection);
+					if (listenerResult === false) {
+						return;
+					}
+				}
 				if (getListeners().onBeforeDelete) {
+					// This listener is set by child components using setWithEditListeners()
 					const listenerResult = await getListeners().onBeforeDelete(selection);
 					if (listenerResult === false) {
 						return;

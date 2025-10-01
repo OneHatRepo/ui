@@ -60,6 +60,7 @@ import Folder from '../../Components/Icons/Folder.js';
 import Plus from '../../Components/Icons/Plus.js';
 import Trash from '../../Components/Icons/Trash.js';
 import Edit from '../../Components/Icons/Edit.js';
+import Rotate from '../../Components/Icons/Rotate.js';
 import delay from '../../Functions/delay.js';
 import _ from 'lodash';
 
@@ -555,9 +556,54 @@ function AttachmentsElement(props) {
 			});
 		},
 		onDeleteDirectory = async () => {
-			const attachmentDirectory = getTreeSelection()[0];
+
+			const
+				attachmentDirectory = getTreeSelection()[0],
+				isRoot = attachmentDirectory.isRoot;
+			if (isRoot) {
+				alert('Cannot delete the root directory.');
+				return;
+			}
+
+
+			// check if there are any attachments in this directory or its subdirectories
+			const
+				url = AttachmentDirectories.api.baseURL + 'AttachmentDirectories/hasAttachments',
+				data = {
+					attachment_directory_id: treeSelection[0].id,
+				},
+				result = await AttachmentDirectories._send('POST', url, data);
+			
+			const {
+				root,
+				success,
+				total,
+				message
+			} = AttachmentDirectories._processServerResponse(result);
+
+			if (!success) {
+				alert(message);
+				return;
+			}
+
+			if (root.hasAttachments) {
+				alert('Cannot delete a directory that contains attachments somewhere down its hierarchy. Please move or delete the attachments first.');
+				return;
+			}
+
+
+			// transfer selection to the parent node
+			const
+				parentNode = attachmentDirectory.getParent(),
+				newSelection = [parentNode];
+			setTreeSelection(newSelection);
+			self.children.tree.setSelection(newSelection);
+
+			
+			// now delete it
 			await attachmentDirectory.delete();
 			self.children.tree.buildAndSetTreeNodeData();
+			
 		},
 		onRenameDirectory = () => {
 			const attachmentDirectory = getTreeSelection()[0];
@@ -606,6 +652,14 @@ function AttachmentsElement(props) {
 							}}
 						/>,
 			});
+		},
+		onReloadDirectories = async () => {
+			await AttachmentDirectories.loadRootNodes(2);
+			const rootNodes = AttachmentDirectories.getRootNodes();
+			if (rootNodes) {
+				setTreeSelection(rootNodes);
+				self.children.tree.setSelection(rootNodes);
+			}
 		};
 
 	if (!_.isEqual(modelidCalc, modelid.current)) {
@@ -1127,6 +1181,12 @@ function AttachmentsElement(props) {
 										handler: onDeleteDirectory,
 										icon: Trash,
 										isDisabled: !treeSelection.length || !treeSelection[0].parentId, // disabled if selection is root or none
+									},
+									{
+										key: 'Reload',
+										text: 'Reload Directories',
+										handler: onReloadDirectories,
+										icon: Rotate,
 									},
 								] : [],
 							}}
