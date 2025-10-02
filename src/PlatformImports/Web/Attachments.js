@@ -273,8 +273,29 @@ function AttachmentsElement(props) {
 		getFiles = () => {
 			return setFilesRaw.current;
 		},
-		buildFiles = () => {
-			const files = _.map(Attachments.entities, (entity) => {
+		buildFiles = async () => {
+			// FilesUI doesn't allow headers to be passed with URLs,
+			// but these URLs require authentication.
+			// So we need to fetch the files ourselves, create blob URLs, 
+			// and pass those to FilesUI.
+			const files = await Promise.all(_.map(Attachments.entities, async (entity) => {
+				let imageUrl = entity.attachments__uri;
+				
+				// For images, create authenticated blob URLs
+				if (entity.attachments__mimetype && entity.attachments__mimetype.startsWith('image/')) {
+					try {
+						const response = await fetch(entity.attachments__uri, {
+							headers: Attachments.headers // Use your repository's headers
+						});
+						
+						if (response.ok) {
+							const blob = await response.blob();
+							imageUrl = URL.createObjectURL(blob);
+						}
+					} catch (error) {
+						console.warn('Failed to fetch authenticated image:', error);
+					}
+				}
 				return {
 					id: entity.id, //	string | number	The identifier of the file
 					// file: null, //	File	The file object obtained from client drop or selection
@@ -285,15 +306,16 @@ function AttachmentsElement(props) {
 					// errors: null, //	string[]	The list of errors according to the validation criteria or the result of the given custom validation function.
 					// uploadStatus: null, //	UPLOADSTATUS	The current upload status. (e.g. "uploading").
 					// uploadMessage: null, //	string	A message that shows the result of the upload process.
-					imageUrl: entity.attachments__uri, //	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
+					imageUrl: imageUrl, //	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
 					downloadUrl: entity.attachments__uri, //	string	The url to be used to perform a GET request in order to download the file. If defined, the download icon will be shown.
 					// progress: null, //	number	The current percentage of upload progress. This value will have a higher priority over the upload progress value calculated inside the component.
 					// extraUploadData: null, //	Record<string, any>	The additional data that will be sent to the server when files are uploaded individually
 					// extraData: null, //	Object	Any kind of extra data that could be needed.
 					// serverResponse: null, //	ServerResponse	The upload response from server.
 					// xhr: null, //	XMLHttpRequest	A reference to the XHR object that allows the upload, progress and abort events.
+				
 				};
-			});
+			}));
 			setFiles(files);
 		},
 		clearFiles = () => {
@@ -716,7 +738,7 @@ function AttachmentsElement(props) {
 					}
 				}
 
-				buildFiles();
+				await buildFiles();
 			} else {
 				Attachments.clear();
 				if (usesDirectories) {
