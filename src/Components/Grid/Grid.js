@@ -1212,11 +1212,19 @@ function GridComponent(props) {
 				} else {
 					// Conform the calculated localColumnsConfig to the saved config.
 					// This should allow us to continue using non-serializable configurations after a refresh
-					const reconstructedLocalColumnsConfig = savedLocalColumnsConfig.map((savedConfig) => { // foreach saved column, in the order it was saved...
-						const columnConfig = localColumnsConfig.find(localConfig => localConfig.id === savedConfig.id); // find the corresponding column in localColumnsConfig
-						_.assign(columnConfig, savedConfig);
-						return columnConfig;
-					});
+					const reconstructedLocalColumnsConfig = savedLocalColumnsConfig
+						.map((savedConfig) => {
+							const columnConfig = localColumnsConfig.find(localConfig => localConfig.id === savedConfig.id);
+							if (!columnConfig) {
+								console.warn(`Column with id '${savedConfig.id}' not found in current config, skipping`);
+								return null; // Return null for missing columns
+							}
+							_.assign(columnConfig, savedConfig);
+							return columnConfig;
+						})
+						.filter(Boolean); // Remove null entries
+
+
 					localColumnsConfig = reconstructedLocalColumnsConfig;
 				}
 			}
