@@ -238,7 +238,8 @@ function AttachmentsElement(props) {
 		modelid = useRef(modelidCalc),
 		id = props.id || (model && modelid.current ? `attachments-${model}-${modelid.current}` : 'attachments'),
 		forceUpdate = useForceUpdate(),
-		blobUrlsRef = useRef(new Set()), // to track created blob URLs for cleanup
+		iconBlobUrlsRef = useRef(new Set()), // to track created blob URLs for cleanup
+		modalBlobUrlsRef = useRef(new Set()), // For modal images
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -272,7 +273,7 @@ function AttachmentsElement(props) {
 			return setFilesRaw.current;
 		},
 		buildFiles = async () => {
-			cleanupBlobUrls();
+			cleanupIconBlobUrls();
 
 			// FilesUI doesn't allow headers to be passed with URLs,
 			// but these URLs require authentication.
@@ -290,7 +291,7 @@ function AttachmentsElement(props) {
 					if (response.ok) {
 						const blob = await response.blob();
 						imageUrl = URL.createObjectURL(blob);
-						blobUrlsRef.current.add(imageUrl);
+						iconBlobUrlsRef.current.add(imageUrl);
 					}
 				} catch (error) {
 					console.warn('Failed to fetch authenticated image:', error);
@@ -319,17 +320,24 @@ function AttachmentsElement(props) {
 			setFiles(files);
 		},
 		clearFiles = () => {
-			cleanupBlobUrls();
+			cleanupIconBlobUrls();
 			setFiles([]);
 		},
-		cleanupBlobUrls = () => {
-			// Revoke all created blob URLs to free up memory
-			blobUrlsRef.current.forEach((url) => {
+		cleanupIconBlobUrls = () => {
+			iconBlobUrlsRef.current.forEach((url) => {
 				if (url.startsWith('blob:')) {
 					URL.revokeObjectURL(url);
 				}
 			});
-			blobUrlsRef.current.clear();
+			iconBlobUrlsRef.current.clear();
+		},
+		cleanupModalBlobUrls = () => {
+			modalBlobUrlsRef.current.forEach((url) => {
+				if (url.startsWith('blob:')) {
+					URL.revokeObjectURL(url);
+				}
+			});
+			modalBlobUrlsRef.current.clear();
 		},
 		onFileDelete = (id) => {
 			const
@@ -452,10 +460,12 @@ function AttachmentsElement(props) {
 				isPrevDisabled = !prevFile,
 				isNextDisabled = !nextFile,
 				onPrev = async () => {
+					cleanupModalBlobUrls();
 					const modalBody = await buildModalBody(prevFile);
 					updateModalBody(modalBody);
 				},
 				onNext = async () => {
+					cleanupModalBlobUrls();
 					const modalBody = await buildModalBody(nextFile);
 					updateModalBody(modalBody);
 				},
@@ -470,7 +480,7 @@ function AttachmentsElement(props) {
 				if (response.ok) {
 					const blob = await response.blob();
 					url = URL.createObjectURL(blob);
-					blobUrlsRef.current.add(url);
+					modalBlobUrlsRef.current.add(url);
 				}
 			} catch (error) {
 				console.warn('Failed to fetch authenticated file for modal:', error);
@@ -506,7 +516,7 @@ function AttachmentsElement(props) {
 					</HStack>;
 		},
 		onViewLightbox = async (item) => {
-			cleanupBlobUrls();
+			cleanupModalBlobUrls();
 			const modalBody = await buildModalBody(item);
 			showModal({
 				title: 'Lightbox',
@@ -515,7 +525,7 @@ function AttachmentsElement(props) {
 				includeCancel: true,
 				w: 1920,
 				h: 1080,
-				onClose: cleanupBlobUrls,
+				onClose: cleanupModalBlobUrls,
 			});
 		},
 
@@ -796,7 +806,8 @@ function AttachmentsElement(props) {
 				AttachmentDirectories.off('beforeLoad', setDirectoriesTrue);
 				AttachmentDirectories.off('loadRootNodes', setDirectoriesFalse);
 			}
-			cleanupBlobUrls();
+			cleanupIconBlobUrls();
+			cleanupModalBlobUrls();
 		};
 	}, [model, modelid.current, showAll, getTreeSelection()]);
 
