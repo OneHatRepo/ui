@@ -87,17 +87,29 @@ function FileCardCustom(props) {
 		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']),
 		isPdf = mimetype === 'application/pdf';
 
-	let cardContent = <Pressable
-				onPress={() => {
-					downloadInBackground(downloadUrl);
-				}}
-				className="Pressable px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700"
-			>
-				{isDownloading && <Spinner className="mr-2" />}
-				{onSee && isPdf && <IconButton className="mr-1" icon={Eye} onPress={() => onSee(id)} />}
-				<Text>{filename}</Text>
-				{onDelete && <IconButton className="ml-1" icon={Xmark} onPress={() => onDelete(id)} />}
-			</Pressable>;
+	let cardContent = 
+		<Pressable
+			onPress={() => {
+				downloadInBackground(downloadUrl);
+			}}
+			className="Pressable px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700"
+		>
+			{isDownloading &&
+				<Spinner className="mr-2" />}
+			{onSee && isPdf &&
+				<IconButton
+					className="mr-1"
+					icon={Eye}
+					onPress={() => onSee(id)}
+				/>}
+			<Text>{filename}</Text>
+			{onDelete &&
+				<IconButton
+					className="ml-1"
+					icon={Xmark}
+					onPress={() => onDelete(id)}
+				/>}
+		</Pressable>;
 
 	// Wrap with drag source if needed
 	if (isDragSource) {
@@ -212,7 +224,7 @@ function AttachmentsElement(props) {
 			selectorSelectedField = 'id',
 
 			// withData
-			Repository,
+			Repository: Attachments,
 
 			// withAlert
 			showModal,
@@ -261,7 +273,7 @@ function AttachmentsElement(props) {
 			return setFilesRaw.current;
 		},
 		buildFiles = () => {
-			const files = _.map(Repository.entities, (entity) => {
+			const files = _.map(Attachments.entities, (entity) => {
 				return {
 					id: entity.id, //	string | number	The identifier of the file
 					// file: null, //	File	The file object obtained from client drop or selection
@@ -302,11 +314,11 @@ function AttachmentsElement(props) {
 		doDelete = (id) => {
 			const
 				files = getFiles(),
-				file = Repository.getById(id);
+				file = Attachments.getById(id);
 			if (file) {
 				// if the file exists in the repository, delete it there
-				Repository.deleteById(id);
-				Repository.save();
+				Attachments.deleteById(id);
+				Attachments.save();
 
 			} else {
 				// simply remove it from the files array
@@ -389,7 +401,7 @@ function AttachmentsElement(props) {
 				});
 				if (!isError) {
 					setIsUploading(false);
-					Repository.reload();
+					Attachments.reload();
 					if (onUpload) {
 						onUpload(files);
 					}
@@ -398,77 +410,23 @@ function AttachmentsElement(props) {
 		},
 
 		// Lightbox
-		findFile = (id) => {
-			const files = getFiles();
-			if (useFileMosaic) {
-				return _.find(files, (file) => file.id === id);
-			}
-			return _.find(files, { id });
-		},
-		findPrevFile = (id) => {
-			const
-				files = getFiles(),
-				currentFile = findFile(id),
-				currentIx = _.findIndex(files, currentFile);
-			if (currentIx > 0) {
-				return files[currentIx - 1];
-			}
-			return null;
-		}
-		findNextFile = (url, id) => {
-			const
-				files = getFiles(),
-				currentFile = findFile(id),
-				currentIx = _.findIndex(files, currentFile);
-			if (currentIx < files.length - 1) {
-				return files[currentIx + 1];
-			}
-			return null;
-		},
 		buildModalBody = (id) => {
-			let isPdf = false,
-				url = null,
-				body = null,
-				isPrevDisabled = false,
-				isNextDisabled = false,
-				onPrev,
-				onNext;
-			switch(viewMode) {
-				case ATTACHMENTS_VIEW_MODES__ICON: {
-					const
-						currentFile = findFile(id),
-						prevFile = findPrevFile(id),
-						nextFile = findNextFile(id);
-					isPrevDisabled = !prevFile;
-					isNextDisabled = !nextFile;
-					onPrev = () => {
-						updateModalBody(buildModalBody(prevFile.id));
-					};
-					onNext = () => {
-						updateModalBody(buildModalBody(nextFile.id));
-					};
-					url = currentFile.imageUrl;
-					isPdf = url?.match(/\.pdf$/);
-					break;
-				}
-				case ATTACHMENTS_VIEW_MODES__LIST: {
-					const
-						currentFile = Repository.getById(id),
-						currentIx = Repository.getIxById(id),
-						prevFile = Repository.getByIx(currentIx - 1),
-						nextFile = Repository.getByIx(currentIx + 1);
-					isPrevDisabled = !prevFile;
-					isNextDisabled = !nextFile;
-					onPrev = () => {
-						updateModalBody(buildModalBody(prevFile.id));
-					};
-					onNext = () => {
-						updateModalBody(buildModalBody(nextFile.id));
-					};
-					url = currentFile.attachments__uri;
-					isPdf = currentFile.attachments__mimetype === 'application/pdf';
-				}
-			}
+			const
+				currentFile = Attachments.getById(id),
+				currentIx = Attachments.getIxById(id),
+				prevFile = Attachments.getByIx(currentIx - 1),
+				nextFile = Attachments.getByIx(currentIx + 1),
+				isPrevDisabled = !prevFile,
+				isNextDisabled = !nextFile,
+				onPrev = () => {
+					updateModalBody(buildModalBody(prevFile.id));
+				},
+				onNext = () => {
+					updateModalBody(buildModalBody(nextFile.id));
+				},
+				url = currentFile.attachments__uri,
+				isPdf = currentFile.attachments__mimetype === 'application/pdf';
+			let body = null;
 			if (isPdf) {
 				body = <iframe
 							src={url}
@@ -678,9 +636,9 @@ function AttachmentsElement(props) {
 			setDirectoriesTrue = () => setIsDirectoriesLoading(true),
 			setDirectoriesFalse = () => setIsDirectoriesLoading(false);
 
-		Repository.on('beforeLoad', setTrue);
-		Repository.on('load', setFalse);
-		Repository.on('load', buildFiles);
+		Attachments.on('beforeLoad', setTrue);
+		Attachments.on('load', setFalse);
+		Attachments.on('load', buildFiles);
 		if (usesDirectories) {
 			AttachmentDirectories.on('beforeLoad', setDirectoriesTrue);
 			AttachmentDirectories.on('loadRootNodes', setDirectoriesFalse);
@@ -690,12 +648,12 @@ function AttachmentsElement(props) {
 
 			if (modelid.current && !_.isArray(modelid.current)) {
 				const
-					currentConditions = Repository.getBaseParamConditions() || {},
+					currentConditions = Attachments.getParamConditions() || {},
 					newConditions = {
 						'conditions[Attachments.model]': model,
 						'conditions[Attachments.modelid]': modelid.current,
 					},
-					currentPageSize = Repository.pageSize,
+					currentPageSize = Attachments.pageSize,
 					newPageSize = showAll ? expandedMax : collapsedMax;
 				
 				// figure out conditions
@@ -720,29 +678,29 @@ function AttachmentsElement(props) {
 				}
 				let doReload = false;
 				if (!_.isEqual(currentConditions, newConditions)) {
-					Repository.setBaseParams(newConditions);
+					Attachments.setParams(newConditions);
 					doReload = true;
 				}
 
 				// figure out pageSize
 				if (!_.isEqual(currentPageSize, newPageSize)) {
-					Repository.setPageSize(newPageSize);
+					Attachments.setPageSize(newPageSize);
 					doReload = true;
 				}
 				if (doReload) {
-					await Repository.load();
+					await Attachments.load();
 				}
 				if (usesDirectories) {
 					const
 						wasAlreadyLoaded = AttachmentDirectories.areRootNodesLoaded,
-						currentConditions = AttachmentDirectories.getBaseParamConditions() || {},
+						currentConditions = AttachmentDirectories.getParamConditions() || {},
 						newConditions = {
 							'conditions[AttachmentDirectories.model]': selectorSelected.repository.name,
 							'conditions[AttachmentDirectories.modelid]': selectorSelected[selectorSelectedField],
 						};
 					let doReload = false;
 					if (!_.isEqual(currentConditions, newConditions)) {
-						AttachmentDirectories.setBaseParams(newConditions);
+						AttachmentDirectories.setParams(newConditions);
 						doReload = true;
 					}
 					if (doReload) {
@@ -759,7 +717,7 @@ function AttachmentsElement(props) {
 
 				buildFiles();
 			} else {
-				Repository.clear();
+				Attachments.clear();
 				if (usesDirectories) {
 					AttachmentDirectories.clear();
 				}
@@ -782,9 +740,9 @@ function AttachmentsElement(props) {
 		})();
 
 		return () => {
-			Repository.off('beforeLoad', setTrue);
-			Repository.off('load', setFalse);
-			Repository.off('load', buildFiles);
+			Attachments.off('beforeLoad', setTrue);
+			Attachments.off('load', setFalse);
+			Attachments.off('load', buildFiles);
 			if (usesDirectories) {
 				AttachmentDirectories.off('beforeLoad', setDirectoriesTrue);
 				AttachmentDirectories.off('loadRootNodes', setDirectoriesFalse);
@@ -808,7 +766,7 @@ function AttachmentsElement(props) {
 	const files = getFiles();
 	let content = null;
 	// icon or list view
-	if (viewMode === ATTACHMENTS_VIEW_MODES__ICON) {
+	if (viewMode === ATTACHMENTS_VIEW_MODES__ICON || isUploading) {
 		content = <VStack
 						className={clsx(
 							'AttachmentsElement-icon-VStack1',
@@ -825,13 +783,14 @@ function AttachmentsElement(props) {
 						<HStack
 							className={clsx(
 								'AttachmentsElement-HStack',
-								'h-full',
-								'flex-1',
+								'gap-2',
 								'flex-wrap',
+								'items-start',
 								files.length === 0 ? [
 									// So the 'No files' text is centered
 									'justify-center',
 									'items-center',
+									'h-full',
 								] : null,
 							)}
 						>
@@ -840,28 +799,30 @@ function AttachmentsElement(props) {
 								let eyeProps = {};
 								if (file.type && (file.type.match(/^image\//) || file.type === 'application/pdf')) {
 									eyeProps = {
-										onSee: onViewLightbox,
+										onSee: () => {
+											onViewLightbox(file.id);
+										},
 									};
 								}
 
 								// Create drag source item for this file
-								const fileEntity = Repository.getById(file.id);
-								console.log('Drag setup for file:', file.id, 'Entity:', fileEntity, 'canCrud:', canCrud, 'usesDirectories:', usesDirectories);
-								const dragSourceItem = {
-									item: fileEntity, // Get the actual entity
-									sourceComponentRef: null, // Could be set to a ref if needed
-									getDragProxy: () => {
-										// Custom drag preview for file items
-										return <VStack className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg max-w-[200px]">
-													<Text className="font-semibold text-gray-800">{file.name}</Text>
-													<Text className="text-sm text-gray-600">File</Text>
-												</VStack>;
-									}
-								};
+								const
+									fileEntity = Attachments.getById(file.id),
+									dragSourceItem = {
+										item: fileEntity, // Get the actual entity
+										sourceComponentRef: null, // Could be set to a ref if needed
+										getDragProxy: () => {
+											// Custom drag preview for file items
+											return <VStack className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg max-w-[200px]">
+														<Text className="font-semibold text-gray-800">{file.name}</Text>
+														<Text className="text-sm text-gray-600">File</Text>
+													</VStack>;
+										}
+									};
 
 								return <Box
 											key={file.id}
-											className="mr-2"
+											className="BoxHERE mr-2"
 										>
 											{useFileMosaic &&
 												<DraggableFileMosaic
@@ -889,7 +850,7 @@ function AttachmentsElement(props) {
 													isDragSource={canCrud && usesDirectories}
 													dragSourceType="Attachments"
 													dragSourceItem={dragSourceItem}
-													item={Repository.getById(file.id)}
+													item={Attachments.getById(file.id)}
 													onDragStart={() => {
 														setTimeout(() => setIsDragging(true), 50); // Delay to avoid interfering with drag initialization
 													}}
@@ -900,11 +861,11 @@ function AttachmentsElement(props) {
 										</Box>;
 							})}
 						</HStack>
-						{Repository.total <= collapsedMax ? null :
+						{Attachments.total <= collapsedMax ? null :
 							<Button
 								onPress={toggleShowAll}
 								className="AttachmentsElement-toggleShowAll mt-2"
-								text={'Show ' + (showAll ? ' Less' : ' All ' + Repository.total)}
+								text={'Show ' + (showAll ? ' Less' : ' All ' + Attachments.total)}
 								_text={{
 									className: `
 										text-grey-600
@@ -918,7 +879,7 @@ function AttachmentsElement(props) {
 					</VStack>;
 	} else if (viewMode === ATTACHMENTS_VIEW_MODES__LIST) {
 		content = <AttachmentsGridEditor
-						Repository={Repository}
+						Repository={Attachments}
 						selectionMode={SELECTION_MODE_MULTI}
 						showSelectHandle={false}
 						disableAdd={true}
@@ -938,7 +899,7 @@ function AttachmentsElement(props) {
 							{
 								id: 'view',
 								header: 'View',
-								w: 70,
+								w: 60,
 								isSortable: false,
 								isEditable: false,
 								isReorderable: false,
@@ -946,13 +907,34 @@ function AttachmentsElement(props) {
 								isHidable: false,
 								renderer: (item) => {
 									return <IconButton
-												className="w-[70px]"
+												className="w-[60px]"
 												icon={Eye}
 												_icon={{
 													size: 'xl',
 												}}
 												onPress={() => onViewLightbox(item.id)}
 												tooltip="View"
+											/>;
+								},
+							},
+							{
+								id: 'download',
+								header: 'Get',
+								w: 60,
+								isSortable: false,
+								isEditable: false,
+								isReorderable: false,
+								isResizable: false,
+								isHidable: false,
+								renderer: (item) => {
+									return <IconButton
+												className="w-[60px]"
+												icon={Download}
+												_icon={{
+													size: 'xl',
+												}}
+												onPress={() => onDownload(item.id)}
+												tooltip="Download"
 											/>;
 								},
 							},
@@ -964,7 +946,7 @@ function AttachmentsElement(props) {
 								"isEditable": true,
 								"isReorderable": true,
 								"isResizable": true,
-								"w": 150
+								"w": 250
 							},
 							{
 								"id": "attachments__size_formatted",
@@ -974,7 +956,7 @@ function AttachmentsElement(props) {
 								"isEditable": false,
 								"isReorderable": true,
 								"isResizable": true,
-								"w": 200
+								"w": 100
 							},
 						]}
 						areRowsDragSource={canCrud}
@@ -1051,9 +1033,9 @@ function AttachmentsElement(props) {
 						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
 						autoClean={true}
 						uploadConfig={{
-							url: Repository.api.baseURL + Repository.name + '/uploadAttachment',
+							url: Attachments.api.baseURL + Attachments.schema.name + '/uploadAttachment',
 							method: 'POST',
-							headers: Repository.headers,
+							headers: Attachments.headers,
 							autoUpload,
 						}}
 						headerConfig={{
@@ -1218,13 +1200,27 @@ function withAdditionalProps(WrappedComponent) {
 		const {
 				usesDirectories = false,
 			} = props,
-			AttachmentDirectories = usesDirectories ? oneHatData.getRepository('AttachmentDirectories', true) : null; // put this here; otherwise a new unique repository will be created on every render!
+			[isReady, setIsReady] = useState(false),
+			[AttachmentDirectories] = useState(() => (usesDirectories ? oneHatData.getRepository('AttachmentDirectories', true) : null)), // lazy instantiator, so getRepository is called only once (it's unique, so otherwise, every time this renders, we'd get a new Repository!)
+			[Attachments] = useState(() => oneHatData.getRepository('Attachments', true)); // same
 		
+		useEffect(() => {
+			(async () => {
+				Attachments.setBaseParams(props.baseParams || {}); // have to add the baseParams here, because we're bypassing withData
+				if (!isReady) {
+					setIsReady(true);
+				}
+			})();
+		}, []);
+
+		if (!isReady) {
+			return null;
+		}
+
 		return <WrappedComponent
-					model="Attachments"
-					uniqueRepository={true}
 					reference="attachments"
 					{...props}
+					Repository={Attachments}
 					AttachmentDirectories={AttachmentDirectories}
 				/>;
 	};

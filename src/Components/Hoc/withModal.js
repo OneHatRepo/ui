@@ -72,6 +72,10 @@ export default function withModal(WrappedComponent) {
 					throw new Error('withModal: body is required for showModal');
 				}
 
+				if (_.isFunction(body)) {
+					body = body();
+				}
+
 				setTitle(title);
 				setBody(body);
 				setCanClose(canClose);
