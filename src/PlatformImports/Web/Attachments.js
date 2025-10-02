@@ -692,7 +692,7 @@ function AttachmentsElement(props) {
 				}
 				if (usesDirectories) {
 					const
-						wasAlreadyLoaded = AttachmentDirectories.areRootNodesLoaded,
+						wasAlreadyLoaded = AttachmentDirectories.isLoaded,
 						currentConditions = AttachmentDirectories.getParamConditions() || {},
 						newConditions = {
 							'conditions[AttachmentDirectories.model]': selectorSelected.repository.name,
