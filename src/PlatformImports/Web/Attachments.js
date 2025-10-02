@@ -61,6 +61,7 @@ import Plus from '../../Components/Icons/Plus.js';
 import Trash from '../../Components/Icons/Trash.js';
 import Edit from '../../Components/Icons/Edit.js';
 import Rotate from '../../Components/Icons/Rotate.js';
+import Download from '../../Components/Icons/Download.js';
 import delay from '../../Functions/delay.js';
 import _ from 'lodash';
 
@@ -917,27 +918,27 @@ function AttachmentsElement(props) {
 											/>;
 								},
 							},
-							{
-								id: 'download',
-								header: 'Get',
-								w: 60,
-								isSortable: false,
-								isEditable: false,
-								isReorderable: false,
-								isResizable: false,
-								isHidable: false,
-								renderer: (item) => {
-									return <IconButton
-												className="w-[60px]"
-												icon={Download}
-												_icon={{
-													size: 'xl',
-												}}
-												onPress={() => onDownload(item.id)}
-												tooltip="Download"
-											/>;
-								},
-							},
+							// {
+							// 	id: 'download',
+							// 	header: 'Get',
+							// 	w: 60,
+							// 	isSortable: false,
+							// 	isEditable: false,
+							// 	isReorderable: false,
+							// 	isResizable: false,
+							// 	isHidable: false,
+							// 	renderer: (item) => {
+							// 		return <IconButton
+							// 					className="w-[60px]"
+							// 					icon={Download}
+							// 					_icon={{
+							// 						size: 'xl',
+							// 					}}
+							// 					onPress={() => onDownload(item.id)}
+							// 					tooltip="Download"
+							// 				/>;
+							// 	},
+							// },
 							{
 								"id": "attachments__filename",
 								"header": "Filename",
