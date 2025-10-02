@@ -137,8 +137,6 @@ function DraggableFileMosaic(props) {
 			...fileMosaicProps
 		} = props;
 
-	console.log('DraggableFileMosaic render:', { isDragSource, dragSourceType, hasItem: !!dragSourceItem.item });
-
 	// If not a drag source, just return the regular FileMosaic
 	if (!isDragSource) {
 		return <FileMosaic {...fileMosaicProps} />;
@@ -146,7 +144,6 @@ function DraggableFileMosaic(props) {
 
 	// Create a completely separate draggable container
 	const DragSourceContainer = withDragSource(({ dragSourceRef, ...dragProps }) => {
-		console.log('DragSourceContainer render with props:', dragProps);
 		return (
 			<div 
 				ref={dragSourceRef}
@@ -241,6 +238,7 @@ function AttachmentsElement(props) {
 		modelid = useRef(modelidCalc),
 		id = props.id || (model && modelid.current ? `attachments-${model}-${modelid.current}` : 'attachments'),
 		forceUpdate = useForceUpdate(),
+		blobUrlsRef = useRef(new Set()), // to track created blob URLs for cleanup
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -274,6 +272,8 @@ function AttachmentsElement(props) {
 			return setFilesRaw.current;
 		},
 		buildFiles = async () => {
+			cleanupBlobUrls();
+
 			// FilesUI doesn't allow headers to be passed with URLs,
 			// but these URLs require authentication.
 			// So we need to fetch the files ourselves, create blob URLs, 
@@ -281,21 +281,21 @@ function AttachmentsElement(props) {
 			const files = await Promise.all(_.map(Attachments.entities, async (entity) => {
 				let imageUrl = entity.attachments__uri;
 				
-				// For images, create authenticated blob URLs
-				if (entity.attachments__mimetype && entity.attachments__mimetype.startsWith('image/')) {
-					try {
-						const response = await fetch(entity.attachments__uri, {
-							headers: Attachments.headers // Use your repository's headers
-						});
-						
-						if (response.ok) {
-							const blob = await response.blob();
-							imageUrl = URL.createObjectURL(blob);
-						}
-					} catch (error) {
-						console.warn('Failed to fetch authenticated image:', error);
+				// create authenticated blob URLs
+				try {
+					const response = await fetch(entity.attachments__uri, {
+						headers: Attachments.headers // Use your repository's headers
+					});
+					
+					if (response.ok) {
+						const blob = await response.blob();
+						imageUrl = URL.createObjectURL(blob);
+						blobUrlsRef.current.add(imageUrl);
 					}
+				} catch (error) {
+					console.warn('Failed to fetch authenticated image:', error);
 				}
+
 				return {
 					id: entity.id, //	string | number	The identifier of the file
 					// file: null, //	File	The file object obtained from client drop or selection
@@ -319,7 +319,17 @@ function AttachmentsElement(props) {
 			setFiles(files);
 		},
 		clearFiles = () => {
+			cleanupBlobUrls();
 			setFiles([]);
+		},
+		cleanupBlobUrls = () => {
+			// Revoke all created blob URLs to free up memory
+			blobUrlsRef.current.forEach((url) => {
+				if (url.startsWith('blob:')) {
+					URL.revokeObjectURL(url);
+				}
+			});
+			blobUrlsRef.current.clear();
 		},
 		onFileDelete = (id) => {
 			const
@@ -433,22 +443,39 @@ function AttachmentsElement(props) {
 		},
 
 		// Lightbox
-		buildModalBody = (id) => {
+		buildModalBody = async (item) => {
 			const
-				currentFile = Attachments.getById(id),
-				currentIx = Attachments.getIxById(id),
+				currentFile = item,
+				currentIx = Attachments.getIxById(item.id),
 				prevFile = Attachments.getByIx(currentIx - 1),
 				nextFile = Attachments.getByIx(currentIx + 1),
 				isPrevDisabled = !prevFile,
 				isNextDisabled = !nextFile,
-				onPrev = () => {
-					updateModalBody(buildModalBody(prevFile.id));
+				onPrev = async () => {
+					const modalBody = await buildModalBody(prevFile);
+					updateModalBody(modalBody);
 				},
-				onNext = () => {
-					updateModalBody(buildModalBody(nextFile.id));
+				onNext = async () => {
+					const modalBody = await buildModalBody(nextFile);
+					updateModalBody(modalBody);
 				},
-				url = currentFile.attachments__uri,
 				isPdf = currentFile.attachments__mimetype === 'application/pdf';
+				
+			let url = currentFile.attachments__uri;
+			try {
+				const response = await fetch(currentFile.attachments__uri, {
+					headers: Attachments.headers // Use your repository's headers
+				});
+				
+				if (response.ok) {
+					const blob = await response.blob();
+					url = URL.createObjectURL(blob);
+					blobUrlsRef.current.add(url);
+				}
+			} catch (error) {
+				console.warn('Failed to fetch authenticated file for modal:', error);
+			}
+			
 			let body = null;
 			if (isPdf) {
 				body = <iframe
@@ -478,18 +505,17 @@ function AttachmentsElement(props) {
 						/>
 					</HStack>;
 		},
-		onViewLightbox = (id) => {
-			if (!id) {
-				alert('Cannot view lightbox until image is uploaded.');
-				return;
-			}
+		onViewLightbox = async (item) => {
+			cleanupBlobUrls();
+			const modalBody = await buildModalBody(item);
 			showModal({
 				title: 'Lightbox',
-				body: buildModalBody(id),
+				body: modalBody,
 				canClose: true,
 				includeCancel: true,
 				w: 1920,
 				h: 1080,
+				onClose: cleanupBlobUrls,
 			});
 		},
 
@@ -770,6 +796,7 @@ function AttachmentsElement(props) {
 				AttachmentDirectories.off('beforeLoad', setDirectoriesTrue);
 				AttachmentDirectories.off('loadRootNodes', setDirectoriesFalse);
 			}
+			cleanupBlobUrls();
 		};
 	}, [model, modelid.current, showAll, getTreeSelection()]);
 
@@ -819,33 +846,32 @@ function AttachmentsElement(props) {
 						>
 							{files.length === 0 && <Text className="text-grey-600 italic">No files {usesDirectories ? 'in this directory' : ''}</Text>}
 							{files.map((file) => {
+								const fileEntity = Attachments.getById(file.id);
 								let eyeProps = {};
 								if (file.type && (file.type.match(/^image\//) || file.type === 'application/pdf')) {
 									eyeProps = {
 										onSee: () => {
-											onViewLightbox(file.id);
+											onViewLightbox(fileEntity);
 										},
 									};
 								}
 
 								// Create drag source item for this file
-								const
-									fileEntity = Attachments.getById(file.id),
-									dragSourceItem = {
-										item: fileEntity, // Get the actual entity
-										sourceComponentRef: null, // Could be set to a ref if needed
-										getDragProxy: () => {
-											// Custom drag preview for file items
-											return <VStack className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg max-w-[200px]">
-														<Text className="font-semibold text-gray-800">{file.name}</Text>
-														<Text className="text-sm text-gray-600">File</Text>
-													</VStack>;
-										}
-									};
+								const dragSourceItem = {
+									item: fileEntity, // Get the actual entity
+									sourceComponentRef: null, // Could be set to a ref if needed
+									getDragProxy: () => {
+										// Custom drag preview for file items
+										return <VStack className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg max-w-[200px]">
+													<Text className="font-semibold text-gray-800">{file.name}</Text>
+													<Text className="text-sm text-gray-600">File</Text>
+												</VStack>;
+									}
+								};
 
 								return <Box
 											key={file.id}
-											className="BoxHERE mr-2"
+											className="mr-2"
 										>
 											{useFileMosaic &&
 												<DraggableFileMosaic
@@ -935,7 +961,7 @@ function AttachmentsElement(props) {
 												_icon={{
 													size: 'xl',
 												}}
-												onPress={() => onViewLightbox(item.id)}
+												onPress={() => onViewLightbox(item)}
 												tooltip="View"
 											/>;
 								},
