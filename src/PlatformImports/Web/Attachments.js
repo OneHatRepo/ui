@@ -240,6 +240,7 @@ function AttachmentsElement(props) {
 		forceUpdate = useForceUpdate(),
 		iconBlobUrlsRef = useRef(new Set()), // to track created blob URLs for cleanup
 		modalBlobUrlsRef = useRef(new Set()), // For modal images
+		[areBlobUrlsReady, setAreBlobUrlsReady] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isUploading, setIsUploading] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -273,6 +274,7 @@ function AttachmentsElement(props) {
 			return setFilesRaw.current;
 		},
 		buildFiles = async () => {
+			setAreBlobUrlsReady(false);
 			cleanupIconBlobUrls();
 
 			// FilesUI doesn't allow headers to be passed with URLs,
@@ -318,6 +320,7 @@ function AttachmentsElement(props) {
 				};
 			}));
 			setFiles(files);
+			setAreBlobUrlsReady(true);
 		},
 		clearFiles = () => {
 			cleanupIconBlobUrls();
@@ -828,115 +831,121 @@ function AttachmentsElement(props) {
 	let content = null;
 	// icon or list view
 	if (viewMode === ATTACHMENTS_VIEW_MODES__ICON || isUploading) {
-		content = <VStack
-						className={clsx(
-							'AttachmentsElement-icon-VStack1',
-							'h-full',
-							'flex-1',
-							'border',
-							'p-1',
-							isLoading ? [
-								'border-t-4',
-								'border-t-[#f00]',
-							] : null,
-						)}
-					>
-						<HStack
+		if (isLoading || !areBlobUrlsReady) {
+			content = <VStack className="AttachmentsElement-icon-VStack1 h-full flex-1 border p-1 justify-center items-center">
+							<Spinner />
+						</VStack>;
+		} else {
+			content = <VStack
 							className={clsx(
-								'AttachmentsElement-HStack',
-								'gap-2',
-								'flex-wrap',
-								'items-start',
-								files.length === 0 ? [
-									// So the 'No files' text is centered
-									'justify-center',
-									'items-center',
-									'h-full',
+								'AttachmentsElement-icon-VStack1',
+								'h-full',
+								'flex-1',
+								'border',
+								'p-1',
+								isLoading ? [
+									'border-t-4',
+									'border-t-[#f00]',
 								] : null,
 							)}
 						>
-							{files.length === 0 && <Text className="text-grey-600 italic">No files {usesDirectories ? 'in this directory' : ''}</Text>}
-							{files.map((file) => {
-								const fileEntity = Attachments.getById(file.id);
-								let eyeProps = {};
-								if (file.type && (file.type.match(/^image\//) || file.type === 'application/pdf')) {
-									eyeProps = {
-										onSee: () => {
-											onViewLightbox(fileEntity);
-										},
-									};
-								}
-
-								// Create drag source item for this file
-								const dragSourceItem = {
-									item: fileEntity, // Get the actual entity
-									sourceComponentRef: null, // Could be set to a ref if needed
-									getDragProxy: () => {
-										// Custom drag preview for file items
-										return <VStack className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg max-w-[200px]">
-													<Text className="font-semibold text-gray-800">{file.name}</Text>
-													<Text className="text-sm text-gray-600">File</Text>
-												</VStack>;
+							<HStack
+								className={clsx(
+									'AttachmentsElement-HStack',
+									'gap-2',
+									'flex-wrap',
+									'items-start',
+									files.length === 0 ? [
+										// So the 'No files' text is centered
+										'justify-center',
+										'items-center',
+										'h-full',
+									] : null,
+								)}
+							>
+								{files.length === 0 && <Text className="text-grey-600 italic">No files {usesDirectories ? 'in this directory' : ''}</Text>}
+								{files.map((file) => {
+									const fileEntity = Attachments.getById(file.id);
+									let eyeProps = {};
+									if (file.type && (file.type.match(/^image\//) || file.type === 'application/pdf')) {
+										eyeProps = {
+											onSee: () => {
+												onViewLightbox(fileEntity);
+											},
+										};
 									}
-								};
 
-								return <Box
-											key={file.id}
-											className="mr-2"
-										>
-											{useFileMosaic &&
-												<DraggableFileMosaic
-													{...file}
-													backgroundBlurImage={false}
-													onDownload={onDownload}
-													{..._fileMosaic}
-													{...eyeProps}
-													isDragSource={canCrud && usesDirectories}
-													dragSourceType="Attachments"
-													dragSourceItem={dragSourceItem}
-													onDragStart={() => {
-														setTimeout(() => setIsDragging(true), 50); // Delay to avoid interfering with drag initialization
-													}}
-													onDragEnd={() => {
-														setIsDragging(false);
-													}}
-												/>}
-											{!useFileMosaic &&
-												<FileCardCustom
-													{...file}
-													backgroundBlurImage={false}
-													{..._fileMosaic}
-													{...eyeProps}
-													isDragSource={canCrud && usesDirectories}
-													dragSourceType="Attachments"
-													dragSourceItem={dragSourceItem}
-													item={Attachments.getById(file.id)}
-													onDragStart={() => {
-														setTimeout(() => setIsDragging(true), 50); // Delay to avoid interfering with drag initialization
-													}}
-													onDragEnd={() => {
-														setIsDragging(false);
-													}}
-												/>}
-										</Box>;
-							})}
-						</HStack>
-						{Attachments.total <= collapsedMax ? null :
-							<Button
-								onPress={toggleShowAll}
-								className="AttachmentsElement-toggleShowAll mt-2"
-								text={'Show ' + (showAll ? ' Less' : ' All ' + Attachments.total)}
-								_text={{
-									className: `
-										text-grey-600
-										italic
-										text-left
-										w-full
-									`,
-								}}
-								variant="outline"
-							/>}
-					</VStack>;
+									// Create drag source item for this file
+									const dragSourceItem = {
+										item: fileEntity, // Get the actual entity
+										sourceComponentRef: null, // Could be set to a ref if needed
+										getDragProxy: () => {
+											// Custom drag preview for file items
+											return <VStack className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg max-w-[200px]">
+														<Text className="font-semibold text-gray-800">{file.name}</Text>
+														<Text className="text-sm text-gray-600">File</Text>
+													</VStack>;
+										}
+									};
+
+									return <Box
+												key={file.id}
+												className="mr-2"
+											>
+												{useFileMosaic &&
+													<DraggableFileMosaic
+														{...file}
+														backgroundBlurImage={false}
+														onDownload={onDownload}
+														{..._fileMosaic}
+														{...eyeProps}
+														isDragSource={canCrud && usesDirectories}
+														dragSourceType="Attachments"
+														dragSourceItem={dragSourceItem}
+														onDragStart={() => {
+															setTimeout(() => setIsDragging(true), 50); // Delay to avoid interfering with drag initialization
+														}}
+														onDragEnd={() => {
+															setIsDragging(false);
+														}}
+													/>}
+												{!useFileMosaic &&
+													<FileCardCustom
+														{...file}
+														backgroundBlurImage={false}
+														{..._fileMosaic}
+														{...eyeProps}
+														isDragSource={canCrud && usesDirectories}
+														dragSourceType="Attachments"
+														dragSourceItem={dragSourceItem}
+														item={Attachments.getById(file.id)}
+														onDragStart={() => {
+															setTimeout(() => setIsDragging(true), 50); // Delay to avoid interfering with drag initialization
+														}}
+														onDragEnd={() => {
+															setIsDragging(false);
+														}}
+													/>}
+											</Box>;
+								})}
+							</HStack>
+							{Attachments.total <= collapsedMax ? null :
+								<Button
+									onPress={toggleShowAll}
+									className="AttachmentsElement-toggleShowAll mt-2"
+									text={'Show ' + (showAll ? ' Less' : ' All ' + Attachments.total)}
+									_text={{
+										className: `
+											text-grey-600
+											italic
+											text-left
+											w-full
+										`,
+									}}
+									variant="outline"
+								/>}
+						</VStack>;
+		}
 	} else if (viewMode === ATTACHMENTS_VIEW_MODES__LIST) {
 		content = <AttachmentsGridEditor
 						Repository={Attachments}
@@ -1084,7 +1093,7 @@ function AttachmentsElement(props) {
 			</VStack>;
 	
 	// Always wrap content in dropzone when canCrud is true, but conditionally disable functionality
-	if (canCrud) {
+	if (canCrud && !isDragging) {
 		content = <Dropzone
 						value={files}
 						onChange={isDragging ? () => {} : onDropzoneChange} // Disable onChange when dragging
