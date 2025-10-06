@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, } from 'react';
 import {
 	Box,
+	HStack,
 	ScrollView,
 	Text,
 	VStack,
