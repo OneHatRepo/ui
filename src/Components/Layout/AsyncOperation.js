@@ -63,6 +63,7 @@ function AsyncOperation(props) {
 			getProgressUpdates = false,
 			parseProgress, // optional fn, accepts 'response' as arg and returns an object like this: { status, errors, started, lastUpdated, timeElapsed, count, current, total, percentage }
 			updateInterval = 10000, // ms
+			progressColor = '#666',
 
 			// withComponent
 			self,
@@ -267,16 +268,16 @@ function AsyncOperation(props) {
 				const className = 'text-lg';
 				renderItems.push(<Text className={className + ' ' + color} key="status">Status: {statusMessage}</Text>);
 				if (!_.isNil(percentage)) {
-					renderItems.push(<HStack className="mb-2" key="progress">
+					renderItems.push(<VStack key="progress">
 											<Progress.Bar
 												animated={true}
 												progress={percentage / 100}
 												width={175}
-												height={20}
-												color="#666"
+												height={15}
+												color={progressColor}
 											/>
-											<Text className={className + ' pl-1'}>{percentage}%</Text>
-										</HStack>);
+											<Text className={className}>{percentage}%</Text>
+										</VStack>);
 				}
 				if (started) {
 					const startedMoment = moment(started);
@@ -299,7 +300,7 @@ function AsyncOperation(props) {
 				if (!_.isNil(current) && !_.isNil(total) && current !== 0 && total !== 0) {
 					renderItems.push(<Text className={className} key="currentTotal">Current/Total: {current} / {total}</Text>);
 				}
-				if (!_.isNil(message)) {
+				if (!_.isNil(message) && !_.isEmpty(message)) {
 					renderItems.push(<Text className={className} key="message">{message}</Text>);
 				}
 				if (!_.isNil(errors)) {
