@@ -192,6 +192,7 @@ export default function TreeNode(props) {
 									'flex-1',
 									'text-ellipsis',
 									styles.TREE_NODE_CLASSNAME,
+									nodeProps?._tree?.className ?? null,
 								)}
 							>{text}</TextNative>}
 
