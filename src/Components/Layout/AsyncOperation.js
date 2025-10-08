@@ -8,7 +8,7 @@ import {
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import * as Progress from 'react-native-progress';
-import useForceUpdate from '@onehat/ui/src/Hooks/useForceUpdate';
+import useForceUpdate from '../../Hooks/useForceUpdate';
 import {
 	PROGRESS__NONE_FOUND,
 	PROGRESS__IN_PROCESS,
