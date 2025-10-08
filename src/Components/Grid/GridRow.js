@@ -216,7 +216,7 @@ const GridRow = forwardRef(function GridRow(props, ref) {
 								textClassName += ' ' + config.className;
 							}
 							const rendererProps = {
-								...testProps('rendererCol-' + config.fieldName),
+								...testProps('rendererCol-' + (config.fieldName || config.id || key)),
 								className: textClassName,
 								...propsToPass,
 								...extraProps,
