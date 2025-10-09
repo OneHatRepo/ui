@@ -106,7 +106,8 @@ const
 	TRIPLE_CLICK = 3,
 	PHASES__INITIAL = 'initial',
 	PHASES__MEASURING = 'measuring',
-	PHASES__OPTIMIZED = 'optimized';
+	PHASES__OPTIMIZED = 'optimized',
+	DEBUG = false;
 
 function GridComponent(props) {
 	const {
@@ -887,7 +888,9 @@ function GridComponent(props) {
 			cachedDragElements.current = null;
 		},
 		calculatePageSize = (containerHeight, useActualMeasurements = false) => {
-			console.log(`${getMeasurementPhase()}, calculatePageSize A containerHeight=${containerHeight}, useActualMeasurements=${useActualMeasurements}, measuredRowHeight=${getMeasuredRowHeight()}`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, calculatePageSize A containerHeight=${containerHeight}, useActualMeasurements=${useActualMeasurements}, measuredRowHeight=${getMeasuredRowHeight()}`);
+			}
 			// Phase 1: Initial calculation using estimated heights
 			if (!useActualMeasurements || getMeasurementPhase() === PHASES__INITIAL) {
 				const
@@ -904,7 +907,9 @@ function GridComponent(props) {
 				if (pageSize < 1) {
 					pageSize = 1;
 				}
-				console.log(`${getMeasurementPhase()}, calculatePageSize B using ESTIMATED heights, pageSize=${pageSize}`);
+				if (DEBUG) {
+					console.log(`${getMeasurementPhase()}, calculatePageSize B using ESTIMATED heights, pageSize=${pageSize}`);
+				}
 				return pageSize;
 			}
 			
@@ -931,23 +936,31 @@ function GridComponent(props) {
 				if (pageSize < 1) {
 					pageSize = 1;
 				}
-				console.log(`${getMeasurementPhase()}, calculatePageSize C using ACTUAL heights, pageSize=${pageSize}`);
+				if (DEBUG) {
+					console.log(`${getMeasurementPhase()}, calculatePageSize C using ACTUAL heights, pageSize=${pageSize}`);
+				}
 				return pageSize;
 			}
 			
 			// Fallback to Phase 1 logic
-			console.log(`${getMeasurementPhase()}, calculatePageSize D fallback to ESTIMATED heights by calling calculatePageSize(${containerHeight}, false)`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, calculatePageSize D fallback to ESTIMATED heights by calling calculatePageSize(${containerHeight}, false)`);
+			}
 			return calculatePageSize(containerHeight, false);
 		},
 		measureActualRowHeights = () => {
 			if (!gridContainerRef.current) {
 				return null;
 			}
-			console.log(`${getMeasurementPhase()}, measureActualRowHeights A`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, measureActualRowHeights A`);
+			}
 
 			const measuredRows = measuredRowsRef.current.filter(ref => ref && ref.current);
 			if (measuredRows.length === 0) {
-				console.log(`${getMeasurementPhase()}, measureActualRowHeights B no rows to measure`);
+				if (DEBUG) {
+					console.log(`${getMeasurementPhase()}, measureActualRowHeights B no rows to measure`);
+				}
 				return null;
 			}
 			
@@ -982,8 +995,10 @@ function GridComponent(props) {
 								if (completed === measuredRows.length) {
 									if (measurements.length > 0) {
 										const averageHeight = measurements.reduce((sum, h) => sum + h, 0) / measurements.length;
-										console.log(`[Grid] Measured actual row height: ${averageHeight}px from ${measurements.length} measured rows`);
-										
+										if (DEBUG) {
+											console.log(`[Grid] Measured actual row height: ${averageHeight}px from ${measurements.length} measured rows`);
+										}
+
 										// Clear measured refs for next measurement cycle
 										measuredRowsRef.current = [];
 										
@@ -1005,7 +1020,9 @@ function GridComponent(props) {
 					setTimeout(() => {
 						if (measurements.length > 0) {
 							const averageHeight = measurements.reduce((sum, h) => sum + h, 0) / measurements.length;
-							console.log(`[Grid] Measured actual row height (timeout): ${averageHeight}px from ${measurements.length} measured rows`);
+							if (DEBUG) {
+								log(`[Grid] Measured actual row height (timeout): ${averageHeight}px from ${measurements.length} measured rows`);
+							}
 							measuredRowsRef.current = [];
 							resolve(averageHeight);
 						} else {
@@ -1018,19 +1035,25 @@ function GridComponent(props) {
 			if (measuredCount > 0) {
 				const averageHeight = totalHeight / measuredCount;
 
-				console.log(`${getMeasurementPhase()}, measureActualRowHeights C averageHeight=${averageHeight}, measuredCount=${measuredCount}`);
-				
+				if (DEBUG) {
+					console.log(`${getMeasurementPhase()}, measureActualRowHeights C averageHeight=${averageHeight}, measuredCount=${measuredCount}`);
+				}
+
 				// Clear measured refs for next measurement cycle
 				measuredRowsRef.current = [];
 				
 				return averageHeight;
 			}
 			
-			console.log(`${getMeasurementPhase()}, measureActualRowHeights D measuredCount=0`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, measureActualRowHeights D measuredCount=0`);
+			}
 			return null;
 		},
 		applyMeasuredRowHeight = (averageHeight) => {
-			console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight A averageHeight=${averageHeight}, lastMeasuredContainerHeight=${lastMeasuredContainerHeight}, setMeasurementPhase(${PHASES__OPTIMIZED})`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight A averageHeight=${averageHeight}, lastMeasuredContainerHeight=${lastMeasuredContainerHeight}, setMeasurementPhase(${PHASES__OPTIMIZED})`);
+			}
 
 			// Always transition to optimized phase, even if measurement failed
 			setMeasurementPhase(PHASES__OPTIMIZED);
@@ -1040,15 +1063,21 @@ function GridComponent(props) {
 				
 				// Recalculate pageSize with actual measurements
 				if (lastMeasuredContainerHeight > 0) {
-					console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B call calculatePageSize(${lastMeasuredContainerHeight}, true)`);
+					if (DEBUG) {
+						console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B call calculatePageSize(${lastMeasuredContainerHeight}, true)`);
+					}
 					const newPageSize = calculatePageSize(lastMeasuredContainerHeight, true);
 					if (newPageSize !== Repository.pageSize) {
-						console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B Repository.setPageSize(${newPageSize})`);
+						if (DEBUG) {
+							console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B Repository.setPageSize(${newPageSize})`);
+						}
 						Repository.setPageSize(newPageSize);
 					}
 				}
 			} else {
-				console.log(`[Grid] Row height measurement failed or unavailable - using estimated pageSize`);
+				if (DEBUG) {
+					console.log(`[Grid] Row height measurement failed or unavailable - using estimated pageSize`);
+				}
 				// Keep the current estimated pageSize, just hide the loading overlay
 			}
 		},
@@ -1056,7 +1085,9 @@ function GridComponent(props) {
 			if (!Repository || Repository.isDestroyed) { // This method gets delayed, so it's possible for Repository to have been destroyed. Check for this
 				return;
 			}
-			console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A`);
+			}
 
 			let doAdjustment = autoAdjustPageSizeToHeight;
 			if (!_.isNil(UiGlobals.autoAdjustPageSizeToHeight) && !UiGlobals.autoAdjustPageSizeToHeight) {
@@ -1069,21 +1100,29 @@ function GridComponent(props) {
 					setLastMeasuredContainerHeight(containerHeight);
 					
 					// Phase 1: Initial calculation with buffer
-					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight B call calculatePageSize(${containerHeight}, false)`);
+					if (DEBUG) {
+						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight B call calculatePageSize(${containerHeight}, false)`);
+					}
 					const
 						useActualMeasurements = (getMeasurementPhase() === PHASES__OPTIMIZED && getMeasuredRowHeight()),
 						pageSize = calculatePageSize(containerHeight, useActualMeasurements);
-					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight C containerHeight=${containerHeight}, pageSize=${pageSize}, currentPageSize=${Repository.pageSize}`);
+					if (DEBUG) {
+						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight C containerHeight=${containerHeight}, pageSize=${pageSize}, currentPageSize=${Repository.pageSize}`);
+					}
 
 					if (pageSize !== Repository.pageSize) {
-						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight D Repository.setPageSize(${pageSize})`);
+						if (DEBUG) {
+							console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight D Repository.setPageSize(${pageSize})`);
+						}
 						Repository.setPageSize(pageSize);
 						
 					}
 
 					// Trigger Phase 2: Enable measurement mode after render
 					if (getMeasurementPhase() === PHASES__INITIAL) {
-						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight E setMeasurementPhase(${PHASES__MEASURING})`);
+						if (DEBUG) {
+							console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight E setMeasurementPhase(${PHASES__MEASURING})`);
+						}
 						setMeasurementPhase(PHASES__MEASURING);
 					}
 				}
@@ -1231,15 +1270,18 @@ function GridComponent(props) {
 				if (Repository.isRemote) {
 					Repository.isAutoLoad = false;
 				}
-				console.log(`${getMeasurementPhase()}, useEffect 1 - first call, Repository.pauseEvents, while we render placeholder to get container dimensions`);
+				if (DEBUG) {
+					console.log(`${getMeasurementPhase()}, useEffect 1 - first call, Repository.pauseEvents, while we render placeholder to get container dimensions`);
+				}
 				Repository.pauseEvents();
 			}
 			return () => {};
 		}
 
 		(async () => {
-
-			console.log(`${getMeasurementPhase()}, useEffect 1 - second call, do other necessary column setup`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, useEffect 1 - second call, do other necessary column setup`);
+			}
 			// second call, do other necessary column setup
 			let columnsConfigVariable = columnsConfig,
 				localColumnsConfig = [],
@@ -1341,20 +1383,26 @@ function GridComponent(props) {
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false),
 			onChangeFilters = () => {
-				console.log('onChangeFilters, reload and re-measure');
+				if (DEBUG) {
+					console.log('onChangeFilters, reload and re-measure');
+				}
 				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
 				
 				// Reset measurement phase and recalculate pageSize if auto-adjust is enabled
 				if (autoAdjustPageSizeToHeight && lastMeasuredContainerHeight > 0) {
-					console.log(`onChangeFilters - setMeasurementPhase(${PHASES__INITIAL})`);
+					if (DEBUG) {
+						console.log(`onChangeFilters - setMeasurementPhase(${PHASES__INITIAL})`);
+					}
 					setMeasurementPhase(PHASES__INITIAL);
 					setMeasuredRowHeight(null);
 					measuredRowsRef.current = [];
 					
 					// Recalculate pageSize with fresh measurements
-					console.log(`onChangeFilters, call calculatePageSize(${lastMeasuredContainerHeight}, false)`);
+					if (DEBUG) {
+						console.log(`onChangeFilters, call calculatePageSize(${lastMeasuredContainerHeight}, false)`);
+					}
 					const pageSize = calculatePageSize(lastMeasuredContainerHeight, false);
 					if (pageSize !== Repository.pageSize) {
 						Repository.setPageSize(pageSize);
@@ -1383,11 +1431,16 @@ function GridComponent(props) {
 		Repository.on('changePage', onChangePage);
 
 		applySelectorSelected();
-		console.log(`${getMeasurementPhase()}, useEffect 1 - Repository.resumeEvents()`);
+
+		if (DEBUG) {
+			console.log(`${getMeasurementPhase()}, useEffect 1 - Repository.resumeEvents()`);
+		}
 		Repository.resumeEvents();
 
 		if (((Repository.isRemote && !Repository.isLoaded && !Repository.isLoading) || forceLoadOnRender) && !disableLoadOnRender) { // default remote repositories to load on render, optionally force or disable load on render
-			console.log(`${getMeasurementPhase()}, useEffect 1 - Repository.load()`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, useEffect 1 - Repository.load()`);
+			}
 			Repository.load();
 		}
 
@@ -1409,7 +1462,9 @@ function GridComponent(props) {
 			return () => {};
 		}
 
-		console.log(`useEffect 2 - applySelectorSelected()`);
+		if (DEBUG) {
+			console.log(`useEffect 2 - applySelectorSelected()`);
+		}
 		applySelectorSelected();
 
 	}, [selectorId, selectorSelected]);
@@ -1420,12 +1475,18 @@ function GridComponent(props) {
 			// Small delay to ensure elements are fully rendered
 			const timer = setTimeout(async () => {
 				try {
-					console.log(`${getMeasurementPhase()}, useEffect 3 call measureActualRowHeights()`);
+					if (DEBUG) {
+						console.log(`${getMeasurementPhase()}, useEffect 3 call measureActualRowHeights()`);
+					}
 					const averageHeight = await measureActualRowHeights();
-					console.log(`${getMeasurementPhase()}, useEffect 3 averageHeight=${averageHeight}, call applyMeasuredRowHeight()`);
+					if (DEBUG) {
+						console.log(`${getMeasurementPhase()}, useEffect 3 averageHeight=${averageHeight}, call applyMeasuredRowHeight()`);
+					}
 					applyMeasuredRowHeight(averageHeight);
 				} catch (error) {
-					console.warn('useEffect 3 - error', error);
+					if (DEBUG) {
+						console.warn('useEffect 3 - error', error);
+					}
 					// Fallback: use default height estimation
 					applyMeasuredRowHeight(null);
 				}
@@ -1436,7 +1497,9 @@ function GridComponent(props) {
 
 	useEffect(() => {
 		if (autoAdjustPageSizeToHeight && getMeasurementPhase() !== PHASES__INITIAL) {
-			console.log(`${getMeasurementPhase()}, useEffect 4 setMeasurementPhase(${PHASES__INITIAL})`);
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, useEffect 4 setMeasurementPhase(${PHASES__INITIAL})`);
+			}
 			setMeasurementPhase(PHASES__INITIAL);
 			setMeasuredRowHeight(null);
 			measuredRowsRef.current = [];
@@ -1460,9 +1523,13 @@ function GridComponent(props) {
 		// first time through, render a placeholder so we can get container dimensions
 		return <VStackNative
 					onLayout={(e) => {
-						console.log(`${getMeasurementPhase()}, placeholder onLayout, call adjustPageSizeToHeight()`);
+						if (DEBUG) {
+							console.log(`${getMeasurementPhase()}, placeholder onLayout, call adjustPageSizeToHeight()`);
+						}
 						adjustPageSizeToHeight(e);
-						console.log(`${getMeasurementPhase()}, placeholder onLayout, call setIsInited(true)`);
+						if (DEBUG) {
+							console.log(`${getMeasurementPhase()}, placeholder onLayout, call setIsInited(true)`);
+						}
 						setIsInited(true);
 					}}
 					className="w-full flex-1"
