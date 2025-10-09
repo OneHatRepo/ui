@@ -12,7 +12,11 @@ export default function PageSizeSelect(props) {
 		} = props;
 
 	return useMemo(() => {
-		return <HStack className="PageSizeSelect-HStack w-[70px]">
+		return <HStack
+					className={clsx(
+						'PageSizeSelect-HStack',
+					)}
+				>
 					<Select
 						data={[
 							// [ 1, '1', ],
@@ -26,6 +30,7 @@ export default function PageSizeSelect(props) {
 						onChangeValue={(value) => Repository.setPageSize(value)}
 						tooltip="Page Size"
 						tooltipClassName="w-[70px]"
+						fixedWidth={false}
 					/>
 				</HStack>;
 	}, [

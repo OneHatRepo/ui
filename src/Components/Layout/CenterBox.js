@@ -13,7 +13,7 @@ export default function CenterBox(props) {
 		'p-2',
 	);
 	if (props.className) {
-		className += props.className;
+		className += ' ' + props.className;
 	}
 	return <Box
 				{...props}

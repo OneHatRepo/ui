@@ -10,9 +10,12 @@ import {
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 
-export default forwardRef(function Toolbar(props, ref) {
-	
-	const styles = UiGlobals.styles;
+const Toolbar = forwardRef((props, ref) => {
+	const {
+			children,
+			...propsToPass
+		} = props,
+		styles = UiGlobals.styles;
 	
 	let className = clsx(
 		'Toolbar',
@@ -34,11 +37,10 @@ export default forwardRef(function Toolbar(props, ref) {
 	}
 	let toolbar = <HStackNative
 						ref={ref}
+						{...propsToPass}
 						className={className}
-						style={props.style || {}}
-						onLayout={props.onLayout}
 					>
-						{props.children}
+						{children}
 					</HStackNative>;	
 
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
@@ -53,3 +55,5 @@ export default forwardRef(function Toolbar(props, ref) {
 
 	return toolbar;
 });
+
+export default Toolbar;

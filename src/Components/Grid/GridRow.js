@@ -29,7 +29,7 @@ let getEmptyImage = null;
 
 // This was broken out from Grid simply so we can memoize it
 
-const GridRow = forwardRef(function GridRow(props, ref) {
+const GridRow = forwardRef((props, ref) => {
 	const {
 			columnsConfig,
 			columnProps,

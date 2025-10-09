@@ -510,4 +510,3 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 		showRowHandle,
 	]);
 });
-

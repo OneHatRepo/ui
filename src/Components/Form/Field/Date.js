@@ -601,7 +601,7 @@ export const DateElement = forwardRef((props, ref) => {
 		styles.FORM_DATE_CLASSNAME,
 	);
 	if (props.className) {
-		className += props.className;
+		className += ' ' + props.className;
 	}
 	if (minimizeForRow) {
 		className += ' h-auto min-h-0 max-h-[50px]';

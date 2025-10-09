@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback, } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, createRef, } from 'react';
 import {
 	Box,
 	FlatList,
@@ -104,9 +104,9 @@ const
 	SINGLE_CLICK = 1,
 	DOUBLE_CLICK = 2,
 	TRIPLE_CLICK = 3,
-	PHASES_INITIAL = 'initial',
-	PHASES_MEASURING = 'measuring',
-	PHASES_OPTIMIZED = 'optimized';
+	PHASES__INITIAL = 'initial',
+	PHASES__MEASURING = 'measuring',
+	PHASES__OPTIMIZED = 'optimized';
 
 function GridComponent(props) {
 	const {
@@ -255,20 +255,42 @@ function GridComponent(props) {
 			return !isSerializable(columnsConfig); // (runs only once, when the component is first created)
 		}),
 		forceUpdate = useForceUpdate(),
+		isAddingRaw = useRef(),
+		measurementPhaseRaw = useRef(PHASES__INITIAL),
+		measuredRowHeightRaw = useRef(null),
 		containerRef = useRef(),
 		gridRef = useRef(),
 		gridContainerRef = useRef(),
-		isAddingRef = useRef(),
 		expandedRowsRef = useRef({}),
 		cachedDragElements = useRef(),
 		dragSelectionRef = useRef([]),
 		previousSelectorId = useRef(),
+		headerRowRef = useRef(null),
+		topToolbarRef = useRef(null),
+		measuredRowsRef = useRef([]),
+		footerToolbarRef = useRef(null),
+		rowRefs = useRef([]),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[isReorderMode, setIsReorderMode] = useState(false),
 		showRowHandle = showSelectHandle || areRowsDragSource || (canRowsReorder && isReorderMode),
+		[lastMeasuredContainerHeight, setLastMeasuredContainerHeight] = useState(0),
+		getMeasurementPhase = () => {
+			return measurementPhaseRaw.current;
+		},
+		setMeasurementPhase = (phase) => {
+			measurementPhaseRaw.current = phase;
+			forceUpdate();
+		},
+		getMeasuredRowHeight = () => {
+			return measuredRowHeightRaw.current;
+		},
+		setMeasuredRowHeight = (height) => {
+			measuredRowHeightRaw.current = height;
+			forceUpdate();
+		},
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
 		},
@@ -639,14 +661,20 @@ function GridComponent(props) {
 
 						}
 						
-						// Use pre-created ref for row height measurement (sample first few rows)
+						// assign ref for row height measurement during measurement phase
 						let rowRef = null;
-						if (autoAdjustPageSizeToHeight && measurementPhase === PHASES_MEASURING && 
-							!isHeaderRow && index >= 1 && index <= 5) { // Sample first 5 data rows (index 1-5)
+						if (autoAdjustPageSizeToHeight && getMeasurementPhase() === PHASES__MEASURING && 
+							!isHeaderRow && index >= 1) { // Sample all data rows (index 1+)
 							const refIndex = index - 1; // Convert to 0-based index
-							rowRef = rowRefs[refIndex];
-							if (rowRef && !sampleRowsRef.current.includes(rowRef)) {
-								sampleRowsRef.current.push(rowRef);
+							
+							// Create ref if it doesn't exist
+							if (!rowRefs.current[refIndex]) {
+								rowRefs.current[refIndex] = createRef();
+							}
+							rowRef = rowRefs.current[refIndex];
+							
+							if (rowRef && !measuredRowsRef.current.includes(rowRef)) {
+								measuredRowsRef.current.push(rowRef);
 							}
 						}
 						
@@ -858,25 +886,15 @@ function GridComponent(props) {
 			marker.remove();
 			cachedDragElements.current = null;
 		},
-		// Refs for measuring actual row heights
-		headerRowRef = useRef(null),
-		paginationToolbarRef = useRef(null),
-		sampleRowsRef = useRef([]),
-		
-		// Pre-create refs for first 5 rows for measurement
-		rowRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)],
-		
-		// State for tracking measurement phases
-		[measurementPhase, setMeasurementPhase] = useState(PHASES_INITIAL), // 
-		[lastMeasuredContainerHeight, setLastMeasuredContainerHeight] = useState(0),
-		[measuredRowHeight, setMeasuredRowHeight] = useState(null),
 		calculatePageSize = (containerHeight, useActualMeasurements = false) => {
+			console.log(`${getMeasurementPhase()}, calculatePageSize A containerHeight=${containerHeight}, useActualMeasurements=${useActualMeasurements}, measuredRowHeight=${getMeasuredRowHeight()}`);
 			// Phase 1: Initial calculation using estimated heights
-			if (!useActualMeasurements || measurementPhase === PHASES_INITIAL) {
+			if (!useActualMeasurements || getMeasurementPhase() === PHASES__INITIAL) {
 				const
-					headerHeight = showHeaders ? 50 : 0,
+					headerRowHeight = showHeaders ? 50 : 0,
+					topToolbarHeight = topToolbar ? 50 : 0, // Estimate top toolbar height
 					footerHeight = !disablePagination ? 50 : 0,
-					availableHeight = containerHeight - headerHeight - footerHeight,
+					availableHeight = containerHeight - topToolbarHeight - headerRowHeight - footerHeight,
 					maxClassNormal = styles.GRID_ROW_MAX_HEIGHT_NORMAL, // e.g. max-h-[40px]
 					rowNormalHeight = parseInt(maxClassNormal.match(/\d+/)[0]);
 				
@@ -886,87 +904,159 @@ function GridComponent(props) {
 				if (pageSize < 1) {
 					pageSize = 1;
 				}
+				console.log(`${getMeasurementPhase()}, calculatePageSize B using ESTIMATED heights, pageSize=${pageSize}`);
 				return pageSize;
 			}
 			
 			// Phase 3: Optimized calculation using actual measurements
-			if (useActualMeasurements && measurementPhase === PHASES_OPTIMIZED && measuredRowHeight) {
-				let actualHeaderHeight = 0;
-				let actualFooterHeight = 0;
-				let actualRowHeight = measuredRowHeight;
+			if (useActualMeasurements && getMeasurementPhase() === PHASES__OPTIMIZED && getMeasuredRowHeight()) {
+				let actualTopToolbarHeight = 0,
+					actualHeaderHeight = 0,
+					actualFooterHeight = 0,
+					actualRowHeight = getMeasuredRowHeight();
 				
-				// Measure actual header height
+				if (topToolbar && topToolbarRef.current) {
+					actualTopToolbarHeight = topToolbarRef.current.offsetHeight || topToolbarRef.current.clientHeight || 50;
+				}
 				if (showHeaders && headerRowRef.current) {
 					actualHeaderHeight = headerRowRef.current.offsetHeight || headerRowRef.current.clientHeight || 50;
 				}
-				
-				// Measure actual pagination toolbar height
-				if (!disablePagination && paginationToolbarRef.current) {
-					actualFooterHeight = paginationToolbarRef.current.offsetHeight || paginationToolbarRef.current.clientHeight || 50;
+				if (!disablePagination && footerToolbarRef.current) {
+					actualFooterHeight = footerToolbarRef.current.offsetHeight || footerToolbarRef.current.clientHeight || 50;
 				}
 				
-				const availableHeight = containerHeight - actualHeaderHeight - actualFooterHeight;
+				const availableHeight = containerHeight - actualTopToolbarHeight - actualHeaderHeight - actualFooterHeight;
 				let pageSize = Math.floor(availableHeight / actualRowHeight);
 				
 				if (pageSize < 1) {
 					pageSize = 1;
 				}
+				console.log(`${getMeasurementPhase()}, calculatePageSize C using ACTUAL heights, pageSize=${pageSize}`);
 				return pageSize;
 			}
 			
 			// Fallback to Phase 1 logic
+			console.log(`${getMeasurementPhase()}, calculatePageSize D fallback to ESTIMATED heights by calling calculatePageSize(${containerHeight}, false)`);
 			return calculatePageSize(containerHeight, false);
 		},
 		measureActualRowHeights = () => {
-			if (CURRENT_MODE !== UI_MODE_WEB || !gridContainerRef.current) {
-				return;
+			if (!gridContainerRef.current) {
+				return null;
 			}
-			
-			// Measure a sample of rendered rows to get average height
-			const sampleRows = sampleRowsRef.current.filter(ref => ref && ref.current);
-			if (sampleRows.length === 0) {
-				return;
+			console.log(`${getMeasurementPhase()}, measureActualRowHeights A`);
+
+			const measuredRows = measuredRowsRef.current.filter(ref => ref && ref.current);
+			if (measuredRows.length === 0) {
+				console.log(`${getMeasurementPhase()}, measureActualRowHeights B no rows to measure`);
+				return null;
 			}
 			
 			let totalHeight = 0;
 			let measuredCount = 0;
-			
-			sampleRows.forEach(rowRef => {
-				if (rowRef.current) {
-					const height = rowRef.current.offsetHeight || rowRef.current.clientHeight;
-					if (height > 0) {
-						totalHeight += height;
-						measuredCount++;
+
+			if (CURRENT_MODE === UI_MODE_WEB) {
+				// Web: Use DOM measurement APIs
+				_.each(measuredRows, (rowRef) => {
+					if (rowRef.current) {
+						const height = rowRef.current.offsetHeight || rowRef.current.clientHeight;
+						if (height > 0) {
+							totalHeight += height;
+							measuredCount++;
+						}
 					}
-				}
-			});
+				});
+			} else if (CURRENT_MODE === UI_MODE_NATIVE) {
+				// React Native: Use measure API with promises
+				return new Promise((resolve) => {
+					let completed = 0;
+					const measurements = [];
+					
+					_.each(measuredRows, (rowRef) => {
+						if (rowRef.current && rowRef.current.measure) {
+							rowRef.current.measure((x, y, width, height) => {
+								if (height > 0) {
+									measurements.push(height);
+								}
+								completed++;
+								
+								if (completed === measuredRows.length) {
+									if (measurements.length > 0) {
+										const averageHeight = measurements.reduce((sum, h) => sum + h, 0) / measurements.length;
+										console.log(`[Grid] Measured actual row height: ${averageHeight}px from ${measurements.length} measured rows`);
+										
+										// Clear measured refs for next measurement cycle
+										measuredRowsRef.current = [];
+										
+										resolve(averageHeight);
+									} else {
+										resolve(null);
+									}
+								}
+							});
+						} else {
+							completed++;
+							if (completed === measuredRows.length && measurements.length === 0) {
+								resolve(null);
+							}
+						}
+					});
+					
+					// Timeout fallback
+					setTimeout(() => {
+						if (measurements.length > 0) {
+							const averageHeight = measurements.reduce((sum, h) => sum + h, 0) / measurements.length;
+							console.log(`[Grid] Measured actual row height (timeout): ${averageHeight}px from ${measurements.length} measured rows`);
+							measuredRowsRef.current = [];
+							resolve(averageHeight);
+						} else {
+							resolve(null);
+						}
+					}, 200);
+				});
+			}
 			
 			if (measuredCount > 0) {
 				const averageHeight = totalHeight / measuredCount;
-				console.log(`[Grid] Measured actual row height: ${averageHeight}px from ${measuredCount} sample rows`);
-				setMeasuredRowHeight(averageHeight);
-				setMeasurementPhase(PHASES_OPTIMIZED);
+
+				console.log(`${getMeasurementPhase()}, measureActualRowHeights C averageHeight=${averageHeight}, measuredCount=${measuredCount}`);
 				
-				// Clear sample refs for next measurement cycle
-				sampleRowsRef.current = [];
+				// Clear measured refs for next measurement cycle
+				measuredRowsRef.current = [];
+				
+				return averageHeight;
+			}
+			
+			console.log(`${getMeasurementPhase()}, measureActualRowHeights D measuredCount=0`);
+			return null;
+		},
+		applyMeasuredRowHeight = (averageHeight) => {
+			console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight A averageHeight=${averageHeight}, lastMeasuredContainerHeight=${lastMeasuredContainerHeight}, setMeasurementPhase(${PHASES__OPTIMIZED})`);
+
+			// Always transition to optimized phase, even if measurement failed
+			setMeasurementPhase(PHASES__OPTIMIZED);
+			
+			if (averageHeight) {
+				setMeasuredRowHeight(averageHeight);
 				
 				// Recalculate pageSize with actual measurements
 				if (lastMeasuredContainerHeight > 0) {
+					console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B call calculatePageSize(${lastMeasuredContainerHeight}, true)`);
 					const newPageSize = calculatePageSize(lastMeasuredContainerHeight, true);
-					console.log(`[Grid] Optimized pageSize: ${newPageSize} (was ${Repository.pageSize})`);
 					if (newPageSize !== Repository.pageSize) {
+						console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B Repository.setPageSize(${newPageSize})`);
 						Repository.setPageSize(newPageSize);
 					}
 				}
+			} else {
+				console.log(`[Grid] Row height measurement failed or unavailable - using estimated pageSize`);
+				// Keep the current estimated pageSize, just hide the loading overlay
 			}
 		},
 		adjustPageSizeToHeight = (e) => {
-			if (CURRENT_MODE !== UI_MODE_WEB) { // TODO: Remove this conditional, and don't even do the double render for RN
-				return;
-			}
 			if (!Repository || Repository.isDestroyed) { // This method gets delayed, so it's possible for Repository to have been destroyed. Check for this
 				return;
 			}
+			console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A`);
 
 			let doAdjustment = autoAdjustPageSizeToHeight;
 			if (!_.isNil(UiGlobals.autoAdjustPageSizeToHeight) && !UiGlobals.autoAdjustPageSizeToHeight) {
@@ -979,16 +1069,22 @@ function GridComponent(props) {
 					setLastMeasuredContainerHeight(containerHeight);
 					
 					// Phase 1: Initial calculation with buffer
-					const pageSize = calculatePageSize(containerHeight, false);
-					console.log(`[Grid] Adjusting pageSize: containerHeight=${containerHeight}, phase=${measurementPhase}, calculatedPageSize=${pageSize}, currentPageSize=${Repository.pageSize}`);
-					
+					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight B call calculatePageSize(${containerHeight}, false)`);
+					const
+						useActualMeasurements = (getMeasurementPhase() === PHASES__OPTIMIZED && getMeasuredRowHeight()),
+						pageSize = calculatePageSize(containerHeight, useActualMeasurements);
+					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight C containerHeight=${containerHeight}, pageSize=${pageSize}, currentPageSize=${Repository.pageSize}`);
+
 					if (pageSize !== Repository.pageSize) {
+						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight D Repository.setPageSize(${pageSize})`);
 						Repository.setPageSize(pageSize);
 						
-						// Trigger Phase 2: Enable measurement mode after render
-						if (measurementPhase === PHASES_INITIAL) {
-							setMeasurementPhase(PHASES_MEASURING);
-						}
+					}
+
+					// Trigger Phase 2: Enable measurement mode after render
+					if (getMeasurementPhase() === PHASES__INITIAL) {
+						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight E setMeasurementPhase(${PHASES__MEASURING})`);
+						setMeasurementPhase(PHASES__MEASURING);
 					}
 				}
 			}
@@ -1130,22 +1226,21 @@ function GridComponent(props) {
 
 	useEffect(() => {
 		if (!isInited) {
-			// first call -- meant to render placeholder so we get container dimensions
+			// first call, Repository.pauseEvents, while we render placeholder so we get container dimensions
 			if (Repository) {
 				if (Repository.isRemote) {
 					Repository.isAutoLoad = false;
 				}
+				console.log(`${getMeasurementPhase()}, useEffect 1 - first call, Repository.pauseEvents, while we render placeholder to get container dimensions`);
 				Repository.pauseEvents();
-			}
-			if (onRender) {
-				onRender(self)
 			}
 			return () => {};
 		}
 
 		(async () => {
 
-			// second call -- do other necessary setup
+			console.log(`${getMeasurementPhase()}, useEffect 1 - second call, do other necessary column setup`);
+			// second call, do other necessary column setup
 			let columnsConfigVariable = columnsConfig,
 				localColumnsConfig = [],
 				savedLocalColumnsConfig,
@@ -1231,6 +1326,9 @@ function GridComponent(props) {
 
 			setLocalColumnsConfig(localColumnsConfig);
 
+			if (onRender) {
+				onRender(self)
+			}
 			setIsReady(true);
 		})();
 
@@ -1243,18 +1341,20 @@ function GridComponent(props) {
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false),
 			onChangeFilters = () => {
+				console.log('onChangeFilters, reload and re-measure');
 				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
 				
 				// Reset measurement phase and recalculate pageSize if auto-adjust is enabled
 				if (autoAdjustPageSizeToHeight && lastMeasuredContainerHeight > 0) {
-					console.log(`[Grid] Filters changed - resetting pageSize measurement`);
-					setMeasurementPhase(PHASES_INITIAL);
+					console.log(`onChangeFilters - setMeasurementPhase(${PHASES__INITIAL})`);
+					setMeasurementPhase(PHASES__INITIAL);
 					setMeasuredRowHeight(null);
-					sampleRowsRef.current = [];
+					measuredRowsRef.current = [];
 					
 					// Recalculate pageSize with fresh measurements
+					console.log(`onChangeFilters, call calculatePageSize(${lastMeasuredContainerHeight}, false)`);
 					const pageSize = calculatePageSize(lastMeasuredContainerHeight, false);
 					if (pageSize !== Repository.pageSize) {
 						Repository.setPageSize(pageSize);
@@ -1283,9 +1383,11 @@ function GridComponent(props) {
 		Repository.on('changePage', onChangePage);
 
 		applySelectorSelected();
+		console.log(`${getMeasurementPhase()}, useEffect 1 - Repository.resumeEvents()`);
 		Repository.resumeEvents();
 
 		if (((Repository.isRemote && !Repository.isLoaded && !Repository.isLoading) || forceLoadOnRender) && !disableLoadOnRender) { // default remote repositories to load on render, optionally force or disable load on render
+			console.log(`${getMeasurementPhase()}, useEffect 1 - Repository.load()`);
 			Repository.load();
 		}
 
@@ -1307,27 +1409,37 @@ function GridComponent(props) {
 			return () => {};
 		}
 
+		console.log(`useEffect 2 - applySelectorSelected()`);
 		applySelectorSelected();
 
 	}, [selectorId, selectorSelected]);
 
 	// Effect to trigger row height measurement after render
 	useEffect(() => {
-		if (measurementPhase === PHASES_MEASURING && data && data.length > 0) {
-			// Small delay to ensure DOM is fully rendered
-			const timer = setTimeout(() => {
-				measureActualRowHeights();
-			}, 100);
+		if (getMeasurementPhase() === PHASES__MEASURING) {
+			// Small delay to ensure elements are fully rendered
+			const timer = setTimeout(async () => {
+				try {
+					console.log(`${getMeasurementPhase()}, useEffect 3 call measureActualRowHeights()`);
+					const averageHeight = await measureActualRowHeights();
+					console.log(`${getMeasurementPhase()}, useEffect 3 averageHeight=${averageHeight}, call applyMeasuredRowHeight()`);
+					applyMeasuredRowHeight(averageHeight);
+				} catch (error) {
+					console.warn('useEffect 3 - error', error);
+					// Fallback: use default height estimation
+					applyMeasuredRowHeight(null);
+				}
+			}, 1000);
 			return () => clearTimeout(timer);
 		}
-	}, [measurementPhase, data]);
+	}, [getMeasurementPhase(), data]);
 
-	// Effect to reset measurement state when autoAdjustPageSizeToHeight changes
 	useEffect(() => {
-		if (autoAdjustPageSizeToHeight) {
-			setMeasurementPhase(PHASES_INITIAL);
+		if (autoAdjustPageSizeToHeight && getMeasurementPhase() !== PHASES__INITIAL) {
+			console.log(`${getMeasurementPhase()}, useEffect 4 setMeasurementPhase(${PHASES__INITIAL})`);
+			setMeasurementPhase(PHASES__INITIAL);
 			setMeasuredRowHeight(null);
-			sampleRowsRef.current = [];
+			measuredRowsRef.current = [];
 		}
 	}, [autoAdjustPageSizeToHeight]);
 
@@ -1340,7 +1452,7 @@ function GridComponent(props) {
 		self.gridRef = gridRef;
 	}
 
-	isAddingRef.current = isAdding;
+	isAddingRaw.current = isAdding;
 
 	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isReorderMode]);
 
@@ -1348,7 +1460,9 @@ function GridComponent(props) {
 		// first time through, render a placeholder so we can get container dimensions
 		return <VStackNative
 					onLayout={(e) => {
+						console.log(`${getMeasurementPhase()}, placeholder onLayout, call adjustPageSizeToHeight()`);
 						adjustPageSizeToHeight(e);
+						console.log(`${getMeasurementPhase()}, placeholder onLayout, call setIsInited(true)`);
 						setIsInited(true);
 					}}
 					className="w-full flex-1"
@@ -1383,7 +1497,7 @@ function GridComponent(props) {
 				showMoreOnly = true;
 			}
 			listFooterComponent = <PaginationToolbar
-										ref={paginationToolbarRef}
+										ref={footerToolbarRef}
 										Repository={Repository}
 										self={self}
 										toolbarItems={footerToolbarItemComponents}
@@ -1392,7 +1506,9 @@ function GridComponent(props) {
 										{..._paginationToolbarProps}
 									/>;
 		} else if (footerToolbarItemComponents.length) {
-			listFooterComponent = <Toolbar>
+			listFooterComponent = <Toolbar
+										ref={footerToolbarRef}
+									>
 										<ReloadButton Repository={Repository} self={self} />
 										{footerToolbarItemComponents}
 									</Toolbar>;
@@ -1490,7 +1606,10 @@ function GridComponent(props) {
 				className={className}
 				style={style}
 			>
-				{topToolbar}
+				{topToolbar &&
+					<VStack ref={topToolbarRef}>
+						{topToolbar}
+					</VStack>}
 
 				<VStack
 					ref={gridContainerRef}
@@ -1505,10 +1624,19 @@ function GridComponent(props) {
 						// 'h-full',
 						'flex-1',
 						'min-h-[40px]',
+						'relative', // Enable positioning for overlay
 						gridContainerBorderClassName,
 					)}
 				>
 					{grid}
+					{/* Loading overlay during measurement phases to prevent visual flashing */}
+					{autoAdjustPageSizeToHeight && 
+					 (getMeasurementPhase() === PHASES__INITIAL || getMeasurementPhase() === PHASES__MEASURING) && 
+					 entities?.length > 0 && (
+						<VStack className="absolute inset-0 z-10 bg-white">
+							<Loading isScreen={true} />
+						</VStack>
+					)}
 				</VStack>
 
 				{listFooterComponent}

@@ -7,7 +7,7 @@ import Pagination from './Pagination.js'
 import Toolbar from './Toolbar.js'
 import _ from 'lodash';
 
-export default forwardRef(function PaginationToolbar(props, ref) {
+const PaginationToolbar = forwardRef((props, ref) => {
 	const {
 			toolbarItems = [],
 			disablePageSize = false,
@@ -65,3 +65,5 @@ export default forwardRef(function PaginationToolbar(props, ref) {
 				/>
 			</Toolbar>;
 });
+
+export default PaginationToolbar;
