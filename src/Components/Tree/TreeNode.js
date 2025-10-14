@@ -128,7 +128,7 @@ export default function TreeNode(props) {
 			'items-center',
 			'flex-1',
 			'grow-1',
-			'select-none',
+			!showNodeHandle && 'select-none',
 			'cursor-pointer',
 		);
 
@@ -169,16 +169,35 @@ export default function TreeNode(props) {
 							canDrag={nodeCanDrag}
 						/>}
 
-					{hasChildren && <IconButton
-										{...testProps('expandBtn')}
-										icon={isExpanded ? ChevronDown : ChevronRight}
-										onPress={(e) => onToggle(datum, e)}
-										className="ml-2"
-									/>}
-					
+					{hasChildren &&
+						<IconButton
+							{...testProps('expandBtn')}
+							icon={isExpanded ? ChevronDown : ChevronRight}
+							_icon={{
+								className: clsx(
+									'text-gray-400',
+								),
+							}}
+							onPress={(e) => onToggle(datum, e)}
+							className={clsx(
+								'TreeNode-expandBtn',
+								'ml-2',
+								styles.TREE_NODE_EXPAND_BTN_CLASSNAME,
+							)}
+						/>}
+
 					{isLoading && <Spinner className="px-2" />}
 
-					{!isLoading && icon && <Icon as={icon} className="ml-2 mr-1" />}
+					{!isLoading && icon && 
+						<Icon
+							as={icon}
+							className={clsx(
+								'TreeNode-icon',
+								'ml-2',
+								'mr-1',
+								styles.TREE_NODE_ICON_CLASSNAME,
+							)}
+						/>}
 
 					{text && <TextNative
 								numberOfLines={1}
