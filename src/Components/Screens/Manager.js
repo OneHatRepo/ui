@@ -29,7 +29,7 @@ function ManagerScreen(props) {
 		[isRendered, setIsRendered] = useState(false),
 		[isModeSet, setIsModeSet] = useState(false),
 		[allowSideBySide, setAllowSideBySide] = useState(false),
-		[mode, setModeRaw] = useState(SCREEN_MODES__FULL),
+		[mode, setModeRaw] = useState(SCREEN_MODES__SIDE),
 		actualMode = (!allowSideBySide || mode === SCREEN_MODES__FULL) ? SCREEN_MODES__FULL : SCREEN_MODES__SIDE,
 		setMode = (newMode) => {
 			if (!allowSideBySide && newMode === SCREEN_MODES__SIDE) {
