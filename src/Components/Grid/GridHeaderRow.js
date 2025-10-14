@@ -105,12 +105,19 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 				columnHeaders = _.filter(columnHeader.parentElement.children, (childNode) => {
 					return childNode.getBoundingClientRect().width !== 0; // Skip zero-width children
 				}),
-				currentX = proxyRect.left; // left position of pointer
+				currentX = proxyRect.left, // left position of pointer
+				rowHandleOffset = showRowHandle ? 1 : 0; // Account for RowHandleSpacer
 		
 			// Figure out which index the user wants
 			let newIx = 0;
 			_.each(columnHeaders, (child, ix, all) => {
+				// Skip the row handle spacer if present
+				if (showRowHandle && ix === 0) {
+					return true; // continue to next iteration
+				}
+				
 				const
+					adjustedIx = ix - rowHandleOffset, // Adjust index for row handle offset
 					rect = child.getBoundingClientRect(), // rect of the columnHeader of this iteration
 					{
 						left,
@@ -119,8 +126,8 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 					} = rect,
 					halfWidth = width /2;
 
-				if (ix === 0) {
-					// first column
+				if (adjustedIx === 0) {
+					// first actual data column
 					if (currentX < left + halfWidth) {
 						newIx = 0;
 						return false;
@@ -128,22 +135,22 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 						newIx = 1;
 						return false;
 					}
-				} else if (ix === all.length -1) {
-					// last column
+				} else if (adjustedIx === all.length - 1 - rowHandleOffset) {
+					// last actual data column (account for nav column and row handle)
 					if (currentX < left + halfWidth) {
-						newIx = ix;
+						newIx = adjustedIx;
 						return false;
 					}
-					newIx = ix +1;
+					newIx = adjustedIx + 1;
 					return false;
 				}
 				
 				// all other columns
 				if (left <= currentX && currentX < left + halfWidth) {
-					newIx = ix;
+					newIx = adjustedIx;
 					return false;
 				} else if (currentX < right) {
-					newIx = ix +1;
+					newIx = adjustedIx + 1;
 					return false;
 				}
 			});
@@ -155,7 +162,8 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 
 			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
 			const
-				columnHeaderRect = columnHeaders[newIx].getBoundingClientRect(),
+				targetColumnIndex = newIx + rowHandleOffset, // Add back offset for visual positioning
+				columnHeaderRect = columnHeaders[targetColumnIndex].getBoundingClientRect(),
 				left = columnHeaderRect.left,
 				gridRowsContainer = gridRef.current._listRef._scrollRef.childNodes[0],
 				gridRowsContainerRect = gridRowsContainer.getBoundingClientRect(),
@@ -180,12 +188,19 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 				columnHeaders = _.filter(columnHeader.parentElement.children, (childNode) => {
 					return childNode.getBoundingClientRect().width !== 0; // Skip zero-width children
 				}),
-				currentX = proxyRect.left; // left position of pointer
+				currentX = proxyRect.left, // left position of pointer
+				rowHandleOffset = showRowHandle ? 1 : 0; // Account for RowHandleSpacer
 		
 			// Figure out which index the user wants
 			let newIx = 0;
 			_.each(columnHeaders, (child, ix, all) => {
+				// Skip the row handle spacer if present
+				if (showRowHandle && ix === 0) {
+					return true; // continue to next iteration
+				}
+				
 				const
+					adjustedIx = ix - rowHandleOffset, // Adjust index for row handle offset
 					rect = child.getBoundingClientRect(), // rect of the columnHeader of this iteration
 					{
 						left,
@@ -194,8 +209,8 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 					} = rect,
 					halfWidth = width /2;
 
-				if (ix === 0) {
-					// first column
+				if (adjustedIx === 0) {
+					// first actual data column
 					if (currentX < left + halfWidth) {
 						newIx = 0;
 						return false;
@@ -203,22 +218,22 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 						newIx = 1;
 						return false;
 					}
-				} else if (ix === all.length -1) {
-					// last column
+				} else if (adjustedIx === all.length - 1 - rowHandleOffset) {
+					// last actual data column (account for nav column and row handle)
 					if (currentX < left + halfWidth) {
-						newIx = ix;
+						newIx = adjustedIx;
 						return false;
 					}
-					newIx = ix +1;
+					newIx = adjustedIx + 1;
 					return false;
 				}
 				
 				// all other columns
 				if (left <= currentX && currentX < left + halfWidth) {
-					newIx = ix;
+					newIx = adjustedIx;
 					return false;
 				} else if (currentX < right) {
-					newIx = ix +1;
+					newIx = adjustedIx + 1;
 					return false;
 				}
 			});
@@ -230,7 +245,8 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 
 			// Render marker showing destination location (can't use regular render cycle because this div is absolutely positioned on page)
 			const
-				columnHeaderRect = columnHeaders[newIx].getBoundingClientRect(),
+				targetColumnIndex = newIx + rowHandleOffset, // Add back offset for visual positioning
+				columnHeaderRect = columnHeaders[targetColumnIndex].getBoundingClientRect(),
 				left = columnHeaderRect.left;
 			let marker = dragColumnSlot && dragColumnSlot.marker;
 			if (marker) {
