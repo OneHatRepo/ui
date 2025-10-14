@@ -3,7 +3,7 @@ import {
 	Icon,
 	VStack,
 } from '@project-components/Gluestack';
-import withTooltip from '@onehat/ui/src/Components/Hoc/withTooltip';
+import withTooltip from '../Hoc/withTooltip';
 import clsx from 'clsx';
 import UiGlobals from '../../UiGlobals.js';
 import Arcs from '../Icons/Arcs.js';
