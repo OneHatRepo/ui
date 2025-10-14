@@ -291,6 +291,9 @@ const GridRow = forwardRef((props, ref) => {
 									if (config.className) {
 										elementClassName += ' ' + config.className;
 									}
+									if (rowProps?._cell?.className) {
+										elementClassName += ' ' + rowProps._cell.className;
+									}
 									if (cellProps.className) {
 										elementClassName += ' ' + cellProps.className;
 									}
@@ -351,6 +354,9 @@ const GridRow = forwardRef((props, ref) => {
 						styles.GRID_CELL_CLASSNAME,
 						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
 					);
+					if (rowProps?._cell?.className) {
+						textClassName += ' ' + rowProps._cell.className;
+					}
 					if (config.className) {
 						textClassName += ' ' + config.className;
 					}
