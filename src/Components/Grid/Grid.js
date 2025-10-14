@@ -1389,25 +1389,6 @@ function GridComponent(props) {
 				if (!Repository.isAutoLoad) {
 					Repository.reload();
 				}
-				
-				// Reset measurement phase and recalculate pageSize if auto-adjust is enabled
-				if (autoAdjustPageSizeToHeight && lastMeasuredContainerHeight > 0) {
-					if (DEBUG) {
-						console.log(`onChangeFilters - setMeasurementPhase(${PHASES__INITIAL})`);
-					}
-					setMeasurementPhase(PHASES__INITIAL);
-					setMeasuredRowHeight(null);
-					measuredRowsRef.current = [];
-					
-					// Recalculate pageSize with fresh measurements
-					if (DEBUG) {
-						console.log(`onChangeFilters, call calculatePageSize(${lastMeasuredContainerHeight}, false)`);
-					}
-					const pageSize = calculatePageSize(lastMeasuredContainerHeight, false);
-					if (pageSize !== Repository.pageSize) {
-						Repository.setPageSize(pageSize);
-					}
-				}
 			},
 			onChangeSorters = () => {
 				if (!Repository.isAutoLoad) {
