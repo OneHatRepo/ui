@@ -196,6 +196,7 @@ export default function TreeNode(props) {
 								'ml-2',
 								'mr-1',
 								styles.TREE_NODE_ICON_CLASSNAME,
+								nodeProps?._icon?.className ?? null,
 							)}
 						/>}
 
@@ -211,7 +212,7 @@ export default function TreeNode(props) {
 									'flex-1',
 									'text-ellipsis',
 									styles.TREE_NODE_CLASSNAME,
-									nodeProps?._tree?.className ?? null,
+									nodeProps?._text?.className ?? null,
 								)}
 							>{text}</TextNative>}
 
