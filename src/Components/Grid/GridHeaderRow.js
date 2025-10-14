@@ -468,7 +468,12 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 				if (showRowHandle) {
 					headerColumns.unshift(<Box
 						key="RowHandleSpacer"
-						className="Spacer-RowHandle w-[40px] flex-none"
+						className={clsx(
+							'Spacer-RowHandle',
+							'w-[40px]',
+							'flex-none',
+							styles.ROW_HANDLE_CLASSNAME,
+						)}
 					/>);
 				}
 				if (!hideNavColumn) {
