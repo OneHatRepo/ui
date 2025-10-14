@@ -146,6 +146,7 @@ function GridComponent(props) {
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
+			areCellsScrollable = true,
 			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
@@ -690,6 +691,7 @@ function GridComponent(props) {
 									isRowHoverable={isRowHoverable}
 									isSelected={isSelected}
 									isHovered={hovered}
+									areCellsScrollable={areCellsScrollable}
 									showHovers={showHovers}
 									showRowHandle={showRowHandle}
 									rowCanSelect={rowCanSelect}

@@ -37,6 +37,7 @@ const GridRow = forwardRef((props, ref) => {
 			rowProps,
 			hideNavColumn,
 			showRowHandle,
+			areCellsScrollable,
 			rowCanSelect,
 			rowCanDrag,
 			isRowHoverable,
@@ -141,7 +142,7 @@ const GridRow = forwardRef((props, ref) => {
 						'justify-center',
 						'border-r-black-100',
 						'block',
-						'overflow-auto',
+						areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
 						whichCursor,
 						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
 					);
@@ -207,7 +208,7 @@ const GridRow = forwardRef((props, ref) => {
 							let textClassName = clsx(
 								'GridRow-TextNative',
 								'self-center',
-								'overflow-hidden',
+								areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
 								colClassName,
 								styles.GRID_CELL_CLASSNAME,
 								styles.GRID_ROW_MAX_HEIGHT_EXTRA,
@@ -283,7 +284,7 @@ const GridRow = forwardRef((props, ref) => {
 										'px-2',
 										'py-3',
 										'block',
-										'overflow-scroll',
+										areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
 										colClassName,
 										styles.GRID_CELL_CLASSNAME,
 										styles.GRID_ROW_MAX_HEIGHT_NORMAL,
@@ -349,7 +350,7 @@ const GridRow = forwardRef((props, ref) => {
 					let textClassName = clsx(
 						'GridRow-TextNative',
 						'self-center',
-						'overflow-hidden',
+						areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
 						colClassName,
 						styles.GRID_CELL_CLASSNAME,
 						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
