@@ -1096,9 +1096,15 @@ function GridComponent(props) {
 				// allow global override to prevent this auto adjustment
 				doAdjustment = false;
 			}
-			if (doAdjustment) {
-				const containerHeight = e.nativeEvent.layout.height;
-				if (containerHeight > 0) {
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A2 doAdjustment=${doAdjustment}, autoAdjustPageSizeToHeight=${autoAdjustPageSizeToHeight}, UiGlobals.autoAdjustPageSizeToHeight=${UiGlobals.autoAdjustPageSizeToHeight}`);
+			}
+			const containerHeight = e.nativeEvent.layout.height;
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A3 containerHeight=${containerHeight}`);
+			}
+			if (containerHeight > 0) {
+				if (doAdjustment) {
 					setLastMeasuredContainerHeight(containerHeight);
 					
 					// Phase 1: Initial calculation with buffer
@@ -1119,14 +1125,14 @@ function GridComponent(props) {
 						Repository.setPageSize(pageSize);
 						
 					}
-
-					// Trigger Phase 2: Enable measurement mode after render
-					if (getMeasurementPhase() === PHASES__INITIAL) {
-						if (DEBUG) {
-							console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight E setMeasurementPhase(${PHASES__MEASURING})`);
-						}
-						setMeasurementPhase(PHASES__MEASURING);
+				}
+				
+				// Trigger Phase 2: Enable measurement mode after render
+				if (getMeasurementPhase() === PHASES__INITIAL) {
+					if (DEBUG) {
+						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight E setMeasurementPhase(${PHASES__MEASURING})`);
 					}
+					setMeasurementPhase(PHASES__MEASURING);
 				}
 			}
 		},
