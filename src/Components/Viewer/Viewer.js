@@ -160,6 +160,12 @@ function Viewer(props) {
 			if (type?.match(/(Tag|TagEditor)$/)) {
 				viewerTypeProps.isViewOnly = true;
 			}
+			if (type?.match(/(GridEditor)$/)) {
+				viewerTypeProps.disableAdd = true;
+				viewerTypeProps.disableEdit = true;
+				viewerTypeProps.disableDelete = true;
+				viewerTypeProps.disableDuplicate = true;
+			}
 			const Element = getComponentFromType(type);
 
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {

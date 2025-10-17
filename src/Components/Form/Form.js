@@ -541,7 +541,7 @@ function Form(props) {
 				return null;
 			}
 			if (type === 'DisplayField' || type?.match(/Grid/)) {
-				isEditable = false;
+				isEditable = false; // this merely disables the FormController for this element
 			}
 			if (!itemPropsToPass.className) {
 				itemPropsToPass.className = '';
