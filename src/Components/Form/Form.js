@@ -540,7 +540,7 @@ function Form(props) {
 			if (isHidden) {
 				return null;
 			}
-			if (type === 'DisplayField') {
+			if (type === 'DisplayField' || type?.match(/Grid/)) {
 				isEditable = false;
 			}
 			if (!itemPropsToPass.className) {
@@ -676,7 +676,7 @@ function Form(props) {
 					}
 				}
 
-				let elementClassName = 'field-' + name;
+				let elementClassName = name ? 'field-' + name : '';
 				const defaultsClassName = defaults.className;
 				if (defaultsClassName) {
 					elementClassName += ' ' + defaultsClassName;
@@ -689,7 +689,6 @@ function Form(props) {
 				if (viewerTypeClassName) {
 					elementClassName += ' ' + viewerTypeClassName;
 				}
-		
 				let element = <Element
 									{...testProps('field-' + name)}
 									value={value}

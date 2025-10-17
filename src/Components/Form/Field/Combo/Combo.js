@@ -773,6 +773,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 		if (CURRENT_MODE === UI_MODE_NATIVE) {
 			gridClassName += ' h-[400px] max-h-[100%]';
 		}
+		if (gridProps.className) {
+			gridClassName += ' ' + gridProps.className;
+		}
 		grid = <WhichGrid
 					showHeaders={false}
 					showHovers={true}
@@ -886,9 +889,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 					}}
 					reference="grid"
 					parent={self}
-					className={gridClassName}
 					style={gridStyle}
 					{...gridProps}
+					className={gridClassName}
 					{..._editor}
 				/>;
 		if (CURRENT_MODE === UI_MODE_WEB) {

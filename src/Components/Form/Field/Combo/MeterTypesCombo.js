@@ -22,6 +22,7 @@ function MeterTypesCombo(props) {
 				reference="MeterTypeCombo"
 				data={data}
 				disableDirectEntry={true}
+				menuHeight={100}
 				{...props}
 			/>;
 }
