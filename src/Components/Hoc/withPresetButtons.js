@@ -300,7 +300,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 							isEmptySelection() ||
 							isMultiSelection() ||
 							isProtectedValue() ||
-							(canRecordBeEdited && !canRecordBeEdited(selection))
+							(canRecordBeDeleted && !canRecordBeDeleted(selection))
 						) {
 							isDisabled = true;
 						}
