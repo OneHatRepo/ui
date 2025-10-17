@@ -1103,7 +1103,16 @@ function GridComponent(props) {
 			if (DEBUG) {
 				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A3 containerHeight=${containerHeight}`);
 			}
-			if (containerHeight > 0) {
+			
+			// Only proceed if height changed significantly
+			const
+				heightChanged = Math.abs(containerHeight - lastMeasuredContainerHeight) > 5, // 5px tolerance
+				isFirstMeasurement = lastMeasuredContainerHeight === 0;
+			if (containerHeight > 0 && (isFirstMeasurement || heightChanged)) {
+				if (DEBUG) {
+					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A4 height changed significantly, proceeding with remeasurement`);
+				}
+				
 				if (doAdjustment) {
 					setLastMeasuredContainerHeight(containerHeight);
 					
@@ -1123,7 +1132,6 @@ function GridComponent(props) {
 							console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight D Repository.setPageSize(${pageSize})`);
 						}
 						Repository.setPageSize(pageSize);
-						
 					}
 				}
 				
@@ -1133,6 +1141,10 @@ function GridComponent(props) {
 						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight E setMeasurementPhase(${PHASES__MEASURING})`);
 					}
 					setMeasurementPhase(PHASES__MEASURING);
+				}
+			} else {
+				if (DEBUG) {
+					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A5 height unchanged, skipping remeasurement`);
 				}
 			}
 		},
