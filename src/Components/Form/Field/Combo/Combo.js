@@ -965,7 +965,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 										top,
 										left,
 										width,
-										height: (menuHeight || styles.FORM_COMBO_MENU_HEIGHT) + inputHeight,
+										// height: (menuHeight || styles.FORM_COMBO_MENU_HEIGHT) + inputHeight,
 										minWidth: 100,
 									}}
 								>
