@@ -885,7 +885,8 @@ function Form(props) {
 														>*</Text>;
 								}
 							}
-							if (!disableLabels && label && editorType !== EDITOR_TYPE__INLINE) {
+							const labelToUse = dynamicProps.label || label;
+							if (!disableLabels && labelToUse && editorType !== EDITOR_TYPE__INLINE) {
 								const style = {};
 								if (defaults?.labelWidth) {
 									style.width = defaults.labelWidth;
@@ -900,7 +901,7 @@ function Form(props) {
 									element = <HStack className="Form-HStack8 w-full">
 								 					<Label style={style}>
 														{requiredIndicator}
-														{label}
+														{labelToUse}
 													</Label>
 													{element}
 								 				</HStack>;
@@ -908,7 +909,7 @@ function Form(props) {
 									element = <VStack className="Form-VStack9 w-full mt-3">
 													<Label style={style}>
 														{requiredIndicator}
-														{label}
+														{labelToUse}
 													</Label>
 													{element}
 												</VStack>;
