@@ -667,11 +667,11 @@ function Form(props) {
 			if (isEditorViewOnly || !isEditable) {
 				let value = null;
 				if (isSingle) {
-					value = record?.properties[name]?.displayValue || null;
-					if (_.isNil(value) && record && record[name]) {
+					value = record?.properties?.[name]?.displayValue || null;
+					if (_.isNil(value) && !_.isNil(record?.[name])) {
 						value = record[name];
 					}
-					if (_.isNil(value) && startingValues && startingValues[name]) {
+					if (_.isNil(value) && !_.isNil(startingValues?.[name])) {
 						value = startingValues[name];
 					}
 				}
