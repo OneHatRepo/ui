@@ -183,7 +183,7 @@ function Form(props) {
 				pointerEvents: fabOpacity.value > 0 ? 'auto' : 'none', // Disable interaction when invisible
 			};
 		}),
-		initialValues = _.merge(startingValues, (record && !record.isDestroyed ? record.submitValues : {})),
+		initialValues = _.merge(startingValues, ((record && !record.isDestroyed) ? (record.submitValues || record) : {})),
 		defaultValues = isMultiple ? getNullFieldValues(initialValues, Repository) : initialValues, // when multiple entities, set all default values to null
 		validatorToUse = (() => {
 			// If a custom validator is provided, use it
@@ -440,6 +440,7 @@ function Form(props) {
 										}
 										if (type.match(/Tag/)) {
 											elementClassName += ' overflow-auto';
+											configPropsToPass.SourceRepository = Repository;
 										}
 										if (!type.match(/Toggle/)) {
 											elementClassName += ' h-full';
@@ -675,6 +676,9 @@ function Form(props) {
 						value = startingValues[name];
 					}
 				}
+				if (type.match(/Tag/)) {
+					itemPropsToPass.SourceRepository = Repository;
+				}
 
 				let elementClassName = name ? 'field-' + name : '';
 				const defaultsClassName = defaults.className;
@@ -785,6 +789,9 @@ function Form(props) {
 							let dynamicProps = {};
 							if (getDynamicProps) {
 								dynamicProps = getDynamicProps({ fieldState, formSetValue, formGetValues, formState });
+							}
+							if (type.match(/Tag/)) {
+								itemPropsToPass.SourceRepository = Repository;
 							}
 
 							let elementClassName = 'Form-Element field-' + name + ' w-full';

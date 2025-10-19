@@ -1,18 +1,26 @@
-import { useRef, } from 'react';
+import { useRef, useState, useEffect, } from 'react';
 import {
 	HStack,
 	VStackNative,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import * as yup from 'yup'; // https://github.com/jquense/yup#string
+import oneHatData from '@onehat/data';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../../Constants/Editor.js';
+import {
+	EDITOR_TYPE__PLAIN,
+} from '../../../../Constants/Editor.js';
+import Form from '../../Form.js';
+import Viewer from '../../../Viewer/Viewer.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withModal from '../../../Hoc/withModal.js';
 import withValue from '../../../Hoc/withValue.js';
 import ValueBox from './ValueBox.js';
+import Inflector from 'inflector-js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import _ from 'lodash';
@@ -27,8 +35,12 @@ function TagComponent(props) {
 			minimizeForRow = false,
 			Editor,
 			_combo = {},
+			SourceRepository,
+			joinDataConfig,
+			outerValueId, // for recursion only. See note in useEffect
 			tooltip,
 			testID,
+			getBaseParams,
 
 			// parent Form
 			onChangeValue,
@@ -38,6 +50,10 @@ function TagComponent(props) {
 
 			// withComponent
 			self,
+
+			// withData
+			Repository: TargetRepository,
+			setBaseParams,
 
 			// withFilters
 			isInFilter,
@@ -53,11 +69,22 @@ function TagComponent(props) {
 			...propsToPass // break connection between Tag and Combo props
 		} = props,
 		styles = UiGlobals.styles,
+		propertyDef = SourceRepository?.getSchema().getPropertyDefinition(self.reference),
+		hasJoinData = propertyDef?.joinData?.length,
+		[JoinRepository] = useState(() => {
+			if (hasJoinData) {
+				return oneHatData.getRepository(propertyDef.joinModel, true);
+			}
+			return null;
+		}),
+		[isInited, setIsInited] = useState(false),
+		modelFieldStartsWith = hasJoinData ? Inflector.underscore(JoinRepository.getSchema().name) + '__' : '',
 		valueRef = useRef(value),
 		onView = async (item, e) => {
+			// This method shows the record viewer
 			const
 				id = item.id,
-				repository = propsToPass.Repository;
+				repository = TargetRepository;
 			if (repository.isLoading) {
 				await repository.waitUntilDoneLoading();
 			}
@@ -117,7 +144,6 @@ function TagComponent(props) {
 			// The value we get from combo is a simple int
 			// Convert this to id and displayValue from either Repository or data array.
 			const
-				Repository = props.Repository,
 				data = props.data,
 				idIx = props.idIx,
 				displayIx = props.displayIx,
@@ -127,9 +153,9 @@ function TagComponent(props) {
 				
 			if (!id) {
 				displayValue = '';
-			} else if (Repository) {
-				if (!Repository.isDestroyed) {
-					item = Repository.getById(id);
+			} else if (TargetRepository) {
+				if (!TargetRepository.isDestroyed) {
+					item = TargetRepository.getById(id);
 					if (!item) {
 						throw Error('item not found');
 					}
@@ -143,13 +169,42 @@ function TagComponent(props) {
 				displayValue = item[displayIx];
 			}
 
+			let joinData = {};
+			if (hasJoinData) {
+				// build up the default starting values,
+				// first with schema defaultValues...
+				const
+					allSchemaDefaults = JoinRepository.getSchema().getDefaultValues(),
+					modelSchemaDefaults = _.pickBy(allSchemaDefaults, (value, key) => {
+						return key.startsWith(modelFieldStartsWith);
+					}),
+					joinFieldNames = joinDataConfig.map(fieldConfig => fieldConfig.name || fieldConfig),
+					schemaDefaultValues = _.pick(modelSchemaDefaults, joinFieldNames),
+					strippedSchemaDefaultValues = _.mapKeys(schemaDefaultValues, (value, key) => {
+						return key.startsWith(modelFieldStartsWith) ? key.slice(modelFieldStartsWith.length) : key;
+					});
+
+				// then with default values in joinDataConfig, if they exist
+				_.each(joinDataConfig, (fieldConfig) => {
+					if (!_.isNil(fieldConfig.defaultValue)) {
+						joinData[fieldConfig.name] = fieldConfig.defaultValue;
+					}
+				});
+				joinData = { ...strippedSchemaDefaultValues, ...joinData };
+			}
+
 
 			// add new value
-			const newValue = [...value]; // clone, so we trigger a re-render
-			newValue.push({
-				id,
-				text: displayValue,
-			})
+			const
+				newValue = [...value], // clone, so we trigger a re-render
+				newItem = {
+					id,
+					text: displayValue,
+				};
+			if (hasJoinData) {
+				newItem.joinData = joinData;
+			}
+			newValue.push(newItem);
 			setValue(newValue);
 			clearComboValue();
 		},
@@ -159,6 +214,105 @@ function TagComponent(props) {
 				return val1.id !== val.id;
 			});			
 			setValue(newValue);
+		},
+		onJoin = async (item, e) => {
+			// This method shows the joinData viewer/editor
+
+			/* item format:
+				item = {
+					id: 3,
+					text: "1000HR PM",
+					joinData: {
+						hide_every_n: 0,
+						also_resets: '[]',
+					},
+				}
+			*/
+
+			// prepend 'model_name__' to the field names, so they match the JoinRepository property names
+			const
+				record = _.mapKeys(item.joinData, (value, key) => {
+					return modelFieldStartsWith + key;
+				}),
+				items = propertyDef.joinData.map((fieldName) => {
+					let obj = {
+						name: modelFieldStartsWith + fieldName,
+					};
+					// add in any config from joinDataConfig for this field
+					if (joinDataConfig?.[fieldName]) {
+						const jdcf = _.clone(joinDataConfig[fieldName]); // don't mutate original
+						jdcf.outerValueId = item.id;
+						obj = {
+							...obj,
+							...jdcf,
+						};
+					}
+
+					return obj;
+				});
+
+			let height = 300;
+			let body;
+			if (isViewOnly) {
+				// show Viewer
+				body = <Viewer
+							record={record}
+							Repository={JoinRepository}
+							items={items}
+							columnDefaults={{
+								labelWidth: 200,
+							}}
+						/>;
+			} else {
+				switch (items.length) {
+					case 1: height = 250; break;
+					case 2: height = 400; break;
+					default: height = 600; break;
+				}
+				body = <Form
+							editorType={EDITOR_TYPE__PLAIN}
+							isEditorViewOnly={false}
+							record={record}
+							Repository={JoinRepository}
+							items={items}
+							additionalFooterButtons={[
+								{
+									text: 'Cancel',
+									onPress: hideModal,
+									skipSubmit: true,
+									variant: 'outline',
+								}
+							]}
+							onSave={(values)=> {
+
+								// strip the 'model__' prefix from the field names
+								values = _.mapKeys(values, (value, key) => {
+									return key.startsWith(modelFieldStartsWith) ? key.slice(modelFieldStartsWith.length) : key;
+								});
+
+								// Put these values back on joinData
+								item.joinData = values;
+								const newValue = [...valueRef.current]; // clone
+								const ix = _.findIndex(newValue, (val) => {
+									return val.id === item.id;
+								});
+								newValue[ix] = item;
+								setValue(newValue);
+
+								hideModal();
+							}}
+						/>;
+			}
+
+			showModal({
+				title: 'Extra data for "' + item.text + '"',
+				w: 400,
+				h: height,
+				canClose: true,
+				includeReset: false,
+				includeCancel: false,
+				body,
+			});
 		},
 		onGridAdd = (selection) => {
 			// underlying GridEditor added a record.
@@ -226,12 +380,60 @@ function TagComponent(props) {
 						key={ix}
 						text={val.text}
 						onView={() => onView(val)}
-						onDelete={!isViewOnly ? () => onDelete(val) : null}
 						showEye={showEye}
+						onJoin={() => onJoin(val)}
+						showJoin={hasJoinData}
+						onDelete={!isViewOnly ? () => onDelete(val) : null}
 						minimizeForRow={minimizeForRow}
 					/>;
 		});
 	
+	useEffect(() => {
+
+		// NOTE: This useEffect is so we can set the Target baseParams before it loads
+		// We did this for cases where the Tag field has joinData that's managing a nested Tag field. 
+		// ... This deals with recursion, so gets "alice in wonderland" quickly!
+		// If that inner Tag field has getBaseParams defined on the joinDataConfig of the outer Tag,
+		// then that means it needs to set its baseParams dynamically, based on the values that are 
+		// currently set, as well as the value of the outer ValueBox that was clicked on.
+
+		// For example: in the MetersEditor:
+		// {
+		// 	name: 'meters__pm_schedules',
+		// 	parent: self,
+		// 	reference: 'meters__pm_schedules',
+		// 	joinDataConfig: {
+		// 		also_resets: {
+		// 			getBaseParams: (values, outerValueId) => {
+		// 				const
+		// 					baseParams = {
+		// 						'conditions[MetersPmSchedules.meter_id]': meter_id, // limit also_resets to those MetersPmSchedules related to this meter
+		// 					},
+		// 					ids = values.map((value) => value.id),
+		// 					mpsValues = JSON.parse(self.children.meters__pm_schedules?.value || '[]');
+		// 				if (outerValueId) {
+		// 					ids.push(outerValueId);
+		// 				}
+		// 				if (!_.isEmpty(ids)) {
+		// 					baseParams['conditions[MetersPmSchedules.pm_schedule_id NOT IN]'] = ids;
+		// 				}
+		// 				return baseParams;
+		// 			},
+		// 		},
+		// 	},
+		// }
+
+
+		if (getBaseParams) {
+			TargetRepository.setBaseParams(getBaseParams(value, outerValueId));
+		}
+		setIsInited(true);
+	}, [value]);
+
+	if (!isInited) {
+		return null;
+	}
+
 	valueRef.current = value; // the onGrid* methods were dealing with stale data, so use a ref, and update it here
 
 	let WhichCombo = Combo;
@@ -309,7 +511,7 @@ function TagComponent(props) {
 				
 				{!isViewOnly && 
 					<WhichCombo
-						Repository={props.Repository}
+						Repository={TargetRepository}
 						Editor={props.Editor}
 						onSubmit={onChangeComboValue}
 						parent={self}

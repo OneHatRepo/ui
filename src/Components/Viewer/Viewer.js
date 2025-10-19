@@ -159,6 +159,7 @@ function Viewer(props) {
 			}
 			if (type?.match(/(Tag|TagEditor)$/)) {
 				viewerTypeProps.isViewOnly = true;
+				viewerTypeProps.SourceRepository = Repository;
 			}
 			if (type?.match(/(GridEditor)$/)) {
 				viewerTypeProps.disableAdd = true;
@@ -259,9 +260,9 @@ function Viewer(props) {
 				label = propertyDef.title;
 			}
 
-			let value = record?.properties[name]?.displayValue || null;
+			let value = record?.properties?.[name]?.displayValue || record?.[name] || null;
 			const
-				schema = record?.repository.getSchema(),
+				schema = record?.repository?.getSchema(),
 				propertyDefinition = schema?.getPropertyDefinition(name);
 			if (propertyDefinition?.isFk) {
 				// value above is the id, get the actual display value

@@ -130,6 +130,13 @@ export default function withData(WrappedComponent) {
 					displayField={displayField}
 					idIx={localIdIx}
 					displayIx={localDisplayIx}
+					setBaseParams={(baseParams) => {
+						// This allows components down the hierarchy to dynamically set the baseParams
+						LocalRepository.setBaseParams(baseParams);
+						if (LocalRepository.isRemote) {
+							LocalRepository.load();
+						}
+					}}
 				/>;
 	});
 }
