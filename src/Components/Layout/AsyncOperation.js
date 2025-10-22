@@ -267,7 +267,7 @@ function AsyncOperation(props) {
 
 				const className = 'text-lg';
 				renderItems.push(<Text className={className + ' ' + color} key="status">Status: {statusMessage}</Text>);
-				if (!_.isNil(percentage)) {
+				if (!_.isNil(percentage) && status !== PROGRESS__COMPLETED) {
 					renderItems.push(<VStack key="progress">
 											<Progress.Bar
 												animated={true}
@@ -297,7 +297,7 @@ function AsyncOperation(props) {
 				if (!_.isNil(count) && count !== 0) {
 					renderItems.push(<Text className={className} key="count">Count: {count}</Text>);
 				}
-				if (!_.isNil(current) && !_.isNil(total) && current !== 0 && total !== 0) {
+				if (!_.isNil(current) && !_.isNil(total)) {
 					renderItems.push(<Text className={className} key="currentTotal">Current/Total: {current} / {total}</Text>);
 				}
 				if (!_.isNil(message) && !_.isEmpty(message)) {
