@@ -15,6 +15,7 @@ import {
 	PROGRESS__COMPLETED,
 	PROGRESS__FAILED,
 	PROGRESS__STUCK,
+	PROGRESS__UNSTUCK,
 } from '../../Constants/Progress.js';
 import {
 	MOMENT_DATE_FORMAT_2,
@@ -27,6 +28,7 @@ import withAlert from '../Hoc/withAlert.js';
 import Loading from '../Messages/Loading.js';
 import ChevronLeft from '../Icons/ChevronLeft.js';
 import ChevronRight from '../Icons/ChevronRight.js';
+import RotateLeft from '../Icons/RotateLeft.js';
 import Play from '../Icons/Play.js';
 import EllipsisHorizontal from '../Icons/EllipsisHorizontal.js';
 import Stop from '../Icons/Stop.js';
@@ -102,6 +104,13 @@ function AsyncOperation(props) {
 		setFormValues = (values) => {
 			formValuesRef.current = values;
 		},
+		isStuckRef = useRef(false),
+		getIsStuck = () => {
+			return isStuckRef.current;
+		},
+		setIsStuck = (bool) => {
+			isStuckRef.current = bool;
+		},
 		getFooter = () => {
 			switch(getMode()) {
 				case INIT:
@@ -127,19 +136,28 @@ function AsyncOperation(props) {
 					// 			/>
 					// 		</Toolbar>;
 				case RESULTS:
-					return <Toolbar>
-								<Button
+					let button;
+					if (getIsStuck()) {
+						button = <Button
+									text="Unstick"
+									icon={RotateLeft}
+									onPress={() => unstick()}
+								/>;
+					} else {
+						button = <Button
 									text="Reset"
 									icon={ChevronLeft}
 									onPress={() => resetToInitialState()}
-								/>
+								/>;
+					}
+					return <Toolbar>
+								{button}
 							</Toolbar>;
 			}
 		},
 		[footer, setFooter] = useState(getFooter()),
 		[results, setResults] = useState(null),
 		[progress, setProgress] = useState(null),
-		[isStuck, setIsStuck] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		showResults = (results) => {
 			setMode(RESULTS);
@@ -194,7 +212,6 @@ function AsyncOperation(props) {
 								<Text>{message}</Text>;
 			}
 			showResults(results);
-
 		},
 		getProgress = (immediately = false) => {
 			if (!getProgressUpdates) {
@@ -331,6 +348,35 @@ function AsyncOperation(props) {
 			if (immediately) {
 				fetchProgress(true); // isInitial
 			}
+		},
+		unstick = async () => {
+			stopGettingProgress();
+			setMode(PROCESSING);
+			setFooter(getFooter());
+			
+			const
+				method = Repository.methods.edit,
+				uri = Repository.getModel() + '/unstickProcess',
+				data = {
+					process
+				};
+			const
+				result = await Repository._send(method, uri, data);
+			
+			const response = Repository._processServerResponse(result);
+			if (!response?.success) {
+				alert(response.message || 'Error unsticking process on server.');
+				resetToInitialState();
+				return;
+			}
+
+			if (response.root?.status !== PROGRESS__UNSTUCK) {
+				alert('Process could not be unstuck.');
+				return;
+			}
+
+			alert('Process unstuck.');
+			resetToInitialState();
 		},
 		resetToInitialState = () => {
 			setMode(START);
