@@ -169,7 +169,7 @@ export default function TreeNode(props) {
 							canDrag={nodeCanDrag}
 						/>}
 
-					{hasChildren &&
+					{hasChildren ?
 						<IconButton
 							{...testProps('expandBtn')}
 							icon={isExpanded ? ChevronDown : ChevronRight}
@@ -183,6 +183,14 @@ export default function TreeNode(props) {
 								'TreeNode-expandBtn',
 								'ml-2',
 								styles.TREE_NODE_EXPAND_BTN_CLASSNAME,
+							)}
+						/> :
+						<Box
+							{...testProps('spacer')}
+							className={clsx(
+								'TreeNode-spacer',
+								'ml-2',
+								styles.TREE_NODE_SPACER_CLASSNAME,
 							)}
 						/>}
 
