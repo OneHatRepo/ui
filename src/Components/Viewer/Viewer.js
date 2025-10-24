@@ -486,6 +486,7 @@ function Viewer(props) {
 		'Viewer-VStackNative',
 		'h-full',
 		'bg-white',
+		'[transform:translateZ(0)]', // so embedded FAB will be relative to this container, not to viewport
 	);
 	if (props.className) {
 		className += ' ' + props.className;
