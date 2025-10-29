@@ -17,6 +17,9 @@ import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
 import {
+	EDITOR_TYPE__SIDE,
+} from '../../Constants/Editor.js';
+import {
 	EDIT,
 	VIEW,
 } from '../../Constants/Commands.js';
@@ -207,6 +210,8 @@ function GridComponent(props) {
 			onContextMenu,
 			isAdding,
 			isEditorViewOnly,
+			getIsEditorShown,
+			editorType,
 
 			// withData
 			Repository,
@@ -1109,6 +1114,11 @@ function GridComponent(props) {
 				heightChanged = Math.abs(containerHeight - lastMeasuredContainerHeight) > 5, // 5px tolerance
 				isFirstMeasurement = lastMeasuredContainerHeight === 0;
 			if (containerHeight > 0 && (isFirstMeasurement || heightChanged)) {
+				if (editorType === EDITOR_TYPE__SIDE && getIsEditorShown()) {
+					// When side editor is shown, skip adjustment to avoid layout thrashing
+					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A4 height changed significantly, but side editor is shown, skipping remeasurement`);
+					return;
+				}
 				if (DEBUG) {
 					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A4 height changed significantly, proceeding with remeasurement`);
 				}

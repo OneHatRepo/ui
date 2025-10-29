@@ -86,10 +86,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			newEntityDisplayValueRef = useRef(),
 			editorModeRef = useRef(initialEditorMode),
 			isIgnoreNextSelectionChangeRef = useRef(false),
+			isEditorShownRef = useRef(false),
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isAdding, setIsAdding] = useState(false),
 			[isSaving, setIsSaving] = useState(false),
-			[isEditorShown, setIsEditorShownRaw] = useState(false),
 			[isEditorViewOnly, setIsEditorViewOnly] = useState(canEditorViewOnly), // current state of whether editor is in view-only mode
 			[lastSelection, setLastSelection] = useState(),
 			setIsIgnoreNextSelectionChange = (bool) => {
@@ -99,10 +99,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return isIgnoreNextSelectionChangeRef.current;
 			},
 			setIsEditorShown = (bool) => {
-				setIsEditorShownRaw(bool);
+				isEditorShownRef.current = bool;
+				forceUpdate();
 				if (!bool && onEditorClose) {
 					onEditorClose();
 				}
+			},
+			getIsEditorShown = () => {
+				return isEditorShownRef.current;
 			},
 			setIsWaitModalShown = (bool) => {
 				const
@@ -685,8 +689,18 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
-			setEditorMode(calculateEditorMode());
 
+			if (editorType === EDITOR_TYPE__SIDE) {
+				if (selection?.length) { //  || isAdding
+					// there is a selection, so show the editor
+					setIsEditorShown(true);
+				} else {
+					// no selection, so close the editor
+					setIsEditorShown(false);
+				}
+			}
+
+			setEditorMode(calculateEditorMode());
 			setLastSelection(selection);
 			
 			// Push isIgnoreNextSelectionChange until after a microtask to ensure all
@@ -722,7 +736,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					alreadyHasWithEditor={true}
 					currentRecord={currentRecord}
 					setCurrentRecord={setCurrentRecord}
-					isEditorShown={isEditorShown}
+					isEditorShown={getIsEditorShown()}
+					getIsEditorShown={getIsEditorShown}
 					isEditorViewOnly={isEditorViewOnly}
 					isAdding={isAdding}
 					isSaving={isSaving}

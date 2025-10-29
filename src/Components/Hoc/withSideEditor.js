@@ -66,7 +66,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								isSideEditor={true}
 								{...props}
 							/>}
-					east={<Editor
+					east={props.isEditorShown && <Editor
 								{...propsToPass}
 								editorType={EDITOR_TYPE__SIDE}
 								{..._editor}
