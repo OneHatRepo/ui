@@ -12,6 +12,8 @@ import {
 import {
 	EDITOR_TYPE__PLAIN,
 } from '../../../../Constants/Editor.js';
+import Button from '../../../Buttons/Button.js';
+import testProps from '../../../../Functions/testProps.js';
 import Form from '../../Form.js';
 import Viewer from '../../../Viewer/Viewer.js';
 import withAlert from '../../../Hoc/withAlert.js';
@@ -264,6 +266,7 @@ function TagComponent(props) {
 
 			let height = 300;
 			let body;
+			const extraModalProps = {};
 			if (isViewOnly) {
 				// show Viewer
 				body = <Viewer
@@ -274,12 +277,17 @@ function TagComponent(props) {
 								labelWidth: 200,
 							}}
 						/>;
+
+				extraModalProps.customButtons = [
+					<Button
+						{...testProps('closeBtn')}
+						key="closeBtn"
+						onPress={hideModal}
+						text="Close"
+						className="text-white"
+					/>,
+				];
 			} else {
-				switch (items.length) {
-					case 1: height = 250; break;
-					case 2: height = 400; break;
-					default: height = 600; break;
-				}
 				body = <Form
 							editorType={EDITOR_TYPE__PLAIN}
 							isEditorViewOnly={false}
@@ -314,6 +322,11 @@ function TagComponent(props) {
 							}}
 						/>;
 			}
+			switch (items.length) {
+				case 1: height = 250; break;
+				case 2: height = 400; break;
+				default: height = 600; break;
+			}
 
 			showModal({
 				title: 'Extra data for "' + item.text + '"',
@@ -323,6 +336,7 @@ function TagComponent(props) {
 				includeReset: false,
 				includeCancel: false,
 				body,
+				...extraModalProps,
 			});
 		},
 		onGridAdd = (selection) => {
