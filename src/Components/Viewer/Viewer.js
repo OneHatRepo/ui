@@ -161,11 +161,8 @@ function Viewer(props) {
 				viewerTypeProps.isViewOnly = true;
 				viewerTypeProps.SourceRepository = Repository;
 			}
-			if (type?.match(/(GridEditor)$/)) {
-				viewerTypeProps.disableAdd = true;
-				viewerTypeProps.disableEdit = true;
-				viewerTypeProps.disableDelete = true;
-				viewerTypeProps.disableDuplicate = true;
+			if (type?.match(/(Grid|GridEditor)$/)) {
+				viewerTypeProps.canEditorViewOnly = true;
 			}
 			const Element = getComponentFromType(type);
 
