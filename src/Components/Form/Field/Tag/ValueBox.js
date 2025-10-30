@@ -16,7 +16,7 @@ export default function ValueBox(props) {
 			text,
 			onView,
 			showEye = false,
-			onJoin,
+			onViewEditJoinData,
 			showJoin = false,
 			onDelete,
 			minimizeForRow = false,
@@ -60,7 +60,7 @@ export default function ValueBox(props) {
 							size: styles.FORM_TAG_VALUEBOX_ICON_SIZE,
 							className: 'text-grey-600',
 						}}
-						onPress={onJoin}
+						onPress={onViewEditJoinData}
 						className={clsx(
 							'ValueBox-joinBtn',
 							'h-full',

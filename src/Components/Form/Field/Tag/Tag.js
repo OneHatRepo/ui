@@ -36,11 +36,13 @@ function TagComponent(props) {
 			Editor,
 			_combo = {},
 			SourceRepository,
+			mustSaveBeforeEditingJoinData = false,
 			joinDataConfig,
-			outerValueId, // for recursion only. See note in useEffect
+			getBaseParams, // See note in useEffect
+			outerValueId, // See note in useEffect
 			tooltip,
 			testID,
-			getBaseParams,
+			isDirty = false,
 
 			// parent Form
 			onChangeValue,
@@ -77,11 +79,11 @@ function TagComponent(props) {
 			}
 			return null;
 		}),
-		[isInited, setIsInited] = useState(false),
+		[isInited, setIsInited] = useState(_.isUndefined(getBaseParams)), // default to true unless getBaseParams is defined
 		modelFieldStartsWith = hasJoinData ? Inflector.underscore(JoinRepository.getSchema().name) + '__' : '',
 		valueRef = useRef(value),
 		onView = async (item, e) => {
-			// This method shows the record viewer
+			// show the joined record's viewer
 			const
 				id = item.id,
 				repository = TargetRepository;
@@ -142,7 +144,7 @@ function TagComponent(props) {
 			}
 
 			// The value we get from combo is a simple int
-			// Convert this to id and displayValue from either Repository or data array.
+			// Convert this to { id, text} from either Repository or data array.
 			const
 				data = props.data,
 				idIx = props.idIx,
@@ -171,32 +173,36 @@ function TagComponent(props) {
 
 			let joinData = {};
 			if (hasJoinData) {
-				// build up the default starting values,
+				// build up the default starting values for joinData,
 				// first with schema defaultValues...
 				const
 					allSchemaDefaults = JoinRepository.getSchema().getDefaultValues(),
 					modelSchemaDefaults = _.pickBy(allSchemaDefaults, (value, key) => {
 						return key.startsWith(modelFieldStartsWith);
 					}),
-					joinFieldNames = joinDataConfig.map(fieldConfig => fieldConfig.name || fieldConfig),
-					schemaDefaultValues = _.pick(modelSchemaDefaults, joinFieldNames),
-					strippedSchemaDefaultValues = _.mapKeys(schemaDefaultValues, (value, key) => {
-						return key.startsWith(modelFieldStartsWith) ? key.slice(modelFieldStartsWith.length) : key;
-					});
-
-				// then with default values in joinDataConfig, if they exist
-				_.each(joinDataConfig, (fieldConfig) => {
-					if (!_.isNil(fieldConfig.defaultValue)) {
-						joinData[fieldConfig.name] = fieldConfig.defaultValue;
-					}
+					fullFieldNames = propertyDef.joinData.map((fieldName) => { // add the 'model_name__' prefix so we can get schema default values
+						return modelFieldStartsWith + fieldName;
+					}),
+					schemaDefaultValues = _.pick(modelSchemaDefaults, fullFieldNames);
+				joinData = _.mapKeys(schemaDefaultValues, (value, key) => { // strip out the 'model_name__' prefix from field names
+					return key.startsWith(modelFieldStartsWith) ? key.slice(modelFieldStartsWith.length) : key;
 				});
-				joinData = { ...strippedSchemaDefaultValues, ...joinData };
+
+				// then override with default values in joinDataConfig, if they exist
+				if (joinDataConfig) {
+					_.each(Object.keys(joinDataConfig), (fieldName) => {
+						const fieldConfig = joinDataConfig[fieldName];
+						if (!_.isUndefined(fieldConfig.defaultValue)) { // null in jsonDataConfig will override a default value in schema!
+							joinData[fieldName] = fieldConfig.defaultValue;
+						}
+					});
+				}
 			}
 
 
 			// add new value
 			const
-				newValue = [...value], // clone, so we trigger a re-render
+				newValue = [...value], // clone Tag's full current value (array), so we trigger a re-render after adding the new value
 				newItem = {
 					id,
 					text: displayValue,
@@ -215,8 +221,8 @@ function TagComponent(props) {
 			});			
 			setValue(newValue);
 		},
-		onJoin = async (item, e) => {
-			// This method shows the joinData viewer/editor
+		onViewEditJoinData = async (item, e) => {
+			// show the joinData viewer/editor
 
 			/* item format:
 				item = {
@@ -229,22 +235,27 @@ function TagComponent(props) {
 				}
 			*/
 
-			// prepend 'model_name__' to the field names, so they match the JoinRepository property names
+			// Prepare Form to edit the joinData
 			const
-				record = _.mapKeys(item.joinData, (value, key) => {
+				// create the Form.record, format: { meters_pm_schedules__also_resets: null, meters_pm_schedules__hide_every_n: 5 }
+				record = _.mapKeys(item.joinData, (value, key) => { // add the 'model_name__' prefix so we can match JoinRepository property names
 					return modelFieldStartsWith + key;
 				}),
+				// create the Form.items
 				items = propertyDef.joinData.map((fieldName) => {
 					let obj = {
 						name: modelFieldStartsWith + fieldName,
 					};
-					// add in any config from joinDataConfig for this field
+
+					// add in any specific config for joinData[fieldName]], if it exists
+					// (The outer *Editor can configure each Tag field's joinData Form item.
+					// This moves that configuration down and adds outerValueId)
 					if (joinDataConfig?.[fieldName]) {
-						const jdcf = _.clone(joinDataConfig[fieldName]); // don't mutate original
-						jdcf.outerValueId = item.id;
+						const joinDataConfigFieldname = _.clone(joinDataConfig[fieldName]); // don't mutate original
+						joinDataConfigFieldname.outerValueId = item.id; // so that joinData can be aware of the value of the inspected ValueBox; see note in useEffect, below
 						obj = {
 							...obj,
-							...jdcf,
+							...joinDataConfigFieldname,
 						};
 					}
 
@@ -285,7 +296,7 @@ function TagComponent(props) {
 							]}
 							onSave={(values)=> {
 
-								// strip the 'model__' prefix from the field names
+								// strip the 'model_name__' prefix from the field names
 								values = _.mapKeys(values, (value, key) => {
 									return key.startsWith(modelFieldStartsWith) ? key.slice(modelFieldStartsWith.length) : key;
 								});
@@ -381,54 +392,47 @@ function TagComponent(props) {
 						text={val.text}
 						onView={() => onView(val)}
 						showEye={showEye}
-						onJoin={() => onJoin(val)}
-						showJoin={hasJoinData}
+						onViewEditJoinData={() => onViewEditJoinData(val)}
+						showJoin={hasJoinData && (!mustSaveBeforeEditingJoinData || !isDirty)}
 						onDelete={!isViewOnly ? () => onDelete(val) : null}
 						minimizeForRow={minimizeForRow}
 					/>;
 		});
 	
-	useEffect(() => {
+	if (!_.isUndefined(getBaseParams) && outerValueId) {
+		useEffect(() => {
 
-		// NOTE: This useEffect is so we can set the Target baseParams before it loads
-		// We did this for cases where the Tag field has joinData that's managing a nested Tag field. 
-		// ... This deals with recursion, so gets "alice in wonderland" quickly!
-		// If that inner Tag field has getBaseParams defined on the joinDataConfig of the outer Tag,
-		// then that means it needs to set its baseParams dynamically, based on the values that are 
-		// currently set, as well as the value of the outer ValueBox that was clicked on.
+			// NOTE: This useEffect is so we can dynamically set the TargetRepository's baseParams,
+			// based on outerValueId, before it loads.
+			// We did this for cases where the Tag field has joinData that's managing a nested Tag field. 
+			// ... This deals with recursion, so gets "alice in wonderland" quickly!
+			// If that inner Tag field has getBaseParams defined on a joinDataConfig field of the outer Tag,
+			// then that means it needs to set its baseParams dynamically, based on the value of the outer ValueBox.
 
-		// For example: in the MetersEditor:
-		// {
-		// 	name: 'meters__pm_schedules',
-		// 	parent: self,
-		// 	reference: 'meters__pm_schedules',
-		// 	joinDataConfig: {
-		// 		also_resets: {
-		// 			getBaseParams: (values, outerValueId) => {
-		// 				const
-		// 					baseParams = {
-		// 						'conditions[MetersPmSchedules.meter_id]': meter_id, // limit also_resets to those MetersPmSchedules related to this meter
-		// 					},
-		// 					ids = values.map((value) => value.id),
-		// 					mpsValues = JSON.parse(self.children.meters__pm_schedules?.value || '[]');
-		// 				if (outerValueId) {
-		// 					ids.push(outerValueId);
-		// 				}
-		// 				if (!_.isEmpty(ids)) {
-		// 					baseParams['conditions[MetersPmSchedules.pm_schedule_id NOT IN]'] = ids;
-		// 				}
-		// 				return baseParams;
-		// 			},
-		// 		},
-		// 	},
-		// }
+			// For example: in the MetersEditor:
+			// {
+			// 	name: 'meters__pm_schedules',
+			// 	mustSaveBeforeEditingJoinData: true,
+			// 	joinDataConfig: {
+			// 		also_resets: {
+			// 			getBaseParams: (values, outerValueId) => {
+			// 				const baseParams = {
+			// 					'conditions[MetersPmSchedules.meter_id]': meter_id, // limit also_resets to those MetersPmSchedules related to this meter
+			// 				};
+			// 				if (outerValueId) {
+			// 					baseParams['conditions[MetersPmSchedules.id <>]'] = outerValueId; // exclude the ValueBox that was clicked on
+			// 				}
+			// 				return baseParams;
+			// 			},
+			// 		},
+			// 	},
+			// }
 
-
-		if (getBaseParams) {
 			TargetRepository.setBaseParams(getBaseParams(value, outerValueId));
-		}
-		setIsInited(true);
-	}, [value]);
+			setIsInited(true);
+
+		}, [value]);
+	}
 
 	if (!isInited) {
 		return null;
