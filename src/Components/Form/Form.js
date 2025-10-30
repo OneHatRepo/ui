@@ -816,6 +816,7 @@ function Form(props) {
 												{...testProps('field-' + name)}
 												name={name}
 												value={value}
+												isDirty={isDirty}
 												onChangeValue={(newValue) => {
 													if (newValue === undefined) {
 														newValue = null; // React Hook Form doesn't respond well when setting value to undefined
