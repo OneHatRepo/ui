@@ -32,6 +32,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryUserCanEdit = true, // not permissions, but capability
 				secondaryUserCanView = true,
 				secondaryCanEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
+				secondaryCanProceedWithCrud, // fn returns bool on if the CRUD operation can proceed
 				secondaryDisableAdd = false,
 				secondaryDisableEdit = false,
 				secondaryDisableDelete = false,
@@ -47,12 +48,14 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryEditorType,
 				secondaryOnAdd,
 				secondaryOnChange, // any kind of crud change
+				secondaryOnBeforeDelete,
 				secondaryOnDelete,
 				secondaryOnSave, // this could also be called 'onEdit'
 				secondaryOnEditorClose,
 				secondaryNewEntityDisplayValue,
 				secondaryNewEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				secondaryDefaultValues,
+				secondaryInitialEditorMode = EDITOR_MODE__VIEW,
 				secondaryStayInEditModeOnSelectionChange = false,
 
 				// withComponent
@@ -86,11 +89,11 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			secondaryNewEntityDisplayValueRef = useRef(),
 			secondaryEditorModeRef = useRef(EDITOR_MODE__VIEW),
 			secondaryIsIgnoreNextSelectionChangeRef = useRef(false),
+			secondaryIsEditorShownRef = useRef(false),
 			secondaryModel = SecondaryRepository?.schema?.name,
 			[secondaryCurrentRecord, secondarySetCurrentRecord] = useState(null),
 			[secondaryIsAdding, setIsAdding] = useState(false),
 			[secondaryIsSaving, setIsSaving] = useState(false),
-			[secondaryIsEditorShown, secondarySetIsEditorShownRaw] = useState(false),
 			[secondaryIsEditorViewOnly, setIsEditorViewOnly] = useState(secondaryCanEditorViewOnly), // current state of whether editor is in view-only mode
 			[secondaryLastSelection, setLastSelection] = useState(),
 			secondarySetIsIgnoreNextSelectionChange = (bool) => {
@@ -100,9 +103,22 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				return secondaryIsIgnoreNextSelectionChangeRef.current;
 			},
 			secondarySetIsEditorShown = (bool) => {
-				secondarySetIsEditorShownRaw(bool);
+				secondaryIsEditorShownRef.current = bool;
+				forceUpdate();
 				if (!bool && secondaryOnEditorClose) {
 					secondaryOnEditorClose();
+				}
+			},
+			secondaryGetIsEditorShown = () => {
+				return secondaryIsEditorShownRef.current;
+			},
+			secondarySetIsWaitModalShown = (bool) => {
+				const
+					dispatch = UiGlobals.redux?.dispatch,
+					setIsWaitModalShownAction = UiGlobals.systemReducer?.setIsWaitModalShownAction;
+				if (setIsWaitModalShownAction) {
+					console.log('withSecondaryEditor:setIsWaitModalShownAction', bool);
+					dispatch(setIsWaitModalShownAction(bool));
 				}
 			},
 			secondarySetSelectionDecorated = (newSelection) => {
@@ -139,12 +155,15 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					forceUpdate();
 				}
 			},
-			getNewEntityDisplayValue = () => {
+			secondaryGetNewEntityDisplayValue = () => {
 				return secondaryNewEntityDisplayValueRef.current;
 			},
 			secondaryDoAdd = async (e, values) => {
 				if (canUser && !canUser(ADD, secondaryModel)) {
 					showPermissionsError(ADD, secondaryModel);
+					return;
+				}
+				if (secondaryCanProceedWithCrud && !secondaryCanProceedWithCrud()) {
 					return;
 				}
 
@@ -165,20 +184,20 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					// 1. directlty submit 'values' to use in secondaryDoAdd(), or
 					// 2. Use the repository's default values (defined on each property as 'defaultValue'), or
 					// 3. Individually override the repository's default values with submitted 'defaultValues' (given as a prop to this HOC)
-					let defaultValuesToUse = SecondaryRepository.getSchema().getDefaultValues();
+					let secondaryDefaultValuesToUse = SecondaryRepository.getSchema().getDefaultValues();
 					if (secondaryDefaultValues) {
-						_.merge(defaultValuesToUse, secondaryDefaultValues);
+						_.merge(secondaryDefaultValuesToUse, secondaryDefaultValues);
 					}
-					addValues = {...defaultValuesToUse};
+					addValues = {...secondaryDefaultValuesToUse};
 				}
 
 				if (secondarySelectorId && !_.isEmpty(secondarySelectorSelected)) {
 					addValues[secondarySelectorId] = secondarySelectorSelected[secondarySelectorSelectedField];
 				}
 
-				if (getNewEntityDisplayValue()) {
+				if (secondaryGetNewEntityDisplayValue()) {
 					const displayPropertyName = secondaryNewEntityDisplayProperty || SecondaryRepository.getSchema().model.displayProperty;
-					addValues[displayPropertyName] = getNewEntityDisplayValue();
+					addValues[displayPropertyName] = secondaryGetNewEntityDisplayValue();
 				}
 
 				if (getListeners().onBeforeAdd) {
@@ -246,6 +265,9 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(EDIT, secondaryModel);
 					return;
 				}
+				if (secondaryCanProceedWithCrud && !secondaryCanProceedWithCrud()) {
+					return;
+				}
 				const secondarySelection = secondaryGetSelection();
 				if (_.isEmpty(secondarySelection) || (_.isArray(secondarySelection) && (secondarySelection.length > 1 || secondarySelection[0]?.isDestroyed))) {
 					return;
@@ -265,6 +287,9 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(DELETE, secondaryModel);
 					return;
 				}
+				if (secondaryCanProceedWithCrud && !secondaryCanProceedWithCrud()) {
+					return;
+				}
 				let cb = null;
 				if (_.isFunction(args)) {
 					cb = args;
@@ -273,7 +298,15 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				if (_.isEmpty(secondarySelection) || (_.isArray(secondarySelection) && (secondarySelection.length > 1 || secondarySelection[0]?.isDestroyed))) {
 					return;
 				}
+				if (secondaryOnBeforeDelete) {
+					// This listener is set by parent components using a prop
+					const listenerResult = await secondaryOnBeforeDelete(secondarySelection);
+					if (listenerResult === false) {
+						return;
+					}
+				}
 				if (getListeners().onBeforeDelete) {
+					// This listener is set by child components using setWithEditListeners()
 					const listenerResult = await getListeners().onBeforeDelete();
 					if (listenerResult === false) {
 						return;
@@ -309,26 +342,33 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					});
 				} else
 				if (isSingle && isPhantom) {
-					deleteRecord(cb);
+					secondaryDeleteRecord(cb);
 				} else {
 					const identifier = secondaryGetRecordIdentifier(secondarySelection);
-					confirm('Are you sure you want to delete the ' + identifier, () => deleteRecord(null, cb));
+					confirm('Are you sure you want to delete the ' + identifier, () => secondaryDeleteRecord(null, cb));
 				}
 			},
 			secondaryDoMoveChildren = (cb) => {
 				hideAlert();
-				deleteRecord(true, cb);
+				secondaryDeleteRecord(true, cb);
 			},
 			secondaryDoDeleteChildren = (cb) => {
 				hideAlert();
-				deleteRecord(false, cb);
+				secondaryDeleteRecord(false, cb);
 			},
-			deleteRecord = async (moveSubtreeUp, cb) => {
+			secondaryDeleteRecord = async (moveSubtreeUp, cb) => {
 				if (canUser && !canUser(DELETE, secondaryModel)) {
 					showPermissionsError(DELETE, secondaryModel);
 					return;
 				}
 				const secondarySelection = secondaryGetSelection();
+				if (secondaryOnBeforeDelete) {
+					// This listener is set by parent components using a prop
+					const listenerResult = await secondaryOnBeforeDelete(secondarySelection);
+					if (listenerResult === false) {
+						return;
+					}
+				}
 				if (getListeners().onBeforeDelete) {
 					const listenerResult = await getListeners().onBeforeDelete(secondarySelection);
 					if (listenerResult === false) {
@@ -362,6 +402,9 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(VIEW, secondaryModel);
 					return;
 				}
+				if (secondaryCanProceedWithCrud && !secondaryCanProceedWithCrud()) {
+					return;
+				}
 				if (secondaryEditorType === EDITOR_TYPE__INLINE) {
 					alert('Cannot view in inline editor.');
 					return; // inline editor doesn't have a view mode
@@ -389,37 +432,70 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					showPermissionsError(DUPLICATE, secondaryModel);
 					return;
 				}
-
-				// check permissions for duplicate
+				if (secondaryCanProceedWithCrud && !secondaryCanProceedWithCrud()) {
+					return;
+				}
 
 				const secondarySelection = secondaryGetSelection();
 				if (secondarySelection.length !== 1) {
 					return;
 				}
-				if (secondaryUseRemoteDuplicate) {
-					const results = await onRemoteDuplicate();
-					return results;
-				}
-				const
-					entity = secondarySelection[0],
-					idProperty = SecondaryRepository.getSchema().model.idProperty,
-					rawValues = _.omit(entity.getOriginalData(), idProperty);
-				rawValues.id = null; // unset the id of the duplicate
-				const duplicate = await SecondaryRepository.add(rawValues, false, true);
-				secondarySetIsIgnoreNextSelectionChange(true);
-				secondarySetSelection([duplicate]);
-				secondarySetEditorMode(EDITOR_MODE__EDIT);
-				secondarySetIsEditorShown(true);
-			},
-			onRemoteDuplicate = async () => {
-				const
-					secondarySelection = secondaryGetSelection(),
-					entity = secondarySelection[0],
-					duplicateEntity = await SecondaryRepository.remoteDuplicate(entity);
 
-				secondarySetIsIgnoreNextSelectionChange(true);
-				secondarySetSelection([duplicateEntity]);
-				secondaryDoEdit();
+				if (secondaryUseRemoteDuplicate) {
+					return await secondaryOnRemoteDuplicate();
+				}
+
+				let isSuccess = false,
+					duplicateEntity;
+				try {
+					const
+						entity = secondarySelection[0],
+						idProperty = SecondaryRepository.getSchema().model.idProperty,
+						rawValues = _.omit(entity.getOriginalData(), idProperty);
+					rawValues.id = null; // unset the id of the duplicate
+
+					setIsWaitModalShown(true);
+
+					duplicateEntity = await SecondaryRepository.add(rawValues, false, true);
+					isSuccess = true;
+
+				} catch(err) {
+					// do nothing
+				} finally {
+					setIsWaitModalShown(false);
+				}
+
+				if (isSuccess) {
+					secondarySetIsIgnoreNextSelectionChange(true);
+					secondarySetSelection([duplicateEntity]);
+					secondarySetEditorMode(EDITOR_MODE__EDIT);
+					secondarySetIsEditorShown(true);
+				}
+			},
+			secondaryOnRemoteDuplicate = async () => {
+				let isSuccess = false,
+					duplicateEntity;
+				try {
+					const
+						secondarySelection = secondaryGetSelection(),
+						entity = secondarySelection[0];
+					
+					setIsWaitModalShown(true);
+
+					duplicateEntity = await SecondaryRepository.remoteDuplicate(entity);
+					isSuccess = true;
+					
+				} catch(err) {
+					// do nothing
+				} finally {
+					setIsWaitModalShown(false);
+				}
+				if (isSuccess) {
+					secondarySetIsIgnoreNextSelectionChange(true);
+					secondarySetSelection([duplicateEntity]);
+					secondaryDoEdit();
+					return duplicateEntity;
+				}
 			},
 			secondaryDoEditorSave = async (data, e) => {
 				let mode = secondaryGetEditorMode() === EDITOR_MODE__ADD ? ADD : EDIT;
@@ -516,7 +592,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 						isSingle = secondarySelection.length === 1,
 						isPhantom = secondarySelection[0] && !secondarySelection[0]?.isDestroyed && secondarySelection[0].isPhantom;
 					if (isSingle && isPhantom) {
-						await deleteRecord();
+						await secondaryDeleteRecord();
 					}
 					
 					setIsAdding(false);
@@ -551,7 +627,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondarySetIsEditorShown(false);
 				});
 			},
-			calculateEditorMode = () => {
+			secondaryCalculateEditorMode = () => {
 			
 				let secondaryIsIgnoreNextSelectionChange = secondaryGetIsIgnoreNextSelectionChange(),
 					doStayInEditModeOnSelectionChange = secondaryStayInEditModeOnSelectionChange;
@@ -563,7 +639,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondaryIsIgnoreNextSelectionChange = true;
 				}
 			
-				// calculateEditorMode gets called only on selection changes
+				// secondaryCalculateEditorMode gets called only on selection changes
 				const secondarySelection = secondaryGetSelection();
 				let mode;
 				if (secondaryEditorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
@@ -617,10 +693,26 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
-			secondarySetEditorMode(calculateEditorMode());
 
-			secondarySetIsIgnoreNextSelectionChange(false);
+			if (secondaryEditorType === EDITOR_TYPE__SIDE) {
+				if (secondarySelection?.length) { //  || isAdding
+					// there is a selection, so show the editor
+					secondarySetIsEditorShown(true);
+				} else {
+					// no selection, so close the editor
+					secondarySetIsEditorShown(false);
+				}
+			}
+
+			secondarySetEditorMode(secondaryCalculateEditorMode());
 			setLastSelection(secondarySelection);
+			
+			// Push isIgnoreNextSelectionChange until after a microtask to ensure all
+			// synchronous operations (including listener callbacks) are complete
+			// (this is to prevent the editor from immediately switching modes on doAdd in Tree)
+			Promise.resolve().then(() => {
+				secondarySetIsIgnoreNextSelectionChange(false);
+			});
 		}, [secondarySelection]);
 	
 		if (self) {
@@ -638,21 +730,23 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
 			// (basically redo what's in the useEffect, above)
-			secondarySetEditorMode(calculateEditorMode());
+			secondarySetEditorMode(secondaryCalculateEditorMode());
 		}
 
 		return <WrappedComponent
 					{...props}
+					ref={ref}
 					secondaryDisableWithEditor={false}
 					secondaryAlreadyHasWithEditor={true}
-					ref={ref}
 					secondaryCurrentRecord={secondaryCurrentRecord}
 					secondarySetCurrentRecord={secondarySetCurrentRecord}
-					secondaryIsEditorShown={secondaryIsEditorShown}
+					secondaryIsEditorShown={secondaryGetIsEditorShown()}
+					secondaryGetIsEditorShown={secondaryGetIsEditorShown}
 					secondaryIsEditorViewOnly={secondaryIsEditorViewOnly}
 					secondaryIsAdding={secondaryIsAdding}
 					secondaryIsSaving={secondaryIsSaving}
 					secondaryEditorMode={secondaryGetEditorMode()}
+					secondaryGetEditorMode={secondaryGetEditorMode}
 					secondaryOnEditMode={secondarySetEditMode}
 					secondaryOnViewMode={secondarySetViewMode}
 					secondaryEditorStateRef={secondaryEditorStateRef}
