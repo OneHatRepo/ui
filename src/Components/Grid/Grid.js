@@ -133,6 +133,7 @@ function GridComponent(props) {
 			flatListProps = {},
 			onRowPress,
 			onRender,
+			onLayout,
 			disableLoadOnRender = false,
 			forceLoadOnRender = false,
 			pullToRefresh = true,
@@ -1091,6 +1092,9 @@ function GridComponent(props) {
 		adjustPageSizeToHeight = (e) => {
 			if (!Repository || Repository.isDestroyed) { // This method gets delayed, so it's possible for Repository to have been destroyed. Check for this
 				return;
+			}
+			if (onLayout) {
+				onLayout(e);
 			}
 			if (DEBUG) {
 				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A`);
