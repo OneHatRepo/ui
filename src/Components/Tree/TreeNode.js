@@ -1,6 +1,7 @@
 import { useMemo, useEffect, } from 'react';
 import {
 	Box,
+	BoxNative,
 	HStackNative,
 	Icon,
 	Spinner,
@@ -185,7 +186,7 @@ export default function TreeNode(props) {
 								styles.TREE_NODE_EXPAND_BTN_CLASSNAME,
 							)}
 						/> :
-						<Box
+						<BoxNative
 							{...testProps('spacer')}
 							className={clsx(
 								'TreeNode-spacer',
