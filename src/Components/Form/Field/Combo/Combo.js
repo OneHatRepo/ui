@@ -24,6 +24,7 @@ import testProps from '../../../../Functions/testProps.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
+import useForceUpdate from '../../../../Hooks/useForceUpdate.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
@@ -121,13 +122,16 @@ export const ComboComponent = forwardRef((props, ref) => {
 			setValue,
 		} = props,
 		styles = UiGlobals.styles,
+		forceUpdate = useForceUpdate(),
 		inputRef = useRef(),
 		inputCloneRef = useRef(),
 		triggerRef = useRef(),
 		menuRef = useRef(),
 		displayValueRef = useRef(),
 		typingTimeout = useRef(),
-		[isMenuShown, setIsMenuShown] = useState(false),
+		isMenuShown = useRef(false),
+		isGridLayoutRunWithRender = useRef(false),
+		[isMenuAbove, setIsMenuAbove] = useState(false),
 		[isViewerShown, setIsViewerShown] = useState(false),
 		[viewerSelection, setViewerSelection] = useState([]),
 		[isRendered, setIsRendered] = useState(false),
@@ -140,15 +144,39 @@ export const ComboComponent = forwardRef((props, ref) => {
 		[newEntityDisplayValue, setNewEntityDisplayValue] = useState(null),
 		[filteredData, setFilteredData] = useState(data),
 		[inputHeight, setInputHeight] = useState(0),
+		[menuRenderedHeight, setMenuRenderedHeight] = useState(0),
 		[width, setWidth] = useState(0),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
+		getIsMenuShown = () => {
+			return isMenuShown.current;
+		},
+		setIsMenuShown = (bool) => {
+			isMenuShown.current = bool;
+
+			if (!bool) {
+				// The menu's onLayout runs every time there's a change in its size or position.
+				// We're only interested in the *first* time it runs with a rendered height.
+				// So if hiding the menu, reset isGridLayoutRunWithRender here and we'll set it to true
+				// the first time onLayout runs with a height.
+				setIsGridLayoutRunWithRender(false);
+				setIsMenuAbove(false); // reset this so the next time the menu opens, it starts below the input
+			}
+
+			forceUpdate();
+		},
+		getIsGridLayoutRunWithRender = () => {
+			return isGridLayoutRunWithRender.current;
+		},
+		setIsGridLayoutRunWithRender = (bool) => {
+			isGridLayoutRunWithRender.current = bool;
+		},
 		onLayout = (e) => {
 			setIsRendered(true);
 			setContainerWidth(e.nativeEvent.layout.width);
 		},
 		showMenu = async () => {
-			if (isMenuShown) {
+			if (getIsMenuShown()) {
 				return;
 			}
 			if (CURRENT_MODE === UI_MODE_WEB && inputRef.current?.getBoundingClientRect) {
@@ -181,13 +209,13 @@ export const ComboComponent = forwardRef((props, ref) => {
 			setIsMenuShown(true);
 		},
 		hideMenu = () => {
-			if (!isMenuShown) {
+			if (!getIsMenuShown()) {
 				return;
 			}
 			setIsMenuShown(false);
 		},
 		toggleMenu = () => {
-			setIsMenuShown(!isMenuShown);
+			setIsMenuShown(!getIsMenuShown());
 		},
 		temporarilySetIsNavigatingViaKeyboard = () => {
 			setIsNavigatingViaKeyboard(true);
@@ -359,14 +387,14 @@ export const ComboComponent = forwardRef((props, ref) => {
 			if (reloadOnTrigger && Repository) {
 				await Repository.reload();
 			}
-			if (isMenuShown) {
+			if (getIsMenuShown()) {
 				hideMenu();
 			} else {
 				showMenu();
 			}
 		},
 		onTriggerBlur = (e) => {
-			if (!isMenuShown) {
+			if (!getIsMenuShown()) {
 				return;
 			}
 
@@ -408,6 +436,33 @@ export const ComboComponent = forwardRef((props, ref) => {
 		onViewerClose = () => setIsViewerShown(false),
 		onCheckButtonPress = () => {
 			hideMenu();
+		},
+		onGridLayout = (e) => {
+			// This method is to determine if we need to flip the grid above the input
+			// because the menu is partially offscreen
+
+			if (CURRENT_MODE !== UI_MODE_WEB || !e.nativeEvent.layout.height) {
+				return;
+			}
+
+			// we reach this point only if the grid has rendered with a height.
+
+			if (!getIsGridLayoutRunWithRender()) {
+				// we reach this point only on the *first* time onGridLayout runs with a height.
+				// determine if the menu is partially offscreen
+				const
+					menuRect = menuRef.current.getBoundingClientRect(),
+					inputRect = inputRef.current.getBoundingClientRect(),
+					menuOverflows = menuRect.bottom > window.innerHeight;
+				if (menuOverflows) {
+					// flip it
+					setIsMenuAbove(true);
+				} else {
+					setIsMenuAbove(false);
+				}
+				setMenuRenderedHeight(e.nativeEvent.layout.height);
+				setIsGridLayoutRunWithRender(true);
+			}
 		},
 		isEventStillInComponent = (e) => {
 			const {
@@ -518,7 +573,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 				setFilteredData(found);
 			}
 
-			if (!isMenuShown) {
+			if (!getIsMenuShown()) {
 				showMenu();
 			}
 			setIsSearchMode(true);
@@ -734,7 +789,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 				</Pressable>;
 	}
 
-	if (isMenuShown) {
+	if (getIsMenuShown()) {
 		const gridProps = _.pick(props, [
 			'Editor',
 			'model',
@@ -761,8 +816,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 		if (!Repository) {
 			gridProps.data = filteredData;
 		}
-		const WhichGrid = isEditor ? WindowedGridEditor : Grid;
-		const gridStyle = {};
+		const
+			WhichGrid = isEditor ? WindowedGridEditor : Grid,
+			gridStyle = {};
 		if (CURRENT_MODE === UI_MODE_WEB) {
 			gridStyle.height = menuHeight || styles.FORM_COMBO_MENU_HEIGHT;
 		}
@@ -786,6 +842,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 					disablePresetButtons={!isEditor}
 					alternateRowBackgrounds={false}
 					showSelectHandle={false}
+					onLayout={onGridLayout}
 					onChangeSelection={(selection) => {
 
 						if (Repository && selection[0]?.isPhantom) {
@@ -938,7 +995,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 							</Box>;
 			}
 			dropdownMenu = <Popover
-								isOpen={isMenuShown}
+								isOpen={getIsMenuShown()}
 								onClose={() => {
 									hideMenu();
 								}}
@@ -962,15 +1019,24 @@ export const ComboComponent = forwardRef((props, ref) => {
 										'max-w-full',
 									)}
 									style={{
-										top,
+										// If flipped, position above input; otherwise, below
+										top: isMenuAbove
+											? (top - menuRenderedHeight) // above
+											: top, // below
 										left,
 										width,
-										// height: (menuHeight || styles.FORM_COMBO_MENU_HEIGHT) + inputHeight,
 										minWidth: 100,
 									}}
 								>
-									{inputClone}
-									{grid}
+									{isMenuAbove ?
+										<>
+											{grid}
+											{inputClone}
+										</> :
+										<>
+											{inputClone}
+											{grid}
+										</>}
 								</Box>
 							</Popover>;
 		}
