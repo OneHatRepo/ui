@@ -21,6 +21,7 @@ export function JsonElement(props) {
 			tooltip = null,
 			isDisabled = false,
 			isViewOnly = false,
+			isCollapsed = true,
 			tooltipPlacement = 'bottom',
 			testID,
 
@@ -59,7 +60,7 @@ export function JsonElement(props) {
 					editable={!isViewOnly}
 					src={src}
 					enableClipboard={false}
-					collapsed={true}
+					collapsed={isCollapsed}
 					onEdit={(obj) => {
 						setValue(JSON.stringify(obj.updated_src));
 					}}
