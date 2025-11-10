@@ -286,7 +286,7 @@ const GridRow = forwardRef((props, ref) => {
 										'block',
 										areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
 										'[&::-webkit-scrollbar]:h-2',
-										'[&::-webkit-scrollbar-thumb]:bg-gray-400',
+										'[&::-webkit-scrollbar-thumb]:bg-gray-300',
 										'[&::-webkit-scrollbar-thumb]:rounded-full',
 										colClassName,
 										styles.GRID_CELL_CLASSNAME,
@@ -350,10 +350,17 @@ const GridRow = forwardRef((props, ref) => {
 					if (config.getCellProps) {
 						_.assign(elementProps, config.getCellProps(item));
 					}
+
+					// TODO: incorporate better scrollbar formatting with
+					// tailwind plugin 'tailwind-scrollbar' (already installed, just not yet used here)
+
 					let textClassName = clsx(
 						'GridRow-TextNative',
 						'self-center',
 						areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
+						'[&::-webkit-scrollbar]:h-2',
+						'[&::-webkit-scrollbar-thumb]:bg-gray-300',
+						'[&::-webkit-scrollbar-thumb]:rounded-full',
 						colClassName,
 						styles.GRID_CELL_CLASSNAME,
 						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
