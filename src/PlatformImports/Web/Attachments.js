@@ -474,9 +474,9 @@ function AttachmentsElement(props) {
 				},
 				isPdf = currentFile.attachments__mimetype === 'application/pdf';
 				
-			let url = currentFile.attachments__uri;
+			let url = encodeURI(currentFile.attachments__uri);
 			try {
-				const response = await fetch(currentFile.attachments__uri, {
+				const response = await fetch(url, {
 					headers: Attachments.headers // Use your repository's headers
 				});
 				
@@ -1019,7 +1019,7 @@ function AttachmentsElement(props) {
 							},
 							{
 								"id": "attachments__size_formatted",
-								"header": "Size Formatted",
+								"header": "Size",
 								"fieldName": "attachments__size_formatted",
 								"isSortable": false,
 								"isEditable": false,
