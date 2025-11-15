@@ -95,8 +95,7 @@ export default function withContextMenu(WrappedComponent) {
 								action="secondary"
 							/>;
 				});
-				const showId = true; // TODO: This should only be for local dev
-				if (showId) {
+				if (UiGlobals.isLocal) {
 					contextMenuItemComponents.push(<Text key="idViewer" className="flex-1 py-2 px-4 select-none">id: {selection?.[0]?.id}</Text>);
 				}
 				return contextMenuItemComponents;
@@ -122,9 +121,19 @@ export default function withContextMenu(WrappedComponent) {
 			// may change based on the selection; and this is why we're using 
 			// useEffect to show the context menu instead of onContextMenu.
 
+			// TODO: There might be a bug here. As the comment above suggests, useEffect()
+			// was running if contextMenuItems changed. But the comment next to the args
+			// for useEffect() says we're not including contextMenuItems in the args
+			// to avoid infinite loops. Is this a problem??
+
+			const contextMenuItemComponents = createContextMenuItemComponents();
+			if (contextMenuItemComponents.length === 0) {
+				// No items to show
+				return;
+			}
+			
 			// show context menu
 			const
-				contextMenuItemComponents = createContextMenuItemComponents(),
 				className = clsx(
 					'context-menu-container',
 					'absolute',
