@@ -10,12 +10,19 @@ import clsx from 'clsx';
 import * as Progress from 'react-native-progress';
 import useForceUpdate from '../../Hooks/useForceUpdate';
 import {
+	EDITOR_TYPE__PLAIN,
+} from '../../Constants/Editor.js';
+import {
 	PROGRESS__NONE_FOUND,
 	PROGRESS__IN_PROCESS,
 	PROGRESS__COMPLETED,
 	PROGRESS__FAILED,
 	PROGRESS__STUCK,
 	PROGRESS__UNSTUCK,
+	ASYNC_OPERATION_MODES__INIT,
+	ASYNC_OPERATION_MODES__START,
+	ASYNC_OPERATION_MODES__PROCESSING,
+	ASYNC_OPERATION_MODES__RESULTS,
 } from '../../Constants/Progress.js';
 import {
 	MOMENT_DATE_FORMAT_2,
@@ -38,11 +45,12 @@ import Toolbar from '../Toolbar/Toolbar.js';
 import moment from 'moment';
 import _ from 'lodash';
 
-const
-	INIT = 'INIT', // no footer shown; used when component initially loads, to see if operation is already in progress
-	START = 'START', // shows the start form
-	PROCESSING = 'PROCESSING', // shows the loading indicator while starting the operation
-	RESULTS = 'RESULTS'; // shows the results of the operation, or any in-progress updates
+// MODES:
+// ASYNC_OPERATION_MODES__INIT - no footer shown; used when component initially loads, to see if operation is already in progress
+// ASYNC_OPERATION_MODES__START - shows the start form
+// ASYNC_OPERATION_MODES__PROCESSING - shows the loading indicator while starting the operation
+// ASYNC_OPERATION_MODES__RESULTS - shows the results of the operation, or any in-progress updates
+
 
 // If getProgressUpdates is false, the component will show the start form initially.
 // If getProgressUpdates is true, the component will initially query the server to see if
@@ -66,6 +74,7 @@ function AsyncOperation(props) {
 			parseProgress, // optional fn, accepts 'response' as arg and returns an object like this: { status, errors, started, lastUpdated, timeElapsed, count, current, total, percentage }
 			updateInterval = 10000, // ms
 			progressColor = '#666',
+			onChangeMode,
 
 			// withComponent
 			self,
@@ -81,15 +90,19 @@ function AsyncOperation(props) {
 		getIsValid = () => {
 			return isValid.current;
 		},
-		mode = useRef(INIT),
+		mode = useRef(ASYNC_OPERATION_MODES__INIT),
 		setMode = (newMode) => {
 			mode.current = newMode;
+
+			if (onChangeMode) {
+				onChangeMode(newMode);
+			}
 		},
 		getMode = () => {
 			return mode.current;
 		},
-		isInProcess = getMode() === PROCESSING,
-		currentTabIx = (getMode() === PROCESSING ? 1 : (getMode() === RESULTS ? 2 : 0)),
+		isInProcess = getMode() === ASYNC_OPERATION_MODES__PROCESSING,
+		currentTabIx = (getMode() === ASYNC_OPERATION_MODES__PROCESSING ? 1 : (getMode() === ASYNC_OPERATION_MODES__PROCESSING ? 2 : 0)),
 		intervalRef = useRef(null),
 		getInterval = () => {
 			return intervalRef.current;
@@ -113,9 +126,9 @@ function AsyncOperation(props) {
 		},
 		getFooter = () => {
 			switch(getMode()) {
-				case INIT:
+				case ASYNC_OPERATION_MODES__INIT:
 					return null;
-				case START:
+				case ASYNC_OPERATION_MODES__START:
 					return <Toolbar>
 								<Button
 									text="Start"
@@ -124,7 +137,7 @@ function AsyncOperation(props) {
 									isDisabled={!getIsValid()}
 								/>
 							</Toolbar>;
-				case PROCESSING:
+				case ASYNC_OPERATION_MODES__PROCESSING:
 					// TODO: Add a cancellation option to the command.
 					// would require a backend controller action to support it
 					return null;
@@ -135,7 +148,7 @@ function AsyncOperation(props) {
 					// 				variant="link"
 					// 			/>
 					// 		</Toolbar>;
-				case RESULTS:
+				case ASYNC_OPERATION_MODES__PROCESSING:
 					let button;
 					if (getIsStuck()) {
 						button = <Button
@@ -160,13 +173,13 @@ function AsyncOperation(props) {
 		[progress, setProgress] = useState(null),
 		[isReady, setIsReady] = useState(false),
 		showResults = (results) => {
-			setMode(RESULTS);
+			setMode(ASYNC_OPERATION_MODES__PROCESSING);
 			setFooter(getFooter());
 			setResults(results);
 		},
 		startProcess = async () => {
 			stopGettingProgress();
-			setMode(PROCESSING);
+			setMode(ASYNC_OPERATION_MODES__PROCESSING);
 			setFooter(getFooter());
 			
 			const
@@ -264,11 +277,11 @@ function AsyncOperation(props) {
 					statusMessage = '',
 					errorMessage = null;
 				if (status === PROGRESS__IN_PROCESS) {
-					setMode(PROCESSING);
+					setMode(ASYNC_OPERATION_MODES__PROCESSING);
 					color = 'text-green-600';
 					statusMessage = 'In process...';
 				} else {
-					setMode(RESULTS);
+					setMode(ASYNC_OPERATION_MODES__PROCESSING);
 					stopGettingProgress();
 					if (status === PROGRESS__COMPLETED) {
 						statusMessage = 'Completed';
@@ -328,7 +341,7 @@ function AsyncOperation(props) {
 										})}
 									</VStack>);
 				}
-				if (getMode() === PROCESSING) {
+				if (getMode() === ASYNC_OPERATION_MODES__PROCESSING) {
 					setProgress(renderItems);
 				} else {
 					setResults(renderItems);
@@ -351,7 +364,7 @@ function AsyncOperation(props) {
 		},
 		unstick = async () => {
 			stopGettingProgress();
-			setMode(PROCESSING);
+			setMode(ASYNC_OPERATION_MODES__PROCESSING);
 			setFooter(getFooter());
 			
 			const
@@ -379,7 +392,7 @@ function AsyncOperation(props) {
 			resetToInitialState();
 		},
 		resetToInitialState = () => {
-			setMode(START);
+			setMode(ASYNC_OPERATION_MODES__START);
 			setFooter(getFooter());
 			setIsStuck(false);
 			stopGettingProgress();
@@ -397,7 +410,7 @@ function AsyncOperation(props) {
 		if (getProgressUpdates) {
 			getProgress(true);
 		} else {
-			setMode(START);
+			setMode(ASYNC_OPERATION_MODES__START);
 			setIsReady(true);
 		}
 		return () => {
@@ -421,10 +434,11 @@ function AsyncOperation(props) {
 								title: 'Start',
 								icon: Play,
 								isDisabled: currentTabIx !== 0,
-								content: getMode() === INIT ? 
+								content: getMode() === ASYNC_OPERATION_MODES__INIT ? 
 										<Loading /> :
 										<ScrollView className="ScrollView h-full w-full">
 											<Form
+												editorType={EDITOR_TYPE__PLAIN}
 												reference="form"
 												parent={self}
 												className="w-full h-full flex-1"
