@@ -205,7 +205,7 @@ function Form(props) {
 			
 			// Fallback to empty schema that allows any fields and defaults to valid
 			return yup.object().noUnknown(false).default({});
-		})(),
+		})() || yup.object().noUnknown(false).default({}), // on rare occasions, validatorToUse was null. This fixes it
 		{
 			control,
 			formState,
@@ -1549,7 +1549,7 @@ function Form(props) {
 function disableRequiredYupFields(validator) {
 	// based on https://github.com/jquense/yup/issues/1466#issuecomment-944386480
 	if (!validator) {
-		return null;
+		return yup.object().noUnknown(false).default({}); // Return valid schema instead of null
 	}
 
 	const nextSchema = validator.clone();
