@@ -264,6 +264,7 @@ import FiltersForm from './Form/FiltersForm.js';
 import Form from './Form/Form.js';
 import Grid from './Grid/Grid.js';
 import GridPanel from './Panel/GridPanel.js';
+import Hidden from './Form/Field/Hidden.js';
 import IconButton from './Buttons/IconButton.js';
 import Input from './Form/Field/Input.js';
 import IntervalsCombo from './Form/Field/Combo/IntervalsCombo.js';
@@ -558,6 +559,7 @@ const components = {
 	Form,
 	Grid,
 	GridPanel,
+	Hidden,
 	IconButton,
 	Input,
 	IntervalsCombo,
