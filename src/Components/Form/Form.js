@@ -1549,7 +1549,7 @@ function Form(props) {
 function disableRequiredYupFields(validator) {
 	// based on https://github.com/jquense/yup/issues/1466#issuecomment-944386480
 	if (!validator) {
-		return yup.object().noUnknown(false).default({}); // Return valid schema instead of null
+		return null;
 	}
 
 	const nextSchema = validator.clone();
