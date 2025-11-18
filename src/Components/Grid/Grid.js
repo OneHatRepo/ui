@@ -523,27 +523,29 @@ function GridComponent(props) {
 						}
 					}}
 					onContextMenu={(e) => {
-						// web only. Happens before onLongPress triggers
-						if (e.preventDefault && e.cancelable) {
-							e.preventDefault();
-							e.stopPropagation(); // disallow browser's default behavior for context menu
-						}
+						// web only; happens before onLongPress triggers
+						// different behavior here than onLongPress:
+						// if user clicks on a header row or phantom record, or if onContextMenu is not set, pass to the browser's context menu
 						if (isHeaderRow || isReorderMode) {
 							return
 						}
 						if (selection && selection[0] && selection[0].isRemotePhantom) {
 							return; // block context menu or changing selection when a remote phantom is already selected
 						}
-						
-						// context menu
-						const newSelection = [item];
-						if (!disableWithSelection) {
-							setSelection(newSelection);
-						}
-						if (onEditorRowClick) { // e.g. inline editor
-							onEditorRowClick(item, index, e);
-						}
 						if (onContextMenu) {
+							e.preventDefault();
+							e.stopPropagation(); // disallow browser's default behavior for context menu
+
+							// if the right-clicked item is not in the current selection,
+							// set the selection only to this one item.
+							let newSelection = selection;
+							if (!isInSelection(item)) {
+								newSelection = [item];
+								if (!disableWithSelection) {
+									setSelection(newSelection);
+								}
+							}
+
 							onContextMenu(item, e, newSelection);
 						}
 					}}
