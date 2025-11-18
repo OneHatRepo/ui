@@ -91,16 +91,16 @@ function AsyncOperation(props) {
 		getIsValid = () => {
 			return isValid.current;
 		},
-		mode = useRef(ASYNC_OPERATION_MODES__INIT),
-		setMode = (newMode) => {
-			mode.current = newMode;
+		modeRef = useRef(ASYNC_OPERATION_MODES__INIT),
+		setMode = (mode) => {
+			modeRef.current = mode;
 
 			if (onChangeMode) {
-				onChangeMode(newMode);
+				onChangeMode(mode);
 			}
 		},
 		getMode = () => {
-			return mode.current;
+			return modeRef.current;
 		},
 		isInProcess = getMode() === ASYNC_OPERATION_MODES__PROCESSING,
 		intervalRef = useRef(null),
@@ -281,11 +281,6 @@ function AsyncOperation(props) {
 					color = 'text-green-600';
 					statusMessage = 'In process...';
 				} else {
-					
-					// LEFT OFF HERE
-					// The mode is not yet operating correctly.
-					// Right now, when I hit reset, it doesn't go back to start
-
 					setMode(ASYNC_OPERATION_MODES__RESULTS);
 					stopGettingProgress();
 					if (status === PROGRESS__COMPLETED) {
@@ -432,10 +427,13 @@ function AsyncOperation(props) {
 		case ASYNC_OPERATION_MODES__INIT:
 		case ASYNC_OPERATION_MODES__START:
 			currentTabIx = 0;
+			break;
 		case ASYNC_OPERATION_MODES__PROCESSING:
 			currentTabIx = 1;
+			break;
 		case ASYNC_OPERATION_MODES__RESULTS:
 			currentTabIx = 2;
+			break;
 	}
 
 	return <Panel
