@@ -72,6 +72,7 @@ function AsyncOperation(props) {
 			formStartingValues = {},
 			_form = {},
 			getProgressUpdates = false,
+			getInitialProgress = true, // applies only if getProgressUpdates is true
 			parseProgress, // optional fn, accepts 'response' as arg and returns an object like this: { status, errors, started, lastUpdated, timeElapsed, count, current, total, percentage }
 			updateInterval = 10000, // ms
 			progressColor = '#666',
@@ -407,7 +408,7 @@ function AsyncOperation(props) {
 		};
 
 	useEffect(() => {
-		if (getProgressUpdates) {
+		if (getProgressUpdates && getInitialProgress) {
 			getProgress(true);
 		} else {
 			setMode(ASYNC_OPERATION_MODES__START);
