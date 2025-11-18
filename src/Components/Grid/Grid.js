@@ -522,6 +522,31 @@ function GridComponent(props) {
 							onContextMenu(item, e, newSelection);
 						}
 					}}
+					onContextMenu={(e) => {
+						// web only. Happens before onLongPress triggers
+						if (e.preventDefault && e.cancelable) {
+							e.preventDefault();
+							e.stopPropagation(); // disallow browser's default behavior for context menu
+						}
+						if (isHeaderRow || isReorderMode) {
+							return
+						}
+						if (selection && selection[0] && selection[0].isRemotePhantom) {
+							return; // block context menu or changing selection when a remote phantom is already selected
+						}
+						
+						// context menu
+						const newSelection = [item];
+						if (!disableWithSelection) {
+							setSelection(newSelection);
+						}
+						if (onEditorRowClick) { // e.g. inline editor
+							onEditorRowClick(item, index, e);
+						}
+						if (onContextMenu) {
+							onContextMenu(item, e, newSelection);
+						}
+					}}
 					className={clsx(
 						'Pressable',
 						'Row',

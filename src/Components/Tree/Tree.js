@@ -1106,6 +1106,24 @@ function TreeComponent(props) {
 								onContextMenu(item, e, selection);
 							}
 						}}
+						onContextMenu={(e) => {
+							// web only. Happens before onLongPress triggers
+							if (e.preventDefault && e.cancelable) {
+								e.preventDefault();
+								e.stopPropagation(); // disallow browser's default behavior for context menu
+							}
+
+							if (!setSelection) {
+								return;
+							}
+							
+							// context menu
+							const selection = [item];
+							setSelection(selection);
+							if (onContextMenu) {
+								onContextMenu(item, e, selection);
+							}
+						}}
 						className={clsx(
 							'Pressable',
 							'Node',
