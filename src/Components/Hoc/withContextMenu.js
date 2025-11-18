@@ -96,7 +96,7 @@ export default function withContextMenu(WrappedComponent) {
 							/>;
 				});
 				if (UiGlobals.isLocal) {
-					contextMenuItemComponents.push(<Text key="idViewer" className="flex-1 py-2 px-4 select-none">id: {selection?.[0]?.id}</Text>);
+					contextMenuItemComponents.push(<Text key="idViewer" className="flex-1 py-2 px-4 select-none">id: {selection?.[0]?.actualId || selection?.[0]?.id}</Text>);
 				}
 				return contextMenuItemComponents;
 			};
