@@ -27,6 +27,7 @@ import {
 import {
 	MOMENT_DATE_FORMAT_2,
 } from '../../Constants/Dates.js';
+import inArray from '../../Functions/inArray.js';
 import isJson from '../../Functions/isJson.js';
 import Form from '../Form/Form.js';
 import Button from '../Buttons/Button.js';
@@ -102,19 +103,6 @@ function AsyncOperation(props) {
 			return mode.current;
 		},
 		isInProcess = getMode() === ASYNC_OPERATION_MODES__PROCESSING,
-		currentTabIx = (() => {
-			switch(getMode()) {
-				case ASYNC_OPERATION_MODES__INIT:
-				case ASYNC_OPERATION_MODES__START:
-					return 0;
-				case ASYNC_OPERATION_MODES__PROCESSING:
-					return 1;
-				case ASYNC_OPERATION_MODES__RESULTS:
-					return 2;
-				default:
-					return 0;
-			}
-		})(),
 		intervalRef = useRef(null),
 		getInterval = () => {
 			return intervalRef.current;
@@ -293,6 +281,11 @@ function AsyncOperation(props) {
 					color = 'text-green-600';
 					statusMessage = 'In process...';
 				} else {
+					
+					// LEFT OFF HERE
+					// The mode is not yet operating correctly.
+					// Right now, when I hit reset, it doesn't go back to start
+
 					setMode(ASYNC_OPERATION_MODES__RESULTS);
 					stopGettingProgress();
 					if (status === PROGRESS__COMPLETED) {
@@ -434,6 +427,17 @@ function AsyncOperation(props) {
 		};
 	}, []);
 
+	let currentTabIx = 0;
+	switch(getMode()) {
+		case ASYNC_OPERATION_MODES__INIT:
+		case ASYNC_OPERATION_MODES__START:
+			currentTabIx = 0;
+		case ASYNC_OPERATION_MODES__PROCESSING:
+			currentTabIx = 1;
+		case ASYNC_OPERATION_MODES__RESULTS:
+			currentTabIx = 2;
+	}
+
 	return <Panel
 				{...props}
 				footer={footer}
@@ -446,7 +450,7 @@ function AsyncOperation(props) {
 								title: 'Start',
 								icon: Play,
 								isDisabled: currentTabIx !== 0,
-								content: getMode() === ASYNC_OPERATION_MODES__INIT ? 
+								content: inArray(getMode(), [ASYNC_OPERATION_MODES__INIT, ASYNC_OPERATION_MODES__PROCESSING, ASYNC_OPERATION_MODES__RESULTS]) ? 
 										<Loading /> :
 										<ScrollView className="ScrollView h-full w-full">
 											<Form
