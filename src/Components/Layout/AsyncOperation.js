@@ -102,7 +102,19 @@ function AsyncOperation(props) {
 			return mode.current;
 		},
 		isInProcess = getMode() === ASYNC_OPERATION_MODES__PROCESSING,
-		currentTabIx = (getMode() === ASYNC_OPERATION_MODES__PROCESSING ? 1 : (getMode() === ASYNC_OPERATION_MODES__PROCESSING ? 2 : 0)),
+		currentTabIx = (() => {
+			switch(getMode()) {
+				case ASYNC_OPERATION_MODES__INIT:
+				case ASYNC_OPERATION_MODES__START:
+					return 0;
+				case ASYNC_OPERATION_MODES__PROCESSING:
+					return 1;
+				case ASYNC_OPERATION_MODES__RESULTS:
+					return 2;
+				default:
+					return 0;
+			}
+		})(),
 		intervalRef = useRef(null),
 		getInterval = () => {
 			return intervalRef.current;
@@ -148,7 +160,7 @@ function AsyncOperation(props) {
 					// 				variant="link"
 					// 			/>
 					// 		</Toolbar>;
-				case ASYNC_OPERATION_MODES__PROCESSING:
+				case ASYNC_OPERATION_MODES__RESULTS:
 					let button;
 					if (getIsStuck()) {
 						button = <Button
@@ -173,7 +185,7 @@ function AsyncOperation(props) {
 		[progress, setProgress] = useState(null),
 		[isReady, setIsReady] = useState(false),
 		showResults = (results) => {
-			setMode(ASYNC_OPERATION_MODES__PROCESSING);
+			setMode(ASYNC_OPERATION_MODES__RESULTS);
 			setFooter(getFooter());
 			setResults(results);
 		},
@@ -281,7 +293,7 @@ function AsyncOperation(props) {
 					color = 'text-green-600';
 					statusMessage = 'In process...';
 				} else {
-					setMode(ASYNC_OPERATION_MODES__PROCESSING);
+					setMode(ASYNC_OPERATION_MODES__RESULTS);
 					stopGettingProgress();
 					if (status === PROGRESS__COMPLETED) {
 						statusMessage = 'Completed';
