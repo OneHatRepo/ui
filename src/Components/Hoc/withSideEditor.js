@@ -45,11 +45,12 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 			throw Error('Editor is not defined');
 		}
 
+		const containerProps = {};
 		if (isResizable) {
-			_editor.w = 500;
-			_editor.isResizable = true;
+			containerProps.eastIsResizable = true;
+			containerProps.eastInitialWidth = 500;
 		} else {
-			_editor.flex = sideFlex;
+			containerProps.eastInitialFlex = sideFlex;
 		}
 
 		if (!_editor.className) {
@@ -73,6 +74,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								parent={self}
 								reference="editor"
 							/>}
+					{...containerProps}
 				/>;
 	});
 	return withAdditionalProps(withEditor(SideEditor, isTree));

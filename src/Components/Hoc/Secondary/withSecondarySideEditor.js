@@ -47,11 +47,12 @@ export default function withSecondarySideEditor(WrappedComponent, isTree = false
 			throw Error('SecondaryEditor is not defined');
 		}
 
+		const containerProps = {};
 		if (isResizable) {
-			secondaryEditorProps.w = 500;
-			secondaryEditorProps.isResizable = true;
+			containerProps.eastIsResizable = true;
+			containerProps.eastInitialWidth = 500;
 		} else {
-			secondaryEditorProps.flex = secondarySideFlex;
+			containerProps.eastInitialFlex = secondarySideFlex;
 		}
 
 		if (!secondaryEditorProps.className) {
@@ -75,6 +76,7 @@ export default function withSecondarySideEditor(WrappedComponent, isTree = false
 								parent={self}
 								reference="secondaryEditor"
 							/>}
+					{...containerProps}
 				/>;
 	});
 	return withAdditionalProps(withSecondaryEditor(SideEditor, isTree));
