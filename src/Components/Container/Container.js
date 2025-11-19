@@ -92,15 +92,15 @@ function Container(props) {
 			westInitialIsCollapsed = false,
 
 			// optional external control of collapse states
-			isNorthCollapsed = false,
-			isSouthCollapsed = false,
-			isEastCollapsed = false,
-			isWestCollapsed = false,
+			northIsCollapsed = false,
+			southIsCollapsed = false,
+			eastIsCollapsed = false,
+			westIsCollapsed = false,
 
-			setIsNorthCollapsed: setExternalIsNorthCollapsed,
-			setIsSouthCollapsed: setExternalIsSouthCollapsed,
-			setIsEastCollapsed: setExternalIsEastCollapsed,
-			setIsWestCollapsed: setExternalIsWestCollapsed,
+			setNorthIsCollapsed: setExternalNorthIsCollapsed,
+			setSouthIsCollapsed: setExternalSouthIsCollapsed,
+			setEastIsCollapsed: setExternalEastIsCollapsed,
+			setWestIsCollapsed: setExternalWestIsCollapsed,
 		} = props,
 		id = props.id || props.self?.path,
 		isWeb = CURRENT_MODE === UI_MODE_WEB,
@@ -115,133 +115,149 @@ function Container(props) {
 		eastWidthRef = useRef(eastInitialWidth),
 		westWidthRef = useRef(westInitialWidth),
 		[isReady, setIsReady] = useState(false),
-		[localIsNorthCollapsed, setLocalIsNorthCollapsed] = useState(northInitialIsCollapsed),
-		[localIsSouthCollapsed, setLocalIsSouthCollapsed] = useState(southInitialIsCollapsed),
-		[localIsEastCollapsed, setLocalIsEastCollapsed] = useState(eastInitialIsCollapsed),
-		[localIsWestCollapsed, setLocalIsWestCollapsed] = useState(westInitialIsCollapsed),
-		setIsNorthCollapsed = (bool) => {
-			if (setExternalIsNorthCollapsed) {
-				setExternalIsNorthCollapsed(bool);
+		[localNorthIsCollapsed, setLocalNorthIsCollapsed] = useState(northInitialIsCollapsed),
+		[localSouthIsCollapsed, setLocalSouthIsCollapsed] = useState(southInitialIsCollapsed),
+		[localEastIsCollapsed, setLocalEastIsCollapsed] = useState(eastInitialIsCollapsed),
+		[localWestIsCollapsed, setLocalWestIsCollapsed] = useState(westInitialIsCollapsed),
+		setNorthIsCollapsed = (bool) => {
+			if (setExternalNorthIsCollapsed) {
+				setExternalNorthIsCollapsed(bool);
 			} else {
-				setLocalIsNorthCollapsed(bool);
+				setLocalNorthIsCollapsed(bool);
 			}
 
 			if (id) {
-				setSaved(id + '-isNorthCollapsed', bool);
+				setSaved(id + '-northIsCollapsed', bool);
 			}
 		},
-		getIsNorthCollapsed = () => {
-			if (setExternalIsNorthCollapsed) {
-				return isNorthCollapsed;
+		getNorthIsCollapsed = () => {
+			if (setExternalNorthIsCollapsed) {
+				return northIsCollapsed;
 			}
-			return localIsNorthCollapsed;
+			return localNorthIsCollapsed;
 		},
-		setIsSouthCollapsed = (bool) => {
-			if (setExternalIsSouthCollapsed) {
-				setExternalIsSouthCollapsed(bool);
+		setSouthIsCollapsed = (bool) => {
+			if (setExternalSouthIsCollapsed) {
+				setExternalSouthIsCollapsed(bool);
 			} else {
-				setLocalIsSouthCollapsed(bool);
+				setLocalSouthIsCollapsed(bool);
 			}
 
 			if (id) {
-				setSaved(id + '-isSouthCollapsed', bool);
+				setSaved(id + '-southIsCollapsed', bool);
 			}
 		},
-		getIsSouthCollapsed = () => {
-			if (setExternalIsSouthCollapsed) {
-				return isSouthCollapsed;
+		getSouthIsCollapsed = () => {
+			if (setExternalSouthIsCollapsed) {
+				return southIsCollapsed;
 			}
-			return localIsSouthCollapsed;
+			return localSouthIsCollapsed;
 		},
-		setIsEastCollapsed = (bool) => {
-			if (setExternalIsEastCollapsed) {
-				setExternalIsEastCollapsed(bool);
+		setEastIsCollapsed = (bool) => {
+			if (setExternalEastIsCollapsed) {
+				setExternalEastIsCollapsed(bool);
 			} else {
-				setLocalIsEastCollapsed(bool);
+				setLocalEastIsCollapsed(bool);
 			}
 
 			if (id) {
-				setSaved(id + '-isEastCollapsed', bool);
+				setSaved(id + '-eastIsCollapsed', bool);
 			}
 		},
-		getIsEastCollapsed = () => {
-			if (setExternalIsEastCollapsed) {
-				return isEastCollapsed;
+		getEastIsCollapsed = () => {
+			if (setExternalEastIsCollapsed) {
+				return eastIsCollapsed;
 			}
-			return localIsEastCollapsed;
+			return localEastIsCollapsed;
 		},
-		setIsWestCollapsed = (bool) => {
-			if (setExternalIsWestCollapsed) {
-				setExternalIsWestCollapsed(bool);
+		setWestIsCollapsed = (bool) => {
+			if (setExternalWestIsCollapsed) {
+				setExternalWestIsCollapsed(bool);
 			} else {
-				setLocalIsWestCollapsed(bool);
+				setLocalWestIsCollapsed(bool);
 			}
 
 			if (id) {
-				setSaved(id + '-isWestCollapsed', bool);
+				setSaved(id + '-westIsCollapsed', bool);
 			}
 		},
-		getIsWestCollapsed = () => {
-			if (setExternalIsWestCollapsed) {
-				return isWestCollapsed;
+		getWestIsCollapsed = () => {
+			if (setExternalWestIsCollapsed) {
+				return westIsCollapsed;
 			}
-			return localIsWestCollapsed;
-		}
+			return localWestIsCollapsed;
+		},
 		setNorthHeight = (height) => {
-			northHeightRef.current = height;
-			if (id) {
-				setSaved(id + '-northHeight', height);
+			if (!getNorthIsCollapsed()) {
+				northHeightRef.current = height;
+				if (id) {
+					setSaved(id + '-northHeight', height);
+				}
 			}
 		},
 		getNorthHeight = () => {
 			return northHeightRef.current;
 		},
 		setSouthHeight = (height) => {
-			southHeightRef.current = height;
-			if (id) {
-				setSaved(id + '-southHeight', height);
+			if (!getSouthIsCollapsed()) {
+				southHeightRef.current = height;
+				if (id) {
+					setSaved(id + '-southHeight', height);
+				}
 			}
 		},
 		getSouthHeight = () => {
 			return southHeightRef.current;
 		},
 		setEastWidth = (width) => {
-			eastWidthRef.current = width;
-			if (id) {
-				setSaved(id + '-eastWidth', width);
+			if (!getEastIsCollapsed()) {
+				eastWidthRef.current = width;
+				if (id) {
+					setSaved(id + '-eastWidth', width);
+				}
 			}
 		},
 		getEastWidth = () => {
 			return eastWidthRef.current;
 		},
 		setWestWidth = (width) => {
-			westWidthRef.current = width;
-			if (id) {
-				setSaved(id + '-westWidth', width);
+			if (!getWestIsCollapsed()) {
+				westWidthRef.current = width;
+				if (id) {
+					setSaved(id + '-westWidth', width);
+				}
 			}
 		},
 		getWestWidth = () => {
 			return westWidthRef.current;
 		},
 		onNorthResize = (delta) => {
-			const newHeight = getNorthHeight() + delta;
-			setNorthHeight(newHeight);
-			forceUpdate();
+			if (!getNorthIsCollapsed()) {
+				const newHeight = getNorthHeight() + delta;
+				setNorthHeight(newHeight);
+				forceUpdate();
+			}
 		},
 		onSouthResize = (delta) => {
-			const newHeight = getSouthHeight() - delta; // minus
-			setSouthHeight(newHeight);
-			forceUpdate();
+			if (!getSouthIsCollapsed()) {
+				const newHeight = getSouthHeight() - delta; // minus
+				setSouthHeight(newHeight);
+				forceUpdate();
+			}
 		},
 		onEastResize = (delta) => {
-			const newWidth = getEastWidth() - delta; // minus
-			setEastWidth(newWidth);
-			forceUpdate();
+			if (!getEastIsCollapsed()) {
+				const newWidth = getEastWidth() - delta; // minus
+				setEastWidth(newWidth);
+				forceUpdate();
+			}
 		},
 		onWestResize = (delta) => {
-			const newWidth = getWestWidth() + delta;
-			setWestWidth(newWidth);
-			forceUpdate();
+			if (!getWestIsCollapsed()) {
+				const newWidth = getWestWidth() + delta;
+				setWestWidth(newWidth);
+				forceUpdate();
+			}
 		};
 
 	useEffect(() => {
@@ -250,28 +266,28 @@ function Container(props) {
 
 			if (id) {
 				let key, val;
-				key = id + '-isNorthCollapsed';
+				key = id + '-northIsCollapsed';
 				val = await getSaved(key);
 				if (!_.isNil(val)) {
-					setIsNorthCollapsed(val);
+					setNorthIsCollapsed(val);
 				}
 
-				key = id + '-isSouthCollapsed';
+				key = id + '-southIsCollapsed';
 				val = await getSaved(key);
 				if (!_.isNil(val)) {
-					setIsSouthCollapsed(val);
+					setSouthIsCollapsed(val);
 				}
 
-				key = id + '-isEastCollapsed';
+				key = id + '-eastIsCollapsed';
 				val = await getSaved(key);
 				if (!_.isNil(val)) {
-					setIsEastCollapsed(val);
+					setEastIsCollapsed(val);
 				}
 
-				key = id + '-isWestCollapsed';
+				key = id + '-westIsCollapsed';
 				val = await getSaved(key);
 				if (!_.isNil(val)) {
-					setIsWestCollapsed(val);
+					setWestIsCollapsed(val);
 				}
 
 				key = id + '-northHeight';
@@ -333,16 +349,22 @@ function Container(props) {
 				setNorthHeight(height);
 			}
 		};
-		const northHeight = getNorthHeight();
-		if (_.isNil(northHeight)) {
-			wrapperProps.style = { flex: northInitialFlex || 50, };
+		if (getNorthIsCollapsed()) {
+			wrapperProps.style = {
+				height: 33,
+			};
 		} else {
-			wrapperProps.style = { height: northHeight, };
+			const northHeight = getNorthHeight();
+			if (_.isNil(northHeight)) {
+				wrapperProps.style = { flex: northInitialFlex || 50, };
+			} else {
+				wrapperProps.style = { height: northHeight, };
+			}
 		}
+		componentProps.collapseDirection = VERTICAL;
+		componentProps.isCollapsed = getNorthIsCollapsed();
+		componentProps.setIsCollapsed = setNorthIsCollapsed;
 		if (isWeb && northIsResizable) {
-			componentProps.collapseDirection = VERTICAL;
-			componentProps.isCollapsed = getIsNorthCollapsed();
-			componentProps.setIsCollapsed = setIsNorthCollapsed;
 			northSplitter = <Splitter mode={VERTICAL} onDragStop={onNorthResize} />;
 		}
 		northComponent = <BoxNative className="w-full" {...wrapperProps}>
@@ -356,20 +378,26 @@ function Container(props) {
 		componentProps.className = (south.props.className || '') + ' h-full w-full';
 		wrapperProps.onLayout = (e) => {
 			const height = parseFloat(e.nativeEvent.layout.height);
-			if (height && height !== southHeight) {
+			if (height && height !== getSouthHeight()) {
 				setSouthHeight(height);
 			}
 		};
-		const southHeight = getSouthHeight();
-		if (_.isNil(southHeight)) {
-			wrapperProps.style = { flex: southInitialFlex || 50, };
+		if (getSouthIsCollapsed()) {
+			wrapperProps.style = {
+				height: 33,
+			};
 		} else {
-			wrapperProps.style = { height: southHeight, };
+			const southHeight = getSouthHeight();
+			if (_.isNil(southHeight)) {
+				wrapperProps.style = { flex: southInitialFlex || 50, };
+			} else {
+				wrapperProps.style = { height: southHeight, };
+			}
 		}
+		componentProps.collapseDirection = VERTICAL;
+		componentProps.isCollapsed = getSouthIsCollapsed();
+		componentProps.setIsCollapsed = setSouthIsCollapsed;
 		if (isWeb && southIsResizable) {
-			componentProps.collapseDirection = VERTICAL;
-			componentProps.isCollapsed = getIsSouthCollapsed();
-			componentProps.setIsCollapsed = setIsSouthCollapsed;
 			southSplitter = <Splitter mode={VERTICAL} onDragStop={onSouthResize} />;
 		}
 		southComponent = <BoxNative className="w-full" {...wrapperProps}>
@@ -383,23 +411,29 @@ function Container(props) {
 		componentProps.className = (east.props.className || '') + ' h-full w-full';
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
-			if (width && width !== eastWidth) {
+			if (width && width !== getEastWidth()) {
 				setEastWidth(width);
 			}
 		};
-		const eastWidth = getEastWidth();
-		if (_.isNil(eastWidth)) {
-			wrapperProps.style = { flex: eastInitialFlex || 50, };
+		if (getEastIsCollapsed()) {
+			wrapperProps.style = {
+				width: 33,
+			};
 		} else {
-			wrapperProps.style = { width: eastWidth, };
+			const eastWidth = getEastWidth();
+			if (_.isNil(eastWidth)) {
+				wrapperProps.style = { flex: eastInitialFlex || 50, };
+			} else {
+				wrapperProps.style = { width: eastWidth, };
+			}
 		}
+		componentProps.collapseDirection = HORIZONTAL;
+		componentProps.isCollapsed = getEastIsCollapsed();
+		componentProps.setIsCollapsed = setEastIsCollapsed;
 		if (isWeb && eastIsResizable) {
-			componentProps.collapseDirection = HORIZONTAL;
-			componentProps.isCollapsed = getIsEastCollapsed();
-			componentProps.setIsCollapsed = setIsEastCollapsed;
 			eastSplitter = <Splitter mode={HORIZONTAL} onDragStop={onEastResize} />;
 		}
-		eastComponent = <BoxNative className="h-full" {...wrapperProps}>
+		eastComponent = <BoxNative className="eastWrapper h-full" {...wrapperProps}>
 							{cloneElement(east, componentProps)}
 						</BoxNative>;
 	}
@@ -410,40 +444,45 @@ function Container(props) {
 		componentProps.className = (west.props.className || '') + ' h-full w-full';
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
-			if (width && width !== westWidth) {
+			if (width && width !== getWestWidth()) {
 				setWestWidth(width);
 			}
 		};
-		const westWidth = getWestWidth();
-		if (_.isNil(westWidth)) {
-			wrapperProps.style = { flex: westInitialFlex || 50, };
+		if (getWestIsCollapsed()) {
+			wrapperProps.style = {
+				width: 33,
+			};
 		} else {
-			wrapperProps.style = { width: westWidth, };
+			const westWidth = getWestWidth();
+			if (_.isNil(westWidth)) {
+				wrapperProps.style = { flex: westInitialFlex || 50, };
+			} else {
+				wrapperProps.style = { width: westWidth, };
+			}
 		}
+		componentProps.collapseDirection = HORIZONTAL;
+		componentProps.isCollapsed = getWestIsCollapsed();
+		componentProps.setIsCollapsed = setWestIsCollapsed;
 		if (isWeb && westIsResizable) {
-			componentProps.collapseDirection = HORIZONTAL;
-			componentProps.isCollapsed = getIsWestCollapsed();
-			componentProps.setIsCollapsed = setIsWestCollapsed;
 			westSplitter = <Splitter mode={HORIZONTAL} onDragStop={onWestResize} />;
 		}
-		westComponent = <BoxNative className="h-full" {...wrapperProps}>
+		westComponent = <BoxNative className="westWrapper h-full" {...wrapperProps}>
 							{cloneElement(west, componentProps)}
 						</BoxNative>;
 	}
-	
 	return <VStack className="Container-all w-full flex-1">
 				{northComponent}
-				{!isNorthCollapsed && !localIsNorthCollapsed && northSplitter}
+				{!northIsCollapsed && !localNorthIsCollapsed && northSplitter}
 				<HStack className="Container-mid w-full flex-[100]">
 					{westComponent}
-					{!isWestCollapsed && !localIsWestCollapsed && westSplitter}
+					{!westIsCollapsed && !localWestIsCollapsed && westSplitter}
 					<VStack className="Container-center h-full overflow-auto flex-[100]">
 						{centerComponent}
 					</VStack>
-					{!isEastCollapsed && !localIsEastCollapsed && eastSplitter}
+					{!eastIsCollapsed && !localEastIsCollapsed && eastSplitter}
 					{eastComponent}
 				</HStack>
-				{!isSouthCollapsed && !localIsSouthCollapsed && southSplitter}
+				{!southIsCollapsed && !localSouthIsCollapsed && southSplitter}
 				{southComponent}
 			</VStack>;
 }
