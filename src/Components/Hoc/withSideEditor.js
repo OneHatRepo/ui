@@ -62,10 +62,10 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 					parent={self}
 					reference="SideEditor"
 					center={<WrappedComponent
+								{...props}
 								ref={ref}
 								isTree={isTree}
 								isSideEditor={true}
-								{...props}
 							/>}
 					east={props.isEditorShown && <Editor
 								{...propsToPass}
