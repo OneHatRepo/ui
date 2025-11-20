@@ -77,6 +77,7 @@ import Toolbar from '../Toolbar/Toolbar.js';
 import NoReorderRows from '../Icons/NoReorderRows.js';
 import ReorderRows from '../Icons/ReorderRows.js';
 import Unauthorized from '../Messages/Unauthorized.js';
+import Mask from '../Panel/Mask.js';
 import _ from 'lodash';
 
 
@@ -147,6 +148,7 @@ function GridComponent(props) {
 			showSelectHandle = true,
 			isRowSelectable = true,
 			isRowHoverable = true,
+			isDisabled = false,
 			canColumnsSort = true,
 			canColumnsReorder = true,
 			canColumnsResize = true,
@@ -1706,51 +1708,55 @@ function GridComponent(props) {
 		className += ' ' + props.className;
 	}
 
-	grid = <VStackNative
-				{...testProps(self)}
-				ref={containerRef}
-				tabIndex={0}
-				onKeyDown={onGridKeyDown}
-				onLayout={(e) => debouncedAdjustPageSizeToHeight(e)}
-				className={className}
-				style={style}
-			>
-				{topToolbar &&
-					<VStack ref={topToolbarRef}>
-						{topToolbar}
-					</VStack>}
+	if (isDisabled) {
+		grid = <Mask />;
+	} else {
+		grid = <VStackNative
+						{...testProps(self)}
+						ref={containerRef}
+						tabIndex={0}
+						onKeyDown={onGridKeyDown}
+						onLayout={(e) => debouncedAdjustPageSizeToHeight(e)}
+						className={className}
+						style={style}
+					>
+						{topToolbar &&
+							<VStack ref={topToolbarRef}>
+								{topToolbar}
+							</VStack>}
 
-				<VStack
-					ref={gridContainerRef}
-					onClick={() => {
-						if (!isReorderMode && !isInlineEditorShown && deselectAll) {
-							deselectAll();
-						}
-					}}
-					className={clsx(
-						'gridContainer',
-						'w-full',
-						// 'h-full',
-						'flex-1',
-						'min-h-[40px]',
-						'relative', // Enable positioning for overlay
-						gridContainerBorderClassName,
-					)}
-				>
-					{grid}
-					{/* Loading overlay during measurement phases to prevent visual flashing */}
-					{autoAdjustPageSizeToHeight && 
-					 (getMeasurementPhase() === PHASES__INITIAL || getMeasurementPhase() === PHASES__MEASURING) && 
-					 entities?.length > 0 && (
-						<VStack className="absolute inset-0 z-10 bg-white">
-							<Loading isScreen={true} />
+						<VStack
+							ref={gridContainerRef}
+							onClick={() => {
+								if (!isReorderMode && !isInlineEditorShown && deselectAll) {
+									deselectAll();
+								}
+							}}
+							className={clsx(
+								'gridContainer',
+								'w-full',
+								// 'h-full',
+								'flex-1',
+								'min-h-[40px]',
+								'relative', // Enable positioning for overlay
+								gridContainerBorderClassName,
+							)}
+						>
+							{grid}
+							{/* Loading overlay during measurement phases to prevent visual flashing */}
+							{autoAdjustPageSizeToHeight && 
+							(getMeasurementPhase() === PHASES__INITIAL || getMeasurementPhase() === PHASES__MEASURING) && 
+							entities?.length > 0 && (
+								<VStack className="absolute inset-0 z-10 bg-white">
+									<Loading isScreen={true} />
+								</VStack>
+							)}
 						</VStack>
-					)}
-				</VStack>
 
-				{listFooterComponent}
+						{listFooterComponent}
 
-			</VStackNative>
+					</VStackNative>;
+	}
 
 	if (isDropTarget) {
 		grid = <VStackNative

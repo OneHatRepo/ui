@@ -75,6 +75,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								reference="editor"
 							/>}
 					{...containerProps}
+					isDisabled={props.isDisabled}
 				/>;
 	});
 	return withAdditionalProps(withEditor(SideEditor, isTree));

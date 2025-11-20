@@ -62,6 +62,8 @@ import _ from 'lodash';
 
 function Container(props) {
 	const {
+			isDisabled = false,
+
 			// components
 			center,
 			north,
@@ -115,6 +117,7 @@ function Container(props) {
 		eastWidthRef = useRef(eastInitialWidth),
 		westWidthRef = useRef(westInitialWidth),
 		[isReady, setIsReady] = useState(false),
+		[isComponentsDisabled, setIsComponentsDisabled] = useState(false),
 		[localNorthIsCollapsed, setLocalNorthIsCollapsed] = useState(northInitialIsCollapsed),
 		[localSouthIsCollapsed, setLocalSouthIsCollapsed] = useState(southInitialIsCollapsed),
 		[localEastIsCollapsed, setLocalEastIsCollapsed] = useState(eastInitialIsCollapsed),
@@ -258,6 +261,26 @@ function Container(props) {
 				setWestWidth(newWidth);
 				forceUpdate();
 			}
+		},
+		onSplitterDragStart = () => {
+			setIsComponentsDisabled(true);
+		},
+		onSplitterDragStop = (delta, which) => {
+			setIsComponentsDisabled(false);
+			switch(which) {
+				case 'north':
+					onNorthResize(delta);
+					break;
+				case 'south':
+					onSouthResize(delta);
+					break;
+				case 'east':
+					onEastResize(delta);
+					break;
+				case 'west':
+					onWestResize(delta);
+					break;
+			}
 		};
 
 	useEffect(() => {
@@ -325,7 +348,7 @@ function Container(props) {
 		return null;
 	}
 	
-	let componentProps = null,
+	let componentProps = {},
 		wrapperProps = null,
 		centerComponent = null,
 		northComponent = null,
@@ -337,11 +360,14 @@ function Container(props) {
 		westComponent = null,
 		westSplitter = null;
 
-	centerComponent = cloneElement(center, { isCollapsible: false, });
+	componentProps.isCollapsible = false;
+	componentProps.isDisabled = isDisabled || isComponentsDisabled;
+	centerComponent = cloneElement(center, componentProps);
 	if (north) {
 		componentProps = {};
 		wrapperProps = {};
 		
+		componentProps.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps.className = (north.props.className || '') + ' h-full w-full';
 		wrapperProps.onLayout = (e) => {
 			const height = parseFloat(e.nativeEvent.layout.height);
@@ -365,7 +391,11 @@ function Container(props) {
 		componentProps.isCollapsed = getNorthIsCollapsed();
 		componentProps.setIsCollapsed = setNorthIsCollapsed;
 		if (isWeb && northIsResizable) {
-			northSplitter = <Splitter mode={VERTICAL} onDragStop={onNorthResize} />;
+			northSplitter = <Splitter
+								mode={VERTICAL}
+								onDragStart={onSplitterDragStart}
+								onDragStop={(delta) => onSplitterDragStop(delta, 'north')}
+							/>;
 		}
 		northComponent = <BoxNative className="northWrapper w-full" {...wrapperProps}>
 							{cloneElement(north, componentProps)}
@@ -375,6 +405,7 @@ function Container(props) {
 		componentProps = {};
 		wrapperProps = {};
 		
+		componentProps.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps.className = (south.props.className || '') + ' h-full w-full';
 		wrapperProps.onLayout = (e) => {
 			const height = parseFloat(e.nativeEvent.layout.height);
@@ -398,7 +429,11 @@ function Container(props) {
 		componentProps.isCollapsed = getSouthIsCollapsed();
 		componentProps.setIsCollapsed = setSouthIsCollapsed;
 		if (isWeb && southIsResizable) {
-			southSplitter = <Splitter mode={VERTICAL} onDragStop={onSouthResize} />;
+			southSplitter = <Splitter
+								mode={VERTICAL}
+								onDragStart={onSplitterDragStart}
+								onDragStop={(delta) => onSplitterDragStop(delta, 'south')}
+							/>;
 		}
 		southComponent = <BoxNative className="southWrapper w-full" {...wrapperProps}>
 							{cloneElement(south, componentProps)}
@@ -408,6 +443,7 @@ function Container(props) {
 		componentProps = {};
 		wrapperProps = {};
 		
+		componentProps.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps.className = (east.props.className || '') + ' h-full w-full';
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
@@ -431,7 +467,11 @@ function Container(props) {
 		componentProps.isCollapsed = getEastIsCollapsed();
 		componentProps.setIsCollapsed = setEastIsCollapsed;
 		if (isWeb && eastIsResizable) {
-			eastSplitter = <Splitter mode={HORIZONTAL} onDragStop={onEastResize} />;
+			eastSplitter = <Splitter
+								mode={HORIZONTAL}
+								onDragStart={onSplitterDragStart}
+								onDragStop={(delta) => onSplitterDragStop(delta, 'east')}
+							/>;
 		}
 		eastComponent = <BoxNative className="eastWrapper h-full" {...wrapperProps}>
 							{cloneElement(east, componentProps)}
@@ -441,6 +481,7 @@ function Container(props) {
 		componentProps = {};
 		wrapperProps = {};
 		
+		componentProps.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps.className = (west.props.className || '') + ' h-full w-full';
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
@@ -464,7 +505,11 @@ function Container(props) {
 		componentProps.isCollapsed = getWestIsCollapsed();
 		componentProps.setIsCollapsed = setWestIsCollapsed;
 		if (isWeb && westIsResizable) {
-			westSplitter = <Splitter mode={HORIZONTAL} onDragStop={onWestResize} />;
+			westSplitter = <Splitter
+								mode={HORIZONTAL}
+								onDragStart={onSplitterDragStart}
+								onDragStop={(delta) => onSplitterDragStop(delta, 'west')}
+							/>;
 		}
 		westComponent = <BoxNative className="westWrapper h-full" {...wrapperProps}>
 							{cloneElement(west, componentProps)}

@@ -1,8 +1,8 @@
+import { cloneElement, useState, useEffect, } from 'react';
 import {
 	VStackNative,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
-import React, { useState, useEffect, } from 'react';
 import {
 	SCREEN_MODES__FULL,
 	SCREEN_MODES__SIDE,
@@ -21,10 +21,9 @@ function ManagerScreen(props) {
 			sideModeComponent,
 			fullModeComponent,
 			onChangeMode,
-
-			// withComponent
-			self,
+			...propsToPass
 		} = props,
+		self = props.self,
 		id = props.id || props.self?.path,
 		[isRendered, setIsRendered] = useState(false),
 		[isModeSet, setIsModeSet] = useState(false),
@@ -79,7 +78,7 @@ function ManagerScreen(props) {
 		self.mode = actualMode;
 	}
 
-	const whichComponent = actualMode === SCREEN_MODES__FULL ? fullModeComponent : sideModeComponent;
+	const whichComponent = cloneElement((actualMode === SCREEN_MODES__FULL ? fullModeComponent : sideModeComponent), propsToPass);
 
 	return <VStackNative
 				{...testProps(self)}
