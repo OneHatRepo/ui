@@ -14,7 +14,8 @@ import {
 } from 'uuid';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 
-
+// NOTE: Incorrect info.x values are being given if the components under the one being dragged
+// 
 
 // Note on modes:
 // HORIZONTAL means the component moves along the X axis.
@@ -62,6 +63,8 @@ export default function withDraggable(WrappedComponent) {
 				if (isDragging) {
 					return;
 				}
+
+				// console.log('start x', info.x);
 				
 				const
 					node = getDraggableNodeFromNode(info.node),
@@ -132,6 +135,9 @@ export default function withDraggable(WrappedComponent) {
 					deltaY,
 				} = info;
 
+
+				// console.log('drag x', info.x);
+
 				// Move the proxy to where it should be
 				const
 					proxy = document.getElementById('dragproxy'),
@@ -157,7 +163,8 @@ export default function withDraggable(WrappedComponent) {
 					return;
 				}
 
-				// console.log('end', info);
+				// console.log('end x', info.x);
+
 				// remove proxy
 				const proxy = document.getElementById('dragproxy');
 				proxy.remove();

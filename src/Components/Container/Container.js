@@ -367,7 +367,7 @@ function Container(props) {
 		if (isWeb && northIsResizable) {
 			northSplitter = <Splitter mode={VERTICAL} onDragStop={onNorthResize} />;
 		}
-		northComponent = <BoxNative className="w-full" {...wrapperProps}>
+		northComponent = <BoxNative className="northWrapper w-full" {...wrapperProps}>
 							{cloneElement(north, componentProps)}
 						</BoxNative>;
 	}
@@ -400,7 +400,7 @@ function Container(props) {
 		if (isWeb && southIsResizable) {
 			southSplitter = <Splitter mode={VERTICAL} onDragStop={onSouthResize} />;
 		}
-		southComponent = <BoxNative className="w-full" {...wrapperProps}>
+		southComponent = <BoxNative className="southWrapper w-full" {...wrapperProps}>
 							{cloneElement(south, componentProps)}
 						</BoxNative>;
 	}
