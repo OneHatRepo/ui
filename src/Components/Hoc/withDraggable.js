@@ -14,9 +14,6 @@ import {
 } from 'uuid';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 
-// NOTE: Incorrect info.x values are being given if the components under the one being dragged
-// 
-
 // Note on modes:
 // HORIZONTAL means the component moves along the X axis.
 // VERTICAL means the component moves along the Y axis.
