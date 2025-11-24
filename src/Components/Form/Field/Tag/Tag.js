@@ -46,9 +46,6 @@ function TagComponent(props) {
 			testID,
 			isDirty = false,
 
-			// parent Form
-			onChangeValue,
-
 			// withAlert
 			alert,
 
