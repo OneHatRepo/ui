@@ -1118,12 +1118,9 @@ function GridComponent(props) {
 				// Keep the current estimated pageSize, just hide the loading overlay
 			}
 		},
-		adjustPageSizeToHeight = (e) => {
+		adjustPageSizeToHeight = (containerHeight) => {
 			if (!Repository || Repository.isDestroyed) { // This method gets delayed, so it's possible for Repository to have been destroyed. Check for this
 				return;
-			}
-			if (onLayout) {
-				onLayout(e);
 			}
 			if (DEBUG) {
 				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A`);
@@ -1135,11 +1132,7 @@ function GridComponent(props) {
 				doAdjustment = false;
 			}
 			if (DEBUG) {
-				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A2 doAdjustment=${doAdjustment}, autoAdjustPageSizeToHeight=${autoAdjustPageSizeToHeight}, UiGlobals.autoAdjustPageSizeToHeight=${UiGlobals.autoAdjustPageSizeToHeight}`);
-			}
-			const containerHeight = e.nativeEvent.layout.height;
-			if (DEBUG) {
-				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A3 containerHeight=${containerHeight}`);
+				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A2 doAdjustment=${doAdjustment}, autoAdjustPageSizeToHeight=${autoAdjustPageSizeToHeight}, UiGlobals.autoAdjustPageSizeToHeight=${UiGlobals.autoAdjustPageSizeToHeight}, containerHeight=${containerHeight}`);
 			}
 			
 			// Only proceed if height changed significantly
@@ -1570,11 +1563,15 @@ function GridComponent(props) {
 						if (DEBUG) {
 							console.log(`${getMeasurementPhase()}, placeholder onLayout, call adjustPageSizeToHeight()`);
 						}
-						adjustPageSizeToHeight(e);
+						const containerHeight = e.nativeEvent.layout.height;
+						adjustPageSizeToHeight(containerHeight);
 						if (DEBUG) {
 							console.log(`${getMeasurementPhase()}, placeholder onLayout, call setIsInited(true)`);
 						}
 						setIsInited(true);
+						if (onLayout) {
+							onLayout(e);
+						}
 					}}
 					className="w-full flex-1"
 				/>;
@@ -1716,7 +1713,10 @@ function GridComponent(props) {
 						ref={containerRef}
 						tabIndex={0}
 						onKeyDown={onGridKeyDown}
-						onLayout={(e) => debouncedAdjustPageSizeToHeight(e)}
+						onLayout={(e) => {
+							const containerHeight = e.nativeEvent.layout.height;
+							debouncedAdjustPageSizeToHeight(containerHeight);
+						}}
 						className={className}
 						style={style}
 					>
