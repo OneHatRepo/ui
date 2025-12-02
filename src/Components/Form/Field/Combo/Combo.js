@@ -1138,6 +1138,24 @@ export const ComboComponent = forwardRef((props, ref) => {
 					/>
 					{checkButton}
 				</HStack>;
+			let modalBackdrop = <ModalBackdrop />
+			if (CURRENT_MODE === UI_MODE_NATIVE) {
+				// Gluestack's ModalBackdrop was not working on Native,
+				// so workaround is to do it manually for now
+				modalBackdrop = <Pressable
+									onPress={() => setIsMenuShown(false)}
+									className={clsx(
+										'ModalBackdrop-replacment',
+										'h-full',
+										'w-full',
+										'absolute',
+										'top-0',
+										'left-0',
+										'bg-[#000]',
+										'opacity-50',
+									)}
+								/>;
+			}
 			dropdownMenu = <Modal
 								isOpen={true}
 								safeAreaTop={true}
@@ -1147,7 +1165,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 									'w-full',
 								)}
 							>
-								<ModalBackdrop />
+								{modalBackdrop}
 								<VStackNative
 									className={clsx(
 										'h-[400px]',
