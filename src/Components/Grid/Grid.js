@@ -1748,7 +1748,7 @@ function GridComponent(props) {
 							(getMeasurementPhase() === PHASES__INITIAL || getMeasurementPhase() === PHASES__MEASURING) && 
 							entities?.length > 0 && (
 								<VStack className="absolute inset-0 z-10 bg-white">
-									<Loading isScreen={true} />
+									<Loading />
 								</VStack>
 							)}
 						</VStack>
