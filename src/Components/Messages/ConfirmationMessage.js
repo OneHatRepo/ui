@@ -1,8 +1,14 @@
 import {
+	Box,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import {
+	CURRENT_MODE,
+	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+} from '../../Constants/UiModes.js';
 import Button from '../Buttons/Button';
 import emptyFn from '../../Functions/emptyFn.js';
 
@@ -13,8 +19,27 @@ export default function ConfirmationMessage(props) {
 			onOk = emptyFn,
 		} = props;
 
+	let modalBackdrop = <ModalBackdrop className="ConfirmationMessage-ModalBackdrop" />
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
+		// Gluestack's ModalBackdrop was not working on Native,
+		// so workaround is to do it manually for now
+		modalBackdrop = <Pressable
+							onPress={() => setIsMenuShown(false)}
+							className={clsx(
+								'ConfirmationMessage-ModalBackdrop-replacment',
+								'h-full',
+								'w-full',
+								'absolute',
+								'top-0',
+								'left-0',
+								'bg-[#000]',
+								'opacity-50',
+							)}
+						/>;
+	}
+
 	return <Modal isOpen={true} {...props} _backdrop={{ bg: "#000" }}>
-				<ModalBackdrop />
+				{modalBackdrop}
 				<ModalContent maxWidth="400px">
 					<ModalHeader>Confirm</ModalHeader>
 					<ModalBody

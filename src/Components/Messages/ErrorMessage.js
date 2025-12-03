@@ -6,6 +6,11 @@ import {
 	Text,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import {
+	CURRENT_MODE,
+	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+} from '../../Constants/UiModes.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import Button from '../Buttons/Button.js';
 import Panel from '../Panel/Panel.js';
@@ -21,8 +26,27 @@ export default function ErrorMessage(props) {
 		} = props,
 		[width, height] = useAdjustedWindowSize(500, 250);
 
+	let modalBackdrop = <ModalBackdrop className="ErrorMessage-ModalBackdrop" />
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
+		// Gluestack's ModalBackdrop was not working on Native,
+		// so workaround is to do it manually for now
+		modalBackdrop = <Pressable
+							onPress={() => setIsMenuShown(false)}
+							className={clsx(
+								'ErrorMessage-ModalBackdrop-replacment',
+								'h-full',
+								'w-full',
+								'absolute',
+								'top-0',
+								'left-0',
+								'bg-[#000]',
+								'opacity-50',
+							)}
+						/>;
+	}
+
 	return <Modal isOpen={true} {...props} {...testProps('ErrorMessage')}>
-				<ModalBackdrop />
+				{modalBackdrop}
 
 				<Panel
 					title="Alert"

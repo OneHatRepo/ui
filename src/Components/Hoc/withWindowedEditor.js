@@ -1,8 +1,14 @@
 import { forwardRef } from 'react';
 import {
+	Box,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import {
+	CURRENT_MODE,
+	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+} from '../../Constants/UiModes.js';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../Constants/Editor.js';
@@ -69,6 +75,25 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			throw Error('Editor is not defined');
 		}
 
+		let modalBackdrop = <ModalBackdrop className="withEditor-ModalBackdrop" />
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
+			// Gluestack's ModalBackdrop was not working on Native,
+			// so workaround is to do it manually for now
+			modalBackdrop = <Pressable
+								onPress={() => setIsMenuShown(false)}
+								className={clsx(
+									'withEditor-ModalBackdrop-replacment',
+									'h-full',
+									'w-full',
+									'absolute',
+									'top-0',
+									'left-0',
+									'bg-[#000]',
+									'opacity-50',
+								)}
+							/>;
+		}
+
 		return <>
 					<WrappedComponent {...props} ref={ref} />
 					{isEditorShown && 
@@ -77,7 +102,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 							onClose={onEditorCancel}
 							className="withEditor-Modal"
 						>
-							<ModalBackdrop className="withEditor-ModalBackdrop" />
+							{modalBackdrop}
 							<Editor
 								editorType={EDITOR_TYPE__WINDOWED}
 								{...propsToPass}

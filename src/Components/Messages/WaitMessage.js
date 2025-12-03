@@ -1,4 +1,5 @@
 import {
+	Box,
 	HStack,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Spinner,
@@ -20,13 +21,33 @@ export default function WaitMessage(props) {
 	if (!text) { // do this here instead of setting default value in deconstructor, so we can use the default for text, even if text is defined and passed as null or empty string
 		text = 'Please wait...';
 	}
+	
+	let modalBackdrop = <ModalBackdrop className="WaitMessage-ModalBackdrop" />
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
+		// Gluestack's ModalBackdrop was not working on Native,
+		// so workaround is to do it manually for now
+		modalBackdrop = <Pressable
+							onPress={() => setIsMenuShown(false)}
+							className={clsx(
+								'WaitMessage-ModalBackdrop-replacment',
+								'h-full',
+								'w-full',
+								'absolute',
+								'top-0',
+								'left-0',
+								'bg-[#000]',
+								'opacity-50',
+							)}
+						/>;
+	}
+
 	return <Modal
 				{...testProps('WaitMessage')}
 				isOpen={true}
 				className="Modal"
 				aria-disabled={true}
 			>
-				<ModalBackdrop />
+				{modalBackdrop}
 				<ModalContent
 					className={clsx(
 						'ModalContent',

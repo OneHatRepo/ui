@@ -5,6 +5,11 @@ import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Text,
 } from '@project-components/Gluestack';
+import {
+	CURRENT_MODE,
+	UI_MODE_WEB,
+	UI_MODE_NATIVE,
+} from '../../Constants/UiModes.js';
 import clsx from 'clsx';
 import Button from '../Buttons/Button.js';
 import Panel from '../Panel/Panel.js';
@@ -179,6 +184,25 @@ export default function withModal(WrappedComponent) {
 					>{modalBody}</Panel>
 			}
 		}
+
+		let modalBackdrop = <ModalBackdrop className="withModal-ModalBackdrop" />
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
+			// Gluestack's ModalBackdrop was not working on Native,
+			// so workaround is to do it manually for now
+			modalBackdrop = <Pressable
+								onPress={() => setIsMenuShown(false)}
+								className={clsx(
+									'withModal-ModalBackdrop-replacment',
+									'h-full',
+									'w-full',
+									'absolute',
+									'top-0',
+									'left-0',
+									'bg-[#000]',
+									'opacity-50',
+								)}
+							/>;
+		}
 		
 		return <>
 					<WrappedComponent
@@ -199,7 +223,7 @@ export default function withModal(WrappedComponent) {
 							className="withModal-Modal"
 							{...testProps(testID)}
 						>
-							<ModalBackdrop className="withModal-ModalBackdrop" />
+							{modalBackdrop}
 							{modalBody}
 						</Modal>}
 					
