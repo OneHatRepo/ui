@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import {
-	Box,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Pressable,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import {
@@ -80,7 +80,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			// Gluestack's ModalBackdrop was not working on Native,
 			// so workaround is to do it manually for now
 			modalBackdrop = <Pressable
-								onPress={() => setIsMenuShown(false)}
+								onPress={() => onEditorCancel()}
 								className={clsx(
 									'withEditor-ModalBackdrop-replacment',
 									'h-full',

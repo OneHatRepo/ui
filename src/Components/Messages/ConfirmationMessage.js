@@ -1,6 +1,7 @@
 import {
 	Box,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Pressable,
 	Text,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
@@ -23,8 +24,7 @@ export default function ConfirmationMessage(props) {
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// Gluestack's ModalBackdrop was not working on Native,
 		// so workaround is to do it manually for now
-		modalBackdrop = <Pressable
-							onPress={() => setIsMenuShown(false)}
+		modalBackdrop = <Box
 							className={clsx(
 								'ConfirmationMessage-ModalBackdrop-replacment',
 								'h-full',

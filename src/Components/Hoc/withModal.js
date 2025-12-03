@@ -1,8 +1,8 @@
 import { forwardRef, useState, useRef } from 'react';
 import {
-	Box,
 	Icon,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Pressable,
 	Text,
 } from '@project-components/Gluestack';
 import {
@@ -190,7 +190,7 @@ export default function withModal(WrappedComponent) {
 			// Gluestack's ModalBackdrop was not working on Native,
 			// so workaround is to do it manually for now
 			modalBackdrop = <Pressable
-								onPress={() => setIsMenuShown(false)}
+								onPress={() => hideModal()}
 								className={clsx(
 									'withModal-ModalBackdrop-replacment',
 									'h-full',

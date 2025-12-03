@@ -32,8 +32,7 @@ export default function ProgressModal(props) {
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// Gluestack's ModalBackdrop was not working on Native,
 		// so workaround is to do it manually for now
-		modalBackdrop = <Pressable
-							onPress={() => setIsMenuShown(false)}
+		modalBackdrop = <Box
 							className={clsx(
 								'ProgressModal-ModalBackdrop-replacment',
 								'h-full',

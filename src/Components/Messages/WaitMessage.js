@@ -2,6 +2,7 @@ import {
 	Box,
 	HStack,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Pressable,
 	Spinner,
 	Text,
 } from '@project-components/Gluestack';
@@ -26,8 +27,7 @@ export default function WaitMessage(props) {
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// Gluestack's ModalBackdrop was not working on Native,
 		// so workaround is to do it manually for now
-		modalBackdrop = <Pressable
-							onPress={() => setIsMenuShown(false)}
+		modalBackdrop = <Box
 							className={clsx(
 								'WaitMessage-ModalBackdrop-replacment',
 								'h-full',
