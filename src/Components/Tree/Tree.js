@@ -1145,7 +1145,7 @@ function TreeComponent(props) {
 							pressed,
 						}) => {
 							const nodeDragProps = {};
-							let WhichNode = TreeNode;
+							let WhichNode = TreeNode,
 								nodeCanSelect = true,
 								nodeCanDrag = false;
 							if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
