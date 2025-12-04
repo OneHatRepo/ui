@@ -242,6 +242,7 @@ export const DateElement = forwardRef((props, ref) => {
 	// Format the display date/time/datetime
 	let placeholder = 'Select',
 		pickerValue = null,
+		title = null,
 		height = null,
 		width = null;
 	switch(mode) {
