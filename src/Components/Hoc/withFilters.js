@@ -294,9 +294,12 @@ export default function withFilters(WrappedComponent) {
 						elementProps.minWidth = 100;
 					}
 
-					const
+					let
 						tooltip = filter.tooltip || title,
 						placeholder = filter.placeholder || title;
+					if (title === tooltip || placeholder === tooltip) {
+						tooltip = null;
+					}
 					let filterClassName = filterProps.className + ` Filter-${field}`;
 					if (className) {
 						filterClassName += ' ' + className;
