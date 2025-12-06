@@ -294,7 +294,9 @@ export default function withFilters(WrappedComponent) {
 						elementProps.minWidth = 100;
 					}
 
-					const tooltip = filter.tooltip || title;
+					const
+						tooltip = filter.tooltip || title,
+						placeholder = filter.placeholder || title;
 					let filterClassName = filterProps.className + ` Filter-${field}`;
 					if (className) {
 						filterClassName += ' ' + className;
@@ -305,7 +307,7 @@ export default function withFilters(WrappedComponent) {
 					let filterElement = <Element
 											{...testProps('filter-' + field)}
 											tooltip={tooltip}
-											placeholder={tooltip}
+											placeholder={placeholder}
 											value={getFilterValue(field)}
 											onChangeValue={(value) => onFilterChangeValue(field, value)}
 											isInFilter={true}
@@ -552,7 +554,7 @@ export default function withFilters(WrappedComponent) {
 				if (isUsingCustomFilters) {
 					_.each(filtersToUse, ({ field, value, getRepoFilters }) => {
 						if (getRepoFilters) {
-							let repoFiltersFromFilter = getRepoFilters(value) || [];
+							let repoFiltersFromFilter = getRepoFilters(value) || []; // getRepoFilters converts the field's value into repository filters (e.g. convert a DateRange field value into two repository filters: >= low, <= high)
 							if (!_.isArray(repoFiltersFromFilter)) {
 								repoFiltersFromFilter = [repoFiltersFromFilter];
 							}
