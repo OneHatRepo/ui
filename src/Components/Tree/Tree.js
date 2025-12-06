@@ -101,6 +101,7 @@ function TreeComponent(props) {
 			getNodeProps = (item) => {
 				return {};
 			},
+			fitToContainerWidth = false,
 			noneFoundText,
 			disableLoadingIndicator = false,
 			disableSelectorSelected = false,
@@ -1349,6 +1350,7 @@ function TreeComponent(props) {
 										nodeCanSelect={nodeCanSelect}
 										nodeCanDrag={nodeCanDrag}
 										isHighlighted={highlitedDatum === datum}
+										fitToContainerWidth={fitToContainerWidth}
 										{...nodeDragProps}
 
 										// fields={fields}
@@ -1504,7 +1506,7 @@ function TreeComponent(props) {
 		'Tree-VStack',
 		'flex-1',
 		'w-full',
-		'min-w-[300px]',
+		fitToContainerWidth ? 'min-w-0' : 'min-w-[300px]',
 	);
 	if (isLoading) {
 		className += ' border-t-2 border-[#f00]';
@@ -1542,8 +1544,9 @@ function TreeComponent(props) {
 					>
 						<ScrollView
 							{...testProps('ScrollView-Horizontal')}
-							horizontal={true}
+							horizontal={!fitToContainerWidth}
 							className="w-full"
+							showsHorizontalScrollIndicator={!fitToContainerWidth}
 							contentContainerStyle={{
 								minWidth: '100%',
 								flexDirection: 'column', // Keep vertical stacking

@@ -37,6 +37,7 @@ export default function TreeNode(props) {
 			nodeProps = {},
 			onToggle,
 			bg,
+			fitToContainerWidth,
 			isDraggable,
 			isDragSource,
 			isHovered,
@@ -132,6 +133,10 @@ export default function TreeNode(props) {
 			!showNodeHandle && 'select-none',
 			'cursor-pointer',
 		);
+		if (fitToContainerWidth) {
+			// ensure node occupies container width and allows children to wrap instead of forcing a wider row
+			className += ' w-full min-w-0 flex-wrap';
+		}
 
 		// Add drop state classes for additional styling
 		if (isOver && actualCanDrop) {
@@ -151,6 +156,9 @@ export default function TreeNode(props) {
 					className={className}
 					style={{
 						backgroundColor: bg,
+						// if fitToContainerWidth, lock to 100% width and allow wrapping; don't forcibly hide content
+						width: fitToContainerWidth ? '100%' : undefined,
+						minWidth: fitToContainerWidth ? 0 : undefined,
 					}}
 					ref={(element) => {
 						if (dropTargetRef && dropTargetRef.current !== undefined) {
@@ -210,22 +218,24 @@ export default function TreeNode(props) {
 						/>}
 
 					{text && <TextNative
-								numberOfLines={1}
-								ellipsizeMode="head"
+								// allow multi-line wrapping instead of truncation so content can wrap to available width
+								// removed numberOfLines and ellipsizeMode to allow wrapping
 								// {...propsToPass}
 								className={clsx(
 									'TreeNode-TextNative',
 									'self-center',
-									'overflow-hidden',
+									'overflow-visible',
 									'flex',
 									'flex-1',
-									'text-ellipsis',
+									'min-w-0',
+									'break-words',
+									'whitespace-normal',
 									styles.TREE_NODE_CLASSNAME,
 									nodeProps?._text?.className ?? null,
 								)}
 							>{text}</TextNative>}
 
-					{content}
+					{content && <Box className="flex-1 min-w-0 break-words whitespace-normal">{content}</Box>}
 
 				</HStackNative>;
 	}, [
@@ -233,6 +243,8 @@ export default function TreeNode(props) {
 		bg,
 		item,
 		hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
+		fitToContainerWidth,
+		isDraggable,
 		isDragSource,
 		isExpanded,
 		isHighlighted,
