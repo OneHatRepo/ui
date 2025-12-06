@@ -21,6 +21,7 @@ import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withModal from '../../../Hoc/withModal.js';
 import withValue from '../../../Hoc/withValue.js';
+import withTooltip from '../../../Hoc/withTooltip.js';
 import ValueBox from './ValueBox.js';
 import Inflector from 'inflector-js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
@@ -42,7 +43,6 @@ function TagComponent(props) {
 			joinDataConfig,
 			getBaseParams, // See note in useEffect
 			outerValueId, // See note in useEffect
-			tooltip,
 			testID,
 			isDirty = false,
 
@@ -535,7 +535,6 @@ function TagComponent(props) {
 						onGridAdd={onGridAdd}
 						onGridSave={onGridSave}
 						onGridDelete={onGridDelete}
-						tooltip={tooltip}
 						usePermissions={props.usePermissions}
 						{..._combo}
 						className={comboClassName}
@@ -559,7 +558,9 @@ export const Tag = withAdditionalProps(
 							withAlert(
 								withData(
 									withValue(
-										TagComponent
+										withTooltip(
+											TagComponent
+										)
 									)
 								)
 							)

@@ -101,8 +101,6 @@ export const ComboComponent = forwardRef((props, ref) => {
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
 			onSubmit, // when Combo is used in a Tag, call this when the user submits the Combo value (i.e. presses Enter or clicks a row)
 			newEntityDisplayProperty,
-			tooltip = null,
-			tooltipPlacement = 'bottom',
 			testID,
 
 			// withComponent
@@ -732,14 +730,6 @@ export const ComboComponent = forwardRef((props, ref) => {
 						InputLeftElement={inputIconElement}
 						autoSubmitDelay={500}
 						placeholder={placeholder}
-						tooltip={tooltip}
-						tooltipPlacement={tooltipPlacement}
-						tooltipTriggerClassName={clsx(
-							'grow',
-							'h-auto',
-							'self-stretch',
-							'flex-1'
-						)}
 						className={clsx(
 							'Combo-Input',
 							'grow',
@@ -977,13 +967,6 @@ export const ComboComponent = forwardRef((props, ref) => {
 									InputLeftElement={inputIconElement}
 									autoSubmitDelay={500}
 									placeholder={placeholder}
-									tooltip={tooltip}
-									tooltipPlacement={tooltipPlacement}
-									tooltipTriggerClassName={clsx(
-										'grow',
-										'h-full',
-										'flex-1'
-									)}
 									className={clsx(
 										'Combo-inputClone-Input',
 										'grow',
@@ -1104,12 +1087,6 @@ export const ComboComponent = forwardRef((props, ref) => {
 							InputLeftElement={inputIconElement}
 							autoSubmitDelay={500}
 							placeholder={placeholder}
-							tooltip={tooltip}
-							tooltipPlacement={tooltipPlacement}
-							tooltipTriggerClassName={clsx(
-								'h-full',
-								'flex-1'
-							)}
 							className={clsx(
 								'h-full',
 								'flex-1',
