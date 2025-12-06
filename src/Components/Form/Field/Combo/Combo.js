@@ -28,6 +28,7 @@ import useForceUpdate from '../../../../Hooks/useForceUpdate.js';
 import withAlert from '../../../Hoc/withAlert.js';
 import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
+import withTooltip from '../../../Hoc/withTooltip.js';
 import withValue from '../../../Hoc/withValue.js';
 import emptyFn from '../../../../Functions/emptyFn.js';
 import IconButton from '../../../Buttons/IconButton.js';
@@ -1282,7 +1283,9 @@ export const Combo = withComponent(
 						withAlert(
 							withData(
 								withValue(
-									ComboComponent
+									withTooltip(
+										ComboComponent
+									)
 								)
 							)
 						)
