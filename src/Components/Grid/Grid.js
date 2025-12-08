@@ -1569,9 +1569,6 @@ function GridComponent(props) {
 							console.log(`${getMeasurementPhase()}, placeholder onLayout, call setIsInited(true)`);
 						}
 						setIsInited(true);
-						if (onLayout) {
-							onLayout(e);
-						}
 					}}
 					className="w-full flex-1"
 				/>;
@@ -1716,6 +1713,10 @@ function GridComponent(props) {
 						onLayout={(e) => {
 							const containerHeight = e.nativeEvent.layout.height;
 							debouncedAdjustPageSizeToHeight(containerHeight);
+							
+							if (onLayout) {
+								onLayout(e);
+							}
 						}}
 						className={className}
 						style={style}
