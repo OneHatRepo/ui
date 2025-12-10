@@ -319,14 +319,58 @@ export default function withPdfButtons(WrappedComponent) {
 							/>,
 				});
 			},
-			getPdf = (data) => {
+			getPdf = async (data) => {
+				// NOTE: we previously used a simple window.open() with the URL to view the PDF,
+				// but this doesn't work when authentication headers are required.
+				// So now we fetch the PDF ourselves, then open it in a new window.
+
 				data.id = selection[0].id;
 
 				const
-					url = UiGlobals.baseURL + model + '/viewModelPdf?',
-					queryString = qs.stringify(data);
+					url = UiGlobals.baseURL + model + '/viewModelPdf',
+					queryString = qs.stringify(data),
+					fullUrl = url + '?' + queryString;
 
-				window.open(url + queryString, '_blank');
+				try {
+					// Show loading indicator
+					const
+						dispatch = UiGlobals.redux.dispatch,
+						setIsWaitModalShownAction = UiGlobals.systemReducer.setIsWaitModalShownAction;
+					dispatch(setIsWaitModalShownAction(true));
+
+					// Fetch with auth headers
+					const response = await fetch(fullUrl, {
+						method: 'GET',
+						headers: {
+							...Repository.headers,
+						},
+					});
+
+					dispatch(setIsWaitModalShownAction(false));
+
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+
+					// Get the PDF blob
+					const blob = await response.blob();
+					
+					// Create a blob URL
+					const blobUrl = URL.createObjectURL(blob);
+					
+					// Open in new window
+					window.open(blobUrl, '_blank');
+
+					// Clean up the blob URL after a delay
+					// (give it time to load in the new window)
+					setTimeout(() => {
+						URL.revokeObjectURL(blobUrl);
+					}, 1000);
+
+				} catch (error) {
+					console.error('Failed to fetch PDF:', error);
+					alert('Failed to load PDF. Please try again.');
+				}
 			},
 			sendEmail = async (data) => {
 
