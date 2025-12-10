@@ -385,7 +385,7 @@ function AttachmentsElement(props) {
 				
 				alert('Files cannot be downloaded and viewed within an iOS PWA. Please use the Safari browser instead.');
 			} else {
-				downloadInBackground(url);
+				downloadInBackground(url, {}, Attachments.headers);
 			}
 		},
 
