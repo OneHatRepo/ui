@@ -339,13 +339,13 @@ function Form(props) {
 					if (renderer) {
 						value = renderer(record);
 					} else {
-						if (record?.properties && record.properties[fieldName]) {
+						if (record?.properties?.hasOwnProperty(fieldName)) {
 							value = record.properties[fieldName].displayValue;
 						}
-						if (_.isNil(value) && record && record[fieldName]) {
+						if (_.isNil(value) && record?.hasOwnProperty(fieldName)) {
 							value = record[fieldName];
 						}
-						if (_.isNil(value) && startingValues && startingValues[fieldName]) {
+						if (_.isNil(value) && startingValues?.hasOwnProperty(fieldName)) {
 							value = startingValues[fieldName];
 						}
 					}

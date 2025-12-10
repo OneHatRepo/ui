@@ -257,7 +257,13 @@ function Viewer(props) {
 				label = propertyDef.title;
 			}
 
-			let value = record?.properties?.[name]?.displayValue || record?.[name] || null;
+			let value = null;
+			if (record?.properties?.hasOwnProperty(name)) {
+				value = record.properties[name].displayValue;
+			}
+			if (_.isNil(value) && record?.hasOwnProperty(name)) {
+				value = record[name];
+			}
 			const
 				schema = record?.repository?.getSchema(),
 				propertyDefinition = schema?.getPropertyDefinition(name);
