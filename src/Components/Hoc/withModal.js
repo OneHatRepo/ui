@@ -1,4 +1,4 @@
-import { forwardRef, useState, useRef } from 'react';
+import { forwardRef, useState } from 'react';
 import {
 	Icon,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
@@ -44,8 +44,6 @@ export default function withModal(WrappedComponent) {
 			[body, setBody] = useState(),
 			[whichModal, setWhichModal] = useState(),
 			[testID, setTestID] = useState('Modal'),
-			autoFocusRef = useRef(null),
-			cancelRef = useRef(null),
 			[windowWidth, windowHeight] = useAdjustedWindowSize(w, h),
 			hideModal = () => {
 				setIsModalShown(false);
@@ -113,7 +111,6 @@ export default function withModal(WrappedComponent) {
 									key="cancelBtn"
 									onPress={onCancel || hideModal}
 									colorScheme="coolGray"
-									ref={cancelRef}
 									className="mr-2"
 									text="Cancel"
 									variant="outline" // or unstyled
@@ -133,7 +130,6 @@ export default function withModal(WrappedComponent) {
 				buttons.push(<Button
 								{...testProps('okBtn')}
 								key="okBtn"
-								ref={autoFocusRef}
 								onPress={onOk}
 								text={okBtnLabel}
 								className="text-white"
@@ -143,7 +139,6 @@ export default function withModal(WrappedComponent) {
 				buttons.push(<Button
 								{...testProps('yesBtn')}
 								key="yesBtn"
-								ref={autoFocusRef}
 								onPress={onYes}
 								text="Yes"
 								className="text-white"
