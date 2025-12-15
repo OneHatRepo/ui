@@ -27,18 +27,52 @@ export default function WaitMessage(props) {
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// Gluestack's ModalBackdrop was not working on Native,
 		// so workaround is to do it manually for now
-		modalBackdrop = <Box
+		return <Modal
+					{...testProps('WaitMessage')}
+					isOpen={true}
+					className="Modal"
+					aria-disabled={true}
+				>
+					<Box
+						className={clsx(
+							'WaitMessage-ModalBackdrop-replacment',
+							'h-full',
+							'w-full',
+							'absolute',
+							'top-0',
+							'left-0',
+							'bg-[#000]',
+							'opacity-50',
+						)}
+					/>
+					{/* <ModalContent
+						className={clsx(
+							'ModalContent',
+							'w-[200px]',
+							CURRENT_MODE === UI_MODE_WEB ? 'h-[50px]' : '',
+							'shadow-lg',
+						)}
+					> */}
+						<HStack
 							className={clsx(
-								'WaitMessage-ModalBackdrop-replacment',
-								'h-full',
-								'w-full',
-								'absolute',
-								'top-0',
-								'left-0',
-								'bg-[#000]',
-								'opacity-50',
+								'HStack',
+								'items-center',
+								'justify-center',
+								'bg-white',
+								'p-4',
+								'rounded-md',
 							)}
-						/>;
+						>
+							<Spinner
+								className={clsx(
+									'mr-2',
+									'focus:outline-none',
+								)}
+							/>
+							<Text className="text-black">{text}</Text>
+						</HStack>
+					{/* </ModalContent> */}
+				</Modal>;
 	}
 
 	return <Modal
@@ -47,7 +81,7 @@ export default function WaitMessage(props) {
 				className="Modal"
 				aria-disabled={true}
 			>
-				{modalBackdrop}
+				<ModalBackdrop className="WaitMessage-ModalBackdrop" />
 				<ModalContent
 					className={clsx(
 						'ModalContent',
