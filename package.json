@@ -1,6 +1,6 @@
 {
 	"name": "@onehat/ui",
-	"version": "0.4.90",
+	"version": "0.4.91",
 	"description": "Base UI for OneHat apps",
 	"main": "src/index.js",
 	"type": "module",
@@ -57,12 +57,12 @@
 		"@hookform/resolvers": "^5.0.0",
 		"@k-renwick/colour-mixer": "^1.2.1",
 		"@legendapp/motion": "^2.4.0",
-		"@onehat/data": "^1.22.0",
-		"@react-native-community/slider": "^4.5.2",
-		"@reduxjs/toolkit": "^2.6.1",
+		"@onehat/data": "^1.22.31",
+		"@react-native-community/slider": "^5.1.1",
+		"@reduxjs/toolkit": "^2.11.2",
 		"clsx": "^2.1.1",
-		"decimal.js": "^10.5.0",
-		"inflector-js": "^1.0.1",
+		"decimal.js": "^10.6.0",
+		"inflector-js": "^2.0.1",
 		"js-cookie": "^3.0.5",
 		"nativewind": "4.1.23",
 		"normalize-css-color": "^1.0.2",
@@ -71,7 +71,7 @@
 		"react-redux": "^9.2.0",
 		"tailwind-scrollbar": "^3.1.0",
 		"tailwindcss": "^3.4.17",
-		"yup": "^1.6.1"
+		"yup": "^1.7.1"
 	},
 	"peerDependencies": {
 		"@ckeditor/ckeditor5-react": "^6.3.0",
