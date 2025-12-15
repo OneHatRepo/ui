@@ -279,7 +279,7 @@ import Panel from './Panel/Panel.js';
 // import Picker from './Panel/Picker.js';
 import PlusMinusButton from './Buttons/PlusMinusButton.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
-import Slider from './Form/Field/Slider.js';
+// import Slider from './Form/Field/Slider.js'; // Currently, Slider is not compatible with the new React architecture. Temporarily remove it from index.js to prevent issues.
 import SquareButton from './Buttons/SquareButton.js';
 import TabPanel from './Panel/TabPanel.js';
 import Tag from './Form/Field/Tag/Tag.js';
@@ -574,7 +574,7 @@ const components = {
 	// Picker,
 	PlusMinusButton,
 	RadioGroup,
-	Slider,
+	// Slider,
 	SquareButton,
 	TabPanel,
 	Tag,
