@@ -14,6 +14,7 @@ import {
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
 import * as colourMixer from '@k-renwick/colour-mixer';
+import Tooltip from '../Tooltip/Tooltip.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import UiGlobals from '../../UiGlobals.js';
 import { withDragSource, withDropTarget } from '../Hoc/withDnd.js';
@@ -457,16 +458,20 @@ const GridRow = forwardRef((props, ref) => {
 		if (isOver) {
 			rowClassName += ' border-4 border-[#0ff]';
 		}
-		return <HStackNative
-					ref={ref}
-					{...testProps('Row ' + (isSelected ? 'row-selected' : ''))}
-					{...rowProps}
-					key={hash}
-					className={rowClassName}
-					style={{
-						backgroundColor: bg,
-					}}
-				>{rowContents}</HStackNative>;
+		let row = <HStackNative
+						ref={ref}
+						{...testProps('Row ' + (isSelected ? 'row-selected' : ''))}
+						{...rowProps}
+						key={hash}
+						className={rowClassName}
+						style={{
+							backgroundColor: bg,
+						}}
+					>{rowContents}</HStackNative>;
+		if (rowProps.tooltip) {
+			row = <Tooltip label={rowProps.tooltip} placement="bottom left">{row}</Tooltip>;
+		}
+		return row;
 	}, [
 		columnsConfig,
 		asyncResults,
