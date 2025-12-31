@@ -5,6 +5,7 @@ import {
 	HStack,
 	Pressable,
 	// ScrollView,
+	Text,
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
