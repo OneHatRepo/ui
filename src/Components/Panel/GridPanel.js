@@ -11,6 +11,7 @@ export function GridPanel(props) {
 	const {
 			isEditor = false,
 			editorType = EDITOR_TYPE__WINDOWED,
+			_panel = {},
 		} = props;
 
 	let WhichGrid = Grid;
@@ -28,11 +29,7 @@ export function GridPanel(props) {
 		}
 	}
 
-	if (!props._panel) {
-		props._panel = {};
-	}
-
-	return <Panel {...props} {...props._panel}>
+	return <Panel {...props} {..._panel}>
 				<WhichGrid {...props} />
 			</Panel>;
 }
