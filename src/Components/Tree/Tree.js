@@ -133,7 +133,17 @@ function TreeComponent(props) {
 			canNodeMoveInternally, // optional fn to customize whether each node can be dragged INternally
 			canNodeMoveExternally, // optional fn to customize whether each node can be dragged EXternally
 			canNodeAcceptDrop, // optional fn to customize whether each node can accept a dropped item: (targetItem, draggedItem) => boolean
-			getCustomDragProxy, // optional fn to render custom drag preview: (item, selection) => ReactElement
+			dragProxyField,
+			getCustomDragProxy = (item, selection) => { // optional fn to render custom drag preview: (item, selection) => ReactElement
+				let selectionCount = selection?.length || 1,
+					displayText = dragProxyField ? item[dragProxyField] : (item.displayValue || 'Selected TreeNode');
+				return <VStack className="bg-white border border-gray-300 rounded-lg p-3 shadow-lg max-w-[200px]">
+							<Text className="font-semibold text-gray-800">{displayText}</Text>
+							{selectionCount > 1 && 
+								<Text className="text-sm text-gray-600">(+{selectionCount -1} more item{selectionCount > 2 ? 's' : ''})</Text>
+							}
+						</VStack>;
+			},
 			dragPreviewOptions, // optional object for drag preview positioning options
 			areNodesDragSource = false,
 			nodeDragSourceType,
