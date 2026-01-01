@@ -271,6 +271,7 @@ function GridComponent(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		id = props.id || props.self?.path,
+		entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data,
 		localColumnsConfigKey = id && id + '-localColumnsConfig',
 		[hasUnserializableColumns] = useState(() => {
 			return !isSerializable(columnsConfig); // (runs only once, when the component is first created)
@@ -291,6 +292,8 @@ function GridComponent(props) {
 		measuredRowsRef = useRef([]),
 		footerToolbarRef = useRef(null),
 		rowRefs = useRef([]),
+		previousEntitiesLength = useRef(0),
+		hasRemeasuredAfterRowsAppeared = useRef(false),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -1129,12 +1132,12 @@ function GridComponent(props) {
 				// Keep the current estimated pageSize, just hide the loading overlay
 			}
 		},
-		adjustPageSizeToHeight = (containerHeight) => {
+		adjustPageSizeToHeight = (containerHeight, forceRemeasure = false) => {
 			if (!Repository || Repository.isDestroyed) { // This method gets delayed, so it's possible for Repository to have been destroyed. Check for this
 				return;
 			}
 			if (DEBUG) {
-				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A`);
+				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A forceRemeasure=${forceRemeasure}`);
 			}
 
 			let doAdjustment = autoAdjustPageSizeToHeight;
@@ -1146,11 +1149,11 @@ function GridComponent(props) {
 				console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A2 doAdjustment=${doAdjustment}, autoAdjustPageSizeToHeight=${autoAdjustPageSizeToHeight}, UiGlobals.autoAdjustPageSizeToHeight=${UiGlobals.autoAdjustPageSizeToHeight}, containerHeight=${containerHeight}`);
 			}
 			
-			// Only proceed if height changed significantly
+			// Only proceed if height changed significantly or forced
 			const
 				heightChanged = Math.abs(containerHeight - lastMeasuredContainerHeight) > 5, // 5px tolerance
 				isFirstMeasurement = lastMeasuredContainerHeight === 0;
-			if (containerHeight > 0 && (isFirstMeasurement || heightChanged)) {
+			if (containerHeight > 0 && (isFirstMeasurement || heightChanged || forceRemeasure)) {
 				if (editorType === EDITOR_TYPE__SIDE && getIsEditorShown()) {
 					// When side editor is shown, skip adjustment to avoid layout thrashing
 					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A4 height changed significantly, but side editor is shown, skipping remeasurement`);
@@ -1554,6 +1557,34 @@ function GridComponent(props) {
 		}
 	}, [autoAdjustPageSizeToHeight]);
 
+	// Reset measurement when rows were first empty then became populated
+	useEffect(() => {
+		const
+			currentLength = entities?.length || 0,
+			wasEmpty = previousEntitiesLength.current === 0,
+			isNowPopulated = currentLength > 0;
+		
+		// Only remeasure the FIRST time rows appear after being empty
+		if (autoAdjustPageSizeToHeight && wasEmpty && isNowPopulated && !hasRemeasuredAfterRowsAppeared.current) {
+			// Rows just appeared for the first time - restart measurement cycle to use actual heights
+			if (DEBUG) {
+				console.log(`${getMeasurementPhase()}, useEffect 5 - rows appeared for first time, restarting measurement cycle`);
+			}
+			hasRemeasuredAfterRowsAppeared.current = true;
+			
+			setMeasurementPhase(PHASES__INITIAL);
+			setMeasuredRowHeight(null);
+			measuredRowsRef.current = [];
+			
+			// Trigger remeasurement with force flag since actual rows are now available
+			if (lastMeasuredContainerHeight > 0) {
+				adjustPageSizeToHeight(lastMeasuredContainerHeight, true);
+			}
+		}
+		
+		previousEntitiesLength.current = currentLength;
+	}, [entities?.length, autoAdjustPageSizeToHeight]);
+
 	if (canUser && !canUser('view')) {
 		return <Unauthorized />;
 	}
@@ -1590,7 +1621,6 @@ function GridComponent(props) {
 	}
 
 	// Actual data to show in the grid
-	const entities = Repository ? (Repository.isRemote ? Repository.entities : Repository.getEntitiesOnPage()) : data;
 	let rowData = [...entities]; // don't use the original array, make a new one so alterations to it are temporary
 	if (showHeaders) {
 		rowData.unshift({ id: 'headerRow' });
