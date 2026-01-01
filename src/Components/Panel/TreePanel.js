@@ -11,6 +11,7 @@ export function TreePanel(props) {
 			isEditor = false,
 			editorType = EDITOR_TYPE__WINDOWED,
 			_panel = {},
+			_tree = {},
 		} = props;
 
 	let WhichTree = Tree;
@@ -26,7 +27,7 @@ export function TreePanel(props) {
 	}
 
 	return <Panel {..._panel}>
-				<WhichTree {...props} {..._panel} />
+				<WhichTree {...props} {..._tree} />
 			</Panel>;
 }
 
