@@ -543,26 +543,27 @@ function Viewer(props) {
 						)}
 					>
 						{scrollToTopAnchor}
-						{canEdit && onEditMode &&
-							<Toolbar className="justify-end">
-								<HStack className="flex-1 items-center">
-									<Text className="text-[20px] ml-1 text-grey-500">View Mode</Text>
-								</HStack>
-								{(!canUser || canUser(EDIT)) &&
-									<Button
-										{...testProps('toEditBtn')}
-										key="editBtn"
-										onPress={onEditMode}
-										icon={Pencil}
-										_icon={{ 
-											size: 'sm',
-											className: 'text-white'
-										}}
-										className="text-white"
-										text="To Edit"
-										tooltip="Switch to Edit Mode"
-									/>}
-							</Toolbar>}
+
+						<Toolbar className="justify-end">
+							<HStack className="flex-1 items-center">
+								<Text className="text-[20px] ml-1 text-grey-500">View Mode</Text>
+							</HStack>
+							{onEditMode && (!canUser || canUser(EDIT)) && 
+								<Button
+									{...testProps('toEditBtn')}
+									key="editBtn"
+									onPress={onEditMode}
+									icon={Pencil}
+									_icon={{ 
+										size: 'sm',
+										className: 'text-white'
+									}}
+									className="text-white"
+									text="To Edit"
+									tooltip="Switch to Edit Mode"
+									isDisabled={!canEdit}
+								/>}
+						</Toolbar>
 						
 						{!_.isEmpty(additionalButtons) && 
 							<Toolbar className="justify-end flex-wrap gap-2">

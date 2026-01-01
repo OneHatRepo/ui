@@ -1247,7 +1247,7 @@ function Form(props) {
 
 			if (inArray(editorType, [EDITOR_TYPE__SIDE, EDITOR_TYPE__SMART, EDITOR_TYPE__WINDOWED]) && 
 				isSingle && getEditorMode() === EDITOR_MODE__EDIT && 
-				(onBack || (onViewMode && !disableView))) {
+				(onBack || onViewMode)) {
 				modeHeader = <Toolbar>
 								<HStack className="flex-1 items-center">
 									{onBack &&
