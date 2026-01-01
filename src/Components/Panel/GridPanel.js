@@ -12,6 +12,7 @@ export function GridPanel(props) {
 			isEditor = false,
 			editorType = EDITOR_TYPE__WINDOWED,
 			_panel = {},
+			_grid = {},
 		} = props;
 
 	let WhichGrid = Grid;
@@ -30,7 +31,7 @@ export function GridPanel(props) {
 	}
 
 	return <Panel {...props} {..._panel}>
-				<WhichGrid {...props} />
+				<WhichGrid {...props} {..._grid} />
 			</Panel>;
 }
 

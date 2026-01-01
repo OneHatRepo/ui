@@ -3,8 +3,11 @@ import Panel from './Panel.js';
 
 
 export default function TabPanel(props) {
-	const panelProps = props._panel || {};
-	return <Panel className="w-full flex" {...panelProps}>
-				<TabBar {...props} {...props._tab} />
+	const {
+			_panel = {},
+			_tab = {},
+		} = props;
+	return <Panel className="w-full flex" {..._panel}>
+				<TabBar {...props} {..._tab} />
 			</Panel>;
 }
