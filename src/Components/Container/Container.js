@@ -368,7 +368,7 @@ function Container(props) {
 		wrapperProps = {};
 		
 		componentProps.isDisabled = isDisabled || isComponentsDisabled;
-		componentProps.className = (north.props.className || '') + ' h-full w-full';
+		componentProps.className = 'h-full w-full ' + (north.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const height = parseFloat(e.nativeEvent.layout.height);
 			if (height && height !== northHeight) {
@@ -406,7 +406,7 @@ function Container(props) {
 		wrapperProps = {};
 		
 		componentProps.isDisabled = isDisabled || isComponentsDisabled;
-		componentProps.className = (south.props.className || '') + ' h-full w-full';
+		componentProps.className = 'h-full w-full ' + (south.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const height = parseFloat(e.nativeEvent.layout.height);
 			if (height && height !== getSouthHeight()) {
@@ -444,7 +444,7 @@ function Container(props) {
 		wrapperProps = {};
 		
 		componentProps.isDisabled = isDisabled || isComponentsDisabled;
-		componentProps.className = (east.props.className || '') + ' h-full w-full';
+		componentProps.className = 'h-full w-full ' + (east.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
 			if (width && width !== getEastWidth()) {
@@ -482,7 +482,7 @@ function Container(props) {
 		wrapperProps = {};
 		
 		componentProps.isDisabled = isDisabled || isComponentsDisabled;
-		componentProps.className = (west.props.className || '') + ' h-full w-full';
+		componentProps.className = 'h-full w-full ' + (west.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
 			if (width && width !== getWestWidth()) {
