@@ -30,6 +30,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				userCanView = true,
 				canEditorViewOnly = false, // whether the editor can *ever* change state out of 'View' mode
 				canProceedWithCrud, // fn returns bool on if the CRUD operation can proceed
+				canRecordBeEdited, // fn(selection) returns bool on if the current record(s) can be edited
+				canRecordBeDeleted, // fn(selection) returns bool on if the current record(s) can be deleted
 				disableAdd = false,
 				disableEdit = false,
 				disableDelete = false,
@@ -87,6 +89,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			editorModeRef = useRef(initialEditorMode),
 			isIgnoreNextSelectionChangeRef = useRef(false),
 			isEditorShownRef = useRef(false),
+			canEditorBeInEditModeRef = useRef(true), // whether the editor is allowed to be in edit mode based on canRecordBeEdited
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isAdding, setIsAdding] = useState(false),
 			[isSaving, setIsSaving] = useState(false),
@@ -107,6 +110,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			},
 			getIsEditorShown = () => {
 				return isEditorShownRef.current;
+			},
+			setCanEditorBeInEditMode = (bool) => {
+				canEditorBeInEditModeRef.current = bool;
+				forceUpdate();
+			},
+			getCanEditorBeInEditMode = () => {
+				return canEditorBeInEditModeRef.current;
 			},
 			setIsWaitModalShown = (bool) => {
 				const
@@ -624,6 +634,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				});
 			},
 			calculateEditorMode = () => {
+				if (!getCanEditorBeInEditMode()) { // this is a result of canRecordBeEdited returning false
+					return EDITOR_MODE__VIEW;
+				}
 
 				let isIgnoreNextSelectionChange = getIsIgnoreNextSelectionChange(),
 					doStayInEditModeOnSelectionChange = stayInEditModeOnSelectionChange;
@@ -691,7 +704,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 		useEffect(() => {
 
 			if (editorType === EDITOR_TYPE__SIDE) {
-				if (selection?.length) { //  || isAdding
+				if (selection?.length) { // || isAdding
 					// there is a selection, so show the editor
 					setIsEditorShown(true);
 				} else {
@@ -700,6 +713,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			}
 
+			if (canRecordBeEdited && canRecordBeEdited(selection) === false) {
+				setCanEditorBeInEditMode(false);
+			} else {
+				setCanEditorBeInEditMode(true);
+			}
 			setEditorMode(calculateEditorMode());
 			setLastSelection(selection);
 			
@@ -749,8 +767,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsEditorShown={setIsEditorShown}
 					setIsIgnoreNextSelectionChange={setIsIgnoreNextSelectionChange}
 					onAdd={(!userCanEdit || disableAdd) ? null : doAdd}
-					onEdit={(!userCanEdit || disableEdit) ? null : doEdit}
-					onDelete={(!userCanEdit || disableDelete) ? null : doDelete}
+					onEdit={(!userCanEdit || disableEdit || (canRecordBeEdited && !canRecordBeEdited(selection))) ? null : doEdit}
+					onDelete={(!userCanEdit || disableDelete || (canRecordBeDeleted && !canRecordBeDeleted(selection))) ? null : doDelete}
 					onView={doView}
 					onDuplicate={doDuplicate}
 					onEditorSave={doEditorSave}

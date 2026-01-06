@@ -48,7 +48,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 		}
 
 		const {
-				// extract and pass
+				// for local use
 				contextMenuItems = [],
 				additionalToolbarButtons = [],
 				useUploadDownload = false,
@@ -59,18 +59,18 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				downloadHeaders,
 				downloadParams,
 				onChangeColumnsConfig,
-				canRecordBeEdited,
-				canRecordBeDeleted,
-				canRecordBeDuplicated,
 				...propsToPass
 			} = props,
 			{
-				// for local use
+				// extract and pass down
 				isEditor = false,
 				isTree = false,
 				canDeleteRootNode = false,
 				isSideEditor = false,
 				canEditorViewOnly = false,
+				canRecordBeEdited, // fn(selection) returns bool on if the current record(s) can be edited
+				canRecordBeDeleted, // fn(selection) returns bool on if the current record(s) can be deleted
+				canRecordBeDuplicated, // fn(selection) returns bool on if the current record(s) can be duplicated
 				disableAdd = !isEditor,
 				disableEdit = !isEditor,
 				disableDelete = !isEditor,
