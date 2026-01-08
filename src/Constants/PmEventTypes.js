@@ -1,0 +1,11 @@
+export const PM_EVENT_TYPES__INITIAL = 1;
+export const PM_EVENT_TYPES__WORK_ORDER = 2;
+export const PM_EVENT_TYPES__ALERT = 3;
+export const PM_EVENT_TYPES__COMPLETE = 4;
+export const PM_EVENT_TYPES__RESET = 5;
+export const PM_EVENT_TYPES__DELAY_BY_DAYS = 6;
+export const PM_EVENT_TYPES__DELAY_BY_METER = 7;
+export const PM_EVENT_TYPES__SCHEDULE_PM = 8;
+export const PM_EVENT_TYPES__WILL_CALL = 9;
+export const PM_EVENT_TYPES__ASSIGN_TECHNICIAN = 10;
+export const PM_EVENT_TYPES__COMMENT = 11;

@@ -1,0 +1,5 @@
+export const METER_SOURCES__INITIAL_SETUP = 1;
+export const METER_SOURCES__WORK_ORDER = 2;
+export const METER_SOURCES__PM_EVENT = 3;
+export const METER_SOURCES__TELEMETRY = 4;
+export const METER_SOURCES__MANUAL_ENTRY = 5;

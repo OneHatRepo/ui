@@ -255,6 +255,8 @@ import Container from './Container/Container.js';
 import ContainerColumn from './Container/ContainerColumn.js';
 import DataMgt from './Screens/DataMgt.js';
 import Date from './Form/Field/Date.js';
+import DateViewer from './Viewer/DateViewer.js';
+import DateTimeViewer from './Viewer/DateTimeViewer.js';
 import DateRange from './Filter/DateRange.js';
 import DisplayField from './Form/Field/DisplayField.js';
 import ExpandButton from './Buttons/ExpandButton.js';
@@ -278,6 +280,8 @@ import NumberRange from './Filter/NumberRange.js';
 import Panel from './Panel/Panel.js';
 // import Picker from './Panel/Picker.js';
 import PlusMinusButton from './Buttons/PlusMinusButton.js';
+import PmCalcDebugViewer from './Viewer/PmCalcDebugViewer.js';
+import PmStatusesViewer from './Viewer/PmStatusesViewer.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
 // import Slider from './Form/Field/Slider.js'; // Currently, Slider is not compatible with the new React architecture. Temporarily remove it from index.js to prevent issues.
 import SquareButton from './Buttons/SquareButton.js';
@@ -286,6 +290,7 @@ import Tag from './Form/Field/Tag/Tag.js';
 import TextArea from './Form/Field/TextArea.js';
 import Text from './Form/Field/Text.js';
 import TextWithLinks from './Viewer/TextWithLinks.js';
+import TimeViewer from './Viewer/TimeViewer.js';
 import TimezonesCombo from './Form/Field/Combo/TimezonesCombo.js';
 import Toggle from './Form/Field/Toggle.js';
 import Toolbar from './Toolbar/Toolbar.js';
@@ -550,6 +555,8 @@ const components = {
 	ContainerColumn,
 	DataMgt,
 	Date,
+	DateViewer,
+	DateTimeViewer,
 	DateRange,
 	DisplayField,
 	ExpandButton,
@@ -573,6 +580,8 @@ const components = {
 	Panel,
 	// Picker,
 	PlusMinusButton,
+	PmCalcDebugViewer,
+	PmStatusesViewer,
 	RadioGroup,
 	// Slider,
 	SquareButton,
@@ -581,6 +590,7 @@ const components = {
 	Text,
 	TextArea,
 	TextWithLinks,
+	TimeViewer,
 	TimezonesCombo,
 	Toggle,
 	Toolbar,
