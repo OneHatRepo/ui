@@ -61,6 +61,7 @@ function withAlert(WrappedComponent) {
 								'flex-1',
 								'items-start',
 								'justify-center',
+								'p-4',
 							)}>
 								<Text className={clsx(
 									'withAlert-Text',
@@ -164,7 +165,7 @@ function withAlert(WrappedComponent) {
 					}),
 					onOk: () => hideModal(),
 					canClose: true,
-					h: 200,
+					h: 250,
 					w: 400,
 					whichModal: 'info',
 				});
