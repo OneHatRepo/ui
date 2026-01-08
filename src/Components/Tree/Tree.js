@@ -1052,7 +1052,16 @@ function TreeComponent(props) {
 			return items;
 		},
 		getFooterToolbarItems = () => {
-			return _.map(additionalToolbarButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
+			// Process additionalToolbarButtons to evaluate getIsButtonDisabled functions
+			const processedButtons = _.map(additionalToolbarButtons, (config) => {
+				const processedConfig = { ...config };
+				// If the button has an getIsButtonDisabled function, evaluate it with current selection
+				if (_.isFunction(config.getIsButtonDisabled)) {
+					processedConfig.isDisabled = config.getIsButtonDisabled(selection);
+				}
+				return processedConfig;
+			});
+			return _.map(processedButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
 		},
 		renderTreeNode = (datum) => {
 			if (!datum.isVisible) {
