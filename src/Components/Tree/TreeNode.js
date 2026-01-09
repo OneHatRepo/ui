@@ -148,6 +148,9 @@ export default function TreeNode(props) {
 		if (props.className) {
 			className += ' ' + props.className;
 		}
+		if (nodeProps.className) {
+			className += ' ' + nodeProps.className;
+		}
 	
 		return <HStackNative
 					{...testProps('node' + (isSelected ? '-selected' : ''))}

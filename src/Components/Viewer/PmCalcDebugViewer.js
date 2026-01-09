@@ -18,9 +18,6 @@ import {
 	PM_STATUSES__OVERDUE,
 	PM_STATUSES__COMPLETED,
 } from '../../Constants/PmStatuses.js';
-import {
-	PM_STATUSES__OK,
-} from '../../Constants/PmStatuses.js';
 import Button from '../Buttons/Button.js';
 import Json from '../Form/Field/Json.js';
 import Panel from '../Panel/Panel.js';
