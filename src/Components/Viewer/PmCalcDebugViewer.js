@@ -11,6 +11,15 @@ import {
 } from '../../Constants/PmScheduleModes.js';
 import {
 	PM_STATUSES__OK,
+	PM_STATUSES__PM_DUE,
+	PM_STATUSES__DELAYED,
+	PM_STATUSES__WILL_CALL,
+	PM_STATUSES__SCHEDULED,
+	PM_STATUSES__OVERDUE,
+	PM_STATUSES__COMPLETED,
+} from '../../Constants/PmStatuses.js';
+import {
+	PM_STATUSES__OK,
 } from '../../Constants/PmStatuses.js';
 import Button from '../Buttons/Button.js';
 import Json from '../Form/Field/Json.js';
@@ -99,7 +108,7 @@ export default function PmCalcDebugViewer(props) {
 								label: 'Status',
 								name: 'pm_status_name',
 							},
-							json.overduePms > 0 && {
+							json?.overduePms > 0 && {
 								label: 'Overdue PMs',
 								name: 'overduePms',
 							},
@@ -117,7 +126,7 @@ export default function PmCalcDebugViewer(props) {
 								tooltip: 'Indicates whether the calculation was based on days or usage (meter). ' +
 										'If both methods are applicable, the one resulting in the earlier PM date is chosen.',
 							},
-							json.pm_status_id === 6 && {
+							(json?.pm_status_id === PM_STATUSES__OVERDUE || json?.pm_status_id === PM_STATUSES__PM_DUE) && {
 								label: 'Grace Period End Date',
 								name: 'maxGracePeriodDateTime',
 							},
@@ -127,11 +136,11 @@ export default function PmCalcDebugViewer(props) {
 								tooltip: 'Indicates whether the calculation was based on days or usage (meter). ' +
 										'If both methods are applicable, the one resulting in the earlier PM date is chosen.',
 							},
-							json.workOrder?.title && {
+							json?.workOrder?.title && {
 								label: 'Work Order',
 								name: 'workOrder.title',
 							},
-							json.workOrder?.service_order && {
+							json?.workOrder?.service_order && {
 								label: 'Work Order',
 								name: 'workOrder.service_order',
 							},
@@ -151,11 +160,11 @@ export default function PmCalcDebugViewer(props) {
 								label: 'Days Left Until Next PM',
 								name: 'daysLeft',
 							},
-							// json.isDelayed && {
+							// json?.isDelayed && {
 							// 	label: 'Is Delayed',
 							// 	name: 'isDelayed',
 							// },
-							// json.isOverride && {
+							// json?.isOverride && {
 							// 	label: 'Is Override',
 							// 	name: 'isOverride',
 							// },
@@ -167,11 +176,11 @@ export default function PmCalcDebugViewer(props) {
 						"reference": "pmSchedule",
 						"defaults": {},
 						"items": [
-							json.pmSchedule.interval_days && {
+							json?.pmSchedule?.interval_days && {
 								label: 'Interval Days',
 								name: 'pmSchedule.interval_days',
 							},
-							json.pmSchedule.interval_meter && {
+							json?.pmSchedule?.interval_meter && {
 								label: 'Interval Meter',
 								name: 'pmSchedule.interval_meter',
 							},
@@ -206,7 +215,7 @@ export default function PmCalcDebugViewer(props) {
 			}
 		];
 
-	flattenedJson.pmScheduleMode = getPmScheduleMode(json.pmSchedule.pm_schedule_mode_id);
+	flattenedJson.pmScheduleMode = getPmScheduleMode(json?.pmSchedule.pm_schedule_mode_id);
 
 	return <Panel
 				title="PM Calculation Info"
