@@ -122,6 +122,7 @@ function Viewer(props) {
 					isHidden = false,
 					isHiddenInViewMode = false,
 					getDynamicProps,
+					viewerFormatter = null,
 					...itemPropsToPass
 				} = item,
 				viewerTypeProps = {};
@@ -273,6 +274,9 @@ function Viewer(props) {
 				if (record.properties[fkDisplayField]) {
 					value = record.properties[fkDisplayField].displayValue;
 				}
+			}
+			if (viewerFormatter) {
+				value = viewerFormatter(value, record, self);
 			}
 
 			let elementClassName = clsx(

@@ -18,3 +18,4 @@ export const MOMENT_DATE_FORMAT_2 = 'MMM D YYYY, h:mm:ssa'; // pretty datetime
 export const MOMENT_DATE_FORMAT_3 = 'h:mma'; // pretty time
 export const MOMENT_DATE_FORMAT_4 = 'YYYY-MM-DD';
 export const MOMENT_DATE_FORMAT_5 = 'HH:mm:ss';
+export const MOMENT_DATE_FORMAT_6 = 'MMM D, YYYY'; // pretty date

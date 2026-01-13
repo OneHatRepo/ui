@@ -4,6 +4,9 @@ import {
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import {
+	MOMENT_DATE_FORMAT_6,
+} from '../../Constants/Dates.js';
+import {
 	PM_SCHEDULE_MODES__HISTORICAL_USAGE,
 	PM_SCHEDULE_MODES__EXPECTED_USAGE,
 	PM_SCHEDULE_MODES__NO_ESTIMATION,
@@ -18,12 +21,21 @@ import {
 	PM_STATUSES__OVERDUE,
 	PM_STATUSES__COMPLETED,
 } from '../../Constants/PmStatuses.js';
+import {
+	METER_TYPES__HOURS,
+	METER_TYPES__HOURS_UNITS,
+	METER_TYPES__HOURS_TEXT,
+	METER_TYPES__MILES,
+	METER_TYPES__MILES_UNITS,
+	METER_TYPES__MILES_TEXT,
+} from '../../Constants/MeterTypes.js';
 import Button from '../Buttons/Button.js';
 import Json from '../Form/Field/Json.js';
 import Panel from '../Panel/Panel.js';
 import Footer from '../Layout/Footer.js';
 import Viewer from '../Viewer/Viewer.js';
 import testProps from '../../Functions/testProps.js';
+import moment from 'moment';
 import _ from 'lodash';
 
 export default function PmCalcDebugViewer(props) {
@@ -79,6 +91,36 @@ export default function PmCalcDebugViewer(props) {
 			}
 		},
 		flattenedJson = flatten(json),
+		formatDaysValue = (value, record, self) => {
+			if (value === null || value === undefined) {
+				return value;
+			}
+			return parseInt(_.round(value), 10);
+		},
+		formatMeterValue = (value, record, self) => {
+			if (value === null || value === undefined) {
+				return value;
+			}
+			let ret;
+			const meterType = parseInt(record?.meter_type, 10);
+			switch(meterType) {
+				case METER_TYPES__HOURS:
+					ret = `${value} ${METER_TYPES__HOURS_UNITS}`;
+					break;
+				case METER_TYPES__MILES:
+					ret = `${value} ${METER_TYPES__MILES_UNITS}`;
+					break;
+			}
+			return ret;
+		},
+		formatDateValue = (value, record, self) => {
+			if (value === null || value === undefined) {
+				return value;
+			}
+
+			// convert from datetime to pretty-printed date
+			return moment(value).format(MOMENT_DATE_FORMAT_6);
+		},
 		items = [
 			{
 				"type": "Column",
@@ -98,12 +140,13 @@ export default function PmCalcDebugViewer(props) {
 								name: 'pmSchedule.name',
 							},
 							{
-								label: 'Next PM Date',
-								name: 'nextPmDate',
-							},
-							{
 								label: 'Status',
 								name: 'pm_status_name',
+							},
+							{
+								label: 'Next PM Date',
+								name: 'nextPmDate',
+								viewerFormatter: formatDateValue,
 							},
 							json?.overduePms > 0 && {
 								label: 'Overdue PMs',
@@ -126,12 +169,14 @@ export default function PmCalcDebugViewer(props) {
 							(json?.pm_status_id === PM_STATUSES__OVERDUE || json?.pm_status_id === PM_STATUSES__PM_DUE) && {
 								label: 'Grace Period End Date',
 								name: 'maxGracePeriodDateTime',
+								viewerFormatter: formatDateValue,
 							},
 							{
 								label: 'Last Reset Date',
 								name: 'resetDate',
 								tooltip: 'Indicates whether the calculation was based on days or usage (meter). ' +
 										'If both methods are applicable, the one resulting in the earlier PM date is chosen.',
+								viewerFormatter: formatDateValue,
 							},
 							json?.workOrder?.title && {
 								label: 'Work Order',
@@ -144,18 +189,22 @@ export default function PmCalcDebugViewer(props) {
 							{
 								label: 'Meter Accrued Since Last PM',
 								name: 'meterAccruedSinceLatestPm',
+								viewerFormatter: formatMeterValue,
 							},
 							{
 								label: 'Meter Remaining Until Next PM',
 								name: 'meterRemainingUntilNextPm',
+								viewerFormatter: formatMeterValue,
 							},
 							{
 								label: 'Days Since Last PM',
 								name: 'daysSinceLatestPm',
+								viewerFormatter: formatDaysValue,
 							},
 							{
 								label: 'Days Left Until Next PM',
 								name: 'daysLeft',
+								viewerFormatter: formatDaysValue,
 							},
 							// json?.isDelayed && {
 							// 	label: 'Is Delayed',
@@ -180,6 +229,7 @@ export default function PmCalcDebugViewer(props) {
 							json?.pmSchedule?.interval_meter && {
 								label: 'Interval Meter',
 								name: 'pmSchedule.interval_meter',
+								viewerFormatter: formatMeterValue,
 							},
 							{
 								label: 'Mode',
@@ -196,14 +246,17 @@ export default function PmCalcDebugViewer(props) {
 							{
 								label: 'In Service Date',
 								name: 'inServiceDate',
+								viewerFormatter: formatDateValue,
 							},
 							{
 								label: 'Latest Meter Reading',
 								name: 'latestMeterReading',
+								viewerFormatter: formatMeterValue,
 							},
 							{
 								label: 'Avg Daily Meter',
 								name: 'avgDailyMeter',
+								viewerFormatter: formatMeterValue,
 							},
 						]
 					},
