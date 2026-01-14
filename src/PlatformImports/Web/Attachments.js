@@ -819,6 +819,7 @@ function AttachmentsElement(props) {
 	}
 
 	if (self) {
+		self.repository = Attachments;
 		self.getFiles = getFiles;
 		self.setFiles = setFiles;
 		self.clearFiles = clearFiles;
