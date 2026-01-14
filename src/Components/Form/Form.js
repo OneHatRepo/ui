@@ -522,6 +522,8 @@ function Form(props) {
 			}
 			let {
 					type,
+					editorType: itemEditorType,
+					viewerType,
 					title,
 					name,
 					isEditable = true,
@@ -560,12 +562,18 @@ function Form(props) {
 			}
 			if (!type) {
 				if (isEditable) {
-					const {
-							type: t,
-							...p
-						} = propertyDef?.editorType;
-					type = t;
-					editorTypeProps = p;
+					if (itemEditorType) {
+						type = itemEditorType;
+					} else {
+						const {
+								type: t,
+								...p
+							} = propertyDef?.editorType;
+						type = t;
+						editorTypeProps = p;
+					}
+				} else if (viewerType) {
+					type = viewerType;
 				} else if (propertyDef?.viewerType) {
 					const {
 							type: t,
