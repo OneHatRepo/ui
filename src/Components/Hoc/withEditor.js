@@ -89,6 +89,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			editorModeRef = useRef(initialEditorMode),
 			isIgnoreNextSelectionChangeRef = useRef(false),
 			isEditorShownRef = useRef(false),
+			defaultValuesRef = useRef(defaultValues),
 			canEditorBeInEditModeRef = useRef(true), // whether the editor is allowed to be in edit mode based on canRecordBeEdited
 			[currentRecord, setCurrentRecord] = useState(null),
 			[isAdding, setIsAdding] = useState(false),
@@ -110,6 +111,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			},
 			getIsEditorShown = () => {
 				return isEditorShownRef.current;
+			},
+			getDefaultValues = () => {
+				return defaultValuesRef.current;
+			},
+			setDefaultValues = (vals) => {
+				defaultValuesRef.current = vals;
 			},
 			setCanEditorBeInEditMode = (bool) => {
 				canEditorBeInEditModeRef.current = bool;
@@ -164,6 +171,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
 			},
+			setNewEntityDisplayValue = (val) => {
+				newEntityDisplayValueRef.current = val;
+			},
 			doAdd = async (e, values) => {
 				if (canUser && !canUser(ADD)) {
 					showPermissionsError(ADD);
@@ -191,8 +201,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					// 2. Use the repository's default values (defined on each property as 'defaultValue'), or
 					// 3. Individually override the repository's default values with submitted 'defaultValues' (given as a prop to this HOC)
 					let defaultValuesToUse = Repository.getSchema().getDefaultValues();
-					if (defaultValues) {
-						_.merge(defaultValuesToUse, defaultValues);
+					if (getDefaultValues()) {
+						_.merge(defaultValuesToUse, getDefaultValues());
 					}
 					addValues = {...defaultValuesToUse};
 				}
@@ -738,7 +748,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			self.duplicate = doDuplicate;
 			self.setIsEditorShown = setIsEditorShown;
 		}
-		newEntityDisplayValueRef.current = newEntityDisplayValue;
+		setNewEntityDisplayValue(newEntityDisplayValue);
+		setDefaultValues(defaultValues);
 
 		if (lastSelection !== selection) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
