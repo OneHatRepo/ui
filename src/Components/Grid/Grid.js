@@ -1802,14 +1802,11 @@ function GridComponent(props) {
 							)}
 						>
 							{grid}
-							{/* Loading overlay during measurement phases to prevent visual flashing */}
-							{autoAdjustPageSizeToHeight && 
-							(getMeasurementPhase() === PHASES__INITIAL || getMeasurementPhase() === PHASES__MEASURING) && 
-							entities?.length > 0 && (
+							{/* Load overlay during initial phase to prevent visual flashing */
+							autoAdjustPageSizeToHeight && getMeasurementPhase() === PHASES__INITIAL && 
 								<VStack className="absolute inset-0 z-10 bg-white">
 									<Loading />
-								</VStack>
-							)}
+								</VStack>}
 						</VStack>
 
 						{listFooterComponent}
