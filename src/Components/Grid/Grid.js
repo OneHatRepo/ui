@@ -485,33 +485,41 @@ function GridComponent(props) {
 									}
 									break;
 								case DOUBLE_CLICK:
-									if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
-										onRowClick(item, e); // so reselect it
-									}
-
-									if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
-										if (onView) {
-											if (canUser && !canUser(VIEW)) { // permissions
-												return;
-											}
-											onView(!props.isEditorViewOnly);
+									if (editorType === EDITOR_TYPE__SIDE) {
+										// For side-editors, a double-click just acts like a single click
+										if (!getIsEditorShown()) {
+											onRowClick(item, e); // sets selection
 										}
 									} else {
-										let canDoEdit = false,
-											canDoView = false;
-										if (onEdit && canUser && canUser(EDIT) && (!canRecordBeEdited || canRecordBeEdited(selection)) && !props.disableEdit && !isEditorViewOnly) {
-											canDoEdit = true;
-										} else
-										if (onView && canUser && canUser(VIEW) && !props.disableView) {
-											canDoView = true;
+										if (!isSelected) { // If a row was already selected when double-clicked, the first click will deselect it,
+											onRowClick(item, e); // so reselect it
+										}
+										if (UiGlobals.doubleClickingGridRowOpensEditorInViewMode) { // global setting
+											if (onView) {
+												if (canUser && !canUser(VIEW)) { // permissions
+													return;
+												}
+												onView(!props.isEditorViewOnly);
+											}
+										} else {
+											let canDoEdit = false,
+												canDoView = false;
+											if (onEdit && canUser && canUser(EDIT) && (!canRecordBeEdited || canRecordBeEdited(selection)) && !props.disableEdit && !isEditorViewOnly) {
+												canDoEdit = true;
+											} else
+											if (onView && canUser && canUser(VIEW) && !props.disableView) {
+												canDoView = true;
+											}
+
+											if (canDoEdit) {
+												onEdit();
+											} else if (canDoView) {
+												onView();
+											}
 										}
 
-										if (canDoEdit) {
-											onEdit();
-										} else if (canDoView) {
-											onView();
-										}
 									}
+
 									break;
 								case TRIPLE_CLICK:
 									break;
