@@ -7,7 +7,7 @@ export default function TabPanel(props) {
 			_panel = {},
 			_tab = {},
 		} = props;
-	return <Panel className="w-full flex" {..._panel}>
+	return <Panel {...props} className="w-full flex" {..._panel}>
 				<TabBar {...props} {..._tab} />
 			</Panel>;
 }

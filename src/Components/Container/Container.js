@@ -118,77 +118,81 @@ function Container(props) {
 		westWidthRef = useRef(westInitialWidth),
 		[isReady, setIsReady] = useState(false),
 		[isComponentsDisabled, setIsComponentsDisabled] = useState(false),
-		[localNorthIsCollapsed, setLocalNorthIsCollapsed] = useState(northInitialIsCollapsed),
-		[localSouthIsCollapsed, setLocalSouthIsCollapsed] = useState(southInitialIsCollapsed),
-		[localEastIsCollapsed, setLocalEastIsCollapsed] = useState(eastInitialIsCollapsed),
-		[localWestIsCollapsed, setLocalWestIsCollapsed] = useState(westInitialIsCollapsed),
+		localNorthIsCollapsedRef = useRef(northInitialIsCollapsed),
+		localSouthIsCollapsedRef = useRef(southInitialIsCollapsed),
+		localEastIsCollapsedRef = useRef(eastInitialIsCollapsed),
+		localWestIsCollapsedRef = useRef(westInitialIsCollapsed),
 		setNorthIsCollapsed = (bool) => {
 			if (setExternalNorthIsCollapsed) {
 				setExternalNorthIsCollapsed(bool);
 			} else {
-				setLocalNorthIsCollapsed(bool);
+				localNorthIsCollapsedRef.current = bool;
 			}
 
 			if (id) {
 				setSaved(id + '-northIsCollapsed', bool);
 			}
+			forceUpdate();
 		},
 		getNorthIsCollapsed = () => {
 			if (setExternalNorthIsCollapsed) {
 				return northIsCollapsed;
 			}
-			return localNorthIsCollapsed;
+			return localNorthIsCollapsedRef.current;
 		},
 		setSouthIsCollapsed = (bool) => {
 			if (setExternalSouthIsCollapsed) {
 				setExternalSouthIsCollapsed(bool);
 			} else {
-				setLocalSouthIsCollapsed(bool);
+				localSouthIsCollapsedRef.current = bool;
 			}
 
 			if (id) {
 				setSaved(id + '-southIsCollapsed', bool);
 			}
+			forceUpdate();
 		},
 		getSouthIsCollapsed = () => {
 			if (setExternalSouthIsCollapsed) {
 				return southIsCollapsed;
 			}
-			return localSouthIsCollapsed;
+			return localSouthIsCollapsedRef.current;
 		},
 		setEastIsCollapsed = (bool) => {
 			if (setExternalEastIsCollapsed) {
 				setExternalEastIsCollapsed(bool);
 			} else {
-				setLocalEastIsCollapsed(bool);
+				localEastIsCollapsedRef.current = bool;
 			}
 
 			if (id) {
 				setSaved(id + '-eastIsCollapsed', bool);
 			}
+			forceUpdate();
 		},
 		getEastIsCollapsed = () => {
 			if (setExternalEastIsCollapsed) {
 				return eastIsCollapsed;
 			}
-			return localEastIsCollapsed;
+			return localEastIsCollapsedRef.current;
 		},
 		setWestIsCollapsed = (bool) => {
 			if (setExternalWestIsCollapsed) {
 				setExternalWestIsCollapsed(bool);
 			} else {
-				setLocalWestIsCollapsed(bool);
+				localWestIsCollapsedRef.current = bool;
 			}
 
 			if (id) {
 				setSaved(id + '-westIsCollapsed', bool);
 			}
+			forceUpdate();
 		},
 		getWestIsCollapsed = () => {
 			if (setExternalWestIsCollapsed) {
 				return westIsCollapsed;
 			}
-			return localWestIsCollapsed;
+			return localWestIsCollapsedRef.current;
 		},
 		setNorthHeight = (height) => {
 			if (!getNorthIsCollapsed()) {
@@ -517,17 +521,17 @@ function Container(props) {
 	}
 	return <VStack className="Container-all w-full flex-1">
 				{northComponent}
-				{!northIsCollapsed && !localNorthIsCollapsed && northSplitter}
+				{!getNorthIsCollapsed() && northSplitter}
 				<HStack className="Container-mid w-full flex-[100]">
 					{westComponent}
-					{!westIsCollapsed && !localWestIsCollapsed && westSplitter}
+					{!getWestIsCollapsed() && westSplitter}
 					<VStack className="Container-center h-full overflow-auto flex-[100]">
 						{centerComponent}
 					</VStack>
-					{!eastIsCollapsed && !localEastIsCollapsed && eastSplitter}
+					{!getEastIsCollapsed() && eastSplitter}
 					{eastComponent}
 				</HStack>
-				{!southIsCollapsed && !localSouthIsCollapsed && southSplitter}
+				{!getSouthIsCollapsed() && southSplitter}
 				{southComponent}
 			</VStack>;
 }
