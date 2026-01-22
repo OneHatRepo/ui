@@ -654,9 +654,23 @@ function TreeComponent(props) {
 				return;
 			}
 
-			// Create datum for the new entity and add it to parent's children
 			const newDatum = buildTreeNodeDatum(entity);
-			parentDatum.children.push(newDatum);
+
+			let isInserted = false;
+			if (entity._originalData?.previousSiblingId) {
+				// Insert datum in the correct position among parent's children
+				const siblingDatum = getDatumById(entity._originalData.previousSiblingId);
+				if (siblingDatum) {
+					const siblingIndex = parentDatum.children.findIndex(child => child.item.id === siblingDatum.item.id);
+					parentDatum.children.splice(siblingIndex + 1, 0, newDatum);
+					isInserted = true;
+				}
+			}
+			if (!isInserted) {
+				// Insert datum at end of parent's children
+				parentDatum.children.push(newDatum);
+			}
+
 			
 			// Update parent to show it has children and expand if needed
 			if (!entity.parent.hasChildren) {
