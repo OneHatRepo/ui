@@ -38,6 +38,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				disableDuplicate = false,
 				disableView = false,
 				useRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
+				getDuplicateValues, // fn(entity) to get default values for duplication
 				getRecordIdentifier = (selection) => {
 					if (selection.length > 1) {
 						return 'records?';
@@ -468,7 +469,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					const
 						entity = selection[0],
 						idProperty = Repository.getSchema().model.idProperty,
-						rawValues = _.omit(entity.getOriginalData(), idProperty);
+						rawValues = getDuplicateValues ? getDuplicateValues(entity) : _.omit(entity.getOriginalData(), idProperty);
 					rawValues.id = null; // unset the id of the duplicate
 
 					setIsWaitModalShown(true);
