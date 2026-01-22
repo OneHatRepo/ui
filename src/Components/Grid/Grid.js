@@ -1579,10 +1579,19 @@ function GridComponent(props) {
 		const
 			currentLength = entities?.length || 0,
 			wasEmpty = previousEntitiesLength.current === 0,
-			isNowPopulated = currentLength > 0;
+			isNowPopulated = currentLength > 0,
+			hasPhantomRecord = entities?.some(entity => entity?.isPhantom);
+			
+		// NOTE: The Repository was reloading when a phantom record was added,
+		// and this broke the Editor because selection was being reset to zero.
+		// This is because adjustPageSizeToHeight calls setPageSize,
+		// which calls _onChangePagination, which calls reload.
+		// The reloaded repository doesn’t get the new phantom record,
+		// so it’s not found, and selection goes to zero.
+		// So we skip this adjustment when there is a phantom record.
 		
 		// Only remeasure the FIRST time rows appear after being empty
-		if (autoAdjustPageSizeToHeight && wasEmpty && isNowPopulated && !hasRemeasuredAfterRowsAppeared.current) {
+		if (!hasPhantomRecord && autoAdjustPageSizeToHeight && wasEmpty && isNowPopulated && !hasRemeasuredAfterRowsAppeared.current) {
 			// Rows just appeared for the first time - restart measurement cycle to use actual heights
 			if (DEBUG) {
 				console.log(`${getMeasurementPhase()}, useEffect 5 - rows appeared for first time, restarting measurement cycle`);
@@ -1619,13 +1628,24 @@ function GridComponent(props) {
 		// first time through, render a placeholder so we can get container dimensions
 		return <VStackNative
 					onLayout={(e) => {
-						if (DEBUG) {
-							console.log(`${getMeasurementPhase()}, placeholder onLayout, call adjustPageSizeToHeight()`);
-						}
-						const containerHeight = e.nativeEvent.layout.height;
-						adjustPageSizeToHeight(containerHeight);
-						if (DEBUG) {
-							console.log(`${getMeasurementPhase()}, placeholder onLayout, call setIsInited(true)`);
+						const hasPhantomRecord = entities?.some(entity => entity?.isPhantom);
+						if (!hasPhantomRecord) {
+							// NOTE: The Repository was reloading when a phantom record was added,
+							// and this broke the Editor because selection was being reset to zero.
+							// This is because adjustPageSizeToHeight calls setPageSize,
+							// which calls _onChangePagination, which calls reload.
+							// The reloaded repository doesn’t get the new phantom record,
+							// so it’s not found, and selection goes to zero.
+							// So we skip this adjustment when there is a phantom record.
+
+							if (DEBUG) {
+								console.log(`${getMeasurementPhase()}, placeholder onLayout, call adjustPageSizeToHeight()`);
+							}
+							const containerHeight = e.nativeEvent.layout.height;
+							adjustPageSizeToHeight(containerHeight);
+							if (DEBUG) {
+								console.log(`${getMeasurementPhase()}, placeholder onLayout, call setIsInited(true)`);
+							}
 						}
 						setIsInited(true);
 					}}
