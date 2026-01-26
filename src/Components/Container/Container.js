@@ -1,4 +1,4 @@
-import { cloneElement, useState, useEffect, useRef, } from 'react';
+import { cloneElement, useState, useEffect, useRef, useCallback, } from 'react';
 import {
 	BoxNative,
 	HStack,
@@ -16,6 +16,7 @@ import {
 } from '../../Constants/UiModes.js';
 import withComponent from '../Hoc/withComponent.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
 import Splitter from './Splitter.js';
@@ -106,6 +107,8 @@ function Container(props) {
 		} = props,
 		id = props.id || props.self?.path,
 		isWeb = CURRENT_MODE === UI_MODE_WEB,
+		useWindowSize = getComponentFromType('useWindowSize'),
+		windowSize = useWindowSize(),
 		forceUpdate = useForceUpdate(),
 		centerRef = useRef(null),
 		northRef = useRef(null),
@@ -122,6 +125,36 @@ function Container(props) {
 		localSouthIsCollapsedRef = useRef(southInitialIsCollapsed),
 		localEastIsCollapsedRef = useRef(eastInitialIsCollapsed),
 		localWestIsCollapsedRef = useRef(westInitialIsCollapsed),
+		onLayout = async (e) => {
+			console.log('Container onLayout', e.nativeEvent.layout.width);
+			if (id) {
+				// save prevScreenSize if changed
+				const
+					height = parseFloat(e.nativeEvent.layout.height),
+					width = parseFloat(e.nativeEvent.layout.width),
+					key = id + '-prevScreenSize',
+					prevScreenSize = await getSaved(key);
+				if (!prevScreenSize || prevScreenSize.width !== width || prevScreenSize.height !== height) {
+					await setSaved(key, {
+						height,
+						width,
+					});
+
+					// reset all sizes to null, so they recalculate
+					setNorthHeight(null);
+					setSouthHeight(null);
+					setEastWidth(null);
+					setWestWidth(null);
+					forceUpdate();
+				}
+			}
+		},
+		debouncedOnLayout = useCallback(
+			_.debounce((e) => {
+				onLayout(e);
+			}, 2000), // delay is signficant, as all we're trying to do is catch screen size changes
+			[]
+		),
 		setNorthIsCollapsed = (bool) => {
 			if (setExternalNorthIsCollapsed) {
 				setExternalNorthIsCollapsed(bool);
@@ -293,53 +326,72 @@ function Container(props) {
 
 			if (id) {
 				let key, val;
-				key = id + '-northIsCollapsed';
+
+				// does screensize from previous render exist?
+				key = id + '-prevScreenSize';
 				val = await getSaved(key);
+				let prevScreenSize = null;
 				if (!_.isNil(val)) {
-					setNorthIsCollapsed(val);
+					prevScreenSize = val;
+				}
+				const currentScreenSize = {
+					width: windowSize?.width ?? null,
+					height: windowSize?.height ?? null,
+				};
+				if (!prevScreenSize || (prevScreenSize.width === currentScreenSize.width && prevScreenSize.height === currentScreenSize.height)) {
+				
+					// only load these saved settings if the screen size is the same as when they were saved
+					key = id + '-northIsCollapsed';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setNorthIsCollapsed(val);
+					}
+
+					key = id + '-southIsCollapsed';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setSouthIsCollapsed(val);
+					}
+
+					key = id + '-eastIsCollapsed';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setEastIsCollapsed(val);
+					}
+
+					key = id + '-westIsCollapsed';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setWestIsCollapsed(val);
+					}
+
+					key = id + '-northHeight';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setNorthHeight(val);
+					}
+
+					key = id + '-southHeight';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setSouthHeight(val);
+					}
+
+					key = id + '-eastWidth';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setEastWidth(val);
+					}
+
+					key = id + '-westWidth';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setWestWidth(val);
+					}
+				
 				}
 
-				key = id + '-southIsCollapsed';
-				val = await getSaved(key);
-				if (!_.isNil(val)) {
-					setSouthIsCollapsed(val);
-				}
 
-				key = id + '-eastIsCollapsed';
-				val = await getSaved(key);
-				if (!_.isNil(val)) {
-					setEastIsCollapsed(val);
-				}
-
-				key = id + '-westIsCollapsed';
-				val = await getSaved(key);
-				if (!_.isNil(val)) {
-					setWestIsCollapsed(val);
-				}
-
-				key = id + '-northHeight';
-				val = await getSaved(key);
-				if (!_.isNil(val)) {
-					setNorthHeight(val);
-				}
-
-				key = id + '-southHeight';
-				val = await getSaved(key);
-				if (!_.isNil(val)) {
-					setSouthHeight(val);
-				}
-
-				key = id + '-eastWidth';
-				val = await getSaved(key);
-				if (!_.isNil(val)) {
-					setEastWidth(val);
-				}
-
-				key = id + '-westWidth';
-				val = await getSaved(key);
-				if (!_.isNil(val)) {
-					setWestWidth(val);
-				}
 			}
 
 			if (!isReady) {
@@ -366,6 +418,7 @@ function Container(props) {
 
 	componentProps._panel.isCollapsible = false;
 	componentProps._panel.isDisabled = isDisabled || isComponentsDisabled;
+	componentProps.onLayout = debouncedOnLayout;
 	centerComponent = cloneElement(center, componentProps);
 	if (north) {
 		componentProps = { _panel: { ...north.props?._panel }, };
