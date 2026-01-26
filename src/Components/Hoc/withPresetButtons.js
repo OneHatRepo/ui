@@ -339,6 +339,11 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 					case DUPLICATE:
 						key = 'duplicateBtn';
 						text = 'Duplicate';
+						if (model) {
+							let inflected = Inflector.singularize(model); // can only add one at a time
+							inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
+							text += ' ' + inflected;
+						}
 						handler = (parent, e) => {
 							onDuplicate();
 						};

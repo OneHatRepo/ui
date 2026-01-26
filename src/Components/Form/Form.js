@@ -1398,6 +1398,7 @@ function Form(props) {
 						onPress={() => doReset()}
 						icon={Rotate}
 						isDisabled={!formState.isDirty}
+						tooltip="Reset Form"
 					/>}
 
 				{showCancelBtn &&
