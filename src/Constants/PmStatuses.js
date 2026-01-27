@@ -1,7 +1,16 @@
 export const PM_STATUSES__OK = 1;
+export const PM_STATUSES__OK_TEXT = 'OK';
 export const PM_STATUSES__PM_DUE = 2;
+export const PM_STATUSES__PM_DUE_TEXT = 'PM Due';
 export const PM_STATUSES__DELAYED = 3;
+export const PM_STATUSES__DELAYED_TEXT = 'Delayed';
 export const PM_STATUSES__WILL_CALL = 4;
+export const PM_STATUSES__WILL_CALL_TEXT = 'Will Call';
 export const PM_STATUSES__SCHEDULED = 5;
+export const PM_STATUSES__SCHEDULED_TEXT = 'Scheduled';
 export const PM_STATUSES__OVERDUE = 6;
+export const PM_STATUSES__OVERDUE_TEXT = 'Overdue';
 export const PM_STATUSES__COMPLETED = 7;
+export const PM_STATUSES__COMPLETED_TEXT = 'Completed';
+export const PM_STATUSES__DISABLED = 8;
+export const PM_STATUSES__DISABLED_TEXT = 'Disabled';
