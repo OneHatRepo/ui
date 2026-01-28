@@ -110,6 +110,7 @@ function TreeComponent(props) {
 			showHeaderToolbar = true,
 			showHovers = true,
 			showSelectHandle = true,
+			nodeLongPressDelayMs,
 			isNodeSelectable = true,
 			isNodeHoverable = true,
 			allowToggleSelection = true, // i.e. single click with no shift key toggles the selection of the node clicked on
@@ -219,6 +220,7 @@ function TreeComponent(props) {
 		[highlitedDatum, setHighlitedDatum] = useState(null),
 		[treeSearchValue, setTreeSearchValue] = useState(''),
 		showNodeHandle = showSelectHandle || areNodesDragSource,
+		nodeLongPressDelay = nodeLongPressDelayMs ?? ((areNodesDragSource || canNodesMoveInternally) ? 800 : undefined),
 		// state getters & setters
 		getTreeNodeData = () => {
 			return treeNodeData.current;
@@ -1092,6 +1094,7 @@ function TreeComponent(props) {
 			return <Pressable
 						{...testProps((Repository ? Repository.schema.name : 'TreeNode') + '-' + item?.id)}
 						key={item.hash}
+						delayLongPress={nodeLongPressDelay}
 						onPress={(e) => {
 							if (e.preventDefault && e.cancelable) {
 								e.preventDefault();

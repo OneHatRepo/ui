@@ -208,6 +208,7 @@ function GridComponent(props) {
 			onRowDrop,
 			onDragStart,
 			onDragEnd,
+			rowLongPressDelayMs,
 
 			// withComponent
 			self,
@@ -300,6 +301,7 @@ function GridComponent(props) {
 		[localColumnsConfig, setLocalColumnsConfigRaw] = useState([]),
 		[isReorderMode, setIsReorderMode] = useState(false),
 		showRowHandle = showSelectHandle || areRowsDragSource || (canRowsReorder && isReorderMode),
+		rowLongPressDelay = rowLongPressDelayMs ?? ((areRowsDragSource || canRowsReorder) ? 800 : undefined),
 		[lastMeasuredContainerHeight, setLastMeasuredContainerHeight] = useState(0),
 		getMeasurementPhase = () => {
 			return measurementPhaseRaw.current;
@@ -469,6 +471,7 @@ function GridComponent(props) {
 				<Pressable
 					dataSet={{ ix: index }}
 					{...testProps(getRowTestId ? getRowTestId(row) : ((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id))}
+					delayLongPress={rowLongPressDelay}
 					onPress={(e) => {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
