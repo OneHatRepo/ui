@@ -1212,7 +1212,7 @@ function AttachmentsElement(props) {
 								onChangeSelection: (selection) => {
 									setTreeSelection(selection);
 								},
-								additionalToolbarButtons: canCrud ? [
+								additionalToolbarButtons: canCrud && treeSelection[0] && !treeSelection[0].isDestroyed ? [
 									{
 										key: 'Plus',
 										text: 'New Directory',
