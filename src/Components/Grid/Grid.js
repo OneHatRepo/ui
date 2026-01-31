@@ -476,7 +476,7 @@ function GridComponent(props) {
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
 						}
-						if (isHeaderRow || isReorderMode) {
+						if (isHeaderRow) {
 							return
 						}
 						if (CURRENT_MODE === UI_MODE_WEB) {
@@ -488,6 +488,9 @@ function GridComponent(props) {
 									}
 									break;
 								case DOUBLE_CLICK:
+									if (isReorderMode) {
+										return; // don't allow double-clicks while in reorder mode
+									}
 									if (editorType === EDITOR_TYPE__SIDE) {
 										// For side-editors, a double-click just acts like a single click
 										if (!getIsEditorShown()) {
