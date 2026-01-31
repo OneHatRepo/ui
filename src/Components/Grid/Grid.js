@@ -935,26 +935,58 @@ function GridComponent(props) {
 		onRowReorderEnd = (item, monitor) => {
 			const
 				{ ix: dropIx, useBottom, marker, rows, dragIx } = cachedDragElements.current,
-				shouldMove = dropIx !== dragIx;
-			if (shouldMove && dropIx !== -1) {
-				// Update the row with the new ix
-				let dragRecord,
-					dropRecord;
+				selectionList = item?.getSelection ? item.getSelection() : (dragSelectionRef.current || selection || []);
+			if (dropIx === -1) {
+				marker.remove();
+				cachedDragElements.current = null;
+				return;
+			}
+
+			const
+				// normalize the current selection to ids
+				itemsList = Repository ? entities : data,
+				dragItem = Repository ? Repository.getByIx(dragIx) : itemsList?.[dragIx],
+				selectionIds = _.compact(_.map(selectionList, (selectedItem) => {
+					if (!selectedItem) {
+						return null;
+					}
+					if (_.isObject(selectedItem)) {
+						return Repository ? selectedItem.id : selectedItem[idIx];
+					}
+					return selectedItem;
+				})),
+				// decide if we're moving the selected items or just the dragged item
+				dragItemId = dragItem ? (Repository ? dragItem.id : dragItem[idIx]) : null,
+				useSelection = !!(dragItemId && selectionIds.includes(dragItemId)),
+				dragItems = useSelection ? selectionIds : (dragItemId ? [dragItemId] : []),
+				// get the indices of the selected items
+				selectedIndicesRaw = Repository
+					? _.map(dragItems, (id) => itemsList?.findIndex((item) => item?.id === id))
+					: _.map(dragItems, (id) => itemsList?.findIndex((item) => item?.[idIx] === id)),
+				selectedIndices = _.uniq(_.filter(selectedIndicesRaw, (ix) => ix > -1)).sort((a, b) => a - b),
+				selectedIndicesSet = new Set(selectedIndices),
+				insertionIndexOriginal = useBottom ? dropIx + 1 : dropIx,
+				// get the drop record
+				dropRecord = Repository ? Repository.getByIx(dropIx) : itemsList?.[dropIx],
+				dropRecordId = dropRecord ? (Repository ? dropRecord.id : dropRecord[idIx]) : null,
+				// decide if we should move
+				shouldMove = !dropRecordId || !selectionIds.includes(dropRecordId);
+
+			if (shouldMove && selectedIndices.length) {
 				if (Repository) {
 					if (!Repository.isDestroyed) {
-						dragRecord = Repository.getByIx(dragIx);
-						dropRecord = Repository.getByIx(dropIx);
-						if (dropRecord) {
-							Repository.reorder(dragRecord, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
+						if (dropRecord && dragItems.length) {
+							Repository.reorder(dragItems, dropRecord, useBottom ? DROP_POSITION_AFTER : DROP_POSITION_BEFORE);
 						}
 					}
-				} else {
-					function arrayMove(arr, fromIndex, toIndex) {
-						var element = arr[fromIndex];
-						arr.splice(fromIndex, 1);
-						arr.splice(toIndex, 0, element);
-					}
-					arrayMove(data, compensatedDragIx, finalDropIx);
+				} else if (itemsList && itemsList.length) {
+					const
+						removedBefore = _.filter(selectedIndices, (ix) => ix < insertionIndexOriginal).length,
+						insertionIndex = insertionIndexOriginal - removedBefore,
+						selectedItems = _.map(selectedIndices, (ix) => itemsList[ix]),
+						remainingItems = _.filter(itemsList, (entry, ix) => !selectedIndicesSet.has(ix));
+					remainingItems.splice(insertionIndex, 0, ...selectedItems);
+					itemsList.splice(0, itemsList.length, ...remainingItems);
 				}
 			}
 
