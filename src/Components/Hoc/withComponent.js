@@ -52,6 +52,21 @@ export default function withComponent(WrappedComponent) {
 				parent,
 				reference,
 				path: reference ? (parent?.path || '' ) + '/' + reference : null,
+				waitForChild: (childReference, timeout = 5000) => {
+					return new Promise((resolve, reject) => {
+						const start = Date.now();
+						const checkForChild = () => {
+							if (typeof childrenRef.current[childReference] !== 'undefined') {
+								resolve(childrenRef.current[childReference]);
+							} else if (Date.now() - start > timeout) {
+								reject(new Error(`Timeout waiting for child: ${childReference}`));
+							} else {
+								setTimeout(checkForChild, 50);
+							}
+						};
+						checkForChild();
+					});
+				},
 				hasChild: (childRef) => {
 					const {
 							reference,
