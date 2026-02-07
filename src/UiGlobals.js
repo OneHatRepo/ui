@@ -13,6 +13,7 @@ const Globals = {
 	doubleClickingGridRowOpensEditorInViewMode: false,
 	disableSavedColumnsConfig: true,
 	autoSubmitDelay: 500,
+	// gridAreRowsDragFromHandleOnly: true,
 	// stayInEditModeOnSelectionChange: true,
 	// isSideEditorAlwaysEditMode: true,
 

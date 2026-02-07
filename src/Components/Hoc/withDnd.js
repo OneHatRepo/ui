@@ -222,15 +222,18 @@ export function GlobalDragProxy() {
 	const {
 		isDragging,
 		item,
-		currentOffset,
+		clientOffset,
+		sourceClientOffset,
 	} = useDragLayer((monitor) => {
 		return {
 			isDragging: monitor.isDragging(),
 			item: monitor.getItem(),
-			currentOffset: monitor.getSourceClientOffset(),
+			clientOffset: monitor.getClientOffset(),
+			sourceClientOffset: monitor.getSourceClientOffset(),
 		};
 	});
 
+	const currentOffset = clientOffset || sourceClientOffset;
 	if (!isDragging || !currentOffset || CURRENT_MODE !== UI_MODE_WEB) { // Native uses a native drag layer, so we don't need to render a custom proxy
 		return null;
 	}

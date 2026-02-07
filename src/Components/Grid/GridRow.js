@@ -53,6 +53,7 @@ const GridRow = forwardRef((props, ref) => {
 			isInlineEditorShown,
 			isDraggable = false, // withDraggable
 			isDragSource = false, // withDnd
+			isDragFromHandleOnly = true,
 			isOver = false, // drop target
 			canDrop,
 			draggedItem,
@@ -124,7 +125,22 @@ const GridRow = forwardRef((props, ref) => {
 		}
 		const
 			visibleColumns = _.filter(columnsConfig, (config) => !config.isHidden),
-			isOnlyOneVisibleColumn = visibleColumns.length === 1;
+			isOnlyOneVisibleColumn = visibleColumns.length === 1,
+			rowShouldHaveDragRef = !isDragFromHandleOnly && (isDragSource || isDraggable) && !!dragSourceRef;
+		const setRowRef = (node) => {
+			if (typeof ref === 'function') {
+				ref(node);
+			} else if (ref) {
+				ref.current = node;
+			}
+			if (rowShouldHaveDragRef) {
+				if (typeof dragSourceRef === 'function') {
+					dragSourceRef(node);
+				} else if (dragSourceRef) {
+					dragSourceRef.current = node;
+				}
+			}
+		};
 
 		const renderColumns = (item) => {
 			if (_.isArray(columnsConfig)) {
@@ -136,7 +152,7 @@ const GridRow = forwardRef((props, ref) => {
 					const
 						propsToPass = columnProps[key] || {},
 						colStyle = {},
-						whichCursor = showRowHandle ? 'cursor-text' : 'cursor-pointer'; // when using rowSelectHandle, indicate that the row text is selectable, otherwise indicate that the row itself is selectable
+						whichCursor = showRowHandle && isDragFromHandleOnly ? 'cursor-text' : 'cursor-pointer'; // when using rowSelectHandle, indicate that the row text is selectable, otherwise indicate that the row itself is selectable
 					let colClassName = clsx(
 						'GridRow-column',
 						'p-1',
@@ -144,6 +160,7 @@ const GridRow = forwardRef((props, ref) => {
 						'border-r-black-100',
 						'block',
 						areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
+						isDragFromHandleOnly ? null : 'select-none',
 						whichCursor,
 						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
 					);
@@ -395,7 +412,7 @@ const GridRow = forwardRef((props, ref) => {
 		let rowContents = <>
 							{showRowHandle &&
 								<RowHandle
-									ref={dragSourceRef}
+									ref={isDragFromHandleOnly ? dragSourceRef : undefined}
 									isDragSource={isDragSource}
 									isDraggable={isDraggable}
 									canSelect={rowCanSelect}
@@ -448,6 +465,7 @@ const GridRow = forwardRef((props, ref) => {
 		let rowClassName = clsx(
 			'GridRow-HStackNative',
 			'items-center',
+			isDragFromHandleOnly ? null : 'select-none',
 		);
 		if (isOnlyOneVisibleColumn) {
 			rowClassName += ' w-full';
@@ -459,7 +477,7 @@ const GridRow = forwardRef((props, ref) => {
 			rowClassName += ' border-4 border-[#0ff]';
 		}
 		let row = <HStackNative
-						ref={ref}
+						ref={rowShouldHaveDragRef ? setRowRef : ref}
 						{...testProps('Row ' + (isSelected ? 'row-selected' : ''))}
 						{...rowProps}
 						key={hash}
@@ -498,6 +516,10 @@ const GridRow = forwardRef((props, ref) => {
 		showRowHandle,
 		rowCanSelect,
 		rowCanDrag,
+		isDragFromHandleOnly,
+		isDragSource,
+		isDraggable,
+		dragSourceRef,
 	]);
 });
 

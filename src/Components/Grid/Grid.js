@@ -201,6 +201,7 @@ function GridComponent(props) {
 			},
 			dragPreviewOptions, // optional object for drag preview positioning options
 			areRowsDragSource = false,
+			areRowsDragFromHandleOnly,
 			rowDragSourceType,
 			getRowDragSourceItem,
 			areRowsDropTarget = false,
@@ -641,10 +642,23 @@ function GridComponent(props) {
 
 							const userHasPermissionToDrag = (!canUser || canUser(EDIT));
 							if (userHasPermissionToDrag) {
+
+								// Determine whether dragging should only be allowed from a handle, based on global default and grid prop override
+								let dragFromRowHandleOnly = true;
+								if (!_.isNil(UiGlobals.gridAreRowsDragFromHandleOnly)) {
+									// allow global default
+									dragFromRowHandleOnly = UiGlobals.gridAreRowsDragFromHandleOnly;
+								}
+								if (!_.isNil(areRowsDragFromHandleOnly)) {
+									// allow grid props override
+									dragFromRowHandleOnly = areRowsDragFromHandleOnly;
+								}
+								
 								// assign event handlers
 								if (canRowsReorder && isReorderMode) {
 									WhichRow = DragSourceGridRow;
 									rowReorderProps.isDragSource = true;
+									rowReorderProps.isDragFromHandleOnly = dragFromRowHandleOnly;
 									rowReorderProps.dragSourceType = 'row';
 									const dragIx = showHeaders ? index - 1 : index;
 									rowReorderProps.dragSourceItem = {
@@ -656,6 +670,14 @@ function GridComponent(props) {
 											onRowReorderDrag(dragState, dragIx);
 										},
 									};
+									// Add custom drag preview options
+									if (dragPreviewOptions) {
+										rowReorderProps.dragPreviewOptions = dragPreviewOptions;
+									}
+									// Add drag preview rendering
+									rowReorderProps.getDragProxy = getCustomDragProxy ?
+										(dragItem) => getCustomDragProxy(item, getSelection()) :
+										null; // Let GlobalDragProxy handle the default case
 									rowReorderProps.onDragEnd = onRowReorderEnd;
 									rowCanDrag = true;
 								} else {
@@ -664,6 +686,7 @@ function GridComponent(props) {
 										WhichRow = DragSourceGridRow;
 										rowDragProps.isDragSource = true;
 										rowDragProps.dragSourceType = rowDragSourceType;
+										rowDragProps.isDragFromHandleOnly = dragFromRowHandleOnly;
 										if (getRowDragSourceItem) {
 											rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, isInSelection, rowDragSourceType);
 											// Ensure all drag items have a component reference
