@@ -545,10 +545,16 @@ function TagComponent(props) {
 
 function withAdditionalProps(WrappedComponent) {
 	return (props) => {
+		const tooltipTriggerClassName = clsx(
+			'w-full',
+			'flex-1',
+			props.tooltipTriggerClassName,
+		);
 		return <WrappedComponent
 					isValueAlwaysArray={true}
 					isValueAsStringifiedJson={true}
 					{...props}
+					tooltipTriggerClassName={tooltipTriggerClassName}
 				/>;
 	};
 }
