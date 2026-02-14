@@ -38,6 +38,7 @@ const GridRow = forwardRef((props, ref) => {
 			rowProps,
 			hideNavColumn,
 			showRowHandle,
+			isRowTextSelectable,
 			areCellsScrollable,
 			rowCanSelect,
 			rowCanDrag,
@@ -126,6 +127,8 @@ const GridRow = forwardRef((props, ref) => {
 		const
 			visibleColumns = _.filter(columnsConfig, (config) => !config.isHidden),
 			isOnlyOneVisibleColumn = visibleColumns.length === 1,
+			canSelectTextOnRow = isRowTextSelectable === false ? false : isDragFromHandleOnly,
+			shouldUseTextCursor = showRowHandle && canSelectTextOnRow,
 			rowShouldHaveDragRef = !isDragFromHandleOnly && (isDragSource || isDraggable) && !!dragSourceRef;
 		const setRowRef = (node) => {
 			if (typeof ref === 'function') {
@@ -152,7 +155,7 @@ const GridRow = forwardRef((props, ref) => {
 					const
 						propsToPass = columnProps[key] || {},
 						colStyle = {},
-						whichCursor = showRowHandle && isDragFromHandleOnly ? 'cursor-text' : 'cursor-pointer'; // when using rowSelectHandle, indicate that the row text is selectable, otherwise indicate that the row itself is selectable
+						whichCursor = shouldUseTextCursor ? 'cursor-text' : 'cursor-pointer';
 					let colClassName = clsx(
 						'GridRow-column',
 						'p-1',
@@ -160,7 +163,7 @@ const GridRow = forwardRef((props, ref) => {
 						'border-r-black-100',
 						'block',
 						areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
-						isDragFromHandleOnly ? null : 'select-none',
+						canSelectTextOnRow ? null : 'select-none',
 						whichCursor,
 						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
 					);
@@ -465,7 +468,7 @@ const GridRow = forwardRef((props, ref) => {
 		let rowClassName = clsx(
 			'GridRow-HStackNative',
 			'items-center',
-			isDragFromHandleOnly ? null : 'select-none',
+			canSelectTextOnRow ? null : 'select-none',
 		);
 		if (isOnlyOneVisibleColumn) {
 			rowClassName += ' w-full';
@@ -514,6 +517,7 @@ const GridRow = forwardRef((props, ref) => {
 		dragPreviewRef,
 		dropTargetRef,
 		showRowHandle,
+		isRowTextSelectable,
 		rowCanSelect,
 		rowCanDrag,
 		isDragFromHandleOnly,

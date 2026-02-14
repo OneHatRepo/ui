@@ -147,6 +147,7 @@ function GridComponent(props) {
 			showHeaders = true,
 			showHovers = true,
 			showSelectHandle = true,
+			isRowTextSelectable, // if false, user can't select text in rows (e.g. to copy/paste)
 			isRowSelectable = true,
 			isRowHoverable = true,
 			isDisabled = false,
@@ -789,6 +790,7 @@ function GridComponent(props) {
 									areCellsScrollable={areCellsScrollable}
 									showHovers={showHovers}
 									showRowHandle={showRowHandle}
+									isRowTextSelectable={isRowTextSelectable}
 									rowCanSelect={rowCanSelect}
 									rowCanDrag={rowCanDrag}
 									index={index}
