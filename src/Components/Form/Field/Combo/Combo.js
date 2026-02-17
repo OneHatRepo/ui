@@ -100,6 +100,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 			onGridSave, // to hook into when menu saves (ComboEditor only)
 			onGridDelete, // to hook into when menu deletes (ComboEditor only)
 			onSubmit, // when Combo is used in a Tag, call this when the user submits the Combo value (i.e. presses Enter or clicks a row)
+			displayProperty, // override for Repository.schema.model.displayProperty
+			valueProperty, // override for Repository.schema.model.idProperty
 			newEntityDisplayProperty,
 			testID,
 
@@ -242,7 +244,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						displayValue = _.each(value, (id) => {
 							const entity = Repository.getById(id);
 							if (entity) {
-								displayValue.push(entity.displayValue);
+								displayValue.push((displayProperty ? entity?.[displayProperty] : entity?.displayValue) || '');
 							}
 						});
 					}
@@ -272,7 +274,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 								}
 							}
 						}
-						displayValue = entity?.displayValue || '';
+						displayValue = (displayProperty ? entity?.[displayProperty] : entity?.displayValue) || '';
 					}
 				} else {
 					const item = _.find(data, (datum) => datum[idIx] === value);
@@ -318,7 +320,11 @@ export const ComboComponent = forwardRef((props, ref) => {
 
 					let id = null;
 					if (gridSelection.length) {
-						id = Repository ? gridSelection[0].id : gridSelection[0][idIx];
+						if (Repository) {
+							id = valueProperty ? gridSelection[0][valueProperty] : gridSelection[0].id;
+						} else {
+							id = gridSelection[0][idIx];
+						}
 					}
 					if (id !== value) {
 						setValue(id);
@@ -863,7 +869,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 								return;
 							}
 
-							setValue(selection[0] ? selection[0].id : null);
+							setValue(selection[0] ? (valueProperty ? selection[0][valueProperty] : selection[0].id) : null);
 
 						} else {
 
