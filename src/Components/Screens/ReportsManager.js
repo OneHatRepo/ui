@@ -8,44 +8,63 @@ import {
 import clsx from 'clsx';
 import ChartPie from '../Icons/ChartPie.js';
 import ScreenHeader from '../Layout/ScreenHeader.js';
+import TabBar from '../Tab/TabBar.js';
+import _ from 'lodash';
 
 const CONTAINER_THRESHOLD = 1100;
 
 export default function ReportsManager(props) {
 	const {
 			reports = [],
+			reportTabs,
+			initialReportTabIx = 0,
+			id,
+			self,
 			isActive = false,
 		} = props,
 		[containerWidth, setContainerWidth] = useState(),
 		onLayout = (e) => {
 			setContainerWidth(e.nativeEvent.layout.width);
+		},
+		renderReportLayout = (reportsToRender = []) => {
+			if (!containerWidth) {
+				return null;
+			}
+
+			if (containerWidth >= CONTAINER_THRESHOLD) {
+				const
+					reportsPerColumn = Math.ceil(reportsToRender.length / 2),
+					col1Reports = reportsToRender.slice(0, reportsPerColumn),
+					col2Reports = reportsToRender.slice(reportsPerColumn);
+				return <HStack className="gap-3">
+							<VStack className="flex-1">
+								{col1Reports}
+							</VStack>
+							<VStack className="flex-1">
+								{col2Reports}
+							</VStack>
+						</HStack>;
+			}
+
+			return reportsToRender;
 		};
 
 	if (!isActive) {
 		return null;
 	}
 
-	let reportElements = [];
-	if (containerWidth) {
-		if (containerWidth >= CONTAINER_THRESHOLD) {
-			// two column layout
-			const
-				reportsPerColumn = Math.ceil(reports.length / 2),
-				col1Reports = reports.slice(0, reportsPerColumn),
-				col2Reports = reports.slice(reportsPerColumn);
-			reportElements = <HStack className="gap-3">
-								<VStack className="flex-1">
-									{col1Reports}
-								</VStack>
-								<VStack className="flex-1">
-									{col2Reports}
-								</VStack>
-							</HStack>;
-		} else {
-			// one column layout
-			reportElements = reports;
-		}
-	}
+	const
+		hasReportTabs = _.isArray(reportTabs) && reportTabs.length > 0,
+		tabBarId = `${id || self?.path || 'ReportsManager'}-reportTabs`,
+		reportElements = renderReportLayout(reports),
+		tabBarTabs = hasReportTabs ? _.map(reportTabs, (tab, ix) => ({
+			...tab,
+			content: <ScrollView className="flex-1 w-full" key={`reportTabContent-${ix}`}>
+							<VStackNative className="w-full p-4" onLayout={onLayout}>
+								{renderReportLayout(tab.reports || [])}
+							</VStackNative>
+						</ScrollView>,
+		})) : [];
 	
 	return <VStack
 				className="overflow-hidden flex-1 w-full"
@@ -54,10 +73,16 @@ export default function ReportsManager(props) {
 					title="Reports"
 					icon={ChartPie}
 				/>
-				<ScrollView className="flex-1 w-full">
-					<VStackNative className="w-full p-4" onLayout={onLayout}>
-						{containerWidth && reportElements}
-					</VStackNative>
-				</ScrollView>
+				{hasReportTabs ?
+					<TabBar
+						id={tabBarId}
+						initialTabIx={initialReportTabIx}
+						tabs={tabBarTabs}
+					/> :
+					<ScrollView className="flex-1 w-full">
+						<VStackNative className="w-full p-4" onLayout={onLayout}>
+							{containerWidth && reportElements}
+						</VStackNative>
+					</ScrollView>}
 			</VStack>;
 }
