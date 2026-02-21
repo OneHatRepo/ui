@@ -9,6 +9,8 @@ import {
 	SCREEN_MODES__FULL,
 	SCREEN_MODES__SIDE,
 } from '../../Constants/ScreenModes.js'
+import withModal from '../Hoc/withModal.js';
+import CircleQuestion from '../Icons/CircleQuestion';
 import FullWidth from '../Icons/FullWidth';
 import SideBySide from '../Icons/SideBySide';
 import UiGlobals from '../../UiGlobals.js';
@@ -16,18 +18,34 @@ import IconButton from '../Buttons/IconButton';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
-export default function ScreenHeader(props) {
+function ScreenHeader(props) {
 	const {
 			title,
 			icon,
+			info,
+			_info = {},
 			useModeIcons = false,
 			allowSideBySide = false,
 			actualMode,
 			onFullWidth,
 			onSideBySide,
+
+			// withModal
+			showModal,
+			hideModal,
 		} = props,
 		textProps = {},
-		styles = UiGlobals.styles;
+		styles = UiGlobals.styles,
+		onShowInstructions = () => {
+			showModal({
+				title: 'Info',
+				body: info,
+				canClose: true,
+				onCancel: hideModal,
+
+				..._info,
+			});
+		};
 	if (styles.MANAGER_SCREEN_TITLE) {
 		textProps.style = {
 			fontFamily: styles.MANAGER_SCREEN_TITLE,
@@ -70,5 +88,19 @@ export default function ScreenHeader(props) {
 							tooltip="To side editor"
 						/>
 					</>}
+				{info && 
+					<IconButton
+						{...testProps('infoBtn')}
+						className="ml-5"
+						icon={CircleQuestion}
+						_icon={{
+							size: 'xl',
+							className: 'text-black',
+						}}
+						onPress={onShowInstructions}
+						tooltip="Show info"
+					/>}
 			</HStack>;
 }
+
+export default withModal(ScreenHeader);

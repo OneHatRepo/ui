@@ -18,6 +18,8 @@ function ManagerScreen(props) {
 	const {
 			title,
 			icon,
+			info,
+			_info,
 			sideModeComponent,
 			fullModeComponent,
 			onChangeMode,
@@ -88,6 +90,7 @@ function ManagerScreen(props) {
 				<ScreenHeader
 					title={title}
 					icon={icon}
+					info={info}
 					useModeIcons={true}
 					actualMode={actualMode}
 					allowSideBySide={allowSideBySide}
