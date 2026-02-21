@@ -427,12 +427,14 @@ function GridComponent(props) {
 			}
 		},
 		getFooterToolbarItems = () => {
-			// Process additionalToolbarButtons to evaluate getIsButtonDisabled functions
+			// Process additionalToolbarButtons to evaluate functions
 			const processedButtons = _.map(additionalToolbarButtons, (config) => {
 				const processedConfig = { ...config };
-				// If the button has an getIsButtonDisabled function, evaluate it with current selection
 				if (_.isFunction(config.getIsButtonDisabled)) {
 					processedConfig.isDisabled = config.getIsButtonDisabled(selection);
+				}
+				if (_.isFunction(config.getText)) {
+					processedConfig.text = config.getText(selection);
 				}
 				return processedConfig;
 			});
@@ -1674,6 +1676,14 @@ function GridComponent(props) {
 		previousEntitiesLength.current = currentLength;
 	}, [entities?.length, autoAdjustPageSizeToHeight]);
 
+	// Memoize footer toolbar items to avoid unnecessary re-renders, but only if they don't have dynamic properties
+	const
+		hasDynamicFooterToolbarItems = useMemo(() => _.some(additionalToolbarButtons, (config) => {
+			return _.isFunction(config.getIsButtonDisabled) || _.isFunction(config.getText);
+		}), [additionalToolbarButtons]),
+		memoizedFooterToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isReorderMode]),
+		footerToolbarItemComponents = hasDynamicFooterToolbarItems ? getFooterToolbarItems() : memoizedFooterToolbarItemComponents;
+
 	if (canUser && !canUser('view')) {
 		return <Unauthorized />;
 	}
@@ -1684,8 +1694,6 @@ function GridComponent(props) {
 	}
 
 	isAddingRaw.current = isAdding;
-
-	const footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, isReorderMode]);
 
 	if (!isInited) {
 		// first time through, render a placeholder so we can get container dimensions

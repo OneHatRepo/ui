@@ -1068,12 +1068,14 @@ function TreeComponent(props) {
 			return items;
 		},
 		getFooterToolbarItems = () => {
-			// Process additionalToolbarButtons to evaluate getIsButtonDisabled functions
+			// Process additionalToolbarButtons to evaluate functions
 			const processedButtons = _.map(additionalToolbarButtons, (config) => {
 				const processedConfig = { ...config };
-				// If the button has an getIsButtonDisabled function, evaluate it with current selection
 				if (_.isFunction(config.getIsButtonDisabled)) {
 					processedConfig.isDisabled = config.getIsButtonDisabled(selection);
+				}
+				if (_.isFunction(config.getText)) {
+					processedConfig.text = config.getText(selection);
 				}
 				return processedConfig;
 			});
@@ -1483,6 +1485,16 @@ function TreeComponent(props) {
 		}
 	}, [selectorId, selectorSelected]);
 
+	const
+		hasDynamicFooterToolbarItems = useMemo(() => _.some(additionalToolbarButtons, (config) => {
+			return _.isFunction(config.getIsButtonDisabled) || _.isFunction(config.getText);
+		}), [additionalToolbarButtons]),
+		memoizedFooterToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, getTreeNodeData()]),
+		headerToolbarItemComponents = showHeaderToolbar ? useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, getTreeNodeData()]) : null,
+		footerToolbarItemComponents = hasDynamicFooterToolbarItems
+			? getFooterToolbarItems()
+			: memoizedFooterToolbarItemComponents;
+
 	if (canUser && !canUser('view')) {
 		return <CenterBox>
 					<Unauthorized />
@@ -1510,9 +1522,6 @@ function TreeComponent(props) {
 		self.forceUpdate = forceUpdate;
 	}
 	
-	const
-		headerToolbarItemComponents = showHeaderToolbar ? useMemo(() => getHeaderToolbarItems(), [Repository?.hash, treeSearchValue, getTreeNodeData()]) : null,
-		footerToolbarItemComponents = useMemo(() => getFooterToolbarItems(), [Repository?.hash, additionalToolbarButtons, getTreeNodeData()]);
 
 	if (!isReady) {
 		return <CenterBox>
