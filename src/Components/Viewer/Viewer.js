@@ -278,39 +278,47 @@ function Viewer(props) {
 					value = record.properties[fkDisplayField].displayValue;
 				}
 			}
+			let element = null,
+				viewerFormatterReturnedReactComponent = false;
 			if (viewerFormatter) {
-				value = viewerFormatter(value, record, self);
+				value = viewerFormatter(value, record, self); // viewerFormatter can return either a primitive value or a React component.
+				if (isValidElement(value)) {
+					// if it's a React component, render it directly
+					element = value;
+					viewerFormatterReturnedReactComponent = true;
+				}
 			}
-
-			let elementClassName = clsx(
-				'Viewer-field',
-				'basis-auto',
-				'grow',
-				'shrink',
-			);
-			const defaultsClassName = defaults.className;
-			if (defaultsClassName) {
-				elementClassName += ' ' + defaultsClassName;
+			if (!viewerFormatterReturnedReactComponent) {
+				let elementClassName = clsx(
+					'Viewer-field',
+					'basis-auto',
+					'grow',
+					'shrink',
+				);
+				const defaultsClassName = defaults.className;
+				if (defaultsClassName) {
+					elementClassName += ' ' + defaultsClassName;
+				}
+				const itemPropsToPassClassName = itemPropsToPass.className;
+				if (itemPropsToPassClassName) {
+					elementClassName += ' ' + itemPropsToPassClassName;
+				}
+				const viewerTypeClassName = viewerTypeProps.className;
+				if (viewerTypeClassName) {
+					elementClassName += ' ' + viewerTypeClassName;
+				}
+				
+				element = <Element
+									{...testProps('field-' + name)}
+									value={value}
+									isEditable={false}
+									parent={self}
+									reference={name}
+									{...itemPropsToPass}
+									{...viewerTypeProps}
+									className={elementClassName}
+								/>;
 			}
-			const itemPropsToPassClassName = itemPropsToPass.className;
-			if (itemPropsToPassClassName) {
-				elementClassName += ' ' + itemPropsToPassClassName;
-			}
-			const viewerTypeClassName = viewerTypeProps.className;
-			if (viewerTypeClassName) {
-				elementClassName += ' ' + viewerTypeClassName;
-			}
-			
-			let element = <Element
-								{...testProps('field-' + name)}
-								value={value}
-								isEditable={false}
-								parent={self}
-								reference={name}
-								{...itemPropsToPass}
-								{...viewerTypeProps}
-								className={elementClassName}
-							/>;
 
 			if (item.additionalViewButtons) {
 				element = <HStack className="Viewer-HStack1 flex-wrap">
