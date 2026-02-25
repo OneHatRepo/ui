@@ -39,7 +39,7 @@ const presetButtons = [
 	DOWNLOAD,
 ];
 
-export default function withPresetButtons(WrappedComponent, isGrid = false) {
+export default function withPresetButtons(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
 		if (props.disablePresetButtons || props.alreadyHasWithPresetButtons) {
@@ -64,7 +64,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 			{
 				// extract and pass down
 				isEditor = false,
-				isTree = false,
+				isTree = false, // from withWindowedEditor or withSideEditor in Tree
 				canDeleteRootNode = false,
 				isSideEditor = false,
 				canEditorViewOnly = false,
@@ -74,10 +74,10 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				disableAdd = !isEditor,
 				disableEdit = !isEditor,
 				disableDelete = !isEditor,
-				disableView = !isGrid,
-				disableCopy = !isGrid,
+				disableView = isTree,
+				disableCopy = isTree,
 				disableDuplicate = !isEditor,
-				disablePrint = !isGrid,
+				disablePrint = isTree,
 				protectedValues, // records with these values cannot be edited or deleted
 				addDisplayMsg,
 				editDisplayMsg,
@@ -434,6 +434,18 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 				}
 			},
 			onUploadDownload = () => {
+				const onUploadDecorator = async () => {
+					if (onUpload) {
+						await onUpload();
+					}
+					if (Repository && !Repository.isDestroyed) {
+						if (Repository.loadRootNodes) {
+							await Repository.loadRootNodes(1);
+						} else {
+							await Repository.reload();
+						}
+					}
+				};
 				showModal({
 					body: <UploadsDownloadsWindow
 								reference="uploadsDownloads"
@@ -442,7 +454,7 @@ export default function withPresetButtons(WrappedComponent, isGrid = false) {
 								columnsConfig={props.columnsConfig}
 								uploadHeaders={uploadHeaders}
 								uploadParams={uploadParams}
-								onUpload={onUpload}
+								onUpload={onUploadDecorator}
 								downloadHeaders={downloadHeaders}
 								downloadParams={downloadParams}
 							/>,
