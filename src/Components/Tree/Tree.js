@@ -401,7 +401,7 @@ function TreeComponent(props) {
 			} else {
 				// closing
 				if (datumContainsSelection(datum)) {
-					if (forceSelectionOnCollapse) {
+					if (forceSelectionOnCollapse || !allowToggleSelection) {
 						// Select the node being collapsed instead of deselecting all
 						setSelection([datum.item]);
 					} else {
