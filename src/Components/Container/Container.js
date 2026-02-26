@@ -126,7 +126,7 @@ function Container(props) {
 		localEastIsCollapsedRef = useRef(eastInitialIsCollapsed),
 		localWestIsCollapsedRef = useRef(westInitialIsCollapsed),
 		onLayout = async (e) => {
-			console.log('Container onLayout', e.nativeEvent.layout.width);
+			// console.log('Container onLayout', e.nativeEvent.layout.width);
 			if (id) {
 				// save prevScreenSize if changed
 				const
