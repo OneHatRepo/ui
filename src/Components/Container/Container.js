@@ -125,16 +125,20 @@ function Container(props) {
 		localSouthIsCollapsedRef = useRef(southInitialIsCollapsed),
 		localEastIsCollapsedRef = useRef(eastInitialIsCollapsed),
 		localWestIsCollapsedRef = useRef(westInitialIsCollapsed),
+		isSplitterDraggingRef = useRef(false),
 		onLayout = async (e) => {
-			// console.log('Container onLayout', e.nativeEvent.layout.width);
+			if (isSplitterDraggingRef.current) {
+				return;
+			}
 			if (id) {
 				// save prevScreenSize if changed
 				const
-					height = parseFloat(e.nativeEvent.layout.height),
-					width = parseFloat(e.nativeEvent.layout.width),
+					height = windowSize?.height ?? parseFloat(e.nativeEvent.layout.height),
+					width = windowSize?.width ?? parseFloat(e.nativeEvent.layout.width),
 					key = id + '-prevScreenSize',
 					prevScreenSize = await getSaved(key);
-				if (!prevScreenSize || prevScreenSize.width !== width || prevScreenSize.height !== height) {
+				const hasChanged = !prevScreenSize || Math.abs((prevScreenSize.width ?? 0) - width) > 1 || Math.abs((prevScreenSize.height ?? 0) - height) > 1;
+				if (hasChanged) {
 					await setSaved(key, {
 						height,
 						width,
@@ -300,10 +304,12 @@ function Container(props) {
 			}
 		},
 		onSplitterDragStart = () => {
+			isSplitterDraggingRef.current = true;
 			setIsComponentsDisabled(true);
 		},
 		onSplitterDragStop = (delta, which) => {
 			setIsComponentsDisabled(false);
+			isSplitterDraggingRef.current = false;
 			switch(which) {
 				case 'north':
 					onNorthResize(delta);
