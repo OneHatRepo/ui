@@ -1,14 +1,21 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
+	Box,
 	HStack,
-	ScrollView,
+	Icon,
 	Pressable,
+	ScrollView,
+	Text,
+	TextNative,
 	VStack,
 	VStackNative,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import Plus from '../Icons/Plus.js';
+import Minus from '../Icons/Minus.js';
 import inArray from '../../Functions/inArray.js';
 import emptyFn from '../../Functions/emptyFn.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 // The Accordion has two modes.
@@ -25,11 +32,61 @@ import _ from 'lodash';
 
 export default function Accordion(props) {
 	const {
+			styles = UiGlobals.styles,
 			sections = [],
 			activeSections = [],
 			setActiveSections = emptyFn,
-			renderHeader = emptyFn,
-			renderContent = emptyFn,
+			renderHeader = (section, ix, isActive) => {
+				return <HStack
+							className={clsx(
+								'Header',
+								'bg-grey-300',
+								'items-center',
+								'justify-start',
+								'py-1',
+								'border-b-grey-400',
+								'border-b-1',
+								styles.PANEL_HEADER_BG,
+							)}
+						>
+							{/* <Text className="text-white flex-1">{section.header}</Text> */}
+							
+							<TextNative
+								numberOfLines={1}
+								ellipsizeMode="head"
+								className={clsx(
+									'Header-TextNative1',
+									'flex-1',
+									'font-bold',
+									styles.PANEL_HEADER_TEXT_CLASSNAME,
+								)}>{section.header}</TextNative>
+							<Icon
+								as={isActive ? Minus : Plus} 
+								className={clsx(
+									'text-black',
+									'mr-2',
+								)}
+							/>
+						</HStack>;
+			},
+			unmountInactiveContent = true,
+			renderContent = (section, ix, isActive, ref) => {
+				if (unmountInactiveContent) {
+					if (!isActive) {
+						return null;
+					}
+					return section.content;
+				}
+
+				// This keeps all content rendered, just hidden (zero height) if it's inActive
+				let className = 'w-full overflow-hidden';
+				if (!isActive) {
+					className += ' h-[0px]';
+				}
+				return <Box className={className}>
+							{section.content}
+						</Box>;
+			},
 			onAnimationEnd = emptyFn,
 			onLayout,
 			onlyOne = true,
@@ -67,7 +124,9 @@ export default function Accordion(props) {
 
 			// TODO: Animate height. Possible help here: https://stackoverflow.com/a/57333550 and https://stackoverflow.com/a/64797961
 			if (isActive) {
-				rowProps.flex = 1;
+				if (onlyOne) {
+					rowProps.flex = 1;
+				}
 			} else {
 				rowProps.h = 0;
 				rowProps.overflow = 'hidden'; // otherwise some elements mistakenly show
@@ -94,7 +153,7 @@ export default function Accordion(props) {
 						>
 							{header}
 						</Pressable>
-						<HStack {...rowProps} className="bg-[#f00]">
+						<HStack {...rowProps}>
 							{content}
 						</HStack>
 					</VStack>;
@@ -129,7 +188,7 @@ export default function Accordion(props) {
 				keyboardShouldPersistTaps="always"
 				className="Accordion-ScrollView flex-1 w-full"
 				contentContainerStyle={{
-					height: '100%',
+					height: onlyOne ? '100%' : undefined,
 				}}
 			>
 				<VStackNative
