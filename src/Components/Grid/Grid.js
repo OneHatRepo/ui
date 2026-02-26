@@ -289,7 +289,6 @@ function GridComponent(props) {
 		expandedRowsRef = useRef({}),
 		cachedDragElements = useRef(),
 		dragSelectionRef = useRef([]),
-		selectionRef = useRef(selection),
 		previousSelectorId = useRef(),
 		headerRowRef = useRef(null),
 		topToolbarRef = useRef(null),
@@ -297,7 +296,11 @@ function GridComponent(props) {
 		footerToolbarRef = useRef(null),
 		rowRefs = useRef([]),
 		previousEntitiesLength = useRef(0),
-		autoPageSizeSelectionGuardCountRef = useRef(0),
+		paginationSelectionGuardRef = useRef({
+			source: null,
+			pending: new Set(),
+			expiresAt: 0,
+		}),
 		hasRemeasuredAfterRowsAppeared = useRef(false),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
@@ -307,20 +310,6 @@ function GridComponent(props) {
 		showRowHandle = showSelectHandle || areRowsDragSource || (canRowsReorder && isReorderMode),
 		rowLongPressDelay = rowLongPressDelayMs ?? ((areRowsDragSource || canRowsReorder) ? 800 : undefined),
 		[lastMeasuredContainerHeight, setLastMeasuredContainerHeight] = useState(0),
-		getMeasurementPhase = () => {
-			return measurementPhaseRaw.current;
-		},
-		setMeasurementPhase = (phase) => {
-			measurementPhaseRaw.current = phase;
-			forceUpdate();
-		},
-		getMeasuredRowHeight = () => {
-			return measuredRowHeightRaw.current;
-		},
-		setMeasuredRowHeight = (height) => {
-			measuredRowHeightRaw.current = height;
-			forceUpdate();
-		},
 		getIsExpanded = (index) => {
 			return !!expandedRowsRef.current[index];
 		},
@@ -427,22 +416,6 @@ function GridComponent(props) {
 					forceUpdate();
 				});
 			}
-		},
-		markPreserveSelectionForAutoPageSizeChange = () => {
-			if (disableWithSelection) {
-				return;
-			}
-			if (_.isEmpty(selectionRef.current)) {
-				return;
-			}
-			autoPageSizeSelectionGuardCountRef.current = 3;
-		},
-		shouldPreserveSelectionForAutoPageSizeEvent = () => {
-			if (autoPageSizeSelectionGuardCountRef.current > 0) {
-				autoPageSizeSelectionGuardCountRef.current -= 1;
-				return true;
-			}
-			return false;
 		},
 		getFooterToolbarItems = () => {
 			// Process additionalToolbarButtons to evaluate functions
@@ -1038,6 +1011,151 @@ function GridComponent(props) {
 			marker.remove();
 			cachedDragElements.current = null;
 		},
+		applySelectorSelected = () => {
+			if (disableSelectorSelected || !selectorId) {
+				return
+			}
+
+			if (previousSelectorId.current && selectorId !== previousSelectorId.current) {
+				Repository.pauseEvents();
+				Repository.clearFilters(previousSelectorId.current);
+				Repository.resumeEvents();
+			}
+			previousSelectorId.current = selectorId;
+
+			let value = null;
+			if (selectorSelected) {
+				value = selectorSelected[selectorSelectedField];
+			}
+			if (noSelectorMeansNoResults && _.isEmpty(selectorSelected)) {
+				value = 'NO_MATCHES';
+			}
+
+			Repository.filter(selectorId, value, false); // false so it doesn't clear existing filters
+		},
+		onGridKeyDown = (e) => {
+			if (isInlineEditorShown) {
+				return;
+			}
+			if (disableWithSelection) {
+				return;
+			}
+			const {
+					shiftKey = false,
+				} = e;
+			if (selectionMode === SELECTION_MODE_MULTI && shiftKey) {
+				switch(e.key) {
+					case 'ArrowDown':
+						e.preventDefault();
+						addNextToSelection();
+						break;
+					case 'ArrowUp':
+						e.preventDefault();
+						addPrevToSelection();
+						break;
+				}
+			} else {
+				// selectionMode is SELECTION_MODE_SINGLE
+				switch(e.key) {
+					case 'Enter':
+						// NOTE: This is never being reached.
+						// The event is getting captured somwhere else,
+						// but I can't find where.
+						// e.preventDefault();
+						
+						// launch inline or windowed editor
+						// const p = props;
+						// debugger;
+						break;
+					case 'ArrowDown':
+						e.preventDefault();
+						selectNext();
+						break;
+					case 'ArrowUp':
+						e.preventDefault();
+						selectPrev();
+						break;
+				}
+			}
+		},
+		showColumnsSelector = () => {
+			const
+				modalItems = _.map(localColumnsConfig, (config, ix) => {
+					return {
+						name: config.id,
+						label: config.header,
+						type: config.isHidable ? 'Checkbox' : 'Text',
+						isEditable: config.isHidable ?? false,
+					};
+				}),
+				startingValues = (() => {
+					const startingValues = {};
+					_.each(localColumnsConfig, (config) => {
+						const value = !config.isHidden; // checkbox implies to show it, so flip the polarity
+						startingValues[config.id] = config.isHidable ? value : 'Always shown';
+					});
+					return startingValues;
+				})();
+			
+			showModal({
+				title: 'Column Selector',
+				includeReset: true,
+				includeCancel: true,
+				h: 800,
+				w: styles.FORM_STACK_ROW_THRESHOLD + 10,
+				body: <Form
+							editorType={EDITOR_TYPE__PLAIN}
+							columnDefaults={{
+								labelWidth: '250px',
+							}}
+							items={[
+								{
+									name: 'instructions',
+									type: 'DisplayField',
+									text: 'Please select which columns to show in the grid.',
+									className: 'mb-3',
+								},
+								{
+									type: 'FieldSet',
+									title: 'Columns',
+									reference: 'columns',
+									showToggleAllCheckbox: true,
+									items: [
+										...modalItems,
+									],
+								}
+							]}
+							startingValues={startingValues}
+							onSave={(values)=> {
+								hideModal();
+
+								const newColumnsConfig = _.cloneDeep(localColumnsConfig);
+								_.each(newColumnsConfig, (config, ix) => {
+									if (config.isHidable) {
+										newColumnsConfig[ix].isHidden = !values[config.id]; // checkbox implies to show it, so flip the polarity
+									}
+								});
+								setLocalColumnsConfig(newColumnsConfig);
+							}}
+						/>,
+			});
+		},
+
+		// These methods relate to auto-pageSize measurement and adjustment:
+		getMeasurementPhase = () => {
+			return measurementPhaseRaw.current;
+		},
+		setMeasurementPhase = (phase) => {
+			measurementPhaseRaw.current = phase;
+			forceUpdate();
+		},
+		getMeasuredRowHeight = () => {
+			return measuredRowHeightRaw.current;
+		},
+		setMeasuredRowHeight = (height) => {
+			measuredRowHeightRaw.current = height;
+			forceUpdate();
+		},
 		calculatePageSize = (containerHeight, useActualMeasurements = false) => {
 			if (DEBUG) {
 				console.log(`${getMeasurementPhase()}, calculatePageSize A containerHeight=${containerHeight}, useActualMeasurements=${useActualMeasurements}, measuredRowHeight=${getMeasuredRowHeight()}`);
@@ -1222,7 +1340,7 @@ function GridComponent(props) {
 						if (DEBUG) {
 							console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B Repository.setPageSize(${newPageSize})`);
 						}
-						markPreserveSelectionForAutoPageSizeChange();
+						startAutoPageSizeSelectionGuard();
 						Repository.setPageSize(newPageSize);
 					}
 				}
@@ -1282,7 +1400,7 @@ function GridComponent(props) {
 						if (DEBUG) {
 							console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight D Repository.setPageSize(${pageSize})`);
 						}
-						markPreserveSelectionForAutoPageSizeChange();
+						startAutoPageSizeSelectionGuard();
 						Repository.setPageSize(pageSize);
 					}
 				}
@@ -1301,135 +1419,50 @@ function GridComponent(props) {
 			}
 		},
 		debouncedAdjustPageSizeToHeight = useCallback(_.debounce(adjustPageSizeToHeight, 200), []),
-		applySelectorSelected = () => {
-			if (disableSelectorSelected || !selectorId) {
-				return
-			}
 
-			if (previousSelectorId.current && selectorId !== previousSelectorId.current) {
-				Repository.pauseEvents();
-				Repository.clearFilters(previousSelectorId.current);
-				Repository.resumeEvents();
-			}
-			previousSelectorId.current = selectorId;
-
-			let value = null;
-			if (selectorSelected) {
-				value = selectorSelected[selectorSelectedField];
-			}
-			if (noSelectorMeansNoResults && _.isEmpty(selectorSelected)) {
-				value = 'NO_MATCHES';
-			}
-
-			Repository.filter(selectorId, value, false); // false so it doesn't clear existing filters
+		// These methods guard for selection/pagination interaction
+		// (If user makes a selection during the auto-pageSize adjustment, 
+		// we don't want to clear the selection if the current selection 
+		// would still be valid with the new page size):
+		clearPaginationSelectionGuard = () => {
+			paginationSelectionGuardRef.current = {
+				source: null,
+				pending: new Set(),
+				expiresAt: 0,
+			};
 		},
-		onGridKeyDown = (e) => {
-			if (isInlineEditorShown) {
+		startAutoPageSizeSelectionGuard = () => {
+			if (disableWithSelection || !deselectAll) {
 				return;
 			}
-			if (disableWithSelection) {
-				return;
-			}
-			const {
-					shiftKey = false,
-				} = e;
-			if (selectionMode === SELECTION_MODE_MULTI && shiftKey) {
-				switch(e.key) {
-					case 'ArrowDown':
-						e.preventDefault();
-						addNextToSelection();
-						break;
-					case 'ArrowUp':
-						e.preventDefault();
-						addPrevToSelection();
-						break;
-				}
-			} else {
-				// selectionMode is SELECTION_MODE_SINGLE
-				switch(e.key) {
-					case 'Enter':
-						// NOTE: This is never being reached.
-						// The event is getting captured somwhere else,
-						// but I can't find where.
-						// e.preventDefault();
-						
-						// launch inline or windowed editor
-						// const p = props;
-						// debugger;
-						break;
-					case 'ArrowDown':
-						e.preventDefault();
-						selectNext();
-						break;
-					case 'ArrowUp':
-						e.preventDefault();
-						selectPrev();
-						break;
-				}
-			}
+			paginationSelectionGuardRef.current = {
+				source: 'autoPageSize',
+				pending: new Set(['changePage', 'changePageSize',]),
+				expiresAt: Date.now() + 5000,
+			};
 		},
-		showColumnsSelector = () => {
-			const
-				modalItems = _.map(localColumnsConfig, (config, ix) => {
-					return {
-						name: config.id,
-						label: config.header,
-						type: config.isHidable ? 'Checkbox' : 'Text',
-						isEditable: config.isHidable ?? false,
-					};
-				}),
-				startingValues = (() => {
-					const startingValues = {};
-					_.each(localColumnsConfig, (config) => {
-						const value = !config.isHidden; // checkbox implies to show it, so flip the polarity
-						startingValues[config.id] = config.isHidable ? value : 'Always shown';
-					});
-					return startingValues;
-				})();
-			
-			showModal({
-				title: 'Column Selector',
-				includeReset: true,
-				includeCancel: true,
-				h: 800,
-				w: styles.FORM_STACK_ROW_THRESHOLD + 10,
-				body: <Form
-							editorType={EDITOR_TYPE__PLAIN}
-							columnDefaults={{
-								labelWidth: '250px',
-							}}
-							items={[
-								{
-									name: 'instructions',
-									type: 'DisplayField',
-									text: 'Please select which columns to show in the grid.',
-									className: 'mb-3',
-								},
-								{
-									type: 'FieldSet',
-									title: 'Columns',
-									reference: 'columns',
-									showToggleAllCheckbox: true,
-									items: [
-										...modalItems,
-									],
-								}
-							]}
-							startingValues={startingValues}
-							onSave={(values)=> {
-								hideModal();
+		consumePaginationSelectionGuard = (eventType) => {
+			const guard = paginationSelectionGuardRef.current;
+			if (guard.source !== 'autoPageSize') {
+				return false;
+			}
+			if (Date.now() > guard.expiresAt) {
+				clearPaginationSelectionGuard();
+				return false;
+			}
+			if (!guard.pending.has(eventType)) {
+				return false;
+			}
 
-								const newColumnsConfig = _.cloneDeep(localColumnsConfig);
-								_.each(newColumnsConfig, (config, ix) => {
-									if (config.isHidable) {
-										newColumnsConfig[ix].isHidden = !values[config.id]; // checkbox implies to show it, so flip the polarity
-									}
-								});
-								setLocalColumnsConfig(newColumnsConfig);
-							}}
-						/>,
-			});
+			guard.pending.delete(eventType);
+
+			if (!guard.pending.size) {
+				clearPaginationSelectionGuard();
+			}
+
+			return true;
 		};
+
 
 	if (forceLoadOnRender && disableLoadOnRender) {
 		throw new Error('incompatible config! forceLoadOnRender and disableLoadOnRender cannot both be true');
@@ -1553,15 +1586,26 @@ function GridComponent(props) {
 		// set up @onehat/data repository
 		const
 			setTrue = () => setIsLoading(true),
-			setFalse = () => setIsLoading(false),
+			setFalse = () => {
+				setIsLoading(false);
+				clearPaginationSelectionGuard();
+			},
+			onPaginationEvent = (eventType) => {
+				if (consumePaginationSelectionGuard(eventType)) {
+					return;
+				}
+				if (!disableWithSelection && deselectAll) {
+					deselectAll();
+				}
+				if (eventType === 'changePage' && showRowExpander) {
+					expandedRowsRef.current = {}; // clear expanded rows
+				}
+			},
 			onChangePageSize = () => {
 				if (disableWithSelection || !deselectAll) {
 					return;
 				}
-				if (shouldPreserveSelectionForAutoPageSizeEvent()) {
-					return;
-				}
-				deselectAll();
+				onPaginationEvent('changePageSize');
 			},
 			onChangeFilters = () => {
 				if (DEBUG) {
@@ -1577,15 +1621,7 @@ function GridComponent(props) {
 				}
 			},
 			onChangePage = () => {
-				if (shouldPreserveSelectionForAutoPageSizeEvent()) {
-					return;
-				}
-				if (!disableWithSelection && deselectAll) {
-					deselectAll();
-				}
-				if (showRowExpander) {
-					expandedRowsRef.current = {}; // clear expanded rows
-				}
+				onPaginationEvent('changePage');
 			};
 
 		Repository.on('beforeLoad', setTrue);
@@ -1622,10 +1658,6 @@ function GridComponent(props) {
 	}, [isInited]);
 
 	useEffect(() => {
-		selectionRef.current = selection;
-	}, [selection]);
-
-	useEffect(() => {
 		if (!Repository || !isReady) {
 			return () => {};
 		}
@@ -1637,8 +1669,8 @@ function GridComponent(props) {
 
 	}, [selectorId, selectorSelected]);
 
-	// Effect to trigger row height measurement after render
 	useEffect(() => {
+		// trigger row height measurement after render
 		if (getMeasurementPhase() === PHASES__MEASURING) {
 			// Small delay to ensure elements are fully rendered
 			const timer = setTimeout(async () => {
@@ -1674,8 +1706,8 @@ function GridComponent(props) {
 		}
 	}, [autoAdjustPageSizeToHeight]);
 
-	// Reset measurement when rows were first empty then became populated
 	useEffect(() => {
+		// Reset measurement when rows were first empty then became populated
 		const
 			currentLength = entities?.length || 0,
 			wasEmpty = previousEntitiesLength.current === 0,
@@ -1711,6 +1743,7 @@ function GridComponent(props) {
 		previousEntitiesLength.current = currentLength;
 	}, [entities?.length, autoAdjustPageSizeToHeight]);
 
+	
 	// Memoize footer toolbar items to avoid unnecessary re-renders, but only if they don't have dynamic properties
 	const
 		hasDynamicFooterToolbarItems = useMemo(() => _.some(additionalToolbarButtons, (config) => {
