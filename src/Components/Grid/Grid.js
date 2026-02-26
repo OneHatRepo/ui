@@ -289,6 +289,7 @@ function GridComponent(props) {
 		expandedRowsRef = useRef({}),
 		cachedDragElements = useRef(),
 		dragSelectionRef = useRef([]),
+		selectionRef = useRef(selection),
 		previousSelectorId = useRef(),
 		headerRowRef = useRef(null),
 		topToolbarRef = useRef(null),
@@ -296,6 +297,7 @@ function GridComponent(props) {
 		footerToolbarRef = useRef(null),
 		rowRefs = useRef([]),
 		previousEntitiesLength = useRef(0),
+		autoPageSizeSelectionGuardCountRef = useRef(0),
 		hasRemeasuredAfterRowsAppeared = useRef(false),
 		[isInited, setIsInited] = useState(false),
 		[isReady, setIsReady] = useState(false),
@@ -425,6 +427,22 @@ function GridComponent(props) {
 					forceUpdate();
 				});
 			}
+		},
+		markPreserveSelectionForAutoPageSizeChange = () => {
+			if (disableWithSelection) {
+				return;
+			}
+			if (_.isEmpty(selectionRef.current)) {
+				return;
+			}
+			autoPageSizeSelectionGuardCountRef.current = 3;
+		},
+		shouldPreserveSelectionForAutoPageSizeEvent = () => {
+			if (autoPageSizeSelectionGuardCountRef.current > 0) {
+				autoPageSizeSelectionGuardCountRef.current -= 1;
+				return true;
+			}
+			return false;
 		},
 		getFooterToolbarItems = () => {
 			// Process additionalToolbarButtons to evaluate functions
@@ -1204,6 +1222,7 @@ function GridComponent(props) {
 						if (DEBUG) {
 							console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B Repository.setPageSize(${newPageSize})`);
 						}
+						markPreserveSelectionForAutoPageSizeChange();
 						Repository.setPageSize(newPageSize);
 					}
 				}
@@ -1263,6 +1282,7 @@ function GridComponent(props) {
 						if (DEBUG) {
 							console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight D Repository.setPageSize(${pageSize})`);
 						}
+						markPreserveSelectionForAutoPageSizeChange();
 						Repository.setPageSize(pageSize);
 					}
 				}
@@ -1534,6 +1554,15 @@ function GridComponent(props) {
 		const
 			setTrue = () => setIsLoading(true),
 			setFalse = () => setIsLoading(false),
+			onChangePageSize = () => {
+				if (disableWithSelection || !deselectAll) {
+					return;
+				}
+				if (shouldPreserveSelectionForAutoPageSizeEvent()) {
+					return;
+				}
+				deselectAll();
+			},
 			onChangeFilters = () => {
 				if (DEBUG) {
 					console.log('onChangeFilters, reload and re-measure');
@@ -1548,6 +1577,12 @@ function GridComponent(props) {
 				}
 			},
 			onChangePage = () => {
+				if (shouldPreserveSelectionForAutoPageSizeEvent()) {
+					return;
+				}
+				if (!disableWithSelection && deselectAll) {
+					deselectAll();
+				}
 				if (showRowExpander) {
 					expandedRowsRef.current = {}; // clear expanded rows
 				}
@@ -1555,13 +1590,11 @@ function GridComponent(props) {
 
 		Repository.on('beforeLoad', setTrue);
 		Repository.on('load', setFalse);
-		if (!disableWithSelection) {
-			Repository.ons(['changePage', 'changePageSize',], deselectAll);
-		}
+		Repository.on('changePage', onChangePage);
+		Repository.on('changePageSize', onChangePageSize);
 		Repository.ons(['changeData', 'change'], forceUpdate);
 		Repository.on('changeFilters', onChangeFilters);
 		Repository.on('changeSorters', onChangeSorters);
-		Repository.on('changePage', onChangePage);
 
 		applySelectorSelected();
 
@@ -1580,15 +1613,17 @@ function GridComponent(props) {
 		return () => {
 			Repository.off('beforeLoad', setTrue);
 			Repository.off('load', setFalse);
-			if (!disableWithSelection) {
-				Repository.offs(['changePage', 'changePageSize',], deselectAll);
-			}
+			Repository.off('changePage', onChangePage);
+			Repository.off('changePageSize', onChangePageSize);
 			Repository.offs(['changeData', 'change'], forceUpdate);
 			Repository.off('changeFilters', onChangeFilters);
 			Repository.off('changeSorters', onChangeSorters);
-			Repository.off('changePage', onChangePage);
 		};
 	}, [isInited]);
+
+	useEffect(() => {
+		selectionRef.current = selection;
+	}, [selection]);
 
 	useEffect(() => {
 		if (!Repository || !isReady) {
