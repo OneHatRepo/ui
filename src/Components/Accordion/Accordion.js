@@ -44,6 +44,7 @@ export default function Accordion(props) {
 								'items-center',
 								'justify-start',
 								'py-1',
+								'px-2',
 								'border-b-grey-400',
 								'border-b-1',
 								styles.PANEL_HEADER_BG,
@@ -64,7 +65,6 @@ export default function Accordion(props) {
 								as={isActive ? Minus : Plus} 
 								className={clsx(
 									'text-black',
-									'mr-2',
 								)}
 							/>
 						</HStack>;
