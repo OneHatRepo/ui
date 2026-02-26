@@ -1213,6 +1213,10 @@ function Form(props) {
 		style.maxHeight = maxHeight;
 	}
 
+	const
+		// allow horizontal layouts only if there are top-level columns, and screen is wide enough
+		hasTopLevelColumns = _.some(items, (item) => item?.type === 'Column'),
+		shouldUseHorizontalFormLayout = !isItemsCustomLayout && hasTopLevelColumns && containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD;
 	let modeHeader = null,
 		formButtons = null,
 		scrollButtons = null,
@@ -1246,8 +1250,8 @@ function Form(props) {
 			formComponents = buildFromItems();
 			const formAncillaryComponents = buildAncillary();
 			editor = <>
-						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD && !isItemsCustomLayout ? <HStack className="Form-formComponents-HStack p-4 gap-4 justify-center">{formComponents}</HStack> : null}
-						{containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD || isItemsCustomLayout ? <VStack className="Form-formComponents-VStack p-4">{formComponents}</VStack> : null}
+						{shouldUseHorizontalFormLayout ? <HStack className="Form-formComponents-HStack w-full min-w-0 p-4 gap-4 justify-start items-stretch">{formComponents}</HStack> : null}
+						{!shouldUseHorizontalFormLayout ? <VStack className="Form-formComponents-VStack p-4">{formComponents}</VStack> : null}
 						{formAncillaryComponents.length ? <VStack className="Form-AncillaryComponents m-2 pt-4 px-2">{formAncillaryComponents}</VStack> : null}
 					</>;
 
@@ -1532,7 +1536,8 @@ function Form(props) {
 							onScroll={onScroll}
 							scrollEventThrottle={16 /* ms */}
 							contentContainerStyle={{
-								// height: '100%',
+								width: '100%',
+								minWidth: '100%',
 							}}
 						>
 							{scrollToTopAnchor}
