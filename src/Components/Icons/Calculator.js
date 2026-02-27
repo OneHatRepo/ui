@@ -1,0 +1,12 @@
+// Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc.
+import { createIcon } from "../Gluestack/icon";
+import Svg, { Path } from 'react-native-svg';
+
+const SvgComponent = createIcon({
+	Root: Svg,
+	viewBox: '0 0 384 512',
+	path: <Path d="M64 0C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zm32 64h192c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V96c0-17.7 14.3-32 32-32zm32 160a32 32 0 11-64 0 32 32 0 1164 0zM96 352a32 32 0 110-64 32 32 0 110 64zm-32 64c0-17.7 14.3-32 32-32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H96c-17.7 0-32-14.3-32-32zm128-160a32 32 0 110-64 32 32 0 110 64zm32 64a32 32 0 11-64 0 32 32 0 1164 0zm64-64a32 32 0 110-64 32 32 0 110 64zm32 64a32 32 0 11-64 0 32 32 0 1164 0zm-32 128a32 32 0 110-64 32 32 0 110 64z" />,
+});
+
+export default SvgComponent
+
