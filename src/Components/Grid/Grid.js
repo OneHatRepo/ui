@@ -1712,7 +1712,7 @@ function GridComponent(props) {
 			currentLength = entities?.length || 0,
 			wasEmpty = previousEntitiesLength.current === 0,
 			isNowPopulated = currentLength > 0,
-			hasPhantomRecord = entities?.some(entity => entity?.isPhantom);
+			hasPhantomRecord = entities?.some(entity => !entity.isDestroyed && entity?.isPhantom);
 			
 		// NOTE: The Repository was reloading when a phantom record was added,
 		// and this broke the Editor because selection was being reset to zero.
