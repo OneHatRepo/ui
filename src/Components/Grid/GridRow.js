@@ -490,7 +490,11 @@ const GridRow = forwardRef((props, ref) => {
 						}}
 					>{rowContents}</HStackNative>;
 		if (rowProps.tooltip) {
-			row = <Tooltip label={rowProps.tooltip} placement="bottom left">{row}</Tooltip>;
+			row = <Tooltip
+						label={rowProps.tooltip}
+						placement="bottom left"
+						triggerClassName={rowClassName}
+					>{row}</Tooltip>;
 		}
 		return row;
 	}, [
