@@ -17,7 +17,7 @@ import ClockRegular from '../../Icons/ClockRegular.js';
 import OilCan from '../../Icons/OilCan.js';
 import TabBar from '../../Tab/TabBar.js';
 import TreeSpecific from '../Layout/TreeSpecific/TreeSpecific.js';
-import UpcomingPmsGrid from '../Grid/UpcomingPmsGrid.js';
+import UpcomingPmsGrid from '@src/Components/Grid/UpcomingPmsGrid.js';
 import PmEventsFilteredGridEditor from '@src/Components/Grid/PmEventsFilteredGridEditor.js';
 import PmEventsFilteredSideGridEditor from '@src/Components/Grid/PmEventsFilteredSideGridEditor.js';
 import _ from 'lodash';
