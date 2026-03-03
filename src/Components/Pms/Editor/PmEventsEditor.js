@@ -92,18 +92,18 @@ export default function PmEventsEditor(props) {
 				case PM_EVENT_TYPES__INITIAL:
 				case PM_EVENT_TYPES__WORK_ORDER:
 				case PM_EVENT_TYPES__ALERT:
+				case PM_EVENT_TYPES__COMPLETE:
 					setIsIntervalHidden(true);
 					setIsDateHidden(true);
 					setIsMeterReadingHidden(false);
 					setIsDetailsHidden(false);
 					setIsPmTechnicianHidden(true);
 					break;
-				case PM_EVENT_TYPES__COMPLETE:
 				case PM_EVENT_TYPES__RESET:
 					setIsIntervalHidden(true);
 					setIsDateHidden(true);
-					setIsMeterReadingHidden(false);
-					setIsDetailsHidden(false);
+					setIsMeterReadingHidden(true);
+					setIsDetailsHidden(true);
 					setIsPmTechnicianHidden(true);
 					break;
 				case PM_EVENT_TYPES__DELAY_BY_DAYS:
