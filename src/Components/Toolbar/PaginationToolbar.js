@@ -11,15 +11,17 @@ const PaginationToolbar = forwardRef((props, ref) => {
 	const {
 			toolbarItems = [],
 			disablePageSize = false,
+			disableMinimizing = false,
 			minimize,
 		} = props,
 		[minimizeLocal, setMinimizeLocal] = useState(minimize),
 		propsToPass = _.omit(props, 'toolbarItems'),
 		showPagination = true,//props.Repository?.totalPages > 1,
 		onLayout = (e) => {
-			if (minimize) {
-				return; // skip if already minimized
+			if (minimize || disableMinimizing) {
+				return;
 			}
+			
 			// Note to future self: this is using hard-coded values.
 			// Eventually might want to make it responsive to actual sizes
 
@@ -32,7 +34,7 @@ const PaginationToolbar = forwardRef((props, ref) => {
 				threshold = pagingToolbarMinwidth + toolbarItemsMinwidth,
 				shouldMinimize = width < threshold;
 
-			if (shouldMinimize !== minimize) {
+			if (shouldMinimize !== minimizeLocal) {
 				setMinimizeLocal(shouldMinimize);
 			}
 		};
