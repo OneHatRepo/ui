@@ -50,6 +50,7 @@ function Panel(props) {
 			disableTitleChange = false,
 
 			// Content
+			renderWhileCollapsed = false,
 			topToolbar = null,
 			children = null,
 			bottomToolbar = null,
@@ -139,14 +140,7 @@ function Panel(props) {
 		className += ' ' + filteredClassName;
 	}
 
-	return <VStackNative
-				{...testProps(self?.reference)}
-				className={className}
-				style={style}
-			>
-				{isDisabled && <Mask />}
-				{headerComponent}
-				{!isCollapsed && <>
+	let content = <>
 					{topToolbar}
 					<VStack
 						className={clsx(
@@ -169,7 +163,41 @@ function Panel(props) {
 					</VStack>
 					{bottomToolbar}
 					{footer}
-				</>}
+				</>;
+	if (renderWhileCollapsed) {
+		content = <Box
+					className={clsx(
+						'Panel-Box',
+						...(isCollapsed ? 
+							[
+								'w-[0px]',
+								'h-[0px]',
+								'overflow-hidden',
+							] :
+							[
+								'w-full',
+								'h-full',
+							])
+					)}
+				>
+					{content}
+				</Box>;
+	} else {
+		if (isCollapsed) {
+			// hide the content when collapsed
+			content = null;
+		}
+	}
+	
+
+	return <VStackNative
+				{...testProps(self?.reference)}
+				className={className}
+				style={style}
+			>
+				{isDisabled && <Mask />}
+				{headerComponent}
+				{content}
 			</VStackNative>;
 
 }
