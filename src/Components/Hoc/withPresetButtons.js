@@ -68,6 +68,7 @@ export default function withPresetButtons(WrappedComponent) {
 				canDeleteRootNode = false,
 				isSideEditor = false,
 				canEditorViewOnly = false,
+				canRecordBeAdded, // fn(selection) returns bool on if the current record(s) can be added
 				canRecordBeEdited, // fn(selection) returns bool on if the current record(s) can be edited
 				canRecordBeDeleted, // fn(selection) returns bool on if the current record(s) can be deleted
 				canRecordBeDuplicated, // fn(selection) returns bool on if the current record(s) can be duplicated
@@ -239,6 +240,7 @@ export default function withPresetButtons(WrappedComponent) {
 						};
 						icon = Plus;
 						if (isNoSelectorSelected() ||
+							(canRecordBeAdded && !canRecordBeAdded(selection)) ||
 							(isTree && isEmptySelection())
 						) {
 							isDisabled = true;
