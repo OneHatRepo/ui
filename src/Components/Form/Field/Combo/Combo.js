@@ -90,6 +90,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			isInTag = false,
 			minimizeForRow = false,
 			reloadOnTrigger = false,
+			loadAfterRender = false,
 			searchHasInitialPercent = false,
 			menuHeight,
 			placeholder,
@@ -585,11 +586,16 @@ export const ComboComponent = forwardRef((props, ref) => {
 		};
 
 	useEffect(() => {
-		// on render, focus the input
 		if (!isRendered) {
 			return () => {};
 		}
+		
+		if (loadAfterRender) {
+			Repository?.reload();
+		}
+		
 		if (autoFocus && !inputRef.current.isFocused()) {
+			// on render, focus the input
 			inputRef.current.focus();
 		}
 
@@ -599,7 +605,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}
 		};
 
-	}, [isRendered]);
+	}, [isRendered, loadAfterRender, Repository]);
 
 	useEffect(() => {
 		(async () => {
