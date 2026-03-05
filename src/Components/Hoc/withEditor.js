@@ -47,6 +47,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				},
 				editorType,
 				onAdd,
+				onBeforeAdd,
 				onChange, // any kind of crud change
 				onBeforeDelete,
 				onDelete,
@@ -218,9 +219,25 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				if (getListeners().onBeforeAdd) {
-					const listenerResult = await getListeners().onBeforeAdd();
+					// This listener is set by child components using setWithEditListeners()
+					const listenerResult = await getListeners().onBeforeAdd(addValues);
 					if (listenerResult === false) {
 						return;
+					}
+					if (listenerResult) {
+						// allow the listener to override the addValues by returning an object
+						addValues = listenerResult;
+					}
+				}
+				if (onBeforeAdd) {
+					// This listener is set by parent components using a prop
+					const listenerResult = await onBeforeAdd(addValues);
+					if (listenerResult === false) {
+						return;
+					}
+					if (listenerResult) {
+						// allow the listener to override the addValues by returning an object
+						addValues = listenerResult;
 					}
 				}
 

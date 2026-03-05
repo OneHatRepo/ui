@@ -47,6 +47,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				},
 				secondaryEditorType,
 				secondaryOnAdd,
+				secondaryOnBeforeAdd,
 				secondaryOnChange, // any kind of crud change
 				secondaryOnBeforeDelete,
 				secondaryOnDelete,
@@ -201,9 +202,25 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 
 				if (getListeners().onBeforeAdd) {
-					const listenerResult = await getListeners().onBeforeAdd();
+					// This listener is set by child components using setWithEditListeners()
+					const listenerResult = await getListeners().onBeforeAdd(addValues);
 					if (listenerResult === false) {
 						return;
+					}
+					if (listenerResult) {
+						// allow the listener to override the addValues by returning an object
+						addValues = listenerResult;
+					}
+				}
+				if (secondaryOnBeforeAdd) {
+					// This listener is set by parent components using a prop
+					const listenerResult = await secondaryOnBeforeAdd(addValues);
+					if (listenerResult === false) {
+						return;
+					}
+					if (listenerResult) {
+						// allow the listener to override the addValues by returning an object
+						addValues = listenerResult;
 					}
 				}
 
