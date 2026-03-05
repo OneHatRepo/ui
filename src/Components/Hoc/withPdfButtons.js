@@ -418,6 +418,9 @@ export default function withPdfButtons(WrappedComponent) {
 			},
 		];
 		_.each(buttons, (button) => {
+			if (!button) {
+				return; // guard against null/undefined
+			}
 			if (!_.find(additionalEditButtons, btn => button.key === btn.key)) { 
 				additionalEditButtons.push(button);
 			}
