@@ -253,8 +253,9 @@ function Form(props) {
 					'border-r-grey-200',
 					'px-1',
 					styles.INLINE_EDITOR_MIN_WIDTH,
-				);
-			_.each(columnsConfig, (config, ix) => {
+				),
+				validColumnsConfig = _.filter(columnsConfig, (config) => !!config); // filter out any null/undefined configs
+			_.each(validColumnsConfig, (config, ix) => {
 				let {
 						fieldName,
 						isEditable = false,
@@ -273,7 +274,7 @@ function Form(props) {
 					type,
 					editorTypeProps = {},
 					viewerTypeProps = {};
-				
+			
 				if (isHidden) {
 					return;
 				}
@@ -965,9 +966,11 @@ function Form(props) {
 					/>;
 		},
 		buildAncillary = () => {
-			const components = [];
+			const
+				validAncillaryItems = _.filter(ancillaryItems, (item) => !!item), // filter out any null/undefined items
+				components = [];
 			setAncillaryButtons([]);
-			if (ancillaryItems.length) {
+			if (validAncillaryItems.length) {
 
 				// add the "scroll to top" button
 				getAncillaryButtons().push({
@@ -978,7 +981,7 @@ function Form(props) {
 					tooltip: 'Scroll to top',
 				});
 
-				_.each(ancillaryItems, (item, ix) => {
+				_.each(validAncillaryItems, (item, ix) => {
 					let {
 							type,
 							title = null,

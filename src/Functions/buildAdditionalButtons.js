@@ -5,6 +5,11 @@ import _ from 'lodash';
 export default function buildAdditionalButtons(configs, self, handlerArgs = {}) {
 	const additionalButtons = [];
 	_.each(configs, (config) => {
+
+		if (!config) {
+			return;
+		}
+		
 		const {
 				key,
 				color = '#fff',

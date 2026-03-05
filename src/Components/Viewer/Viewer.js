@@ -350,9 +350,11 @@ function Viewer(props) {
 			return <HStack key={ix} className="Viewer-HStack4 px-2 pb-1">{element}</HStack>;
 		},
 		buildAncillary = () => {
-			const components = [];
+			const
+				validAncillaryItems = _.filter(ancillaryItems, (item) => !!item), // filter out any null/undefined items
+				components = [];
 			setAncillaryButtons([]);
-			if (ancillaryItems.length) {
+			if (validAncillaryItems.length) {
 
 				// add the "scroll to top" button
 				getAncillaryButtons().push({
@@ -363,7 +365,7 @@ function Viewer(props) {
 					tooltip: 'Scroll to top',
 				});
 
-				_.each(ancillaryItems, (item, ix) => {
+				_.each(validAncillaryItems, (item, ix) => {
 					let {
 						type,
 						title = null,
