@@ -589,6 +589,8 @@ function GridComponent(props) {
 						'flex-row',
 						'grow',
 						'max-h-[80px]',
+						'focus:outline-none',
+						'focus-visible:outline-none',
 					)}
 				>
 					{({
@@ -1914,6 +1916,8 @@ function GridComponent(props) {
 		'w-full',
 		'border',
 		'border-grey-300',
+		'focus:outline-none',
+		'focus-visible:outline-none',
 	);
 	if (props.className) {
 		className += ' ' + props.className;
