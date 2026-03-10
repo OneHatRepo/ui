@@ -31,6 +31,7 @@ function ManagerScreen(props) {
 		[isModeSet, setIsModeSet] = useState(false),
 		[allowSideBySide, setAllowSideBySide] = useState(false),
 		[mode, setModeRaw] = useState(SCREEN_MODES__SIDE),
+		isDisabled = propsToPass._panel?.isDisabled ?? false, // this is kind of a hack, since there's no Panel, but it works
 		actualMode = (!allowSideBySide || mode === SCREEN_MODES__FULL) ? SCREEN_MODES__FULL : SCREEN_MODES__SIDE,
 		setMode = (newMode) => {
 			if (!allowSideBySide && newMode === SCREEN_MODES__SIDE) {
@@ -97,7 +98,7 @@ function ManagerScreen(props) {
 					onFullWidth={() => setMode(SCREEN_MODES__FULL)}
 					onSideBySide={() => setMode(SCREEN_MODES__SIDE)}
 				/>
-				{isRendered && isModeSet && whichComponent}
+				{isRendered && isModeSet && !isDisabled && whichComponent}
 			</VStackNative>;
 }
 
