@@ -388,6 +388,19 @@ function AttachmentsElement(props) {
 				downloadInBackground(url, {}, Attachments.headers);
 			}
 		},
+		onDownloadAll = () => {
+			if (!model || _.isNil(modelid.current) || _.isArray(modelid.current)) {
+				alert('Cannot download all attachments without a single selected model and model id.');
+				return;
+			}
+
+			const url = Attachments.api.baseURL + 'Attachments/downloadAll/' + encodeURIComponent(model) + '/' + encodeURIComponent(modelid.current);
+			if (isPwa) {
+				alert('Files cannot be downloaded and viewed within an iOS PWA. Please use the Safari browser instead.');
+			} else {
+				downloadInBackground(url, {}, Attachments.headers);
+			}
+		},
 
 		// dropzone
 		onDropzoneChange = async (files) => {
@@ -1086,6 +1099,19 @@ function AttachmentsElement(props) {
 							'py-[2px]',
 						)}
 						tooltip="List View"
+					/>
+					<Box className="spacer flex-1" />
+					<IconButton
+						onPress={onDownloadAll}
+						icon={Download}
+						className={clsx(
+							'w-[25px]',
+							'h-[25px]',
+							'px-[2px]',
+							'py-[2px]',
+						)}
+						isDisabled={!model || _.isNil(modelid.current) || _.isArray(modelid.current)}
+						tooltip="Download All"
 					/>
 				</HStack>
 
