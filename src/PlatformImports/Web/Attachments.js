@@ -1110,7 +1110,7 @@ function AttachmentsElement(props) {
 							'px-[2px]',
 							'py-[2px]',
 						)}
-						isDisabled={!model || _.isNil(modelid.current) || _.isArray(modelid.current)}
+						isDisabled={!model || _.isNil(modelid.current) || _.isArray(modelid.current) || files.length === 0}
 						tooltip="Download All"
 					/>
 				</HStack>
