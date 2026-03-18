@@ -139,6 +139,7 @@ function Form(props) {
 			onDelete,
 			editorStateRef,
 			disableView,
+			isEditorModeControlledByParent = false,
 
 			// parent container
 			selectorId,
@@ -1262,7 +1263,7 @@ function Form(props) {
 
 			if (inArray(editorType, [EDITOR_TYPE__SIDE, EDITOR_TYPE__SMART, EDITOR_TYPE__WINDOWED]) && 
 				isSingle && getEditorMode() === EDITOR_MODE__EDIT && 
-				(onBack || onViewMode)) {
+				(onBack || onViewMode || isEditorModeControlledByParent)) {
 				modeHeader = <Toolbar>
 								<HStack className="flex-1 items-center">
 									{onBack &&
@@ -1280,7 +1281,7 @@ function Form(props) {
 											)}
 											text="Back"
 										/>}
-									<Text className="text-[20px] ml-1 text-grey-500">Edit Mode</Text>
+									<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent ? 'Edit Mode (Inherited)' : 'Edit Mode'}</Text>
 								</HStack>
 								{onViewMode && !disableView && (!canUser || canUser(VIEW)) &&
 									<Button

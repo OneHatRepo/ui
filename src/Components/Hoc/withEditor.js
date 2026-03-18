@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState, useRef, } from 'react';
+import { forwardRef, useContext, useEffect, useState, useRef, } from 'react';
 import {
 	ADD,
 	EDIT,
@@ -15,6 +15,7 @@ import {
 } from '../../Constants/Editor.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js'
 import Button from '../Buttons/Button.js';
+import EditorModeContext from '../../Contexts/EditorModeContext.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
@@ -58,6 +59,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				defaultValues,
 				initialEditorMode = EDITOR_MODE__VIEW,
 				stayInEditModeOnSelectionChange = false,
+				inheritParentEditorMode = true,
 
 				// withComponent
 				self,
@@ -84,6 +86,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				confirm,
 				hideAlert,
 			} = props,
+			parentEditorModeContext = useContext(EditorModeContext),
 			forceUpdate = useForceUpdate(),
 			listeners = useRef({}),
 			editorStateRef = useRef(),
@@ -170,13 +173,85 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					forceUpdate();
 				}
 			},
+			getParentEditorMode = () => {
+				return parentEditorModeContext?.effectiveEditorMode || null;
+			},
+			getInheritedEditorMode = () => {
+				if (!inheritParentEditorMode) {
+					return null;
+				}
+				const parentMode = getParentEditorMode();
+				if (parentMode === EDITOR_MODE__ADD) {
+					return EDITOR_MODE__EDIT;
+				}
+				if (parentMode === EDITOR_MODE__EDIT || parentMode === EDITOR_MODE__VIEW) {
+					return parentMode;
+				}
+				return null;
+			},
+			getIsParentSaveLocked = () => {
+				return !!parentEditorModeContext?.isAnyAncestorUnsaved;
+			},
+			getIsCurrentSelectionUnsaved = () => {
+				const selection = getSelection();
+				if (!selection || selection.length !== 1) {
+					return false;
+				}
+				const record = selection[0];
+				if (!record || record.isDestroyed) {
+					return false;
+				}
+				return !!(record.isPhantom || record.isRemotePhantom);
+			},
+			getIsEditorDisabledByParent = () => {
+				return getIsParentSaveLocked();
+			},
+			getIsEditorModeControlledByParent = () => {
+				return !!getInheritedEditorMode();
+			},
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
 			},
 			setNewEntityDisplayValue = (val) => {
 				newEntityDisplayValueRef.current = val;
 			},
+			showViewFallback = async () => {
+				// helper for doEdit
+				// If the editor is forced into EDIT mode by parent inheritance, 
+				// but the child editor cannot actually be in edit mode due to permissions or configuration, 
+				// switch the mode to VIEW.
+
+				if (!userCanView) {
+					return;
+				}
+				if (canUser && !canUser(VIEW)) {
+					showPermissionsError(VIEW);
+					return;
+				}
+				if (canProceedWithCrud && !canProceedWithCrud()) {
+					return;
+				}
+				if (editorType === EDITOR_TYPE__INLINE) {
+					return;
+				}
+				const selection = getSelection();
+				if (selection.length !== 1) {
+					return;
+				}
+				setIsEditorViewOnly(true);
+				setEditorMode(EDITOR_MODE__VIEW);
+				setIsEditorShown(true);
+				if (getListeners().onAfterView) {
+					await getListeners().onAfterView();
+				}
+			},
 			doAdd = async (e, values) => {
+				if (getIsEditorDisabledByParent()) {
+					return;
+				}
+				if (getInheritedEditorMode() === EDITOR_MODE__VIEW) {
+					return;
+				}
 				if (canUser && !canUser(ADD)) {
 					showPermissionsError(ADD);
 					return;
@@ -295,7 +370,23 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			doEdit = async () => {
+				if (getIsEditorDisabledByParent()) {
+					return;
+				}
+				const inheritedEditorMode = getInheritedEditorMode();
+				if (inheritedEditorMode === EDITOR_MODE__VIEW) {
+					await doView(false);
+					return;
+				}
+				if (inheritedEditorMode === EDITOR_MODE__EDIT && (!userCanEdit || disableEdit || canEditorViewOnly)) {
+					await showViewFallback();
+					return;
+				}
 				if (canUser && !canUser(EDIT)) {
+					if (inheritedEditorMode === EDITOR_MODE__EDIT) {
+						await showViewFallback();
+						return;
+					}
 					showPermissionsError(EDIT);
 					return;
 				}
@@ -317,6 +408,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(true);
 			},
 			doDelete = async (args) => {
+				if (getIsEditorDisabledByParent()) {
+					return;
+				}
+				if (getInheritedEditorMode() === EDITOR_MODE__VIEW) {
+					return;
+				}
 				if (canUser && !canUser(DELETE)) {
 					showPermissionsError(DELETE);
 					return;
@@ -430,6 +527,17 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			doView = async (allowEditing = false) => {
+				if (getIsEditorDisabledByParent()) {
+					return;
+				}
+				const inheritedEditorMode = getInheritedEditorMode();
+				if (inheritedEditorMode === EDITOR_MODE__EDIT) {
+					await doEdit();
+					return;
+				}
+				if (inheritedEditorMode === EDITOR_MODE__VIEW) {
+					allowEditing = false;
+				}
 				if (!userCanView) {
 					return;
 				}
@@ -460,6 +568,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			doDuplicate = async () => {
+				if (getIsEditorDisabledByParent()) {
+					return;
+				}
+				if (getInheritedEditorMode() === EDITOR_MODE__VIEW) {
+					return;
+				}
 				if (!userCanEdit || disableDuplicate) {
 					return;
 				}
@@ -533,6 +647,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			doEditorSave = async (data, e) => {
+				if (getIsEditorDisabledByParent()) {
+					return false;
+				}
 				let mode = getEditorMode() === EDITOR_MODE__ADD ? ADD : EDIT;
 				if (canUser && !canUser(mode)) {
 					showPermissionsError(mode);
@@ -651,6 +768,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorShown(false);
 			},
 			doEditorDelete = async () => {
+				if (getIsEditorDisabledByParent()) {
+					return;
+				}
+				if (getInheritedEditorMode() === EDITOR_MODE__VIEW) {
+					return;
+				}
 				if (canUser && !canUser(DELETE)) {
 					showPermissionsError(DELETE);
 					return;
@@ -662,6 +785,46 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				});
 			},
 			calculateEditorMode = () => {
+				// Calculate the editor's effective mode based on parent inheritance, permissions, and local selection state.
+				// Priority order:
+				// 1. If parent is save-locked (unsaved ancestor), force VIEW mode
+				// 2. If parent forces VIEW mode via inheritance, return VIEW (child cannot edit if parent is view-only)
+				// 3. If parent forces EDIT mode via inheritance, check child permissions:
+				//    a. If parent disabled, child disabled, or child cannot edit, return VIEW
+				//    b. If single phantom record, return ADD (new record being created)
+				//    c. Otherwise return EDIT or VIEW based on selection count
+				// 4. Fall back to local selection heuristics (multiple→EDIT, single→VIEW, stays in previous mode if configured)
+				const
+					selection = getSelection(),
+					inheritedEditorMode = getInheritedEditorMode();
+
+				if (getIsEditorDisabledByParent()) {
+					return EDITOR_MODE__VIEW;
+				}
+
+				if (inheritedEditorMode === EDITOR_MODE__VIEW) {
+					return EDITOR_MODE__VIEW;
+				}
+
+				if (inheritedEditorMode === EDITOR_MODE__EDIT) {
+					if (!getCanEditorBeInEditMode()) {
+						return EDITOR_MODE__VIEW;
+					}
+					if (canEditorViewOnly || !userCanEdit || disableEdit) {
+						return EDITOR_MODE__VIEW;
+					}
+					if (canUser && !canUser(EDIT)) {
+						return EDITOR_MODE__VIEW;
+					}
+					if (canRecordBeEdited && canRecordBeEdited(selection) === false) {
+						return EDITOR_MODE__VIEW;
+					}
+					if (selection.length === 1 && !selection[0].isDestroyed && (selection[0].isPhantom || selection[0].isRemotePhantom) && !disableAdd) {
+						return EDITOR_MODE__ADD;
+					}
+					return selection.length ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
+				}
+
 				if (!getCanEditorBeInEditMode()) { // this is a result of canRecordBeEdited returning false
 					return EDITOR_MODE__VIEW;
 				}
@@ -677,7 +840,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				// calculateEditorMode gets called only on selection changes
-				const selection = getSelection();
 				let mode;
 				if (editorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
 					// special case: side editor is always edit mode
@@ -705,6 +867,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return mode;
 			},
 			setEditMode = () => {
+				if (getIsEditorDisabledByParent() || getIsEditorModeControlledByParent()) {
+					return;
+				}
 				if (canUser && !canUser(EDIT)) {
 					showPermissionsError(EDIT);
 					return;
@@ -713,6 +878,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__EDIT);
 			},
 			setViewMode = () => {
+				if (getIsEditorDisabledByParent() || getIsEditorModeControlledByParent()) {
+					return;
+				}
 				if (canUser && !canUser(VIEW)) {
 					showPermissionsError(VIEW);
 					return;
@@ -729,10 +897,20 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			};
 
+		const
+			inheritedEditorMode = getInheritedEditorMode(),
+			isEditorDisabledByParent = getIsEditorDisabledByParent(),
+			isEditorModeControlledByParent = getIsEditorModeControlledByParent(),
+			isCurrentSelectionUnsaved = getIsCurrentSelectionUnsaved(),
+			isAnyAncestorUnsaved = getIsParentSaveLocked() || isCurrentSelectionUnsaved,
+			isCrudBlockedByInheritedView = inheritedEditorMode === EDITOR_MODE__VIEW;
+
 		useEffect(() => {
 
 			if (editorType === EDITOR_TYPE__SIDE) {
-				if (selection?.length) { // || isAdding
+				if (isEditorDisabledByParent) {
+					setIsEditorShown(false);
+				} else if (selection?.length) { // || isAdding
 					// there is a selection, so show the editor
 					setIsEditorShown(true);
 				} else {
@@ -746,6 +924,19 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			} else {
 				setCanEditorBeInEditMode(true);
 			}
+
+			if (isEditorDisabledByParent || inheritedEditorMode === EDITOR_MODE__VIEW) {
+				setIsEditorViewOnly(true);
+			} else if (inheritedEditorMode === EDITOR_MODE__EDIT) {
+				const canEditInInheritedMode =
+					!canEditorViewOnly &&
+					userCanEdit &&
+					!disableEdit &&
+					(!canUser || canUser(EDIT)) &&
+					(!canRecordBeEdited || canRecordBeEdited(selection));
+				setIsEditorViewOnly(!canEditInInheritedMode);
+			}
+
 			setEditorMode(calculateEditorMode());
 			setLastSelection(selection);
 			
@@ -755,7 +946,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			Promise.resolve().then(() => {
 				setIsIgnoreNextSelectionChange(false);
 			});
-		}, [selection]);
+		}, [selection, inheritedEditorMode, isEditorDisabledByParent]);
 
 		if (self) {
 			self.add = doAdd;
@@ -776,7 +967,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			setEditorMode(calculateEditorMode());
 		}
 
-		return <WrappedComponent
+		const editorModeContextValue = {
+			effectiveEditorMode: getEditorMode(),
+			isAnyAncestorUnsaved,
+		};
+
+		return <EditorModeContext.Provider value={editorModeContextValue}>
+				<WrappedComponent
 					{...props}
 					ref={ref}
 					disableWithEditor={false}
@@ -786,35 +983,38 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isEditorShown={getIsEditorShown()}
 					getIsEditorShown={getIsEditorShown}
 					isEditorViewOnly={isEditorViewOnly}
+					isEditorModeControlledByParent={isEditorModeControlledByParent}
+					isEditorDisabledByParent={isEditorDisabledByParent}
 					isAdding={isAdding}
 					isSaving={isSaving}
 					editorMode={getEditorMode()}
 					getEditorMode={getEditorMode}
-					onEditMode={setEditMode}
-					onViewMode={setViewMode}
+					onEditMode={(isEditorModeControlledByParent || isEditorDisabledByParent) ? null : setEditMode}
+					onViewMode={(isEditorModeControlledByParent || isEditorDisabledByParent) ? null : setViewMode}
 					editorStateRef={editorStateRef}
 					setIsEditorShown={setIsEditorShown}
 					setIsIgnoreNextSelectionChange={setIsIgnoreNextSelectionChange}
-					onAdd={(!userCanEdit || disableAdd) ? null : doAdd}
-					onEdit={(!userCanEdit || disableEdit || (canRecordBeEdited && !canRecordBeEdited(selection))) ? null : doEdit}
-					onDelete={(!userCanEdit || disableDelete || (canRecordBeDeleted && !canRecordBeDeleted(selection))) ? null : doDelete}
-					onView={doView}
-					onDuplicate={doDuplicate}
+					onAdd={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableAdd) ? null : doAdd}
+					onEdit={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableEdit || (canRecordBeEdited && !canRecordBeEdited(selection))) ? null : doEdit}
+					onDelete={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete || (canRecordBeDeleted && !canRecordBeDeleted(selection))) ? null : doDelete}
+					onView={isEditorDisabledByParent ? null : doView}
+					onDuplicate={(isEditorDisabledByParent || isCrudBlockedByInheritedView) ? null : doDuplicate}
 					onEditorSave={doEditorSave}
 					onEditorCancel={doEditorCancel}
-					onEditorDelete={(!userCanEdit || disableDelete) ? null : doEditorDelete}
+					onEditorDelete={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete) ? null : doEditorDelete}
 					onEditorClose={doEditorClose}
 					setWithEditListeners={setListeners}
 					isEditor={true}
 					userCanEdit={userCanEdit}
 					userCanView={userCanView}
-					disableAdd={disableAdd}
-					disableEdit={disableEdit}
-					disableDelete={disableDelete}
-					disableDuplicate={disableDuplicate}
-					disableView ={disableView}
+					disableAdd={disableAdd || isEditorDisabledByParent || isCrudBlockedByInheritedView}
+					disableEdit={disableEdit || isEditorDisabledByParent || isCrudBlockedByInheritedView}
+					disableDelete={disableDelete || isEditorDisabledByParent || isCrudBlockedByInheritedView}
+					disableDuplicate={disableDuplicate || isEditorDisabledByParent || isCrudBlockedByInheritedView}
+					disableView ={disableView || isEditorDisabledByParent}
 					setSelection={setSelectionDecorated}
 					isTree={isTree}
-				/>;
+				/>
+			</EditorModeContext.Provider>;
 	});
 }

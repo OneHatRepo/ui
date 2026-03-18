@@ -72,6 +72,7 @@ function Viewer(props) {
 			onEditMode,
 			onClose,
 			onDelete,
+			isEditorModeControlledByParent = false,
 
 			// parent container
 			selectorId,
@@ -563,7 +564,7 @@ function Viewer(props) {
 
 						<Toolbar className="justify-end">
 							<HStack className="flex-1 items-center">
-								<Text className="text-[20px] ml-1 text-grey-500">View Mode</Text>
+									<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent ? 'View Mode (Inherited)' : 'View Mode'}</Text>
 							</HStack>
 							{onEditMode && (!canUser || canUser(EDIT)) && 
 								<Button
