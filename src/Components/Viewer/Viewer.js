@@ -18,6 +18,9 @@ import {
 	EDIT,
 } from '../../Constants/Commands.js';
 import {
+	EDITOR_MODE__ADD,
+	EDITOR_MODE__EDIT,
+	EDITOR_MODE__VIEW,
 	EDITOR_TYPE__SIDE,
 	EDITOR_TYPE__SMART,
 } from '../../Constants/Editor.js';
@@ -69,6 +72,8 @@ function Viewer(props) {
 
 			// withEditor
 			editorType,
+			getEditorMode,
+			editorMode,
 			onEditMode,
 			onClose,
 			onDelete,
@@ -353,6 +358,14 @@ function Viewer(props) {
 		buildAncillary = () => {
 			const
 				validAncillaryItems = _.filter(ancillaryItems, (item) => !!item), // filter out any null/undefined items
+				parentEditorModeRaw = (getEditorMode && getEditorMode()) || editorMode || null,
+				parentEditorMode = parentEditorModeRaw === EDITOR_MODE__ADD
+					? EDITOR_MODE__EDIT
+					: parentEditorModeRaw,
+				normalizedParentEditorMode =
+					parentEditorMode === EDITOR_MODE__EDIT || parentEditorMode === EDITOR_MODE__VIEW
+						? parentEditorMode
+						: null,
 				components = [];
 			setAncillaryButtons([]);
 			if (validAncillaryItems.length) {
@@ -396,6 +409,8 @@ function Viewer(props) {
 					}
 
 					const
+						ancillaryEditorMode = itemPropsToPass.editorMode ?? normalizedParentEditorMode,
+						ancillaryInitialEditorMode = itemPropsToPass.initialEditorMode ?? ancillaryEditorMode ?? undefined,
 						Element = getComponentFromType(type),
 						element = <Element
 										{...testProps('ancillary-' + type)}
@@ -407,6 +422,8 @@ function Viewer(props) {
 										uniqueRepository={true}
 										parent={self}
 										{...itemPropsToPass}
+										editorMode={ancillaryEditorMode}
+										initialEditorMode={ancillaryInitialEditorMode}
 										className={className}
 										canRowsReorder={false}
 									/>;

@@ -57,6 +57,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				newEntityDisplayValue,
 				newEntityDisplayProperty, // in case the field to set for newEntityDisplayValue is different from model
 				defaultValues,
+				editorMode: parentEditorModeProp,
 				initialEditorMode = EDITOR_MODE__VIEW,
 				stayInEditModeOnSelectionChange = false,
 				inheritParentEditorMode = true,
@@ -174,7 +175,21 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			getParentEditorMode = () => {
-				return parentEditorModeContext?.effectiveEditorMode || null;
+				const contextMode = parentEditorModeContext?.effectiveEditorMode || null;
+				if (contextMode) {
+					return contextMode;
+				}
+
+				// Some modal implementations break React context boundaries. Fall back to
+				// an explicitly-passed parent mode so nested ancillary editors still inherit.
+				if (parentEditorModeProp === EDITOR_MODE__ADD) {
+					return EDITOR_MODE__EDIT;
+				}
+				if (parentEditorModeProp === EDITOR_MODE__EDIT || parentEditorModeProp === EDITOR_MODE__VIEW) {
+					return parentEditorModeProp;
+				}
+
+				return null;
 			},
 			getInheritedEditorMode = () => {
 				if (!inheritParentEditorMode) {

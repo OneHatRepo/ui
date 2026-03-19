@@ -969,6 +969,14 @@ function Form(props) {
 		buildAncillary = () => {
 			const
 				validAncillaryItems = _.filter(ancillaryItems, (item) => !!item), // filter out any null/undefined items
+				parentEditorModeRaw = getEditorMode?.() || props.editorMode || null,
+				parentEditorMode = parentEditorModeRaw === EDITOR_MODE__ADD
+					? EDITOR_MODE__EDIT
+					: parentEditorModeRaw,
+				normalizedParentEditorMode =
+					parentEditorMode === EDITOR_MODE__EDIT || parentEditorMode === EDITOR_MODE__VIEW
+						? parentEditorMode
+						: null,
 				components = [];
 			setAncillaryButtons([]);
 			if (validAncillaryItems.length) {
@@ -1011,6 +1019,8 @@ function Form(props) {
 					}
 
 					const
+						ancillaryEditorMode = itemPropsToPass.editorMode ?? normalizedParentEditorMode,
+						ancillaryInitialEditorMode = itemPropsToPass.initialEditorMode ?? ancillaryEditorMode ?? undefined,
 						Element = getComponentFromType(type),
 						element = <Element
 										{...testProps('ancillary-' + type)}
@@ -1020,6 +1030,8 @@ function Form(props) {
 										uniqueRepository={true}
 										parent={self}
 										{...itemPropsToPass}
+									editorMode={ancillaryEditorMode}
+										initialEditorMode={ancillaryInitialEditorMode}
 									/>;
 					if (title) {
 						if (record?.displayValue) {
