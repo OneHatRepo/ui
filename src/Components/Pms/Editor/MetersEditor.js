@@ -126,6 +126,11 @@ export default function MetersEditor(props) {
 								isEditable: false,
 								isEditingEnabledInPlainEditor: true,
 							},
+							{
+								name: 'meters__latest_meter_reading_date',
+								isEditable: false,
+								isEditingEnabledInPlainEditor: true,
+							},
 							...(includeExtendedCalculatedFields ? [
 								{
 									name: 'meters__latest_inspection_date',
