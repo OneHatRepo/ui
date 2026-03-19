@@ -46,10 +46,11 @@ function Editor(props) {
 	if (canRecordBeEdited && !canRecordBeEdited(selection)) {
 		canEdit = false;
 	}
+	const record = selection[0];
+	self.record = record; // make it so we can target the record from within a Viewer or Form
 	
 	// Repository?.isRemotePhantomMode && selection.length === 1 && 
 	if (getEditorMode() === EDITOR_MODE__VIEW || isEditorViewOnly || !canEdit) {
-		const record = selection[0];
 		if (record.isDestroyed) {
 			return null;
 		}
