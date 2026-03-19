@@ -240,6 +240,7 @@ function Form(props) {
 			resolver: yupResolver(validatorToUse),
 			context: { isPhantom },
 		}),
+		currentEditorMode = getEditorMode(),
 		buildFromColumnsConfig = () => {
 			// Only used in InlineEditor
 			// Build the fields that match the current columnsConfig in the grid
@@ -1153,6 +1154,29 @@ function Form(props) {
 		if (skipAll) {
 			return;
 		}
+		if (currentEditorMode !== EDITOR_MODE__ADD) {
+			return;
+		}
+		if (!containerWidth) {
+			// Wait until fields are mounted; before this, isValid can be false with empty errors.
+			return;
+		}
+
+		// In some flows the editor mode flips to ADD after the record effect runs.
+		// Validate again so the Add button is enabled immediately when form is valid.
+		const timeoutId = setTimeout(() => {
+			trigger();
+		}, 0);
+
+		return () => {
+			clearTimeout(timeoutId);
+		};
+	}, [record, currentEditorMode, containerWidth, trigger]);
+
+	useEffect(() => {
+		if (skipAll) {
+			return;
+		}
 		if (!Repository) {
 			return () => {
 				if (!_.isNil(editorStateRef)) {
@@ -1249,7 +1273,8 @@ function Form(props) {
 		showCloseBtn = false,
 		showCancelBtn = false,
 		showSaveBtn = false,
-		showSubmitBtn = false;
+		showSubmitBtn = false,
+		isAddMode = getEditorMode() === EDITOR_MODE__ADD;
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 
 		// create editor
@@ -1332,7 +1357,7 @@ function Form(props) {
 			isSaveDisabled = true;
 			isSubmitDisabled = true;
 		}
-		if (_.isEmpty(formState.dirtyFields) && !isPhantom) {
+		if (_.isEmpty(formState.dirtyFields) && !isPhantom && !isAddMode) {
 			isSaveDisabled = true;
 		}
 		if (onDelete && getEditorMode() === EDITOR_MODE__EDIT && isSingle) {

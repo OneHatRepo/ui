@@ -149,7 +149,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					selection = getSelection();
 				if (!_.isEmpty(formState?.dirtyFields) && newSelection !== selection && getEditorMode() === EDITOR_MODE__EDIT) {
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
-				} else if (selection && selection[0] && !selection[0].isDestroyed && (selection[0]?.isPhantom || selection[0]?.isRemotePhantom)) {
+				} else if (selection && selection[0] && !selection[0].isDestroyed && selection[0].isPhantom) {
 					confirm('This new record is unsaved. Are you sure you want to cancel editing? Changes will be lost.', async () => {
 						await selection[0].delete();
 						doIt();
@@ -216,7 +216,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (!record || record.isDestroyed) {
 					return false;
 				}
-				return !!(record.isPhantom || record.isRemotePhantom);
+				return !!record.isPhantom;
 			},
 			getIsEditorDisabledByParent = () => {
 				return getIsParentSaveLocked();
@@ -680,8 +680,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					// just update this one entity
 					selection[0].setValues(data);
 
-					// If this is a remote phantom, and nothing is dirty, stage it so it actually gets saved to server and solidified
-					if (selection[0].isRemotePhantom && !selection[0].isDirty) {
+					// In ADD mode, if record is phantom and nothing is dirty, stage it so save() still submits and solidifies.
+					if (getEditorMode() === EDITOR_MODE__ADD && selection[0].isPhantom && !selection[0].isDirty) {
 						selection[0].markStaged();
 						useStaged = true;
 					}
@@ -834,7 +834,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (canRecordBeEdited && canRecordBeEdited(selection) === false) {
 						return EDITOR_MODE__VIEW;
 					}
-					if (selection.length === 1 && !selection[0].isDestroyed && (selection[0].isPhantom || selection[0].isRemotePhantom) && !disableAdd) {
+					if (selection.length === 1 && !selection[0].isDestroyed && selection[0].isPhantom && !disableAdd) {
 						return EDITOR_MODE__ADD;
 					}
 					return selection.length ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
