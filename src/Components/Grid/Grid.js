@@ -430,7 +430,7 @@ function GridComponent(props) {
 				return processedConfig;
 			});
 			const items = _.map(processedButtons, (config, ix) => getIconButtonFromConfig(config, ix, self));
-			if (canRowsReorder && CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
+			if (canRowsReorder && CURRENT_MODE === UI_MODE_WEB && onEdit && (!canUser || canUser(EDIT)) && !isEditorViewOnly) { // DND is currently web-only  TODO: implement for RN
 				items.unshift(<IconButton
 					{...testProps('reorderBtn')}
 					key="reorderBtn"
