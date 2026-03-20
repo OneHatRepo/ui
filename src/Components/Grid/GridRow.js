@@ -450,6 +450,8 @@ const GridRow = forwardRef((props, ref) => {
 									)}
 								/>}
 						</>;
+		const hasCustomBgClass = rowProps?.className && /\bbg-/.test(rowProps.className);
+
 		if (dropTargetRef) {
 			rowContents = <HStack
 								ref={dropTargetRef}
@@ -459,9 +461,7 @@ const GridRow = forwardRef((props, ref) => {
 									'flex-1',
 									'grow-1',
 								)}
-								style={{
-									backgroundColor: bg,
-								}}
+								style={hasCustomBgClass ? undefined : { backgroundColor: bg }}
 							>{rowContents}</HStack>;
 		}
 
@@ -485,9 +485,7 @@ const GridRow = forwardRef((props, ref) => {
 						{...rowProps}
 						key={hash}
 						className={rowClassName}
-						style={{
-							backgroundColor: bg,
-						}}
+						style={hasCustomBgClass ? undefined : { backgroundColor: bg }}
 					>{rowContents}</HStackNative>;
 		if (rowProps.tooltip) {
 			row = <Tooltip
