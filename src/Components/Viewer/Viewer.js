@@ -51,6 +51,7 @@ function Viewer(props) {
 	const {
 			viewerCanDelete = false,
 			items = [], // Columns, FieldSets, Fields, etc to define the form
+			isItemsCustomLayout = false,
 			ancillaryItems = [], // additional items which are not controllable form elements, but should appear in the form
 			showAncillaryButtons = false,
 			columnDefaults = {}, // defaults for each Column defined in items (above)
@@ -183,7 +184,7 @@ function Viewer(props) {
 				let children;
 				const style = {};
 				if (type === 'Column') {
-					const isEverythingInOneColumn = containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD;
+					const isEverythingInOneColumn = isItemsCustomLayout || containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD;
 					if (itemPropsToPass.hasOwnProperty('flex')) {
 						if (!isEverythingInOneColumn) {
 							style.flex = itemPropsToPass.flex;
@@ -489,7 +490,9 @@ function Viewer(props) {
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
 		showCloseBtn = !isSideEditor && !isSmartEditor && onClose,
-		showFooter = (showDeleteBtn || showCloseBtn);
+		showFooter = (showDeleteBtn || showCloseBtn),
+		hasTopLevelColumns = _.some(items, (item) => item?.type === 'Column'),
+		shouldUseHorizontalViewerLayout = !isItemsCustomLayout && hasTopLevelColumns && containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD;
 	let additionalButtons = null,
 		viewerComponents = null,
 		ancillaryComponents = null,
@@ -611,8 +614,8 @@ function Viewer(props) {
 								{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
 							</Toolbar>}
 						
-						{containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD ? <HStack className="Viewer-formComponents-HStack p-4 gap-4 justify-center">{viewerComponents}</HStack> : null}
-						{containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD ? <VStack className="Viewer-formComponents-VStack p-4">{viewerComponents}</VStack> : null}
+						{shouldUseHorizontalViewerLayout ? <HStack className="Viewer-formComponents-HStack p-4 gap-4 justify-center">{viewerComponents}</HStack> : null}
+						{!shouldUseHorizontalViewerLayout ? <VStack className="Viewer-formComponents-VStack p-4">{viewerComponents}</VStack> : null}
 						<VStack className="Viewer-AncillaryComponents m-2 pt-4 px-2">{ancillaryComponents}</VStack>
 					</ScrollView>
 
