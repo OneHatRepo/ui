@@ -58,28 +58,8 @@ export default function withPdfButtons(WrappedComponent) {
 			styles = UiGlobals.styles,
 			propertyNames = [],
 			buildModalItems = () => {
-				const modalItems = _.map(_.cloneDeep(items), (item, ix) => buildNextLayer(item, ix, columnDefaults)); // clone, as we don't want to alter the item by reference
-
-				// remove additionalEditButtons from the modal
-				function walkTreeToDeleteAdditionalEditButtons(item) {
-					if (!item) {
-						return;
-					}
-
-					let {
-							additionalEditButtons,
-							items,
-						} = item;
-					if (!_.isEmpty(items)) {
-						_.each(items, (item) => {
-							walkTreeToDeleteAdditionalEditButtons(item);
-						});
-					}
-					if (additionalEditButtons) {
-						delete item.additionalEditButtons;
-					}
-				}
-				_.each(modalItems, walkTreeToDeleteAdditionalEditButtons);
+				// Build a cloned PDF item tree so we never mutate source items by reference.
+				const modalItems = _.compact(_.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults)));
 
 				if (!_.isEmpty(ancillaryItems)) {
 					const
@@ -127,47 +107,74 @@ export default function withPdfButtons(WrappedComponent) {
 				return modalItems;
 			},
 			buildNextLayer = (item, ix, defaults) => {
-				let {
-						type,
-						name,
-						items,
-					} = item;
-				if (inArray(type, ['Column', 'FieldSet'])) {
-					if (!item.defaults) {
-						item.defaults = {};
-					}
-					if (type === 'FieldSet') {
-						item.showToggleAllCheckbox = true;
-						item.isCollapsible = false;
-					}
-					item.defaults.labelWidth = '90%';
-					if (!_.isEmpty(items)) {
-						const defaults = item.defaults;
-						item.items = _.map(items, (item, ix) => {
-							if (!item){
-								return null;
-							}
-							return buildNextLayer(item, ix, defaults);
-						});
-					}
-					return item;
-				}
-
-				if (item.isHiddenInViewMode || type === 'Button') {
+				if (!item) {
 					return null;
 				}
 
-				if (!item.title) {
+				const {
+					type,
+					name,
+					title,
+					items: childItems,
+					isHiddenInViewMode,
+				} = item;
+
+				if (inArray(type, ['Column', 'FieldSet'])) {
+					const nextDefaults = {
+						...(defaults || {}),
+						...(item.defaults || {}),
+						labelWidth: '90%',
+					};
+
+					const nextItem = {
+						type,
+						defaults: nextDefaults,
+					};
+
+					if (title) {
+						nextItem.title = title;
+					}
+					if (item.reference) {
+						nextItem.reference = item.reference;
+					}
+					if (item.flex) {
+						nextItem.flex = item.flex;
+					}
+					if (type === 'FieldSet') {
+						nextItem.showToggleAllCheckbox = true;
+						nextItem.isCollapsible = false;
+					}
+
+					if (!_.isEmpty(childItems)) {
+						nextItem.items = _.compact(_.map(childItems, (childItem, childIx) => buildNextLayer(childItem, childIx, nextDefaults)));
+					}
+
+					return nextItem;
+				}
+
+				if (isHiddenInViewMode || type === 'Button') {
+					return null;
+				}
+
+				let resolvedTitle = title;
+				if (!resolvedTitle) {
 					const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
 					if (propertyDef?.title) {
-						item.title = propertyDef.title;
+						resolvedTitle = propertyDef.title;
 					}
 				}
 				if (name) {
 					propertyNames.push(name); // for validator
 				}
-				item.type = 'Checkbox';
-				return item;
+				if (!name) {
+					return null;
+				}
+
+				return {
+					type: 'Checkbox',
+					name,
+					title: resolvedTitle,
+				};
 			},
 			buildValidator = () => {
 				const propertyValidatorDefs = {};
