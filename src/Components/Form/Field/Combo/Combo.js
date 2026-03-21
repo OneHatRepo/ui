@@ -1223,6 +1223,25 @@ export const ComboComponent = forwardRef((props, ref) => {
 	}
 	
 	if (isViewerShown && Editor) {
+		let modalBackdrop = <ModalBackdrop className="Combo-viewer-ModalBackdrop" />;
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
+			// Gluestack's ModalBackdrop was not working on Native,
+			// so workaround is to do it manually for now
+			modalBackdrop = <Pressable
+								onPress={onViewerClose}
+								className={clsx(
+									'Combo-viewer-ModalBackdrop-replacment',
+									'h-full',
+									'w-full',
+									'absolute',
+									'top-0',
+									'left-0',
+									'bg-[#000]',
+									'opacity-50',
+								)}
+							/>;
+		}
+
 		const propsForViewer = _.pick(props, [
 			'disableCopy',
 			'disableDuplicate',
@@ -1246,6 +1265,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						isOpen={true}
 						onClose={onViewerClose}
 					>
+						{modalBackdrop}
 						<Editor
 							editorType={EDITOR_TYPE__WINDOWED}
 							isEditorViewOnly={true}
