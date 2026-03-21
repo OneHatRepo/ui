@@ -33,6 +33,7 @@ export default function withPdfButtons(WrappedComponent) {
 				additionalEditButtons = [],
 				additionalViewButtons = [],
 				items = [],
+				pdfItems,
 				ancillaryItems = [],
 				columnDefaults = {},
 
@@ -59,7 +60,9 @@ export default function withPdfButtons(WrappedComponent) {
 			propertyNames = [],
 			buildModalItems = () => {
 				// Build a cloned PDF item tree so we never mutate source items by reference.
-				const modalItems = _.compact(_.map(items, (item, ix) => buildNextLayer(item, ix, columnDefaults)));
+				const
+					itemsTouse = pdfItems || items,
+					modalItems = _.compact(_.map(itemsTouse, (item, ix) => buildNextLayer(item, ix, columnDefaults)));
 
 				if (!_.isEmpty(ancillaryItems)) {
 					const
