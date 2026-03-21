@@ -179,6 +179,7 @@ export default function withPdfButtons(WrappedComponent) {
 					type: 'Checkbox',
 					name,
 					title: resolvedTitle,
+					isEditable: false, // hack to force all checkboxes to use same render branch in Form
 				};
 			},
 			buildValidator = () => {
