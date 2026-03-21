@@ -35,6 +35,7 @@ export default function withPdfButtons(WrappedComponent) {
 				items = [],
 				pdfItems,
 				ancillaryItems = [],
+				pdfAncillaryItems,
 				columnDefaults = {},
 
 				// withComponent
@@ -62,11 +63,12 @@ export default function withPdfButtons(WrappedComponent) {
 				// Build a cloned PDF item tree so we never mutate source items by reference.
 				const
 					itemsTouse = pdfItems || items,
+					ancillaryItemsToUse = pdfAncillaryItems || ancillaryItems,
 					modalItems = _.compact(_.map(itemsTouse, (item, ix) => buildNextLayer(item, ix, columnDefaults)));
 
-				if (!_.isEmpty(ancillaryItems)) {
+				if (!_.isEmpty(ancillaryItemsToUse)) {
 					const
-						ancillaryItemsClone = _.cloneDeepWith(ancillaryItems, (value) => {
+						ancillaryItemsClone = _.cloneDeepWith(ancillaryItemsToUse, (value) => {
 							// Exclude the 'parent' property from being cloned, as it would introduce an infinitely recursive loop
 							if (value && value.parent) {
 								const { parent, ...rest } = value;
