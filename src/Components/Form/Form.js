@@ -1046,7 +1046,7 @@ function Form(props) {
 											)}
 										>{title}</Text>;
 						if (icon) {
-							titleElement = <HStack className="items-center"><Icon as={icon} className="w-[32px] h-[32px] mr-2" />{titleElement}</HStack>
+							titleElement = <HStack className="items-center mb-1"><Icon as={icon} className="w-[32px] h-[32px] mr-2" />{titleElement}</HStack>
 						}
 					}
 					if (description) {
