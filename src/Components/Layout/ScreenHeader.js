@@ -22,6 +22,7 @@ function ScreenHeader(props) {
 	const {
 			title,
 			icon,
+			additionalButtons,
 			info,
 			_info = {},
 			useModeIcons = false,
@@ -88,6 +89,7 @@ function ScreenHeader(props) {
 							tooltip="To side editor"
 						/>
 					</>}
+				{additionalButtons}
 				{info && 
 					<IconButton
 						{...testProps('infoBtn')}
