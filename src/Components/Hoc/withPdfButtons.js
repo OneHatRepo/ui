@@ -179,7 +179,7 @@ export default function withPdfButtons(WrappedComponent) {
 					type: 'Checkbox',
 					name,
 					title: resolvedTitle,
-					isEditable: false, // hack to force all checkboxes to use same render branch in Form
+					label: resolvedTitle,
 				};
 			},
 			buildValidator = () => {
@@ -228,6 +228,7 @@ export default function withPdfButtons(WrappedComponent) {
 								parent={self}
 								reference="chooseFieldsForm"
 								editorType={EDITOR_TYPE__PLAIN}
+								checkIsEditingDisabled={false /* hack so layout looks right */}
 								alert={alert}
 								columnDefaults={{
 									labelWidth: '100px',
