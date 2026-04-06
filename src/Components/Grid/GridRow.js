@@ -375,9 +375,11 @@ const GridRow = forwardRef((props, ref) => {
 					// TODO: incorporate better scrollbar formatting with
 					// tailwind plugin 'tailwind-scrollbar' (already installed, just not yet used here)
 
+					const isEmptyCellValue = _.isNil(value) || value === '';
+
 					let textClassName = clsx(
 						'GridRow-TextNative',
-						'self-center',
+						isEmptyCellValue ? 'self-stretch' : 'self-center', // if the cell value is empty, stretch the cell to be full height
 						areCellsScrollable ? 'overflow-auto' : 'overflow-hidden',
 						'[&::-webkit-scrollbar]:h-2',
 						'[&::-webkit-scrollbar-thumb]:bg-gray-300',
@@ -386,6 +388,14 @@ const GridRow = forwardRef((props, ref) => {
 						styles.GRID_CELL_CLASSNAME,
 						styles.GRID_ROW_MAX_HEIGHT_EXTRA,
 					);
+					const textStyle = {
+						// userSelect: 'none',
+						...colStyle,
+						...(isEmptyCellValue ? { // if the cell value is empty, stretch the cell to be full height
+							height: '100%',
+							display: 'block',
+						} : {}),
+					};
 					if (rowProps?._cell?.className) {
 						textClassName += ' ' + rowProps._cell.className;
 					}
@@ -395,16 +405,13 @@ const GridRow = forwardRef((props, ref) => {
 					return <TextNative
 								{...testProps('cell-' + config.fieldName)}
 								key={key}
-								style={{
-									// userSelect: 'none',
-									...colStyle,
-								}}
+								style={textStyle}
 								numberOfLines={1}
 								ellipsizeMode="head"
 								className={textClassName}
 								{...elementProps}
 								{...propsToPass}
-							>{value}</TextNative>;
+							>{isEmptyCellValue ? ' ' : value}</TextNative>;
 				});
 			} else {
 				// TODO: if 'columnsConfig' is an object, parse its contents
