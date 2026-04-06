@@ -36,6 +36,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				disableAdd = false,
 				disableEdit = false,
 				disableDelete = false,
+				enableMultiDelete = false, // deleting multiple records at once is opt-in only
 				disableDuplicate = false,
 				disableView = false,
 				useRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
@@ -441,7 +442,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					cb = args;
 				}
 				const selection = getSelection();
-				if (_.isEmpty(selection) || (_.isArray(selection) && (selection.length > 1 || selection[0]?.isDestroyed))) {
+				const hasTreeSelection = isTree || _.some(selection, (selected) => !!selected?.isTree);
+				if (
+					_.isEmpty(selection) ||
+					(_.isArray(selection) && (
+						selection[0]?.isDestroyed ||
+						(selection.length > 1 && (!enableMultiDelete || hasTreeSelection))
+					))
+				) {
 					return;
 				}
 				if (onBeforeDelete) {
@@ -461,11 +469,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				const
 					isSingle = selection.length === 1,
 					firstSelection = selection[0],
-					isTree = firstSelection?.isTree,
-					hasChildren = isTree ? firstSelection?.hasChildren : false,
+					isTreeNode = firstSelection?.isTree,
+					hasChildren = isTreeNode ? firstSelection?.hasChildren : false,
 					isPhantom = firstSelection?.isPhantom;
 
-				if (isSingle && isTree && hasChildren) {
+				if (isSingle && isTreeNode && hasChildren) {
 					alert({
 						title: 'Move up children?',
 						message: 'The node you have selected for deletion has children. ' + 
@@ -1022,6 +1030,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isEditor={true}
 					userCanEdit={userCanEdit}
 					userCanView={userCanView}
+					enableMultiDelete={enableMultiDelete}
 					disableAdd={disableAdd || isEditorDisabledByParent || isCrudBlockedByInheritedView}
 					disableEdit={disableEdit || isEditorDisabledByParent || isCrudBlockedByInheritedView}
 					disableDelete={disableDelete || isEditorDisabledByParent || isCrudBlockedByInheritedView}

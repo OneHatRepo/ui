@@ -75,6 +75,7 @@ export default function withPresetButtons(WrappedComponent) {
 				disableAdd = !isEditor,
 				disableEdit = !isEditor,
 				disableDelete = !isEditor,
+				enableMultiDelete = false,
 				disableView = isTree,
 				disableCopy = isTree,
 				disableDuplicate = !isEditor,
@@ -300,7 +301,7 @@ export default function withPresetButtons(WrappedComponent) {
 						icon = Trash;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
-							isMultiSelection() ||
+							(isMultiSelection() && (!enableMultiDelete || isTree)) ||
 							isProtectedValue() ||
 							(canRecordBeDeleted && !canRecordBeDeleted(selection))
 						) {
