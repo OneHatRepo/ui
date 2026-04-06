@@ -424,6 +424,8 @@ function Container(props) {
 
 	componentProps._panel.isCollapsible = false;
 	componentProps._panel.isDisabled = isDisabled || isComponentsDisabled;
+	componentProps.isCollapsible = false;
+	componentProps.isDisabled = isDisabled || isComponentsDisabled;
 	componentProps.onLayout = debouncedOnLayout;
 	centerComponent = cloneElement(center, componentProps);
 	if (north) {
@@ -432,9 +434,11 @@ function Container(props) {
 		
 		componentProps._panel.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps._panel.className = 'h-full w-full ' + (north.props.className || '');
+		componentProps.isDisabled = !!north.props?.isDisabled || isDisabled || isComponentsDisabled;
+		componentProps.className = 'h-full w-full ' + (north.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const height = parseFloat(e.nativeEvent.layout.height);
-			if (height && height !== northHeight) {
+			if (height && height !== getNorthHeight()) {
 				setNorthHeight(height);
 			}
 		};
@@ -453,6 +457,9 @@ function Container(props) {
 		componentProps._panel.collapseDirection = VERTICAL;
 		componentProps._panel.isCollapsed = getNorthIsCollapsed();
 		componentProps._panel.setIsCollapsed = setNorthIsCollapsed;
+		componentProps.collapseDirection = VERTICAL;
+		componentProps.isCollapsed = getNorthIsCollapsed();
+		componentProps.setIsCollapsed = setNorthIsCollapsed;
 		if (isWeb && northIsResizable) {
 			northSplitter = <Splitter
 								mode={VERTICAL}
@@ -470,6 +477,8 @@ function Container(props) {
 		
 		componentProps._panel.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps._panel.className = 'h-full w-full ' + (south.props.className || '');
+		componentProps.isDisabled = !!south.props?.isDisabled || isDisabled || isComponentsDisabled;
+		componentProps.className = 'h-full w-full ' + (south.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const height = parseFloat(e.nativeEvent.layout.height);
 			if (height && height !== getSouthHeight()) {
@@ -491,6 +500,9 @@ function Container(props) {
 		componentProps._panel.collapseDirection = VERTICAL;
 		componentProps._panel.isCollapsed = getSouthIsCollapsed();
 		componentProps._panel.setIsCollapsed = setSouthIsCollapsed;
+		componentProps.collapseDirection = VERTICAL;
+		componentProps.isCollapsed = getSouthIsCollapsed();
+		componentProps.setIsCollapsed = setSouthIsCollapsed;
 		if (isWeb && southIsResizable) {
 			southSplitter = <Splitter
 								mode={VERTICAL}
@@ -508,6 +520,8 @@ function Container(props) {
 		
 		componentProps._panel.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps._panel.className = 'h-full w-full ' + (east.props.className || '');
+		componentProps.isDisabled = !!east.props?.isDisabled || isDisabled || isComponentsDisabled;
+		componentProps.className = 'h-full w-full ' + (east.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
 			if (width && width !== getEastWidth()) {
@@ -529,6 +543,9 @@ function Container(props) {
 		componentProps._panel.collapseDirection = HORIZONTAL;
 		componentProps._panel.isCollapsed = getEastIsCollapsed();
 		componentProps._panel.setIsCollapsed = setEastIsCollapsed;
+		componentProps.collapseDirection = HORIZONTAL;
+		componentProps.isCollapsed = getEastIsCollapsed();
+		componentProps.setIsCollapsed = setEastIsCollapsed;
 		if (isWeb && eastIsResizable) {
 			eastSplitter = <Splitter
 								mode={HORIZONTAL}
@@ -546,6 +563,8 @@ function Container(props) {
 		
 		componentProps._panel.isDisabled = isDisabled || isComponentsDisabled;
 		componentProps._panel.className = 'h-full w-full ' + (west.props.className || '');
+		componentProps.isDisabled = !!west.props?.isDisabled || isDisabled || isComponentsDisabled;
+		componentProps.className = 'h-full w-full ' + (west.props.className || '');
 		wrapperProps.onLayout = (e) => {
 			const width = parseFloat(e.nativeEvent.layout.width);
 			if (width && width !== getWestWidth()) {
@@ -567,6 +586,9 @@ function Container(props) {
 		componentProps._panel.collapseDirection = HORIZONTAL;
 		componentProps._panel.isCollapsed = getWestIsCollapsed();
 		componentProps._panel.setIsCollapsed = setWestIsCollapsed;
+		componentProps.collapseDirection = HORIZONTAL;
+		componentProps.isCollapsed = getWestIsCollapsed();
+		componentProps.setIsCollapsed = setWestIsCollapsed;
 		if (isWeb && westIsResizable) {
 			westSplitter = <Splitter
 								mode={HORIZONTAL}
