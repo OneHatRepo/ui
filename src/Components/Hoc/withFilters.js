@@ -97,7 +97,7 @@ export default function withFilters(WrappedComponent) {
 					
 					let title, type;
 					if (propertyDef) {
-						title = propertyDef.title;
+						title = propertyDef.filterTitle || propertyDef.title;
 						type = propertyDef.filterType;
 					} else if (modelAncillaryFilters[field]) {
 						const ancillaryFilter = modelFilterTypes[field];
@@ -262,7 +262,7 @@ export default function withFilters(WrappedComponent) {
 						
 					if (!title) {
 						const propertyDef = Repository.getSchema().getPropertyDefinition(field);
-						title = propertyDef?.title;
+						title = propertyDef?.filterTitle || propertyDef?.title;
 					}
 
 					if (_.isString(filterType)) {
