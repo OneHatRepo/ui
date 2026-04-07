@@ -398,6 +398,9 @@ export default function withFilters(WrappedComponent) {
 
 						// basic property filter
 						const propertyDef = Repository.getSchema().getPropertyDefinition(filterField);
+						if (propertyDef?.isFilteringDisabled) {
+							return;
+						}
 						data.push([ filterField, propertyDef?.filterTitle || propertyDef?.title ]);
 					});
 
