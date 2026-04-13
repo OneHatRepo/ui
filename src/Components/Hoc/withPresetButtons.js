@@ -436,6 +436,10 @@ export default function withPresetButtons(WrappedComponent) {
 					showInfo('Copied to clipboard!');
 				}
 			},
+			getColumnsConfigForDownload = () => {
+				const activeColumnsConfig = localColumnsConfig.length ? localColumnsConfig : props.columnsConfig;
+				return _.filter(activeColumnsConfig, (config) => !config.isHidden);
+			},
 			onUploadDownload = () => {
 				const onUploadDecorator = async () => {
 					if (onUpload) {
@@ -454,7 +458,7 @@ export default function withPresetButtons(WrappedComponent) {
 								reference="uploadsDownloads"
 								onClose={hideModal}
 								Repository={Repository}
-								columnsConfig={props.columnsConfig}
+								columnsConfig={getColumnsConfigForDownload()}
 								uploadHeaders={uploadHeaders}
 								uploadParams={uploadParams}
 								onUpload={onUploadDecorator}
@@ -471,7 +475,7 @@ export default function withPresetButtons(WrappedComponent) {
 								onClose={hideModal}
 								isDownloadOnly={true}
 								Repository={Repository}
-								columnsConfig={props.columnsConfig}
+								columnsConfig={getColumnsConfigForDownload()}
 								downloadHeaders={downloadHeaders}
 								downloadParams={downloadParams}
 							/>,
