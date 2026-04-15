@@ -18,6 +18,11 @@ import Upload from '../Icons/Upload';
 import Cookies from 'js-cookie';
 import _ from 'lodash';
 
+const
+	MODES__GRID = 'grid',
+	MODES__BATCH = 'batch',
+	MODES__TEMPLATE = 'template';
+
 function UploadsDownloadsWindow(props) {
 	const {
 			Repository,
@@ -37,8 +42,8 @@ function UploadsDownloadsWindow(props) {
 			showInfo,
 		} = props,
 		[importFile, setImportFile] = useState(null),
-		[width, height] = useAdjustedWindowSize(400, 450),
-		onDownload = (isTemplate = false) => {
+		[width, height] = useAdjustedWindowSize(400, 550),
+		onDownload = (mode) => {
 
 			const win = window.open('');
 			win.document.write('<html><head><title>Downloading</title></head><body><img style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);" src="' + 
@@ -63,7 +68,7 @@ function UploadsDownloadsWindow(props) {
 						columns,
 						order,
 						model,
-						isTemplate,
+						mode,
 						...Repository._params,
 						...downloadParams,
 					}),
@@ -78,9 +83,6 @@ function UploadsDownloadsWindow(props) {
 					win.window.close();
 				}
 			}, 1000);
-		},
-		onDownloadTemplate = () => {
-			onDownload(true);
 		},
 		onUploadLocal = async () => {
 			const
@@ -130,24 +132,40 @@ function UploadsDownloadsWindow(props) {
 		const items = [
 			{
 				type: 'DisplayField',
-				text: 'Download an Excel file of the current grid contents.',
+				text: "Get the current grid's contents as an Excel file.",
 			},
 			{
 				type: 'Button',
-				text: 'Download',
+				text: 'Get as Excel',
 				isEditable: false,
 				icon: Excel,
 				_icon: {
 					size: 'md',
 				},
-				onPress: () => onDownload(),
+				onPress: () => onDownload(MODES__GRID),
+				className: 'mb-5',
+			},
+			{
+				type: 'DisplayField',
+				text: "Batch download the current grid's records,\n"
+					+ "so they can be edited and re-uploaded.",
+			},
+			{
+				type: 'Button',
+				text: 'Batch Download',
+				isEditable: false,
+				icon: Excel,
+				_icon: {
+					size: 'md',
+				},
+				onPress: () => onDownload(MODES__BATCH),
 				className: 'mb-5',
 			},
 		];
 		if (!isDownloadOnly) {
 			items.push({
 				type: 'DisplayField',
-				text: 'Upload an Excel file to the current grid.',
+				text: 'Batch upload an Excel file to the current grid.',
 			});
 			items.push({
 				type: 'File',
@@ -161,7 +179,7 @@ function UploadsDownloadsWindow(props) {
 				items: [
 					{
 						type: 'Button',
-						text: 'Upload',
+						text: 'Batch Upload',
 						isEditable: false,
 						icon: Upload,
 						_icon: {
@@ -175,7 +193,7 @@ function UploadsDownloadsWindow(props) {
 						text: 'Get Template',
 						icon: Download,
 						isEditable: false,
-						onPress: onDownloadTemplate,
+						onPress: () => onDownload(MODES__TEMPLATE),
 					},
 
 				],
