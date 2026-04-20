@@ -125,6 +125,7 @@ function Viewer(props) {
 					title,
 					name,
 					label,
+					disableLabel = false,
 					items,
 					useSelectorId = false,
 					isHidden = false,
@@ -160,7 +161,11 @@ function Viewer(props) {
 					type = 'Text';
 				}
 			}
-			const isCombo = type?.match && type.match(/Combo/);
+			const
+				Element = getComponentFromType(type),
+				shouldHideFieldUi = type === 'Hidden',
+				isCombo = type?.match && type.match(/Combo/);
+			
 			if (item.hasOwnProperty('autoLoad')) {
 				viewerTypeProps.autoLoad = item.autoLoad;
 			} else {
@@ -175,7 +180,6 @@ function Viewer(props) {
 			if (type?.match(/(Grid|GridEditor)$/)) {
 				viewerTypeProps.canEditorViewOnly = true;
 			}
-			const Element = getComponentFromType(type);
 
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
@@ -264,6 +268,10 @@ function Viewer(props) {
 						>{children}</Element>;
 			}
 
+			if (shouldHideFieldUi) {
+				return null;
+			}
+
 			if (!label && Repository && propertyDef?.title) {
 				label = propertyDef.title;
 			}
@@ -334,7 +342,7 @@ function Viewer(props) {
 							</HStack>;
 			}
 
-			if (!disableLabels && label) {
+			if (!disableLabels && !disableLabel && label) {
 				const style = {};
 				if (defaults?.labelWidth) {
 					style.width = defaults.labelWidth;

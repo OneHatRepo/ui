@@ -321,7 +321,11 @@ function Form(props) {
 						type = 'Text';
 					}
 				}
-				const isCombo = type?.match && type.match(/Combo/);
+				const
+					Element = getComponentFromType(type),
+					shouldHideFieldUi = type === 'Hidden',
+					isCombo = type?.match && type.match(/Combo/);
+				
 				if (config.hasOwnProperty('autoLoad')) {
 					editorTypeProps.autoLoad = config.autoLoad;
 				} else {
@@ -335,9 +339,8 @@ function Form(props) {
 						editorTypeProps.showXButton = true;
 					}
 				}
-				const Element = getComponentFromType(type);
 
-				if (isEditorViewOnly || !isEditable) {
+				if ((isEditorViewOnly || !isEditable) && !shouldHideFieldUi) {
 					let value = null;
 					if (renderer) {
 						value = renderer(record);
@@ -483,6 +486,9 @@ function Form(props) {
 														{...dynamicProps}
 														className={elementClassName}
 													/>;
+										if (shouldHideFieldUi) {
+											return element;
+										}
 
 										const dirtyIcon = isDirty && !disableDirtyIcon ? 
 															<Icon
@@ -532,6 +538,7 @@ function Form(props) {
 					isEditable = true,
 					isEditingEnabledInPlainEditor,
 					label,
+					disableLabel = false,
 					labelWidth,
 					items,
 					onChange: onEditorChange,
@@ -588,7 +595,11 @@ function Form(props) {
 					type = 'Text';
 				}
 			}
-			const isCombo = type?.match && type.match(/Combo/);
+			const
+				Element = getComponentFromType(type),
+				shouldHideFieldUi = type === 'Hidden',
+				isCombo = type?.match && type.match(/Combo/);
+			
 			if (item.hasOwnProperty('autoLoad')) {
 				editorTypeProps.autoLoad = item.autoLoad;
 			} else {
@@ -602,7 +613,6 @@ function Form(props) {
 					editorTypeProps.showXButton = true;
 				}
 			}
-			const Element = getComponentFromType(type);
 			
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
@@ -676,7 +686,7 @@ function Form(props) {
 				label = propertyDef.title;
 			}
 
-			if (isEditorViewOnly || !isEditable) {
+			if ((isEditorViewOnly || !isEditable) && !shouldHideFieldUi) {
 				let value = null;
 				if (isSingle) {
 					value = record?.properties?.[name]?.displayValue || null;
@@ -713,7 +723,10 @@ function Form(props) {
 									{...viewerTypeProps}
 									className={elementClassName}
 								/>;
-				if (!disableLabels && label) {
+				if (shouldHideFieldUi) {
+					return null;
+				}
+				if (!disableLabels && !disableLabel && label) {
 					const style = {};
 					if (defaults?.labelWidth) {
 						style.width = defaults.labelWidth;
@@ -846,6 +859,9 @@ function Form(props) {
 												{...dynamicProps}
 												className={elementClassName}
 											/>;
+							if (shouldHideFieldUi) {
+								return element;
+							}
 							let message = null;
 							if (error) {
 								message = error.message;
@@ -905,7 +921,7 @@ function Form(props) {
 								}
 							}
 							const labelToUse = dynamicProps.label || label;
-							if (!disableLabels && labelToUse && editorType !== EDITOR_TYPE__INLINE) {
+							if (!disableLabels && !disableLabel && labelToUse && editorType !== EDITOR_TYPE__INLINE) {
 								const style = {};
 								if (defaults?.labelWidth) {
 									style.width = defaults.labelWidth;
@@ -933,7 +949,7 @@ function Form(props) {
 													{element}
 												</VStack>;
 								}
-							} else if (disableLabels && requiredIndicator) {
+							} else if ((disableLabels || disableLabel) && requiredIndicator) {
 								element = <HStack className="Form-HStack10 w-full">
 												{requiredIndicator}
 												{element}
