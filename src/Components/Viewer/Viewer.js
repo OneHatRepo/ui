@@ -107,6 +107,14 @@ function Viewer(props) {
 		}),
 		isSideEditor = editorType === EDITOR_TYPE__SIDE,
 		isSmartEditor = editorType === EDITOR_TYPE__SMART,
+		parentEditorModeRaw = (getEditorMode && getEditorMode()) || editorMode || null,
+		parentEditorMode = parentEditorModeRaw === EDITOR_MODE__ADD
+			? EDITOR_MODE__EDIT
+			: parentEditorModeRaw,
+		normalizedParentEditorMode =
+			parentEditorMode === EDITOR_MODE__EDIT || parentEditorMode === EDITOR_MODE__VIEW
+				? parentEditorMode
+				: null,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
 		buildFromItems = () => {
@@ -367,14 +375,6 @@ function Viewer(props) {
 		buildAncillary = () => {
 			const
 				validAncillaryItems = _.filter(ancillaryItems, (item) => !!item), // filter out any null/undefined items
-				parentEditorModeRaw = (getEditorMode && getEditorMode()) || editorMode || null,
-				parentEditorMode = parentEditorModeRaw === EDITOR_MODE__ADD
-					? EDITOR_MODE__EDIT
-					: parentEditorModeRaw,
-				normalizedParentEditorMode =
-					parentEditorMode === EDITOR_MODE__EDIT || parentEditorMode === EDITOR_MODE__VIEW
-						? parentEditorMode
-						: null,
 				components = [];
 			setAncillaryButtons([]);
 			if (validAncillaryItems.length) {
@@ -592,7 +592,7 @@ function Viewer(props) {
 
 						<Toolbar className="justify-end">
 							<HStack className="flex-1 items-center">
-									<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent ? 'View Mode (Inherited)' : 'View Mode'}</Text>
+									<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent && normalizedParentEditorMode === EDITOR_MODE__VIEW ? 'View Mode (Inherited)' : 'View Mode'}</Text>
 							</HStack>
 							{onEditMode && (!canUser || canUser(EDIT)) && 
 								<Button
