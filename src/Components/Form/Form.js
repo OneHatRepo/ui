@@ -1290,7 +1290,10 @@ function Form(props) {
 		showCancelBtn = false,
 		showSaveBtn = false,
 		showSubmitBtn = false,
-		isAddMode = getEditorMode() === EDITOR_MODE__ADD;
+		isAddMode = getEditorMode() === EDITOR_MODE__ADD,
+		isEditableMode =
+			getEditorMode() === EDITOR_MODE__ADD ||
+			getEditorMode() === EDITOR_MODE__EDIT;
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 
 		// create editor
@@ -1379,7 +1382,7 @@ function Form(props) {
 		if (onDelete && getEditorMode() === EDITOR_MODE__EDIT && isSingle) {
 			showDeleteBtn = true;
 		}
-		if (!isEditorViewOnly && !hideResetButton) {
+		if (!isEditorViewOnly && isEditableMode && !hideResetButton) {
 			showResetBtn = true;
 		}
 		// determine whether we should show the close or cancel button
@@ -1410,7 +1413,7 @@ function Form(props) {
 				}
 			}
 		}
-		if (!isEditorViewOnly && onSave) {
+		if (!isEditorViewOnly && isEditableMode && onSave) {
 			showSaveBtn = true;
 		}
 		if (!!onSubmit) {
