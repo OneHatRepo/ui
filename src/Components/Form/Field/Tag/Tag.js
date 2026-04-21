@@ -320,7 +320,7 @@ function TagComponent(props) {
 						/>;
 			}
 			switch (items.length) {
-				case 1: height = 250; break;
+				case 1: height = 300; break;
 				case 2: height = 400; break;
 				default: height = 600; break;
 			}
