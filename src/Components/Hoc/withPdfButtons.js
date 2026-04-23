@@ -62,9 +62,9 @@ export default function withPdfButtons(WrappedComponent) {
 			buildModalItems = () => {
 				// Build a cloned PDF item tree so we never mutate source items by reference.
 				const
-					itemsTouse = pdfItems || items,
+					itemsToUse = pdfItems || _.filter(items, (item) => item?.type !== 'Hidden'),
 					ancillaryItemsToUse = pdfAncillaryItems || ancillaryItems,
-					modalItems = _.compact(_.map(itemsTouse, (item, ix) => buildNextLayer(item, ix, columnDefaults)));
+					modalItems = _.compact(_.map(itemsToUse, (item, ix) => buildNextLayer(item, ix, columnDefaults)));
 
 				if (!_.isEmpty(ancillaryItemsToUse)) {
 					const
