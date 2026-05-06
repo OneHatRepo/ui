@@ -8,8 +8,10 @@ import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import {
 	logout,
-	selectUser,
 } from '@src/Models/Slices/AppSlice';
+import {
+	selectUser,
+} from '../../Models/Slices/AuthSlice.js';
 import IconButton from '../Buttons/IconButton';
 import RightFromBracket from '../Icons/RightFromBracket';
 import User from '../Icons/User';

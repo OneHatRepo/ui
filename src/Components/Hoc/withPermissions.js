@@ -23,7 +23,7 @@ import _ from 'lodash';
 export function checkPermission(permission) {
 	const
 		reduxState = UiGlobals.redux?.getState(),
-		permissions = reduxState?.app?.permissions || [];
+		permissions = reduxState?.app?.permissions || reduxState?.auth?.permissions || [];
 	let hasPermission = inArray(permission, permissions);
 	if (hasPermission) {
 		return true;
