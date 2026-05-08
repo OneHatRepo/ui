@@ -4,7 +4,10 @@ import {
 } from '../Constants/ReportTypes.js';
 import downloadInBackground from './downloadInBackground.js';
 import downloadWithFetch from './downloadWithFetch.js';
-import getTokenHeaders from './getTokenHeaders.js';
+import {
+	getUserToken,
+	getRepositoryAuthHeaders,
+} from './authFunctions.js';
 import UiGlobals from '../UiGlobals.js';
 
 export default function getReport(args) {
@@ -27,7 +30,9 @@ export default function getReport(args) {
 			showReportHeaders,
 			...data,
 		},
-		authHeaders = getTokenHeaders();
+		user = UiGlobals?.redux?.getState ? UiGlobals.redux.getState()?.auth?.user : null,
+		token = getUserToken(user),
+		authHeaders = getRepositoryAuthHeaders(token);
 
 	if (reportType === REPORT_TYPES__EXCEL) {
 		downloadInBackground(url, params, authHeaders);
