@@ -28,6 +28,10 @@ const ButtonComponent = forwardRef((props, ref) => {
 			...propsToPass
 		} = props;
 
+	if (propsToPass.handler) {
+		propsToPass.onPress = propsToPass.handler; // alias
+	}
+
 	if (icon) {
 		if (isValidElement(icon)) {
 			if (_icon) {
