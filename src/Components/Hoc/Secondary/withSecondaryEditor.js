@@ -38,6 +38,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryDisableDelete = false,
 				secondaryDisableDuplicate = false,
 				secondaryDisableView = false,
+				secondaryWaitWhileSaving = false, // when true, show global wait modal while doEditorSave is in-flight
 				secondaryUseRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				secondaryGetRecordIdentifier = (secondarySelection) => {
 					if (secondarySelection.length > 1) {
@@ -558,16 +559,24 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 
 				setIsSaving(true);
+				if (secondaryWaitWhileSaving) {
+					setIsWaitModalShown(true);
+				}
 				let success = true;
 				const tempListener = (msg, data) => {
 					success = { msg, data };
 				};
 
-				SecondaryRepository.on('error', tempListener); // add a temporary listener for the error event
-				await SecondaryRepository.save(null, useStaged);
-				SecondaryRepository.off('error', tempListener); // remove the temporary listener
-				
-				setIsSaving(false);
+				try {
+					SecondaryRepository.on('error', tempListener); // add a temporary listener for the error event
+					await SecondaryRepository.save(null, useStaged);
+				} finally {
+					SecondaryRepository.off('error', tempListener); // remove the temporary listener
+					setIsSaving(false);
+					if (secondaryWaitWhileSaving) {
+						setIsWaitModalShown(false);
+					}
+				}
 
 				if (_.isBoolean(success) && success) {
 					if (secondaryOnChange) {

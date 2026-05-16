@@ -39,6 +39,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				enableMultiDelete = false, // deleting multiple records at once is opt-in only
 				disableDuplicate = false,
 				disableView = false,
+				waitWhileSaving = false, // when true, show global wait modal while doEditorSave is in-flight
 				useRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				getDuplicateValues, // fn(entity) to get default values for duplication
 				getRecordIdentifier = (selection) => {
@@ -716,16 +717,24 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 
 				setIsSaving(true);
+				if (waitWhileSaving) {
+					setIsWaitModalShown(true);
+				}
 				let success = true;
 				const tempListener = (msg, data) => {
 					success = false;
 				};
 
-				Repository.on('error', tempListener); // add a temporary listener for the error event
-				await Repository.save(null, useStaged);
-				Repository.off('error', tempListener); // remove the temporary listener
-				
-				setIsSaving(false);
+				try {
+					Repository.on('error', tempListener); // add a temporary listener for the error event
+					await Repository.save(null, useStaged);
+				} finally {
+					Repository.off('error', tempListener); // remove the temporary listener
+					setIsSaving(false);
+					if (waitWhileSaving) {
+						setIsWaitModalShown(false);
+					}
+				}
 
 				if (_.isBoolean(success) && success) {
 					if (onChange) {
