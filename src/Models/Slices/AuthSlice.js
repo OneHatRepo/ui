@@ -344,7 +344,7 @@ export const verifyStartupAuthThunk = createAsyncThunk(
 		const userData = getUserData(user);
 		const token = getUserToken(userData);
 		if (!token) {
-			await dispatch(forceUnauthenticatedThunk(EXPIRED_MESSAGE));
+			await dispatch(forceUnauthenticatedThunk(null));
 			return false;
 		}
 
@@ -364,7 +364,7 @@ export const verifyStartupAuthThunk = createAsyncThunk(
 			dispatch(setAuthStatus(AUTH_STATUS_AUTHENTICATED));
 			return true;
 		} catch (error) {
-			await dispatch(forceUnauthenticatedThunk(EXPIRED_MESSAGE));
+			await dispatch(forceUnauthenticatedThunk(null));
 			return false;
 		}
 	}
