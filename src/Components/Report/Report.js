@@ -47,6 +47,12 @@ function Report(props) {
 			quickReportData = {},
 			alert,
 		} = props,
+		formProps = props._form || {},
+		footerProps = formProps.footerProps || {},
+		footerClassName = clsx(
+			footerProps.className,
+			'flex-wrap',
+		),
 		buttons = [],
 		onPressQuickReport = () => {
 			downloadReport({
@@ -227,7 +233,11 @@ function Report(props) {
 					<Form
 						type={EDITOR_TYPE__PLAIN}
 						additionalFooterButtons={buttons}
-						{...props._form}
+						{...formProps}
+						footerProps={{
+							...footerProps,
+							className: footerClassName,
+						}}
 					/>
 				</Box>
 				{isDisabled &&
