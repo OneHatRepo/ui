@@ -28,6 +28,13 @@ export default function testProps(id, suffix) {
 			accessible: true,
 		};
 	}
+	if (Platform.OS === 'web') {
+		return {
+			dataSet: {
+				testid: id,
+			},
+		};
+	}
 	return {
 		testID: id,
 	};
