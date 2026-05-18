@@ -855,6 +855,7 @@ function AttachmentsElement(props) {
 								'AttachmentsElement-icon-VStack1',
 								'h-full',
 								'flex-1',
+								'min-h-0',
 								'border',
 								'p-1',
 								isLoading ? [
@@ -866,6 +867,9 @@ function AttachmentsElement(props) {
 							<HStack
 								className={clsx(
 									'AttachmentsElement-HStack',
+									'flex-1',
+									'min-h-0',
+									'overflow-y-auto',
 									'gap-2',
 									'flex-wrap',
 									'items-start',
