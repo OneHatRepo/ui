@@ -446,6 +446,55 @@ function GridComponent(props) {
 			}
 			return items;
 		},
+		isScrollbarPress = (e) => {
+			if (CURRENT_MODE !== UI_MODE_WEB) {
+				return false;
+			}
+
+			const
+				nativeEvent = e?.nativeEvent || e,
+				clientX = nativeEvent?.clientX,
+				clientY = nativeEvent?.clientY;
+
+			if (_.isNil(clientX) || _.isNil(clientY)) {
+				return false;
+			}
+
+			function isPointOnScrollbar(element) {
+				if (!element || typeof element.getBoundingClientRect !== 'function') {
+					return false;
+				}
+
+				const rect = element.getBoundingClientRect();
+				if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+					return false;
+				}
+
+				const verticalScrollbarWidth = element.offsetWidth - element.clientWidth;
+				if (verticalScrollbarWidth > 0 && clientX >= (rect.right - verticalScrollbarWidth)) {
+					return true;
+				}
+
+				const horizontalScrollbarHeight = element.offsetHeight - element.clientHeight;
+				if (horizontalScrollbarHeight > 0 && clientY >= (rect.bottom - horizontalScrollbarHeight)) {
+					return true;
+				}
+
+				return false;
+			};
+
+			const currentTarget = e?.currentTarget;
+			let target = nativeEvent?.target || e?.target;
+
+			while(target && target !== currentTarget) {
+				if (isPointOnScrollbar(target)) {
+					return true;
+				}
+				target = target.parentElement;
+			}
+
+			return isPointOnScrollbar(currentTarget);
+		},
 		renderRow = (row) => {
 			if (row.item.isDestroyed) {
 				return null;
@@ -534,6 +583,15 @@ function GridComponent(props) {
 						}
 					}}
 					onLongPress={(e) => {
+						if (isScrollbarPress(e)) {
+							if (e.preventDefault && e.cancelable) {
+								e.preventDefault();
+							}
+							if (e.stopPropagation) {
+								e.stopPropagation();
+							}
+							return;
+						}
 						if (e.preventDefault && e.cancelable) {
 							e.preventDefault();
 						}
@@ -560,6 +618,15 @@ function GridComponent(props) {
 						// web only; happens before onLongPress triggers
 						// different behavior here than onLongPress:
 						// if user clicks on a header row or phantom record, or if onContextMenu is not set, pass to the browser's context menu
+						if (isScrollbarPress(e)) {
+							if (e.preventDefault && e.cancelable) {
+								e.preventDefault();
+							}
+							if (e.stopPropagation) {
+								e.stopPropagation();
+							}
+							return;
+						}
 						if (isHeaderRow || isReorderMode) {
 							return
 						}
