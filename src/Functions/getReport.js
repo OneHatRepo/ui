@@ -35,7 +35,7 @@ export default function getReport(args) {
 		authHeaders = getRepositoryAuthHeaders(token);
 
 	if (reportType === REPORT_TYPES__EXCEL) {
-		downloadInBackground(url, params, authHeaders);
+		return downloadInBackground(url, params, authHeaders);
 	} else {
 		const options = {
 			method: 'POST',
@@ -45,6 +45,6 @@ export default function getReport(args) {
 			},
 			body: JSON.stringify(params),
 		};
-		downloadWithFetch(url, options);
+		return downloadWithFetch(url, options);
 	}
 };

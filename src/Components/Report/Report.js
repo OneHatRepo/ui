@@ -55,7 +55,7 @@ function Report(props) {
 		),
 		buttons = [],
 		onPressQuickReport = () => {
-			downloadReport({
+			return downloadReport({
 				reportId,
 				reportType: REPORT_TYPES__EXCEL,
 				showReportHeaders,
@@ -65,9 +65,13 @@ function Report(props) {
 				},
 			});
 		},
-		downloadReport = (args) => {
-			getReport(args);
-			alert('Download started');
+		downloadReport = async (args) => {
+			try {
+				await getReport(args);
+				alert('Download started');
+			} catch (error) {
+				alert(error?.message || 'Unable to download report. Please try again.');
+			}
 		};
 
 	const propsIcon = props._icon || {};

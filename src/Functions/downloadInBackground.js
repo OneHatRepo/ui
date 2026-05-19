@@ -1,4 +1,5 @@
 import qs from 'qs';
+import getErrorMessageFromResponse from './getErrorMessageFromResponse.js';
 
 const downloadInBackground = async (url, data, authHeaders = {}) => {
 	try {
@@ -13,7 +14,8 @@ const downloadInBackground = async (url, data, authHeaders = {}) => {
 		});
 
 		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
+			const errorMessage = await getErrorMessageFromResponse(response);
+			throw new Error(errorMessage || `HTTP error! status: ${response.status}`);
 		}
 
 		// Get the blob from the response
