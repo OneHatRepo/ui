@@ -64,6 +64,8 @@ const ButtonComponent = forwardRef((props, ref) => {
 		'flex',
 		'flex-row',
 		'items-center',
+		'disabled:opacity-40',
+		'disabled:cursor-not-allowed',
 	);
 	if (isExpandToFillVertical) {
 		// IMPORTANT! Otherwise the button will cut off the vertical content due to size classes automatically added by Gluestack (e.g. h-10)
