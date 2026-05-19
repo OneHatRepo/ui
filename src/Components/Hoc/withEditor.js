@@ -663,7 +663,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				} finally {
 					setIsWaitModalShown(false);
 				}
-				if (isSuccess) {
+				if (isSuccess && duplicateEntity) {
 					setIsIgnoreNextSelectionChange(true);
 					setSelection([duplicateEntity]);
 					doEdit();
