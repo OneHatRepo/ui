@@ -235,7 +235,7 @@ function Report(props) {
 						</VStack>
 					</HStack>
 					<Form
-						type={EDITOR_TYPE__PLAIN}
+						editorType={EDITOR_TYPE__PLAIN}
 						additionalFooterButtons={buttons}
 						{...formProps}
 						footerProps={{
