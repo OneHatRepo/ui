@@ -207,6 +207,25 @@ function Form(props) {
 			// Fallback to empty schema that allows any fields and defaults to valid
 			return yup.object().noUnknown(false).default({});
 		})() || yup.object().shape({}), // on rare occasions, validatorToUse was null. This fixes it
+		requiredFieldsFromValidatorDescription = (() => {
+			if (editorType !== EDITOR_TYPE__PLAIN || !validatorToUse?.describe) {
+				return new Set();
+			}
+			const description = validatorToUse.describe();
+			const fields = description?.fields || {};
+			const requiredFieldNames = new Set();
+			Object.entries(fields).forEach(([fieldName, fieldConfig]) => {
+				if (!fieldConfig) {
+					return;
+				}
+				const hasRequiredTest = Array.isArray(fieldConfig.tests)
+					&& fieldConfig.tests.some((test) => test?.name === 'required');
+				if (fieldConfig.optional === false || hasRequiredTest) {
+					requiredFieldNames.add(fieldName);
+				}
+			});
+			return requiredFieldNames;
+		})(),
 		{
 			control,
 			formState,
@@ -899,6 +918,9 @@ function Form(props) {
 							if (!isMultiple) { // Don't require fields if editing multiple records
 								if (getIsRequired) {
 									isRequired = getIsRequired(formGetValues, formState);
+								} else if (requiredFieldsFromValidatorDescription.has(name)) {
+									// submitted validator (describe fallback for plain editor)
+									isRequired = true;
 								} else if (validatorToUse?.fields && validatorToUse.fields[name]?.exclusiveTests?.required) {
 									// submitted validator
 									isRequired = true;
