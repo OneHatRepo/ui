@@ -22,8 +22,11 @@ import Form from '../Form/Form.js';
 import IconButton from '../Buttons/IconButton.js';
 import withComponent from '../Hoc/withComponent.js';
 import withAlert from '../Hoc/withAlert.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import testProps from '../../Functions/testProps.js';
 import ChartLine from '../Icons/ChartLine.js';
+import Calendar from '../Icons/Calendar.js';
+import Plus from '../Icons/Plus.js';
 import Pdf from '../Icons/Pdf.js';
 import Excel from '../Icons/Excel.js';
 import getReport from '../../Functions/getReport.js';
@@ -42,6 +45,9 @@ function Report(props) {
 			showReportHeaders = true,
 			isQuickReport = false,
 			isDisabled = false,
+			usePresets = false,
+			useQueue = false,
+			useScheduledReports = false,
 			disabledMessage = 'Report is Disabled',
 			additionalData = {},
 			quickReportData = {},
@@ -53,7 +59,6 @@ function Report(props) {
 			footerProps.className,
 			'flex-wrap',
 		),
-		buttons = [],
 		onPressQuickReport = () => {
 			return downloadReport({
 				reportId,
@@ -171,10 +176,64 @@ function Report(props) {
 				</VStackNative>;
 	}
 
+	let footerItems = [];
+	if (usePresets) {
+		footerItems.push({
+			...testProps('reportPresetsComboEditor'),
+			key: 'reportPresetsComboEditor',
+			type: 'ReportPresetsComboEditor',
+			tooltip: 'Report Presets',
+			placeholder: 'Report Presets',
+			disableEdit: true,
+			className: 'w-[100px]',
+			baseParams: {
+				reportId,
+			},
+		});
+	}
+	if (useScheduledReports) {
+		footerItems.push({
+			...testProps('scheduleReportBtn'),
+			key: 'scheduleReportBtn',
+			type: 'Button',
+			tooltip: 'Schedule Report',
+			icon: Calendar,
+			onPress: (data) => scheduleReport({
+				reportId,
+				data: {
+					...data,
+					...additionalData,
+				},
+				reportType: REPORT_TYPES__EXCEL,
+				showReportHeaders,
+			}),
+			disableOnInvalid: true,
+		});
+	}
+	if (useQueue) {
+		footerItems.push({
+			...testProps('queueBtn'),
+			key: 'queueBtn',
+			type: 'Button',
+			tooltip: 'Add to Queue',
+			icon: Plus,
+			onPress: (data) => addToQueue({
+				reportId,
+				data: {
+					...data,
+					...additionalData,
+				},
+				reportType: REPORT_TYPES__EXCEL,
+				showReportHeaders,
+			}),
+			disableOnInvalid: true,
+		});
+	}
 	if (!disableExcel) {
-		buttons.push({
+		footerItems.push({
 			...testProps('excelBtn'),
 			key: 'excelBtn',
+			type: 'Button',
 			text: 'Download Excel',
 			icon: Excel,
 			onPress: (data) => downloadReport({
@@ -190,9 +249,10 @@ function Report(props) {
 		});
 	}
 	if (!disablePdf) {
-		buttons.push({
+		footerItems.push({
 			...testProps('pdfBtn'),
 			key: 'pdfBtn',
+			type: 'Button',
 			text: 'Download PDF',
 			icon: Pdf,
 			onPress: (data) => downloadReport({
@@ -205,6 +265,12 @@ function Report(props) {
 				showReportHeaders,
 			}),
 			disableOnInvalid: true,
+		});
+	}
+	if (footerItems.length) {
+		footerItems = footerItems.map(item => {
+			const Component = getComponentFromType(item.type);
+			return <Component {...item} />;
 		});
 	}
 	return <VStackNative
@@ -236,7 +302,7 @@ function Report(props) {
 					</HStack>
 					<Form
 						editorType={EDITOR_TYPE__PLAIN}
-						additionalFooterButtons={buttons}
+						additionalFooterItems={footerItems}
 						{...formProps}
 						footerProps={{
 							...footerProps,

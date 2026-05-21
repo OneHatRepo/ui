@@ -109,6 +109,7 @@ function Form(props) {
 			formSetup, // this fn will be executed after the form setup is complete
 			additionalEditButtons,
 			useAdditionalEditButtons = true,
+			additionalFooterItems, // overrides additionalFooterButtons if both are provided
 			additionalFooterButtons,
 			disableFooter = false,
 			hideResetButton = false,
@@ -1299,7 +1300,7 @@ function Form(props) {
 		formButtons = null,
 		scrollButtons = null,
 		footer = null,
-		footerButtons = null,
+		footerItems = null,
 		formComponents,
 		editor,
 		additionalButtons,
@@ -1441,10 +1442,10 @@ function Form(props) {
 		if (!!onSubmit) {
 			showSubmitBtn = true;
 		}
-		footerButtons =
+		footerItems =
 			<>
-			
-				{additionalFooterButtons && _.map(additionalFooterButtons, (props, ix) => {
+				{additionalFooterItems}
+				{!additionalFooterItems && additionalFooterButtons && _.map(additionalFooterButtons, (props, ix) => {
 					let isDisabled = false;
 					if (props.disableOnInvalid) {
 						isDisabled = !formState.isValid;
@@ -1556,7 +1557,7 @@ function Form(props) {
 							'rounded-b-lg',
 							'bg-primary-700',
 						)}
-					>{footerButtons}</HStack>
+					>{footerItems}</HStack>
 				</Box>;
 		} else {
 			if (!disableFooter) {
@@ -1581,7 +1582,7 @@ function Form(props) {
 					footerClassName += ' ' + footerProps.className;
 				}
 				footer = <Footer {...footerProps} className={footerClassName}>
-							{footerButtons}
+							{footerItems}
 						</Footer>;
 			}
 		}
