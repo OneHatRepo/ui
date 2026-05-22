@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useRef, isValidElement, } from 'react';
+import { useEffect, useCallback, useState, useRef, isValidElement, cloneElement, Children, } from 'react';
 import {
 	Box,
 	HStack,
@@ -59,6 +59,7 @@ import Xmark from '../Icons/Xmark.js';
 import Check from '../Icons/Check.js';
 import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
+import FormContext from '../Form/FormContext.js';
 import _ from 'lodash';
 
 // TODO: memoize field Components
@@ -1119,6 +1120,42 @@ function Form(props) {
 				alert(errors.message);
 			}
 		},
+		decorateAdditionalFooterItems = (elements) => {
+			const decorateElement = (element) => {
+				if (!isValidElement(element)) {
+					return element;
+				}
+
+				const
+					elementProps = element.props || {},
+					propsToInject = {};
+
+				if (elementProps.disableOnInvalid && !formState.isValid) {
+					propsToInject.isDisabled = true;
+				}
+
+				if (typeof elementProps.onPress === 'function' && (elementProps.disableOnInvalid || elementProps.skipSubmit || elementProps.submitWithForm)) {
+					const originalOnPress = elementProps.onPress;
+					if (elementProps.skipSubmit) {
+						propsToInject.onPress = () => originalOnPress();
+					} else {
+						propsToInject.onPress = (e) => handleSubmit(originalOnPress, onSubmitError)(e);
+					}
+				}
+
+				if (elementProps.children) {
+					propsToInject.children = Children.map(elementProps.children, decorateElement);
+				}
+
+				if (_.isEmpty(propsToInject)) {
+					return element;
+				}
+
+				return cloneElement(element, propsToInject);
+			};
+
+			return Children.map(elements, decorateElement);
+		},
 		doReset = (values) => {
 			reset(values);
 			if (onReset) {
@@ -1444,7 +1481,7 @@ function Form(props) {
 		}
 		footerItems =
 			<>
-				{additionalFooterItems}
+				{decorateAdditionalFooterItems(additionalFooterItems)}
 				{!additionalFooterItems && additionalFooterButtons && _.map(additionalFooterButtons, (props, ix) => {
 					let isDisabled = false;
 					if (props.disableOnInvalid) {
@@ -1597,7 +1634,8 @@ function Form(props) {
 		className += ' ' + props.className;
 	}
 	const scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />;
-	return <VStackNative
+	return <FormContext.Provider value={{ isValid: formState.isValid }}>
+			<VStackNative
 				ref={formRef}
 				{...testProps(self)}
 				style={style}
@@ -1639,7 +1677,8 @@ function Form(props) {
 					{isFabVisible && fab}
 
 				</>}
-			</VStackNative>;
+			</VStackNative>
+		</FormContext.Provider>;
 }
 
 // helper fns

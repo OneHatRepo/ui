@@ -1,4 +1,4 @@
-import { cloneElement, forwardRef, isValidElement, useRef } from 'react';
+import { cloneElement, forwardRef, isValidElement, useContext, useRef } from 'react';
 import {
 	Button,
 	ButtonText,
@@ -10,9 +10,12 @@ import addIconProps from '../../Functions/addIconProps.js';
 import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../Hoc/withTooltip.js';
+import FormContext from '../Form/FormContext.js';
 import _ from 'lodash';
 
 const ButtonComponent = forwardRef((props, ref) => {
+
+	const formContext = useContext(FormContext);
 	let {
 			self,
 			text, // the text to display on the button
@@ -30,6 +33,16 @@ const ButtonComponent = forwardRef((props, ref) => {
 
 	if (propsToPass.handler) {
 		propsToPass.onPress = propsToPass.handler; // alias
+	}
+
+	const {
+		disableOnInvalid,
+		...propsToPassWithoutDisableOnInvalid
+	} = propsToPass;
+	propsToPass = propsToPassWithoutDisableOnInvalid;
+
+	if (_.isNil(propsToPass.isDisabled) && disableOnInvalid && formContext && !formContext.isValid) {
+		propsToPass.isDisabled = true;
 	}
 
 	if (icon) {
@@ -64,8 +77,10 @@ const ButtonComponent = forwardRef((props, ref) => {
 		'flex',
 		'flex-row',
 		'items-center',
-		'disabled:opacity-40',
-		'disabled:cursor-not-allowed',
+		'data-[disabled=true]:opacity-40',
+		'data-[disabled=true]:cursor-not-allowed',
+		'web:disabled:opacity-40',
+		'web:disabled:cursor-not-allowed',
 	);
 	if (isExpandToFillVertical) {
 		// IMPORTANT! Otherwise the button will cut off the vertical content due to size classes automatically added by Gluestack (e.g. h-10)
