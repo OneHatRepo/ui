@@ -9,6 +9,72 @@ import {
 	getRepositoryAuthHeaders,
 } from './authFunctions.js';
 import UiGlobals from '../UiGlobals.js';
+import _ from 'lodash';
+
+
+
+// keeps safe serializable values (primitives, arrays, plain objects, Date to ISO), 
+// and removes cyclic/non-plain references, preventing "RangeError: Cyclic object value" errors.
+const sanitizeReportData = (value, seen = new WeakSet()) => {
+	if (value == null) {
+		return value;
+	}
+
+	const valueType = typeof value;
+	if (
+		valueType === 'string'
+		|| valueType === 'number'
+		|| valueType === 'boolean'
+	) {
+		return value;
+	}
+	if (valueType === 'bigint') {
+		return value.toString();
+	}
+	if (valueType === 'function' || valueType === 'symbol') {
+		return undefined;
+	}
+
+	if (value instanceof Date) {
+		return value.toISOString();
+	}
+
+	if (valueType !== 'object') {
+		return undefined;
+	}
+
+	if (seen.has(value)) {
+		return undefined;
+	}
+	seen.add(value);
+
+	if (Array.isArray(value)) {
+		const output = [];
+		for (const item of value) {
+			const sanitized = sanitizeReportData(item, seen);
+			if (sanitized !== undefined) {
+				output.push(sanitized);
+			}
+		}
+		seen.delete(value);
+		return output;
+	}
+
+	if (!_.isPlainObject(value)) {
+		seen.delete(value);
+		return undefined;
+	}
+
+	const output = {};
+	for (const [key, item] of Object.entries(value)) {
+		const sanitized = sanitizeReportData(item, seen);
+		if (sanitized !== undefined) {
+			output[key] = sanitized;
+		}
+	}
+	seen.delete(value);
+	return output;
+};
 
 export default function getReport(args) {
 	const {
@@ -24,11 +90,12 @@ export default function getReport(args) {
 
 	const
 		url = UiGlobals.baseURL + 'Reports/getReport',
+		sanitizedData = sanitizeReportData(data) || {},
 		params = {
 			report_id: reportId,
 			outputFileType: reportType,
 			showReportHeaders,
-			...data,
+			...sanitizedData,
 		},
 		user = UiGlobals?.redux?.getState ? UiGlobals.redux.getState()?.auth?.user : null,
 		token = getUserToken(user),

@@ -72,8 +72,8 @@ function Report(props) {
 		},
 		downloadReport = async (args) => {
 			try {
-				await getReport(args);
 				alert('Download started');
+				await getReport(args);
 			} catch (error) {
 				alert(error?.message || 'Unable to download report. Please try again.');
 			}
