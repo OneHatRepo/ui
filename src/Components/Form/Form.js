@@ -262,6 +262,7 @@ function Form(props) {
 			context: { isPhantom },
 		}),
 		currentEditorMode = getEditorMode(),
+		resolvedEditorMode = currentEditorMode || props.editorMode || null,
 		buildFromColumnsConfig = () => {
 			// Only used in InlineEditor
 			// Build the fields that match the current columnsConfig in the grid
@@ -1350,10 +1351,18 @@ function Form(props) {
 		showCancelBtn = false,
 		showSaveBtn = false,
 		showSubmitBtn = false,
-		isAddMode = getEditorMode() === EDITOR_MODE__ADD,
-		isEditableMode =
-			getEditorMode() === EDITOR_MODE__ADD ||
-			getEditorMode() === EDITOR_MODE__EDIT;
+		isAddMode = resolvedEditorMode === EDITOR_MODE__ADD,
+		isEditableMode = (() => {
+			// Keep explicit editor modes authoritative, but preserve legacy modal behavior:
+			// if no mode is supplied, treat forms with onSave as editable so Save can render.
+			if (resolvedEditorMode === EDITOR_MODE__ADD || resolvedEditorMode === EDITOR_MODE__EDIT) {
+				return true;
+			}
+			if (resolvedEditorMode === EDITOR_MODE__VIEW) {
+				return false;
+			}
+			return !!onSave;
+		})();
 	if (containerWidth) { // we need to render this component twice in order to get the container width. Skip this on first render
 
 		// create editor
@@ -1378,7 +1387,7 @@ function Form(props) {
 			additionalButtons = buildAdditionalButtons(additionalEditButtons);
 
 			if (inArray(editorType, [EDITOR_TYPE__SIDE, EDITOR_TYPE__SMART, EDITOR_TYPE__WINDOWED]) && 
-				isSingle && getEditorMode() === EDITOR_MODE__EDIT && 
+				isSingle && resolvedEditorMode === EDITOR_MODE__EDIT && 
 				(onBack || onViewMode || isEditorModeControlledByParent)) {
 				modeHeader = <Toolbar>
 								<HStack className="flex-1 items-center">
@@ -1414,7 +1423,7 @@ function Form(props) {
 									/>}
 							</Toolbar>;
 			}
-			if (getEditorMode() === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
+			if (resolvedEditorMode === EDITOR_MODE__EDIT && !_.isEmpty(additionalButtons)) {
 				formButtons = <Toolbar className="justify-end flex-wrap gap-2">
 									{additionalButtons}
 								</Toolbar>;
@@ -1439,7 +1448,7 @@ function Form(props) {
 		if (_.isEmpty(formState.dirtyFields) && !isPhantom && !isAddMode) {
 			isSaveDisabled = true;
 		}
-		if (onDelete && getEditorMode() === EDITOR_MODE__EDIT && isSingle) {
+		if (onDelete && resolvedEditorMode === EDITOR_MODE__EDIT && isSingle) {
 			showDeleteBtn = true;
 		}
 		if (!isEditorViewOnly && isEditableMode && !hideResetButton) {
