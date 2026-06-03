@@ -115,6 +115,7 @@ function Container(props) {
 		southRef = useRef(null),
 		eastRef = useRef(null),
 		westRef = useRef(null),
+		centerWidthRef = useRef(null), // used to store the width of the center area, which is used to calculate max widths for east and west
 		northHeightRef = useRef(northInitialHeight),
 		southHeightRef = useRef(southInitialHeight),
 		eastWidthRef = useRef(eastInitialWidth),
@@ -202,6 +203,12 @@ function Container(props) {
 				localEastIsCollapsedRef.current = bool;
 			}
 
+			if (!bool) {
+				setSideWidth('east', getEastWidth() ?? eastInitialWidth, {
+					ignoreCollapsedCheck: true,
+				});
+			}
+
 			if (id) {
 				setSaved(id + '-eastIsCollapsed', bool);
 			}
@@ -218,6 +225,12 @@ function Container(props) {
 				setExternalWestIsCollapsed(bool);
 			} else {
 				localWestIsCollapsedRef.current = bool;
+			}
+
+			if (!bool) {
+				setSideWidth('west', getWestWidth() ?? westInitialWidth, {
+					ignoreCollapsedCheck: true,
+				});
 			}
 
 			if (id) {
@@ -253,24 +266,76 @@ function Container(props) {
 		getSouthHeight = () => {
 			return southHeightRef.current;
 		},
-		setEastWidth = (width) => {
-			if (!getEastIsCollapsed()) {
-				eastWidthRef.current = width;
+		setCenterWidth = (width) => {
+			centerWidthRef.current = width;
+		},
+		getCenterWidth = () => {
+			return centerWidthRef.current;
+		},
+		getMaxSideWidth = () => {
+			const width = getCenterWidth();
+			if (!_.isFinite(width) || width <= 0) {
+				return null;
+			}
+
+			return width;
+		},
+		clampSideWidth = (width) => {
+			if (_.isNil(width)) {
+				return width;
+			}
+
+			const maxSideWidth = getMaxSideWidth();
+			if (_.isNil(maxSideWidth)) {
+				return width;
+			}
+
+			return Math.min(width, maxSideWidth);
+		},
+		setSideWidth = (side, width, opts = {}) => {
+			const
+				{
+					ignoreCollapsedCheck = false,
+				} = opts,
+				isCollapsed = side === 'east' ? getEastIsCollapsed() : getWestIsCollapsed();
+
+			if (!ignoreCollapsedCheck && isCollapsed) {
+				return;
+			}
+
+			const clampedWidth = clampSideWidth(width);
+			if (side === 'east') {
+				eastWidthRef.current = clampedWidth;
 				if (id) {
-					setSaved(id + '-eastWidth', width);
+					setSaved(id + '-eastWidth', clampedWidth);
+				}
+			} else {
+				westWidthRef.current = clampedWidth;
+				if (id) {
+					setSaved(id + '-westWidth', clampedWidth);
 				}
 			}
+		},
+		normalizeSideWidthForRender = (width, initialWidth) => {
+			if (_.isNil(width)) {
+				return width;
+			}
+
+			const maxSideWidth = getMaxSideWidth();
+			if (_.isNil(maxSideWidth)) {
+				return _.isFinite(initialWidth) && initialWidth > 0 ? initialWidth : width;
+			}
+
+			return Math.min(width, maxSideWidth);
+		},
+		setEastWidth = (width) => {
+			setSideWidth('east', width);
 		},
 		getEastWidth = () => {
 			return eastWidthRef.current;
 		},
 		setWestWidth = (width) => {
-			if (!getWestIsCollapsed()) {
-				westWidthRef.current = width;
-				if (id) {
-					setSaved(id + '-westWidth', width);
-				}
-			}
+			setSideWidth('west', width);
 		},
 		getWestWidth = () => {
 			return westWidthRef.current;
@@ -409,6 +474,7 @@ function Container(props) {
 	if (!isReady) {
 		return null;
 	}
+
 	
 	let componentProps = { _panel: { ...center?.props?._panel }, },
 		wrapperProps = null,
@@ -533,11 +599,17 @@ function Container(props) {
 				width: 33,
 			};
 		} else {
-			const eastWidth = getEastWidth();
+			const eastWidth = normalizeSideWidthForRender(getEastWidth(), eastInitialWidth);
 			if (_.isNil(eastWidth)) {
-				wrapperProps.style = { flex: eastInitialFlex || 50, };
+				wrapperProps.style = {
+					flex: eastInitialFlex || 50,
+					maxWidth: '100%',
+				};
 			} else {
-				wrapperProps.style = { width: eastWidth, };
+				wrapperProps.style = {
+					width: eastWidth,
+					maxWidth: '100%',
+				};
 			}
 		}
 		componentProps._panel.collapseDirection = HORIZONTAL;
@@ -576,11 +648,17 @@ function Container(props) {
 				width: 33,
 			};
 		} else {
-			const westWidth = getWestWidth();
+			const westWidth = normalizeSideWidthForRender(getWestWidth(), westInitialWidth);
 			if (_.isNil(westWidth)) {
-				wrapperProps.style = { flex: westInitialFlex || 50, };
+				wrapperProps.style = {
+					flex: westInitialFlex || 50,
+					maxWidth: '100%',
+				};
 			} else {
-				wrapperProps.style = { width: westWidth, };
+				wrapperProps.style = {
+					width: westWidth,
+					maxWidth: '100%',
+				};
 			}
 		}
 		componentProps._panel.collapseDirection = HORIZONTAL;
@@ -600,13 +678,31 @@ function Container(props) {
 							{cloneElement(west, componentProps)}
 						</BoxNative>;
 	}
-	return <VStack className="Container-all w-full flex-1">
+	return <VStack className="Container-all flex-1 min-w-0">
 				{northComponent}
 				{!getNorthIsCollapsed() && northSplitter}
-				<HStack className="Container-mid w-full flex-[100]">
+				<HStack
+					className="Container-mid w-full flex-[100] min-w-0"
+					onLayout={(e) => {
+						// Measure available horizontal space for side panels.
+						const width = parseFloat(e.nativeEvent.layout.width);
+						if (width && width !== getCenterWidth()) {
+							// Save latest width and clamp east/west if they exceed it.
+							setCenterWidth(width);
+							if (getEastWidth() > width) {
+								setEastWidth(width);
+							}
+							if (getWestWidth() > width) {
+								setWestWidth(width);
+							}
+							// Trigger a render so updated widths are applied immediately.
+							forceUpdate();
+						}
+					}}
+				>
 					{westComponent}
 					{!getWestIsCollapsed() && westSplitter}
-					<VStack className="Container-center h-full overflow-auto flex-[100]">
+					<VStack className="Container-center h-full overflow-auto flex-[100] min-w-0">
 						{centerComponent}
 					</VStack>
 					{!getEastIsCollapsed() && eastSplitter}
