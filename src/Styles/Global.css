@@ -1,14 +1,19 @@
-html, body {
-	/* -webkit-user-select: none;
-	user-select: none; */
-}
-
 /* to fix the inline editor */
 [data-testid="gridContainer"] > [data-testid="ScrollView"] > div {
 	height: 100%;
 }
 
 /* Custom styles for attachments dropzone */
+.attachments-dropzone {
+	width: 100%;
+	min-width: 0;
+	overflow-x: hidden;
+}
+
 .attachments-dropzone .files-ui-dropzone-children-container {
 	padding: 0 !important;
+	width: 100%;
+	min-width: 0;
+	min-height: 0;
+	overflow-x: hidden;
 }

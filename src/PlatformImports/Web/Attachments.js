@@ -93,7 +93,7 @@ function FileCardCustom(props) {
 			onPress={() => {
 				downloadInBackground(downloadUrl);
 			}}
-			className="Pressable px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700"
+			className="Pressable max-w-full px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700"
 		>
 			{isDownloading &&
 				<Spinner className="mr-2" />}
@@ -103,7 +103,7 @@ function FileCardCustom(props) {
 					icon={Eye}
 					onPress={() => onSee(id)}
 				/>}
-			<Text>{filename}</Text>
+			<Text className="max-w-[220px] truncate">{filename}</Text>
 			{onDelete &&
 				<IconButton
 					className="ml-1"
@@ -868,7 +868,9 @@ function AttachmentsElement(props) {
 								className={clsx(
 									'AttachmentsElement-HStack',
 									'flex-1',
+									'w-full',
 									'min-h-0',
+									'min-w-0',
 									'overflow-y-auto',
 									'gap-2',
 									'flex-wrap',
@@ -908,7 +910,7 @@ function AttachmentsElement(props) {
 
 									return <Box
 												key={file.id}
-												className="mr-2"
+												className="mr-2 min-w-0 max-w-full"
 											>
 												{useFileMosaic &&
 													<DraggableFileMosaic
@@ -1142,7 +1144,7 @@ function AttachmentsElement(props) {
 							className: '!hidden',
 							deleteFiles: false,
 						}}
-						className="attachments-dropzone flex-1 h-full" // Add flex classes to ensure full height
+						className="attachments-dropzone flex-1 h-full min-w-0 overflow-x-hidden" // Keep horizontal containment while allowing vertical scrolling
 						onUploadStart={onUploadStart}
 						onUploadFinish={onUploadFinish}
 						background={styles.ATTACHMENTS_BG}
@@ -1285,6 +1287,8 @@ function AttachmentsElement(props) {
 		'AttachmentsElement',
 		'testx',
 		'w-full',
+		'min-w-0',
+		'overflow-x-hidden',
 		'h-[400px]',
 		'border-2',
 		'rounded-[5px]',
