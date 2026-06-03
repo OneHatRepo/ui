@@ -1163,6 +1163,21 @@ function Form(props) {
 				onReset(values, formSetValue, formGetValues, trigger);
 			}
 		},
+		resetFromRecord = () => {
+			if (!record || _.isArray(record) || record.isDestroyed) {
+				return;
+			}
+
+			const
+				currentValues = formGetValues(),
+				recordValues = record.submitValues || record,
+				nextValues = {
+					...currentValues,
+					..._.pick(recordValues, Object.keys(currentValues)),
+				};
+
+			doReset(nextValues);
+		},
 		onSaveDecorated = async (data, e) => {
 			// reset the form after a save
 			const result = await onSave(data, e);
@@ -1226,6 +1241,21 @@ function Form(props) {
 			formSetup(formSetValue, formGetValues, formState, trigger);
 		}
 	}, [record]);
+
+	useEffect(() => {
+		// If this form is bound to a single record, reset the form whenever that record emits a 'reload' event.
+		// This ensures the form stays in sync with the latest data for that record.
+		
+		if (skipAll || !isSingle || !record?.on || !record?.off) {
+			return;
+		}
+
+		record.on('reload', resetFromRecord);
+
+		return () => {
+			record.off('reload', resetFromRecord);
+		};
+	}, [record, skipAll, isSingle]);
 
 	useEffect(() => {
 		if (skipAll) {
