@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement } from 'react';
+import { cloneElement, isValidElement, useState, } from 'react';
 import {
 	Box,
 	HStack,
@@ -18,6 +18,7 @@ import {
 	REPORT_TYPES__EXCEL,
 	REPORT_TYPES__PDF,
 } from '../../Constants/ReportTypes.js';
+import oneHatData from '@onehat/data';
 import Form from '../Form/Form.js';
 import IconButton from '../Buttons/IconButton.js';
 import withComponent from '../Hoc/withComponent.js';
@@ -54,22 +55,33 @@ function Report(props) {
 			disabledMessage = 'Report is Disabled',
 			additionalData = {},
 			quickReportData = {},
+
+			// withAlert
 			alert,
+			showInfo,
+
+			// withComponent
 			self,
 		} = props,
 		formProps = props._form || {},
 		hasFormItems = formProps?.items?.[0]?.items?.length,
+		[isValid, setIsValid] = useState(!hasFormItems), // if there are no form items, consider the form valid by default; otherwise, start as invalid until the form says otherwise
 		getCurrentReportFormData = () => {
 			const
 				form = self?.children?.form,
 				formValues = form?.formGetValues?.();
 			if (!_.isPlainObject(formValues)) {
+				alert('Unable to get form data');
 				return {};
 			}
 			return formValues;
 		},
 		setCurrentReportFormData = (data) => {
 			const form = self?.children?.form;
+			if (!form || !_.isPlainObject(data)) {
+				alert('Unable to set form data');
+				return;
+			}
 			_.each(data, (value, key) => {
 				form.formSetValue(key, value);
 			});
@@ -105,15 +117,37 @@ function Report(props) {
 			
 
 
+		},
+		getRepository = () => {
+			let repository;
+			try {
+				// There is no 'Reports' repository (bc there is no 'Reports' model), 
+				// so just get the first OneBuild repository; doesn't matter which one
+	
+				repository = oneHatData.getRepositoriesByType('onebuild', true); // true to get the first only
 
+			} catch (error) {
+				alert('Error getting repository: ' + (error?.message || error));
+				return null;
+			}
+			return repository;
 		},
 		addToQueue = async (formData) => {
-			debugger;
-			// Call ReportsController/addToQueue with the formData and reportId
+			const
+				repository = getRepository(),
+				data = {
+					report_id: reportId,
+					...formData,
+					...additionalData,
+				},
+				result = await repository._send('POST', 'Reports/addToQueue', data),
+				response = repository._processServerResponse(result);
+			if (!response.success) {
+				alert(response.message || 'Failed to add report to queue');
+				return;
+			}
 
-			// A centralized, customized UtilQueuedReportsGridEditor (disallow edits, add retryBtn) would allow CRUD of all queued reports.
-			// Maybe use the Report form to show the selected config, but disallow edits
-
+			showInfo('Report added to queue.');
 		},
 		selectReportPreset = (reportPresetId) => {
 			// Change the form settings based on the selected preset
@@ -142,6 +176,7 @@ function Report(props) {
 
 			// Call ReportPresets/share
 			
+
 
 		};
 
@@ -252,10 +287,11 @@ function Report(props) {
 			type: 'ReportPresetsComboEditor',
 			tooltip: 'Report Presets',
 			placeholder: 'Presets',
+			disableAdd: !isValid, // only allow creating a preset if the form is valid, since the preset will capture the current form config
 			disableEdit: true, // too complicated to edit, just allow add/delete/share
 			className: 'w-[130px]',
 			baseParams: {
-				reportId,
+				'conditions[reportid]': reportId, // reportid is a generated field, so you can search on it, but change capitalization
 			},
 			onChangeValue: selectReportPreset,
 			_grid: {
@@ -263,7 +299,10 @@ function Report(props) {
 					// add the current form values to ReportPresets.config when creating a new preset
 					return {
 						...addValues,
-						report_presets__config: getCurrentReportFormData(),
+						report_presets__config: {
+							...getCurrentReportFormData(),
+							report_id: reportId,
+						},
 					};
 				},
 				additionalToolbarButtons: [
@@ -383,6 +422,9 @@ function Report(props) {
 						footerProps={{
 							...footerProps,
 							className: footerClassName,
+						}}
+						onValidityChange={(isValid) => {
+							setIsValid(isValid);
 						}}
 					/>
 				</Box>
