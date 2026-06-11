@@ -28,6 +28,7 @@ import ChartLine from '../Icons/ChartLine.js';
 import Calendar from '../Icons/Calendar.js';
 import Plus from '../Icons/Plus.js';
 import Pdf from '../Icons/Pdf.js';
+import Share from '../Icons/Share.js';
 import Excel from '../Icons/Excel.js';
 import getReport from '../../Functions/getReport.js';
 import _ from 'lodash';
@@ -41,7 +42,9 @@ function Report(props) {
 			description,
 			reportId,
 			disablePdf = false,
+			pdfButtonText = 'Download PDF',
 			disableExcel = false,
+			excelButtonText = 'Download Excel',
 			showReportHeaders = true,
 			isQuickReport = false,
 			isDisabled = false,
@@ -52,8 +55,25 @@ function Report(props) {
 			additionalData = {},
 			quickReportData = {},
 			alert,
+			self,
 		} = props,
 		formProps = props._form || {},
+		hasFormItems = formProps?.items?.[0]?.items?.length,
+		getCurrentReportFormData = () => {
+			const
+				form = self?.children?.form,
+				formValues = form?.formGetValues?.();
+			if (!_.isPlainObject(formValues)) {
+				return {};
+			}
+			return formValues;
+		},
+		setCurrentReportFormData = (data) => {
+			const form = self?.children?.form;
+			_.each(data, (value, key) => {
+				form.formSetValue(key, value);
+			});
+		},
 		footerProps = formProps.footerProps || {},
 		footerClassName = clsx(
 			footerProps.className,
@@ -77,6 +97,52 @@ function Report(props) {
 			} catch (error) {
 				alert(error?.message || 'Unable to download report. Please try again.');
 			}
+		},
+		scheduleReport = async (formData) => {
+			debugger;
+			// Show a modal with ReportSchedulesGridEditor with baseParams of this reportId, 
+			// onBeforeAdd to add the formData to the new schedule
+			
+
+
+
+		},
+		addToQueue = async (formData) => {
+			debugger;
+			// Call ReportsController/addToQueue with the formData and reportId
+
+			// A centralized, customized UtilQueuedReportsGridEditor (disallow edits, add retryBtn) would allow CRUD of all queued reports.
+			// Maybe use the Report form to show the selected config, but disallow edits
+
+		},
+		selectReportPreset = (reportPresetId) => {
+			// Change the form settings based on the selected preset
+			const
+				form = self?.children?.form,
+				ReportPresets = self?.children?.reportPresetsComboEditor?.repository;
+			if (!form || !ReportPresets) {
+				return;
+			}
+			
+			const reportPreset = ReportPresets?.getById(reportPresetId);
+			if (!reportPreset) {
+				alert('Selected report preset not found');
+				return;
+			}
+
+			// apply the config to the form
+			const config = reportPreset.properties.report_presets__config.getParsedValue(); // get the actual JS object
+			setCurrentReportFormData(config);
+		},
+		shareReportPreset = (parent) => {
+			const
+				ReportPresets = self?.children?.reportPresetsComboEditor?.repository,
+				reportPreset = parent.selection[0];
+			debugger;
+
+			// Call ReportPresets/share
+			
+
 		};
 
 	const propsIcon = props._icon || {};
@@ -177,17 +243,39 @@ function Report(props) {
 	}
 
 	let footerItems = [];
-	if (usePresets) {
+	if (usePresets && hasFormItems) { // if no form items, no need for ReportPresets!
 		footerItems.push({
 			...testProps('reportPresetsComboEditor'),
+			parent: self,
+			reference: 'reportPresetsComboEditor',
 			key: 'reportPresetsComboEditor',
 			type: 'ReportPresetsComboEditor',
 			tooltip: 'Report Presets',
-			placeholder: 'Report Presets',
-			disableEdit: true,
-			className: 'w-[100px]',
+			placeholder: 'Presets',
+			disableEdit: true, // too complicated to edit, just allow add/delete/share
+			className: 'w-[130px]',
 			baseParams: {
 				reportId,
+			},
+			onChangeValue: selectReportPreset,
+			_grid: {
+				onBeforeAdd: (addValues) => {
+					// add the current form values to ReportPresets.config when creating a new preset
+					return {
+						...addValues,
+						report_presets__config: getCurrentReportFormData(),
+					};
+				},
+				additionalToolbarButtons: [
+					{
+						...testProps('shareBtn'),
+						key: 'shareBtn',
+						text: 'Share Report Preset',
+						icon: Share,
+						getIsButtonDisabled: (selection) => !selection?.[0]?.id,
+						handler: shareReportPreset,
+					},
+				],
 			},
 		});
 	}
@@ -196,17 +284,9 @@ function Report(props) {
 			...testProps('scheduleReportBtn'),
 			key: 'scheduleReportBtn',
 			type: 'Button',
-			tooltip: 'Schedule Report',
+			tooltip: 'Schedule Report for Future Delivery',
 			icon: Calendar,
-			onPress: (data) => scheduleReport({
-				reportId,
-				data: {
-					...data,
-					...additionalData,
-				},
-				reportType: REPORT_TYPES__EXCEL,
-				showReportHeaders,
-			}),
+			onPress: scheduleReport,
 			disableOnInvalid: true,
 		});
 	}
@@ -215,17 +295,9 @@ function Report(props) {
 			...testProps('queueBtn'),
 			key: 'queueBtn',
 			type: 'Button',
-			tooltip: 'Add to Queue',
+			tooltip: 'Immediately add to Queue',
 			icon: Plus,
-			onPress: (data) => addToQueue({
-				reportId,
-				data: {
-					...data,
-					...additionalData,
-				},
-				reportType: REPORT_TYPES__EXCEL,
-				showReportHeaders,
-			}),
+			onPress: addToQueue,
 			disableOnInvalid: true,
 		});
 	}
@@ -234,8 +306,9 @@ function Report(props) {
 			...testProps('excelBtn'),
 			key: 'excelBtn',
 			type: 'Button',
-			text: 'Download Excel',
+			text: excelButtonText,
 			icon: Excel,
+			tooltip: excelButtonText !== 'Download Excel' ? 'Download Excel' : null,
 			onPress: (data) => downloadReport({
 				reportId,
 				data: {
@@ -253,8 +326,9 @@ function Report(props) {
 			...testProps('pdfBtn'),
 			key: 'pdfBtn',
 			type: 'Button',
-			text: 'Download PDF',
+			text: pdfButtonText,
 			icon: Pdf,
+			tooltip: pdfButtonText !== 'Download PDF' ? 'Download PDF' : null,
 			onPress: (data) => downloadReport({
 				reportId,
 				data: {
@@ -301,6 +375,8 @@ function Report(props) {
 						</VStack>
 					</HStack>
 					<Form
+						parent={self}
+						reference="form"
 						editorType={EDITOR_TYPE__PLAIN}
 						additionalFooterItems={footerItems}
 						{...formProps}
@@ -353,4 +429,13 @@ function Report(props) {
 			</VStackNative>;
 }
 
-export default withComponent(withAlert(Report));
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					reference={props.reference || 'report'}
+					{...props}
+				/>;
+	};
+}
+
+export default withAdditionalProps(withComponent(withAlert(Report)));
