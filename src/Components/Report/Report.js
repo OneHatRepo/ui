@@ -72,6 +72,7 @@ function Report(props) {
 		} = props,
 		formProps = props._form || {},
 		hasFormItems = formProps?.items?.[0]?.items?.length,
+		showPresets = usePresets && hasFormItems,
 		user = useSelector(selectUser),
 		[isValid, setIsValid] = useState(!hasFormItems), // if there are no form items, consider the form valid by default; otherwise, start as invalid until the form says otherwise
 		getCurrentReportFormData = () => {
@@ -118,10 +119,13 @@ function Report(props) {
 				alert(error?.message || 'Unable to download report. Please try again.');
 			}
 		},
-		scheduleReport = async (formData) => {
-			debugger;
+		manageReportSchedules = async (formData) => {
 			// Show a modal with ReportSchedulesGridEditor with baseParams of this reportId, 
 			// onBeforeAdd to add the formData to the new schedule
+
+			// It should handle things differently if showPresets is true/false.
+			// If true, schedule presets.
+			// If false, just schedule the report without form data.
 			
 
 
@@ -237,7 +241,7 @@ function Report(props) {
 					/>,
 				canClose: true,
 				whichModal: 'shareReportPresetModal',
-				h:400,
+				h: 220,
 				w: 500,
 			});
 		};
@@ -340,7 +344,7 @@ function Report(props) {
 	}
 
 	let footerItems = [];
-	if (usePresets && hasFormItems) { // if no form items, no need for ReportPresets!
+	if (showPresets) { // if no form items, no need for ReportPresets!
 		footerItems.push({
 			...testProps('reportPresetsComboEditor'),
 			parent: self,
@@ -382,12 +386,12 @@ function Report(props) {
 	}
 	if (useScheduledReports) {
 		footerItems.push({
-			...testProps('scheduleReportBtn'),
-			key: 'scheduleReportBtn',
+			...testProps('manageReportSchedulesBtn'),
+			key: 'manageReportSchedulesBtn',
 			type: 'Button',
-			tooltip: 'Schedule Report for Future Delivery',
+			tooltip: 'Manage delivery schedules for this report',
 			icon: Calendar,
-			onPress: scheduleReport,
+			onPress: manageReportSchedules,
 			disableOnInvalid: true,
 		});
 	}
