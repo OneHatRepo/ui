@@ -9,7 +9,11 @@ import {
 	VStackNative,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import { useSelector, useDispatch } from 'react-redux';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor';
+import {
+	selectUser,
+} from '../../Models/Slices/AuthSlice.js';
 import {
 	UI_MODE_WEB,
 	CURRENT_MODE,
@@ -32,6 +36,7 @@ import Pdf from '../Icons/Pdf.js';
 import Share from '../Icons/Share.js';
 import Excel from '../Icons/Excel.js';
 import getReport from '../../Functions/getReport.js';
+import * as yup from 'yup';
 import _ from 'lodash';
 
 function Report(props) {
@@ -59,12 +64,15 @@ function Report(props) {
 			// withAlert
 			alert,
 			showInfo,
+			showModal,
+			hideModal,
 
 			// withComponent
 			self,
 		} = props,
 		formProps = props._form || {},
 		hasFormItems = formProps?.items?.[0]?.items?.length,
+		user = useSelector(selectUser),
 		[isValid, setIsValid] = useState(!hasFormItems), // if there are no form items, consider the form valid by default; otherwise, start as invalid until the form says otherwise
 		getCurrentReportFormData = () => {
 			const
@@ -169,15 +177,69 @@ function Report(props) {
 			setCurrentReportFormData(config);
 		},
 		shareReportPreset = (parent) => {
-			const
-				ReportPresets = self?.children?.reportPresetsComboEditor?.repository,
-				reportPreset = parent.selection[0];
-			debugger;
 
-			// Call ReportPresets/share
-			
+			// show a Modal with UserSelector, excluding current user.
+			showModal({
+				title: 'Share Report Preset',
+				body: <Form
+						instructions="Please select which user to share with."
+						editorType={EDITOR_TYPE__PLAIN}
+						className="flex-1"
+						items={[
+							{
+								name: 'instructions',
+								type: 'DisplayField',
+								text: 'Please select which user to share with.',
+								className: 'mb-3',
+							},
+							{
+								type: 'Column',
+								flex: 1,
+								items: [
+									{
+										name: 'user_id',
+										type: 'UsersCombo',
+										label: 'User',
+										baseParams: {
+											'conditions[id <>]': user.id,
+										},
+									},
+								],
+							},
+						]}
+						validator={yup.object({
+							user_id: yup.number().integer().required(),
+						})}
+						onCancel={(e) => {
+							hideModal();
+						}}
+						onClose={(e) => {
+							hideModal();
+						}}
+						onSubmit={async (data, e) => {
+							const
+								ReportPresets = self?.children?.reportPresetsComboEditor?.repository,
+								reportPreset = parent.selection[0],
+								params = {
+									report_preset_id: reportPreset.id,
+									user_id: data.user_id,
+								},
+								result = await ReportPresets._send('POST', 'ReportPresets/share', params),
+								response = ReportPresets._processServerResponse(result);
 
+							// Close the modal
+							hideModal();
 
+							if (response.success) {
+								showInfo('Report preset shared successfully.');
+							}
+						}}
+					/>,
+				canClose: true,
+				whichModal: 'shareReportPresetModal',
+				h:400,
+				w: 500,
+			});
 		};
 
 	const propsIcon = props._icon || {};
