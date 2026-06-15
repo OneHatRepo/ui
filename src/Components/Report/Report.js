@@ -120,21 +120,17 @@ function Report(props) {
 			}
 		},
 		manageReportSchedules = async (formData) => {
-			// onBeforeAdd to add the formData to the new schedule
-
-			// It should handle things differently if showPresets is true/false.
-			// If true, schedule presets.
-			// If false, just schedule the report without form data.
-			
-
-			// Show a modal with ReportSchedulesGridEditor with baseParams of this reportId, 
-			const ReportSchedulesSideGridEditor = getComponentFromType('ReportSchedulesSideGridEditor');
+			const ReportSchedulesGridEditor = getComponentFromType('ReportSchedulesGridEditor');
 			showModal({
 				title: 'Schedules for "' + title + '"',
-				body: <ReportSchedulesSideGridEditor
+				body: <ReportSchedulesGridEditor
 							baseParams={{
 								'conditions[user_id]': user.id,
 								'conditions[reportid]': reportId,
+							}}
+							_editor={{
+								hasFormItems,
+								reportId,
 							}}
 						/>,
 				canClose: true,
@@ -142,8 +138,6 @@ function Report(props) {
 				h: 800,
 				w: 1100,
 			});
-
-
 		},
 		getRepository = () => {
 			let repository;
@@ -407,7 +401,6 @@ function Report(props) {
 			tooltip: 'Manage delivery schedules for this report',
 			icon: Calendar,
 			onPress: manageReportSchedules,
-			disableOnInvalid: true,
 		});
 	}
 	if (useQueue) {
