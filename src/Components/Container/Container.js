@@ -2,6 +2,7 @@ import { cloneElement, useState, useEffect, useRef, useCallback, } from 'react';
 import {
 	BoxNative,
 	HStack,
+	HStackNative,
 	VStack,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
@@ -681,7 +682,7 @@ function Container(props) {
 	return <VStack className="Container-all flex-1 min-w-0">
 				{northComponent}
 				{!getNorthIsCollapsed() && northSplitter}
-				<HStack
+				<HStackNative
 					className="Container-mid w-full flex-[100] min-w-0"
 					onLayout={(e) => {
 						// Measure available horizontal space for side panels.
@@ -707,7 +708,7 @@ function Container(props) {
 					</VStack>
 					{!getEastIsCollapsed() && eastSplitter}
 					{eastComponent}
-				</HStack>
+				</HStackNative>
 				{!getSouthIsCollapsed() && southSplitter}
 				{southComponent}
 			</VStack>;
