@@ -275,6 +275,7 @@ export const DateElement = forwardRef((props, ref) => {
 			if (limitWidth) {
 				width = 150;
 			}
+			height = 150;
 			break;
 		default:
 	}
