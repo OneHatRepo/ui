@@ -121,6 +121,24 @@ function Report(props) {
 		},
 		manageReportSchedules = async (formData) => {
 			const ReportSchedulesGridEditor = getComponentFromType('ReportSchedulesGridEditor');
+			if (hasFormItems) {
+				// check to make sure there is at least one ReportPreset for this report, since the schedule needs to be based on a preset (which captures the form config)
+				// If not, show alert saying create preset first
+				const ReportPresets = self?.children?.reportPresetsComboEditor?.repository;
+				if (!ReportPresets) {
+					alert('Unable to access report presets. Please try again.');
+					return;
+				}
+				let reportPresets = ReportPresets.getEntities();
+				if (!reportPresets?.length) {
+					await ReportPresets.load();
+					reportPresets = ReportPresets.getEntities();
+				}
+				if (!reportPresets?.length) {
+					alert('Please create at least one report preset first, since schedules are based on presets.');
+					return;
+				}
+			}
 			showModal({
 				title: 'Schedules for "' + title + '"',
 				body: <ReportSchedulesGridEditor
@@ -362,7 +380,6 @@ function Report(props) {
 			type: 'ReportPresetsComboEditor',
 			tooltip: 'Report Presets',
 			placeholder: 'Presets',
-			disableAdd: !isValid, // only allow creating a preset if the form is valid, since the preset will capture the current form config
 			disableEdit: true, // too complicated to edit, just allow add/delete/share
 			className: 'w-[130px]',
 			baseParams: {
@@ -370,6 +387,7 @@ function Report(props) {
 			},
 			onChangeValue: selectReportPreset,
 			_grid: {
+				canRecordBeAdded: () => isValid, // only allow creating a preset if the form is valid, since the preset will capture the current form config
 				onBeforeAdd: (addValues) => {
 					// add the current form values to ReportPresets.config when creating a new preset
 					return {
@@ -457,7 +475,8 @@ function Report(props) {
 	if (footerItems.length) {
 		footerItems = footerItems.map(item => {
 			const Component = getComponentFromType(item.type);
-			return <Component {...item} />;
+			const { key, ...componentProps } = item;
+			return <Component key={key} {...componentProps} />;
 		});
 	}
 	return <VStackNative
