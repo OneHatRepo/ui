@@ -1040,6 +1040,7 @@ function Form(props) {
 							icon,
 							selectorId,
 							selectorSelectedField,
+							disableTitleSuffix = false,
 							...itemPropsToPass
 						} = item,
 						titleElement;
@@ -1076,7 +1077,7 @@ function Form(props) {
 										initialEditorMode={ancillaryInitialEditorMode}
 									/>;
 					if (title) {
-						if (record?.displayValue) {
+						if (record?.displayValue && !disableTitleSuffix) {
 							title += ' for ' + record.displayValue;
 						}
 						titleElement = <Text
