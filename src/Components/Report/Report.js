@@ -120,7 +120,6 @@ function Report(props) {
 			}
 		},
 		manageReportSchedules = async (formData) => {
-			const ReportSchedulesGridEditor = getComponentFromType('ReportSchedulesGridEditor');
 			if (hasFormItems) {
 				// check to make sure there is at least one ReportPreset for this report, since the schedule needs to be based on a preset (which captures the form config)
 				// If not, show alert saying create preset first
@@ -139,6 +138,7 @@ function Report(props) {
 					return;
 				}
 			}
+			const ReportSchedulesGridEditor = getComponentFromType('ReportSchedulesGridEditor');
 			showModal({
 				title: 'Schedules for "' + title + '"',
 				body: <ReportSchedulesGridEditor
@@ -149,6 +149,9 @@ function Report(props) {
 							_editor={{
 								hasFormItems,
 								reportId,
+							}}
+							defaultValues={{
+								report_schedules__additional_data: additionalData,
 							}}
 						/>,
 				canClose: true,
@@ -479,6 +482,13 @@ function Report(props) {
 			return <Component key={key} {...componentProps} />;
 		});
 	}
+	let additionalDataComponent = null;
+	if (!_.isEmpty(additionalData)) {
+		const ReportAdditionalData = getComponentFromType('ReportAdditionalData');
+		additionalDataComponent = <ReportAdditionalData
+									additionalData={additionalData}
+								/>;
+	}
 	return <VStackNative
 				{...testProps('Report-' + reportId)}
 				className={clsx(
@@ -504,6 +514,7 @@ function Report(props) {
 						<VStack className="flex-1">
 							<Text className="text-2xl max-w-full">{title}</Text>
 							<Text className="text-sm">{description}</Text>
+							{additionalDataComponent}
 						</VStack>
 					</HStack>
 					<Form
