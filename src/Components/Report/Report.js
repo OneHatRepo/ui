@@ -143,7 +143,6 @@ function Report(props) {
 				title: 'Schedules for "' + title + '"',
 				body: <ReportSchedulesGridEditor
 							baseParams={{
-								'conditions[user_id]': user.id,
 								'conditions[reportid]': reportId,
 							}}
 							_editor={{
