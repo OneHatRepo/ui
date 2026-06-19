@@ -233,7 +233,7 @@ function AttachmentsElement(props) {
 
 		} = props,
 		styles = UiGlobals.styles,
-		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].repository?.name : selectorSelected?.repository?.name,
+		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].schema?.name : selectorSelected?.schema?.name,
 		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity[selectorSelectedField]) : selectorSelected?.[selectorSelectedField],
 		modelid = useRef(modelidCalc),
 		id = props.id || (model && modelid.current ? `attachments-${model}-${modelid.current}` : 'attachments'),
@@ -770,7 +770,7 @@ function AttachmentsElement(props) {
 						wasAlreadyLoaded = AttachmentDirectories.isLoaded,
 						currentConditions = AttachmentDirectories.getParamConditions() || {},
 						newConditions = {
-							'conditions[AttachmentDirectories.model]': selectorSelected.repository.name,
+							'conditions[AttachmentDirectories.model]': selectorSelected.schema.name,
 							'conditions[AttachmentDirectories.modelid]': selectorSelected[selectorSelectedField],
 						};
 					let doReload = false;
