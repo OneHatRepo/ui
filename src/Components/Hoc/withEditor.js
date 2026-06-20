@@ -63,6 +63,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				initialEditorMode = EDITOR_MODE__VIEW,
 				stayInEditModeOnSelectionChange = false,
 				inheritParentEditorMode = true,
+				ignoreGlobalStayInEditModeOnSelectionChange = false,
 
 				// withComponent
 				self,
@@ -863,8 +864,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				let isIgnoreNextSelectionChange = getIsIgnoreNextSelectionChange(),
 					doStayInEditModeOnSelectionChange = stayInEditModeOnSelectionChange;
-				if (!_.isNil(UiGlobals.stayInEditModeOnSelectionChange)) {
-					// allow global override to for this property
+				if (!_.isNil(UiGlobals.stayInEditModeOnSelectionChange) && !ignoreGlobalStayInEditModeOnSelectionChange) {
+					// allow global override for this property
 					doStayInEditModeOnSelectionChange = UiGlobals.stayInEditModeOnSelectionChange;
 				}
 				if (doStayInEditModeOnSelectionChange) {
