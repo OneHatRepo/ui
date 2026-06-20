@@ -770,7 +770,7 @@ function AttachmentsElement(props) {
 						wasAlreadyLoaded = AttachmentDirectories.isLoaded,
 						currentConditions = AttachmentDirectories.getParamConditions() || {},
 						newConditions = {
-							'conditions[AttachmentDirectories.model]': selectorSelected.schema.name,
+							'conditions[AttachmentDirectories.model]': selectorSelected.schema?.name,
 							'conditions[AttachmentDirectories.modelid]': selectorSelected[selectorSelectedField],
 						};
 					let doReload = false;
@@ -1135,7 +1135,7 @@ function AttachmentsElement(props) {
 						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
 						autoClean={true}
 						uploadConfig={{
-							url: Attachments.api.baseURL + Attachments.schema.name + '/uploadAttachment',
+							url: Attachments.api.baseURL + Attachments.schema?.name + '/uploadAttachment',
 							method: 'POST',
 							headers: Attachments.headers,
 							autoUpload,
