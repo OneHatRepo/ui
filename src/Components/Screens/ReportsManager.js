@@ -7,6 +7,8 @@ import {
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import ChartPie from '../Icons/ChartPie.js';
+import Q from '../Icons/Q.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import ScreenHeader from '../Layout/ScreenHeader.js';
 import TabBar from '../Tab/TabBar.js';
 import _ from 'lodash';
@@ -18,6 +20,7 @@ export default function ReportsManager(props) {
 			reports = [],
 			reportTabs,
 			initialReportTabIx = 0,
+			showQueueTab = false,
 			id,
 			self,
 			isActive = false,
@@ -65,6 +68,15 @@ export default function ReportsManager(props) {
 							</VStackNative>
 						</ScrollView>,
 		})) : [];
+
+	if (showQueueTab) {
+		const ReportsQueue = getComponentFromType('ReportsQueue');
+		tabBarTabs.push({
+			title: 'Queue',
+			icon: Q,
+			content: <ReportsQueue />,
+		});
+	}
 	
 	return <VStack
 				className="overflow-hidden flex-1 w-full"
