@@ -152,7 +152,7 @@ function Report(props) {
 					showInfo('Failed to get or create report preset: ' + (response.message || 'Unknown error'));
 					return;
 				}
-				defaultValues.report_schedules__report_preset_id = response.data.id;
+				defaultValues.report_schedules__report_preset_id = response.root.id;
 			}
 			const ReportSchedulesGridEditor = getComponentFromType('ReportSchedulesGridEditor');
 			showModal({
