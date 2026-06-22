@@ -120,6 +120,9 @@ function Report(props) {
 			}
 		},
 		manageReportSchedules = async (formData) => {
+			let defaultValues = {
+				report_schedules__additional_data: additionalData,
+			};
 			if (hasFormItems) {
 				// check to make sure there is at least one ReportPreset for this report, since the schedule needs to be based on a preset (which captures the form config)
 				// If not, show alert saying create preset first
@@ -137,6 +140,19 @@ function Report(props) {
 					alert('Please create at least one report preset first, since schedules are based on presets.');
 					return;
 				}
+			} else {
+				// Form is empty, but the ReportSchedule needs a report_preset_id to work.
+				// Get or create one.
+				const ReportPresets = oneHatData.getRepository('ReportPresets');
+				const result = await ReportPresets._send('POST', 'ReportPresets/getOrCreate', {
+					reportId,
+				});
+				const response = ReportPresets._processServerResponse(result);
+				if (!response.success) {
+					showInfo('Failed to get or create report preset: ' + (response.message || 'Unknown error'));
+					return;
+				}
+				defaultValues.report_schedules__report_preset_id = response.data.id;
 			}
 			const ReportSchedulesGridEditor = getComponentFromType('ReportSchedulesGridEditor');
 			showModal({
@@ -149,9 +165,7 @@ function Report(props) {
 								hasFormItems,
 								reportId,
 							}}
-							defaultValues={{
-								report_schedules__additional_data: additionalData,
-							}}
+							defaultValues={defaultValues}
 						/>,
 				canClose: true,
 				whichModal: 'schedulesModal',
