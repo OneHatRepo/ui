@@ -284,6 +284,7 @@ import PmCalcDebugViewer from './Viewer/PmCalcDebugViewer.js';
 import PmStatusesViewer from './Viewer/PmStatusesViewer.js';
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
 import ReportPresetsComboEditor from './Form/Field/Combo/ReportPresetsComboEditor.js';
+import ReportQueueStatusesCombo from './Form/Field/Combo/ReportQueueStatusesCombo.js';
 // import Slider from './Form/Field/Slider.js'; // Currently, Slider is not compatible with the new React architecture. Temporarily remove it from index.js to prevent issues.
 import SquareButton from './Buttons/SquareButton.js';
 import TabPanel from './Panel/TabPanel.js';
@@ -585,6 +586,7 @@ const components = {
 	PmStatusesViewer,
 	RadioGroup,
 	ReportPresetsComboEditor,
+	ReportQueueStatusesCombo,
 	// Slider,
 	SquareButton,
 	TabPanel,

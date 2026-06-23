@@ -10,6 +10,7 @@ import ChartPie from '../Icons/ChartPie.js';
 import Q from '../Icons/Q.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import ScreenHeader from '../Layout/ScreenHeader.js';
+import ReportsQueue from '../Grid/ReportsQueue.js';
 import TabBar from '../Tab/TabBar.js';
 import _ from 'lodash';
 
@@ -70,7 +71,6 @@ export default function ReportsManager(props) {
 		})) : [];
 
 	if (showQueueTab) {
-		const ReportsQueue = getComponentFromType('ReportsQueue');
 		tabBarTabs.push({
 			title: 'Queue',
 			icon: Q,
