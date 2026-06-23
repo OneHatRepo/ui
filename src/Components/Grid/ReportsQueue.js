@@ -240,6 +240,16 @@ function ReportsQueue(props) {
 						"isResizable": true,
 						"w": 100
 					},
+					{
+						"id": "users__username",
+						"header": "User",
+						"fieldName": "users__username",
+						"isSortable": false,
+						"isEditable": false,
+						"isReorderable": false,
+						"isResizable": false,
+						"w": 100
+					},
 				]}
 				getRowProps={(item) => {
 					const rowProps = {
