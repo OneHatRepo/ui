@@ -10,16 +10,16 @@ import {
 	REPORT_QUEUE_STATUS__ALL,
 	REPORT_QUEUE_STATUS__COMPLETED,
 	REPORT_QUEUE_STATUS__FAILED,
-	REPORT_QUEUE_STATUS__PENDING,
 	REPORT_QUEUE_STATUS__IN_PROCESS,
+	REPORT_QUEUE_STATUS__PENDING,
 } from '../../../../Constants/ReportQueueStatuses.js';
 
 const data = [
 	[REPORT_QUEUE_STATUS__ALL, 'All'],
+	[REPORT_QUEUE_STATUS__PENDING, 'Only Pending'],
 	[REPORT_QUEUE_STATUS__IN_PROCESS, 'Only In Process'],
 	[REPORT_QUEUE_STATUS__FAILED, 'Only Failures'],
 	[REPORT_QUEUE_STATUS__COMPLETED, 'Only Completed'],
-	[REPORT_QUEUE_STATUS__PENDING, 'Only Pending'],
 ];
 
 function ReportQueueStatusesCombo(props) {
