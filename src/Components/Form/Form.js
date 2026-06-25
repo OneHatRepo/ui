@@ -105,6 +105,8 @@ function Form(props) {
 			onViewMode,
 			onValidityChange,
 			onDirtyChange,
+			addAgain = false, // if true, after saving, the form will reset to allow adding another record. If false, the form will retain the newly added record.
+			addAgainAlways = false, // determines whether the form will show one or two add buttons. If true, the form will show only the "Add & New" button. If false, the form will show both "Add" and "Add & New" buttons. If addAgain=false, this setting has no effect. 
 			submitBtnLabel,
 			onSubmit,
 			formSetup, // this fn will be executed after the form setup is complete
@@ -150,6 +152,7 @@ function Form(props) {
 
 			// withAlert
 			alert,
+			showInfo,
 			
 		} = props,
 		formRef = useRef(),
@@ -1179,10 +1182,10 @@ function Form(props) {
 
 			doReset(nextValues);
 		},
-		onSaveDecorated = async (data, e) => {
+		onSaveDecorated = async (data, e, options) => {
 			// reset the form after a save
-			const result = await onSave(data, e);
-			if (result) {
+			const result = await onSave(data, e, options);
+			if (result && !options?.addAgain) {
 				const values = record.submitValues;
 				doReset(values);
 			}
@@ -1383,6 +1386,7 @@ function Form(props) {
 		showSaveBtn = false,
 		showSubmitBtn = false,
 		isAddMode = resolvedEditorMode === EDITOR_MODE__ADD,
+		showDualAddButtons = isAddMode && addAgain && !addAgainAlways,
 		isEditableMode = (() => {
 			// Keep explicit editor modes authoritative, but preserve legacy modal behavior:
 			// if no mode is supplied, treat forms with onSave as editable so Save can render.
@@ -1587,15 +1591,38 @@ function Form(props) {
 						text="Close"
 					/>}
 
-				{showSaveBtn && 
+				{showSaveBtn && // multipurpose button: Add, Add & New, or Save depending on mode and props
 					<Button
 						{...testProps('saveBtn')}
 						key="saveBtn"
-						onPress={(e) => handleSubmit(onSaveDecorated, onSubmitError)(e)}
+						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e, {
+							addAgain: isAddMode && addAgain && addAgainAlways,
+						}), onSubmitError)(e)}
 						icon={getEditorMode() === EDITOR_MODE__ADD ? Plus : FloppyDiskRegular}
 						isDisabled={isSaveDisabled}
 						className="text-white"
-						text={(getEditorMode() === EDITOR_MODE__ADD ? 'Add' : 'Save') + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
+						tooltip={
+							getEditorMode() === EDITOR_MODE__EDIT
+								? 'Save Changes'
+								: (showDualAddButtons || !addAgain || !addAgainAlways)
+									? 'Add this record and keep it in editor'
+									: 'Add this record and reset the form to add another'
+						}
+						text={(getEditorMode() === EDITOR_MODE__ADD ? (showDualAddButtons ? 'Add' : (addAgain ? 'Add & New' : 'Add')) : 'Save') + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
+					/>}
+
+				{showSaveBtn && showDualAddButtons && // this button appears only when addAgain is true and addAgainAlways is false
+					<Button
+						{...testProps('addAgainBtn')}
+						key="addAgainBtn"
+						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e, {
+							addAgain: true,
+						}), onSubmitError)(e)}
+						icon={Plus}
+						isDisabled={isSaveDisabled}
+						className="text-white"
+						tooltip="Add this record and reset the form to add another"
+						text={'Add & New' + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
 					/>}
 				
 				{showSubmitBtn && 

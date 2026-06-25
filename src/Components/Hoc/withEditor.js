@@ -39,6 +39,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				enableMultiDelete = false, // deleting multiple records at once is opt-in only
 				disableDuplicate = false,
 				disableView = false,
+				addAgain = false,
 				waitWhileSaving = false, // when true, show global wait modal while doEditorSave is in-flight
 				useRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				getDuplicateValues, // fn(entity) to get default values for duplication
@@ -89,6 +90,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				alert,
 				confirm,
 				hideAlert,
+				showInfo,
 			} = props,
 			parentEditorModeContext = useContext(EditorModeContext),
 			forceUpdate = useForceUpdate(),
@@ -671,7 +673,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return duplicateEntity;
 				}
 			},
-			doEditorSave = async (data, e) => {
+			doEditorSave = async (data, e, options = {}) => {
+				const shouldAddAgain = _.isBoolean(options?.addAgain) ? options.addAgain : addAgain;
 				if (getIsEditorDisabledByParent()) {
 					return false;
 				}
@@ -749,10 +752,18 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							await getListeners().onAfterAddSave(selection);
 						}
 						setIsAdding(false);
-						if (!canUser || canUser(EDIT)) {
-							setEditorMode(EDITOR_MODE__EDIT);
+
+						if (addAgain && shouldAddAgain) {
+							if (showInfo) {
+								showInfo('New record created successfully. You can add another one now.');
+							}
+							await doAdd(e);
 						} else {
-							setEditorMode(EDITOR_MODE__VIEW);
+							if (!canUser || canUser(EDIT)) {
+								setEditorMode(EDITOR_MODE__EDIT);
+							} else {
+								setEditorMode(EDITOR_MODE__VIEW);
+							}
 						}
 					} else if (getEditorMode() === EDITOR_MODE__EDIT) {
 						if (getListeners().onAfterEdit) {
