@@ -38,6 +38,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryDisableDelete = false,
 				secondaryDisableDuplicate = false,
 				secondaryDisableView = false,
+				secondaryAddAgain = false,
 				secondaryWaitWhileSaving = false, // when true, show global wait modal while doEditorSave is in-flight
 				secondaryUseRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				secondaryGetRecordIdentifier = (secondarySelection) => {
@@ -84,6 +85,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				alert,
 				confirm,
 				hideAlert,
+				showInfo,
 			} = props,
 			forceUpdate = useForceUpdate(),
 			secondaryListeners = useRef({}),
@@ -515,7 +517,8 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					return duplicateEntity;
 				}
 			},
-			secondaryDoEditorSave = async (data, e) => {
+			secondaryDoEditorSave = async (data, e, options = {}) => {
+				const shouldAddAgain = _.isBoolean(options?.addAgain) ? options.addAgain : secondaryAddAgain;
 				let mode = secondaryGetEditorMode() === EDITOR_MODE__ADD ? ADD : EDIT;
 				if (canUser && !canUser(mode, secondaryModel)) {
 					showPermissionsError(mode, secondaryModel);
@@ -590,10 +593,18 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 							await getListeners().onAfterAddSave(secondarySelection);
 						}
 						setIsAdding(false);
-						if (!canUser || canUser(EDIT, secondaryModel)) {
-							secondarySetEditorMode(EDITOR_MODE__EDIT);
+
+						if (secondaryAddAgain && shouldAddAgain) {
+							if (showInfo) {
+								showInfo('New record created successfully. You can add another one now.');
+							}
+							await secondaryDoAdd(e);
 						} else {
-							secondarySetEditorMode(EDITOR_MODE__VIEW);
+							if (!canUser || canUser(EDIT, secondaryModel)) {
+								secondarySetEditorMode(EDITOR_MODE__EDIT);
+							} else {
+								secondarySetEditorMode(EDITOR_MODE__VIEW);
+							}
 						}
 					} else if (secondaryGetEditorMode() === EDITOR_MODE__EDIT) {
 						if (getListeners().onAfterEdit) {
