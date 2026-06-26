@@ -216,8 +216,12 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}
 			setIsMenuShown(false);
 		},
-		toggleMenu = () => {
-			setIsMenuShown(!getIsMenuShown());
+		toggleMenu = async () => {
+			if (getIsMenuShown()) {
+				hideMenu();
+				return;
+			}
+			await showMenu();
 		},
 		temporarilySetIsNavigatingViaKeyboard = () => {
 			setIsNavigatingViaKeyboard(true);
@@ -1021,7 +1025,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 										// If flipped, position above input; otherwise, below
 										top: isMenuAbove
 											? (top - menuRenderedHeight) // above
-											: top, // below
+											: (disableDirectEntry ? (top + inputHeight) : top), // below
 										left,
 										width,
 										minWidth: 100,
