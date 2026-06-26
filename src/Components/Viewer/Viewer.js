@@ -96,6 +96,7 @@ function Viewer(props) {
 			return ancillaryButtons.current;
 		},
 		isMultiple = _.isArray(record),
+		[containerHeight, setContainerHeight] = useState(),
 		[containerWidth, setContainerWidth] = useState(),
 		[isFabVisible, setIsFabVisible] = useState(false),
 		fabOpacity = useSharedValue(0),
@@ -117,6 +118,16 @@ function Viewer(props) {
 				: null,
 		styles = UiGlobals.styles,
 		flex = props.flex || 1,
+		isHeaderScrollable = (() => {
+			// This project can disable scrolling of Editor header by setting UiGlobals.isEditorHeaderScrollable = false
+			// However, if the screen is not tall enough, it will still scroll.
+			if (!UiGlobals.hasOwnProperty('isEditorHeaderScrollable') ||
+				!containerHeight ||
+				containerHeight < 800) {
+				return true;
+			}
+			return UiGlobals.isEditorHeaderScrollable;
+		})(),
 		buildFromItems = () => {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
@@ -458,6 +469,7 @@ function Viewer(props) {
 			return components;
 		},
 		onLayout = (e) => {
+			setContainerHeight(e.nativeEvent.layout.height);
 			setContainerWidth(e.nativeEvent.layout.width);
 		},
 		scrollToAncillaryItem = (ix) => {
@@ -576,56 +588,109 @@ function Viewer(props) {
 			>
 				{containerWidth && <>
 
-					<ScrollView
-						_web={{ height: 1 }}
-						ref={scrollViewRef}
-						onScroll={onScroll}
-						scrollEventThrottle={16 /* ms */}
-						className={clsx(
-							'Viewer-ScrollView',
-							'w-full',
-							'pb-1',
-							'flex-1',
-						)}
-					>
-						{scrollToTopAnchor}
+					{isHeaderScrollable && 
+						<ScrollView
+							_web={{ height: 1 }}
+							ref={scrollViewRef}
+							onScroll={onScroll}
+							scrollEventThrottle={16 /* ms */}
+							className={clsx(
+								'Viewer-ScrollView',
+								'w-full',
+								'pb-1',
+								'flex-1',
+							)}
+						>
+							{scrollToTopAnchor}
 
-						<Toolbar className="justify-end">
-							<HStack className="flex-1 items-center">
-									<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent && normalizedParentEditorMode === EDITOR_MODE__VIEW ? 'View Mode (Inherited)' : 'View Mode'}</Text>
-							</HStack>
-							{onEditMode && (!canUser || canUser(EDIT)) && 
-								<Button
-									{...testProps('toEditBtn')}
-									key="editBtn"
-									onPress={onEditMode}
-									icon={Pencil}
-									_icon={{ 
-										size: 'sm',
-										className: 'text-white'
-									}}
-									className="text-white"
-									text="To Edit"
-									tooltip="Switch to Edit Mode"
-									isDisabled={!canEdit}
-								/>}
-						</Toolbar>
-						
-						{!_.isEmpty(additionalButtons) && 
-							<Toolbar className="justify-end flex-wrap gap-2">
-								{additionalButtons}
-							</Toolbar>}
-						
-						{showAncillaryButtons && !_.isEmpty(getAncillaryButtons()) && 
-							<Toolbar className="justify-start flex-wrap gap-2">
-								<Text>Scroll:</Text>
-								{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
-							</Toolbar>}
-						
-						{shouldUseHorizontalViewerLayout ? <HStack className="Viewer-formComponents-HStack p-4 gap-4 justify-center">{viewerComponents}</HStack> : null}
-						{!shouldUseHorizontalViewerLayout ? <VStack className="Viewer-formComponents-VStack p-4">{viewerComponents}</VStack> : null}
-						<VStack className="Viewer-AncillaryComponents m-2 pt-4 px-2">{ancillaryComponents}</VStack>
-					</ScrollView>
+							<Toolbar className="justify-end">
+								<HStack className="flex-1 items-center">
+										<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent && normalizedParentEditorMode === EDITOR_MODE__VIEW ? 'View Mode (Inherited)' : 'View Mode'}</Text>
+								</HStack>
+								{onEditMode && (!canUser || canUser(EDIT)) && 
+									<Button
+										{...testProps('toEditBtn')}
+										key="editBtn"
+										onPress={onEditMode}
+										icon={Pencil}
+										_icon={{ 
+											size: 'sm',
+											className: 'text-white'
+										}}
+										className="text-white"
+										text="To Edit"
+										tooltip="Switch to Edit Mode"
+										isDisabled={!canEdit}
+									/>}
+							</Toolbar>
+							
+							{!_.isEmpty(additionalButtons) && 
+								<Toolbar className="justify-end flex-wrap gap-2">
+									{additionalButtons}
+								</Toolbar>}
+							
+							{showAncillaryButtons && !_.isEmpty(getAncillaryButtons()) && 
+								<Toolbar className="justify-start flex-wrap gap-2">
+									<Text>Scroll:</Text>
+									{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
+								</Toolbar>}
+							
+							{shouldUseHorizontalViewerLayout ? <HStack className="Viewer-formComponents-HStack p-4 gap-4 justify-center">{viewerComponents}</HStack> : null}
+							{!shouldUseHorizontalViewerLayout ? <VStack className="Viewer-formComponents-VStack p-4">{viewerComponents}</VStack> : null}
+							<VStack className="Viewer-AncillaryComponents m-2 pt-4 px-2">{ancillaryComponents}</VStack>
+						</ScrollView>}
+					{!isHeaderScrollable && 
+						<>
+							<Toolbar className="justify-end">
+								<HStack className="flex-1 items-center">
+										<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent && normalizedParentEditorMode === EDITOR_MODE__VIEW ? 'View Mode (Inherited)' : 'View Mode'}</Text>
+								</HStack>
+								{onEditMode && (!canUser || canUser(EDIT)) && 
+									<Button
+										{...testProps('toEditBtn')}
+										key="editBtn"
+										onPress={onEditMode}
+										icon={Pencil}
+										_icon={{ 
+											size: 'sm',
+											className: 'text-white'
+										}}
+										className="text-white"
+										text="To Edit"
+										tooltip="Switch to Edit Mode"
+										isDisabled={!canEdit}
+									/>}
+							</Toolbar>
+							
+							{!_.isEmpty(additionalButtons) && 
+								<Toolbar className="justify-end flex-wrap gap-2">
+									{additionalButtons}
+								</Toolbar>}
+							
+							{showAncillaryButtons && !_.isEmpty(getAncillaryButtons()) && 
+								<Toolbar className="justify-start flex-wrap gap-2">
+									<Text>Scroll:</Text>
+									{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
+								</Toolbar>}
+							
+							<ScrollView
+								_web={{ height: 1 }}
+								ref={scrollViewRef}
+								onScroll={onScroll}
+								scrollEventThrottle={16 /* ms */}
+								className={clsx(
+									'Viewer-ScrollView',
+									'w-full',
+									'pb-1',
+									'flex-1',
+								)}
+							>
+								{scrollToTopAnchor}
+								{shouldUseHorizontalViewerLayout ? <HStack className="Viewer-formComponents-HStack p-4 gap-4 justify-center">{viewerComponents}</HStack> : null}
+								{!shouldUseHorizontalViewerLayout ? <VStack className="Viewer-formComponents-VStack p-4">{viewerComponents}</VStack> : null}
+								<VStack className="Viewer-AncillaryComponents m-2 pt-4 px-2">{ancillaryComponents}</VStack>
+							</ScrollView>
+						</>}
 
 					{footer}
 					{isFabVisible && fab}

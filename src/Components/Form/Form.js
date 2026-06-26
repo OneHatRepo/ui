@@ -180,6 +180,7 @@ function Form(props) {
 		isPhantom = !skipAll && !!record?.isPhantom,
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
+		[containerHeight, setContainerHeight] = useState(),
 		[containerWidth, setContainerWidth] = useState(),
 		[isFabVisible, setIsFabVisible] = useState(false),
 		fabOpacity = useSharedValue(0),
@@ -230,6 +231,16 @@ function Form(props) {
 				}
 			});
 			return requiredFieldNames;
+		})(),
+		isHeaderScrollable = (() => {
+			// This project can disable scrolling of Editor header by setting UiGlobals.isEditorHeaderScrollable = false
+			// However, if the screen is not tall enough, it will still scroll.
+			if (!UiGlobals.hasOwnProperty('isEditorHeaderScrollable') ||
+				!containerHeight ||
+				containerHeight < 800) {
+				return true;
+			}
+			return UiGlobals.isEditorHeaderScrollable;
 		})(),
 		{
 			control,
@@ -1202,6 +1213,7 @@ function Form(props) {
 				onLayout(e);
 			}
 
+			setContainerHeight(e.nativeEvent.layout.height);
 			setContainerWidth(e.nativeEvent.layout.width);
 		},
 		scrollToAncillaryItem = (ix) => {
@@ -1710,9 +1722,8 @@ function Form(props) {
 				className={className}
 			>
 				{!!containerWidth && <>
-					{editorType === EDITOR_TYPE__INLINE &&
-						editor}
-					{editorType !== EDITOR_TYPE__INLINE &&
+					{editorType === EDITOR_TYPE__INLINE && editor}
+					{editorType !== EDITOR_TYPE__INLINE && isHeaderScrollable &&
 						<ScrollView
 							className={clsx(
 								'Form-ScrollView',
@@ -1739,6 +1750,37 @@ function Form(props) {
 								</Toolbar>}
 							{editor}
 						</ScrollView>}
+					{editorType !== EDITOR_TYPE__INLINE && !isHeaderScrollable && 
+						<>
+							<>
+								{modeHeader}
+								{formHeader}
+								{formButtons}
+								{showAncillaryButtons && !_.isEmpty(getAncillaryButtons()) && 
+									<Toolbar className="justify-start flex-wrap gap-2">
+										<Text>Scroll:</Text>
+										{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
+									</Toolbar>}
+							</>
+							<ScrollView
+								className={clsx(
+									'Form-ScrollView',
+									'w-full',
+									'flex-1',
+									'pb-1',
+									`web:min-h-[${minHeight}px]`,
+								)}
+								onScroll={onScroll}
+								scrollEventThrottle={16 /* ms */}
+								contentContainerStyle={{
+									width: '100%',
+									minWidth: '100%',
+								}}
+							>
+								{scrollToTopAnchor}
+								{editor}
+							</ScrollView>
+						</>}
 
 					{footer}
 					{isFabVisible && fab}
