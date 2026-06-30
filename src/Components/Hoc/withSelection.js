@@ -26,7 +26,7 @@ export default function withSelection(WrappedComponent) {
 				onChangeSelection,
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				autoSelectFirstItem = false,
-				isSelectionControlled = false,
+				isSelectionControlled = false, // if true, selection is controlled by parent; i.e. this is a controlled component. If false, selection is managed by this HOC.
 				fireEvent,
 
 				// withComponent
