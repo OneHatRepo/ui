@@ -16,12 +16,17 @@ export default function withSelection(WrappedComponent) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
+		if (props.isSelectionControlled && !props.onChangeSelection) {
+			throw Error('withSelection: isSelectionControlled is true, but no onChangeSelection was provided!');
+		}
+
 		const {
 				selection,
 				defaultSelection,
 				onChangeSelection,
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				autoSelectFirstItem = false,
+				isSelectionControlled = false,
 				fireEvent,
 
 				// withComponent
@@ -43,7 +48,7 @@ export default function withSelection(WrappedComponent) {
 			selectionRef = useRef(initialSelection),
 			RepositoryRef = useRef(Repository),
 			isSelectionChangesEnabledRef = useRef(true),
-			[isReady, setIsReady] = useState(selection || false), // if selection is already defined, or value is not null and we don't need to load repository, it's ready
+			[isReady, setIsReady] = useState(isSelectionControlled || selection || false), // if controlled or selection is already defined we don't need to load repository, it's ready
 			getIsSelectionChangesEnabled = () => {
 				return isSelectionChangesEnabledRef.current;
 			},
@@ -64,16 +69,23 @@ export default function withSelection(WrappedComponent) {
 					return;
 				}
 
-				selectionRef.current = selection;
+				if (!isSelectionControlled) {
+					selectionRef.current = selection;
+				}
 				if (onChangeSelection) {
 					onChangeSelection(selection);
 				}
 				if (fireEvent) {
 					fireEvent('changeSelection', selection);
 				}
-				forceUpdate();
+				if (!isSelectionControlled) {
+					forceUpdate();
+				}
 			},
 			getSelection = () => {
+				if (isSelectionControlled) {
+					return selection ?? [];
+				}
 				return selectionRef.current;
 			},
 			getRepository = () => {
@@ -126,9 +138,9 @@ export default function withSelection(WrappedComponent) {
 				const Repository = getRepository();
 				let newSelection = [];
 				if (Repository) {
-					newSelection = _.remove(getSelection(), (sel) => sel !== item);
+					newSelection = _.filter(getSelection(), (sel) => sel !== item);
 				} else {
-					newSelection = _.remove(getSelection(), (sel) => sel[idIx] !== item[idIx]);
+					newSelection = _.filter(getSelection(), (sel) => sel[idIx] !== item[idIx]);
 				}
 				setSelection(newSelection);
 			},
@@ -287,6 +299,10 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			conformSelectionToValue = async () => {
+				if (isSelectionControlled) {
+					return;
+				}
+
 				const Repository = getRepository();
 				let newSelection = [];
 				if (Repository) {
@@ -356,6 +372,10 @@ export default function withSelection(WrappedComponent) {
 			}, []);
 		}
 
+		if (isSelectionControlled) {
+			selectionRef.current = selection ?? [];
+		}
+
 		useEffect(() => {
 
 			(async () => {
@@ -368,7 +388,11 @@ export default function withSelection(WrappedComponent) {
 					await Repository.load();
 				}
 
-				if (!_.isNil(value)) {
+				if (isSelectionControlled) {
+
+					conformValueToLocalSelection();
+
+				} else if (!_.isNil(value)) {
 
 					await conformSelectionToValue();
 
@@ -417,12 +441,20 @@ export default function withSelection(WrappedComponent) {
 					return () => {};
 				}
 	
+				if (isSelectionControlled) {
+					return () => {};
+				}
+	
 				conformSelectionToValue();
 	
 			}, [value]);
 	
 			useEffect(() => {
 				if (!isReady) {
+					return () => {};
+				}
+	
+				if (!isSelectionControlled) {
 					return () => {};
 				}
 	

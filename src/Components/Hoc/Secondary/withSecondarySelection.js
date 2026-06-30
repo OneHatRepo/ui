@@ -15,14 +15,18 @@ export default function withSelection(WrappedComponent) {
 	return forwardRef((props, ref) => {
 
 		if (props.secondaryDisableWithSelection || props.secondaryAlreadyHasWithSelection) {
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		if (props.secondarySetSelection) {
 			// bypass everything, since we're already using withSelection() in hierarchy.
 			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
 			// but we only need it defined once for the whole thing.
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...props} ref={ref} />;
+		}
+
+		if (props.isSecondarySelectionControlled && !props.secondaryOnChangeSelection) {
+			throw Error('withSecondarySelection: isSecondarySelectionControlled is true, but no secondaryOnChangeSelection was provided!');
 		}
 
 		const {
@@ -31,6 +35,7 @@ export default function withSelection(WrappedComponent) {
 				secondaryOnChangeSelection,
 				secondarySelectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
 				secondaryAutoSelectFirstItem = false,
+				isSecondarySelectionControlled = false,
 				fireEvent,
 
 				// withComponent
@@ -51,22 +56,45 @@ export default function withSelection(WrappedComponent) {
 			forceUpdate = useForceUpdate(),
 			secondarySelectionRef = useRef(initialSelection),
 			SecondaryRepositoryRef = useRef(SecondaryRepository),
-			[isReady, setIsReady] = useState(secondarySelection || false), // if secondarySelection is already defined, or secondaryValue is not null and we don't need to load repository, it's ready
+			isSecondarySelectionChangesEnabledRef = useRef(true),
+			[isReady, setIsReady] = useState(isSecondarySelectionControlled || secondarySelection || false), // if controlled or secondarySelection is already defined we don't need to load repository, it's ready
+			getIsSecondarySelectionChangesEnabled = () => {
+				return isSecondarySelectionChangesEnabledRef.current;
+			},
+			setIsSecondarySelectionChangesEnabled = (bool) => {
+				isSecondarySelectionChangesEnabledRef.current = bool;
+			},
+			disableSecondarySelectionChanges = () => {
+				setIsSecondarySelectionChangesEnabled(false);
+			},
+			enableSecondarySelectionChanges = () => {
+				setIsSecondarySelectionChangesEnabled(true);
+			},
 			secondarySetSelection = (secondarySelection) => {
+				if (!getIsSecondarySelectionChangesEnabled()) {
+					return;
+				}
 				if (_.isEqual(secondarySelection, secondaryGetSelection())) {
 					return;
 				}
 
-				secondarySelectionRef.current = secondarySelection;
+				if (!isSecondarySelectionControlled) {
+					secondarySelectionRef.current = secondarySelection;
+				}
 				if (secondaryOnChangeSelection) {
 					secondaryOnChangeSelection(secondarySelection);
 				}
 				if (fireEvent) {
 					fireEvent('secondaryChangeSelection', secondarySelection);
 				}
-				forceUpdate();
+				if (!isSecondarySelectionControlled) {
+					forceUpdate();
+				}
 			},
 			secondaryGetSelection = () => {
+				if (isSecondarySelectionControlled) {
+					return secondarySelection ?? [];
+				}
 				return secondarySelectionRef.current;
 			},
 			secondaryGetRepository = () => {
@@ -119,9 +147,9 @@ export default function withSelection(WrappedComponent) {
 				const SecondaryRepository = secondaryGetRepository();
 				let newSelection = [];
 				if (SecondaryRepository) {
-					newSelection = _.remove(secondaryGetSelection(), (sel) => sel !== item);
+					newSelection = _.filter(secondaryGetSelection(), (sel) => sel !== item);
 				} else {
-					newSelection = _.remove(secondaryGetSelection(), (sel) => sel[secondaryIdIx] !== item[secondaryIdIx]);
+					newSelection = _.filter(secondaryGetSelection(), (sel) => sel[secondaryIdIx] !== item[secondaryIdIx]);
 				}
 				secondarySetSelection(newSelection);
 			},
@@ -152,7 +180,9 @@ export default function withSelection(WrappedComponent) {
 					currentlySelectedRowIndices = [];
 				const SecondaryRepository = secondaryGetRepository();
 				if (SecondaryRepository) {
-					items = SecondaryRepository.getEntitiesOnPage();
+					if (!SecondaryRepository.isDestroyed) {
+						items = SecondaryRepository.getEntitiesOnPage();
+					}
 				} else {
 					items = secondaryData;
 				}
@@ -216,8 +246,11 @@ export default function withSelection(WrappedComponent) {
 
 				// Gets ix of entity on page, or element in secondaryData array
 				if (SecondaryRepository) {
-					const entities = SecondaryRepository.getEntitiesOnPage();
-					return entities.indexOf(item);
+					if (!SecondaryRepository.isDestroyed) {
+						const entities = SecondaryRepository.getEntitiesOnPage();
+						return entities.indexOf(item);
+					}
+					return -1;
 				}
 				
 				let found;
@@ -271,31 +304,37 @@ export default function withSelection(WrappedComponent) {
 				}
 			},
 			conformSelectionToValue = async () => {
+				if (isSecondarySelectionControlled) {
+					return;
+				}
+
 				const SecondaryRepository = secondaryGetRepository();
 				let newSelection = [];
 				if (SecondaryRepository) {
-					if (SecondaryRepository.isLoading) {
-						await SecondaryRepository.waitUntilDoneLoading();
-					}
-					// Get entity or entities that match secondaryValue
-					if ((_.isArray(secondaryValue) && !_.isEmpty(secondaryValue)) || !!secondaryValue) {
-						if (_.isArray(secondaryValue)) {
-							newSelection = SecondaryRepository.getBy((entity) => inArray(entity.id, secondaryValue));
-						} else {
-							let found = SecondaryRepository.getById(secondaryValue);
-							if (found) {
-								newSelection.push(found);
-							// } else if (SecondaryRepository?.isRemote && SecondaryRepository?.entities.length) {
+					if (!SecondaryRepository.isDestroyed) {
+						if (SecondaryRepository.isLoading) {
+							await SecondaryRepository.waitUntilDoneLoading();
+						}
+						// Get entity or entities that match secondaryValue
+						if ((_.isArray(secondaryValue) && !_.isEmpty(secondaryValue)) || !!secondaryValue) {
+							if (_.isArray(secondaryValue)) {
+								newSelection = SecondaryRepository.getBy((entity) => inArray(entity.id, secondaryValue));
+							} else {
+								let found = SecondaryRepository.getById(secondaryValue);
+								if (found) {
+									newSelection.push(found);
+								// } else if (SecondaryRepository?.isRemote && SecondaryRepository?.entities.length) {
 
-							// 	// Value cannot be found in SecondaryRepository, but actually exists on server
-							// 	// Try to get this secondaryValue from the server directly
-							// 	SecondaryRepository.filter(SecondaryRepository.schema.model.idProperty, secondaryValue);
-							// 	await SecondaryRepository.load();
-							// 	found = SecondaryRepository.getById(secondaryValue);
-							// 	if (found) {
-							// 		newSelection.push(found);
-							// 	}
+								// 	// Value cannot be found in SecondaryRepository, but actually exists on server
+								// 	// Try to get this secondaryValue from the server directly
+								// 	SecondaryRepository.filter(SecondaryRepository.schema.model.idProperty, secondaryValue);
+								// 	await SecondaryRepository.load();
+								// 	found = SecondaryRepository.getById(secondaryValue);
+								// 	if (found) {
+								// 		newSelection.push(found);
+								// 	}
 
+								}
 							}
 						}
 					}
@@ -328,11 +367,18 @@ export default function withSelection(WrappedComponent) {
 
 		if (SecondaryRepository) {
 			useEffect(() => {
+				if (SecondaryRepository.isDestroyed) {
+					return null;
+				}
 				SecondaryRepository.on('load', secondaryRefreshSelection);
 				return () => {
 					SecondaryRepository.off('load', secondaryRefreshSelection);
 				};
 			}, []);
+		}
+
+		if (isSecondarySelectionControlled) {
+			secondarySelectionRef.current = secondarySelection ?? [];
 		}
 
 		useEffect(() => {
@@ -347,7 +393,11 @@ export default function withSelection(WrappedComponent) {
 					await SecondaryRepository.load();
 				}
 
-				if (!_.isNil(secondaryValue)) {
+				if (isSecondarySelectionControlled) {
+
+					conformValueToLocalSelection();
+
+				} else if (!_.isNil(secondaryValue)) {
 
 					await conformSelectionToValue();
 
@@ -393,6 +443,10 @@ export default function withSelection(WrappedComponent) {
 				if (!isReady) {
 					return () => {};
 				}
+
+				if (isSecondarySelectionControlled) {
+					return () => {};
+				}
 	
 				conformSelectionToValue();
 	
@@ -400,6 +454,10 @@ export default function withSelection(WrappedComponent) {
 	
 			useEffect(() => {
 				if (!isReady) {
+					return () => {};
+				}
+
+				if (!isSecondarySelectionControlled) {
 					return () => {};
 				}
 	
@@ -432,6 +490,9 @@ export default function withSelection(WrappedComponent) {
 					secondaryIsInSelection={secondaryIsInSelection}
 					secondaryGetIdsFromSelection={secondaryGetIdsFromLocalSelection}
 					secondaryGetDisplayValuesFromSelection={secondaryGetDisplayValuesFromLocalSelection}
+					disableSecondarySelectionChanges={disableSecondarySelectionChanges}
+					enableSecondarySelectionChanges={enableSecondarySelectionChanges}
+					secondaryRefreshSelection={secondaryRefreshSelection}
 				/>;
 	});
 }
