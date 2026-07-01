@@ -79,11 +79,16 @@ function withAlert(WrappedComponent) {
 			},
 			onAlert = (arg1, onOk, includeCancel = false, canClose = true) => {
 
+
+
 				hideModal();
 
 				let title = 'Alert',
 					message,
-					buttons;
+					buttons,
+					suppressOnOk = false,
+					h: 250,
+					w: 400;
 				
 				if (_.isString(arg1)) {
 					// simple alert
@@ -106,6 +111,15 @@ function withAlert(WrappedComponent) {
 					if (arg1.hasOwnProperty('canClose')) {
 						canClose = arg1.canClose;
 					}
+					if (arg1.hasOwnProperty('suppressOnOk')) {
+						suppressOnOk = arg1.suppressOnOk;
+					}
+					if (arg1.hasOwnProperty('h')) {
+						h = arg1.h;
+					}
+					if (arg1.hasOwnProperty('w')) {
+						w = arg1.w;
+					}
 				}
 				showModal({
 					testID: 'AlertModal',
@@ -115,7 +129,7 @@ function withAlert(WrappedComponent) {
 						message,
 						fillColor: 'fill-red-500',
 					}),
-					onOk: () => {
+					onOk: suppressOnOk ? undefined : () => {
 						hideModal();
 						if (onOk) {
 							onOk();
@@ -124,8 +138,8 @@ function withAlert(WrappedComponent) {
 					includeCancel,
 					canClose,
 					customButtons: buttons ?? null,
-					h: 250,
-					w: 400,
+					h,
+					w,
 					whichModal: 'alert',
 				});
 			},

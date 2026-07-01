@@ -451,9 +451,13 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					_.isEmpty(selection) ||
 					(_.isArray(selection) && (
 						selection[0]?.isDestroyed ||
-						(selection.length > 1 && (!enableMultiDelete || hasTreeSelection))
+						(selection.length > 1 && !enableMultiDelete)
 					))
 				) {
+					return;
+				}
+				if (_.isArray(selection) && selection.length > 1 && hasTreeSelection) {
+					alert('Cannot bulk delete tree nodes.');
 					return;
 				}
 				if (onBeforeDelete) {
@@ -465,7 +469,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				}
 				if (getListeners().onBeforeDelete) {
 					// This listener is set by child components using setWithEditListeners()
-					const listenerResult = await getListeners().onBeforeDelete();
+					const listenerResult = await getListeners().onBeforeDelete(selection);
 					if (listenerResult === false) {
 						return;
 					}
@@ -474,12 +478,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isSingle = selection.length === 1,
 					firstSelection = selection[0],
 					isTreeNode = firstSelection?.isTree,
-					hasChildren = isTreeNode ? firstSelection?.hasChildren : false,
+					hasChildren = isTreeNode ? (firstSelection?.hasChildren || !!firstSelection?.hasChildrenOfOtherNodeTypes) : false,
 					isPhantom = firstSelection?.isPhantom;
 
 				if (isSingle && isTreeNode && hasChildren) {
 					alert({
-						title: 'Move up children?',
+						title: 'How to Handle children?',
 						message: 'The node you have selected for deletion has children. ' + 
 								'Should these children be moved up to this node\'s parent, or be deleted?',
 						buttons: [
@@ -488,6 +492,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 								colorScheme="danger"
 								onPress={() => doMoveChildren(cb)}
 								text="Move Children"
+								className="mr-2"
 							/>,
 							<Button
 								key="deleteBtn"
@@ -497,6 +502,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							/>
 						],
 						includeCancel: true,
+						suppressOnOk: true,
+						w: 470,
 					});
 				} else
 				if (isSingle && isPhantom) {
