@@ -48,6 +48,32 @@ export default function BulkAssignTechnician(props) {
 	} else {
 		assignTo += selection.length + ' ' + nodeType.charAt(0).toLowerCase() + nodeType.slice(1); // make first letter lower case
 	}
+	const formVars = {
+		items: [
+			{
+				type: 'DisplayField',
+				text: `You are about to assign a technician to ${assignTo}.`,
+			},
+			{
+				type: 'PmTechniciansCombo',
+				name: 'user_id',
+				label: 'Technician',
+				className: 'mb-1 mt-4',
+				tooltip: 'Which technician to assign.',
+			},
+			{
+				type: 'Hidden',
+				name: hiddenFieldName,
+			},
+		],
+		validator: yup.object({
+			user_id: yup.number().integer().required(),
+		}),
+		startingValues: {
+			user_id: null,
+			[hiddenFieldName]: selection.map(item => item.actualId || item.id).join(','),
+		},
+	};
 
 	return <VStack className="h-full">
 				<AsyncOperation
@@ -60,32 +86,7 @@ export default function BulkAssignTechnician(props) {
 					getInitialProgress={false}
 					updateInterval={1000}
 					onChangeMode={setMode}
-					_form={{
-						items: [
-							{
-								type: 'DisplayField',
-								text: `You are about to assign a technician to ${assignTo}.`,
-							},
-							{
-								type: 'PmTechniciansCombo',
-								name: 'user_id',
-								label: 'Technician',
-								className: 'mb-1 mt-4',
-								tooltip: 'Which technician to assign.',
-							},
-							{
-								type: 'Hidden',
-								name: hiddenFieldName,
-							},
-						],
-						validator: yup.object({
-							user_id: yup.number().integer().required(),
-						}),
-						startingValues: {
-							user_id: null,
-							[hiddenFieldName]: selection.map(item => item.actualId).join(','),
-						},
-					}}
+					_form={formVars}
 				/>
 				<Toolbar>
 					<Button
