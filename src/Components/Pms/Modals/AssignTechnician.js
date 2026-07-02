@@ -49,6 +49,10 @@ function AssignTechnician(props) {
 		[MetersPmSchedules] = useState(() => oneHatData.getRepository('MetersPmSchedules', true));
 
 	useEffect(() => {
+		setPmScheduleId(null);
+		setPmScheduleName(null);
+		setMeter(null);
+		
 		if (!isSingle) {
 			return;
 		}
@@ -165,8 +169,8 @@ function AssignTechnician(props) {
 		items: [
 			{
 				type: 'DisplayField',
-				text: `You are about to assign a technician to '${assignTo}'` + 
-						(isSingle ? " for PM Schedule '" + pmScheduleName + "'" : ' for all PM Schedules') + '.',
+				text: `You are about to assign a technician to ${assignTo}` + 
+						(isSingle ? (" for PM Schedule '" + pmScheduleName + "'") : ' for all PM Schedules') + '.',
 			},
 			{
 				type: 'PmTechniciansCombo',
@@ -190,32 +194,19 @@ function AssignTechnician(props) {
 		},
 	};
 
-	return <VStack className="h-full">
-				<AsyncOperation
-					Repository={selection[0]?.nodeType === 'Fleets' ? Fleets : Equipment}
-					title="Assign Technician"
-					isCollapsible={false}
-					reference="AssignTechnician"
-					process="AssignTechnician"
-					getProgressUpdates={true}
-					getInitialProgress={false}
-					updateInterval={1000}
-					onChangeMode={setMode}
-					_form={formVars}
-				/>
-				<Toolbar>
-					<Button
-						{...testProps('cancelBtn')}
-						key="cancelBtn"
-						variant="outline"
-						icon={Xmark}
-						onPress={() => hideModal()}
-						className="text-white"
-						text={inArray(mode, [ASYNC_OPERATION_MODES__INIT, ASYNC_OPERATION_MODES__START]) ? 'Cancel' : (mode === ASYNC_OPERATION_MODES__PROCESSING ? 'Wait' : 'Close')}
-						isDisabled={mode === ASYNC_OPERATION_MODES__PROCESSING}
-					/>
-				</Toolbar>
-			</VStack>;
+	return <AsyncOperation
+				className="h-full"
+				Repository={selection[0]?.nodeType === 'Fleets' ? Fleets : Equipment}
+				title="Assign Technician"
+				isCollapsible={false}
+				reference="AssignTechnician"
+				process="AssignTechnician"
+				getProgressUpdates={true}
+				getInitialProgress={false}
+				updateInterval={1000}
+				onChangeMode={setMode}
+				_form={formVars}
+			/>;
 
 }
 
