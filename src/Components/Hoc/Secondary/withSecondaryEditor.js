@@ -38,7 +38,6 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				secondaryDisableDelete = false,
 				secondaryDisableDuplicate = false,
 				secondaryDisableView = false,
-				secondaryAddAgain = false,
 				secondaryWaitWhileSaving = false, // when true, show global wait modal while doEditorSave is in-flight
 				secondaryUseRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				secondaryGetRecordIdentifier = (secondarySelection) => {
@@ -518,7 +517,9 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 			},
 			secondaryDoEditorSave = async (data, e, options = {}) => {
-				const shouldAddAgain = _.isBoolean(options?.addAgain) ? options.addAgain : secondaryAddAgain;
+				const
+					shouldAddAgain = !!options?.useAddAndNew,
+					shouldCloseAfterAdd = !!options?.useAddAndClose;
 				let mode = secondaryGetEditorMode() === EDITOR_MODE__ADD ? ADD : EDIT;
 				if (canUser && !canUser(mode, secondaryModel)) {
 					showPermissionsError(mode, secondaryModel);
@@ -594,11 +595,13 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 						}
 						setIsAdding(false);
 
-						if (secondaryAddAgain && shouldAddAgain) {
+						if (shouldAddAgain) {
 							if (showInfo) {
 								showInfo('New record created successfully. You can add another one now.');
 							}
 							await secondaryDoAdd(e);
+						} else if (shouldCloseAfterAdd) {
+							secondarySetIsEditorShown(false);
 						} else {
 							if (!canUser || canUser(EDIT, secondaryModel)) {
 								secondarySetEditorMode(EDITOR_MODE__EDIT);

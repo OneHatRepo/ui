@@ -49,6 +49,7 @@ import IconButton from '../Buttons/IconButton.js';
 import DynamicFab from '../Fab/DynamicFab.js';
 import AngleLeft from '../Icons/AngleLeft.js';
 import Eye from '../Icons/Eye.js';
+import Gear from '../Icons/Gear.js';
 import Rotate from '../Icons/Rotate.js';
 import Pencil from '../Icons/Pencil.js';
 import Plus from '../Icons/Plus.js';
@@ -60,6 +61,8 @@ import Check from '../Icons/Check.js';
 import Footer from '../Layout/Footer.js';
 import Label from '../Form/Label.js';
 import FormContext from '../Form/FormContext.js';
+import getSaved from '../../Functions/getSaved.js';
+import setSaved from '../../Functions/setSaved.js';
 import _ from 'lodash';
 
 // TODO: memoize field Components
@@ -79,6 +82,9 @@ import _ from 'lodash';
 // Form is embedded on screen in some other way. Mainly use startingValues, items, validator
 
 const FAB_FADE_TIME = 300; // ms
+export const ADD_NORMAL_BUTTON = 'ADD_NORMAL_BUTTON';
+export const ADD_AND_NEW_BUTTON = 'ADD_AND_NEW_BUTTON';
+export const ADD_AND_CLOSE_BUTTON = 'ADD_AND_CLOSE_BUTTON';
 
 function Form(props) {
 	const {
@@ -105,8 +111,10 @@ function Form(props) {
 			onViewMode,
 			onValidityChange,
 			onDirtyChange,
-			addAgain = false, // if true, after saving, the form will reset to allow adding another record. If false, the form will retain the newly added record.
-			addAgainAlways = false, // determines whether the form will show one or two add buttons. If true, the form will show only the "Add & New" button. If false, the form will show both "Add" and "Add & New" buttons. If addAgain=false, this setting has no effect. 
+			useAdd = true, // show the normal 'Add' button in ADD mode
+			useAddAndNew = false, // show the 'Add & New' button in ADD mode
+			useAddAndClose = false, // show the 'Add & Close' button in ADD mode
+			defaultAddButtons, // default visible add buttons when no saved preference exists
 			submitBtnLabel,
 			onSubmit,
 			formSetup, // this fn will be executed after the form setup is complete
@@ -153,10 +161,17 @@ function Form(props) {
 			// withAlert
 			alert,
 			showInfo,
+
+			// withModal
+			showModal,
+			hideModal,
 			
 		} = props,
+		id = props.id || props.self?.path,
 		formRef = useRef(),
 		ancillaryItemsRef = useRef({}),
+		addButtonsPreferenceKey = id ? id + '-add-buttons' : null,
+		lastSavedAddButtonsRef = useRef(),
 		ancillaryButtons = useRef([]),
 		setAncillaryButtons = (array) => {
 			ancillaryButtons.current = array;
@@ -178,11 +193,26 @@ function Form(props) {
 		isMultiple = _.isArray(record),
 		isSingle = _.isNil(record) || !_.isArray(record),
 		isPhantom = !skipAll && !!record?.isPhantom,
+		enabledAddButtonTypes = (() => {
+			const addButtonTypes = [];
+			if (useAdd) {
+				addButtonTypes.push(ADD_NORMAL_BUTTON);
+			}
+			if (useAddAndNew) {
+				addButtonTypes.push(ADD_AND_NEW_BUTTON);
+			}
+			if (useAddAndClose) {
+				addButtonTypes.push(ADD_AND_CLOSE_BUTTON);
+			}
+			return addButtonTypes;
+		})(),
+		hasMultipleEnabledAddButtons = enabledAddButtonTypes.length > 1,
 		forceUpdate = useForceUpdate(),
 		[previousRecord, setPreviousRecord] = useState(record),
 		[containerHeight, setContainerHeight] = useState(),
 		[containerWidth, setContainerWidth] = useState(),
 		[isFabVisible, setIsFabVisible] = useState(false),
+		[visibleAddButtonTypes, setVisibleAddButtonTypes] = useState(() => getDefaultVisibleAddButtonTypes(enabledAddButtonTypes, defaultAddButtons)),
 		fabOpacity = useSharedValue(0),
 		fabAnimatedStyle = useAnimatedStyle(() => {
 			return {
@@ -277,6 +307,18 @@ function Form(props) {
 		}),
 		currentEditorMode = getEditorMode(),
 		resolvedEditorMode = currentEditorMode || props.editorMode || null,
+		isAddMode = resolvedEditorMode === EDITOR_MODE__ADD,
+		isUsingSavedAddButtons = hasMultipleEnabledAddButtons && !!addButtonsPreferenceKey,
+		visibleEnabledAddButtonTypes = filterEnabledAddButtonTypes(visibleAddButtonTypes, enabledAddButtonTypes),
+		resolvedVisibleAddButtonTypes = (() => {
+			if (enabledAddButtonTypes.length <= 1) {
+				return [...enabledAddButtonTypes];
+			}
+			if (!_.isEmpty(visibleEnabledAddButtonTypes)) {
+				return visibleEnabledAddButtonTypes;
+			}
+			return getDefaultVisibleAddButtonTypes(enabledAddButtonTypes, defaultAddButtons);
+		})(),
 		buildFromColumnsConfig = () => {
 			// Only used in InlineEditor
 			// Build the fields that match the current columnsConfig in the grid
@@ -1196,7 +1238,7 @@ function Form(props) {
 		onSaveDecorated = async (data, e, options) => {
 			// reset the form after a save
 			const result = await onSave(data, e, options);
-			if (result && !options?.addAgain) {
+			if (result && !options?.useAddAndNew && record && !_.isArray(record) && !record.isDestroyed) { // only reset if record exists, is not an array, and is not destroyed
 				const values = record.submitValues;
 				doReset(values);
 			}
@@ -1220,6 +1262,97 @@ function Form(props) {
 			ancillaryItemsRef.current[ix]?.scrollIntoView({
 				behavior: 'smooth',
 				block: 'start',
+			});
+		},
+		saveAddButtonPreferences = async (nextVisibleButtons) => {
+			// save the user's add button preferences, if they have changed
+			setVisibleAddButtonTypes(nextVisibleButtons);
+
+			if (!isUsingSavedAddButtons) {
+				lastSavedAddButtonsRef.current = nextVisibleButtons;
+				return;
+			}
+
+			const previousSavedButtons = lastSavedAddButtonsRef.current || [];
+			if (_.isEqual(_.sortBy(previousSavedButtons), _.sortBy(nextVisibleButtons))) {
+				return;
+			}
+
+			await setSaved(addButtonsPreferenceKey, nextVisibleButtons);
+			lastSavedAddButtonsRef.current = nextVisibleButtons;
+		},
+		showAddButtonsPreferencesModal = () => {
+			if (!showModal || !hideModal || !hasMultipleEnabledAddButtons) {
+				return;
+			};
+
+			showModal({
+				title: 'Add Button Preferences',
+				canClose: true,
+				w: 500,
+				body: <Form
+						editorType={EDITOR_TYPE__PLAIN}
+						items={[
+							{
+								name: 'instructions',
+								type: 'DisplayField',
+								text: 'Choose which add buttons to show.',
+								className: 'mb-3',
+							},
+							{
+								type: 'Column',
+								flex: 1,
+								items: _.compact([
+									useAdd ? {
+										type: 'Checkbox',
+										name: ADD_NORMAL_BUTTON,
+										label: 'Add',
+										title: 'Add',
+									} : null,
+									useAddAndNew ? {
+										type: 'Checkbox',
+										name: ADD_AND_NEW_BUTTON,
+										label: 'Add & New',
+										title: 'Add & New',
+									} : null,
+									useAddAndClose ? {
+										type: 'Checkbox',
+										name: ADD_AND_CLOSE_BUTTON,
+										label: 'Add & Close',
+										title: 'Add & Close',
+									} : null,
+								]),
+							},
+						]}
+						startingValues={{
+							[ADD_NORMAL_BUTTON]: _.includes(resolvedVisibleAddButtonTypes, ADD_NORMAL_BUTTON),
+							[ADD_AND_NEW_BUTTON]: _.includes(resolvedVisibleAddButtonTypes, ADD_AND_NEW_BUTTON),
+							[ADD_AND_CLOSE_BUTTON]: _.includes(resolvedVisibleAddButtonTypes, ADD_AND_CLOSE_BUTTON),
+						}}
+						validator={yup.object().test(
+							'at-least-one-add-button',
+							'At least one add button must be enabled.',
+							(values = {}) => {
+								return enabledAddButtonTypes.some((buttonType) => !!values?.[buttonType]);
+							}
+						)}
+						onCancel={() => {
+							hideModal();
+						}}
+						onClose={() => {
+							hideModal();
+						}}
+						onSave={async (data) => {
+							const nextVisibleButtons = _.filter(enabledAddButtonTypes, (buttonType) => !!data?.[buttonType]);
+							if (_.isEmpty(nextVisibleButtons)) {
+								return false;
+							}
+
+							await saveAddButtonPreferences(nextVisibleButtons);
+							hideModal();
+							return true;
+						}}
+					/>,
 			});
 		},
 		onScroll = useCallback(
@@ -1257,6 +1390,38 @@ function Form(props) {
 			formSetup(formSetValue, formGetValues, formState, trigger);
 		}
 	}, [record]);
+
+	useEffect(() => {
+		// If the user has not yet saved their add button preferences, use the default buttons.
+		const nextDefaultVisibleButtons = getDefaultVisibleAddButtonTypes(enabledAddButtonTypes, defaultAddButtons);
+		if (!isUsingSavedAddButtons) {
+			setVisibleAddButtonTypes(nextDefaultVisibleButtons);
+			lastSavedAddButtonsRef.current = nextDefaultVisibleButtons;
+			return;
+		}
+
+		let isCancelled = false;
+		(async () => {
+			// If the user has saved their add button preferences, use those instead of the default buttons.
+			let nextVisibleButtons = nextDefaultVisibleButtons;
+			const
+				savedAddButtons = await getSaved(addButtonsPreferenceKey),
+				normalizedSavedAddButtons = normalizeAddButtonTypes(savedAddButtons),
+				filteredSavedAddButtons = filterEnabledAddButtonTypes(normalizedSavedAddButtons, enabledAddButtonTypes);
+			if (!_.isEmpty(filteredSavedAddButtons)) {
+				nextVisibleButtons = filteredSavedAddButtons;
+			}
+
+			if (!isCancelled) {
+				setVisibleAddButtonTypes(nextVisibleButtons);
+				lastSavedAddButtonsRef.current = nextVisibleButtons;
+			}
+		})();
+
+		return () => {
+			isCancelled = true;
+		};
+	}, [isUsingSavedAddButtons, addButtonsPreferenceKey, defaultAddButtons, useAdd, useAddAndNew, useAddAndClose]);
 
 	useEffect(() => {
 		// If this form is bound to a single record, reset the form whenever that record emits a 'reload' event.
@@ -1348,6 +1513,10 @@ function Form(props) {
 		return null;
 	}
 
+	if (isAddMode && enabledAddButtonTypes.length === 0) {
+		throw Error('Form requires at least one enabled add button (useAdd, useAddAndNew, useAddAndClose) in ADD mode.');
+	}
+
 	// if (Repository && (!record || _.isEmpty(record) || record.isDestroyed)) {
 	// 	return null;
 	// }
@@ -1397,8 +1566,6 @@ function Form(props) {
 		showCancelBtn = false,
 		showSaveBtn = false,
 		showSubmitBtn = false,
-		isAddMode = resolvedEditorMode === EDITOR_MODE__ADD,
-		showDualAddButtons = isAddMode && addAgain && !addAgainAlways,
 		isEditableMode = (() => {
 			// Keep explicit editor modes authoritative, but preserve legacy modal behavior:
 			// if no mode is supplied, treat forms with onSave as editable so Save can render.
@@ -1603,32 +1770,36 @@ function Form(props) {
 						text="Close"
 					/>}
 
-				{showSaveBtn && // multipurpose button: Add, Add & New, or Save depending on mode and props
+				{showSaveBtn && !isAddMode &&
 					<Button
 						{...testProps('saveBtn')}
 						key="saveBtn"
-						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e, {
-							addAgain: isAddMode && addAgain && addAgainAlways,
-						}), onSubmitError)(e)}
-						icon={getEditorMode() === EDITOR_MODE__ADD ? Plus : FloppyDiskRegular}
+						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e), onSubmitError)(e)}
+						icon={FloppyDiskRegular}
 						isDisabled={isSaveDisabled}
 						className="text-white"
-						tooltip={
-							getEditorMode() === EDITOR_MODE__EDIT
-								? 'Save Changes'
-								: (showDualAddButtons || !addAgain || !addAgainAlways)
-									? 'Add this record and keep it in editor'
-									: 'Add this record and reset the form to add another'
-						}
-						text={(getEditorMode() === EDITOR_MODE__ADD ? (showDualAddButtons ? 'Add' : (addAgain ? 'Add & New' : 'Add')) : 'Save') + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
+						tooltip="Save Changes"
+						text={'Save' + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
 					/>}
 
-				{showSaveBtn && showDualAddButtons && // this button appears only when addAgain is true and addAgainAlways is false
+				{showSaveBtn && isAddMode && _.includes(resolvedVisibleAddButtonTypes, ADD_NORMAL_BUTTON) &&
+					<Button
+						{...testProps('saveBtn')}
+						key="saveBtn"
+						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e), onSubmitError)(e)}
+						icon={Plus}
+						isDisabled={isSaveDisabled}
+						className="text-white"
+						tooltip="Add this record and keep it in editor"
+						text={'Add' + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
+					/>}
+
+				{showSaveBtn && isAddMode && _.includes(resolvedVisibleAddButtonTypes, ADD_AND_NEW_BUTTON) &&
 					<Button
 						{...testProps('addAgainBtn')}
 						key="addAgainBtn"
 						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e, {
-							addAgain: true,
+							useAddAndNew: true,
 						}), onSubmitError)(e)}
 						icon={Plus}
 						isDisabled={isSaveDisabled}
@@ -1636,6 +1807,30 @@ function Form(props) {
 						tooltip="Add this record and reset the form to add another"
 						text={'Add & New' + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
 					/>}
+
+				{showSaveBtn && isAddMode && _.includes(resolvedVisibleAddButtonTypes, ADD_AND_CLOSE_BUTTON) &&
+					<Button
+						{...testProps('addAndCloseBtn')}
+						key="addAndCloseBtn"
+						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e, {
+							useAddAndClose: true,
+						}), onSubmitError)(e)}
+						icon={Plus}
+						isDisabled={isSaveDisabled}
+						className="text-white"
+						tooltip="Add this record and close the editor"
+						text={'Add & Close' + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
+					/>}
+
+				{showSaveBtn && isAddMode && hasMultipleEnabledAddButtons &&
+					<IconButton
+						{...testProps('addButtonPreferencesBtn')}
+						key="addButtonPreferencesBtn"
+						onPress={showAddButtonsPreferencesModal}
+						icon={Gear}
+						tooltip="Choose add buttons"
+					/>
+				}
 				
 				{showSubmitBtn && 
 					<Button
@@ -1790,6 +1985,12 @@ function Form(props) {
 		</FormContext.Provider>;
 }
 
+export const FormEditor = withComponent(withAlert(withEditor(Form)));
+
+export default withComponent(withAlert(Form));
+
+
+
 // helper fns
 function disableRequiredYupFields(validator) {
 	// based on https://github.com/jquense/yup/issues/1466#issuecomment-944386480
@@ -1833,7 +2034,33 @@ function getNullFieldValues(initialValues, Repository) {
 	}
 	return ret;
 }
+function normalizeAddButtonTypes(addButtonTypes) {
+	if (_.isNil(addButtonTypes)) {
+		return undefined;
+	}
+	const array = _.isArray(addButtonTypes) ? addButtonTypes : [addButtonTypes];
+	return _.uniq(array);
+}
+function filterEnabledAddButtonTypes(addButtonTypes, enabledAddButtonTypes) {
+	if (_.isEmpty(addButtonTypes)) {
+		return [];
+	}
+	return _.filter(addButtonTypes, (buttonType) => _.includes(enabledAddButtonTypes, buttonType));
+}
+function getDefaultVisibleAddButtonTypes(enabledAddButtonTypes, defaultAddButtons) {
+	if (enabledAddButtonTypes.length <= 1) {
+		return [...enabledAddButtonTypes];
+	}
 
-export const FormEditor = withComponent(withAlert(withEditor(Form)));
+	const normalizedDefaultAddButtons = normalizeAddButtonTypes(defaultAddButtons);
+	if (_.isNil(normalizedDefaultAddButtons)) {
+		return [...enabledAddButtonTypes];
+	}
 
-export default withComponent(withAlert(Form));
+	const filteredDefaults = filterEnabledAddButtonTypes(normalizedDefaultAddButtons, enabledAddButtonTypes);
+	if (_.isEmpty(filteredDefaults)) {
+		return [...enabledAddButtonTypes];
+	}
+
+	return filteredDefaults;
+}
