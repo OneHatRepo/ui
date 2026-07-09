@@ -193,15 +193,17 @@ function Form(props) {
 		isMultiple = _.isArray(record),
 		isSingle = _.isNil(record) || !_.isArray(record),
 		isPhantom = !skipAll && !!record?.isPhantom,
+		canUseAdd = useAdd || (editorType === EDITOR_TYPE__SIDE && useAddAndClose), // in side editor, normalize "Add & Close" into regular "Add" so ADD mode always has a valid add action
+		canUseAddAndClose = useAddAndClose && editorType !== EDITOR_TYPE__SIDE, // side editor keeps records open/selected after add, so "Add & Close" should never be available
 		enabledAddButtonTypes = (() => {
 			const addButtonTypes = [];
-			if (useAdd) {
+			if (canUseAdd) {
 				addButtonTypes.push(ADD_NORMAL_BUTTON);
 			}
 			if (useAddAndNew) {
 				addButtonTypes.push(ADD_AND_NEW_BUTTON);
 			}
-			if (useAddAndClose) {
+			if (canUseAddAndClose) {
 				addButtonTypes.push(ADD_AND_CLOSE_BUTTON);
 			}
 			return addButtonTypes;
@@ -1303,7 +1305,7 @@ function Form(props) {
 								type: 'Column',
 								flex: 1,
 								items: _.compact([
-									useAdd ? {
+									canUseAdd ? {
 										type: 'Checkbox',
 										name: ADD_NORMAL_BUTTON,
 										label: 'Add',
@@ -1315,7 +1317,7 @@ function Form(props) {
 										label: 'Add & New',
 										title: 'Add & New',
 									} : null,
-									useAddAndClose ? {
+									canUseAddAndClose ? {
 										type: 'Checkbox',
 										name: ADD_AND_CLOSE_BUTTON,
 										label: 'Add & Close',
@@ -1421,7 +1423,7 @@ function Form(props) {
 		return () => {
 			isCancelled = true;
 		};
-	}, [isUsingSavedAddButtons, addButtonsPreferenceKey, defaultAddButtons, useAdd, useAddAndNew, useAddAndClose]);
+	}, [isUsingSavedAddButtons, addButtonsPreferenceKey, defaultAddButtons, canUseAdd, useAddAndNew, canUseAddAndClose]);
 
 	useEffect(() => {
 		// If this form is bound to a single record, reset the form whenever that record emits a 'reload' event.
