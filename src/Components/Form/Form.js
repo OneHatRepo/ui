@@ -428,6 +428,12 @@ function Form(props) {
 						if (record?.properties?.hasOwnProperty(fieldName)) {
 							value = record.properties[fieldName].displayValue;
 						}
+						if (propertyDef?.isFk) {
+							const fkDisplayField = propertyDef.fkDisplayField;
+							if (record?.properties?.[fkDisplayField]) {
+								value = record.properties[fkDisplayField].displayValue;
+							}
+						}
 						if (_.isNil(value) && record?.hasOwnProperty(fieldName)) {
 							value = record[fieldName];
 						}
@@ -770,6 +776,12 @@ function Form(props) {
 				let value = null;
 				if (isSingle) {
 					value = record?.properties?.[name]?.displayValue || null;
+					if (propertyDef?.isFk) {
+						const fkDisplayField = propertyDef.fkDisplayField;
+						if (record?.properties?.[fkDisplayField]) {
+							value = record.properties[fkDisplayField].displayValue;
+						}
+					}
 					if (_.isNil(value) && !_.isNil(record?.[name])) {
 						value = record[name];
 					}
