@@ -1,0 +1,1294 @@
+import { forwardRef, useState, useEffect, useRef, } from 'react';
+import {
+	Box,
+	HStack,
+	HStackNative,
+	Icon,
+	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
+	Pressable,
+	Text,
+	TextNative,
+	VStackNative,
+} from '@project-components/Gluestack';
+import clsx from 'clsx';
+import {
+	CURRENT_MODE,
+	UI_MODE_NATIVE,
+	UI_MODE_WEB,
+} from '../../../Constants/UiModes.js';
+import {
+	EDITOR_TYPE__WINDOWED,
+} from '../../../Constants/Editor.js';
+import testProps from '../../../Functions/testProps.js';
+import UiGlobals from '../../../UiGlobals.js';
+import Input from 'Input.js';
+import { Tree, WindowedTreeEditor } from '../../Tree/Tree.js';
+import useForceUpdate from '../../../Hooks/useForceUpdate.js';
+import withAlert from '../../Hoc/withAlert.js';
+import withComponent from '../../Hoc/withComponent.js';
+import withData from '../../Hoc/withData.js';
+import withTooltip from '../../Hoc/withTooltip.js';
+import withValue from '../../Hoc/withValue.js';
+import emptyFn from '../../../Functions/emptyFn.js';
+import IconButton from '../../Buttons/IconButton.js';
+import CaretDown from '../../Icons/CaretDown.js';
+import Check from '../../Icons/Check.js';
+import Xmark from '../../Icons/Xmark.js';
+import Eye from '../../Icons/Eye.js';
+import _ from 'lodash';
+
+
+// This component acts like a Combo, but instead of showing a Grid, shows a Tree instead.
+
+const FILTER_NAME = 'q';
+
+/**
+ * isEmptyValue
+ * _.isEmpty returns true for all integers, so we need this instead
+ * @param {*} value 
+ * @returns boolean
+ */
+function isEmptyValue(value) {
+	return value === null ||
+			value === undefined ||
+			value === '' ||
+			value === 0 ||
+			(_.isObject(value) && _.isEmpty(value));
+};
+
+
+export const TreeSelectorComponent = forwardRef((props, ref) => {
+
+	const {
+			additionalButtons,
+			autoFocus = false,
+			menuMinWidth,
+			disableDirectEntry = false,
+			hideMenuOnSelection = true,
+			showXButton = false,
+			showEyeButton = false,
+			viewerProps = {}, // popup for eyeButton
+			_input = {},
+			_editor = {},
+			_tree = {},
+			isEditor = false,
+			isDisabled = false,
+			isInTag = false,
+			minimizeForRow = false,
+			reloadOnTrigger = false,
+			loadAfterRender = false,
+			searchHasInitialPercent = false,
+			menuHeight,
+			placeholder,
+			onNodePress,
+			icon,
+			Editor, // only used for the eyeButton
+			onTreeAdd, // to hook into when menu adds (TreeSelectorEditor only)
+			onTreeSave, // to hook into when menu saves (TreeSelectorEditor only)
+			onTreeDelete, // to hook into when menu deletes (TreeSelectorEditor only)
+			onSubmit, // when TreeSelector is used in a Tag, call this when the user submits the TreeSelector value (i.e. presses Enter or clicks a row)
+			displayProperty, // override for Repository.schema.model.displayProperty
+			valueProperty, // override for Repository.schema.model.idProperty
+			newEntityDisplayProperty,
+			testID,
+
+			// withComponent
+			self,
+
+			// withAlert
+			alert,
+			confirm,
+			
+			// withData
+			Repository,
+			data,
+			idIx,
+			displayIx,
+
+			// withValue
+			value,
+			setValue,
+		} = props,
+		styles = UiGlobals.styles,
+		forceUpdate = useForceUpdate(),
+		inputRef = useRef(),
+		inputCloneRef = useRef(),
+		triggerRef = useRef(),
+		menuRef = useRef(),
+		displayValueRef = useRef(),
+		typingTimeout = useRef(),
+		isMenuShown = useRef(false),
+		isTreeLayoutRunWithRender = useRef(false),
+		[isMenuAbove, setIsMenuAbove] = useState(false),
+		[isViewerShown, setIsViewerShown] = useState(false),
+		[viewerSelection, setViewerSelection] = useState([]),
+		[isRendered, setIsRendered] = useState(false),
+		[isReady, setIsReady] = useState(false),
+		[isSearchMode, setIsSearchMode] = useState(false),
+		[isNavigatingViaKeyboard, setIsNavigatingViaKeyboard] = useState(false),
+		[containerWidth, setContainerWidth] = useState(),
+		[treeSelection, setTreeSelection] = useState(null),
+		[textInputValue, setTextInputValue] = useState(''),
+		[newEntityDisplayValue, setNewEntityDisplayValue] = useState(null),
+		[filteredData, setFilteredData] = useState(data),
+		[inputHeight, setInputHeight] = useState(0),
+		[menuRenderedHeight, setMenuRenderedHeight] = useState(0),
+		[width, setWidth] = useState(0),
+		[top, setTop] = useState(0),
+		[left, setLeft] = useState(0),
+		getIsMenuShown = () => {
+			return isMenuShown.current;
+		},
+		setIsMenuShown = (bool) => {
+			isMenuShown.current = bool;
+
+			if (!bool) {
+				// The menu's onLayout runs every time there's a change in its size or position.
+				// We're only interested in the *first* time it runs with a rendered height.
+				// So if hiding the menu, reset isTreeLayoutRunWithRender here and we'll set it to true
+				// the first time onLayout runs with a height.
+				setIsTreeLayoutRunWithRender(false);
+				setIsMenuAbove(false); // reset this so the next time the menu opens, it starts below the input
+			}
+
+			forceUpdate();
+		},
+		getIsTreeLayoutRunWithRender = () => {
+			return isTreeLayoutRunWithRender.current;
+		},
+		setIsTreeLayoutRunWithRender = (bool) => {
+			isTreeLayoutRunWithRender.current = bool;
+		},
+		onLayout = (e) => {
+			setIsRendered(true);
+			setContainerWidth(e.nativeEvent.layout.width);
+		},
+		showMenu = async () => {
+			if (getIsMenuShown()) {
+				return;
+			}
+			if (CURRENT_MODE === UI_MODE_WEB && inputRef.current?.getBoundingClientRect) {
+				// For web, ensure it's in the proper place
+				const
+					rect = inputRef.current.getBoundingClientRect(),
+					inputRect = inputRef.current.getBoundingClientRect();
+
+				if (rect.top !== top) {
+					setTop(rect.top);
+				}
+				if (rect.left !== left) {
+					setLeft(rect.left);
+				}
+
+				let widthToSet = rect.width,
+					minWidthToUse = menuMinWidth || styles.FORM_COMBO_MENU_MIN_WIDTH;
+				if (widthToSet < minWidthToUse) {
+					widthToSet = minWidthToUse;
+				}
+				if (widthToSet !== width) {
+					setWidth(widthToSet);
+				}
+
+				setInputHeight(inputRect.height);
+			}
+			if (Repository && !Repository.isLoaded) {
+				// await Repository.load(); // this breaks when the menu (Tree) has selectorSelected
+			}
+			setIsMenuShown(true);
+		},
+		hideMenu = () => {
+			if (!getIsMenuShown()) {
+				return;
+			}
+			setIsMenuShown(false);
+		},
+		toggleMenu = async () => {
+			if (getIsMenuShown()) {
+				hideMenu();
+				return;
+			}
+			await showMenu();
+		},
+		temporarilySetIsNavigatingViaKeyboard = () => {
+			setIsNavigatingViaKeyboard(true);
+			setTimeout(() => {
+				setIsNavigatingViaKeyboard(false);
+			}, 1000);
+		},
+		getDisplayValue = () => {
+			return displayValueRef.current;
+		},
+		setDisplayValue = async (value) => {
+			let displayValue = '';
+			if (_.isNil(value)) {
+				// do nothing
+			} else if (_.isArray(value)) {
+				displayValue = [];
+				if (Repository) {
+					if (!Repository.isDestroyed) {
+						if (!Repository.isLoaded) {
+							throw Error('Not yet implemented'); // Would a TreeSelector ever have multiple remote selections? Shouldn't that be a Tag field??
+						}
+						if (Repository.isLoading) {
+							await Repository.waitUntilDoneLoading();
+						}
+						displayValue = _.each(value, (id) => {
+							const entity = Repository.getById(id);
+							if (entity) {
+								displayValue.push((displayProperty ? entity?.[displayProperty] : entity?.displayValue) || '');
+							}
+						});
+					}
+				} else {
+					displayValue = _.each(value, (id) => {
+						const item = _.find(data, (datum) => datum[idIx] === id);
+						if (item) {
+							displayValue.push(item[displayIx]);
+						}
+					});
+				}
+				displayValue = displayValue.join(', ');
+			} else {
+				if (Repository) {
+					if (!Repository.isDestroyed) {
+						let entity;
+						if (!isEmptyValue(value)) {
+							if (!Repository.isLoaded) {
+								entity = await Repository.getSingleEntityFromServer(value);
+							} else {
+								if (Repository.isLoading) {
+									await Repository.waitUntilDoneLoading();
+								}
+								entity = Repository.getById(value);
+								if (!entity) {
+									entity = await Repository.getSingleEntityFromServer(value);
+								}
+							}
+						}
+						displayValue = (displayProperty ? entity?.[displayProperty] : entity?.displayValue) || '';
+					}
+				} else {
+					const item = _.find(data, (datum) => datum[idIx] === value);
+					displayValue = (item && item[displayIx]) || '';
+				}
+			}
+
+			if (isInTag) {
+				displayValue = '';
+			}
+
+			displayValueRef.current = displayValue;
+			resetTextInputValue();
+		},
+		resetTextInputValue = () => {
+			setTextInputValue(getDisplayValue());
+		},
+		onInputKeyPress = (e, inputValue) => {
+			if (disableDirectEntry) {
+				return;
+			}
+			switch(e.key) {
+				case 'Escape':
+					e.preventDefault();
+					setIsSearchMode(false);
+					resetTextInputValue();
+					hideMenu();
+					break;
+				case 'Enter':
+					e.preventDefault();
+					if (_.isEmpty(inputValue) && !_.isNull(value)) {
+						// User pressed Enter on an empty text field, but value is set to something
+						// This means the user cleared the input and pressed enter, meaning he wants to clear the value
+						setValue(null);
+						hideMenu();
+						return;
+					}
+					
+					if (_.isEmpty(treeSelection)) {
+						hideMenu();
+						return;
+					}
+
+					let id = null;
+					if (treeSelection.length) {
+						if (Repository) {
+							id = valueProperty ? treeSelection[0][valueProperty] : treeSelection[0].id;
+						} else {
+							id = treeSelection[0][idIx];
+						}
+					}
+					if (id !== value) {
+						setValue(id);
+					}
+					if (onSubmit) {
+						onSubmit(id);
+					}
+					hideMenu();
+					break;
+				case 'ArrowDown':
+					e.preventDefault();
+					showMenu();
+					temporarilySetIsNavigatingViaKeyboard();
+					setTimeout(() => {
+						self.children.tree.selectNext();
+					}, 10);
+					break;
+				case 'ArrowUp':
+					e.preventDefault();
+					showMenu();
+					temporarilySetIsNavigatingViaKeyboard();
+					setTimeout(() => {
+						self.children.tree.selectPrev();
+					}, 10);
+					break;
+				default:
+			}
+		},
+		onInputChangeText = (value) => {
+			if (disableDirectEntry) {
+				return;
+			}
+
+			if (_.isEmpty(value)) {
+				setValue(null);
+			}
+
+			setTextInputValue(value);
+
+			clearTimeout(typingTimeout.current);
+			typingTimeout.current = setTimeout(() => {
+				searchForMatches(value);
+			}, 300);
+		},
+		onInputFocus = (e) => {
+			if (inputRef.current?.select) {
+				inputRef.current?.select();
+			}
+		},
+		onInputBlur = (e) => {
+			if (isEventStillInComponent(e)) {
+				// ignore the blur
+				return;
+			}
+
+			setIsSearchMode(false);
+			resetTextInputValue();
+			hideMenu();
+		},
+		onTriggerPress = async (e) => {
+			if (!isRendered) {
+				return;
+			}
+			clearTreeFilters();
+			if (reloadOnTrigger && Repository) {
+				await Repository.reload();
+			}
+			if (getIsMenuShown()) {
+				hideMenu();
+			} else {
+				showMenu();
+			}
+		},
+		onTriggerBlur = (e) => {
+			if (!getIsMenuShown()) {
+				return;
+			}
+
+			if (isEventStillInComponent(e)) {
+				// ignore the blur
+				return;
+			}
+
+			setIsSearchMode(false);
+			resetTextInputValue();
+			hideMenu();
+		},
+		onXButtonPress = () => {
+			setValue(null);
+			clearTreeFilters();
+			clearTreeSelection();
+		},
+		onEyeButtonPress = async () => {
+			const id = value;
+			if (!Repository.isLoaded) {
+				await Repository.load();
+			}
+			if (Repository.isLoading) {
+				await Repository.waitUntilDoneLoading();
+			}
+			let record = Repository.getById(id); // first try to get from entities in memory
+			if (!record && Repository.getSingleEntityFromServer) {
+				record = await Repository.getSingleEntityFromServer(id);
+			}
+
+			if (!record) {
+				alert('Record could not be found!');
+				return;
+			}
+
+			setViewerSelection([record]);
+			setIsViewerShown(true);
+		},
+		onViewerClose = () => setIsViewerShown(false),
+		onCheckButtonPress = () => {
+			hideMenu();
+		},
+		onTreeLayout = (e) => {
+			// This method is to determine if we need to flip the tree above the input
+			// because the menu is partially offscreen
+
+			if (CURRENT_MODE !== UI_MODE_WEB || !e.nativeEvent.layout.height) {
+				return;
+			}
+
+			// we reach this point only if the tree has rendered with a height.
+
+			if (!getIsTreeLayoutRunWithRender()) {
+				// we reach this point only on the *first* time onTreeLayout runs with a height.
+				// determine if the menu is partially offscreen
+				const
+					menuRect = menuRef.current.getBoundingClientRect(),
+					inputRect = inputRef.current.getBoundingClientRect(),
+					menuOverflows = menuRect.bottom > window.innerHeight;
+				if (menuOverflows) {
+					// flip it
+					setIsMenuAbove(true);
+				} else {
+					setIsMenuAbove(false);
+				}
+				setMenuRenderedHeight(e.nativeEvent.layout.height);
+				setIsTreeLayoutRunWithRender(true);
+			}
+		},
+		isEventStillInComponent = (e) => {
+			const {
+					relatedTarget
+				} = e;
+			return !relatedTarget ||
+					!menuRef.current ||
+					!triggerRef.current ||
+					triggerRef.current === relatedTarget ||
+					triggerRef.current.contains(relatedTarget) || 
+					menuRef.current === relatedTarget || 
+					menuRef.current?.contains(relatedTarget);
+		},
+		getFilterName = (isId) => {
+			// Only used for remote repositories
+			// Gets the filter name of the query, which becomes the condition sent to server 
+			let filterName = FILTER_NAME;
+			if (Repository.isRemote) {
+				const
+					schema = Repository.getSchema(),
+					displayFieldName = schema.model.displayProperty,
+					displayFieldDef = schema.getPropertyDefinition(displayFieldName);
+	
+				// Verify displayField is a real field
+				if (isId) {
+					const idFieldName = schema.model.idProperty;
+					filterName = idFieldName;
+				} else if (!displayFieldDef.isVirtual) {
+					filterName = displayFieldName + ' LIKE';
+				}
+			}
+			return filterName;
+		},
+		clearTreeFilters = async () => {
+			if (Repository) {
+				if (!Repository.isDestroyed) {
+					if (Repository.isLoading) {
+						await Repository.waitUntilDoneLoading();
+					}
+					const filterName = getFilterName();
+					if (Repository.hasFilter(filterName)) {
+						Repository.clearFilters(filterName);
+						if (Repository.isRemote && !Repository.isAutoLoad) {
+							await Repository.reload();
+						}
+					}
+				}
+			} else {
+				setFilteredData(data);
+			}
+		},
+		clearTreeSelection = () => {
+			if (self?.children.tree?.deselectAll) {
+				self?.children.tree?.deselectAll();
+			}
+		},
+		searchForMatches = async (value) => {
+			// let found;
+			// if (Repository) {
+			// 	if (!Repository.isDestroyed) {
+			// 		if (Repository.isLoading) {
+			// 			await Repository.waitUntilDoneLoading();
+			// 		}
+
+			// 		if (_.isEmpty(value)) {
+			// 			clearTreeFilters();
+			// 			return;
+			// 		}
+
+			// 		// Set filter
+			// 		const
+			// 			idRegex = /^id:(.*)$/,
+			// 			isId = _.isString(value) && !!value.match(idRegex),
+			// 			filterName = getFilterName(isId);
+			// 		if (Repository.isRemote) {
+			// 			// remote
+			// 			const filterValue = _.isEmpty(value) ? null : (isId ? value.match(idRegex)[1] : (searchHasInitialPercent ? '%' : '') + value + '%');
+			// 			await Repository.filter(filterName, filterValue);
+			// 			if (!Repository.isAutoLoad) {
+			// 				await Repository.reload();
+			// 			}
+			// 		} else {
+			// 			// local
+			// 			Repository.filter({
+			// 				name: filterName,
+			// 				fn: (entity) => {
+			// 					const
+			// 						displayValue = entity.displayValue,
+			// 						regex = new RegExp('^' + value, 'i'); // case-insensitive
+			// 					return displayValue.match(regex);
+			// 				},
+			// 			});
+			// 		}
+
+			// 		if (!isId) {
+			// 			setNewEntityDisplayValue(value); // capture the search query so we can tell Tree what to use for a new entity's displayValue
+			// 		}
+			// 	}
+			// } else {
+			// 	// Search through data
+			// 	const regex = new RegExp('^' + value, 'i'); // case-insensitive
+			// 	found = _.filter(data, (item) => {
+			// 		if (_.isString(item[displayIx]) && _.isString(value)) {
+			// 			return item[displayIx].match(regex);
+			// 		}
+			// 		return item[displayIx] == value; // equality, not identity
+			// 	});
+			// 	setFilteredData(found);
+			// }
+
+			// if (!getIsMenuShown()) {
+			// 	showMenu();
+			// }
+			// setIsSearchMode(true);
+		};
+
+	useEffect(() => {
+		if (!isRendered) {
+			return () => {};
+		}
+		
+		if (loadAfterRender) {
+			Repository?.reload();
+		}
+		
+		if (autoFocus && !inputRef.current.isFocused()) {
+			// on render, focus the input
+			inputRef.current.focus();
+		}
+
+		return () => {
+			if (Repository && !Repository.isUnique && !Repository.isDestroyed) {
+				clearTreeFilters();
+			}
+		};
+
+	}, [isRendered, loadAfterRender, Repository]);
+
+	useEffect(() => {
+		(async () => {
+			setIsSearchMode(false);
+			await setDisplayValue(value);
+			if (!isReady) {
+				setIsReady(true);
+			}
+		})();
+	}, [value]);
+
+	if (!isReady) {
+		return null;
+	}
+
+	const inputIconElement = icon ? <Icon as={icon} size="md" className="text-grey-300 ml-1 mr-2" /> : null;
+	let xButton = null,
+		eyeButton = null,
+		trigger = null,
+		input = null,
+		inputClone = null,
+		checkButton = null,
+		tree = null,
+		dropdownMenu = null,
+		assembledComponents = null;
+	
+	if (showXButton) {
+		xButton = <IconButton
+						{...testProps('xBtn')}
+						icon={Xmark}
+						_icon={{
+							size: 'sm',
+							className: 'text-grey-600',
+						}}
+						isDisabled={isDisabled || _.isNil(value)}
+						onPress={onXButtonPress}
+						tooltip="Clear selection"
+						className={clsx(
+							'h-full',
+							'mr-1',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME
+						)}
+					/>;
+	}
+	if (showEyeButton && Editor) {
+		eyeButton = <IconButton
+						{...testProps('eyeBtn')}
+						icon={Eye}
+						_icon={{
+							size: 'sm',
+							className: 'text-grey-600',
+						}}
+						isDisabled={isDisabled || _.isNil(value)}
+						onPress={onEyeButtonPress}
+						tooltip="View selected record"
+						className={clsx(
+							'h-full',
+							'mr-1',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME
+						)}
+					/>;
+	}
+	const triggerClassName = clsx(
+		'TreeSelector-trigger',
+		'self-stretch',
+		'h-auto',
+		'border',
+		'border-l-0',
+		'border-gray-400',
+		'rounded-l-none',
+		'rounded-r-md',
+		styles.FORM_COMBO_TRIGGER_CLASSNAME,
+	);
+	trigger = <IconButton
+				{...testProps('trigger')}
+				ref={triggerRef}
+				icon={CaretDown}
+				_icon={{
+					size: 'md',
+					className: 'text-grey-500',
+				}}
+				isDisabled={isDisabled}
+				onPress={onTriggerPress}
+				onBlur={onTriggerBlur}
+				className={triggerClassName}
+			/>;
+
+	if (CURRENT_MODE === UI_MODE_WEB) {
+		input = disableDirectEntry ?
+					<Pressable
+						{...testProps('toggleMenuBtn')}
+						ref={inputRef}
+						onPress={toggleMenu}
+						className={clsx(
+							'TreeSelector-toggleMenuBtn',
+							'h-auto',
+							'self-stretch',
+							'flex-1',
+							'flex-row',
+							'justify-center',
+							'items-center',
+							'm-0',
+							'p-2',
+							'bg-white',
+							'border',
+							'border-grey-400',
+							'rounded-r-none',
+							styles.FORM_COMBO_INPUT_BG
+						)}
+					>
+						{inputIconElement}
+						<TextNative
+							numberOfLines={1}
+							ellipsizeMode="head"
+							className={clsx(
+								'TreeSelector-TextNative',
+								'flex-1',
+								_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
+								styles.FORM_COMBO_INPUT_CLASSNAME
+							)}
+						>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
+					</Pressable> :
+					<Input
+						{...testProps('input')}
+						ref={inputRef}
+						reference="TreeSelectorInput"
+						value={textInputValue}
+						autoSubmit={true}
+						isDisabled={isDisabled}
+						onChangeValue={onInputChangeText}
+						onKeyPress={onInputKeyPress}
+						onFocus={onInputFocus}
+						onBlur={onInputBlur}
+						InputLeftElement={inputIconElement}
+						autoSubmitDelay={500}
+						placeholder={placeholder}
+						className={clsx(
+							'TreeSelector-Input',
+							'grow',
+							'h-auto',
+							'self-stretch',
+							'flex-1',
+							'm-0',
+							'rounded-tr-none',
+							'rounded-br-none',
+							styles.FORM_COMBO_INPUT_CLASSNAME
+						)}
+						{..._input}
+					/>;
+	}
+	if (CURRENT_MODE === UI_MODE_NATIVE) {
+		// This input and trigger are for show
+		// They just show the current getDisplayValue and open the menu
+		const displayValue = getDisplayValue();
+		input = <Pressable
+					{...testProps('showMenuBtn')}
+					onPress={showMenu}
+					className={clsx(
+						'h-full',
+						'flex-1',
+						'flex-row',
+						'justify-center',
+						'items-center',
+						'bg-white',
+						'border',
+						'border-grey-400',
+						'rounded-r-none',
+						styles.FORM_COMBO_INPUT_BG,
+					)}
+				>
+					{inputIconElement}
+					<TextNative
+						numberOfLines={1}
+						ellipsizeMode="head"
+						className={clsx(
+							// 'h-full',
+							// 'flex-1',
+							'm-0',
+							'p-2',
+							_.isEmpty(displayValue) ? 'text-grey-400' : 'text-black',
+							styles.FORM_COMBO_INPUT_CLASSNAME,
+						)}
+					>{_.isEmpty(displayValue) ? placeholder : displayValue}</TextNative>
+				</Pressable>;
+	}
+
+	if (getIsMenuShown()) {
+		const treeProps = _.pick(props, [
+			'Editor',
+			'model',
+			'Repository',
+			// 'data',
+			'idIx',
+			'displayIx',
+			// 'value',
+			'disableAdd',
+			'disableEdit',
+			'disableDelete',
+			'disableView',
+			'disableCopy',
+			'disableDuplicate',
+			'disablePrint',
+			'selectorId',
+			'selectorSelected',
+			'selectorSelectedField',
+			'usePermissions',
+		]);
+		if (!_.isEmpty(_tree)){
+			_.assign(treeProps, _tree);
+		}
+		if (!isInTag) {
+			treeProps.value = props.value;
+		}
+		if (!Repository) {
+			treeProps.data = filteredData;
+		}
+		const
+			WhichTree = isEditor ? WindowedTreeEditor : Tree,
+			treeStyle = {};
+		if (CURRENT_MODE === UI_MODE_WEB) {
+			treeStyle.height = menuHeight || styles.FORM_COMBO_MENU_HEIGHT;
+		}
+		let treeClassName = clsx(
+			'h-full',
+			'w-full',
+		);
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
+			treeClassName += ' h-[400px] max-h-[100%]';
+		}
+		if (treeProps.className) {
+			treeClassName += ' ' + treeProps.className;
+		}
+		tree = <WhichTree
+					showHeaders={false}
+					showHovers={true}
+					autoAdjustPageSizeToHeight={false}
+					newEntityDisplayValue={newEntityDisplayValue}
+					newEntityDisplayProperty={newEntityDisplayProperty}
+					disablePresetButtons={!isEditor}
+					alternateRowBackgrounds={false}
+					showSelectHandle={false}
+					onLayout={onTreeLayout}
+					onChangeSelection={(selection) => {
+
+						if (Repository && selection[0]?.isPhantom) {
+							// do nothing
+							return;
+						}
+
+						setTreeSelection(selection);
+
+						if (Repository) {
+
+							// When we first open the menu, we try to match the selection to the value, ignore this
+							if (selection[0]?.displayValue === getDisplayValue()) {
+								return;
+							}
+
+							// when user selected the record matching the current value, kill search mode
+							if (selection[0]?.id === value) {
+								setIsSearchMode(false);
+								resetTextInputValue();
+								if (hideMenuOnSelection && !isNavigatingViaKeyboard && !isEditor) {
+									hideMenu();
+								}
+								return;
+							}
+
+							setValue(selection[0] ? (valueProperty ? selection[0][valueProperty] : selection[0].id) : null);
+
+						} else {
+
+							// When we first open the menu, we try to match the selection to the value, ignore this
+							if (selection[0] && selection[0][displayIx] === getDisplayValue()) {
+								return;
+							}
+
+							// when user selected the record matching the current value, kill search mode
+							if (selection[0] && selection[0][idIx] === value) {
+								setIsSearchMode(false);
+								resetTextInputValue();
+								if (hideMenuOnSelection && !isNavigatingViaKeyboard) {
+									hideMenu();
+								}
+								return;
+							}
+
+							setValue(selection[0] ? selection[0][idIx] : null);
+
+						}
+
+						if (_.isEmpty(selection)) {
+							return;
+						}
+
+						if (hideMenuOnSelection && !isNavigatingViaKeyboard && !isEditor) {
+							hideMenu();
+						}
+
+					}}
+					onAdd={(selection) => {
+						const entity = _.isArray(selection) ? selection[0] : selection;
+						if (entity.id !== value && !isInTag) {
+							// Select it and set the value of the combo.
+							setTreeSelection(selection);
+							setValue(entity.id);
+						}
+						if (onTreeAdd) {
+							onTreeAdd(selection);
+						}
+					}}
+					onSave={(selection) => {
+						const entity = _.isArray(selection) ? selection[0] : selection;
+						if (!isInTag) {
+							if (entity?.id !== value) { // Tag doesn't use value, so don't do this comparison in the Tag
+								// Either a phantom record was just solidified into a real record, or a new (non-phantom) record was added.
+								// Select it and set the value of the combo.
+								setTreeSelection(selection);
+								setValue(entity.id);
+							} else {
+								// we're not changing the TreeSelector's value, but we might still need to change its displayValue
+								setDisplayValue(entity.id);
+							}
+						}
+						if (onTreeSave) {
+							onTreeSave(selection);
+						}
+					}}
+					onDelete={onTreeDelete}
+					onNodePress={(item, e) => {
+						if (onNodePress) {
+							onNodePress(item, e);
+							return;
+						}
+						const id = Repository ? item.id : item[idIx];
+						if (id === value && !isEditor) {
+							hideMenu();
+							onInputFocus();
+						}
+						if (onSubmit) {
+							onSubmit(id);
+						}
+					}}
+					reference="tree"
+					parent={self}
+					style={treeStyle}
+					{...treeProps}
+					className={treeClassName}
+					{..._editor}
+				/>;
+		if (CURRENT_MODE === UI_MODE_WEB) {
+			if (!disableDirectEntry) {
+				inputClone = <Box
+								className="TreeSelector-inputClone-Box"
+								style={{
+									height: inputHeight,
+								}}
+							>
+								<Input
+									{...testProps('input')}
+									ref={inputCloneRef}
+									reference="TreeSelectorInputClone"
+									value={textInputValue}
+									autoSubmit={true}
+									isDisabled={isDisabled}
+									onChangeValue={onInputChangeText}
+									onKeyPress={onInputKeyPress}
+									onFocus={onInputFocus}
+									onBlur={onInputBlur}
+									InputLeftElement={inputIconElement}
+									autoSubmitDelay={500}
+									placeholder={placeholder}
+									className={clsx(
+										'TreeSelector-inputClone-Input',
+										'grow',
+										'h-full',
+										'flex-1',
+										'm-0',
+										'rounded-tr-none',
+										'rounded-br-none',
+										styles.FORM_COMBO_INPUT_CLASSNAME,
+									)}
+									{..._input}
+								/>
+							</Box>;
+			}
+			dropdownMenu = <Popover
+								isOpen={getIsMenuShown()}
+								onClose={() => {
+									hideMenu();
+								}}
+								trigger={emptyFn}
+								className="dropdownMenu-Popover block"
+								initialFocusRef={inputCloneRef}
+							>
+								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
+								<Box
+									ref={menuRef}
+									className={clsx(
+										'dropdownMenu-Box',
+										'flex-1',
+										'overflow-auto',
+										'bg-white',
+										'p-0',
+										'rounded-none',
+										'border',
+										'border-grey-400',
+										'shadow-md',
+										'max-w-full',
+									)}
+									style={{
+										// If flipped, position above input; otherwise, below
+										top: isMenuAbove
+											? (top - menuRenderedHeight) // above
+											: (disableDirectEntry ? (top + inputHeight) : top), // below
+										left,
+										width,
+										minWidth: 100,
+									}}
+								>
+									{isMenuAbove ?
+										<>
+											{tree}
+											{inputClone}
+										</> :
+										<>
+											{inputClone}
+											{tree}
+										</>}
+								</Box>
+							</Popover>;
+		}
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
+			if (isEditor) {
+				// in RN, an editor has no way to accept the selection of the tree, so we need to add a check button to do this
+				checkButton = <IconButton
+								{...testProps('checkBtn')}
+								icon={Check}
+								_icon={{
+									size: 'sm',
+									className: 'text-grey-600',
+								}}
+								onPress={onCheckButtonPress}
+								isDisabled={!value}
+								className={clsx(
+									'h-full',
+									'border',
+									'border-grey-400',
+									'rounded-md',
+									styles.FORM_COMBO_TRIGGER_CLASSNAME,
+								)}
+							/>;
+			}
+			const inputAndTriggerClone = // for RN, this is the actual input and trigger, as we need them to appear up above in the modal
+				<HStack
+					className={clsx(
+						'h-[40px]',
+						'bg-white',
+					)}
+				>
+					{xButton}
+					{eyeButton}
+					{disableDirectEntry ?
+						<TextNative
+							ref={inputRef}
+							numberOfLines={1}
+							ellipsizeMode="head"
+							className={clsx(
+								'h-full',
+								'flex-1',
+								'm-0',
+								'p-2',
+								'border',
+								'border-grey-400',
+								'rounded-r-none',
+								styles.FORM_COMBO_INPUT_CLASSNAME
+							)}
+						>{textInputValue}</TextNative> :
+						<Input
+							{...testProps('input')}
+							ref={inputRef}
+							reference="TreeSelectorInput"
+							value={textInputValue}
+							autoSubmit={true}
+							isDisabled={isDisabled}
+							onChangeValue={onInputChangeText}
+							onKeyPress={onInputKeyPress}
+							onFocus={onInputFocus}
+							onBlur={onInputBlur}
+							InputLeftElement={inputIconElement}
+							autoSubmitDelay={500}
+							placeholder={placeholder}
+							className={clsx(
+								'h-full',
+								'flex-1',
+								'm-0',
+								'rounded-r-none',
+								styles.FORM_COMBO_INPUT_CLASSNAME,
+							)}
+							{..._input}
+						/>}
+					<IconButton
+						{...testProps('hideMenuBtn')}
+						icon={CaretDown}
+						_icon={{
+							size: 'sm',
+							className: 'text-primary-800',
+						}}
+						isDisabled={isDisabled}
+						onPress={() => hideMenu()}
+						className={clsx(
+							'h-full',
+							'border',
+							'border-grey-400',
+							'rounded-l-none',
+							'rounded-r-md',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME,
+						)}
+					/>
+					{checkButton}
+				</HStack>;
+			let modalBackdrop = <ModalBackdrop />
+			if (CURRENT_MODE === UI_MODE_NATIVE) {
+				// Gluestack's ModalBackdrop was not working on Native,
+				// so workaround is to do it manually for now
+				modalBackdrop = <Pressable
+									onPress={() => setIsMenuShown(false)}
+									className={clsx(
+										'ModalBackdrop-replacment',
+										'h-full',
+										'w-full',
+										'absolute',
+										'top-0',
+										'left-0',
+										'bg-[#000]',
+										'opacity-50',
+									)}
+								/>;
+			}
+			dropdownMenu = <Modal
+								isOpen={true}
+								safeAreaTop={true}
+								onClose={() => setIsMenuShown(false)}
+								className={clsx(
+									'h-full',
+									'w-full',
+								)}
+							>
+								{modalBackdrop}
+								<VStackNative
+									className={clsx(
+										'h-[400px]',
+										'w-[80%]',
+										'max-w-[400px]',
+									)}
+								>
+									{inputAndTriggerClone}
+									{tree}
+								</VStackNative>
+							</Modal>;
+		}
+	}
+
+	let className = clsx(
+		'TreeSelector-HStack',
+		'flex-1',
+		'items-stretch',
+		'h-auto',
+		'self-stretch',
+		'justify-center',
+		'items-stretch'
+	);
+	if (props.className) {
+		className += ' ' + props.className;
+	}
+	if (minimizeForRow) {
+		className += ' h-auto min-h-0';
+	}
+	
+	if (isRendered && additionalButtons?.length && containerWidth < 500) {
+		// be responsive for small screen sizes and bump additionalButtons to the next line
+		assembledComponents = 
+			<VStackNative
+				testID={testID}
+				className="TreeSelector-VStack"
+			>
+				<HStack
+					className={className}
+				>
+					{xButton}
+					{eyeButton}
+					{input}
+					{trigger}
+					{dropdownMenu}
+				</HStack>
+				<HStack className="mt-1">
+					{additionalButtons}
+				</HStack>
+			</VStackNative>;
+	} else {
+		assembledComponents = 
+			<HStackNative
+				testID={testID}
+				onLayout={onLayout}
+				className={className}
+			>
+				{xButton}
+				{eyeButton}
+				{input}
+				{trigger}
+				{additionalButtons}
+				{dropdownMenu}
+			</HStackNative>;
+	}
+	
+	if (isViewerShown && Editor) {
+		let modalBackdrop = <ModalBackdrop className="TreeSelector-viewer-ModalBackdrop" />;
+		if (CURRENT_MODE === UI_MODE_NATIVE) {
+			// Gluestack's ModalBackdrop was not working on Native,
+			// so workaround is to do it manually for now
+			modalBackdrop = <Pressable
+								onPress={onViewerClose}
+								className={clsx(
+									'TreeSelector-viewer-ModalBackdrop-replacment',
+									'h-full',
+									'w-full',
+									'absolute',
+									'top-0',
+									'left-0',
+									'bg-[#000]',
+									'opacity-50',
+								)}
+							/>;
+		}
+
+		const propsForViewer = _.pick(props, [
+			'disableCopy',
+			'disableDuplicate',
+			'disablePrint',
+			'disableView',
+			'value',
+			'Repository',
+			'data',
+			'displayField',
+			'displayIx',
+			'fields',
+			'idField',
+			'idIx',
+			'model',
+			'name',
+		]);
+		assembledComponents = 
+				<>
+					{assembledComponents}
+					<Modal
+						isOpen={true}
+						onClose={onViewerClose}
+					>
+						{modalBackdrop}
+						<Editor
+							editorType={EDITOR_TYPE__WINDOWED}
+							isEditorViewOnly={true}
+							parent={self}
+							reference="viewer"
+							selection={viewerSelection}
+							onEditorClose={onViewerClose}
+							className={clsx(
+								'w-full',
+								'p-0',
+							)}
+							{...propsForViewer}
+							{...viewerProps}
+						/>
+					</Modal>
+				</>;
+	}
+	
+	return assembledComponents;
+	
+});
+
+export const TreeSelector = withComponent(
+						withAlert(
+							withData(
+								withValue(
+									withTooltip(
+										TreeSelectorComponent
+									)
+								)
+							)
+						)
+					);
+
+
+export default TreeSelector;

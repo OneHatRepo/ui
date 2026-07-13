@@ -81,6 +81,7 @@ function TreeComponent(props) {
 			autoLoadRootNodes = true,
 			autoSelectRootNode = false,
 			extraParams = {}, // Additional params to send with each request ( e.g. { order: 'Categories.name ASC' })
+			onNodePress,
 			isNodeTextConfigurable = false,
 			editDisplaySettings, // fn
 			getNodeText = (item) => { // extracts model/data and decides what the row text should be
@@ -234,6 +235,9 @@ function TreeComponent(props) {
 		onNodeClick = (item, e) => {
 			if (!setSelection) {
 				return;
+			}
+			if (onNodePress) {
+				onNodePress(item, e);
 			}
 
 			const {
