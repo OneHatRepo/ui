@@ -421,6 +421,7 @@ function Form(props) {
 				}
 
 				if ((isEditorViewOnly || !isEditable) && !shouldHideFieldUi) {
+					const effectiveViewOnly = true; // some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency
 					let value = null;
 					if (renderer) {
 						value = renderer(record);
@@ -463,6 +464,8 @@ function Form(props) {
 										{...testProps('field-' + fieldName)}
 										value={value}
 										minimizeForRow={true}
+										isEditable={!effectiveViewOnly}
+										isViewOnly={effectiveViewOnly}
 										parent={self}
 										reference={fieldName}
 										{...configPropsToPass}
@@ -773,6 +776,7 @@ function Form(props) {
 			}
 
 			if ((isEditorViewOnly || !isEditable) && !shouldHideFieldUi) {
+				const effectiveViewOnly = true; // some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency
 				let value = null;
 				if (isSingle) {
 					value = record?.properties?.[name]?.displayValue || null;
@@ -809,6 +813,8 @@ function Form(props) {
 				let element = <Element
 									{...testProps('field-' + name)}
 									value={value}
+									isEditable={!effectiveViewOnly}
+									isViewOnly={effectiveViewOnly}
 									parent={self}
 									reference={name}
 									{...itemPropsToPass}

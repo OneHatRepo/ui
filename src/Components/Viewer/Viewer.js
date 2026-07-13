@@ -193,6 +193,7 @@ function Viewer(props) {
 				}
 			}
 			if (type?.match(/(Tag|TagEditor)$/)) {
+				viewerTypeProps.isEditable = false; // some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency
 				viewerTypeProps.isViewOnly = true;
 				viewerTypeProps.SourceRepository = Repository;
 			}
@@ -345,7 +346,8 @@ function Viewer(props) {
 				element = <Element
 									{...testProps('field-' + name)}
 									value={value}
-									isEditable={false}
+									isEditable={false /* some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency */}
+									isViewOnly={true}
 									parent={self}
 									reference={name}
 									{...itemPropsToPass}
