@@ -22,7 +22,7 @@ import {
 } from '../../../Constants/Editor.js';
 import testProps from '../../../Functions/testProps.js';
 import UiGlobals from '../../../UiGlobals.js';
-import Input from 'Input.js';
+import Input from './Input.js';
 import { Tree, WindowedTreeEditor } from '../../Tree/Tree.js';
 import useForceUpdate from '../../../Hooks/useForceUpdate.js';
 import withAlert from '../../Hoc/withAlert.js';
@@ -39,7 +39,7 @@ import Eye from '../../Icons/Eye.js';
 import _ from 'lodash';
 
 
-// This component acts like a Combo, but instead of showing a Grid, shows a Tree instead.
+// This component acts like a Combo, but shows a Tree in the dropdown menu instead of a Grid.
 
 const FILTER_NAME = 'q';
 
@@ -1290,5 +1290,21 @@ export const TreeSelector = withComponent(
 						)
 					);
 
+
+function withAdditionalProps(WrappedComponent) {
+	return (props) => {
+		return <WrappedComponent
+					isEditor={true}
+					hideMenuOnSelection={false}
+					disableView={true}
+					disableCopy={true}
+					disableDuplicate={true}
+					disablePrint={true}
+					{...props}
+				/>;
+	};
+}
+
+export const TreeSelectorEditor = withAdditionalProps(TreeSelector);
 
 export default TreeSelector;

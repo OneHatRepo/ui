@@ -298,6 +298,7 @@ import Toggle from './Form/Field/Toggle.js';
 import Toolbar from './Toolbar/Toolbar.js';
 import Tree from './Tree/Tree.js';
 import TreeNode from './Tree/TreeNode.js';
+import TreeSelector from './Form/Field/TreeSelector.js';
 import YearsCombo from './Form/Field/Combo/YearsCombo.js';
 import _ from 'lodash';
 
@@ -600,6 +601,7 @@ const components = {
 	Toolbar,
 	Tree,
 	TreeNode,
+	TreeSelector,
 	YearsCombo,
 };
 export default components;

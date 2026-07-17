@@ -25,6 +25,7 @@ import withTooltip from '../../../Hoc/withTooltip.js';
 import ValueBox from './ValueBox.js';
 import Inflector from 'inflector-js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
+import TreeSelector, { TreeSelectorEditor } from '../TreeSelector.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import _ from 'lodash';
 
@@ -34,10 +35,12 @@ function TagComponent(props) {
 			isViewOnly = false,
 			isValueAlwaysArray,
 			isValueAsStringifiedJson,
+			selectorType = 'combo', // 'combo' || 'tree'. What should the dropdown menu be?
 			showEye = true,
 			minimizeForRow = false,
 			Editor,
 			_combo = {},
+			_tree = {},
 			SourceRepository,
 			mustSaveBeforeEditingJoinData = false,
 			joinDataConfig,
@@ -67,9 +70,11 @@ function TagComponent(props) {
 			showModal,
 			hideModal,
 
-			...propsToPass // break connection between Tag and Combo props
+			...propsToPass // break connection between Tag and selector props
 		} = props,
 		styles = UiGlobals.styles,
+		isTreeMode = selectorType === 'tree',
+		_selector = isTreeMode ? _tree : _combo,
 		propertyDef = SourceRepository?.getSchema().getPropertyDefinition(self.reference),
 		hasJoinData = propertyDef?.joinData?.length,
 		[JoinRepository] = useState(() => {
@@ -116,14 +121,14 @@ function TagComponent(props) {
 				onCancel: hideModal,
 			});
 		},
-		clearComboValue = () => {
-			self.children.combo.setValue(null);
+		clearSelectorValue = () => {
+			self.children.selector?.setValue(null);
 		},
-		onChangeComboValue = (comboValue) => {
+		onChangeSelectorValue = (selectorValue) => {
 
-			if (_.isNil(comboValue)) {
+			if (_.isNil(selectorValue)) {
 				// NOTE: We *shouldn't* get here, but for some unknown reason, we *were* getting here on rare occasions.
-				// The combo was giving us null values, and the Tag dutifully added null values to its value array.
+				// The selector was giving us null values, and the Tag dutifully added null values to its value array.
 				// Stop this from happening.
 				return;
 			}
@@ -131,24 +136,24 @@ function TagComponent(props) {
 			// make sure value doesn't already exist
 			let exists = false;
 			_.each(value, (val) => {
-				if (val.id === comboValue) {
+				if (val.id === selectorValue) {
 					exists = true;
 					return false; // break
 				}
 			});
 			if (exists) {
-				clearComboValue();
+				clearSelectorValue();
 				// alert('Value already exists!'); // This screws up testing! alerts should be for error conditions, not standard operating conditions
 				return;
 			}
 
-			// The value we get from combo is a simple int
+			// The value we get from selector is a simple int
 			// Convert this to { id, text} from either Repository or data array.
 			const
 				data = props.data,
 				idIx = props.idIx,
 				displayIx = props.displayIx,
-				id = comboValue;
+				id = selectorValue;
 			let item,
 				displayValue;
 				
@@ -211,9 +216,9 @@ function TagComponent(props) {
 			}
 			newValue.push(newItem);
 			setValue(newValue);
-			clearComboValue();
+			clearSelectorValue();
 		},
-		onDelete = (val) => {
+		onValueBoxDelete = (val) => {
 			// Remove from value array
 			const newValue = _.filter(value, (val1) => {
 				return val1.id !== val.id;
@@ -336,7 +341,7 @@ function TagComponent(props) {
 				...extraModalProps,
 			});
 		},
-		onGridAdd = (selection) => {
+		onSelectorAdd = (selection) => {
 			// underlying GridEditor added a record.
 			// add it to this Tag's value
 			const
@@ -349,7 +354,7 @@ function TagComponent(props) {
 			});
 			setValue(newValue);
 		},
-		onGridSave = (selection) => {
+		onSelectorSave = (selection) => {
 			// underlying GridEditor has changed a record.
 			// Check if that value exists, and if so, update its displayValue
 			if (_.isEmpty(valueRef.current)) {
@@ -374,7 +379,7 @@ function TagComponent(props) {
 			};
 			setValue(newValue);
 		},
-		onGridDelete = (selection) => {
+		onSelectorDelete = (selection) => {
 			// underlying GridEditor has deleted a value.
 			// Check if that value exists, and if so delete it
 			if (_.isEmpty(valueRef.current)) {
@@ -405,7 +410,7 @@ function TagComponent(props) {
 						showEye={showEye}
 						onViewEditJoinData={() => onViewEditJoinData(val)}
 						showJoin={hasJoinData && (!mustSaveBeforeEditingJoinData || !isDirty)}
-						onDelete={!isViewOnly ? () => onDelete(val) : null}
+						onDelete={!isViewOnly ? () => onValueBoxDelete(val) : null}
 						minimizeForRow={minimizeForRow}
 					/>;
 		});
@@ -451,15 +456,15 @@ function TagComponent(props) {
 
 	valueRef.current = value; // the onGrid* methods were dealing with stale data, so use a ref, and update it here
 
-	let WhichCombo = Combo;
-	if (_combo.isEditor) {
-		WhichCombo = ComboEditor;
+	let WhichSelector = isTreeMode ? TreeSelector : Combo;
+	if (_selector.isEditor) {
+		WhichSelector = isTreeMode ? TreeSelectorEditor : ComboEditor;
 	}
 
 	if (propsToPass.selectorId) {
-		_combo.selectorId = propsToPass.selectorId;
-		_combo.selectorSelected = propsToPass.selectorSelected;
-		_combo.selectorSelectedField = propsToPass.selectorSelectedField;
+		_selector.selectorId = propsToPass.selectorId;
+		_selector.selectorSelected = propsToPass.selectorSelected;
+		_selector.selectorSelectedField = propsToPass.selectorSelectedField;
 	}
 
 	let className = clsx(
@@ -502,18 +507,18 @@ function TagComponent(props) {
 		'bg-grey-100',
 		styles.FORM_TAG_CLASSNAME,
 	),
-	comboClassName = '';
-	if (_combo.className) {
-		comboClassName = _combo.className;
+	selectorClassName = '';
+	if (_selector.className) {
+		selectorClassName = _selector.className;
 	}
 	if (minimizeForRow) {
 		if (isViewOnly) {
-			// combo is not shown, so allow valueBoxes to take up more space
+			// selector is not shown, so allow valueBoxes to take up more space
 			valueBoxesClassName += ' min-h-[25px] h-full overflow-auto flex-1';
 		} else {
 			// shrink both down
 			valueBoxesClassName += ' Scott h-auto min-h-[25px] max-h-[35px] overflow-auto flex-1';
-			comboClassName += ' h-auto min-h-0 max-h-[25px] flex-1';
+			selectorClassName += ' h-auto min-h-0 max-h-[25px] flex-1';
 		}
 	}
 	
@@ -525,19 +530,25 @@ function TagComponent(props) {
 				<HStack className={valueBoxesClassName}>{valueBoxes}</HStack>
 				
 				{!isViewOnly && 
-					<WhichCombo
+					<WhichSelector
 						Repository={TargetRepository}
 						Editor={props.Editor}
-						onSubmit={onChangeComboValue}
+						onSubmit={onChangeSelectorValue}
 						parent={self}
-						reference="combo"
+						reference="selector"
 						isInTag={true}
-						onGridAdd={onGridAdd}
-						onGridSave={onGridSave}
-						onGridDelete={onGridDelete}
+						{...(isTreeMode ? {
+							onTreeAdd: onSelectorAdd,
+							onTreeSave: onSelectorSave,
+							onTreeDelete: onSelectorDelete,
+						} : {
+							onGridAdd: onSelectorAdd,
+							onGridSave: onSelectorSave,
+							onGridDelete: onSelectorDelete,
+						})}
 						usePermissions={props.usePermissions}
-						{..._combo}
-						className={comboClassName}
+						{..._selector}
+						className={selectorClassName}
 					/>}
 			</VStackNative>;
 	
@@ -577,11 +588,20 @@ function withAdditionalEditorProps(WrappedComponent) {
 	return (props) => {
 		const {
 				_combo = {},
-			} = props;
-		_combo.isEditor = true;
+				_tree = {},
+			} = props,
+			comboProps = {
+				..._combo,
+				isEditor: true,
+			},
+			treeProps = {
+				..._tree,
+				isEditor: true,
+			};
 		return <WrappedComponent
 					{...props}
-					_combo={_combo}
+					_combo={comboProps}
+					_tree={treeProps}
 				/>;
 	};
 }
