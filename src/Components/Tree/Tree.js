@@ -379,6 +379,14 @@ function TreeComponent(props) {
 			}
 		},
 		onToggle = async (datum, e) => {
+			// prevent the click from bubbling up to the node click handler, which would cause unwanted selection changes
+			if (e?.stopPropagation) {
+				e.stopPropagation();
+			}
+			if (e?.preventDefault && e?.cancelable) {
+				e.preventDefault();
+			}
+
 			if (datum.isLoading) {
 				return;
 			}
