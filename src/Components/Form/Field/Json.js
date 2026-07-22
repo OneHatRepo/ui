@@ -46,6 +46,7 @@ export function JsonElement(props) {
 		'Json',
 		'flex-1',
 		'justify-start',
+		'w-full',
 		testID,
 	);
 	if (props.className) {

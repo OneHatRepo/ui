@@ -17,3 +17,14 @@
 	min-height: 0;
 	overflow-x: hidden;
 }
+
+/* Custom styles for react18-json-view */
+code.json-view {
+	max-width: 100%;
+	overflow-x: hidden;
+}
+.json-view--string {
+	overflow-wrap: break-word;
+	word-break: break-all;
+	white-space: pre-wrap;
+}

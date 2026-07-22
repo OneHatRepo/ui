@@ -1,4 +1,5 @@
 import UiGlobals from '../UiGlobals.js';
+import '../Styles/Global.css';
 import Attachments from '../PlatformImports/Web/Attachments.js';
 // import CKEditor from '../Components/Form/Field/CKEditor/CKEditor.js';
 import Datetime from '../PlatformImports/Web/Datetime.js';
