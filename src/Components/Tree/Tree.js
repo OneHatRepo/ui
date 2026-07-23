@@ -111,6 +111,7 @@ function TreeComponent(props) {
 			showHeaderToolbar = true,
 			showHovers = true,
 			showSelectHandle = true,
+			showExpandCollapseButtons = true,
 			nodeLongPressDelayMs,
 			isNodeSelectable = true,
 			isNodeHoverable = true,
@@ -1017,30 +1018,31 @@ function TreeComponent(props) {
 
 		// render
 		getHeaderToolbarItems = () => {
-			const
-				buttons = [
-					// {
-					// 	key: 'searchBtn',
-					// 	text: 'Search tree',
-					// 	handler: () => onSearchTree(treeSearchValue),
-					// 	icon: MagnifyingGlass,
-					// 	isDisabled: !treeSearchValue.length,
-					// },
-					{
-						key: 'collapseAllBtn',
-						text: 'Collapse whole tree',
-						handler: onCollapseAll,
-						icon: Collapse,
-						isDisabled: false,
-					},
-					{
+			const buttons = [
+				// {
+				// 	key: 'searchBtn',
+				// 	text: 'Search tree',
+				// 	handler: () => onSearchTree(treeSearchValue),
+				// 	icon: MagnifyingGlass,
+				// 	isDisabled: !treeSearchValue.length,
+				// },
+			];
+			if (showExpandCollapseButtons) {
+				buttons.push({
+					key: 'collapseAllBtn',
+					text: 'Collapse whole tree',
+					handler: onCollapseAll,
+					icon: Collapse,
+					isDisabled: false,
+				});
+				buttons.push({
 						key: 'expandAllBtn',
 						text: 'Expand whole tree',
 						handler: onExpandAll,
 						icon: Expand,
 						isDisabled: false,
-					},
-				];
+				});
+			}
 			if (isNodeTextConfigurable && editDisplaySettings) {
 				buttons.push({
 					key: 'editNodeTextBtn',
