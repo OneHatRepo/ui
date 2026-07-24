@@ -58,6 +58,10 @@ export default function FieldSet(props) {
 		},
 		onChangeValue = (value, childRef) => {
 			const child = _.find(childRefs.current, child => child.childRef === childRef);
+			if (!child) {
+				// Ignore early value events from fields that have not registered yet.
+				return;
+			}
 			if (child.value !== value) {
 				child.value = value;
 				checkChildren();

@@ -94,6 +94,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 			searchHasInitialPercent = false,
 			menuHeight,
 			placeholder,
+			clearValueOnDisable = false,
+			clearValueWhenSelectionMissing = false,
 			onRowPress,
 			icon,
 			Editor, // only used for the eyeButton
@@ -130,6 +132,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 		triggerRef = useRef(),
 		menuRef = useRef(),
 		displayValueRef = useRef(),
+		displayValueRequestIdRef = useRef(0),
 		typingTimeout = useRef(),
 		isMenuShown = useRef(false),
 		isGridLayoutRunWithRender = useRef(false),
@@ -238,7 +241,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 		getDisplayValue = () => {
 			return displayValueRef.current;
 		},
-		setDisplayValue = async (value) => {
+		setDisplayValue = async (value, requestId = null) => {
 			let displayValue = '';
 			if (_.isNil(value)) {
 				// do nothing
@@ -295,6 +298,10 @@ export const ComboComponent = forwardRef((props, ref) => {
 
 			if (isInTag) {
 				displayValue = '';
+			}
+
+			if (!_.isNil(requestId) && requestId !== displayValueRequestIdRef.current) {
+				return;
 			}
 
 			displayValueRef.current = displayValue;
@@ -595,6 +602,35 @@ export const ComboComponent = forwardRef((props, ref) => {
 			setIsSearchMode(true);
 		};
 
+	const valueIsSet = !isEmptyValue(value);
+
+	useEffect(() => {
+		if (!clearValueOnDisable || !isDisabled || !valueIsSet) {
+			return;
+		}
+		setValue(null);
+	}, [clearValueOnDisable, isDisabled, valueIsSet, setValue]);
+
+	useEffect(() => {
+		if (!clearValueWhenSelectionMissing || !valueIsSet || isSearchMode || !Repository) {
+			return;
+		}
+		if (!Repository.isLoaded || Repository.isLoading) {
+			return;
+		}
+
+		let isSelectionPresent = true;
+		if (_.isArray(value)) {
+			isSelectionPresent = value.every((id) => !!Repository.getById(id));
+		} else {
+			isSelectionPresent = !!Repository.getById(value);
+		}
+
+		if (!isSelectionPresent) {
+			setValue(null);
+		}
+	}, [clearValueWhenSelectionMissing, value, valueIsSet, isSearchMode, Repository, setValue]);
+
 	useEffect(() => {
 		if (!isRendered) {
 			return () => {};
@@ -618,9 +654,13 @@ export const ComboComponent = forwardRef((props, ref) => {
 	}, [isRendered, loadAfterRender, Repository]);
 
 	useEffect(() => {
+		const requestId = ++displayValueRequestIdRef.current;
 		(async () => {
 			setIsSearchMode(false);
-			await setDisplayValue(value);
+			await setDisplayValue(value, requestId);
+			if (requestId !== displayValueRequestIdRef.current) {
+				return;
+			}
 			if (!isReady) {
 				setIsReady(true);
 			}
