@@ -80,7 +80,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
 			showXButton = false,
-			showEyeButton = false,
+			showEyeButton = false, // only works when an Editor is provided, and the Editor has a viewer
 			viewerProps = {}, // popup for eyeButton
 			_input = {},
 			_editor = {},
@@ -178,6 +178,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 			setContainerWidth(e.nativeEvent.layout.width);
 		},
 		showMenu = async () => {
+			if (isDisabled) {
+				return;
+			}
 			if (getIsMenuShown()) {
 				return;
 			}
@@ -217,6 +220,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 			setIsMenuShown(false);
 		},
 		toggleMenu = async () => {
+			if (isDisabled) {
+				return;
+			}
 			if (getIsMenuShown()) {
 				hideMenu();
 				return;
@@ -625,7 +631,15 @@ export const ComboComponent = forwardRef((props, ref) => {
 		return null;
 	}
 
-	const inputIconElement = icon ? <Icon as={icon} size="md" className="text-grey-300 ml-1 mr-2" /> : null;
+	const
+		inputIconElement = icon ? <Icon as={icon} size="md" className="text-grey-300 ml-1 mr-2" /> : null,
+		hasSelectionValue = !isEmptyValue(value),
+		isSelectionInRepository = !Repository ||
+									!hasSelectionValue ||
+									!Repository.isLoaded ||
+									Repository.isLoading ||
+									!!Repository.getById(value),
+		shouldDisableSelectionActionButtons = isDisabled || !hasSelectionValue || !isSelectionInRepository;
 	let xButton = null,
 		eyeButton = null,
 		trigger = null,
@@ -644,7 +658,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 							size: 'sm',
 							className: 'text-grey-600',
 						}}
-						isDisabled={isDisabled || _.isNil(value)}
+						isDisabled={shouldDisableSelectionActionButtons}
 						onPress={onXButtonPress}
 						tooltip="Clear selection"
 						className={clsx(
@@ -662,7 +676,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 							size: 'sm',
 							className: 'text-grey-600',
 						}}
-						isDisabled={isDisabled || _.isNil(value)}
+						isDisabled={shouldDisableSelectionActionButtons}
 						onPress={onEyeButtonPress}
 						tooltip="View selected record"
 						className={clsx(
@@ -703,6 +717,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						{...testProps('toggleMenuBtn')}
 						ref={inputRef}
 						onPress={toggleMenu}
+						isDisabled={isDisabled}
 						className={clsx(
 							'Combo-toggleMenuBtn',
 							'h-auto',
