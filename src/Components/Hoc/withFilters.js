@@ -54,6 +54,7 @@ export default function withFilters(WrappedComponent) {
 				// config
 				searchAllText = true,
 				showClearFiltersButton = true,
+				showQrScannerButtonForTextSearch = false,
 				defaultFilters = [], // likely a list of field names, possibly could be of shape below
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
 				clearExceptions = [], // list of fields that should not be cleared when clearFilters button is pressed
@@ -319,6 +320,28 @@ export default function withFilters(WrappedComponent) {
 											{...elementProps}
 											className={filterClassName}
 										/>;
+					if (field === 'q' && showQrScannerButtonForTextSearch) {
+						const QrScannerBtn = getComponentFromType('QrScannerButton');
+						if (QrScannerBtn) {
+							filterElement = <>
+								{filterElement}
+								<QrScannerBtn
+									{...testProps('qrScannerBtn')}
+									className="ml-1"
+									onScan={(value) => {
+										// value is the parsed string from the QR code. Add it to the 'q' filter
+										const newFilters = [...filters];
+										_.each(newFilters, (filter) => {
+											if (filter.field === 'q') {
+												filter.value = value;
+											}
+										});
+										setFilters(newFilters, false);
+									}}
+								/>
+							</>;
+						}
+					}
 					if (field !== 'q') {
 						filterElement = <>
 											<Label
