@@ -1036,11 +1036,11 @@ function TreeComponent(props) {
 					isDisabled: false,
 				});
 				buttons.push({
-						key: 'expandAllBtn',
-						text: 'Expand whole tree',
-						handler: onExpandAll,
-						icon: Expand,
-						isDisabled: false,
+					key: 'expandAllBtn',
+					text: 'Expand whole tree',
+					handler: onExpandAll,
+					icon: Expand,
+					isDisabled: false,
 				});
 			}
 			if (isNodeTextConfigurable && editDisplaySettings) {
@@ -1584,7 +1584,7 @@ function TreeComponent(props) {
 			>
 				{topToolbar}
 
-				{headerToolbarItemComponents?.length && <HStack>{headerToolbarItemComponents}</HStack>}
+				{headerToolbarItemComponents?.length > 0 && <HStack>{headerToolbarItemComponents}</HStack>}
 
 				<VStack
 					ref={treeRef}

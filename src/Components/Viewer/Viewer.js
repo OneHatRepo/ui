@@ -344,16 +344,16 @@ function Viewer(props) {
 				}
 				
 				element = <Element
-									{...testProps('field-' + name)}
-									value={value}
-									isEditable={false /* some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency */}
-									isViewOnly={true}
-									parent={self}
-									reference={name}
-									{...itemPropsToPass}
-									{...viewerTypeProps}
-									className={elementClassName}
-								/>;
+								{...testProps('field-' + name)}
+								value={value}
+								isEditable={false /* some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency */}
+								isViewOnly={true}
+								parent={self}
+								reference={name}
+								{...itemPropsToPass}
+								{...viewerTypeProps}
+								className={elementClassName}
+							/>;
 			}
 
 			if (item.additionalViewButtons) {
