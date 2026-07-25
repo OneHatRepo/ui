@@ -132,7 +132,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 		triggerRef = useRef(),
 		menuRef = useRef(),
 		displayValueRef = useRef(),
-		displayValueRequestIdRef = useRef(0),
+		displayValueRequestIdRef = useRef(0), // used to ensure that async setDisplayValue calls don't overwrite each other
 		typingTimeout = useRef(),
 		isMenuShown = useRef(false),
 		isGridLayoutRunWithRender = useRef(false),
@@ -301,6 +301,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}
 
 			if (!_.isNil(requestId) && requestId !== displayValueRequestIdRef.current) {
+				// this is an async call that has been superseded by a later call, so ignore it
 				return;
 			}
 
@@ -605,6 +606,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 	const valueIsSet = !isEmptyValue(value);
 
 	useEffect(() => {
+		// if the Combo is disabled and clearValueOnDisable is true, clear the value
 		if (!clearValueOnDisable || !isDisabled || !valueIsSet) {
 			return;
 		}
@@ -612,6 +614,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 	}, [clearValueOnDisable, isDisabled, valueIsSet, setValue]);
 
 	useEffect(() => {
+		// if the current value is not present in the Repository, clear the value
 		if (!clearValueWhenSelectionMissing || !valueIsSet || isSearchMode || !Repository) {
 			return;
 		}
@@ -632,11 +635,14 @@ export const ComboComponent = forwardRef((props, ref) => {
 	}, [clearValueWhenSelectionMissing, value, valueIsSet, isSearchMode, Repository, setValue]);
 
 	useEffect(() => {
+		// This effect runs on mount and unmount
+		// On mount, if loadAfterRender is true, it will reload the Repository
+		// On unmount, if the Repository is not unique and not destroyed, it will clear the grid filters
 		if (!isRendered) {
 			return () => {};
 		}
 		
-		if (loadAfterRender) {
+		if (loadAfterRender && Repository && !Repository.isDestroyed) {
 			Repository?.reload();
 		}
 		
@@ -654,6 +660,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 	}, [isRendered, loadAfterRender, Repository]);
 
 	useEffect(() => {
+		// whenever the value changes, update the displayValue
 		const requestId = ++displayValueRequestIdRef.current;
 		(async () => {
 			setIsSearchMode(false);
@@ -673,12 +680,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 
 	const
 		inputIconElement = icon ? <Icon as={icon} size="md" className="text-grey-300 ml-1 mr-2" /> : null,
+		// these next three lines are used to determine if the X and Eye buttons should be disabled
 		hasSelectionValue = !isEmptyValue(value),
-		isSelectionInRepository = !Repository ||
-									!hasSelectionValue ||
-									!Repository.isLoaded ||
-									Repository.isLoading ||
-									!!Repository.getById(value),
+		isSelectionInRepository = !Repository || !hasSelectionValue || !Repository.isLoaded || Repository.isLoading || !!Repository.getById(value),
 		shouldDisableSelectionActionButtons = isDisabled || !hasSelectionValue || !isSelectionInRepository;
 	let xButton = null,
 		eyeButton = null,
