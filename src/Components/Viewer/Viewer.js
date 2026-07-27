@@ -164,7 +164,15 @@ function Viewer(props) {
 			if (!itemPropsToPass.className) {
 				itemPropsToPass.className = '';
 			}
-			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
+			const schema = record?.repository?.getSchema();
+			let propertyDef;
+			if (name) {
+				try {
+					propertyDef = schema?.getPropertyDefinition(name);
+				} catch (error) {
+					// ignore errors, as some fields may not be in the schema
+				}
+			}
 			if (!type) {
 				if (viewerType) {
 					type = viewerType;
@@ -303,12 +311,9 @@ function Viewer(props) {
 			if (_.isNil(value) && record?.hasOwnProperty(name)) {
 				value = record[name];
 			}
-			const
-				schema = record?.repository?.getSchema(),
-				propertyDefinition = name && schema?.getPropertyDefinition(name);
-			if (propertyDefinition?.isFk) {
+			if (propertyDef?.isFk) {
 				// value above is the id, get the actual display value
-				const fkDisplayField = propertyDefinition.fkDisplayField;
+				const fkDisplayField = propertyDef.fkDisplayField;
 				if (record.properties[fkDisplayField]) {
 					value = record.properties[fkDisplayField].displayValue;
 				}

@@ -648,7 +648,14 @@ function Form(props) {
 			if (!itemPropsToPass.className) {
 				itemPropsToPass.className = '';
 			}
-			const propertyDef = name && Repository?.getSchema().getPropertyDefinition(name);
+			let propertyDef;
+			if (name) {
+				try {
+					propertyDef = Repository?.getSchema().getPropertyDefinition(name);
+				} catch (error) {
+					// ignore errors, as some fields may not be in the schema
+				}
+			}
 			if (!useAdditionalEditButtons) {
 				item = _.omit(item, 'additionalEditButtons');
 			}
