@@ -517,6 +517,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 			}
 		},
 		searchForMatches = async (value) => {
+			throw Error('Not yet implemented');
 			// let found;
 			// if (Repository) {
 			// 	if (!Repository.isDestroyed) {
@@ -812,6 +813,9 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 		}
 		if (!Repository) {
 			treeProps.data = filteredData;
+		}
+		if (props.onFilterChange) {
+			treeProps.onFilterChange = props.onFilterChange;
 		}
 		const
 			WhichTree = isEditor ? WindowedTreeEditor : Tree,
