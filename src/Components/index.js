@@ -282,7 +282,7 @@ import Panel from './Panel/Panel.js';
 import PlusMinusButton from './Buttons/PlusMinusButton.js';
 import PmCalcDebugViewer from './Viewer/PmCalcDebugViewer.js';
 import PmStatusesViewer from './Viewer/PmStatusesViewer.js';
-import QrCodeViewer from './Viewer/QrCodeViewer.js';
+// import QrCodeViewer from './Viewer/QrCodeViewer.js'; // project must import this in registerComponents.js, since it requires a dependency on react-qr-code
 import RadioGroup from './Form/Field/RadioGroup/RadioGroup.js';
 import ReportPresetsComboEditor from './Form/Field/Combo/ReportPresetsComboEditor.js';
 import ReportQueueStatusesCombo from './Form/Field/Combo/ReportQueueStatusesCombo.js';
@@ -586,7 +586,7 @@ const components = {
 	PlusMinusButton,
 	PmCalcDebugViewer,
 	PmStatusesViewer,
-	QrCodeViewer,
+	// QrCodeViewer,
 	RadioGroup,
 	ReportPresetsComboEditor,
 	ReportQueueStatusesCombo,
