@@ -183,7 +183,7 @@ function QrCodeViewer(props) {
 					onPress={() => onCopy()}
 					isDisabled={isDisabled}
 					className="ml-2"
-					tooltip="Copy QR Code to Clipboard"
+					tooltip="Copy Image to Clipboard"
 				/>
 			</HStack>;
 }
