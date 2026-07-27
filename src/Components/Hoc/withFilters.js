@@ -262,7 +262,7 @@ export default function withFilters(WrappedComponent) {
 							className = '',
 						} = filter;
 						
-					if (!title) {
+					if (!title && field !== 'q') {
 						const propertyDef = Repository.getSchema().getPropertyDefinition(field);
 						title = propertyDef?.filterTitle || propertyDef?.title;
 					}
