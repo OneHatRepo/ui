@@ -54,6 +54,7 @@ export default function withFilters(WrappedComponent) {
 				// config
 				searchAllText = true,
 				showClearFiltersButton = true,
+				showSwapFiltersButton = true,
 				showQrScannerButtonForTextSearch = false,
 				defaultFilters = [], // likely a list of field names, possibly could be of shape below
 				customFilters = [], // of shape: { title, type, field, value, getRepoFilters(value) }
@@ -714,7 +715,7 @@ export default function withFilters(WrappedComponent) {
 										tooltip="Clear all filters"
 										isDisabled={!hasFilters}
 									/>}
-								{!isUsingCustomFilters && 
+								{!isUsingCustomFilters && showSwapFiltersButton &&
 									<IconButton
 										{...testProps('swapFiltersBtn')}
 										key="swapFiltersBtn"
