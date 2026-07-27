@@ -305,7 +305,7 @@ function Viewer(props) {
 			}
 			const
 				schema = record?.repository?.getSchema(),
-				propertyDefinition = schema?.getPropertyDefinition(name);
+				propertyDefinition = name && schema?.getPropertyDefinition(name);
 			if (propertyDefinition?.isFk) {
 				// value above is the id, get the actual display value
 				const fkDisplayField = propertyDefinition.fkDisplayField;
