@@ -50,6 +50,7 @@ function QrScannerButton(props) {
 	
 	return <IconButton
 				key="qrScannerBtn"
+				tooltip="Scan QR Code"
 				icon={QrCode}
 				onPress={onScanQrCode}
 				{...props}
