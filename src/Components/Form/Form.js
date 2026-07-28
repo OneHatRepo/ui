@@ -1276,8 +1276,10 @@ function Form(props) {
 		onSaveDecorated = async (data, e, options) => {
 			// reset the form after a save
 			const result = await onSave(data, e, options);
-			if (result && !options?.useAddAndNew && record && !_.isArray(record) && !record.isDestroyed) { // only reset if record exists, is not an array, and is not destroyed
-				const values = record.submitValues;
+			if (result && !options?.useAddAndNew) {
+				const values = record && !_.isArray(record) && !record.isDestroyed
+					? record.submitValues
+					: data;
 				doReset(values);
 			}
 		},
