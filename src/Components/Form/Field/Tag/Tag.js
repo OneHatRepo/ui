@@ -38,6 +38,7 @@ function TagComponent(props) {
 			selectorType = 'combo', // 'combo' || 'tree'. What should the dropdown menu be?
 			showEye = true,
 			minimizeForRow = false,
+			Selector,
 			Editor,
 			_combo = {},
 			_tree = {},
@@ -459,6 +460,10 @@ function TagComponent(props) {
 	let WhichSelector = isTreeMode ? TreeSelector : Combo;
 	if (_selector.isEditor) {
 		WhichSelector = isTreeMode ? TreeSelectorEditor : ComboEditor;
+	}
+	if (Selector) {
+		// override default Selector with custom Selector passed in
+		WhichSelector = Selector;
 	}
 
 	if (propsToPass.selectorId) {
