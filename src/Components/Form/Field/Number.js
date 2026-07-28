@@ -71,7 +71,7 @@ function NumberElement(props) {
 		},
 		onDecrement = () => {
 			let localValue = value;
-			if (minValue && localValue === minValue) {
+			if (typeof minValue !== 'undefined' && localValue === minValue) {
 				return;
 			}
 			if (!localValue) {
@@ -82,7 +82,7 @@ function NumberElement(props) {
 		},
 		onIncrement = () => {
 			let localValue = value;
-			if (maxValue && localValue === maxValue) {
+			if (typeof maxValue !== 'undefined' && localValue === maxValue) {
 				return;
 			}
 			if (!localValue) {
