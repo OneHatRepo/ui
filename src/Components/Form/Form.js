@@ -1156,7 +1156,7 @@ function Form(props) {
 										uniqueRepository={true}
 										parent={self}
 										{...itemPropsToPass}
-									editorMode={ancillaryEditorMode}
+										editorMode={ancillaryEditorMode}
 										initialEditorMode={ancillaryInitialEditorMode}
 									/>;
 					if (title) {

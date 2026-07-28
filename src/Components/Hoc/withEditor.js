@@ -692,7 +692,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return;
 				}
 
-				// NOTE: The Form submits onSave for both adds (when not isAutoSsave) and edits.
+				// NOTE: The Form submits onSave for both adds (when not isAutoSave) and edits.
 				const
 					selection = getSelection(),
 					isSingle = selection.length === 1;
