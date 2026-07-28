@@ -35,6 +35,7 @@ import withComponent from '../Hoc/withComponent.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
+import composeEventHandlers from '../../Functions/composerEventHandlers.js';
 import testProps from '../../Functions/testProps.js';
 import DynamicFab from '../Fab/DynamicFab.js';
 import Toolbar from '../Toolbar/Toolbar.js';
@@ -79,6 +80,8 @@ function Viewer(props) {
 			onClose,
 			onDelete,
 			isEditorModeControlledByParent = false,
+			shouldRouteAncillaryEvents = false,
+			ancillaryEventHandlers,
 
 			// parent container
 			selectorId,
@@ -392,6 +395,8 @@ function Viewer(props) {
 		},
 		buildAncillary = () => {
 			const
+				effectiveShouldRouteAncillaryEvents = shouldRouteAncillaryEvents || !!props.secondaryShouldRouteAncillaryEvents,
+				effectiveAncillaryEventHandlers = ancillaryEventHandlers || props.secondaryAncillaryEventHandlers,
 				validAncillaryItems = _.filter(ancillaryItems, (item) => !!item), // filter out any null/undefined items
 				components = [];
 			setAncillaryButtons([]);
@@ -429,6 +434,12 @@ function Viewer(props) {
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
 						itemPropsToPass.h = 400;
+					}
+					if (effectiveShouldRouteAncillaryEvents) {
+						itemPropsToPass.onAdd = composeEventHandlers(itemPropsToPass.onAdd, effectiveAncillaryEventHandlers?.onAdd);
+						itemPropsToPass.onChange = composeEventHandlers(itemPropsToPass.onChange, effectiveAncillaryEventHandlers?.onChange);
+						itemPropsToPass.onDelete = composeEventHandlers(itemPropsToPass.onDelete, effectiveAncillaryEventHandlers?.onDelete);
+						itemPropsToPass.onSave = composeEventHandlers(itemPropsToPass.onSave, effectiveAncillaryEventHandlers?.onSave);
 					}
 					let className = 'Viewer-ancillary-' + type;
 					if (itemPropsToPass.className) {

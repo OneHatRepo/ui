@@ -803,6 +803,18 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondaryOnEditorClose={secondaryDoEditorClose}
 					secondarySetWithEditListeners={setListeners}
 					secondaryIsEditor={true}
+					secondaryAncillaryEventHandlers={{
+						secondaryOnAdd,
+						secondaryOnChange,
+						secondaryOnDelete,
+						secondaryOnSave,
+					}}
+					ancillaryEventHandlers={{
+						onAdd: secondaryOnAdd,
+						onChange: secondaryOnChange,
+						onDelete: secondaryOnDelete,
+						onSave: secondaryOnSave,
+					}}
 					secondaryUserCanEdit={secondaryUserCanEdit}
 					secondaryUserCanView={secondaryUserCanView}
 					secondaryDisableAdd={secondaryDisableAdd}

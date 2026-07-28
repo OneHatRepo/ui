@@ -42,6 +42,7 @@ import withEditor from '../Hoc/withEditor.js';
 import inArray from '../../Functions/inArray.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import buildAdditionalButtons from '../../Functions/buildAdditionalButtons.js';
+import composeEventHandlers from '../../Functions/composerEventHandlers.js';
 import testProps from '../../Functions/testProps.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import Button from '../Buttons/Button.js';
@@ -152,6 +153,8 @@ function Form(props) {
 			editorStateRef,
 			disableView,
 			isEditorModeControlledByParent = false,
+			shouldRouteAncillaryEvents = false,
+			ancillaryEventHandlers,
 
 			// parent container
 			selectorId,
@@ -1093,6 +1096,8 @@ function Form(props) {
 		},
 		buildAncillary = () => {
 			const
+				effectiveShouldRouteAncillaryEvents = shouldRouteAncillaryEvents || !!props.secondaryShouldRouteAncillaryEvents,
+				effectiveAncillaryEventHandlers = ancillaryEventHandlers || props.secondaryAncillaryEventHandlers,
 				validAncillaryItems = _.filter(ancillaryItems, (item) => !!item), // filter out any null/undefined items
 				parentEditorModeRaw = getEditorMode?.() || props.editorMode || null,
 				parentEditorMode = parentEditorModeRaw === EDITOR_MODE__ADD
@@ -1142,6 +1147,12 @@ function Form(props) {
 					}
 					if (type.match(/Grid/) && !itemPropsToPass.h) {
 						itemPropsToPass.h = 400;
+					}
+					if (effectiveShouldRouteAncillaryEvents) {
+						itemPropsToPass.onAdd = composeEventHandlers(itemPropsToPass.onAdd, effectiveAncillaryEventHandlers?.onAdd);
+						itemPropsToPass.onChange = composeEventHandlers(itemPropsToPass.onChange, effectiveAncillaryEventHandlers?.onChange);
+						itemPropsToPass.onDelete = composeEventHandlers(itemPropsToPass.onDelete, effectiveAncillaryEventHandlers?.onDelete);
+						itemPropsToPass.onSave = composeEventHandlers(itemPropsToPass.onSave, effectiveAncillaryEventHandlers?.onSave);
 					}
 
 					const

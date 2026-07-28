@@ -1059,6 +1059,12 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onEditorClose={doEditorClose}
 					setWithEditListeners={setListeners}
 					isEditor={true}
+					ancillaryEventHandlers={{
+						onAdd,
+						onChange,
+						onDelete,
+						onSave,
+					}}
 					userCanEdit={userCanEdit}
 					userCanView={userCanView}
 					enableMultiDelete={enableMultiDelete}
