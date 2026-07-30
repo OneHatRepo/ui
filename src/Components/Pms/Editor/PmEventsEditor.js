@@ -51,17 +51,6 @@ export default function PmEventsEditor(props) {
 			}
 			adjustForm(formGetValues);
 		},
-		onChangeMeter = (newValue, formSetValue, formGetValues, formState, trigger) => {
-			// clear the pm_schedule_id field and repository since the meter has changed
-			PmSchedules.clearAll();
-			formSetValue('pm_events__pm_schedule_id', null);
-			trigger('pm_events__pm_schedule_id');
-
-			adjustForm(formGetValues);
-		},
-		onChangePmEventType = (newValue, formSetValue, formGetValues, formState, trigger) => {
-			adjustForm(formGetValues);
-		},
 		adjustForm = (formGetValues) => {
 			const {
 					pm_events__meter_id,
@@ -136,6 +125,17 @@ export default function PmEventsEditor(props) {
 					setIsPmTechnicianHidden(false);
 					break;
 			}
+		},
+		onChangeMeter = (newValue, formSetValue, formGetValues, formState, trigger) => {
+			// clear the pm_schedule_id field and repository since the meter has changed
+			PmSchedules.clearAll();
+			formSetValue('pm_events__pm_schedule_id', null);
+			trigger('pm_events__pm_schedule_id');
+
+			adjustForm(formGetValues);
+		},
+		onChangePmEventType = (newValue, formSetValue, formGetValues, formState, trigger) => {
+			adjustForm(formGetValues);
 		},
 		overviewItems = [];
 	

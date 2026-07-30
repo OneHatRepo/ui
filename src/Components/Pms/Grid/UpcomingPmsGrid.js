@@ -522,6 +522,7 @@ function withBumper(WrappedComponent) {
 					reference="bumper"
 					Editor={BumpPmsEditorWindow}
 					model="PmEvents"
+					inheritParentEditorMode={false}
 					onAdd={reloadUpcomingPms}
 					alreadyHasWithEditor={false}
 					alreadyHasWithData={false}
@@ -550,6 +551,7 @@ function withWorkOrdersAdder(WrappedComponent) {
 					reference="workOrdersAdder"
 					Editor={BumpWorkOrdersEditorWindow}
 					model="WorkOrders"
+					inheritParentEditorMode={false}
 					onAdd={reloadUpcomingPms}
 					onSave={reloadUpcomingPms}
 					onDelete={reloadUpcomingPms}
