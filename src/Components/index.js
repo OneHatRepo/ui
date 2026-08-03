@@ -190,6 +190,7 @@ import Video from './Icons/Video.js';
 import X from './Icons/X.js';
 import Xmark from './Icons/Xmark.js';
 
+import AllPmEventTypesCombo from './Pms/Form/Field/Combo/AllPmEventTypesCombo.js';
 // import AttachmentsCombo from './Form/Field/Combo/AttachmentsCombo.js';
 // import AttachmentsComboEditor from './Form/Field/Combo/AttachmentsComboEditor.js';
 // import AttachmentsTag from './Form/Field/Tag/AttachmentsTag.js';
@@ -243,6 +244,7 @@ import ArrayRadioGroup from './Form/Field/RadioGroup/ArrayRadioGroup.js';
 // import BackButton from './Buttons/BackButton.js';
 import Blank from './Blank.js';
 import BooleanCombo from './Form/Field/Combo/BooleanCombo.js';
+import BumpPmEventTypesCombo from './Pms/Form/Field/Combo/BumpPmEventTypesCombo.js';
 import Button from './Buttons/Button.js';
 // import CartButtonWithBadge from './Buttons/CartButtonWithBadge.js';
 // import CKEditor from './Form/Field/CKEditor/CKEditor.js'; // web only
