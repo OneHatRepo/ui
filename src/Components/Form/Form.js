@@ -1572,6 +1572,7 @@ function Form(props) {
 		self.formState = formState;
 		self.formSetValue = formSetValue;
 		self.formGetValues = formGetValues;
+		self.trigger = trigger;
 	}
 	
 	const style = props.style || {};
