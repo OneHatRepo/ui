@@ -17,7 +17,6 @@ import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
 export default function PmEventsEditor(props) {
-
 	const {
 			selection,
 			isBump = false,
