@@ -6,7 +6,7 @@ import PmEventsEditor from '../Editor/PmEventsEditor.js';
 export default function PmEventsEditorWindow(props) {
 	const
 		styles = UiGlobals.styles,
-		[width, height] = useAdjustedWindowSize(500, 750);
+		[width, height] = useAdjustedWindowSize(500, 600);
 	
 	return <Panel
 				{...props}

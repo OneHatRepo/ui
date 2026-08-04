@@ -248,8 +248,7 @@ function PmEventsEditor(props) {
 		},
 		onChangePmEventType = () => {
 			adjustForm();
-		},
-		overviewItems = [];
+		};
 
 	useEffect(() => {
 
@@ -276,6 +275,11 @@ function PmEventsEditor(props) {
 		};
 	}, [Meters, PmSchedules, MetersPmSchedules]);
 
+	const overviewItems = [{
+		name: 'pm_events__pm_event_type_id',
+		onChange: onChangePmEventType,
+		editorType: isBump ? 'BumpPmEventTypesCombo' : 'PmEventManualTypesCombo',
+	}];
 	if (!isBump) {
 		if (getHasMultipleMeters()) {
 			overviewItems.push({
@@ -296,34 +300,29 @@ function PmEventsEditor(props) {
 			});
 		}
 	}
-	overviewItems.push({
-		name: 'pm_events__pm_event_type_id',
-		onChange: onChangePmEventType,
-		editorType: isBump ? 'BumpPmEventTypesCombo' : 'PmEventManualTypesCombo',
-	});
 
 	const items = [
-		    {
-		        "type": "Column",
-		        "flex": 1,
-		        "defaults": {},
-		        "items": [
-		            {
-		                "type": "FieldSet",
-		                "title": "Overview",
-		                "reference": "overview",
-		                "defaults": {},
-		                "items": overviewItems,
-		            },
-		            {
-		                "type": "FieldSet",
-		                "title": "Details",
-		                "reference": "details",
-		                "defaults": {},
+			{
+				"type": "Column",
+				"flex": 1,
+				"defaults": {},
+				"items": [
+					{
+						"type": "FieldSet",
+						"title": "Overview",
+						"reference": "overview",
+						"defaults": {},
+						"items": overviewItems,
+					},
+					{
+						"type": "FieldSet",
+						"title": "Details",
+						"reference": "details",
+						"defaults": {},
 						isHidden: isDetailsHidden,
-		                "items": [
-		                    {
-		                        "name": "pm_events__interval",
+						"items": [
+							{
+								"name": "pm_events__interval",
 								tooltip: 'Interval to delay by',
 								isHidden: isIntervalHidden,
 								getIsRequired: (formGetValues, formState) => {
@@ -339,9 +338,9 @@ function PmEventsEditor(props) {
 									}
 									return ret;
 								},
-		                    },
-		                    {
-		                        "name": "pm_events__associated_date",
+							},
+							{
+								"name": "pm_events__associated_date",
 								tooltip: 'When to schedule the PM for',
 								isHidden: isDateHidden,
 								getIsRequired: (formGetValues, formState) => {
@@ -356,9 +355,9 @@ function PmEventsEditor(props) {
 									}
 									return ret;
 								},
-		                    },
-		                    {
-		                        "name": "pm_events__meter_reading",
+							},
+							{
+								"name": "pm_events__meter_reading",
 								tooltip: 'Meter reading at the time of the PM event',
 								getIsRequired: (formGetValues, formState) => {
 									const {
@@ -374,9 +373,9 @@ function PmEventsEditor(props) {
 									return ret;
 								},
 								isHidden: isMeterReadingHidden,
-		                    },
-		                    {
-		                        "name": "pm_events__user_id",
+							},
+							{
+								"name": "pm_events__user_id",
 								tooltip: 'Technician to assign',
 								getIsRequired: (formGetValues, formState) => {
 									const {
@@ -391,29 +390,29 @@ function PmEventsEditor(props) {
 									return ret;
 								},
 								isHidden: isPmTechnicianHidden,
-		                    },
-		                ]
-		            }
-		        ]
-		    },
-		    {
-		        "type": "Column",
-		        "flex": 1,
-		        "defaults": {},
-		        "items": [
-		            {
-		                "type": "FieldSet",
-		                "title": "Comments",
-		                "reference": "comments",
-		                "defaults": {},
-		                "items": [
-		                    {
-		                        "name": "pm_events__comments"
-		                    }
-		                ]
-		            }
-		        ]
-		    }
+							},
+						]
+					}
+				]
+			},
+			{
+				"type": "Column",
+				"flex": 1,
+				"defaults": {},
+				"items": [
+					{
+						"type": "FieldSet",
+						"title": "Comments",
+						"reference": "comments",
+						"defaults": {},
+						"items": [
+							{
+								"name": "pm_events__comments"
+							}
+						]
+					}
+				]
+			}
 		],
 		ancillaryItems = [],
 		columnDefaults = { // defaults for each column defined in 'items', for use in Form amd Viewer
