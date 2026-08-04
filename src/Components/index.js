@@ -496,6 +496,7 @@ const components = {
 	X,
 	Xmark,
 
+	AllPmEventTypesCombo,
 	// AttachmentsCombo,
 	// AttachmentsComboEditor,
 	// AttachmentsTag,
@@ -549,6 +550,7 @@ const components = {
 	// BackButton,
 	Blank,
 	BooleanCombo,
+	BumpPmEventTypesCombo,
 	Button,
 	// CartButtonWithBadge,
 	Checkbox,
