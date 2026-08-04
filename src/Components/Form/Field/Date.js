@@ -121,6 +121,9 @@ export const DateElement = forwardRef((props, ref) => {
 		togglePicker = () => {
 			setIsPickerShown(!isPickerShown);
 		},
+		onXButtonPress = () => {
+			setValue(null);
+		},
 		onInputKeyPress = (e, inputValue) => {
 			if (disableDirectEntry) {
 				return;
@@ -290,7 +293,7 @@ export const DateElement = forwardRef((props, ref) => {
 		dropdownMenu = null,
 		assembledComponents = null;
 
-	if (showXButton && !_.isNil(value)) {
+	if (showXButton) {
 		xButton = <IconButton
 						{...testProps('xBtn')}
 						icon={Xmark}
@@ -298,11 +301,11 @@ export const DateElement = forwardRef((props, ref) => {
 							size: 'sm',
 							className: 'text-grey-600',
 						}}
-						isDisabled={isDisabled}
-						onPress={onClearBtn}
+						isDisabled={isDisabled || _.isNil(value)}
+						onPress={onXButtonPress}
 						className={clsx(
-							'Date-xBtn',
 							'h-full',
+							'mr-1',
 							styles.FORM_COMBO_TRIGGER_CLASSNAME,
 						)}
 					/>;

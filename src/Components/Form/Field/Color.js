@@ -11,8 +11,11 @@ import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 } from '../../../Constants/UiModes.js';
+import IconButton from '../../Buttons/IconButton.js';
+import Xmark from '../../Icons/Xmark.js';
 import UiGlobals from '../../../UiGlobals.js';
 import Input from '../Field/Input.js';
+import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
@@ -22,6 +25,8 @@ export function ColorElement(props) {
 	const {
 			value = '#000',
 			setValue,
+			isDisabled = false,
+			showXButton = false,
 			tooltip = 'Choose a color.',
 			tooltipPlacement = 'bottom',
 		} = props,
@@ -68,6 +73,9 @@ export function ColorElement(props) {
 				return;
 			}
 			setIsPickerShown(false);
+		},
+		onXButtonPress = () => {
+			setValue(null);
 		},
 		onInputKeyPress = (e) => {
 			switch(e.key) {
@@ -133,6 +141,25 @@ export function ColorElement(props) {
 		};
 	}
 
+	let xButton = null;
+	if (showXButton) {
+		xButton = <IconButton
+						{...testProps('xBtn')}
+						icon={Xmark}
+						_icon={{
+							size: 'sm',
+							className: 'text-grey-600',
+						}}
+						isDisabled={isDisabled || _.isNil(value)}
+						onPress={onXButtonPress}
+						className={clsx(
+							'h-full',
+							'mr-1',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME,
+						)}
+					/>;
+	}
+
 
 	// Web version
 	let assembledComponents = null;
@@ -146,6 +173,7 @@ export function ColorElement(props) {
 				'items-center',
 			)}
 		>
+			{xButton}
 			<Pressable
 				ref={triggerRef}
 				onPress={onTriggerPress}
@@ -154,6 +182,7 @@ export function ColorElement(props) {
 				borderBottomLeftRadius={6}
 				borderTopRightRadius={0}
 				borderBottomRightRadius={0}
+				isDisabled={isDisabled}
 				className={clsx(
 					'ColorElement-Pressable',
 					`bg-${value}`,

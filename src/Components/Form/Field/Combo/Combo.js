@@ -702,7 +702,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 							size: 'sm',
 							className: 'text-grey-600',
 						}}
-						isDisabled={shouldDisableSelectionActionButtons}
+						isDisabled={shouldDisableSelectionActionButtons || _.isNil(value)}
 						onPress={onXButtonPress}
 						tooltip="Clear selection"
 						className={clsx(

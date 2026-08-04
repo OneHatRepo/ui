@@ -416,13 +416,8 @@ function Form(props) {
 						editorTypeProps.autoLoad = true;
 					}
 				}
-				if (isCombo) {
-					// editorTypeProps.showEyeButton = true;
-					if (_.isNil(configPropsToPass.showXButton)) {
-						editorTypeProps.showXButton = true;
-					}
-				}
-
+				
+				editorTypeProps.showXButton = true;
 				if ((isEditorViewOnly || !isEditable) && !shouldHideFieldUi) {
 					const effectiveViewOnly = true; // some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency
 					let value = null;
@@ -706,13 +701,8 @@ function Form(props) {
 					editorTypeProps.autoLoad = true;
 				}
 			}
-			if (isCombo) {
-				// editorTypeProps.showEyeButton = true;
-				if (_.isNil(itemPropsToPass.showXButton)) {
-					editorTypeProps.showXButton = true;
-				}
-			}
 			
+			editorTypeProps.showXButton = true;
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;

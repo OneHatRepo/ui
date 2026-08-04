@@ -13,6 +13,7 @@ import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import Plus from '../../Icons/Plus.js';
 import Minus from '../../Icons/Minus.js';
+import Xmark from '../../Icons/Xmark.js';
 import _ from 'lodash';
 
 function NumberElement(props) {
@@ -24,6 +25,7 @@ function NumberElement(props) {
 			autoSubmitDelay = UiGlobals.autoSubmitDelay,
 			tooltip,
 			tooltipPlacement,
+			showXButton = false,
 			isDisabled = false,
 			testID,
 		} = props,
@@ -68,6 +70,9 @@ function NumberElement(props) {
 			}
 			setLocalValue(value);
 			debouncedSetValueRef.current(value);
+		},
+		onXButtonPress = () => {
+			setValue(null);
 		},
 		onDecrement = () => {
 			let localValue = value;
@@ -118,6 +123,26 @@ function NumberElement(props) {
 		inputValue = '' + inputValue;
 	}
 
+	let xButton = null;
+	if (showXButton) {
+		xButton = <IconButton
+						{...testProps('xBtn')}
+						icon={Xmark}
+						_icon={{
+							size: 'sm',
+							className: 'text-grey-600',
+						}}
+						isDisabled={isDisabled || _.isNil(value)}
+						onPress={onXButtonPress}
+						tooltip="Clear selection"
+						className={clsx(
+							'h-full',
+							'mr-1',
+							styles.FORM_COMBO_TRIGGER_CLASSNAME
+						)}
+					/>;
+	}
+
 	const
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
 		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
@@ -129,9 +154,6 @@ function NumberElement(props) {
 		'items-center',
 		'max-h-[40px]',
 		'p-0',
-		'border',
-		'border-grey-400',
-		'rounded-[6px]',
 	);
 	if (props.className) {
 		className += ' ' + props.className;
@@ -140,63 +162,68 @@ function NumberElement(props) {
 	return <HStack
 				className={className}
 			>
-				<IconButton
-					{...testProps('decrementBtn')}
-					icon={Minus}
-					_icon={{
-						className: 'text-grey-500',
-					}}
-					onPress={onDecrement}
-					isDisabled={isDecrementDisabled || isDisabled}
-					className={clsx(
-						'decrementBtn',
-						'h-full',
-						'rounded-r-none',
-					)}
-					style={{
-						width: 40,
-					}}
-				/>
-				<Input
-					testID={testID}
-					value={inputValue}
-					onChangeText={onChangeText}
-					onKeyPress={onInputKeyPress}
-					isDisabled={isDisabled}
-					tooltip={tooltip}
-					tooltipPlacement={tooltipPlacement}
-					tooltipTriggerClassName={clsx(
-						'flex-1',
-						'h-full',
-					)}
-					className={clsx(
-						'h-full',
-						'text-center',
-						'rounded-none',
-					)}
-					textAlignIsCenter={true}
-					style={{
-						flex: 3
-					}}
-					{...props._input}
-				/>
-				<IconButton
-					{...testProps('incrementBtn')}
-					icon={Plus}
-					_icon={{
-						className: 'text-grey-500',
-					}}
-					onPress={onIncrement}
-					isDisabled={isIncrementDisabled || isDisabled}
-					className={clsx(
-						'incrementBtn',
-						'h-full',
-						'rounded-l-none',
-					)}
-					style={{
-						width: 40,
-					}}
-				/>
+				{xButton}
+				<HStack
+					className={clsx(className, 'border', 'border-grey-400', 'rounded-[6px]')}
+				>
+					<IconButton
+						{...testProps('decrementBtn')}
+						icon={Minus}
+						_icon={{
+							className: 'text-grey-500',
+						}}
+						onPress={onDecrement}
+						isDisabled={isDecrementDisabled || isDisabled || _.isNil(value)}
+						className={clsx(
+							'decrementBtn',
+							'h-full',
+							'rounded-r-none',
+						)}
+						style={{
+							width: 40,
+						}}
+					/>
+					<Input
+						testID={testID}
+						value={inputValue}
+						onChangeText={onChangeText}
+						onKeyPress={onInputKeyPress}
+						isDisabled={isDisabled}
+						tooltip={tooltip}
+						tooltipPlacement={tooltipPlacement}
+						tooltipTriggerClassName={clsx(
+							'flex-1',
+							'h-full',
+						)}
+						className={clsx(
+							'h-full',
+							'text-center',
+							'rounded-none',
+						)}
+						textAlignIsCenter={true}
+						style={{
+							flex: 3
+						}}
+						{...props._input}
+					/>
+					<IconButton
+						{...testProps('incrementBtn')}
+						icon={Plus}
+						_icon={{
+							className: 'text-grey-500',
+						}}
+						onPress={onIncrement}
+						isDisabled={isIncrementDisabled || isDisabled}
+						className={clsx(
+							'incrementBtn',
+							'h-full',
+							'rounded-l-none',
+						)}
+						style={{
+							width: 40,
+						}}
+					/>
+				</HStack>
 			</HStack>;
 }
 
