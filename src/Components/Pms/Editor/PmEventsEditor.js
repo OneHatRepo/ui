@@ -16,6 +16,7 @@ import {
 import useForceUpdate from '../../../Hooks/useForceUpdate.js';
 import withAlert from '../../Hoc/withAlert.js';
 import withComponent from '../../Hoc/withComponent.js';
+import Gauge from '../../Icons/Gauge.js';
 import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
@@ -27,10 +28,11 @@ function PmEventsEditor(props) {
 		pmEvent = selection[0],
 		form = self.children?.form,
 		forceUpdate = useForceUpdate(),
-		isFirstRun = useRef(false),
+		isFirstRun = useRef(true),
 		meterId = useRef(pmEvent?.pm_events__meter_id), // EquipmentEditor.PmEventsFilteredGridEditor & UpcomingPmsGrid.onBump both add this by default
 		equipmentId = useRef(null),
 		pmScheduleId = useRef(pmEvent?.pm_events__pm_schedule_id), // UpcomingPmsGrid.onBump adds this by default
+		pmEventTypeId = useRef(pmEvent?.pm_events__pm_event_type_id),
 		hasMultipleMeters = useRef(null),
 		hasMultiplePmSchedules = useRef(null),
 		[isIntervalHidden, setIsIntervalHidden] = useState(true),
@@ -59,6 +61,12 @@ function PmEventsEditor(props) {
 		},
 		setPmScheduleId = (value) => {
 			pmScheduleId.current = value;
+		},
+		getPmEventTypeId = () => {
+			return pmEventTypeId.current;
+		},
+		setPmEventTypeId = (value) => {
+			pmEventTypeId.current = value;
 		},
 		getEquipmentId = () => {
 			return equipmentId.current;
@@ -117,6 +125,7 @@ function PmEventsEditor(props) {
 				isFirstRun = getIsFirstRun(),
 				isMeterIdChanged = pm_events__meter_id !== getMeterId(),
 				isPmScheduleIdChanged = pm_events__pm_schedule_id !== getPmScheduleId(),
+				isPmEventTypeIdChanged = pm_events__pm_event_type_id !== getPmEventTypeId(),
 				meter = pm_events__meter_id ? await getMeterById(pm_events__meter_id) : null;
 
 			if (isFirstRun) {
@@ -141,7 +150,7 @@ function PmEventsEditor(props) {
 				if (isMeterIdChanged) {
 					// clear the pm_schedule_id field since the Meter has changed
 					form.formSetValue('pm_events__pm_schedule_id', null);
-					form.formTrigger('pm_events__pm_schedule_id');
+					form.trigger('pm_events__pm_schedule_id');
 					isPmScheduleIdChanged = true; // force the next block to run, since the pm_schedule_id has been cleared
 				}
 			}
@@ -155,13 +164,22 @@ function PmEventsEditor(props) {
 					const pmScheduleId = pmSchedules[0].pm_schedules__id;
 					setPmScheduleId(pmScheduleId);
 					form.formSetValue('pm_events__pm_schedule_id', pmScheduleId);
-					form.formTrigger('pm_events__pm_schedule_id');
+					form.trigger('pm_events__pm_schedule_id');
 				} else if (pmSchedules.length === 0) {
 					// no PmSchedules exist for the selected Meter
 					setPmScheduleId(null);
 					alert('No PM schedules exist for the selected meter. Please select a different meter or create a PM schedule for this meter.');
 					setIsPmScheduleDisabled(true);
 				}
+				hasChangedRefs = true;
+			}
+			if (isPmEventTypeIdChanged || isFirstRun) {
+				setPmEventTypeId(pm_events__pm_event_type_id);
+				form.trigger('pm_events__interval');
+				form.trigger('pm_events__associated_date');
+				form.trigger('pm_events__meter_reading');
+				form.trigger('pm_events__user_id');
+				
 				hasChangedRefs = true;
 			}
 
@@ -248,6 +266,24 @@ function PmEventsEditor(props) {
 		},
 		onChangePmEventType = () => {
 			adjustForm();
+		},
+		onSetCurrentMeterReading = async () => {
+			const
+				form = props.self?.children?.form,
+				meter = await getMeterById(getMeterId());
+			if (!meter) {
+				alert('Selected meter not found. Please select a different meter.');
+				return;
+			}
+			const latestMeterReading = meter.meters__latest_meter_reading;
+			if (latestMeterReading === null || latestMeterReading === undefined) {
+				alert('Current meter reading not available for the selected meter.');
+				return;
+			}
+			form.formSetValue('pm_events__meter_reading', latestMeterReading);
+			form.trigger('pm_events__meter_reading');
+
+			adjustForm();
 		};
 
 	useEffect(() => {
@@ -279,6 +315,9 @@ function PmEventsEditor(props) {
 		name: 'pm_events__pm_event_type_id',
 		onChange: onChangePmEventType,
 		editorType: isBump ? 'BumpPmEventTypesCombo' : 'PmEventManualTypesCombo',
+		_grid: {
+			className: isBump ? 'min-h-[230px]' : 'min-h-[330px]',
+		},
 	}];
 	if (!isBump) {
 		if (getHasMultipleMeters()) {
@@ -324,6 +363,7 @@ function PmEventsEditor(props) {
 							{
 								"name": "pm_events__interval",
 								tooltip: 'Interval to delay by',
+								minValue: 1,
 								isHidden: isIntervalHidden,
 								getIsRequired: (formGetValues, formState) => {
 									const {
@@ -366,13 +406,21 @@ function PmEventsEditor(props) {
 									let ret = false;
 									switch(pm_events__pm_event_type_id) {
 										case PM_EVENT_TYPES__COMPLETE:
-										case PM_EVENT_TYPES__RESET:
 											ret = true;
 											break;
 									}
 									return ret;
 								},
+								minValue: 0,
 								isHidden: isMeterReadingHidden,
+								additionalEditButtons: [
+									{
+										key: 'setCurrentMeterReadingBtn',
+										tooltip: 'Set to Current Meter Reading',
+										icon: Gauge,
+										handler: onSetCurrentMeterReading,
+									},
+								],
 							},
 							{
 								"name": "pm_events__user_id",
