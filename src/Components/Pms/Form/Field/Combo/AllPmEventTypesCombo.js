@@ -1,4 +1,3 @@
-import PmEventTypesCombo from './PmEventTypesCombo.js';
 import getComponentFromType from '../../../../../Functions/getComponentFromType.js';
 
 function AllPmEventTypesCombo(props) {
