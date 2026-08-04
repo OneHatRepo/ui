@@ -28,17 +28,17 @@ function PmEventsEditor(props) {
 		form = self.children?.form,
 		forceUpdate = useForceUpdate(),
 		isFirstRun = useRef(false),
-		meterId = useRef(pmEvent.pm_events__meter_id), // EquipmentEditor.PmEventsFilteredGridEditor & UpcomingPmsGrid.onBump both add this by default
+		meterId = useRef(pmEvent?.pm_events__meter_id), // EquipmentEditor.PmEventsFilteredGridEditor & UpcomingPmsGrid.onBump both add this by default
 		equipmentId = useRef(null),
-		pmScheduleId = useRef(pmEvent.pm_events__pm_schedule_id),
+		pmScheduleId = useRef(pmEvent?.pm_events__pm_schedule_id), // UpcomingPmsGrid.onBump adds this by default
 		hasMultipleMeters = useRef(null),
 		hasMultiplePmSchedules = useRef(null),
-		[isIntervalHidden, setIsIntervalHidden] = useState(false),
-		[isDateHidden, setIsDateHidden] = useState(false),
-		[isMeterReadingHidden, setIsMeterReadingHidden] = useState(false),
-		[isPmTechnicianHidden, setIsPmTechnicianHidden] = useState(false),
-		[isDetailsHidden, setIsDetailsHidden] = useState(false),
-		[isPmScheduleDisabled, setIsPmScheduleDisabled] = useState(false),
+		[isIntervalHidden, setIsIntervalHidden] = useState(true),
+		[isDateHidden, setIsDateHidden] = useState(true),
+		[isMeterReadingHidden, setIsMeterReadingHidden] = useState(true),
+		[isPmTechnicianHidden, setIsPmTechnicianHidden] = useState(true),
+		[isDetailsHidden, setIsDetailsHidden] = useState(true),
+		[isPmScheduleDisabled, setIsPmScheduleDisabled] = useState(true),
 		[Meters] = useState(() => oneHatData.getRepository('Meters', true)),
 		[PmSchedules] = useState(() => oneHatData.getRepository('PmSchedules', true)),
 		[MetersPmSchedules] = useState(() => oneHatData.getRepository('MetersPmSchedules', true)),
@@ -99,8 +99,15 @@ function PmEventsEditor(props) {
 			adjustForm();
 		},
 		adjustForm = async () => {
+			if (!props.self?.children?.form) {
+				setTimeout(() => {
+					adjustForm();
+				}, 100);
+				return;
+			}
 
 			let
+				form = props.self?.children?.form,
 				fv = form.formGetValues(),
 				{
 					pm_events__meter_id,
@@ -121,11 +128,13 @@ function PmEventsEditor(props) {
 			
 			let hasChangedRefs = false;
 			if (!getEquipmentId() && meter) {
+				// if no EquipmentId has been set yet, set it
 				Meters.setBaseParam('conditions[meters__equipment_id]', meter.meters__equipment_id); // so future Meter selections are limited to the same Equipment
 				setEquipmentId(meter.meters__equipment_id);
 				hasChangedRefs = true;
 			}
 			if ((isMeterIdChanged || isFirstRun) && meter) {
+				// if isFirstRun, or isMeterIdChanged, set meterId and hasMultipleMeters
 				setMeterId(meter.id);
 				setHasMultipleMeters(meter.equipment__has_multiple_meters);
 				hasChangedRefs = true;
@@ -137,6 +146,7 @@ function PmEventsEditor(props) {
 				}
 			}
 			if ((isPmScheduleIdChanged || isFirstRun) && meter) {
+				// if isFirstRun, or isPmScheduleIdChanged, set pmScheduleId and hasMultiplePmSchedules
 				setPmScheduleId(pm_events__pm_schedule_id);
 				const pmSchedules = await getPmSchedulesForMeterId(pm_events__meter_id);
 				setHasMultiplePmSchedules(pmSchedules.length > 1);
