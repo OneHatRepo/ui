@@ -970,7 +970,7 @@ function Form(props) {
 							if (message) {
 								message = <Text className="text-[#f00]">{message}</Text>;
 							}
-							element = <VStack className="Form-VStack4 flex-1 justify-center items-center">
+							element = <VStack className="Form-VStack4 flex-1 justify-center items-left">
 											{element}
 											{message}
 										</VStack>;
@@ -1075,7 +1075,7 @@ function Form(props) {
 											'min-h-[50px]',
 											'w-full',
 											'justify-center',
-											'items-center',
+											'items-left',
 											'flex-none',
 											error ? 'bg-[#fdd]' : '',
 										)}
