@@ -1,6 +1,6 @@
 import { useState, useEffect, } from 'react';
 import { useSelector } from 'react-redux';
-import { useIsFocused } from '@react-navigation/native';
+import useRouteIsFocused from '@onehat/ui/src/Hooks/useRouteIsFocused';
 import {
 	selectTreeSelection,
 } from '@src/Models/Slices/AppSlice';
@@ -31,7 +31,7 @@ export default function PmsManager(props) {
 			Wrapper = EmptyWrapper,
 		} = props,
 		treeSelection = useSelector(selectTreeSelection),
-		isActive = useIsFocused(),
+		isActive = useRouteIsFocused(),
 		[defaultMeterId, setDefaultMeterId] = useState(null),
 		[Equipment] = useState(() => oneHatData.getRepository('Equipment', true)),
 		treeNode = treeSelection?.[0],
