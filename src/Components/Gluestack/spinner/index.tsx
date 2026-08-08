@@ -1,27 +1,33 @@
 'use client';
 import { ActivityIndicator } from 'react-native';
 import React from 'react';
-import { createSpinner } from '@gluestack-ui/spinner';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { cssInterop } from 'nativewind';
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
+import { styled } from 'nativewind';
 
-const UISpinner = createSpinner({ Root: ActivityIndicator });
 
-cssInterop(UISpinner, {
+const StyledActivityIndicator = styled(ActivityIndicator, {
   className: { target: 'style', nativeStyleToProp: { color: true } },
 });
-
 const spinnerStyle = tva({});
 
-type ISpinnerProps = React.ComponentProps<typeof UISpinner>;
-
 const Spinner = React.forwardRef<
-  React.ElementRef<typeof UISpinner>,
-  ISpinnerProps
->(({ className, color, ...props }, ref) => {
+  React.ComponentRef<typeof ActivityIndicator>,
+  React.ComponentProps<typeof ActivityIndicator>
+>(function Spinner(
+  {
+    className,
+    color,
+    focusable = false,
+    'aria-label': ariaLabel = 'loading',
+    ...props
+  },
+  ref
+) {
   return (
-    <UISpinner
+    <StyledActivityIndicator
       ref={ref}
+      focusable={focusable}
+      aria-label={ariaLabel}
       {...props}
       color={color}
       className={spinnerStyle({ class: className })}

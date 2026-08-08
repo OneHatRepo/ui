@@ -10,9 +10,8 @@ import {
 	VStackNative,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
+import useHeaderHeight from '../../Hooks/useHeaderHeight.js';
 import withComponent from '../Hoc/withComponent.js';
-// import { useHeaderHeight } from '@react-navigation/elements';
-// import testProps from '../OneHat/functions/testProps';
 
 function ScreenContainer(props) {
 	const {
@@ -29,7 +28,9 @@ function ScreenContainer(props) {
 		{
 			height,
 		} = useWindowDimensions(),
-		headerHeight = 0,//subtractHeaderHeight ? useHeaderHeight() : 0,
+		autoHeaderHeight = useHeaderHeight(),
+		headerHeight = subtractHeaderHeight ? Math.max(0, Number(props.headerHeight ?? autoHeaderHeight) || 0) : 0,
+		minHeight = Math.max(0, height - headerHeight),
 		safeAreaProps = {};
 	if (safeArea !== false) {
 		safeAreaProps.safeArea = true;
@@ -50,7 +51,7 @@ function ScreenContainer(props) {
 						onLayout={onLayout}
 						{...safeAreaProps}
 						className={className}
-						style={{ minHeight: height - headerHeight }}
+						style={{ minHeight }}
 					>
 						{props.children}
 					</VStackNative>;
@@ -66,7 +67,7 @@ function ScreenContainer(props) {
 								}}
 								keyboardShouldPersistTaps="handled"
 								_contentContainerStyle={{
-									minHeight: height - headerHeight,
+									minHeight,
 								}}
 								{...scrollViewProps}
 							>{column}</ScrollView>;

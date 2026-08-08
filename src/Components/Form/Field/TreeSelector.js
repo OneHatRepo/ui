@@ -996,7 +996,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 								className="dropdownMenu-Popover block"
 								initialFocusRef={inputCloneRef}
 							>
-								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
+								<PopoverBackdrop className="PopoverBackdrop bg-black/20" />
 								<Box
 									ref={menuRef}
 									className={clsx(
@@ -1135,8 +1135,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 										'absolute',
 										'top-0',
 										'left-0',
-										'bg-[#000]',
-										'opacity-50',
+										'bg-black/50',
 									)}
 								/>;
 			}
@@ -1230,8 +1229,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 									'absolute',
 									'top-0',
 									'left-0',
-									'bg-[#000]',
-									'opacity-50',
+									'bg-black/50',
 								)}
 							/>;
 		}

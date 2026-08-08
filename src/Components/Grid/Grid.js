@@ -289,6 +289,7 @@ function GridComponent(props) {
 		expandedRowsRef = useRef({}),
 		cachedDragElements = useRef(),
 		dragSelectionRef = useRef([]),
+		rowDragSourceItemsRef = useRef({}),
 		previousSelectorId = useRef(),
 		headerRowRef = useRef(null),
 		topToolbarRef = useRef(null),
@@ -509,7 +510,215 @@ function GridComponent(props) {
 				} = row,
 				isHeaderRow = row.item.id === 'headerRow',
 				rowProps = getRowProps && !isHeaderRow ? getRowProps(item) : {},
-				isSelected = !isHeaderRow && !disableWithSelection && isInSelection(item);
+				isSelected = !isHeaderRow && !disableWithSelection && isInSelection(item),
+				renderPressableContent = () => {
+					if (isHeaderRow) {
+						let headerRow = <GridHeaderRow
+												ref={headerRowRef}
+												Repository={Repository}
+												columnsConfig={localColumnsConfig}
+												setColumnsConfig={setLocalColumnsConfig}
+												hideNavColumn={hideNavColumn}
+												canColumnsSort={canColumnsSort}
+												canColumnsReorder={canColumnsReorder}
+												canColumnsResize={canColumnsResize}
+												setSelection={setSelection}
+												gridRef={gridRef}
+												isHovered={false}
+												isInlineEditorShown={isInlineEditorShown}
+												areRowsDragSource={areRowsDragSource}
+												showColumnsSelector={showColumnsSelector}
+												showRowHandle={showRowHandle}
+											/>;
+						if (showRowExpander) {
+							// align the header row to content rows by adding a spacer that matches the width of the Grid-rowExpander-expandBtn
+							headerRow = <HStack className="">
+												<Box className="w-[40px]"></Box>
+												{headerRow}
+											</HStack>;
+						}
+						return headerRow;
+					}
+					const
+						rowReorderProps = {},
+						rowDragProps = {};
+					let WhichRow = GridRow,
+						rowCanSelect = true,
+						rowCanDrag = false;
+					if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
+						// Create a method that gets an always-current copy of the selection ids
+						dragSelectionRef.current = selection;
+						const getSelection = () => dragSelectionRef.current;
+
+						const userHasPermissionToDrag = (!canUser || canUser(EDIT));
+						if (userHasPermissionToDrag) {
+
+							// Determine whether dragging should only be allowed from a handle, based on global default and grid prop override
+							let dragFromRowHandleOnly = true;
+							if (!_.isNil(areRowsDragFromHandleOnly)) {
+								// allow grid props override
+								dragFromRowHandleOnly = areRowsDragFromHandleOnly;
+							} else if (showRowExpander) {
+								// Expand/collapse controls and full-row drag compete for pointer ownership on web.
+								// Keep drag on the row handle by default for expandable grids unless explicitly overridden.
+								dragFromRowHandleOnly = true;
+							} else if (!_.isNil(UiGlobals.gridAreRowsDragFromHandleOnly)) {
+								// allow global default when there is no grid-level override or expander safety guard
+								dragFromRowHandleOnly = UiGlobals.gridAreRowsDragFromHandleOnly;
+							}
+							
+							// assign event handlers
+							if (canRowsReorder && isReorderMode) {
+								WhichRow = DragSourceGridRow;
+								rowReorderProps.isDragSource = true;
+								rowReorderProps.isDragFromHandleOnly = dragFromRowHandleOnly;
+								rowReorderProps.dragSourceType = 'row';
+								const dragIx = showHeaders ? index - 1 : index;
+								rowReorderProps.dragSourceItem = {
+									id: item.id,
+									getSelection,
+									isInSelection,
+									sourceComponentRef: gridRef, // Reference to the originating component
+									onDrag: (dragState) => {
+										onRowReorderDrag(dragState, dragIx);
+									},
+								};
+								// Add custom drag preview options
+								if (dragPreviewOptions) {
+									rowReorderProps.dragPreviewOptions = dragPreviewOptions;
+								}
+								// Add drag preview rendering
+								rowReorderProps.getDragProxy = getCustomDragProxy ?
+									(dragItem) => getCustomDragProxy(item, getSelection()) :
+									null; // Let GlobalDragProxy handle the default case
+								rowReorderProps.onDragEnd = onRowReorderEnd;
+								rowCanDrag = true;
+							} else {
+								// Don't allow drag/drop from withDnd while reordering
+								if (areRowsDragSource && (!canRowDrag || canRowDrag(item))) {
+									WhichRow = DragSourceGridRow;
+									rowDragProps.isDragSource = true;
+									rowDragProps.dragSourceType = rowDragSourceType;
+									rowDragProps.isDragFromHandleOnly = dragFromRowHandleOnly;
+									if (getRowDragSourceItem) {
+										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, isInSelection, rowDragSourceType);
+										// Ensure all drag items have a component reference
+										if (!rowDragProps.dragSourceItem.sourceComponentRef) {
+											rowDragProps.dragSourceItem.sourceComponentRef = gridRef;
+										}
+									} else {
+										const sourceItemId = item?.id || index;
+										if (!rowDragSourceItemsRef.current[sourceItemId]) {
+											rowDragSourceItemsRef.current[sourceItemId] = {};
+										}
+										rowDragProps.dragSourceItem = rowDragSourceItemsRef.current[sourceItemId];
+										Object.assign(rowDragProps.dragSourceItem, {
+											id: item.id,
+											item,
+											getSelection,
+											isInSelection,
+											type: rowDragSourceType,
+											sourceComponentRef: gridRef, // Reference to the originating component
+										});
+									}
+									rowDragProps.dragSourceItem.onDragStart = () => {
+										if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
+											// reset the selection to just this one node if it's not already selected
+											setSelection([item]);
+										}
+										if (onDragStart) {
+											onDragStart(item, rowDragProps.dragSourceItem);
+										}
+									};
+									if (canRowDrag) {
+										rowDragProps.canDrag = () => canRowDrag(item, rowDragProps.dragSourceItem);
+									}
+									
+									// Add custom drag preview options
+									if (dragPreviewOptions) {
+										rowDragProps.dragPreviewOptions = dragPreviewOptions;
+									}
+
+									// Add onDragEnd callback
+									if (onDragEnd) {
+										rowDragProps.onDragEnd = onDragEnd;
+									}
+
+									// Add drag preview rendering
+									rowDragProps.getDragProxy = getCustomDragProxy ? 
+										(dragItem) => getCustomDragProxy(item, getSelection()) :
+										null; // Let GlobalDragProxy handle the default case
+
+									rowCanDrag = true;
+								}
+								if (areRowsDropTarget) {
+									WhichRow = DropTargetGridRow;
+									rowDragProps.isDropTarget = true;
+									rowDragProps.dropTargetAccept = dropTargetAccept;
+									rowDragProps.onDrop = (droppedItem) => {
+										// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
+										onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
+									};
+									if (canRowAcceptDrop && typeof canRowAcceptDrop === 'function') {
+										const validateDrop = (droppedItem) => canRowAcceptDrop(item, droppedItem);
+										rowDragProps.canDrop = (droppedItem, monitor) => validateDrop(droppedItem);
+										rowDragProps.validateDrop = validateDrop;
+									}
+								}
+								if (areRowsDragSource && areRowsDropTarget) {
+									WhichRow = DragSourceDropTargetGridRow;
+								}
+							}
+						}
+
+					}
+					
+					// assign ref for row height measurement during measurement phase
+					let rowRef = null;
+					if (autoAdjustPageSizeToHeight && getMeasurementPhase() === PHASES__MEASURING && 
+						!isHeaderRow && index >= 1) { // Sample all data rows (index 1+)
+						const refIndex = index - 1; // Convert to 0-based index
+						
+						// Create ref if it doesn't exist
+						if (!rowRefs.current[refIndex]) {
+							rowRefs.current[refIndex] = createRef();
+						}
+						rowRef = rowRefs.current[refIndex];
+						
+						if (rowRef && !measuredRowsRef.current.includes(rowRef)) {
+							measuredRowsRef.current.push(rowRef);
+						}
+					}
+					
+					return <WhichRow
+									ref={rowRef}
+									columnsConfig={localColumnsConfig}
+									columnProps={columnProps}
+									fields={fields}
+									rowProps={rowProps}
+									hideNavColumn={hideNavColumn}
+									isRowSelectable={isRowSelectable}
+									isRowHoverable={isRowHoverable}
+									isSelected={isSelected}
+									useCssHover={showHovers && CURRENT_MODE === UI_MODE_WEB}
+									areCellsScrollable={areCellsScrollable}
+									showHovers={showHovers}
+									showRowHandle={showRowHandle}
+									isRowTextSelectable={isRowTextSelectable}
+									rowCanSelect={rowCanSelect}
+									rowCanDrag={rowCanDrag}
+									index={index}
+									alternatingInterval={alternatingInterval}
+									alternateRowBackgrounds={alternateRowBackgrounds}
+									bg={bg}
+									item={item}
+									isInlineEditorShown={isInlineEditorShown}
+									{...rowReorderProps}
+									{...rowDragProps}
+
+									key1={item.id}
+								/>;
+				};
 
 			let rowComponent =
 				<Pressable
@@ -660,213 +869,7 @@ function GridComponent(props) {
 						'focus-visible:outline-none',
 					)}
 				>
-					{({
-						hovered,
-						focused,
-						pressed,
-					}) => {
-						if (isHeaderRow) {
-							let headerRow = <GridHeaderRow
-												ref={headerRowRef}
-												Repository={Repository}
-												columnsConfig={localColumnsConfig}
-												setColumnsConfig={setLocalColumnsConfig}
-												hideNavColumn={hideNavColumn}
-												canColumnsSort={canColumnsSort}
-												canColumnsReorder={canColumnsReorder}
-												canColumnsResize={canColumnsResize}
-												setSelection={setSelection}
-												gridRef={gridRef}
-												isHovered={hovered}
-												isInlineEditorShown={isInlineEditorShown}
-												areRowsDragSource={areRowsDragSource}
-												showColumnsSelector={showColumnsSelector}
-												showRowHandle={showRowHandle}
-											/>;
-							if (showRowExpander) {
-								// align the header row to content rows by adding a spacer that matches the width of the Grid-rowExpander-expandBtn
-								headerRow = <HStack className="">
-												<Box className="w-[40px]"></Box>
-												{headerRow}
-											</HStack>;
-							}
-							return headerRow;
-						}
-						const
-							rowReorderProps = {},
-							rowDragProps = {};
-						let WhichRow = GridRow,
-							rowCanSelect = true,
-							rowCanDrag = false;
-						if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
-							// Create a method that gets an always-current copy of the selection ids
-							dragSelectionRef.current = selection;
-							const getSelection = () => dragSelectionRef.current;
-
-							const userHasPermissionToDrag = (!canUser || canUser(EDIT));
-							if (userHasPermissionToDrag) {
-
-								// Determine whether dragging should only be allowed from a handle, based on global default and grid prop override
-								let dragFromRowHandleOnly = true;
-								if (!_.isNil(UiGlobals.gridAreRowsDragFromHandleOnly)) {
-									// allow global default
-									dragFromRowHandleOnly = UiGlobals.gridAreRowsDragFromHandleOnly;
-								}
-								if (!_.isNil(areRowsDragFromHandleOnly)) {
-									// allow grid props override
-									dragFromRowHandleOnly = areRowsDragFromHandleOnly;
-								}
-								
-								// assign event handlers
-								if (canRowsReorder && isReorderMode) {
-									WhichRow = DragSourceGridRow;
-									rowReorderProps.isDragSource = true;
-									rowReorderProps.isDragFromHandleOnly = dragFromRowHandleOnly;
-									rowReorderProps.dragSourceType = 'row';
-									const dragIx = showHeaders ? index - 1 : index;
-									rowReorderProps.dragSourceItem = {
-										id: item.id,
-										getSelection,
-										isInSelection,
-										sourceComponentRef: gridRef, // Reference to the originating component
-										onDrag: (dragState) => {
-											onRowReorderDrag(dragState, dragIx);
-										},
-									};
-									// Add custom drag preview options
-									if (dragPreviewOptions) {
-										rowReorderProps.dragPreviewOptions = dragPreviewOptions;
-									}
-									// Add drag preview rendering
-									rowReorderProps.getDragProxy = getCustomDragProxy ?
-										(dragItem) => getCustomDragProxy(item, getSelection()) :
-										null; // Let GlobalDragProxy handle the default case
-									rowReorderProps.onDragEnd = onRowReorderEnd;
-									rowCanDrag = true;
-								} else {
-									// Don't allow drag/drop from withDnd while reordering
-									if (areRowsDragSource && (!canRowDrag || canRowDrag(item))) {
-										WhichRow = DragSourceGridRow;
-										rowDragProps.isDragSource = true;
-										rowDragProps.dragSourceType = rowDragSourceType;
-										rowDragProps.isDragFromHandleOnly = dragFromRowHandleOnly;
-										if (getRowDragSourceItem) {
-											rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, isInSelection, rowDragSourceType);
-											// Ensure all drag items have a component reference
-											if (!rowDragProps.dragSourceItem.sourceComponentRef) {
-												rowDragProps.dragSourceItem.sourceComponentRef = gridRef;
-											}
-										} else {
-											rowDragProps.dragSourceItem = {
-												id: item.id,
-												item,
-												getSelection,
-												isInSelection,
-												type: rowDragSourceType,
-												sourceComponentRef: gridRef, // Reference to the originating component
-											};
-										}
-										rowDragProps.dragSourceItem.onDragStart = () => {
-											if (!isInSelection(item)) { // get updated isSelected (will be stale if using one in closure)
-												// reset the selection to just this one node if it's not already selected
-												setSelection([item]);
-											}
-											if (onDragStart) {
-												onDragStart(item, rowDragProps.dragSourceItem);
-											}
-										};
-										if (canRowDrag) {
-											rowDragProps.canDrag = () => canRowDrag(item, rowDragProps.dragSourceItem);
-										}
-										
-										// Add custom drag preview options
-										if (dragPreviewOptions) {
-											rowDragProps.dragPreviewOptions = dragPreviewOptions;
-										}
-
-										// Add onDragEnd callback
-										if (onDragEnd) {
-											rowDragProps.onDragEnd = onDragEnd;
-										}
-
-										// Add drag preview rendering
-										rowDragProps.getDragProxy = getCustomDragProxy ? 
-											(dragItem) => getCustomDragProxy(item, getSelection()) :
-											null; // Let GlobalDragProxy handle the default case
-
-										rowCanDrag = true;
-									}
-									if (areRowsDropTarget) {
-										WhichRow = DropTargetGridRow;
-										rowDragProps.isDropTarget = true;
-										rowDragProps.dropTargetAccept = dropTargetAccept;
-										rowDragProps.onDrop = (droppedItem) => {
-											// NOTE: item is sometimes getting destroyed, but it still as the id, so you can still use it
-											onRowDrop(item, droppedItem); // item is what it was dropped on; droppedItem is the dragSourceItem defined above
-										};
-										rowDragProps.canDrop = (droppedItem, monitor) => {
-											// Check if the drop operation would be valid based on business rules
-											if (canRowAcceptDrop && typeof canRowAcceptDrop === 'function') {
-												return canRowAcceptDrop(item, droppedItem);
-											}
-											// Default: allow all drops
-											return true;
-										};
-									}
-									if (areRowsDragSource && areRowsDropTarget) {
-										WhichRow = DragSourceDropTargetGridRow;
-									}
-								}
-							}
-
-						}
-						
-						// assign ref for row height measurement during measurement phase
-						let rowRef = null;
-						if (autoAdjustPageSizeToHeight && getMeasurementPhase() === PHASES__MEASURING && 
-							!isHeaderRow && index >= 1) { // Sample all data rows (index 1+)
-							const refIndex = index - 1; // Convert to 0-based index
-							
-							// Create ref if it doesn't exist
-							if (!rowRefs.current[refIndex]) {
-								rowRefs.current[refIndex] = createRef();
-							}
-							rowRef = rowRefs.current[refIndex];
-							
-							if (rowRef && !measuredRowsRef.current.includes(rowRef)) {
-								measuredRowsRef.current.push(rowRef);
-							}
-						}
-						
-						return <WhichRow
-									ref={rowRef}
-									columnsConfig={localColumnsConfig}
-									columnProps={columnProps}
-									fields={fields}
-									rowProps={rowProps}
-									hideNavColumn={hideNavColumn}
-									isRowSelectable={isRowSelectable}
-									isRowHoverable={isRowHoverable}
-									isSelected={isSelected}
-									isHovered={hovered}
-									areCellsScrollable={areCellsScrollable}
-									showHovers={showHovers}
-									showRowHandle={showRowHandle}
-									isRowTextSelectable={isRowTextSelectable}
-									rowCanSelect={rowCanSelect}
-									rowCanDrag={rowCanDrag}
-									index={index}
-									alternatingInterval={alternatingInterval}
-									alternateRowBackgrounds={alternateRowBackgrounds}
-									bg={bg}
-									item={item}
-									isInlineEditorShown={isInlineEditorShown}
-									{...rowReorderProps}
-									{...rowDragProps}
-
-									key1={item.id}
-								/>;
-					}}
+					{renderPressableContent()}
 				</Pressable>;
 
 			if (showRowExpander && !isHeaderRow) {

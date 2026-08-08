@@ -3,6 +3,9 @@ import _ from 'lodash';
 
 export default function getComponentFromType(type) {
 	if (_.isString(type)) {
+		if (!UiGlobals.components) {
+			throw new Error('UiGlobals.components does not exist!');
+		}
 		if (UiGlobals.components[type]) {
 			return UiGlobals.components[type];
 		}

@@ -6,7 +6,7 @@ import {
 	ButtonIcon,
 	ButtonGroup,
 } from '@project-components/Gluestack';
-import addIconProps from '../../Functions/addIconProps.js';
+import mapIconPropsToGluestack from '../../Functions/mapIconPropsToGluestack.js';
 import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 import withTooltip from '../Hoc/withTooltip.js';
@@ -15,7 +15,6 @@ import _ from 'lodash';
 
 const ButtonComponent = forwardRef((props, ref) => {
 
-	const formContext = useContext(FormContext);
 	let {
 			self,
 			text, // the text to display on the button
@@ -28,48 +27,83 @@ const ButtonComponent = forwardRef((props, ref) => {
 			_icon, // props for icon
 			_rightIcon, // props for rightIcon
 			_text = {}, // props for ButtonText
+			disableOnInvalid,
 			...propsToPass
 		} = props;
 
 	if (propsToPass.handler) {
 		propsToPass.onPress = propsToPass.handler; // alias
 	}
+	const
+		formContext = useContext(FormContext),
+		internalRef = useRef(),
+		getInheritedContentColorClassName = (className) => {
+			// Gluestack v5 styles ButtonText/ButtonIcon as separate slots, so root text color
+			// classes on Button do not always cascade; extract only color-like text classes
+			// so we can re-apply them directly to content slots below.
+			if (!className || !_.isString(className)) {
+				return '';
+			}
 
-	const {
-		disableOnInvalid,
-		...propsToPassWithoutDisableOnInvalid
-	} = propsToPass;
-	propsToPass = propsToPassWithoutDisableOnInvalid;
+			const
+				NON_COLOR_TEXT_CLASS_SUFFIXES = new Set([
+					'text-xs',
+					'text-sm',
+					'text-base',
+					'text-lg',
+					'text-xl',
+					'text-2xl',
+					'text-3xl',
+					'text-4xl',
+					'text-5xl',
+					'text-6xl',
+					'text-7xl',
+					'text-8xl',
+					'text-9xl',
+					'text-left',
+					'text-center',
+					'text-right',
+					'text-justify',
+					'text-start',
+					'text-end',
+					'text-ellipsis',
+					'text-clip',
+				]),
+				tokens = _.compact(className.split(/\s+/)),
+				colorTokens = _.filter(tokens, (token) => {
+					if (!token.includes('text-')) {
+						return false;
+					}
+
+					const suffix = token.split(':').pop();
+					if (!suffix || !suffix.startsWith('text-')) {
+						return false;
+					}
+
+					if (NON_COLOR_TEXT_CLASS_SUFFIXES.has(suffix)) {
+						return false;
+					}
+
+					// Skip arbitrary font-size utilities like text-[13px].
+					if (/^text-\[[0-9.]+(px|rem|em|%)\]$/.test(suffix)) {
+						return false;
+					}
+
+					return true;
+				});
+
+			return colorTokens.join(' ');
+		};
 
 	if (_.isNil(propsToPass.isDisabled) && disableOnInvalid && formContext && !formContext.isValid) {
 		propsToPass.isDisabled = true;
 	}
 
-	if (icon) {
-		if (isValidElement(icon)) {
-			if (_icon) {
-				icon = cloneElement(icon, addIconProps(_icon || {}));
-			}
-		} else {
-			icon = <ButtonIcon as={icon} {...addIconProps(_icon || {})} />;
-		}
-	}
-	if (rightIcon) {
-		if (isValidElement(rightIcon)) {
-			if (_rightIcon) {
-				rightIcon = cloneElement(rightIcon, addIconProps(_rightIcon || {}));
-			}
-		} else {
-			rightIcon = <ButtonIcon as={rightIcon} {...addIconProps(_rightIcon || {})} />;
-		}
-	}
-	
-	if (!ref) {
-		ref = useRef();
-	}
+
+	const resolvedRef = ref || internalRef;
 	
 	if (self) {
-		self.ref = ref.current;
+		self.ref = resolvedRef.current;
 	}
 
 	let className = clsx(
@@ -89,15 +123,53 @@ const ButtonComponent = forwardRef((props, ref) => {
 	if (propsToPass.className) {
 		className += ' ' + propsToPass.className;
 	}
+
+	const
+		inheritedContentColorClassName = getInheritedContentColorClassName(className),
+		// Merge caller-provided slot props with inherited root color classes.
+		// Explicit _icon/_rightIcon/_text classes still win because they are appended last.
+		iconPropsToUse = {
+			...(_icon || {}),
+			className: clsx(inheritedContentColorClassName, _icon?.className),
+		},
+		rightIconPropsToUse = {
+			...(_rightIcon || {}),
+			className: clsx(inheritedContentColorClassName, _rightIcon?.className),
+		},
+		textPropsToUse = {
+			...(_text || {}),
+			className: clsx('ButtonText', inheritedContentColorClassName, _text?.className),
+		};
+
+	if (icon) {
+		if (isValidElement(icon)) {
+			if (_icon || inheritedContentColorClassName) {
+				// For custom icon elements, inject mapped Gluestack props via cloneElement.
+				icon = cloneElement(icon, mapIconPropsToGluestack(iconPropsToUse, { context: 'button', defaultSize: 'lg' }));
+			}
+		} else {
+			// For icon types/components, render through ButtonIcon with mapped props.
+			icon = <ButtonIcon as={icon} {...mapIconPropsToGluestack(iconPropsToUse, { context: 'button', defaultSize: 'lg' })} />;
+		}
+	}
+	if (rightIcon) {
+		if (isValidElement(rightIcon)) {
+			if (_rightIcon || inheritedContentColorClassName) {
+				rightIcon = cloneElement(rightIcon, mapIconPropsToGluestack(rightIconPropsToUse, { context: 'button', defaultSize: 'lg' }));
+			}
+		} else {
+			rightIcon = <ButtonIcon as={rightIcon} {...mapIconPropsToGluestack(rightIconPropsToUse, { context: 'button', defaultSize: 'lg' })} />;
+		}
+	}
 	
 	return <Button
 				{...propsToPass}
 				className={className}
-				ref={ref}
+				ref={resolvedRef}
 			>
 				{isLoading && <ButtonSpinner className="ButtonSpinner" {..._spinner} />}
 				{icon}
-				{text && <ButtonText className="ButtonText" {..._text}>{text}</ButtonText>}
+				{text && <ButtonText {...textPropsToUse}>{text}</ButtonText>}
 				{content}
 				{rightIcon}
 			</Button>;

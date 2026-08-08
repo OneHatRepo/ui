@@ -1,7 +1,8 @@
 import { forwardRef } from 'react';
 import {
 	BoxNative as Box,
-	Tooltip, TooltipContent, TooltipText,
+	TextNative,
+	Tooltip, TooltipContent,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 
@@ -10,11 +11,17 @@ const TooltipElement = forwardRef((props, ref) => {
 			label,
 			placement,
 			elements,
+			textClassName,
 			children,
 		} = props;
-	let className = 'rounded-md';
+	let className = 'rounded-md bg-black px-3 py-1';
 	if (props.className) {
 		className += ' ' + props.className;
+	}
+
+	let tooltipTextClassName = 'text-white';
+	if (textClassName) {
+		tooltipTextClassName += ' ' + textClassName;
 	}
 
 	let triggerClassName = 'Tooltip-trigger';
@@ -30,9 +37,11 @@ const TooltipElement = forwardRef((props, ref) => {
 							</Box>;
 				}}
 			>
-				<TooltipContent className={className}>
-					{label && <TooltipText>{label}</TooltipText>}
-					{elements && elements}
+				<TooltipContent>
+					<Box className={className}>
+						{label && <TextNative className={tooltipTextClassName}>{label}</TextNative>}
+						{elements && elements}
+					</Box>
 				</TooltipContent>
 			</Tooltip>;
 });

@@ -1,6 +1,7 @@
 import {
+	BoxNative as Box,
 	TextNative,
-	Tooltip, TooltipContent, TooltipText,
+	Tooltip, TooltipContent,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 
@@ -17,7 +18,9 @@ export default function TextWithTooltip(props) {
 				}}
 			>
 				<TooltipContent>
-					<TooltipText>{tooltip}</TooltipText>
+					<Box className="bg-black rounded-md px-3 py-1">
+						<TextNative className="text-white">{tooltip}</TextNative>
+					</Box>
 				</TooltipContent>
 			</Tooltip>;
 }

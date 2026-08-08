@@ -8,7 +8,7 @@ import {
 	hasFlex,
 } from '../../../Functions/tailwindFunctions.js';
 import UiGlobals from '../../../UiGlobals.js';
-import addIconProps from '../../../Functions/addIconProps.js';
+import mapIconPropsToGluestack from '../../../Functions/mapIconPropsToGluestack.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
@@ -116,6 +116,7 @@ const InputElement = forwardRef((props, ref) => {
 	}
 	let inputClassName = clsx(
 			'Input',
+			'dark:bg-white',
 			styles.FORM_INPUT_CLASSNAME,
 		),
 		inputFieldClassName = clsx(
@@ -124,12 +125,13 @@ const InputElement = forwardRef((props, ref) => {
 			'h-auto',
 			'w-full',
 			'p-2',
+			'dark:bg-white',
 			textAlignIsCenter ? 'text-center' : 'text-left',
 			styles.FORM_INPUT_CLASSNAME,
 			styles.FORM_INPUT_FIELD_CLASSNAME,
 		);
 	if (className) {
-		inputClassName += className;
+		inputClassName += ' ' + className;
 	}
 
 
@@ -146,10 +148,10 @@ const InputElement = forwardRef((props, ref) => {
 		_leftIcon.className = 'leftInputIcon mr-2 ' + _leftIcon.className; // prepend the margin, so it can potentially be overridden
 		if (isValidElement(leftIcon)) {
 			if (_leftIcon) {
-				leftIcon = cloneElement(leftIcon, addIconProps(_leftIcon || {}));
+				leftIcon = cloneElement(leftIcon, mapIconPropsToGluestack(_leftIcon || {}, { context: 'input', defaultSize: 'sm', }));
 			}
 		} else {
-			leftIcon = <InputIcon as={leftIcon} {...addIconProps(_leftIcon || {})} />;
+			leftIcon = <InputIcon as={leftIcon} {...mapIconPropsToGluestack(_leftIcon || {}, { context: 'input', defaultSize: 'sm', })} />;
 		}
 		if (leftIconHandler) {
 			leftIcon = <InputSlot onPress={leftIconHandler} className="LeftInputSlot">
@@ -170,10 +172,10 @@ const InputElement = forwardRef((props, ref) => {
 		_rightIcon.className = 'rightInputIcon ml-2 ' + _rightIcon.className; // prepend the margin, so it can potentially be overridden
 		if (isValidElement(rightIcon)) {
 			if (_rightIcon) {
-				rightIcon = cloneElement(rightIcon, addIconProps(_rightIcon || {}));
+				rightIcon = cloneElement(rightIcon, mapIconPropsToGluestack(_rightIcon || {}, { context: 'input', defaultSize: 'sm', }));
 			}
 		} else {
-			rightIcon = <InputIcon as={rightIcon} {...addIconProps(_rightIcon || {})} />;
+			rightIcon = <InputIcon as={rightIcon} {...mapIconPropsToGluestack(_rightIcon || {}, { context: 'input', defaultSize: 'sm', })} />;
 		}
 		if (rightIconHandler) {
 			rightIcon = <InputSlot onPress={rightIconHandler} className="RightInputSlot">

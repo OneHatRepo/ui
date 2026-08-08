@@ -29,8 +29,7 @@ export default function OkMessage(props) {
 								'absolute',
 								'top-0',
 								'left-0',
-								'bg-[#000]',
-								'opacity-50',
+								'bg-black/50',
 							)}
 						/>;
 	}

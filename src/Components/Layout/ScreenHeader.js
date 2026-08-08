@@ -1,14 +1,16 @@
 import {
-	HStack,
+	HStackNative,
 	Icon,
 	Text,
 	VStack,
 } from '@project-components/Gluestack';
+import { useEffect, useId } from 'react';
 import clsx from 'clsx';
 import {
 	SCREEN_MODES__FULL,
 	SCREEN_MODES__SIDE,
 } from '../../Constants/ScreenModes.js'
+import { useHeaderHeightRegistry } from '../../Contexts/HeaderHeightContext.js';
 import withModal from '../Hoc/withModal.js';
 import CircleQuestion from '../Icons/CircleQuestion';
 import FullWidth from '../Icons/FullWidth';
@@ -30,13 +32,25 @@ function ScreenHeader(props) {
 			actualMode,
 			onFullWidth,
 			onSideBySide,
+			onLayout,
 
 			// withModal
 			showModal,
 			hideModal,
 		} = props,
+		headerId = useId(),
+		{
+			reportHeaderHeight,
+			clearHeaderHeight,
+		} = useHeaderHeightRegistry(),
 		textProps = {},
 		styles = UiGlobals.styles,
+		onHeaderLayout = (e) => {
+			reportHeaderHeight(headerId, e?.nativeEvent?.layout?.height);
+			if (typeof onLayout === 'function') {
+				onLayout(e);
+			}
+		},
 		onShowInstructions = () => {
 			showModal({
 				title: 'Info',
@@ -47,12 +61,19 @@ function ScreenHeader(props) {
 				..._info,
 			});
 		};
+
+	useEffect(() => {
+		return () => {
+			clearHeaderHeight(headerId);
+		};
+	}, [clearHeaderHeight, headerId]);
+
 	if (styles.MANAGER_SCREEN_TITLE) {
 		textProps.style = {
 			fontFamily: styles.MANAGER_SCREEN_TITLE,
 		};
 	}
-	return <HStack className="ScreenHeader-HStack h-[80px] items-center border-b-[2px] border-b-[#ccc]">
+	return <HStackNative onLayout={onHeaderLayout} className="ScreenHeader-HStack h-[80px] items-center border-b-[2px] border-b-[#ccc]">
 				{icon &&
 					<Icon
 						as={icon}
@@ -61,7 +82,8 @@ function ScreenHeader(props) {
 							'text-black',
 						)}
 						size="xl"
-					/>}
+					/>
+				}
 				<Text {...textProps} className="ScreenHeader-Text pl-4 text-[26px] font-[700]">{title}</Text>
 				{useModeIcons && allowSideBySide &&
 					<>
@@ -102,7 +124,7 @@ function ScreenHeader(props) {
 						onPress={onShowInstructions}
 						tooltip="Show info"
 					/>}
-			</HStack>;
+			</HStackNative>;
 }
 
 export default withModal(ScreenHeader);

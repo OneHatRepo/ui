@@ -21,11 +21,13 @@ const defaults = {
 								'focus:bg-' + FOCUS,
 	FORM_COMBO_INPUT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' + 
 								'bg-' + WHITE + ' ' +
-								'focus:bg-' + FOCUS,
+								'focus:bg-' + FOCUS + ' ' +
+								'min-h-10',
 	FORM_COMBO_MENU_HEIGHT: 250,
 	FORM_COMBO_MENU_MIN_WIDTH: 250,
 	FORM_COMBO_TRIGGER_CLASSNAME: 'bg-' + WHITE + ' ' +
-									'hover:bg-grey-300',
+									'hover:bg-grey-300 ' +
+									'min-h-10',
 	FORM_DATE_CLASSNAME: 'h-[40px]',
 	FORM_DATE_TRIGGER_CLASSNAME: 'bg-primary-200 ' +
 								'hover:bg-primary-400',
@@ -43,13 +45,15 @@ const defaults = {
 	// FORM_FILE_READOUT_BG: 'bg-' + WHITE,
 	FORM_INPUT_CLASSNAME: 'bg-' + WHITE + ' ' +
 						'focus:bg-' + FOCUS + ' ' +
-						'hover:bg-' + HOVER,
+						'hover:bg-' + HOVER + ' ' +
+						'min-h-10',
 	FORM_INPUT_FIELD_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_LABEL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_SELECT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' + 
 							'bg-grey-100 ' +
 							'focus:bg-' + FOCUS + ' ' +
-							'hover:bg-' + HOVER,
+							'hover:bg-' + HOVER + ' ' +
+							'min-h-10',
 	FORM_TAG_CLASSNAME: '',
 	FORM_TAG_VALUEBOX_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_TAG_VALUEBOX_ICON_SIZE: 'sm',
@@ -83,10 +87,12 @@ const defaults = {
 	GRID_REORDER_BORDER_COLOR: 'border-[#23d9ea]',
 	GRID_REORDER_BORDER_WIDTH: 'border-4',
 	GRID_REORDER_BORDER_STYLE: 'border-dashed',
-	ICON_BUTTON_CLASSNAME: 'bg-grey-100 ' + 
+	ICON_BUTTON_CLASSNAME: 'bg-transparent ' +
+							'hover:bg-grey-900/20 ' +
 							'active:bg-grey-900/50 ' +
-							'disabled:bg-grey-200 ' +
-							'hover:bg-grey-900/20',
+							'data-[disabled=true]:bg-grey-200 ' +
+							'data-[disabled=true]:hover:bg-grey-200 ' +
+							'data-[disabled=true]:active:bg-grey-200',
 	INLINE_EDITOR_MIN_WIDTH: 'min-w-[150px]',
 	PANEL_FOOTER_CLASSNAME: 'border-t-primary-300', // :alpha.50
 	PANEL_HEADER_BG: 'bg-primary-500',

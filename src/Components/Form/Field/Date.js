@@ -73,6 +73,9 @@ export const DateElement = forwardRef((props, ref) => {
 		[isRendered, setIsRendered] = useState(false),
 		[localValue, setLocalValue] = useState(value),
 		[textInputValue, setTextInputValue] = useState(value),
+		[isPickerAbove, setIsPickerAbove] = useState(false),
+		[pickerRenderedHeight, setPickerRenderedHeight] = useState(0),
+		[isPickerLayoutRunWithRender, setIsPickerLayoutRunWithRender] = useState(false),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
 		setBothValues = (value) => {
@@ -112,6 +115,9 @@ export const DateElement = forwardRef((props, ref) => {
 			
 				setLeft(inputRect.left);
 				setTop(inputRect.top + inputRect.height);
+				setIsPickerAbove(false);
+				setPickerRenderedHeight(0);
+				setIsPickerLayoutRunWithRender(false);
 			}
 			setIsPickerShown(true);
 		},
@@ -228,6 +234,24 @@ export const DateElement = forwardRef((props, ref) => {
 		},
 		onToday = () => {
 			onPickerChange(moment());
+		},
+		onPickerLayout = (e) => {
+			// This method determines if we need to flip the picker above the input
+			// because the picker is partially offscreen.
+			if (CURRENT_MODE !== UI_MODE_WEB || !e.nativeEvent.layout.height) {
+				return;
+			}
+
+			if (!isPickerLayoutRunWithRender) {
+				const pickerRect = pickerRef.current?.getBoundingClientRect?.();
+				if (pickerRect?.bottom > window.innerHeight) {
+					setIsPickerAbove(true);
+				} else {
+					setIsPickerAbove(false);
+				}
+				setPickerRenderedHeight(e.nativeEvent.layout.height);
+				setIsPickerLayoutRunWithRender(true);
+			}
 		};
 
 	useEffect(() => {
@@ -441,14 +465,16 @@ export const DateElement = forwardRef((props, ref) => {
 								trigger={emptyFn}
 								className="Date-Popover block"
 							>
-								<PopoverBackdrop className="PopoverBackdrop bg-[#000]" />
+								<PopoverBackdrop className="PopoverBackdrop bg-black/20" />
 								<PopoverContent
 									ref={pickerRef}
+									onLayout={onPickerLayout}
 									className={clsx(
 										'Date-PopoverContent',
+										'bg-white',
 									)}
 									style={{
-										top,
+										top: isPickerAbove ? (top - pickerRenderedHeight) : top,
 										left,
 										width,
 										height,

@@ -1,6 +1,6 @@
 import { useState, useEffect, } from 'react';
 import { useSelector } from 'react-redux';
-import useRouteIsFocused from '@onehat/ui/src/Hooks/useRouteIsFocused';
+import useRouteIsFocused from '../../Hooks/useRouteIsFocused';
 import {
 	selectTreeSelection,
 } from '@src/Models/Slices/AppSlice';

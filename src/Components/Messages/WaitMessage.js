@@ -41,8 +41,7 @@ export default function WaitMessage(props) {
 							'absolute',
 							'top-0',
 							'left-0',
-							'bg-[#000]',
-							'opacity-50',
+							'bg-black/50',
 						)}
 					/>
 					{/* <ModalContent

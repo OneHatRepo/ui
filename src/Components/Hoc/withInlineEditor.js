@@ -57,8 +57,8 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 									isEditorShown={isEditorShown}
 									setIsEditorShown={setIsEditorShown}
 								/>}
-
 					{...props}
+					disableView={true}
 					ref={ref}
 				/>;
 	});

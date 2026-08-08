@@ -330,3 +330,5 @@ export const config = {
 		'--color-indicator-error': '232 70 69',
 	}),
 };
+
+export default config;

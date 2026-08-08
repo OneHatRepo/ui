@@ -8,9 +8,30 @@ import { Badge } from './badge';
 import { Box } from './box';
 import { Box as BoxNative } from "./box/index.tsx"; // explicitly import the native version
 import { Button, ButtonText, ButtonSpinner, ButtonIcon, ButtonGroup, } from './button';
+import {
+	Calendar,
+	CalendarHeader,
+	CalendarHeaderPrevButton,
+	CalendarHeaderNextButton,
+	CalendarHeaderTitle,
+	CalendarHeaderMonthSelect,
+	CalendarHeaderYearSelect,
+	CalendarWeekDaysHeader,
+	CalendarWeekDay,
+	CalendarBody,
+	CalendarGrid,
+	CalendarWeek,
+	CalendarDay,
+	CalendarDayText,
+	CalendarDayIndicator,
+	CalendarWeekNumber,
+	CalendarFooter,
+} from './calendar';
 import { Card } from './card';
 import { Center } from './center';
+export * from './chat-ai';
 import { Checkbox, CheckboxGroup, } from './checkbox';
+import { DateTimePicker, DateTimePickerIcon, DateTimePickerInput, DateTimePickerTrigger } from './date-time-picker';
 import { Divider } from './divider';
 import { Drawer } from './drawer';
 import { Fab } from './fab';
@@ -23,9 +44,18 @@ import { HStack as HStackNative } from "./hstack/index.tsx"; // explicitly impor
 import { Icon } from './icon';
 import { Image } from './image';
 import { ImageBackground } from './image-background';
+import {
+	ImageViewer,
+	ImageViewerTrigger,
+	ImageViewerContent,
+	ImageViewerCloseButton,
+	ImageViewerNavigation,
+	ImageViewerCounter,
+} from './image-viewer';
 import { Input, InputField, InputIcon, InputSlot, } from './input';
 import { InputAccessoryView } from './input-accessory-view';
 import { KeyboardAvoidingView } from './keyboard-avoiding-view';
+import { GlassView, GlassContainer, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from './liquid-glass';
 import { Link } from './link';
 import { Menu } from './menu';
 import { Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter, } from './modal';
@@ -45,6 +75,7 @@ import { Spinner } from './spinner';
 import { StatusBar } from './status-bar';
 import { Switch } from './switch';
 import { Table } from './table';
+import { Tabs, TabsList, TabsTrigger, TabsContent, TabsContentWrapper, TabsTriggerText, TabsTriggerIcon, TabsIndicator } from './tabs';
 import { Text } from './text';
 import { Text as TextNative } from './text/index.tsx'; // explicitly import the native version
 import { Textarea, TextareaInput } from './textarea';
@@ -54,6 +85,7 @@ import { View } from './view';
 import { VirtualizedList } from './virtualized-list';
 import { VStack } from './vstack';
 import { VStack as VStackNative } from "./vstack/index.tsx"; // explicitly import the native version
+import { GluestackUIProvider } from './gluestack-ui-provider';
 
 
 export {
@@ -67,14 +99,34 @@ export {
 	Box,
 	BoxNative,
 	Button, ButtonText, ButtonSpinner, ButtonIcon, ButtonGroup,
+	Calendar,
+	CalendarHeader,
+	CalendarHeaderPrevButton,
+	CalendarHeaderNextButton,
+	CalendarHeaderTitle,
+	CalendarHeaderMonthSelect,
+	CalendarHeaderYearSelect,
+	CalendarWeekDaysHeader,
+	CalendarWeekDay,
+	CalendarBody,
+	CalendarGrid,
+	CalendarWeek,
+	CalendarDay,
+	CalendarDayText,
+	CalendarDayIndicator,
+	CalendarWeekNumber,
+	CalendarFooter,
 	Card,
 	Center,
 	Checkbox, CheckboxGroup,
+	DateTimePicker, DateTimePickerIcon, DateTimePickerInput, DateTimePickerTrigger,
 	Divider,
 	Drawer,
 	Fab,
 	FlatList,
 	FormControl,
+	GlassView, GlassContainer, isGlassEffectAPIAvailable, isLiquidGlassAvailable,
+	GluestackUIProvider,
 	Grid,
 	Heading,
 	HStack,
@@ -82,6 +134,12 @@ export {
 	Icon,
 	Image,
 	ImageBackground,
+	ImageViewer,
+	ImageViewerTrigger,
+	ImageViewerContent,
+	ImageViewerCloseButton,
+	ImageViewerNavigation,
+	ImageViewerCounter,
 	Input, InputField, InputIcon, InputSlot,
 	InputAccessoryView,
 	KeyboardAvoidingView,
@@ -104,6 +162,7 @@ export {
 	StatusBar,
 	Switch,
 	Table,
+	Tabs, TabsList, TabsTrigger, TabsContent, TabsContentWrapper, TabsTriggerText, TabsTriggerIcon, TabsIndicator,
 	Text,
 	TextNative,
 	Textarea, TextareaInput,

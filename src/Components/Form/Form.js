@@ -70,7 +70,7 @@ import _ from 'lodash';
 
 // Modes:
 // EDITOR_TYPE__INLINE
-// Form is a single scrollable row, based on columnsConfig and Repository
+// Form is a single horizontally scrollable row, based on columnsConfig and Repository
 //
 // EDITOR_TYPE__WINDOWED
 // EDITOR_TYPE__SIDE
@@ -417,7 +417,9 @@ function Form(props) {
 					}
 				}
 				
-				editorTypeProps.showXButton = true;
+				if (editorType !== EDITOR_TYPE__INLINE) {
+					editorTypeProps.showXButton = true;
+				}
 				if ((isEditorViewOnly || !isEditable) && !shouldHideFieldUi) {
 					const effectiveViewOnly = true; // some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency
 					let value = null;
@@ -1581,7 +1583,8 @@ function Form(props) {
 	const
 		// allow horizontal layouts only if there are top-level columns, and screen is wide enough
 		hasTopLevelColumns = _.some(items, (item) => item?.type === 'Column'),
-		shouldUseHorizontalFormLayout = !isItemsCustomLayout && hasTopLevelColumns && containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD;
+		shouldUseHorizontalFormLayout = !isItemsCustomLayout && hasTopLevelColumns && containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD,
+		isInlineEditor = editorType === EDITOR_TYPE__INLINE;
 	let modeHeader = null,
 		formButtons = null,
 		scrollButtons = null,
@@ -1777,6 +1780,7 @@ function Form(props) {
 						key="resetBtn"
 						onPress={() => doReset()}
 						icon={Rotate}
+						className={isInlineEditor ? 'text-white' : undefined}
 						isDisabled={!formState.isDirty}
 						tooltip="Reset Form"
 					/>}
@@ -1788,7 +1792,7 @@ function Form(props) {
 						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
 						icon={Xmark}
 						onPress={onCancel}
-						className="text-white"
+						className={isInlineEditor ? 'text-white' : undefined}
 						text="Cancel"
 					/>}
 					
@@ -1799,7 +1803,7 @@ function Form(props) {
 						variant={editorType === EDITOR_TYPE__INLINE ? 'solid' : 'outline'}
 						icon={Xmark}
 						onPress={onClose}
-						className="text-white"
+						className={isInlineEditor ? 'text-white' : undefined}
 						text="Close"
 					/>}
 

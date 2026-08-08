@@ -7,7 +7,14 @@ import _ from 'lodash';
 
 const IconButtonElement = forwardRef((props, ref) => {
 	let icon = props.icon,
+		iconProps = {
+			...(props._icon || {}),
+		},
 		styles = UiGlobals.styles;
+
+	if (!iconProps.size) {
+		iconProps.size = 'xl';
+	}
 
 	if (!icon && !props._icon?.as) {
 		throw Error('IconButton requires an icon prop');
@@ -17,6 +24,7 @@ const IconButtonElement = forwardRef((props, ref) => {
 		'IconButton',
 		'rounded-md',
 		'self-center',
+		'min-h-10',
 		'px-[10px]',
 		'py-[10px]',
 		styles.ICON_BUTTON_CLASSNAME,
@@ -28,7 +36,9 @@ const IconButtonElement = forwardRef((props, ref) => {
 	return <Button
 				ref={ref}
 				{...props}
+				_icon={iconProps}
 				className={buttonClassName}
+				size="icon"
 				action="none"
 				variant="none"
 			/>;

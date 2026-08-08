@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, forwardRef, isValidElement, cloneElement, } from 'react';
+import { useMemo, useState, useEffect, useCallback, forwardRef, isValidElement, cloneElement, } from 'react';
 import {
 	Box,
 	HStack,
@@ -44,7 +44,7 @@ const GridRow = forwardRef((props, ref) => {
 			rowCanDrag,
 			isRowHoverable,
 			isSelected,
-			isHovered,
+			useCssHover = false,
 			bg,
 			showHovers,
 			index,
@@ -57,12 +57,16 @@ const GridRow = forwardRef((props, ref) => {
 			isDragFromHandleOnly = true,
 			isOver = false, // drop target
 			canDrop,
+			canDrag: dndCanDrag,
+			isDragging = false,
 			draggedItem,
 			validateDrop, // same as canDrop (for visual feedback)
 			getDragProxy,
 			dragSourceRef,
 			dragPreviewRef,
 			dropTargetRef,
+			alreadyHasDragSource,
+			alreadyHasDropTarget,
 			...propsToPass
 		} = props,
 		styles = UiGlobals.styles,
@@ -70,10 +74,6 @@ const GridRow = forwardRef((props, ref) => {
 			results: asyncResults,
 			loading: asyncLoading,
 		} = useAsyncRenderers(columnsConfig, item);
-
-	if (item.isDestroyed) {
-		return null;
-	}
 	
 	// Hide the default drag preview only when using custom drag proxy (and only on web)
 	useEffect(() => {
@@ -91,9 +91,29 @@ const GridRow = forwardRef((props, ref) => {
 	}, [dragPreviewRef, getDragProxy]);
 
 	const
-		isPhantom = item.isPhantom,
-		hash = item?.hash || item;
+		isPhantom = !item?.isDestroyed && item.isPhantom, // check isDestroyed first, so isPhantom doesn't error!
+		hash = item?.hash || item,
+		rowShouldHaveDragRef = !isDragFromHandleOnly && (isDragSource || isDraggable) && !!dragSourceRef,
+		setRowRef = useCallback((node) => {
+			if (typeof ref === 'function') {
+				ref(node);
+			} else if (ref) {
+				ref.current = node;
+			}
+			if (rowShouldHaveDragRef) {
+				if (typeof dragSourceRef === 'function') {
+					dragSourceRef(node);
+				} else if (dragSourceRef) {
+					dragSourceRef.current = node;
+				}
+			}
+		}, [ref, dragSourceRef, rowShouldHaveDragRef]);
+		
 	return useMemo(() => {
+
+		if (item?.isDestroyed) {
+			return null;
+		}
 
 		let bg = rowProps.bg || props.bg || styles.GRID_ROW_BG,
 			mixWith;
@@ -106,13 +126,15 @@ const GridRow = forwardRef((props, ref) => {
 			actualCanDrop = validateDrop(draggedItem);
 		}
 
+		const isHoverVisualActive = !useCssHover && showHovers && isRowHoverable;
+
 		if (isSelected) {
-			if (showHovers && isHovered) {
+			if (isHoverVisualActive) {
 				mixWith = styles.GRID_ROW_SELECTED_BG_HOVER;
 			} else {
 				mixWith = styles.GRID_ROW_SELECTED_BG;
 			}
-		} else if (isRowHoverable && showHovers && isHovered) {
+		} else if (isHoverVisualActive) {
 			mixWith = styles.GRID_ROW_BG_HOVER;
 		} else if (alternateRowBackgrounds && index % alternatingInterval === 0) { // i.e. every second line, or every third line
 			mixWith = styles.GRID_ROW_ALTERNATE_BG;
@@ -129,21 +151,19 @@ const GridRow = forwardRef((props, ref) => {
 			isOnlyOneVisibleColumn = visibleColumns.length === 1,
 			canSelectTextOnRow = isRowTextSelectable === false ? false : isDragFromHandleOnly,
 			shouldUseTextCursor = showRowHandle && canSelectTextOnRow,
-			rowShouldHaveDragRef = !isDragFromHandleOnly && (isDragSource || isDraggable) && !!dragSourceRef;
-		const setRowRef = (node) => {
-			if (typeof ref === 'function') {
-				ref(node);
-			} else if (ref) {
-				ref.current = node;
-			}
-			if (rowShouldHaveDragRef) {
-				if (typeof dragSourceRef === 'function') {
-					dragSourceRef(node);
-				} else if (dragSourceRef) {
-					dragSourceRef.current = node;
-				}
-			}
-		};
+			propsToPassToCells = _.omit(propsToPass, [
+				'canDrag',
+				'isDragging',
+				'alreadyHasDragSource',
+				'alreadyHasDropTarget',
+				'dragSourceRef',
+				'dragPreviewRef',
+				'dropTargetRef',
+				'canDrop',
+				'isOver',
+				'draggedItem',
+				'validateDrop',
+			]);
 
 		const renderColumns = (item) => {
 			if (_.isArray(columnsConfig)) {
@@ -240,7 +260,7 @@ const GridRow = forwardRef((props, ref) => {
 							const rendererProps = {
 								...testProps('rendererCol-' + (config.fieldName || config.id || key)),
 								className: textClassName,
-								...propsToPass,
+								...propsToPassToCells,
 								...extraProps,
 								style: colStyle,
 							};
@@ -338,7 +358,7 @@ const GridRow = forwardRef((props, ref) => {
 												className={elementClassName}
 												numberOfLines={1}
 												ellipsizeMode="head"
-												{...propsToPass}
+												{...propsToPassToCells}
 												{...elementProps}
 											/>;
 								}
@@ -410,7 +430,7 @@ const GridRow = forwardRef((props, ref) => {
 								ellipsizeMode="head"
 								className={textClassName}
 								{...elementProps}
-								{...propsToPass}
+								{...propsToPassToCells}
 							>{isEmptyCellValue ? ' ' : value}</TextNative>;
 				});
 			} else {
@@ -475,6 +495,7 @@ const GridRow = forwardRef((props, ref) => {
 		let rowClassName = clsx(
 			'GridRow-HStackNative',
 			'items-center',
+			useCssHover && isRowHoverable ? 'hover:brightness-95' : null,
 			canSelectTextOnRow ? null : 'select-none',
 		);
 		if (isOnlyOneVisibleColumn) {
@@ -516,7 +537,7 @@ const GridRow = forwardRef((props, ref) => {
 		hash, // this is an easy way to determine if the data has changed and the item needs to be rerendered
 		isInlineEditorShown,
 		isSelected,
-		isHovered,
+		useCssHover,
 		isOver,
 		index,
 		canDrop,

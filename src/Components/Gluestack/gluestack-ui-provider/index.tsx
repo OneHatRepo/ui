@@ -1,7 +1,7 @@
 import React from 'react';
 import { config } from './config';
 import { ColorSchemeName, useColorScheme, View, ViewProps } from 'react-native';
-import { OverlayProvider } from '@gluestack-ui/overlay';
+import { OverlayProvider } from '@gluestack-ui/core/overlay/creator';
 import { ToastProvider } from '@gluestack-ui/toast';
 import { colorScheme as colorSchemeNW } from 'nativewind';
 
@@ -29,7 +29,7 @@ export function GluestackUIProvider({
 
   const colorSchemeName = getColorSchemeName(colorScheme, mode);
 
-  colorSchemeNW.set(mode);
+  colorSchemeNW.set(colorSchemeName);
 
   return (
     <View
