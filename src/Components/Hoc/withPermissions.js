@@ -94,6 +94,8 @@ export function canUser(permission, modelToCheck = null) {
 	return checkPermission(permission);
 }
 
+export const userCan = canUser; // alias for canUser
+
 export default function withPermissions(WrappedComponent, forceUsePermissions = false) {
 	return forwardRef((props, ref) => {
 
