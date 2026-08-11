@@ -43,6 +43,19 @@ export function checkPermission(permission) {
 }
 
 /**
+ * checkGroup
+ * @param {int} group_id
+ * @returns {boolean} - Whether user is in group
+ */
+export function userIsInGroupId(group_id) {
+	const
+		reduxState = UiGlobals.redux?.getState(),
+		groups = reduxState?.app?.groups || reduxState?.auth?.groups || [],
+		group_ids = _.map(groups, 'id');
+	return inArray(group_id, group_ids);
+}
+
+/**
  * Check if user has permission to perform an action
  * 
  * Example usages:
