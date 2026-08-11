@@ -269,8 +269,15 @@ function TagComponent(props) {
 
 			if (joinDataConfig?.additionalItems) {
 				// add any additionalItems to the Form.items
-				_.each(joinDataConfig.additionalItems, (item) => {
-					items.push(item);
+				_.each(joinDataConfig.additionalItems, (additionalItem) => {
+					if (additionalItem.onPress) {
+						// wrap the onPress so we can hide the modal first
+						const originalOnPress = additionalItem.onPress;
+						additionalItem.onPress = (...args) => {
+							originalOnPress(...args, item, record);
+						};
+					}
+					items.push(additionalItem);
 				});
 			}
 
