@@ -45,10 +45,50 @@ function AssignTechnician(props) {
 		[pmScheduleName, setPmScheduleName] = useState(null),
 		Fleets = oneHatData.getRepository('Fleets'),
 		Equipment = oneHatData.getRepository('Equipment'),
-		[Meters] = useState(() => oneHatData.getRepository('Meters', true)),
-		[MetersPmSchedules] = useState(() => oneHatData.getRepository('MetersPmSchedules', true));
+		[Meters, setMeters] = useState(null),
+		[MetersPmSchedules, setMetersPmSchedules] = useState(null);
 
 	useEffect(() => {
+		// deal with the unique Repositories
+		let Meters = null,
+			MetersPmSchedules = null,
+			isMounted = true;
+
+		(async () => {
+			Meters = await oneHatData.getUniqueRepository('Meters');
+			MetersPmSchedules = await oneHatData.getUniqueRepository('MetersPmSchedules');
+			
+			// If unmounted before await resolves, delete immediately and skip setState.
+			if (!isMounted) {
+				if (Meters?.id) {
+					oneHatData.deleteRepository(Meters.id);
+				}
+				if (MetersPmSchedules?.id) {
+					oneHatData.deleteRepository(MetersPmSchedules.id);
+				}
+				return;
+			}
+
+			setMeters(Meters);
+			setMetersPmSchedules(MetersPmSchedules);
+		})();
+
+		// cleanup when component is unmounted
+		return () => {
+			isMounted = false;
+			if (Meters?.id) {
+				oneHatData.deleteRepository(Meters.id);
+			}
+			if (MetersPmSchedules?.id) {
+				oneHatData.deleteRepository(MetersPmSchedules.id);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!Meters || !MetersPmSchedules) {
+			return;
+		}
 		setPmScheduleId(null);
 		setPmScheduleName(null);
 		setMeter(null);
@@ -78,26 +118,16 @@ function AssignTechnician(props) {
 			}
 
 		})();
-	}, [selection, isSingle]);
+	}, [Meters, MetersPmSchedules, isSingle, selection]);
 
-	useEffect(() => {
-		// cleanup repositories when modal is closed
-		return () => {
-			if (Meters?.id) {
-				oneHatData.deleteRepository(Meters.id);
-			}
-			if (MetersPmSchedules?.id) {
-				oneHatData.deleteRepository(MetersPmSchedules.id);
-			}
-		};
-	}, [Meters, MetersPmSchedules]);
-
-	if (!selection[0]?.repository) {
-		return;
+	if (!Meters || !MetersPmSchedules) {
+		return null;
 	}
-
+	if (!selection[0]?.repository) {
+		return null;
+	}
 	if (isSingle && !meter) {
-		return;
+		return null;
 	}
 
 	// construct assignTo (e.g. 'all equipment in Peoria', 'all equipment in 3 fleets', 'Unit 12345' etc)

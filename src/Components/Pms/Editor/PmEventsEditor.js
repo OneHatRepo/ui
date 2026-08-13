@@ -41,9 +41,9 @@ function PmEventsEditor(props) {
 		[isPmTechnicianHidden, setIsPmTechnicianHidden] = useState(true),
 		[isDetailsHidden, setIsDetailsHidden] = useState(true),
 		[isPmScheduleDisabled, setIsPmScheduleDisabled] = useState(true),
-		[Meters] = useState(() => oneHatData.getRepository('Meters', true)),
-		[PmSchedules] = useState(() => oneHatData.getRepository('PmSchedules', true)),
-		[MetersPmSchedules] = useState(() => oneHatData.getRepository('MetersPmSchedules', true)),
+		[Meters, setMeters] = useState(null),
+		[PmSchedules, setPmSchedules] = useState(null),
+		[MetersPmSchedules, setMetersPmSchedules] = useState(null),
 		getIsFirstRun = () => {
 			return isFirstRun.current;
 		},
@@ -251,9 +251,6 @@ function PmEventsEditor(props) {
 			if (!meterId) {
 				PmSchedules.clearAll();
 			} else {
-				if (PmSchedules.getBaseParam('leftJoinWith') !== 'MetersPmSchedules') {
-					PmSchedules.setBaseParam('leftJoinWith', 'MetersPmSchedules');
-				}
 				if (PmSchedules.getBaseParam('conditions[meters_pm_schedules__meter_id]') !== meterId) {
 					PmSchedules.setBaseParam('conditions[meters_pm_schedules__meter_id]', meterId);
 					await PmSchedules.load();
@@ -287,18 +284,39 @@ function PmEventsEditor(props) {
 		};
 
 	useEffect(() => {
+		// deal with the unique Repositories
+		let Meters = null,
+			PmSchedules = null,
+			MetersPmSchedules = null,
+			isMounted = true;
 
-		if (!Meters || !PmSchedules || !MetersPmSchedules) {
-			return;
-		}
+		(async () => {
+			Meters = await oneHatData.getUniqueRepository('Meters');
+			PmSchedules = await oneHatData.getUniqueRepository('PmSchedules');
+			MetersPmSchedules = await oneHatData.getUniqueRepository('MetersPmSchedules');
 
-		// set Meters baseParams
-		if (Meters.getBaseParam('onlyOnPmSchedules') !== true) {
-			Meters.setBaseParam('onlyOnPmSchedules', true);
-		}
+			// If unmounted before await resolves, delete immediately and skip setState.
+			if (!isMounted) {
+				if (Meters?.id) {
+					oneHatData.deleteRepository(Meters.id);
+				}
+				if (PmSchedules?.id) {
+					oneHatData.deleteRepository(PmSchedules.id);
+				}
+				if (MetersPmSchedules?.id) {
+					oneHatData.deleteRepository(MetersPmSchedules.id);
+				}
+				return;
+			}
 
-		// cleanup Parts when component is unmounted
+			setMeters(Meters);
+			setPmSchedules(PmSchedules);
+			setMetersPmSchedules(MetersPmSchedules);
+		})();
+
+		// cleanup when component is unmounted
 		return () => {
+			isMounted = false;
 			if (Meters?.id) {
 				oneHatData.deleteRepository(Meters.id);
 			}
@@ -309,7 +327,27 @@ function PmEventsEditor(props) {
 				oneHatData.deleteRepository(MetersPmSchedules.id);
 			}
 		};
-	}, [Meters, PmSchedules, MetersPmSchedules]);
+	}, []);
+
+	useEffect(() => {
+
+		if (!Meters || !PmSchedules) {
+			return;
+		}
+
+		// set Meters baseParams
+		if (Meters.getBaseParam('onlyOnPmSchedules') !== true) {
+			Meters.setBaseParam('onlyOnPmSchedules', true);
+		}
+		if (PmSchedules.getBaseParam('leftJoinWith') !== 'MetersPmSchedules') {
+			PmSchedules.setBaseParam('leftJoinWith', 'MetersPmSchedules');
+		}
+
+	}, [Meters, PmSchedules]);
+
+	if (!Meters || !PmSchedules) {
+		return null;
+	}
 
 	const overviewItems = [{
 		name: 'pm_events__pm_event_type_id',

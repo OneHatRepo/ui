@@ -1,6 +1,6 @@
 import { useState, useEffect, } from 'react';
 import { useSelector } from 'react-redux';
-import useRouteIsFocused from '@onehat/ui/src/Hooks/useRouteIsFocused';
+import useRouteIsFocused from '../../Hooks/useRouteIsFocused';
 import {
 	selectTreeSelection,
 } from '@src/Models/Slices/AppSlice';
@@ -33,12 +33,44 @@ export default function PmsManager(props) {
 		treeSelection = useSelector(selectTreeSelection),
 		isActive = useRouteIsFocused(),
 		[defaultMeterId, setDefaultMeterId] = useState(null),
-		[Equipment] = useState(() => oneHatData.getRepository('Equipment', true)),
+		[Equipment, setEquipment] = useState(null),
 		treeNode = treeSelection?.[0],
 		isFleet = treeNode?.nodeType === NODE_TYPES__FLEETS,
 		isEquipment = treeNode?.nodeType === NODE_TYPES__EQUIPMENT;
 
 	useEffect(() => {
+		// deal with the unique Repository
+		let Equipment = null,
+			isMounted = true;
+
+		(async () => {
+			Equipment = await oneHatData.getUniqueRepository('Equipment');
+			
+			// If unmounted before await resolves, delete immediately and skip setState.
+			if (!isMounted) {
+				if (Equipment?.id) {
+					oneHatData.deleteRepository(Equipment.id);
+				}
+				return;
+			}
+
+			setEquipment(Equipment);
+			
+		})();
+
+		// cleanup when component is unmounted
+		return () => {
+			isMounted = false;
+			if (Equipment?.id) {
+				oneHatData.deleteRepository(Equipment.id);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!Equipment) {
+			return;
+		}
 		if (isEquipment) {
 			(async () => {
 				// Fetch the primary_meter_id for this Equipment
@@ -56,8 +88,11 @@ export default function PmsManager(props) {
 		} else {
 			setDefaultMeterId(null);
 		}
-	}, [treeNode]);
+	}, [Equipment, treeNode, isEquipment]);
 		
+	if (!Equipment) {
+		return null;
+	}
 	if (!isActive) {
 		return null;
 	}
