@@ -78,14 +78,10 @@ function TagComponent(props) {
 		_selector = isTreeMode ? _tree : _combo,
 		propertyDef = SourceRepository?.getSchema().getPropertyDefinition(self.reference),
 		hasJoinData = propertyDef?.joinData?.length,
-		[JoinRepository] = useState(() => {
-			if (hasJoinData) {
-				return oneHatData.getRepository(propertyDef.joinModel, true);
-			}
-			return null;
-		}),
+		[JoinRepository, setJoinRepository] = useState(null),
+		[isJoinRepositoryInited, setIsJoinRepositoryInited] = useState(false),
 		[isInited, setIsInited] = useState(_.isUndefined(getBaseParams)), // default to true unless getBaseParams is defined
-		modelFieldStartsWith = hasJoinData ? Inflector.underscore(JoinRepository.getSchema().name) + '__' : '',
+		modelFieldStartsWith = hasJoinData ? (JoinRepository ? Inflector.underscore(JoinRepository.getSchema().name) + '__' : '') : '',
 		valueRef = useRef(value),
 		onView = async (item, e) => {
 			// show the joined record's viewer
@@ -429,6 +425,42 @@ function TagComponent(props) {
 						minimizeForRow={minimizeForRow}
 					/>;
 		});
+
+	useEffect(() => {
+
+		if (!hasJoinData) {
+			setIsJoinRepositoryInited(true);
+			return;
+		}
+
+		// deal with the unique Repository
+		let JoinRepository = null,
+			isMounted = true;
+
+		(async () => {
+			JoinRepository = await oneHatData.getUniqueRepository(propertyDef.joinModel);
+			
+			// If unmounted before await resolves, delete immediately and skip setState.
+			if (!isMounted) {
+				if (JoinRepository?.id) {
+					oneHatData.deleteRepository(JoinRepository.id);
+				}
+				return;
+			}
+
+			setJoinRepository(JoinRepository);
+			setIsJoinRepositoryInited(true);
+			
+		})();
+
+		// cleanup when component is unmounted
+		return () => {
+			isMounted = false;
+			if (JoinRepository?.id) {
+				oneHatData.deleteRepository(JoinRepository.id);
+			}
+		};
+	}, [hasJoinData, propertyDef?.joinModel]);
 	
 	if (!_.isUndefined(getBaseParams) && outerValueId) {
 		useEffect(() => {
@@ -465,7 +497,7 @@ function TagComponent(props) {
 		}, [value]);
 	}
 
-	if (!isInited) {
+	if (!isInited || !isJoinRepositoryInited) {
 		return null;
 	}
 
