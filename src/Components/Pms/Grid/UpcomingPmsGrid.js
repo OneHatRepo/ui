@@ -88,8 +88,8 @@ function UpcomingPmsGrid(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		UpcomingPms = oneHatData.getRepository('UpcomingPms'),
-		[Equipment] = useState(() => oneHatData.getRepository('Equipment', true)),
-		[WorkOrders] = useState(() => oneHatData.getRepository('WorkOrders', true)),
+		[Equipment, setEquipment] = useState(null),
+		[WorkOrders, setWorkOrders] = useState(null),
 		[isReady, setIsReady] = useState(false),
 		[width, height] = useAdjustedWindowSize(styles.DEFAULT_WINDOW_WIDTH, styles.DEFAULT_WINDOW_HEIGHT),
 		onBump = async (metersPmSchedule) => {
@@ -179,7 +179,44 @@ function UpcomingPmsGrid(props) {
 		};
 
 	useEffect(() => {
-		if (!UpcomingPms) {
+		// deal with the unique Repositories
+		let Equipment = null,
+			WorkOrders= null,
+			isMounted = true;
+
+		(async () => {
+			Equipment = await oneHatData.getUniqueRepository('Equipment');
+			WorkOrders = await oneHatData.getUniqueRepository('WorkOrders');
+
+			// If unmounted before await resolves, delete immediately and skip setState.
+			if (!isMounted) {
+				if (Equipment?.id) {
+					oneHatData.deleteRepository(Equipment.id);
+				}
+				if (WorkOrders?.id) {
+					oneHatData.deleteRepository(WorkOrders.id);
+				}
+				return;
+			}
+
+			setEquipment(Equipment);
+			setWorkOrders(WorkOrders);
+		})();
+
+		// cleanup when component is unmounted
+		return () => {
+			isMounted = false;
+			if (Equipment?.id) {
+				oneHatData.deleteRepository(Equipment.id);
+			}
+			if (WorkOrders?.id) {
+				oneHatData.deleteRepository(WorkOrders.id);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!UpcomingPms || !Equipment || !WorkOrders) {
 			return;
 		}
 		if (!nodeId || !nodeType) {
@@ -206,7 +243,7 @@ function UpcomingPmsGrid(props) {
 			setIsReady(true);
 		})();
 		
-	}, [nodeId, nodeType, UpcomingPms]);
+	}, [UpcomingPms, Equipment, WorkOrders, nodeId, nodeType]);
 
 	if (!isReady) {
 		return <Loading />;

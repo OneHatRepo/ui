@@ -198,6 +198,7 @@ function AttachmentsElement(props) {
 			_fileMosaic = {},
 			useFileMosaic = true,
 			usesDirectories = false,
+			modelOverride = null,
 			isDirectoriesByModel = true, // if false, directories are by modelid
 			AttachmentDirectories,
 			initialViewMode = ATTACHMENTS_VIEW_MODES__ICON,
@@ -234,9 +235,10 @@ function AttachmentsElement(props) {
 		} = props,
 		styles = UiGlobals.styles,
 		model = _.isArray(selectorSelected) && selectorSelected[0] ? selectorSelected[0].schema?.name : selectorSelected?.schema?.name,
+		effectiveModel = modelOverride || model,
 		modelidCalc = _.isArray(selectorSelected) ? _.map(selectorSelected, (entity) => entity[selectorSelectedField]) : selectorSelected?.[selectorSelectedField],
 		modelid = useRef(modelidCalc),
-		id = props.id || (model && modelid.current ? `attachments-${model}-${modelid.current}` : 'attachments'),
+		id = props.id || (effectiveModel && modelid.current ? `attachments-${effectiveModel}-${modelid.current}` : 'attachments'),
 		forceUpdate = useForceUpdate(),
 		iconBlobUrlsRef = useRef(new Set()), // to track created blob URLs for cleanup
 		modalBlobUrlsRef = useRef(new Set()), // For modal images
@@ -389,12 +391,12 @@ function AttachmentsElement(props) {
 			}
 		},
 		onDownloadAll = () => {
-			if (!model || _.isNil(modelid.current) || _.isArray(modelid.current)) {
+			if (!effectiveModel || _.isNil(modelid.current) || _.isArray(modelid.current)) {
 				alert('Cannot download all attachments without a single selected model and model id.');
 				return;
 			}
 
-			const url = Attachments.api.baseURL + 'Attachments/downloadAll/' + encodeURIComponent(model) + '/' + encodeURIComponent(modelid.current);
+			const url = Attachments.api.baseURL + 'Attachments/downloadAll/' + encodeURIComponent(effectiveModel) + '/' + encodeURIComponent(modelid.current);
 			if (isPwa) {
 				alert('Files cannot be downloaded and viewed within an iOS PWA. Please use the Safari browser instead.');
 			} else {
@@ -418,7 +420,7 @@ function AttachmentsElement(props) {
 			setFiles(files);
 			_.each(files, (file) => {
 				file.extraUploadData = {
-					model,
+					model: effectiveModel,
 					modelid: modelid.current,
 					...extraUploadData,
 				};
@@ -701,7 +703,7 @@ function AttachmentsElement(props) {
 
 	useEffect(() => {
 
-		if (!model) {
+		if (!effectiveModel) {
 			return () => {};
 		}
 
@@ -725,7 +727,7 @@ function AttachmentsElement(props) {
 				const
 					currentConditions = Attachments.getParamConditions() || {},
 					newConditions = {
-						'conditions[Attachments.model]': model,
+						'conditions[Attachments.model]': effectiveModel,
 						'conditions[Attachments.modelid]': modelid.current,
 					},
 					currentPageSize = Attachments.pageSize,
@@ -770,7 +772,7 @@ function AttachmentsElement(props) {
 						wasAlreadyLoaded = AttachmentDirectories.isLoaded,
 						currentConditions = AttachmentDirectories.getParamConditions() || {},
 						newConditions = {
-							'conditions[AttachmentDirectories.model]': selectorSelected.schema?.name,
+							'conditions[AttachmentDirectories.model]': effectiveModel,
 							'conditions[AttachmentDirectories.modelid]': selectorSelected[selectorSelectedField],
 						};
 					let doReload = false;
@@ -825,7 +827,7 @@ function AttachmentsElement(props) {
 			cleanupIconBlobUrls();
 			cleanupModalBlobUrls();
 		};
-	}, [model, modelid.current, showAll, getTreeSelection()]);
+	}, [effectiveModel, modelid.current, showAll, getTreeSelection()]);
 
 	if (!isReady) {
 		return null;
@@ -1116,7 +1118,7 @@ function AttachmentsElement(props) {
 							'px-[2px]',
 							'py-[2px]',
 						)}
-						isDisabled={!model || _.isNil(modelid.current) || _.isArray(modelid.current) || files.length === 0}
+						isDisabled={!effectiveModel || _.isNil(modelid.current) || _.isArray(modelid.current) || files.length === 0}
 						tooltip="Download All"
 					/>
 				</HStack>

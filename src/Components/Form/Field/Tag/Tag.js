@@ -256,16 +256,30 @@ function TagComponent(props) {
 					// (The outer *Editor can configure each Tag field's joinData Form item.
 					// This moves that configuration down and adds outerValueId)
 					if (joinDataConfig?.[fieldName]) {
-						const joinDataConfigFieldname = _.clone(joinDataConfig[fieldName]); // don't mutate original
-						joinDataConfigFieldname.outerValueId = item.id; // so that joinData can be aware of the value of the inspected ValueBox; see note in useEffect, below
+						const fieldConfig = _.clone(joinDataConfig[fieldName]); // don't mutate original
+						fieldConfig.outerValueId = item.id; // so that joinData can be aware of the value of the inspected ValueBox; see note in useEffect, below
 						obj = {
 							...obj,
-							...joinDataConfigFieldname,
+							...fieldConfig,
 						};
 					}
 
 					return obj;
 				});
+
+			if (joinDataConfig?.additionalItems) {
+				// add any additionalItems to the Form.items
+				_.each(joinDataConfig.additionalItems, (additionalItem) => {
+					if (additionalItem.onPress) {
+						// wrap the onPress so we can hide the modal first
+						const originalOnPress = additionalItem.onPress;
+						additionalItem.onPress = (...args) => {
+							originalOnPress(...args, item, record);
+						};
+					}
+					items.push(additionalItem);
+				});
+			}
 
 			let height = 300;
 			let body;
