@@ -1307,16 +1307,50 @@ function withAdditionalProps(WrappedComponent) {
 				usesDirectories = false,
 			} = props,
 			[isReady, setIsReady] = useState(false),
-			[AttachmentDirectories] = useState(() => (usesDirectories ? oneHatData.getRepository('AttachmentDirectories', true) : null)), // lazy instantiator, so getRepository is called only once (it's unique, so otherwise, every time this renders, we'd get a new Repository!)
-			[Attachments] = useState(() => oneHatData.getRepository('Attachments', true)); // same
-		
+			[AttachmentDirectories, setAttachmentDirectories] = useState(null),
+			[Attachments, setAttachments] = useState(null);
+
 		useEffect(() => {
+			// deal with the unique Repositories
+			let AttachmentDirectories = null,
+				Attachments = null,
+				isMounted = true;
+
 			(async () => {
+				AttachmentDirectories = await oneHatData.getUniqueRepository('AttachmentDirectories');
+				Attachments = await oneHatData.getUniqueRepository('Attachments');
+				
+				// If unmounted before await resolves, delete immediately and skip setState.
+				if (!isMounted) {
+					if (AttachmentDirectories?.id) {
+						oneHatData.deleteRepository(AttachmentDirectories.id);
+					}
+					if (Attachments?.id) {
+						oneHatData.deleteRepository(Attachments.id);
+					}
+					return;
+				}
+				setAttachmentDirectories(AttachmentDirectories);
+				setAttachments(Attachments);
+
+
 				Attachments.setBaseParams(props.baseParams || {}); // have to add the baseParams here, because we're bypassing withData
 				if (!isReady) {
 					setIsReady(true);
 				}
+
 			})();
+
+			// cleanup when component is unmounted
+			return () => {
+				isMounted = false;
+				if (AttachmentDirectories?.id) {
+					oneHatData.deleteRepository(AttachmentDirectories.id);
+				}
+				if (Attachments?.id) {
+					oneHatData.deleteRepository(Attachments.id);
+				}
+			};
 		}, []);
 
 		if (!isReady) {
