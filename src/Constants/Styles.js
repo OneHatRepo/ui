@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 // These are the default styles of the @onehat/ui components.
 // App can override these with Functions/registerStyles()
 const
@@ -5,7 +7,7 @@ const
 	BLACK = 'black',
 	WHITE = 'white',
 	FOCUS = 'focus-200',
-	HOVER = 'primary-200';
+	HOVER = 'grey-100';
 
 const defaults = {
 	ATTACHMENTS_MAX_FILESIZE: 1024 * 1024 * 5, // 5MB
@@ -16,25 +18,35 @@ const defaults = {
 	FILTER_LABEL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_ANCILLARY_TITLE_CLASSNAME: 'text-[22px]',
 	FORM_ANCILLARY_DESCRIPTION_CLASSNAME: 'text-[16px]',
-	FORM_COLOR_INPUT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' +
-								'bg-' + WHITE + ' ' + 
-								'focus:bg-' + FOCUS,
-	FORM_COMBO_INPUT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' + 
-								'bg-' + WHITE + ' ' +
-								'focus:bg-' + FOCUS + ' ' +
-								'min-h-10',
+	FORM_COLOR_INPUT_CLASSNAME: clsx(
+									'text-' + DEFAULT_FONTSIZE,
+									'bg-' + WHITE,
+									'focus:bg-' + FOCUS,
+								),
+	FORM_COMBO_INPUT_CLASSNAME: clsx(
+									'text-' + DEFAULT_FONTSIZE,
+									'bg-' + WHITE,
+									'focus:bg-' + FOCUS,
+									'min-h-10',
+								),
 	FORM_COMBO_MENU_HEIGHT: 250,
 	FORM_COMBO_MENU_MIN_WIDTH: 250,
-	FORM_COMBO_TRIGGER_CLASSNAME: 'bg-' + WHITE + ' ' +
-									'hover:bg-grey-300 ' +
+	FORM_COMBO_TRIGGER_CLASSNAME: clsx(
+									'bg-' + WHITE,
+									'hover:bg-grey-300',
 									'min-h-10',
+								),
 	FORM_DATE_CLASSNAME: 'h-[40px]',
-	FORM_DATE_TRIGGER_CLASSNAME: 'bg-primary-200 ' +
-								'hover:bg-primary-400',
+	FORM_DATE_TRIGGER_CLASSNAME: clsx(
+									'bg-primary-200',
+									'hover:bg-primary-400',
+								),
 	FORM_DATE_TRIGGER_ICON_CLASSNAME: 'text-' + WHITE,
-	FORM_DATE_INPUT_CLASSNAME: 'bg-' + WHITE + ' ' +
-								'focus:bg-' + FOCUS + ' ' +
-								'text-' + DEFAULT_FONTSIZE,
+	FORM_DATE_INPUT_CLASSNAME: clsx(
+									'bg-' + WHITE,
+									'focus:bg-' + FOCUS,
+									'text-' + DEFAULT_FONTSIZE,
+								),
 	FORM_FIELDSET_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
 	FORM_FIELDSET_BG: 'bg-[#f6f6f6]',
 	// FORM_FILE_ICON_BG: 'bg-primary-200',
@@ -43,25 +55,31 @@ const defaults = {
 	// FORM_FILE_INPUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
 	// FORM_FILE_READOUT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
 	// FORM_FILE_READOUT_BG: 'bg-' + WHITE,
-	FORM_INPUT_CLASSNAME: 'bg-' + WHITE + ' ' +
-						'focus:bg-' + FOCUS + ' ' +
-						'hover:bg-' + HOVER + ' ' +
-						'min-h-10',
+	FORM_INPUT_CLASSNAME: clsx(
+								'bg-' + WHITE,
+								'focus:bg-' + FOCUS,
+								'hover:bg-' + HOVER,
+								'min-h-10',
+							),
 	FORM_INPUT_FIELD_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_LABEL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
-	FORM_SELECT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' + 
-							'bg-grey-100 ' +
-							'focus:bg-' + FOCUS + ' ' +
-							'hover:bg-' + HOVER + ' ' +
-							'min-h-10',
+	FORM_SELECT_CLASSNAME: clsx(
+								'text-' + DEFAULT_FONTSIZE,
+								'bg-grey-100',
+								'focus:bg-' + FOCUS,
+								'hover:bg-' + HOVER,
+								'min-h-10',
+							),
 	FORM_TAG_CLASSNAME: '',
 	FORM_TAG_VALUEBOX_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_TAG_VALUEBOX_ICON_SIZE: 'sm',
 	FORM_TAG_BTN_CLASSNAME: '',
 	FORM_TEXT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
-	FORM_TEXTAREA_CLASSNAME: 'bg-' + WHITE + ' ' +
-							'text-' + DEFAULT_FONTSIZE + ' ' +
-							'h-[130px]',
+	FORM_TEXTAREA_CLASSNAME: clsx(
+								'bg-' + WHITE,
+								'text-' + DEFAULT_FONTSIZE,
+								'h-[130px]',
+							),
 	FORM_TOGGLE_BG: null,
 	FORM_TOGGLE_READOUT_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	FORM_TOGGLE_SIZE: 'md',
@@ -71,8 +89,10 @@ const defaults = {
 	FORM_STACK_ROW_THRESHOLD: 400, // stack labels & fields if row is less than this width
 	GRID_CELL_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	GRID_EXPAND_BTN_CLASSNAME: '',
-	GRID_HEADER_PRESSABLE_CLASSNAME: 'bg-[#eee] ' +
-									'hover:bg-[#ddd]',
+	GRID_HEADER_PRESSABLE_CLASSNAME: clsx(
+										'bg-[#eee]',
+										'hover:bg-[#ddd]',
+									),
 	GRID_HEADER_CLASSNAME: 'text-' + DEFAULT_FONTSIZE,
 	GRID_HEADER_ICON_CLASSNAME: 'mt-3 mr-2',
 	GRID_HEADER_ICON_SIZE: 'sm',
@@ -87,19 +107,16 @@ const defaults = {
 	GRID_REORDER_BORDER_COLOR: 'border-[#23d9ea]',
 	GRID_REORDER_BORDER_WIDTH: 'border-4',
 	GRID_REORDER_BORDER_STYLE: 'border-dashed',
-	ICON_BUTTON_CLASSNAME: 'bg-transparent ' +
-							'hover:bg-grey-900/20 ' +
-							'active:bg-grey-900/50 ' +
-							'data-[disabled=true]:bg-grey-200 ' +
-							'data-[disabled=true]:hover:bg-grey-200 ' +
-							'data-[disabled=true]:active:bg-grey-200',
+	ICON_BUTTON_CLASSNAME: '',
 	INLINE_EDITOR_MIN_WIDTH: 'min-w-[150px]',
 	PANEL_FOOTER_CLASSNAME: 'border-t-primary-300', // :alpha.50
 	PANEL_HEADER_BG: 'bg-primary-500',
 	PANEL_HEADER_ICON_CLASSNAME: 'text-' + WHITE,
 	PANEL_HEADER_ICON_SIZE: 'md',
-	PANEL_HEADER_TEXT_CLASSNAME: 'text-' + WHITE + ' ' +
-								'text-[18px]',
+	PANEL_HEADER_TEXT_CLASSNAME: clsx(
+									'text-' + WHITE,
+									'text-[18px]',
+								),
 	SLIDER_MIN_TRACK_COLOR: '#000',
 	SLIDER_MAX_TRACK_COLOR: '#ccc',
 	SLIDER_THUMB_COLOR: '#000',
@@ -124,9 +141,11 @@ const defaults = {
 	TAB_ICON_COLOR_DISABLED: 'group-disabled/button:text-grey-400',
 	TAB_FONTSIZE: 'text-md',
 	TEXT_FONTSIZE: 'text-' + DEFAULT_FONTSIZE,
-	TREE_NODE_CLASSNAME: 'text-' + DEFAULT_FONTSIZE + ' ' +
-						'px-2 ' + 
-						'py-3',
+	TREE_NODE_CLASSNAME: clsx(
+							'text-' + DEFAULT_FONTSIZE,
+							'px-2',
+							'py-3',
+						),
 	TREE_NODE_BG: '#fff', // must be hex
 	TREE_NODE_BG_HOVER: '#cce', // must be hex
 	TREE_NODE_SELECTED_BG: '#ff0', // must be hex
