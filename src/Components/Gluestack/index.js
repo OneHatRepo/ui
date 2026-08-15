@@ -34,7 +34,7 @@ import { Checkbox, CheckboxGroup, } from './checkbox';
 import { DateTimePicker, DateTimePickerIcon, DateTimePickerInput, DateTimePickerTrigger } from './date-time-picker';
 import { Divider } from './divider';
 import { Drawer } from './drawer';
-import { Fab } from './fab';
+import { Fab, FabIcon, FabLabel } from './fab';
 import { FlatList } from './flat-list';
 import { FormControl } from './form-control';
 import { Grid } from './grid';
@@ -123,6 +123,8 @@ export {
 	Divider,
 	Drawer,
 	Fab,
+	FabIcon,
+	FabLabel,
 	FlatList,
 	FormControl,
 	GlassView, GlassContainer, isGlassEffectAPIAvailable, isLiquidGlassAvailable,
