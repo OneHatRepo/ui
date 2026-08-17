@@ -34,7 +34,7 @@ import Clipboard from '../../Icons/Clipboard.js';
 import OilCan from '../../Icons/OilCan.js';
 import Bump from '../../Icons/Bump.js';
 import BumpPmsEditorWindow from '../Window/BumpPmsEditorWindow.js';
-import PmCalcDebugViewer from '../../Viewer/PmCalcDebugViewer.js';
+import PmCalcDebugViewer from '../Viewer/PmCalcDebugViewer.js';
 import {
 	EquipmentIcon,
 } from '@src/Components/Icons/index';

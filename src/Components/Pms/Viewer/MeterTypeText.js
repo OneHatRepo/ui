@@ -7,9 +7,9 @@ import {
 	METER_TYPES__MILES,
 	METER_TYPES__HOURS_TEXT,
 	METER_TYPES__MILES_TEXT,
-} from '../../Constants/MeterTypes';
+} from '../../../Constants/MeterTypes';
 
-import UiGlobals from '../../UiGlobals';
+import UiGlobals from '../../../UiGlobals';
 
 export default function MeterTypeText(props) {
 	const styles = UiGlobals.styles;
@@ -25,7 +25,7 @@ export default function MeterTypeText(props) {
 		className += ' ' + props.className;
 	}
 	let meterType = '';
-	switch(props.value) {
+	switch(parseInt(props.value)) {
 		case METER_TYPES__HOURS:
 			meterType = METER_TYPES__HOURS_TEXT;
 			break;
