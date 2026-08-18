@@ -123,7 +123,10 @@ type IPopoverCloseButtonProps = React.ComponentProps<
 const Popover = React.forwardRef<
   React.ComponentRef<typeof UIPopover>,
   IPopoverProps
->(function Popover({ className, placement = 'bottom', ...props }, ref) {
+>(function Popover(
+  { className, placement = 'bottom', style, ...props },
+  ref
+) {
   return (
     <UIPopover
       ref={ref}
@@ -135,7 +138,7 @@ const Popover = React.forwardRef<
       exiting={FadeOut.duration(150)}
       className={popoverStyle({ class: className })}
       context={{ placement }}
-      pointerEvents="box-none"
+      style={[style, { pointerEvents: 'box-none' }]}
     />
   );
 });
@@ -144,14 +147,16 @@ const PopoverContent = React.forwardRef<
   React.ComponentRef<typeof UIPopover.Content>,
   IPopoverContentProps
 >(function PopoverContent({ className, ...props }, ref) {
+  const { style, ...restProps } = props;
+
   return (
     <UIPopover.Content
       ref={ref}
-      {...props}
+      {...restProps}
+      style={[style, { pointerEvents: 'auto' }]}
       className={popoverContentStyle({
         class: className,
       })}
-      pointerEvents="auto"
     />
   );
 });

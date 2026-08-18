@@ -1,0 +1,66 @@
+SKOTE NOTE: Gluestack Wrapper Customizations
+
+These wrappers are generated from Gluestack source (via @onehat/ui), then adjusted locally.
+If wrappers are regenerated, these local adjustments can be overwritten and must be restored.
+
+Why these modifications exist
+
+1) Web overlay pointer-event routing
+- Overlay roots (modal-like components) should not always consume pointer events at the full-screen wrapper layer.
+- Interactive layers (content/backdrop) should handle clicks directly, while container wrappers stay pass-through where needed.
+
+2) Consistent behavior with style merging
+- Local wrappers use style-based pointerEvents overrides (style={[style, { pointerEvents: '...' }]}) instead of prop-only pointerEvents in several places.
+- This keeps caller style composition explicit and consistent in these wrappers.
+
+Local files with intentional customizations
+
+1) alert-dialog/index.tsx
+- Root class changed to web:pointer-events-none (instead of auto).
+- Root pointerEvents moved to style merge: style={[style, { pointerEvents: 'box-none' }]}.
+- Content pointerEvents moved to style merge: style={[style, { pointerEvents: 'auto' }]}.
+
+2) modal/index.tsx
+- Root class changed to web:pointer-events-none (instead of auto).
+- Root pointerEvents moved to style merge: style={[style, { pointerEvents: 'box-none' }]}.
+- Content pointerEvents moved to style merge: style={[style, { pointerEvents: 'auto' }]}.
+
+3) drawer/index.tsx
+- Root pointerEvents uses style merge: style={[style, { pointerEvents: 'box-none' }]}.
+- Content pointerEvents uses style merge: style={[style, { pointerEvents: 'auto' }]}.
+
+4) popover/index.tsx
+- Root pointerEvents uses style merge: style={[style, { pointerEvents: 'box-none' }]}.
+- Content pointerEvents uses style merge: style={[style, { pointerEvents: 'auto' }]}.
+
+5) tooltip/index.tsx
+- Content pointerEvents uses style merge: style={[style, { pointerEvents: 'auto' }]}.
+
+6) date-time-picker/index.web.tsx
+- Trigger TextInput uses style form for pointer events:
+	style={{ pointerEvents: 'none' }}
+	(instead of pointerEvents="none" prop).
+
+What to restore after regeneration
+
+Reapply the six file customizations above.
+
+Practical restore pattern
+- For Root wrappers that should be pass-through: use style={[style, { pointerEvents: 'box-none' }]}.
+- For interactive overlay content: use style={[style, { pointerEvents: 'auto' }]}.
+- For alert-dialog/modal root classes: ensure web:pointer-events-none is preserved.
+- For date-time-picker web trigger input: keep style={{ pointerEvents: 'none' }}.
+
+Fast verification checklist
+
+1) alert-dialog and modal root base class includes web:pointer-events-none.
+2) alert-dialog, modal, drawer, popover roots use style merge with pointerEvents: 'box-none'.
+3) alert-dialog, modal, drawer, popover, tooltip content uses style merge with pointerEvents: 'auto'.
+4) date-time-picker/index.web.tsx TextInput keeps style={{ pointerEvents: 'none' }}.
+
+Source-of-truth comparison path
+
+- Local wrappers: src/Components/Gluestack/*
+- Generated/source wrappers: node_modules/@onehat/ui/src/Components/Gluestack/*
+
+If behavior regresses after wrapper regeneration (blocked clicks, non-clickable overlay content, or wrong click-through behavior), restore this note's customizations first.

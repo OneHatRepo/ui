@@ -201,12 +201,15 @@ type IDrawerCloseButtonProps = React.ComponentProps<
 const Drawer = React.forwardRef<
   React.ComponentRef<typeof UIDrawer>,
   IDrawerProps
->(function Drawer({ className, size = 'md', anchor = 'left', ...props }, ref) {
+>(function Drawer(
+  { className, size = 'md', anchor = 'left', style, ...props },
+  ref
+) {
   return (
     <UIDrawer
       ref={ref}
       {...props}
-      pointerEvents="box-none"
+      style={[style, { pointerEvents: 'box-none' }]}
       className={drawerStyle({ size, anchor, class: className })}
       context={{ size, anchor }}
     />
@@ -235,6 +238,7 @@ const DrawerContent = React.forwardRef<
   IDrawerContentProps
 >(function DrawerContent({ className, ...props }, ref) {
   const { size: parentSize, anchor: parentAnchor } = useStyleContext(SCOPE);
+  const { style, ...restProps } = props;
 
   // Calculate positioning classes
   const customClass =
@@ -266,7 +270,8 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       entering={enteringAnimation}
       exiting={exitingAnimation}
-      {...props}
+      {...restProps}
+      style={[style, { pointerEvents: 'auto' }]}
       className={drawerContentStyle({
         parentVariants: {
           size: parentSize,
@@ -274,7 +279,6 @@ const DrawerContent = React.forwardRef<
         },
         class: `${className || ''} ${customClass}`,
       })}
-      pointerEvents="auto"
     />
   );
 });

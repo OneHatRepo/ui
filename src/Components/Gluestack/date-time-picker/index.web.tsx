@@ -106,7 +106,7 @@ const DateTimePicker = React.forwardRef<
             value={displayValue || placeholder}
             editable={false}
             className="flex-1 text-foreground text-sm"
-            pointerEvents="none"
+            style={{ pointerEvents: 'none' }}
           />
         </View>
       </Pressable>

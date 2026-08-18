@@ -100,14 +100,16 @@ const TooltipContent = React.forwardRef<
   React.ComponentRef<typeof UITooltip.Content>,
   ITooltipContentProps & { className?: string }
 >(function TooltipContent({ className, ...props }, ref) {
+  const { style, ...restProps } = props;
+
   return (
     <UITooltip.Content
       ref={ref}
-      {...props}
+      {...restProps}
+      style={[style, { pointerEvents: 'auto' }]}
       className={tooltipContentStyle({
         class: className,
       })}
-      pointerEvents="auto"
     />
   );
 });
