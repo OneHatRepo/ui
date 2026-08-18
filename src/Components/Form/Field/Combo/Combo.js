@@ -708,7 +708,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 						className={clsx(
 							'h-full',
 							'mr-1',
-							styles.FORM_COMBO_TRIGGER_CLASSNAME
+							styles.FORM_COMBO_TRIGGER_CLASSNAME,
+							minimizeForRow ? 'min-h-0 py-0' : ''
 						)}
 					/>;
 	}
@@ -726,7 +727,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 						className={clsx(
 							'h-full',
 							'mr-1',
-							styles.FORM_COMBO_TRIGGER_CLASSNAME
+							styles.FORM_COMBO_TRIGGER_CLASSNAME,
+							minimizeForRow ? 'min-h-0 py-0' : ''
 						)}
 					/>;
 	}
@@ -740,6 +742,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 		'rounded-l-none',
 		'rounded-r-md',
 		styles.FORM_COMBO_TRIGGER_CLASSNAME,
+		minimizeForRow ? 'min-h-0 py-0' : '',
 	);
 	trigger = <IconButton
 				{...testProps('trigger')}
@@ -776,7 +779,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 							'border',
 							'border-grey-400',
 							'rounded-r-none',
-							styles.FORM_COMBO_INPUT_BG
+							styles.FORM_COMBO_INPUT_BG,
+							minimizeForRow ? 'min-h-0 py-0' : ''
 						)}
 					>
 						{inputIconElement}
@@ -814,8 +818,10 @@ export const ComboComponent = forwardRef((props, ref) => {
 							'm-0',
 							'rounded-tr-none',
 							'rounded-br-none',
-							styles.FORM_COMBO_INPUT_CLASSNAME
+							styles.FORM_COMBO_INPUT_CLASSNAME,
+							minimizeForRow ? 'min-h-0 py-0' : ''
 						)}
+						minimizeForRow={minimizeForRow}
 						{..._input}
 					/>;
 	}
@@ -837,6 +843,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						'border-grey-400',
 						'rounded-r-none',
 						styles.FORM_COMBO_INPUT_BG,
+						minimizeForRow ? 'min-h-0 py-0' : '',
 					)}
 				>
 					{inputIconElement}
@@ -1051,7 +1058,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 										'rounded-tr-none',
 										'rounded-br-none',
 										styles.FORM_COMBO_INPUT_CLASSNAME,
+										minimizeForRow ? 'min-h-0 py-0' : '',
 									)}
+									minimizeForRow={minimizeForRow}
 									{..._input}
 								/>
 							</Box>;
@@ -1168,7 +1177,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 								'm-0',
 								'rounded-r-none',
 								styles.FORM_COMBO_INPUT_CLASSNAME,
+								minimizeForRow ? 'min-h-0 py-0' : '',
 							)}
+							minimizeForRow={minimizeForRow}
 							{..._input}
 						/>}
 					<IconButton
@@ -1187,6 +1198,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 							'rounded-l-none',
 							'rounded-r-md',
 							styles.FORM_COMBO_TRIGGER_CLASSNAME,
+							minimizeForRow ? 'min-h-0 py-0' : '',
 						)}
 					/>
 					{checkButton}

@@ -34,6 +34,7 @@ const InputElement = forwardRef((props, ref) => {
 			rightIconHandler,
 			placeholder,
 			textAlignIsCenter = false,
+			minimizeForRow = false,
 			className,
 			...propsToPass
 		} = props,
@@ -118,6 +119,7 @@ const InputElement = forwardRef((props, ref) => {
 			'Input',
 			'dark:bg-white',
 			styles.FORM_INPUT_CLASSNAME,
+			minimizeForRow ? 'min-h-0 py-0' : '',
 		),
 		inputFieldClassName = clsx(
 			'InputField',
@@ -129,6 +131,7 @@ const InputElement = forwardRef((props, ref) => {
 			textAlignIsCenter ? 'text-center' : 'text-left',
 			styles.FORM_INPUT_CLASSNAME,
 			styles.FORM_INPUT_FIELD_CLASSNAME,
+			minimizeForRow ? 'min-h-0 py-0' : '',
 		);
 	if (className) {
 		inputClassName += ' ' + className;

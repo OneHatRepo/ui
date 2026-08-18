@@ -568,7 +568,7 @@ function TagComponent(props) {
 			valueBoxesClassName += ' min-h-[25px] h-full overflow-auto flex-1';
 		} else {
 			// shrink both down
-			valueBoxesClassName += ' Scott h-auto min-h-[25px] max-h-[35px] overflow-auto flex-1';
+			valueBoxesClassName += ' h-auto min-h-[25px] max-h-[35px] overflow-auto flex-1';
 			selectorClassName += ' h-auto min-h-0 max-h-[25px] flex-1';
 		}
 	}
@@ -598,6 +598,7 @@ function TagComponent(props) {
 							onGridDelete: onSelectorDelete,
 						})}
 						usePermissions={props.usePermissions}
+						minimizeForRow={minimizeForRow}
 						{..._selector}
 						className={selectorClassName}
 					/>}
