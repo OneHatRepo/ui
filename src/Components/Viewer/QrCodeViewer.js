@@ -17,6 +17,7 @@ import withValue from '../Hoc/withValue';
 import Clipboard from '../Icons/Clipboard.js';
 import Print from '../Icons/Print.js';
 import Eye from '../Icons/Eye.js';
+import omitInternalHocProps from '../../Functions/omitInternalHocProps.js';
 import _ from 'lodash';
 
 function QrCodeViewer(props) {
@@ -143,6 +144,8 @@ function QrCodeViewer(props) {
 			}
 		};
 
+		const qrCodeProps = omitInternalHocProps(propsToPass);
+
 	const className = clsx(
 		containerClassName,
 		testID,
@@ -162,7 +165,7 @@ function QrCodeViewer(props) {
 					level="L"
 					// style={{ height: "auto", maxWidth: "100%", width: "100%" }}
 					viewBox={`0 0 128 128`}
-					{...propsToPass}
+					{...qrCodeProps}
 				/>
 				<IconButton
 					icon={Eye}

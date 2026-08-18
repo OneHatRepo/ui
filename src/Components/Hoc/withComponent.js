@@ -1,4 +1,5 @@
 import { forwardRef, useRef, useEffect, } from 'react';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_COMPONENT_MARKER = Symbol.for('alreadyHasWithComponent');
@@ -121,8 +122,9 @@ export default function withComponent(WrappedComponent) {
 		}, []);
 
 		return <WrappedComponent
-					self={selfRef.current}
-					{...propsToPass}
+					{...withInjectedHocProps(propsToPass, {
+						self: selfRef.current,
+					})}
 					ref={ref}
 					// alreadyHasWithComponent={true}
 				/>;

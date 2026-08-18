@@ -10,6 +10,7 @@ import withModal from './withModal.js';
 import CircleInfo from '../Icons/CircleInfo.js';
 import CircleQuestion from '../Icons/CircleQuestion.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_ALERT_MARKER = Symbol.for('alreadyHasWithAlert');
@@ -205,13 +206,14 @@ function withAlert(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						alert: onAlert,
+						getAlertBody: getBody,
+						confirm: onConfirm,
+						hideAlert: hideModal,
+						showInfo: onInfo,
+					})}
 					ref={ref}
-					alert={onAlert}
-					getAlertBody={getBody}
-					confirm={onConfirm}
-					hideAlert={hideModal}
-					showInfo={onInfo}
 				/>;
 	});
 

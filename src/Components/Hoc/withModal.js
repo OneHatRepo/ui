@@ -17,6 +17,7 @@ import Panel from '../Panel/Panel.js';
 import Footer from '../Layout/Footer.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import testProps from '../../Functions/testProps.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
@@ -318,13 +319,14 @@ export default function withModal(WrappedComponent) {
 
 		return <>
 					<WrappedComponent
-						{...incomingProps}
+						{...withInjectedHocProps(incomingProps, {
+							showModal,
+							hideModal: hideModalProp,
+							updateModalBody,
+							isModalShown,
+							whichModal,
+						})}
 						ref={ref}
-						showModal={showModal}
-						hideModal={hideModalProp}
-						updateModalBody={updateModalBody}
-						isModalShown={isModalShown}
-						whichModal={whichModal}
 					/>
 					{modals.map((modal, index) => {
 						const

@@ -2,6 +2,7 @@ import { forwardRef, useState, useEffect, useRef, useContext, useCallback, } fro
 import natsort from 'natsort';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_VALUE_MARKER = Symbol.for('alreadyHasWithValue');
@@ -146,11 +147,12 @@ export default function withValue(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						value: convertedValue,
+						setValue: setValueRef.current,
+						onChangeSelection,
+					})}
 					ref={ref}
-					value={convertedValue}
-					setValue={setValueRef.current}
-					onChangeSelection={onChangeSelection}
 				/>;
 	});
 

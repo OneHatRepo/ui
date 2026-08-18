@@ -13,6 +13,7 @@ import {
 } from '../../Constants/UiModes.js';
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
+import omitInternalHocProps from '../../Functions/omitInternalHocProps.js';
 import _ from 'lodash';
 
 function TextWithLinksElement(props) {
@@ -96,12 +97,13 @@ function TextWithLinksElement(props) {
 		'px-3',
 		'py-2',
 	);
+	const propsToPass = omitInternalHocProps(props);
 	if (props.className) {
 		className += ` ${props.className}`;
 	}
 	return <BoxNative
 				className={className}
-				{...props}
+				{...propsToPass}
 			>{renderTextWithLinks()}</BoxNative>;
 };
 

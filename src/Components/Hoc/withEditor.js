@@ -17,6 +17,7 @@ import useForceUpdate from '../../Hooks/useForceUpdate.js'
 import Button from '../Buttons/Button.js';
 import EditorModeContext from '../../Contexts/EditorModeContext.js';
 import UiGlobals from '../../UiGlobals.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_EDITOR_MARKER = Symbol.for('alreadyHasWithEditor');
@@ -1039,51 +1040,52 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		return <EditorModeContext.Provider value={editorModeContextValue}>
 				<WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						currentRecord,
+						setCurrentRecord,
+						isEditorShown: getIsEditorShown(),
+						getIsEditorShown,
+						isEditorViewOnly,
+						isEditorModeControlledByParent,
+						isEditorDisabledByParent,
+						isAdding,
+						isSaving,
+						editorMode: getEditorMode(),
+						getEditorMode,
+						onEditMode: (isEditorModeControlledByParent || isEditorDisabledByParent) ? null : setEditMode,
+						onViewMode: (isEditorModeControlledByParent || isEditorDisabledByParent) ? null : setViewMode,
+						editorStateRef,
+						setIsEditorShown,
+						setIsIgnoreNextSelectionChange,
+						onAdd: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableAdd) ? null : doAdd,
+						onEdit: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableEdit || (canRecordBeEdited && !canRecordBeEdited(selection))) ? null : doEdit,
+						onDelete: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete || (canRecordBeDeleted && !canRecordBeDeleted(selection))) ? null : doDelete,
+						onView: isEditorDisabledByParent ? null : doView,
+						onDuplicate: (isEditorDisabledByParent || isCrudBlockedByInheritedView) ? null : doDuplicate,
+						onEditorSave: doEditorSave,
+						onEditorCancel: doEditorCancel,
+						onEditorDelete: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete) ? null : doEditorDelete,
+						onEditorClose: doEditorClose,
+						setWithEditListeners: setListeners,
+						isEditor: true,
+						ancillaryEventHandlers: {
+							onAdd,
+							onChange,
+							onDelete,
+							onSave,
+						},
+						userCanEdit,
+						userCanView,
+						enableMultiDelete,
+						disableAdd: disableAdd || isEditorDisabledByParent || isCrudBlockedByInheritedView,
+						disableEdit: disableEdit || isEditorDisabledByParent || isCrudBlockedByInheritedView,
+						disableDelete: disableDelete || isEditorDisabledByParent || isCrudBlockedByInheritedView,
+						disableDuplicate: disableDuplicate || isEditorDisabledByParent || isCrudBlockedByInheritedView,
+						disableView: disableView || isEditorDisabledByParent,
+						setSelection: setSelectionDecorated,
+						isTree,
+					})}
 					ref={ref}
-					currentRecord={currentRecord}
-					setCurrentRecord={setCurrentRecord}
-					isEditorShown={getIsEditorShown()}
-					getIsEditorShown={getIsEditorShown}
-					isEditorViewOnly={isEditorViewOnly}
-					isEditorModeControlledByParent={isEditorModeControlledByParent}
-					isEditorDisabledByParent={isEditorDisabledByParent}
-					isAdding={isAdding}
-					isSaving={isSaving}
-					editorMode={getEditorMode()}
-					getEditorMode={getEditorMode}
-					onEditMode={(isEditorModeControlledByParent || isEditorDisabledByParent) ? null : setEditMode}
-					onViewMode={(isEditorModeControlledByParent || isEditorDisabledByParent) ? null : setViewMode}
-					editorStateRef={editorStateRef}
-					setIsEditorShown={setIsEditorShown}
-					setIsIgnoreNextSelectionChange={setIsIgnoreNextSelectionChange}
-					onAdd={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableAdd) ? null : doAdd}
-					onEdit={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableEdit || (canRecordBeEdited && !canRecordBeEdited(selection))) ? null : doEdit}
-					onDelete={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete || (canRecordBeDeleted && !canRecordBeDeleted(selection))) ? null : doDelete}
-					onView={isEditorDisabledByParent ? null : doView}
-					onDuplicate={(isEditorDisabledByParent || isCrudBlockedByInheritedView) ? null : doDuplicate}
-					onEditorSave={doEditorSave}
-					onEditorCancel={doEditorCancel}
-					onEditorDelete={(isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete) ? null : doEditorDelete}
-					onEditorClose={doEditorClose}
-					setWithEditListeners={setListeners}
-					isEditor={true}
-					ancillaryEventHandlers={{
-						onAdd,
-						onChange,
-						onDelete,
-						onSave,
-					}}
-					userCanEdit={userCanEdit}
-					userCanView={userCanView}
-					enableMultiDelete={enableMultiDelete}
-					disableAdd={disableAdd || isEditorDisabledByParent || isCrudBlockedByInheritedView}
-					disableEdit={disableEdit || isEditorDisabledByParent || isCrudBlockedByInheritedView}
-					disableDelete={disableDelete || isEditorDisabledByParent || isCrudBlockedByInheritedView}
-					disableDuplicate={disableDuplicate || isEditorDisabledByParent || isCrudBlockedByInheritedView}
-					disableView ={disableView || isEditorDisabledByParent}
-					setSelection={setSelectionDecorated}
-					isTree={isTree}
 				/>
 			</EditorModeContext.Provider>;
 	});

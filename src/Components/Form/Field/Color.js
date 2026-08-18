@@ -19,6 +19,7 @@ import testProps from '../../../Functions/testProps.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import emptyFn from '../../../Functions/emptyFn.js';
+import omitInternalHocProps from '../../../Functions/omitInternalHocProps.js';
 import _ from 'lodash';
 
 export function ColorElement(props) {
@@ -162,6 +163,7 @@ export function ColorElement(props) {
 
 
 	// Web version
+	const pickerPropsToPass = omitInternalHocProps(props);
 	let assembledComponents = null;
 	assembledComponents =
 		<HStackNative
@@ -261,7 +263,7 @@ export function ColorElement(props) {
 							disableAlpha={true}
 							color={value}
 							onChange={(color) => setValue(color.hex)}
-							{...props}
+							{...pickerPropsToPass}
 						/>
 					</PopoverBody>
 				</PopoverContent>

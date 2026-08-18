@@ -7,6 +7,7 @@ import {
 } from '../../Constants/Selection.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import inArray from '../../Functions/inArray.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_SELECTION_MARKER = Symbol.for('alreadyHasWithSelection');
@@ -479,26 +480,27 @@ export default function withSelection(WrappedComponent) {
 		}
 		
 		return <WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						selection: getSelection(),
+						getSelection,
+						setSelection,
+						selectionMode,
+						selectPrev,
+						selectNext,
+						addNextToSelection,
+						addPrevToSelection,
+						removeFromSelection,
+						addToSelection,
+						deselectAll,
+						selectRangeTo,
+						isInSelection,
+						getIdsFromSelection: getIdsFromLocalSelection,
+						getDisplayValuesFromSelection,
+						disableSelectionChanges,
+						enableSelectionChanges,
+						refreshSelection,
+					})}
 					ref={ref}
-					selection={getSelection()}
-					getSelection={getSelection}
-					setSelection={setSelection}
-					selectionMode={selectionMode}
-					selectPrev={selectPrev}
-					selectNext={selectNext}
-					addNextToSelection={addNextToSelection}
-					addPrevToSelection={addPrevToSelection}
-					removeFromSelection={removeFromSelection}
-					addToSelection={addToSelection}
-					deselectAll={deselectAll}
-					selectRangeTo={selectRangeTo}
-					isInSelection={isInSelection}
-					getIdsFromSelection={getIdsFromLocalSelection}
-					getDisplayValuesFromSelection={getDisplayValuesFromSelection}
-					disableSelectionChanges={disableSelectionChanges}
-					enableSelectionChanges={enableSelectionChanges}
-					refreshSelection={refreshSelection}
 				/>;
 	});
 
