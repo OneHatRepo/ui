@@ -48,8 +48,8 @@ export default function ValueBox(props) {
 						className={clsx(
 							'ValueBox-eyeBtn',
 							'h-full',
-							minimizeForRow ? 'py-0' : '',
 							styles.FORM_TAG_BTN_CLASSNAME,
+							minimizeForRow ? 'min-h-[0px] py-0' : '',
 						)}
 					/>}
 				{showJoin &&
@@ -64,8 +64,8 @@ export default function ValueBox(props) {
 						className={clsx(
 							'ValueBox-joinBtn',
 							'h-full',
-							minimizeForRow ? 'py-0' : '',
 							styles.FORM_TAG_BTN_CLASSNAME,
+							minimizeForRow ? 'min-h-[0px] py-0' : '',
 						)}
 					/>}
 				<Text
@@ -90,8 +90,8 @@ export default function ValueBox(props) {
 						className={clsx(
 							'ValueBox-xBtn',
 							'h-full',
-							minimizeForRow ? 'py-0' : '',
 							styles.FORM_TAG_BTN_CLASSNAME,
+							minimizeForRow ? 'min-h-[0px] py-0' : '',
 						)}
 					/>}
 			</HStackNative>;
