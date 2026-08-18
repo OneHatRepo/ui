@@ -138,7 +138,7 @@ function withAlert(WrappedComponent) {
 					w,
 					whichModal: 'alert',
 					stackMode: 'push',
-					showBackdrop: false,
+					showBackdrop: true,
 				});
 			},
 			onConfirm = (message, onYes, includeCancel = false, onNo) => {
@@ -150,6 +150,7 @@ function withAlert(WrappedComponent) {
 						icon: CircleQuestion,
 						message,
 					}),
+					onCancel: () => hideModal({ modalId }),
 					onYes: () => {
 						hideModal({ modalId });
 						onYes();
@@ -161,11 +162,12 @@ function withAlert(WrappedComponent) {
 						}
 					},
 					includeCancel,
+					canClose: true,
 					h: 250,
 					w: 400,
 					whichModal: 'confirm',
 					stackMode: 'push',
-					showBackdrop: false,
+					showBackdrop: true,
 				});
 			},
 			onInfo = (message) => {
@@ -183,7 +185,7 @@ function withAlert(WrappedComponent) {
 					w: 400,
 					whichModal: 'info',
 					stackMode: 'push',
-					showBackdrop: false,
+					showBackdrop: true,
 				});
 			};
 
