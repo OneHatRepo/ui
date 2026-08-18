@@ -9,7 +9,17 @@ import withTooltip from '../../Hoc/withTooltip.js';
 
 const
 	TextElement = (props) => {
-		const styles = UiGlobals.styles;
+		const {
+				outerRef,
+				value,
+				className: incomingClassName,
+				style,
+				numberOfLines,
+				ellipsizeMode,
+				testID,
+				onPress,
+			} = props,
+			styles = UiGlobals.styles;
 
 		let className = clsx(
 			'Text',
@@ -19,16 +29,19 @@ const
 			'py-2',
 			styles.FORM_TEXT_CLASSNAME,
 		);
-		if (props.className) {
-			className += ' ' + props.className;
+		if (incomingClassName) {
+			className += ' ' + incomingClassName;
 		}
 		
 		return <TextNative
-					ref={props.outerRef}
-					ellipsizeMode="head"
-					{...props}
+					ref={outerRef}
+					ellipsizeMode={ellipsizeMode || 'head'}
+					numberOfLines={numberOfLines}
+					style={style}
+					testID={testID}
+					onPress={onPress}
 					className={className}
-				>{props.value}</TextNative>;
+				>{value}</TextNative>;
 	},
 	TextField = withComponent(TextElement); // NOT using withValue on Text element, as this element is simply for display purposes!
 

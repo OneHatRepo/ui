@@ -24,6 +24,21 @@ const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
 
 // This HOC enables usage of more complex dialogs in the wrapped component.
 // Use withAlert for simple alerts, confirmations, and info dialogs.
+//
+// Runtime modes (single public API, dual internal behavior):
+// 1) Owner mode: withModal manages local modal state and renders the modal stack.
+//    This is used when no parent modal API is available.
+// 2) Delegate mode: withModal reuses a parent-provided modal API and does not
+//    render a second local modal stack.
+//
+// Why both exist:
+// - If every nested component owned modals, multiple modal roots/backdrops could
+//   compete, causing focus, layering, and pointer-event issues.
+// - If every component only delegated, standalone components without a parent
+//   modal provider could not open modals.
+//
+// So withModal keeps one external contract (showModal/hideModal/...) while
+// choosing ownership internally based on whether parent modal controls exist.
 
 /*
  * withModal usage:
@@ -65,6 +80,11 @@ export default function withModal(WrappedComponent) {
 		const {
 				disableWithModal = false,
 				alreadyHasWithModal,
+				showModal: parentShowModal,
+				hideModal: parentHideModal,
+				updateModalBody: parentUpdateModalBody,
+				isModalShown: parentIsModalShown,
+				whichModal: parentWhichModal,
 				...incomingProps
 			} = props;
 
@@ -257,6 +277,22 @@ export default function withModal(WrappedComponent) {
 				}
 				return buttons;
 			},
+			ownsModalState = !(_.isFunction(parentShowModal) && _.isFunction(parentHideModal)),
+			modalApi = ownsModalState
+				? {
+					showModal,
+					hideModal: hideModalProp,
+					updateModalBody,
+					isModalShown,
+					whichModal,
+				}
+				: {
+					showModal: parentShowModal,
+					hideModal: parentHideModal,
+					updateModalBody: _.isFunction(parentUpdateModalBody) ? parentUpdateModalBody : updateModalBody,
+					isModalShown: _.isBoolean(parentIsModalShown) ? parentIsModalShown : isModalShown,
+					whichModal: !_.isNil(parentWhichModal) ? parentWhichModal : whichModal,
+				},
 			renderModalBody = (modal, isTopModal) => {
 				let modalBody = modal.body;
 				const buttons = getButtonsForModal(modal);
@@ -317,15 +353,15 @@ export default function withModal(WrappedComponent) {
 		return <>
 					<WrappedComponent
 						{...withInjectedHocProps(incomingProps, {
-							showModal,
-							hideModal: hideModalProp,
-							updateModalBody,
-							isModalShown,
-							whichModal,
+							showModal: modalApi.showModal,
+							hideModal: modalApi.hideModal,
+							updateModalBody: modalApi.updateModalBody,
+							isModalShown: modalApi.isModalShown,
+							whichModal: modalApi.whichModal,
 						})}
 						ref={ref}
 					/>
-					{modals.map((modal, index) => {
+					{ownsModalState && modals.map((modal, index) => {
 						const
 							isTopModal = index === modals.length - 1,
 							onCloseHandler = isTopModal
