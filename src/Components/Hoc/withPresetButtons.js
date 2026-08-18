@@ -225,6 +225,9 @@ export default function withPresetButtons(WrappedComponent) {
 					isDisabled = false;
 				switch(type) {
 					case ADD:
+						if (!onAdd) {
+							throw Error('withPresetButtons: onAdd is required for ADD preset button');
+						}
 						key = 'addBtn';
 						if (addDisplayMsg) {
 							text = addDisplayMsg;
@@ -248,6 +251,9 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case EDIT:
+						if (!onEdit) {
+							throw Error('withPresetButtons: onEdit is required for EDIT preset button');
+						}
 						key = 'editBtn';
 						if (editDisplayMsg) {
 							text = editDisplayMsg;
@@ -278,6 +284,9 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case DELETE:
+						if (!onDelete) {
+							throw Error('withPresetButtons: onDelete is required for DELETE preset button');
+						}
 						key = 'deleteBtn';
 						if (deleteDisplayMsg) {
 							text = deleteDisplayMsg;
@@ -315,6 +324,9 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case VIEW:
+						if (!onView) {
+							throw Error('withPresetButtons: onView is required for VIEW preset button');
+						}
 						key = 'viewBtn';
 						text = 'View';
 						handler = (parent, e) => onView();
@@ -328,6 +340,9 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case COPY:
+						if (!onCopyToClipboard) {
+							throw Error('withPresetButtons: onCopyToClipboard is required for COPY preset button');
+						}
 						key = 'copyBtn';
 						text = 'Copy to Clipboard';
 						handler = (parent, e) => onCopyToClipboard();
@@ -340,6 +355,9 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case DUPLICATE:
+						if (!onDuplicate) {
+							throw Error('withPresetButtons: onDuplicate is required for DUPLICATE preset button');
+						}
 						key = 'duplicateBtn';
 						text = 'Duplicate';
 						if (model) {
@@ -366,12 +384,18 @@ export default function withPresetButtons(WrappedComponent) {
 					// 	icon = Print;
 					// 	break;
 					case UPLOAD_DOWNLOAD:
+						if (!onUploadDownload) {
+							throw Error('withPresetButtons: onUploadDownload is required for UPLOAD_DOWNLOAD preset button');
+						}
 						key = 'uploadDownloadBtn';
 						text = 'Upload/Download';
 						handler = (parent, e) => onUploadDownload();
 						icon = UploadDownload;
 						break;
 					case DOWNLOAD:
+						if (!onDownload) {
+							throw Error('withPresetButtons: onDownload is required for DOWNLOAD preset button');
+						}
 						key = 'downloadBtn';
 						text = 'Download';
 						handler = (parent, e) => onDownload();
