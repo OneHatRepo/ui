@@ -87,6 +87,7 @@ export default function WaitMessage(props) {
 						'w-[200px]',
 						CURRENT_MODE === UI_MODE_WEB ? 'h-[50px]' : '',
 						'shadow-lg',
+						'bg-white',
 					)}
 				>
 					<HStack
