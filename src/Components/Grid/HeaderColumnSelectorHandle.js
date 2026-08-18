@@ -1,12 +1,11 @@
 import {
-	Icon,
 	Pressable,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import Gear from '../Icons/Gear.js';
-import _ from 'lodash';
+import IconWithTooltip from '../Icons/IconWithTooltip.js';
 
-export default function HeaderColumnSelectorHandle(props) {
+function HeaderColumnSelectorHandle(props) {
 	const {
 			showColumnsSelector,
 		} = props;
@@ -23,10 +22,14 @@ export default function HeaderColumnSelectorHandle(props) {
 					'justify-center',
 				)}
 			>
-				<Icon
+				<IconWithTooltip
 					as={Gear}
 					size="xs"
 					className="handle w-full h-full text-[#ccc]"
+					tooltip="Show Columns Selector"
+					tooltipTriggerClassName="h-full w-full"
 				/>
 			</Pressable>;
 }
+
+export default HeaderColumnSelectorHandle;

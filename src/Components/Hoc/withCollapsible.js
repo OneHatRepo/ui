@@ -1,12 +1,14 @@
 import { forwardRef, useState } from 'react';
 
-export default function withCollapsible(WrappedComponent) {
-	return forwardRef((props, ref) => {
+const WITH_COLLAPSIBLE_MARKER = Symbol.for('alreadyHasWithCollapsible');
 
-		if (props.alreadyHasWithCollapsible) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
-		
+export default function withCollapsible(WrappedComponent) {
+	if (WrappedComponent?.[WITH_COLLAPSIBLE_MARKER]) {
+		return WrappedComponent;
+	}
+
+	const ComponentWithCollapsible = forwardRef((props, ref) => {
+
 		const {
 				isCollapsed = false,
 				startsCollapsed = false,
@@ -17,10 +19,12 @@ export default function withCollapsible(WrappedComponent) {
 
 		return <WrappedComponent
 					{...props}
-					alreadyHasWithCollapsible={true}
 					ref={ref}
 					isCollapsed={bypass ? isCollapsed : localIsCollapsed}
 					setIsCollapsed={bypass ? setIsCollapsed : setLocalIsCollapsed}
 				/>;
 	});
+
+	ComponentWithCollapsible[WITH_COLLAPSIBLE_MARKER] = true;
+	return ComponentWithCollapsible;
 }

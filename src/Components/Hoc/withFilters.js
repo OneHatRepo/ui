@@ -30,6 +30,8 @@ import setSaved from '../../Functions/setSaved.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
+const WITH_FILTERS_MARKER = Symbol.for('alreadyHasWithFilters');
+
 // Filters only work with Repository; not data array
 
 // Yet to do:
@@ -40,9 +42,13 @@ import _ from 'lodash';
 const isWindows = Platform.OS === 'windows';
 
 export default function withFilters(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_FILTERS_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (!props.useFilters || props.alreadyHasWithFilters) {
+	const ComponentWithFilters = forwardRef((props, ref) => {
+
+		if (!props.useFilters) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -294,6 +300,8 @@ export default function withFilters(WrappedComponent) {
 					if (field === 'q') {
 						elementProps.flex = 1;
 						elementProps.minWidth = 100;
+					} else {
+						elementProps.minimizeForRow = true;
 					}
 
 					let
@@ -316,7 +324,6 @@ export default function withFilters(WrappedComponent) {
 											value={getFilterValue(field)}
 											onChangeValue={(value) => onFilterChangeValue(field, value)}
 											isInFilter={true}
-											minimizeForRow={true}
 											{...filterProps}
 											{...elementProps}
 											className={filterClassName}
@@ -730,9 +737,11 @@ export default function withFilters(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					ref={ref}
-					alreadyHasWithFilters={true}
 					topToolbar={toolbar}
 				/>;
 
 	});
+
+	ComponentWithFilters[WITH_FILTERS_MARKER] = true;
+	return ComponentWithFilters;
 }

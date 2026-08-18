@@ -15,6 +15,8 @@ import UiGlobals from '../../UiGlobals.js';
 import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
+const WITH_PERMISSIONS_MARKER = Symbol.for('alreadyHasWithPermissions');
+
 /**
  * checkPermission
  * @param {string} permission like 'view_pm_events'
@@ -110,9 +112,13 @@ export function canUser(permission, modelToCheck = null) {
 export const userCan = canUser; // alias for canUser
 
 export default function withPermissions(WrappedComponent, forceUsePermissions = false) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_PERMISSIONS_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if ((!props.usePermissions && !forceUsePermissions) || props.alreadyHasWithPermissions) {
+	const ComponentWithPermissions = forwardRef((props, ref) => {
+
+		if (!props.usePermissions && !forceUsePermissions) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -141,10 +147,12 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 
 		return <WrappedComponent
 					{...props}
-					alreadyHasWithPermissions={true}
 					ref={ref}
 					canUser={canUserDecorator}
 					showPermissionsError={showPermissionsError}
 				/>;
 	});
+
+	ComponentWithPermissions[WITH_PERMISSIONS_MARKER] = true;
+	return ComponentWithPermissions;
 }

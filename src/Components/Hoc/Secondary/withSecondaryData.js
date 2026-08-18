@@ -2,15 +2,27 @@ import { useState, useEffect, } from 'react';
 import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
+const WITH_SECONDARY_DATA_MARKER = Symbol.for('secondaryAlreadyHasWithData');
+
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withData
 // This HOC will eventually get out of sync with that one, and may need to be updated.
 
 export default function withSecondaryData(WrappedComponent) {
-	return (props) => {
+	if (WrappedComponent?.[WITH_SECONDARY_DATA_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.secondaryDisableWithData || props.secondaryAlreadyHasWithData) {
-			return <WrappedComponent {...props} />;
+	const ComponentWithSecondaryData = (props) => {
+		const {
+				secondaryDisableWithData = false,
+				secondaryAlreadyHasWithData,
+				...incomingProps
+			} = props;
+
+		if (secondaryDisableWithData) {
+			return <WrappedComponent {...incomingProps} />;
 		}
+
 		
 		const
 			{
@@ -33,8 +45,8 @@ export default function withSecondaryData(WrappedComponent) {
 
 				// withComponent
 				self,
-			} = props,
-			propsToPass = _.omit(props, ['secondaryModel']), // passing 'secondaryModel' would mess things up if withData gets called twice (e.g. withData(...withData(...)) ), as we'd be trying to recreate SecondaryRepository twice
+			} = incomingProps,
+			propsToPass = _.omit(incomingProps, ['secondaryModel']), // passing 'secondaryModel' would mess things up if withData gets called twice (e.g. withData(...withData(...)) ), as we'd be trying to recreate SecondaryRepository twice
 			localIdIx = secondaryIdIx || (secondaryFields && secondaryIdField ? secondaryFields.indexOf(secondaryIdField) : null),
 			localDisplayIx = secondaryDisplayIx || (secondaryFields && secondaryDisplayField ? secondaryFields?.indexOf(secondaryDisplayField) : null),
 			[LocalSecondaryRepository, setLocalSecondaryRepository] = useState(SecondaryRepository || null), // simply pass on SecondaryRepository if it's already supplied
@@ -103,8 +115,6 @@ export default function withSecondaryData(WrappedComponent) {
 
 		return <WrappedComponent
 					{...propsToPass}
-					secondaryDisableWithData={false}
-					secondaryAlreadyHasWithData={true}
 					SecondaryRepository={LocalSecondaryRepository}
 					secondaryModel={secondaryModel}
 					secondaryData={secondaryData}
@@ -115,4 +125,7 @@ export default function withSecondaryData(WrappedComponent) {
 					secondaryDisplayIx={localDisplayIx}
 				/>;
 	};
+
+	ComponentWithSecondaryData[WITH_SECONDARY_DATA_MARKER] = true;
+	return ComponentWithSecondaryData;
 }

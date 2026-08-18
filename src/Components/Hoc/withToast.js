@@ -8,13 +8,24 @@ import {
 import clsx from 'clsx';
 import _ from 'lodash';
 
+const WITH_TOAST_MARKER = Symbol.for('alreadyHasWithToast');
+
 // This HOC enables showing a toast in the wrapped component.
 
 export default function withToast(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_TOAST_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.disableWithToast || props.alreadyHasWithToast) {
-			return <WrappedComponent {...props} ref={ref} />;
+	const ComponentWithToast = forwardRef((props, ref) => {
+		const {
+				disableWithToast = false,
+				alreadyHasWithToast,
+				...incomingProps
+			} = props;
+
+		if (disableWithToast) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 
 		const
@@ -79,11 +90,12 @@ export default function withToast(WrappedComponent) {
 			};
 		
 		return <WrappedComponent
-					{...props}
-					alreadyHasWithToast={true}
-					disableWithToast={false}
+					{...incomingProps}
 					ref={ref}
 					showToast={showToast}
 				/>;
 	});
+
+	ComponentWithToast[WITH_TOAST_MARKER] = true;
+	return ComponentWithToast;
 }

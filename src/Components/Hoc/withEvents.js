@@ -1,20 +1,24 @@
 import { forwardRef } from 'react';
 
-export default function withEvents(WrappedComponent) {
-	return forwardRef((props, ref) => {
+const WITH_EVENTS_MARKER = Symbol.for('alreadyHasWithEvents');
 
-		if (props.alreadyHasWithEvents) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
-		
+export default function withEvents(WrappedComponent) {
+	if (WrappedComponent?.[WITH_EVENTS_MARKER]) {
+		return WrappedComponent;
+	}
+
+	const ComponentWithEvents = forwardRef((props, ref) => {
+
 		const {
 				onEvent,
 			} = props;
 		return <WrappedComponent
 					{...props}
-					alreadyHasWithEvents={true}
 					ref={ref}
 					fireEvent={onEvent}
 				/>;
 	});
+
+	ComponentWithEvents[WITH_EVENTS_MARKER] = true;
+	return ComponentWithEvents;
 }

@@ -67,6 +67,7 @@ export default function Header(props) {
 							className: styles.PANEL_HEADER_ICON_CLASSNAME,
 						}}
 						className={closeClassName}
+						tooltip="Close"
 					/>;
 	}
 	if (isCollapsible) {
@@ -94,6 +95,7 @@ export default function Header(props) {
 							className: styles.PANEL_HEADER_ICON_CLASSNAME,
 						}}
 						className={collapseClassName}
+						tooltip="Toggle expand/collapse"
 					/>;
 	}
 	

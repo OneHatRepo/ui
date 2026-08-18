@@ -17,6 +17,8 @@ export default function SetupButton(props) {
 		onPress = () => dispatch(toggleSetupMode()),
 		buttonClassName = clsx(
 			'SetupButton',
+			'min-h-10',
+			'py-[10px]',
 			isSetupMode
 				? 'bg-red-500 data-[hover=true]:bg-red-600 data-[active=true]:bg-red-700'
 				: 'bg-grey-100 data-[hover=true]:bg-grey-900/20 data-[active=true]:bg-grey-900/50',

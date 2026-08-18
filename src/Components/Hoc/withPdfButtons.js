@@ -13,8 +13,14 @@ import UiGlobals from '../../UiGlobals.js';
 import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
+const WITH_PDF_BUTTONS_MARKER = Symbol.for('alreadyHasWithPdfButtons');
+
 export default function withPdfButtons(WrappedComponent) {
-	return withModal(forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_PDF_BUTTONS_MARKER]) {
+		return WrappedComponent;
+	}
+
+	const ComponentWithPdfButtons = withModal(forwardRef((props, ref) => {
 		let showButtons = true;
 		if (!props.showPdfBtns) {
 			showButtons = false;
@@ -22,7 +28,7 @@ export default function withPdfButtons(WrappedComponent) {
 		if (props.canUser && !props.canUser(VIEW)) { // permissions
 			showButtons = false;
 		}
-		if (!showButtons || props.alreadyHasWithPdfButtons) {
+		if (!showButtons) {
 			// bypass everything.
 			// If we don't do this, we get an infinite recursion with Form
 			// because this HOC wraps Form and uses Form itself.
@@ -446,9 +452,11 @@ export default function withPdfButtons(WrappedComponent) {
 		return <WrappedComponent
 					{...props}
 					ref={ref}
-					alreadyHasWithPdfButtons={true}
 					additionalEditButtons={additionalEditButtons}
 					additionalViewButtons={additionalViewButtons}
 				/>;
 	}));
+
+	ComponentWithPdfButtons[WITH_PDF_BUTTONS_MARKER] = true;
+	return ComponentWithPdfButtons;
 }

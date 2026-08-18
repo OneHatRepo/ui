@@ -2,6 +2,8 @@ import { forwardRef, useState, useEffect, } from 'react';
 import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
+const WITH_DATA_MARKER = Symbol.for('alreadyHasWithData');
+
 // Keeps track of LocalRepository.
 // If a Repository was submitted, this simply passes everything through
 // without changing anything. In that way, a component can have multiple
@@ -10,10 +12,19 @@ import _ from 'lodash';
 // This is the primary link between @onehat/data and the UI components
 
 export default function withData(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_DATA_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.disableWithData || props.alreadyHasWithData) {
-			return <WrappedComponent {...props} ref={ref} />;
+	const ComponentWithData = forwardRef((props, ref) => {
+		const {
+				disableWithData = false,
+				alreadyHasWithData,
+				...incomingProps
+			} = props;
+
+		if (disableWithData) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 		
 		const {
@@ -36,7 +47,7 @@ export default function withData(WrappedComponent) {
 
 				// withComponent
 				self,
-			} = props,
+			} = incomingProps,
 			localIdIx = idIx || (fields && idField ? fields.indexOf(idField) : null),
 			localDisplayIx = displayIx || (fields && displayField ? fields?.indexOf(displayField) : null),
 			[LocalRepository, setLocalRepository] = useState(Repository || null), // simply pass on Repository if it's already supplied
@@ -120,9 +131,7 @@ export default function withData(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...props}
-					disableWithData={false}
-					alreadyHasWithData={true}
+					{...incomingProps}
 					ref={ref}
 					Repository={LocalRepository}
 					fields={fields}
@@ -139,4 +148,7 @@ export default function withData(WrappedComponent) {
 					}}
 				/>;
 	});
+
+	ComponentWithData[WITH_DATA_MARKER] = true;
+	return ComponentWithData;
 }

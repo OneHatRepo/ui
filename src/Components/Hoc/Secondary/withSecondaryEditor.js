@@ -18,14 +18,25 @@ import Button from '../../Buttons/Button.js';
 import UiGlobals from '../../../UiGlobals.js';
 import _ from 'lodash';
 
+const WITH_SECONDARY_EDITOR_MARKER = Symbol.for('secondaryAlreadyHasWithEditor');
+
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withEditor
 // This HOC will eventually get out of sync with that one, and may need to be updated.
 
 export default function withSecondaryEditor(WrappedComponent, isTree = false) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_SECONDARY_EDITOR_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.secondaryDisableWithEditor || props.secondaryAlreadyHasWithEditor) {
-			return <WrappedComponent {...props} ref={ref} isTree={isTree} />;
+	const ComponentWithSecondaryEditor = forwardRef((props, ref) => {
+		const {
+				secondaryDisableWithEditor = false,
+				secondaryAlreadyHasWithEditor,
+				...incomingProps
+			} = props;
+
+		if (secondaryDisableWithEditor) {
+			return <WrappedComponent {...incomingProps} ref={ref} isTree={isTree} />;
 		}
 
 		const {
@@ -85,7 +96,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				confirm,
 				hideAlert,
 				showInfo,
-			} = props,
+			} = incomingProps,
 			forceUpdate = useForceUpdate(),
 			secondaryListeners = useRef({}),
 			secondaryEditorStateRef = useRef(),
@@ -774,10 +785,8 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 		}
 
 		return <WrappedComponent
-					{...props}
+					{...incomingProps}
 					ref={ref}
-					secondaryDisableWithEditor={false}
-					secondaryAlreadyHasWithEditor={true}
 					secondaryCurrentRecord={secondaryCurrentRecord}
 					secondarySetCurrentRecord={secondarySetCurrentRecord}
 					secondaryIsEditorShown={secondaryGetIsEditorShown()}
@@ -826,4 +835,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					isTree={isTree}
 				/>;
 	});
+
+	ComponentWithSecondaryEditor[WITH_SECONDARY_EDITOR_MARKER] = true;
+	return ComponentWithSecondaryEditor;
 }

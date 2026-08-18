@@ -1,11 +1,11 @@
 import {
-	Icon,
 	VStack,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripLinesVertical from '../Icons/GripLinesVertical.js';
+import IconWithTooltip from '../Icons/IconWithTooltip.js';
 
 function HeaderResizeHandle(props) {
 	const {
@@ -23,10 +23,12 @@ function HeaderResizeHandle(props) {
 					isDragging ? 'bg-grey-300' : 'bg-grey-100',
 				)}
 			>
-				<Icon
+				<IconWithTooltip
 					as={GripLinesVertical}
 					size="sm"
 					className="resizeHandle text-grey-300"
+					tooltip="Resize Column"
+					tooltipTriggerClassName="h-full w-full"
 				/>
 			</VStack>;
 }

@@ -35,7 +35,7 @@ export default function SquareButton(props) {
 		'justify-center',
 		'items-center',
 		'bg-grey-200',
-		'hover:bg-grey-400',
+		'data-[hover=true]:bg-grey-400',
 		'disabled:bg-grey-100',
 	);
 	if (isActive && activeClassName) {

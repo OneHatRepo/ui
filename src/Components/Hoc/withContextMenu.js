@@ -9,13 +9,15 @@ import Button from '../Buttons/Button.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
-export default function withContextMenu(WrappedComponent) {
-	return forwardRef((props, ref) => {
+const WITH_CONTEXT_MENU_MARKER = Symbol.for('alreadyHasWithContextMenu');
 
-		if (props.alreadyHasWithContextMenu) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
-		
+export default function withContextMenu(WrappedComponent) {
+	if (WrappedComponent?.[WITH_CONTEXT_MENU_MARKER]) {
+		return WrappedComponent;
+	}
+
+	const ComponentWithContextMenu = forwardRef((props, ref) => {
+
 		const {
 				// extract and pass
 				disableContextMenu = false,
@@ -175,9 +177,11 @@ export default function withContextMenu(WrappedComponent) {
 
 		return <WrappedComponent
 					{...propsToPass}
-					alreadyHasWithContextMenu={true}
 					ref={ref}
 					onContextMenu={onContextMenu}
 				/>;
 	});
+
+	ComponentWithContextMenu[WITH_CONTEXT_MENU_MARKER] = true;
+	return ComponentWithContextMenu;
 }

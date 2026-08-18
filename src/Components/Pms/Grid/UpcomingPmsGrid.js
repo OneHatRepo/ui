@@ -249,6 +249,18 @@ function UpcomingPmsGrid(props) {
 		return <Loading />;
 	}
 
+	const buttonClassNames = [
+		'flex',
+		'items-center',
+		'justify-center',
+		'p-1',
+		'min-h-[30px]',
+		'bg-grey-100',
+		'hover:bg-grey-300',
+		'data-[hover=true]:bg-grey-300',
+		'cursor-pointer',
+	];
+
 	return <VStack className="flex-1 w-full">
 				<ScreenHeader title="Upcoming PMs" icon={OilCan} />
 				<Grid
@@ -354,9 +366,7 @@ function UpcomingPmsGrid(props) {
 							renderer: (entity, fieldName, cellProps, key) => {
 								const className = clsx(
 									cellProps.className,
-									'flex',
-									'items-center',
-									'justify-center',
+									buttonClassNames,
 								);
 								return <IconButton
 											key={key}
@@ -384,9 +394,7 @@ function UpcomingPmsGrid(props) {
 								renderer: (entity, fieldName, cellProps, key) => {
 									const className = clsx(
 										cellProps.className,
-										'flex',
-										'items-center',
-										'justify-center'
+										buttonClassNames,
 									);
 									return <IconButton
 												key={key}
@@ -414,9 +422,7 @@ function UpcomingPmsGrid(props) {
 							renderer: (entity, fieldName, cellProps, key) => {
 								const className = clsx(
 									cellProps.className,
-									'flex',
-									'items-center',
-									'justify-center'
+									buttonClassNames,
 								);
 								return <IconButton
 											key={key}
@@ -443,9 +449,7 @@ function UpcomingPmsGrid(props) {
 							renderer: (entity, fieldName, cellProps, key) => {
 								const className = clsx(
 									cellProps.className,
-									'flex',
-									'items-center',
-									'justify-center'
+									buttonClassNames,
 								);
 								return <IconButton
 											key={key}

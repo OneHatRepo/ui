@@ -4,13 +4,24 @@ import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import _ from 'lodash';
 
+const WITH_VALUE_MARKER = Symbol.for('alreadyHasWithValue');
+
 // This HOC gives the component value props, primarily for a Form Field.
 
 export default function withValue(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_VALUE_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.disableWithValue || props.alreadyHasWithValue) {
-			return <WrappedComponent {...props} ref={ref} />;
+	const ComponentWithValue = forwardRef((props, ref) => {
+		const {
+				disableWithValue = false,
+				alreadyHasWithValue,
+				...incomingProps
+			} = props;
+
+		if (disableWithValue) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 
 		const {
@@ -26,7 +37,7 @@ export default function withValue(WrappedComponent) {
 				// withData
 				Repository,
 				idIx,
-			} = props,
+			} = incomingProps,
 			forceUpdate = useForceUpdate(),
 			childRef = useRef({}),
 			onChangeValueRef = useRef(),
@@ -135,13 +146,14 @@ export default function withValue(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...props}
-					disableWithValue={false}
-					alreadyHasWithValue={true}
+					{...incomingProps}
 					ref={ref}
 					value={convertedValue}
 					setValue={setValueRef.current}
 					onChangeSelection={onChangeSelection}
 				/>;
 	});
+
+	ComponentWithValue[WITH_VALUE_MARKER] = true;
+	return ComponentWithValue;
 }

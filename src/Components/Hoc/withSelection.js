@@ -9,14 +9,25 @@ import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
-export default function withSelection(WrappedComponent) {
-	return forwardRef((props, ref) => {
+const WITH_SELECTION_MARKER = Symbol.for('alreadyHasWithSelection');
 
-		if (props.disableWithSelection || props.alreadyHasWithSelection) {
-			return <WrappedComponent {...props} ref={ref} />;
+export default function withSelection(WrappedComponent) {
+	if (WrappedComponent?.[WITH_SELECTION_MARKER]) {
+		return WrappedComponent;
+	}
+
+	const ComponentWithSelection = forwardRef((props, ref) => {
+		const {
+				disableWithSelection = false,
+				alreadyHasWithSelection,
+				...incomingProps
+			} = props;
+
+		if (disableWithSelection) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 
-		if (props.isSelectionControlled && !props.onChangeSelection) {
+		if (incomingProps.isSelectionControlled && !incomingProps.onChangeSelection) {
 			throw Error('withSelection: isSelectionControlled is true, but no onChangeSelection was provided!');
 		}
 
@@ -41,7 +52,7 @@ export default function withSelection(WrappedComponent) {
 				data,
 				idIx,
 				displayIx,
-			} = props,
+			} = incomingProps,
 			usesWithValue = !!setValue,
 			initialSelection = selection || defaultSelection || [],
 			forceUpdate = useForceUpdate(),
@@ -468,10 +479,8 @@ export default function withSelection(WrappedComponent) {
 		}
 		
 		return <WrappedComponent
-					{...props}
+					{...incomingProps}
 					ref={ref}
-					disableWithSelection={false}
-					alreadyHasWithSelection={true}
 					selection={getSelection()}
 					getSelection={getSelection}
 					setSelection={setSelection}
@@ -492,4 +501,7 @@ export default function withSelection(WrappedComponent) {
 					refreshSelection={refreshSelection}
 				/>;
 	});
+
+	ComponentWithSelection[WITH_SELECTION_MARKER] = true;
+	return ComponentWithSelection;
 }

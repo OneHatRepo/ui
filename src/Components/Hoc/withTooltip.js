@@ -2,16 +2,19 @@ import { forwardRef } from 'react';
 import Tooltip from '../Tooltip/Tooltip.js';
 import _ from 'lodash';
 
+const WITH_TOOLTIP_MARKER = Symbol.for('alreadyHasWithTooltip');
+
 // This HOC adds a standardized tooltip to the wrapped component.
 // If you need a tooltip with custom elements, use the Tooltip component directly.
 
 export default function withTooltip(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_TOOLTIP_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.alreadyHasWithTooltip) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
+	const ComponentWithTooltip = forwardRef((props, ref) => {
 		
+		// Strip tooltip-specific props so they are never forwarded to DOM-backed components.
 		const {
 				tooltip,
 				tooltipPlacement = 'bottom',
@@ -23,10 +26,10 @@ export default function withTooltip(WrappedComponent) {
 		
 		let component = <WrappedComponent
 							{...propsToPass}
-							alreadyHasWithTooltip={true}
 							ref={ref}
 						/>;
 
+		// Only render the tooltip wrapper when content/options are provided.
 		if (tooltip || !_.isEmpty(_tooltip)) {
 			component = <Tooltip
 							label={tooltip}
@@ -41,4 +44,7 @@ export default function withTooltip(WrappedComponent) {
 		
 		return component;
 	});
+
+	ComponentWithTooltip[WITH_TOOLTIP_MARKER] = true;
+	return ComponentWithTooltip;
 }

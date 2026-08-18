@@ -9,23 +9,34 @@ import useForceUpdate from '../../../Hooks/useForceUpdate.js';
 import inArray from '../../../Functions/inArray.js';
 import _ from 'lodash';
 
+const WITH_SECONDARY_SELECTION_MARKER = Symbol.for('secondaryAlreadyHasWithSelection');
+
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withSelection
 
 export default function withSelection(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_SECONDARY_SELECTION_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.secondaryDisableWithSelection || props.secondaryAlreadyHasWithSelection) {
-			return <WrappedComponent {...props} ref={ref} />;
+	const ComponentWithSecondarySelection = forwardRef((props, ref) => {
+		const {
+				secondaryDisableWithSelection = false,
+				secondaryAlreadyHasWithSelection,
+				...incomingProps
+			} = props;
+
+		if (secondaryDisableWithSelection) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 
-		if (props.secondarySetSelection) {
+		if (incomingProps.secondarySetSelection) {
 			// bypass everything, since we're already using withSelection() in hierarchy.
 			// For example, Combo has withSelection(), and intenally it uses Grid which also has withSelection(),
 			// but we only need it defined once for the whole thing.
-			return <WrappedComponent {...props} ref={ref} />;
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 
-		if (props.isSecondarySelectionControlled && !props.secondaryOnChangeSelection) {
+		if (incomingProps.isSecondarySelectionControlled && !incomingProps.secondaryOnChangeSelection) {
 			throw Error('withSecondarySelection: isSecondarySelectionControlled is true, but no secondaryOnChangeSelection was provided!');
 		}
 
@@ -50,7 +61,7 @@ export default function withSelection(WrappedComponent) {
 				secondaryData,
 				secondaryIdIx,
 				secondaryDisplayIx,
-			} = props,
+			} = incomingProps,
 			usesWithValue = !!secondarySetValue,
 			initialSelection = secondarySelection || secondaryDefaultSelection || [],
 			forceUpdate = useForceUpdate(),
@@ -471,9 +482,7 @@ export default function withSelection(WrappedComponent) {
 		}
 		
 		return <WrappedComponent
-					{...props}
-					secondaryDisableWithSelection={false}
-					secondaryAlreadyHasWithSelection={true}
+					{...incomingProps}
 					ref={ref}
 					secondarySelection={secondaryGetSelection()}
 					secondaryGetSelection={secondaryGetSelection}
@@ -495,4 +504,7 @@ export default function withSelection(WrappedComponent) {
 					secondaryRefreshSelection={secondaryRefreshSelection}
 				/>;
 	});
+
+	ComponentWithSecondarySelection[WITH_SECONDARY_SELECTION_MARKER] = true;
+	return ComponentWithSecondarySelection;
 }

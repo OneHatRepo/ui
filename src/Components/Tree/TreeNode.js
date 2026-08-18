@@ -196,6 +196,7 @@ export default function TreeNode(props) {
 								'ml-2',
 								styles.TREE_NODE_EXPAND_BTN_CLASSNAME,
 							)}
+							tooltip="Toggle expand/collapse"
 						/> :
 						<BoxNative
 							{...testProps('spacer')}

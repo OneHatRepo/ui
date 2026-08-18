@@ -19,6 +19,8 @@ import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
+const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
+
 // This HOC enables usage of more complex dialogs in the wrapped component.
 // Use withAlert for simple alerts, confirmations, and info dialogs.
 
@@ -54,10 +56,19 @@ import _ from 'lodash';
  */
 
 export default function withModal(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_MODAL_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.disableWithModal || props.alreadyHasWithModal) {
-			return <WrappedComponent {...props} ref={ref} />;
+	const ComponentWithModal = forwardRef((props, ref) => {
+		const {
+				disableWithModal = false,
+				alreadyHasWithModal,
+				...incomingProps
+			} = props;
+
+		if (disableWithModal) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 
 		const
@@ -307,9 +318,7 @@ export default function withModal(WrappedComponent) {
 
 		return <>
 					<WrappedComponent
-						{...props}
-						disableWithModal={false}
-						alreadyHasWithModal={true}
+						{...incomingProps}
 						ref={ref}
 						showModal={showModal}
 						hideModal={hideModalProp}
@@ -336,4 +345,7 @@ export default function withModal(WrappedComponent) {
 					})}
 				</>;
 	});
+
+	ComponentWithModal[WITH_MODAL_MARKER] = true;
+	return ComponentWithModal;
 }

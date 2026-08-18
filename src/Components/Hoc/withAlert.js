@@ -12,21 +12,32 @@ import CircleQuestion from '../Icons/CircleQuestion.js';
 import TriangleExclamation from '../Icons/TriangleExclamation.js';
 import _ from 'lodash';
 
+const WITH_ALERT_MARKER = Symbol.for('alreadyHasWithAlert');
+
 // This HOC enables easy usage of alert dialogs in the wrapped component.
 // It can be used for simple alerts, info boxes, confirmations, and 
 // custom dialogs.
 
 function withAlert(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_ALERT_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.disableWithAlert || props.alreadyHasWithAlert) {
-			return <WrappedComponent {...props} ref={ref} />;
+	const ComponentWithAlert = forwardRef((props, ref) => {
+		const {
+				disableWithAlert = false,
+				alreadyHasWithAlert,
+				...incomingProps
+			} = props;
+
+		if (disableWithAlert) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
 
 		const {
 				showModal,
 				hideModal,
-			} = props,
+			} = incomingProps,
 			getBody = (args) => {
 				const {
 					icon = TriangleExclamation,
@@ -194,10 +205,8 @@ function withAlert(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...props}
+					{...incomingProps}
 					ref={ref}
-					disableWithAlert={false}
-					alreadyHasWithAlert={true}
 					alert={onAlert}
 					getAlertBody={getBody}
 					confirm={onConfirm}
@@ -205,6 +214,9 @@ function withAlert(WrappedComponent) {
 					showInfo={onInfo}
 				/>;
 	});
+
+	ComponentWithAlert[WITH_ALERT_MARKER] = true;
+	return ComponentWithAlert;
 }
 
 export default function(WrappedComponent) {

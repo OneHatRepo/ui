@@ -1,11 +1,11 @@
 import {
-	Icon,
 	VStack,
 } from '@project-components/Gluestack';
 import clsx from 'clsx';
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 import GripVertical from '../Icons/GripVertical.js';
+import IconWithTooltip from '../Icons/IconWithTooltip.js';
 
 function HeaderReorderHandle(props) {
 	const {
@@ -23,10 +23,12 @@ function HeaderReorderHandle(props) {
 					isDragging ? 'bg-grey-300' : 'bg-grey-100',
 				)}
 			>
-				<Icon
+				<IconWithTooltip
 					as={GripVertical}
 					size="xs"
 					className="reorderHandle w-full h-full text-grey-300"
+					tooltip="Reorder Column"
+					tooltipTriggerClassName="h-full w-full"
 				/>
 			</VStack>;
 }

@@ -584,7 +584,7 @@ function Viewer(props) {
 							className={clsx(
 								'text-white',
 								'bg-warning-500',
-								'hover:bg-warning-600',
+								'data-[hover=true]:bg-warning-600',
 							)}
 							text="Delete"
 						/>

@@ -1770,7 +1770,7 @@ function Form(props) {
 							icon={Trash}
 							className={clsx(
 								'bg-warning-500',
-								'hover:bg-warning-700',
+								'data-[hover=true]:bg-warning-700',
 								'text-white',
 							)}
 							text="Delete"

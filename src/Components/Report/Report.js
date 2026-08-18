@@ -329,7 +329,7 @@ function Report(props) {
 							'rounded-lg',
 							'border',
 							'border-primary-300',
-							!isDisabled ? 'hover:bg-primary-300' : null,
+							!isDisabled ? 'data-[hover=true]:bg-primary-300' : null,
 						)}
 					>
 						{icon}

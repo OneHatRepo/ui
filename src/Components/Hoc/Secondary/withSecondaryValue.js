@@ -4,21 +4,32 @@ import useForceUpdate from '../../../Hooks/useForceUpdate.js';
 import FieldSetContext from '../../../Contexts/FieldSetContext.js';
 import _ from 'lodash';
 
+const WITH_SECONDARY_VALUE_MARKER = Symbol.for('secondaryAlreadyHasWithValue');
+
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withValue
 // This HOC will eventually get out of sync with that one, and may need to be updated.
 
 export default function withSecondaryValue(WrappedComponent) {
-	return (props) => {
+	if (WrappedComponent?.[WITH_SECONDARY_VALUE_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.secondaryDisableWithValue || props.secondaryAlreadyHasWithValue) {
-			return <WrappedComponent {...props} />;
+	const ComponentWithSecondaryValue = (props) => {
+		const {
+				secondaryDisableWithValue = false,
+				secondaryAlreadyHasWithValue,
+				...incomingProps
+			} = props;
+
+		if (secondaryDisableWithValue) {
+			return <WrappedComponent {...incomingProps} />;
 		}
 
-		if (props.secondarySetValue) {
+		if (incomingProps.secondarySetValue) {
 			// bypass everything, since we're already using withSecondaryValue() in hierarchy.
 			// For example, Combo has withSecondaryValue(), and intenally it uses Input which also has withSecondaryValue(),
 			// but we only need it defined once for the whole thing.
-			return <WrappedComponent {...props} />;
+			return <WrappedComponent {...incomingProps} />;
 		}
 
 		const
@@ -35,7 +46,7 @@ export default function withSecondaryValue(WrappedComponent) {
 				// withData
 				SecondaryRepository,
 				secondaryIdIx,
-			} = props,
+			} = incomingProps,
 			forceUpdate = useForceUpdate(),
 			childRef = useRef({}),
 			secondaryOnChangeValueRef = useRef(),
@@ -144,12 +155,13 @@ export default function withSecondaryValue(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...props}
-					secondaryDisableWithValue={false}
-					secondaryAlreadyHasWithValue={true}
+					{...incomingProps}
 					secondaryValue={convertedValue}
 					secondarySetValue={secondarySetValue}
 					secondaryOnChangeSelection={secondaryOnChangeSelection}
 				/>;
 	};
+
+	ComponentWithSecondaryValue[WITH_SECONDARY_VALUE_MARKER] = true;
+	return ComponentWithSecondaryValue;
 }

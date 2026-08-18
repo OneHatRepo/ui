@@ -1,6 +1,8 @@
 import { forwardRef, useRef, useEffect, } from 'react';
 import _ from 'lodash';
 
+const WITH_COMPONENT_MARKER = Symbol.for('alreadyHasWithComponent');
+
 // withComponent() is an HOC that should wrap every UI base component
 //
 // It does two things:
@@ -12,41 +14,54 @@ import _ from 'lodash';
 // can use these tokens for all components.
 
 export default function withComponent(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_COMPONENT_MARKER]) {
+		return WrappedComponent;
+	}
+
+	const ComponentWithComponent = forwardRef((props, ref) => {
+		const {
+				disableWithComponent = false,
+				alreadyHasWithComponent,
+				...incomingProps
+			} = props;
+
+		if (disableWithComponent) {
+			return <WrappedComponent {...incomingProps} ref={ref} />;
+		}
 
 		// if (props.disableWithComponent || props.alreadyHasWithComponent) {
 		// 	return <WrappedComponent {...props} ref={ref} />;
 		// }
 
-		props = _.clone(props); // without cloning, I couldn't write to props
+		let propsToUse = _.clone(incomingProps); // without cloning, I couldn't write to props
 
 		// translate h, w, and flex tokens to styles
-		if (!props.style) {
-			props.style = {};
+		if (!propsToUse.style) {
+			propsToUse.style = {};
 		}
-		if (props.h) {
-			props.style.height = props.h;
-			delete props.h;
+		if (propsToUse.h) {
+			propsToUse.style.height = propsToUse.h;
+			delete propsToUse.h;
 		}
-		if (props.w) {
-			props.style.width = props.w;
-			delete props.w;
+		if (propsToUse.w) {
+			propsToUse.style.width = propsToUse.w;
+			delete propsToUse.w;
 		}
-		if (props.flex) {
-			props.style.flex = props.flex;
-			delete props.flex;
+		if (propsToUse.flex) {
+			propsToUse.style.flex = propsToUse.flex;
+			delete propsToUse.flex;
 		}
 
 		// now deal with parent-child relationships (if needed)
-		if (!props.reference) {
-			return <WrappedComponent {...props} ref={ref} />;
+		if (!propsToUse.reference) {
+			return <WrappedComponent {...propsToUse} ref={ref} />;
 		}
 
 		const {
 				parent,
 				reference,
 				...propsToPass
-			} = props,
+			} = propsToUse,
 			childrenRef = useRef({}),
 			selfRef = useRef({
 				parent,
@@ -109,8 +124,10 @@ export default function withComponent(WrappedComponent) {
 					self={selfRef.current}
 					{...propsToPass}
 					ref={ref}
-					disableWithComponent={false}
 					// alreadyHasWithComponent={true}
 				/>;
 	});
+
+	ComponentWithComponent[WITH_COMPONENT_MARKER] = true;
+	return ComponentWithComponent;
 }

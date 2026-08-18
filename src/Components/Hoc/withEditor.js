@@ -19,11 +19,22 @@ import EditorModeContext from '../../Contexts/EditorModeContext.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
-export default function withEditor(WrappedComponent, isTree = false) {
-	return forwardRef((props, ref) => {
+const WITH_EDITOR_MARKER = Symbol.for('alreadyHasWithEditor');
 
-		if (props.disableWithEditor || props.alreadyHasWithEditor) {
-			return <WrappedComponent {...props} ref={ref} isTree={isTree} />;
+export default function withEditor(WrappedComponent, isTree = false) {
+	if (WrappedComponent?.[WITH_EDITOR_MARKER]) {
+		return WrappedComponent;
+	}
+
+	const ComponentWithEditor = forwardRef((props, ref) => {
+		const {
+				disableWithEditor = false,
+				alreadyHasWithEditor,
+				...incomingProps
+			} = props;
+
+		if (disableWithEditor) {
+			return <WrappedComponent {...incomingProps} ref={ref} isTree={isTree} />;
 		}
 
 		const {
@@ -90,7 +101,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				confirm,
 				hideAlert,
 				showInfo,
-			} = props,
+			} = incomingProps,
 			parentEditorModeContext = useContext(EditorModeContext),
 			forceUpdate = useForceUpdate(),
 			listeners = useRef({}),
@@ -1028,10 +1039,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 		return <EditorModeContext.Provider value={editorModeContextValue}>
 				<WrappedComponent
-					{...props}
+					{...incomingProps}
 					ref={ref}
-					disableWithEditor={false}
-					alreadyHasWithEditor={true}
 					currentRecord={currentRecord}
 					setCurrentRecord={setCurrentRecord}
 					isEditorShown={getIsEditorShown()}
@@ -1078,4 +1087,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				/>
 			</EditorModeContext.Provider>;
 	});
+
+	ComponentWithEditor[WITH_EDITOR_MARKER] = true;
+	return ComponentWithEditor;
 }

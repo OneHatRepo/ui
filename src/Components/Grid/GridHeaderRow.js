@@ -387,27 +387,27 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 							>
 								{isReorderable && isOver && 
 										<HeaderReorderHandle
-												key="HeaderReorderHandle"
-												mode={HORIZONTAL}
-												onDragStart={onColumnReorderDragStart}
-												onDrag={onColumnReorderDrag}
-												onDragStop={(delta, e) => onColumnReorderDragStop(delta, e, config)}
-												onChangeIsDragging={setIsDragging}
-												getProxy={(node) => {
-													const
-														columnHeader = node.parentElement,
-														columnHeaderRect = columnHeader.getBoundingClientRect(),
-														proxy = columnHeader.cloneNode(true);
-													
-													proxy.style.top = columnHeaderRect.top + 10 + 'px';
-													proxy.style.left = columnHeaderRect.left + 'px';
-													proxy.style.height = columnHeaderRect.height + 'px';
-													proxy.style.width = columnHeaderRect.width + 'px';
-													proxy.style.display = 'flex';
-													proxy.style.backgroundColor = '#ddd';
-													return proxy;
-												}}
-											/>}
+											key="HeaderReorderHandle"
+											mode={HORIZONTAL}
+											onDragStart={onColumnReorderDragStart}
+											onDrag={onColumnReorderDrag}
+											onDragStop={(delta, e) => onColumnReorderDragStop(delta, e, config)}
+											onChangeIsDragging={setIsDragging}
+											getProxy={(node) => {
+												const
+													columnHeader = node.parentElement,
+													columnHeaderRect = columnHeader.getBoundingClientRect(),
+													proxy = columnHeader.cloneNode(true);
+												
+												proxy.style.top = columnHeaderRect.top + 10 + 'px';
+												proxy.style.left = columnHeaderRect.left + 'px';
+												proxy.style.height = columnHeaderRect.height + 'px';
+												proxy.style.width = columnHeaderRect.width + 'px';
+												proxy.style.display = 'flex';
+												proxy.style.backgroundColor = '#ddd';
+												return proxy;
+											}}
+										/>}
 								<TextNative
 									key="Text"
 									numberOfLines={1}

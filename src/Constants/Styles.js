@@ -107,7 +107,12 @@ const defaults = {
 	GRID_REORDER_BORDER_COLOR: 'border-[#23d9ea]',
 	GRID_REORDER_BORDER_WIDTH: 'border-4',
 	GRID_REORDER_BORDER_STYLE: 'border-dashed',
-	ICON_BUTTON_CLASSNAME: '',
+	ICON_BUTTON_CLASSNAME: clsx(
+		'data-[hover=true]:bg-grey-900/20',
+		'data-[active=true]:bg-grey-900/30',
+		'hover:bg-grey-900/20',
+		'active:bg-grey-900/30',
+	),
 	INLINE_EDITOR_MIN_WIDTH: 'min-w-[150px]',
 	PANEL_FOOTER_CLASSNAME: 'border-t-primary-300', // :alpha.50
 	PANEL_HEADER_BG: 'bg-primary-500',

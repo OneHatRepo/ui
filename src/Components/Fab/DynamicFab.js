@@ -71,7 +71,7 @@ export default function DynamicFab(props) {
 										className={clsx(
 											'bg-primary-600',
 											'text-white',
-											'hover:bg-primary-700',
+											'data-[hover=true]:bg-primary-700',
 											'active:bg-primary-800',
 										)}
 										tooltipPlacement={tooltipPlacement}

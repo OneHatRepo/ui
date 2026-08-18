@@ -24,6 +24,8 @@ import inArray from '../../Functions/inArray.js';
 import UploadsDownloadsWindow from '../Window/UploadsDownloadsWindow.js';
 import _ from 'lodash';
 
+const WITH_PRESET_BUTTONS_MARKER = Symbol.for('alreadyHasWithPresetButtons');
+
 // Note: A 'present button' will create both a context menu item 
 // and a toolbar button that match in text label, icon, and handler.
 
@@ -40,9 +42,13 @@ const presetButtons = [
 ];
 
 export default function withPresetButtons(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_PRESET_BUTTONS_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (props.disablePresetButtons || props.alreadyHasWithPresetButtons) {
+	const ComponentWithPresetButtons = forwardRef((props, ref) => {
+
+		if (props.disablePresetButtons) {
 			// bypass everything
 			return <WrappedComponent {...props} ref={ref} />;
 		}
@@ -531,8 +537,6 @@ export default function withPresetButtons(WrappedComponent) {
 
 		return <WrappedComponent
 					{...propsToPass}
-					disablePresetButtons={false}
-					alreadyHasWithPresetButtons={true}
 					ref={ref}
 					contextMenuItems={[
 						...localContextMenuItems,
@@ -545,4 +549,7 @@ export default function withPresetButtons(WrappedComponent) {
 					onChangeColumnsConfig={onChangeColumnsConfigDecorator}
 				/>;
 	});
+
+	ComponentWithPresetButtons[WITH_PRESET_BUTTONS_MARKER] = true;
+	return ComponentWithPresetButtons;
 }
