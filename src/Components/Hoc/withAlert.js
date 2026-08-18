@@ -78,17 +78,12 @@ function withAlert(WrappedComponent) {
 						</HStack>;
 			},
 			onAlert = (arg1, onOk, includeCancel = false, canClose = true) => {
-
-
-
-				hideModal();
-
 				let title = 'Alert',
 					message,
 					buttons,
 					suppressOnOk = false,
-					h: 250,
-					w: 400;
+					h = 250,
+					w = 400;
 				
 				if (_.isString(arg1)) {
 					// simple alert
@@ -121,7 +116,8 @@ function withAlert(WrappedComponent) {
 						w = arg1.w;
 					}
 				}
-				showModal({
+				let modalId;
+				modalId = showModal({
 					testID: 'AlertModal',
 					title,
 					body: getBody({
@@ -130,7 +126,7 @@ function withAlert(WrappedComponent) {
 						fillColor: 'fill-red-500',
 					}),
 					onOk: suppressOnOk ? undefined : () => {
-						hideModal();
+						hideModal({ modalId });
 						if (onOk) {
 							onOk();
 						}
@@ -141,11 +137,13 @@ function withAlert(WrappedComponent) {
 					h,
 					w,
 					whichModal: 'alert',
+					stackMode: 'push',
+					showBackdrop: false,
 				});
 			},
 			onConfirm = (message, onYes, includeCancel = false, onNo) => {
-				hideModal();
-				showModal({
+				let modalId;
+				modalId = showModal({
 					testID: 'ConfirmModal',
 					title: 'Confirm',
 					body: getBody({
@@ -153,11 +151,11 @@ function withAlert(WrappedComponent) {
 						message,
 					}),
 					onYes: () => {
-						hideModal();
+						hideModal({ modalId });
 						onYes();
 					},
 					onNo: () => {
-						hideModal();
+						hideModal({ modalId });
 						if (onNo) {
 							onNo();
 						}
@@ -166,22 +164,26 @@ function withAlert(WrappedComponent) {
 					h: 250,
 					w: 400,
 					whichModal: 'confirm',
+					stackMode: 'push',
+					showBackdrop: false,
 				});
 			},
 			onInfo = (message) => {
-				hideModal();
-				showModal({
+				let modalId;
+				modalId = showModal({
 					testID: 'InfoModal',
 					title: 'Info',
 					body: getBody({
 						icon: CircleInfo,
 						message,
 					}),
-					onOk: () => hideModal(),
+					onOk: () => hideModal({ modalId }),
 					canClose: true,
 					h: 250,
 					w: 400,
 					whichModal: 'info',
+					stackMode: 'push',
+					showBackdrop: false,
 				});
 			};
 
