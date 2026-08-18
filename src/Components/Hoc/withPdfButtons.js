@@ -64,6 +64,7 @@ export default function withPdfButtons(WrappedComponent) {
 
 			} = props,
 			styles = UiGlobals.styles,
+			resolvedModel = model || Repository?.schema?.name || Repository?.name,
 			propertyNames = [],
 			buildModalItems = () => {
 				// Build a cloned PDF item tree so we never mutate source items by reference.
@@ -344,10 +345,15 @@ export default function withPdfButtons(WrappedComponent) {
 				// but this doesn't work when authentication headers are required.
 				// So now we fetch the PDF ourselves, then open it in a new window.
 
+				if (!resolvedModel) {
+					alert('Could not determine model for PDF route. Please pass a model prop or provide a Repository with a schema name.');
+					return;
+				}
+
 				data.id = selection[0].id;
 
 				const
-					url = UiGlobals.baseURL + model + '/viewModelPdf',
+					url = UiGlobals.baseURL + resolvedModel + '/viewModelPdf',
 					queryString = qs.stringify(data),
 					fullUrl = url + '?' + queryString;
 
@@ -393,6 +399,10 @@ export default function withPdfButtons(WrappedComponent) {
 				}
 			},
 			sendEmail = async (data) => {
+				if (!resolvedModel) {
+					alert('Could not determine model for PDF route. Please pass a model prop or provide a Repository with a schema name.');
+					return;
+				}
 
 				const
 					dispatch = UiGlobals.redux.dispatch,
@@ -401,7 +411,7 @@ export default function withPdfButtons(WrappedComponent) {
 				dispatch(setIsWaitModalShownAction(true));
 
 				data.id = selection[0].id;
-				const result = await Repository._send('POST', model + '/emailModelPdf', data);
+				const result = await Repository._send('POST', resolvedModel + '/emailModelPdf', data);
 
 				const {
 					root,
