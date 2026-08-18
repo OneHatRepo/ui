@@ -2,7 +2,7 @@ import { forwardRef, useRef, useState } from 'react';
 import {
 	Box,
 	Icon,
-	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
+	Modal, ModalHeader, ModalContent, ModalCloseButton, ModalFooter,
 	Pressable,
 	Text,
 } from '@project-components/Gluestack';
@@ -294,27 +294,24 @@ export default function withModal(WrappedComponent) {
 				if (!modal.showBackdrop) {
 					return null;
 				}
-				if (CURRENT_MODE === UI_MODE_NATIVE) {
-					// Gluestack's ModalBackdrop was not working on Native,
-					// so workaround is to do it manually for now
-					return <Pressable
-								onPress={() => {
-									if (isTopModal && modal.canClose) {
-										hideModal({ modalId: modal.id });
-									}
-								}}
-								className={clsx(
-									'withModal-ModalBackdrop-replacment',
-									'h-full',
-									'w-full',
-									'absolute',
-									'top-0',
-									'left-0',
-									'bg-black/50',
-								)}
-							/>;
-				}
-				return <ModalBackdrop className="withModal-ModalBackdrop" />;
+				const onBackdropPress = () => {
+					if (isTopModal) {
+						hideModal({ modalId: modal.id });
+					}
+				};
+				return <Pressable
+							onPress={onBackdropPress}
+							className={clsx(
+								'withModal-ModalBackdrop-replacment',
+								'h-full',
+								'w-full',
+								'absolute',
+								'top-0',
+								'left-0',
+								'bg-black/50',
+								'web:pointer-events-auto',
+							)}
+						/>;
 			};
 
 		return <>
@@ -342,7 +339,19 @@ export default function withModal(WrappedComponent) {
 									{...testProps(modal.testID)}
 								>
 									{renderModalBackdrop(modal, isTopModal)}
-									{renderModalBody(modal, isTopModal)}
+									<ModalContent
+										className={clsx(
+											'withModal-ModalContent',
+											'w-auto',
+											'max-w-none',
+											'bg-transparent',
+											'border-0',
+											'shadow-none',
+											'p-0',
+										)}
+									>
+										{renderModalBody(modal, isTopModal)}
+									</ModalContent>
 								</Modal>;
 					})}
 				</>;
