@@ -10,9 +10,9 @@ import {
 import styles from '../../Styles/StyleSheets.js';
 import withDraggable from '../Hoc/withDraggable.js';
 
-// Note on modes:
-// HORIZONTAL means the Splitter moves along the X axis.
-// VERTICAL means the Splitter moves along the Y axis.
+// Note on modes in this codebase:
+// HORIZONTAL means a horizontal splitter bar, so it moves along the Y axis.
+// VERTICAL means a vertical splitter bar, so it moves along the X axis.
 
 function Splitter(props) {
 	const {

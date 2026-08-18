@@ -14,9 +14,9 @@ import {
 } from 'uuid';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 
-// Note on modes:
-// HORIZONTAL means the component moves along the X axis.
-// VERTICAL means the component moves along the Y axis.
+// Note on modes in this codebase:
+// HORIZONTAL means a horizontal splitter bar, so it moves along the Y axis.
+// VERTICAL means a vertical splitter bar, so it moves along the X axis.
 
 export default function withDraggable(WrappedComponent) {
 	return forwardRef((props, ref) => {
@@ -48,8 +48,30 @@ export default function withDraggable(WrappedComponent) {
 			[isDragging, setIsDraggingRaw] = useState(false),
 			[node, setNode] = useState(false),
 			[bounds, setBounds] = useState(null),
+			isDraggingRef = useRef(false),
+			draggedNodeRef = useRef(null),
+			dragStartPointRef = useRef({ x: null, y: null }),
+			dragLastPointRef = useRef({ x: null, y: null }),
 			nodeRef = useRef(null), // to get around React Draggable bug // https://stackoverflow.com/a/63603903
 			{ block } = useBlocking(),
+			getPointerPosition = (evt) => {
+				if (!evt) {
+					return { x: null, y: null };
+				}
+
+				const touch = evt.touches?.[0] || evt.changedTouches?.[0];
+				if (touch) {
+					return {
+						x: touch.pageX,
+						y: touch.pageY,
+					};
+				}
+
+				return {
+					x: evt.pageX,
+					y: evt.pageY,
+				};
+			},
 			setIsDragging = (value) => {
 				setIsDraggingRaw(value);
 				if (onChangeIsDragging) {
@@ -57,7 +79,7 @@ export default function withDraggable(WrappedComponent) {
 				}
 			},
 			handleStart = (e, info) => {
-				if (isDragging) {
+				if (isDraggingRef.current) {
 					return;
 				}
 
@@ -68,6 +90,7 @@ export default function withDraggable(WrappedComponent) {
 					parentContainer = getParentNode && getParentNode(node);
 
 				setNode(node);
+				draggedNodeRef.current = node;
 
 				if (parentContainer && !parentContainer.id) {
 					parentContainer.id = 'a' + uuid().replace(/-/g, '');
@@ -96,6 +119,11 @@ export default function withDraggable(WrappedComponent) {
 				
 				node.style.visibility = 'hidden';
 
+				const startPos = getPointerPosition(e);
+				dragStartPointRef.current = startPos;
+				dragLastPointRef.current = startPos;
+
+				isDraggingRef.current = true;
 				setIsDragging(true);
 
 				if (onDragStart) {
@@ -116,16 +144,27 @@ export default function withDraggable(WrappedComponent) {
 				if (mode === HORIZONTAL) {
 					return pageX >= left && pageX <= right;
 				} else if (mode === VERTICAL) {
-					return pageY <= bottom && pageX >= top;
+					return pageY >= top && pageY <= bottom;
 				} else {
-					return pageX >= left && pageX <= right && pageY <= bottom && pageX >= top;
+					return pageX >= left && pageX <= right && pageY >= top && pageY <= bottom;
 				}
 			},
 			handleDrag = (e, info) => {
+				if (!isDraggingRef.current) {
+					return;
+				}
+
+				const activeNode = draggedNodeRef.current || node;
+				if (!activeNode) {
+					return;
+				}
+
 				// Move proxy to new page coords
 				if (!isWithinBounds(e)) {
 					return;
 				}
+
+				dragLastPointRef.current = getPointerPosition(e);
 
 				const {
 					deltaX,
@@ -151,12 +190,19 @@ export default function withDraggable(WrappedComponent) {
 					proxy.style.top = currentTop + deltaY + 'px';
 				}
 				if (onDrag) {
-					onDrag(info, e, proxy, node);
+					onDrag(info, e, proxy, activeNode);
 				}
 
 			},
 			handleStop = (e, info) => {
-				if (!isDragging) {
+				if (!isDraggingRef.current) {
+					return;
+				}
+
+				const activeNode = draggedNodeRef.current || node;
+				if (!activeNode) {
+					isDraggingRef.current = false;
+					setIsDragging(false);
 					return;
 				}
 
@@ -164,7 +210,9 @@ export default function withDraggable(WrappedComponent) {
 
 				// remove proxy
 				const proxy = document.getElementById('dragproxy');
-				proxy.remove();
+				if (proxy) {
+					proxy.remove();
+				}
 
 				// constrain node to bounds
 				if (!isWithinBounds(e)) {
@@ -185,44 +233,58 @@ export default function withDraggable(WrappedComponent) {
 						} else if (pageX > right) {
 							newX = right;
 						}
-						node.style.left = newX + 'px';
+						activeNode.style.left = newX + 'px';
 					} else if (mode === VERTICAL) {
 						if (top > pageY) {
 							newX = top;
 						} else if (pageY > bottom) {
 							newX = bottom;
 						}
-						node.style.top = newY + 'px';
+						activeNode.style.top = newY + 'px';
 					} else {
 						if (left > pageX) {
 							newX = left;
 						} else if (pageX > right) {
 							newX = right;
 						}
-						node.style.left = newX + 'px';
+						activeNode.style.left = newX + 'px';
 
 						if (top > pageY) {
 							newX = top;
 						} else if (pageY > bottom) {
 							newX = bottom;
 						}
-						node.style.top = newY + 'px';
+						activeNode.style.top = newY + 'px';
 					}
 				}
 
 				// show original node
-				node.style.visibility = 'visible';
+				activeNode.style.visibility = 'visible';
 
 				block();
 				if (onDragStop) {
+					const
+						stopPos = getPointerPosition(e),
+						startPos = dragStartPointRef.current,
+						fallbackPos = dragLastPointRef.current,
+						resolvedX = stopPos.x ?? fallbackPos.x,
+						resolvedY = stopPos.y ?? fallbackPos.y,
+						deltaX = (resolvedX ?? 0) - (startPos.x ?? resolvedX ?? 0),
+						deltaY = (resolvedY ?? 0) - (startPos.y ?? resolvedY ?? 0);
+
 					if (mode === HORIZONTAL) {
-						onDragStop(info.x, e, node);
+						onDragStop(deltaX, e, activeNode);
 					} else if (mode === VERTICAL) {
-						onDragStop(info.y, e, node);
+						onDragStop(deltaY, e, activeNode);
 					} else {
-						onDragStop(info, e, node);
+						onDragStop(info, e, activeNode);
 					}
 				}
+				dragStartPointRef.current = { x: null, y: null };
+				dragLastPointRef.current = { x: null, y: null };
+				isDraggingRef.current = false;
+				draggedNodeRef.current = null;
+				setNode(false);
 				setIsDragging(false);
 			};
 		propsToPass.isDragging = isDragging;
