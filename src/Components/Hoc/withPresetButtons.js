@@ -323,14 +323,15 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case VIEW:
-						if (!onView) {
-							throw Error('withPresetButtons: onView is required for VIEW preset button');
-						}
 						key = 'viewBtn';
 						text = 'View';
-						handler = (parent, e) => onView();
+						handler = (parent, e) => {
+							if (onView) {
+								onView();
+							}
+						};
 						icon = Eye;
-						isDisabled = !selection.length || selection.length !== 1;
+						isDisabled = !onView || !selection.length || selection.length !== 1;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection()
@@ -339,14 +340,15 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case COPY:
-						if (!onCopyToClipboard) {
-							throw Error('withPresetButtons: onCopyToClipboard is required for COPY preset button');
-						}
 						key = 'copyBtn';
 						text = 'Copy to Clipboard';
-						handler = (parent, e) => onCopyToClipboard();
+						handler = (parent, e) => {
+							if (onCopyToClipboard) {
+								onCopyToClipboard();
+							}
+						};
 						icon = Clipboard;
-						isDisabled = !selection.length;
+						isDisabled = !onCopyToClipboard || !selection.length;
 						if (isNoSelectorSelected() ||
 							isEmptySelection()
 						) {
@@ -354,9 +356,6 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case DUPLICATE:
-						if (!onDuplicate) {
-							throw Error('withPresetButtons: onDuplicate is required for DUPLICATE preset button');
-						}
 						key = 'duplicateBtn';
 						text = 'Duplicate';
 						if (model) {
@@ -365,10 +364,12 @@ export default function withPresetButtons(WrappedComponent) {
 							text += ' ' + inflected;
 						}
 						handler = (parent, e) => {
-							onDuplicate();
+							if (onDuplicate) {
+								onDuplicate();
+							}
 						};
 						icon = Duplicate;
-						isDisabled = !selection.length || selection.length !== 1;
+						isDisabled = !onDuplicate || !selection.length || selection.length !== 1;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection() ||
@@ -383,22 +384,30 @@ export default function withPresetButtons(WrappedComponent) {
 					// 	icon = Print;
 					// 	break;
 					case UPLOAD_DOWNLOAD:
-						if (!onUploadDownload) {
-							throw Error('withPresetButtons: onUploadDownload is required for UPLOAD_DOWNLOAD preset button');
-						}
 						key = 'uploadDownloadBtn';
 						text = 'Upload/Download';
-						handler = (parent, e) => onUploadDownload();
+						handler = (parent, e) => {
+							if (onUploadDownload) {
+								onUploadDownload();
+							}
+						};
 						icon = UploadDownload;
+						if (!onUploadDownload) {
+							isDisabled = true;
+						}
 						break;
 					case DOWNLOAD:
-						if (!onDownload) {
-							throw Error('withPresetButtons: onDownload is required for DOWNLOAD preset button');
-						}
 						key = 'downloadBtn';
 						text = 'Download';
-						handler = (parent, e) => onDownload();
+						handler = (parent, e) => {
+							if (onDownload) {
+								onDownload();
+							}
+						};
 						icon = Download;
+						if (!onDownload) {
+							isDisabled = true;
+						}
 						break;
 					default:
 				}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback, createRef, } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, createRef, forwardRef, } from 'react';
 import {
 	Box,
 	FlatList,
@@ -65,6 +65,7 @@ import gsToHex from '../../Functions/gsToHex.js';
 import Loading from '../Messages/Loading.js';
 import isSerializable from '../../Functions/isSerializable.js';
 import inArray from '../../Functions/inArray.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import ReloadButton from '../Buttons/ReloadButton.js';
 import CheckboxButton from '../Buttons/CheckboxButton.js';
 import GridHeaderRow from './GridHeaderRow.js';
@@ -2060,6 +2061,33 @@ function GridComponent(props) {
 	return grid;
 }
 
+// This HOC provides a default view-only windowed editor if no Editor is provided and a model is specified.
+function withDefaultViewOnlyWindowedEditor(WrappedComponent) {
+	return forwardRef((props, ref) => {
+		let Editor = props.Editor;
+		if (!Editor && props.model) {
+			try {
+				Editor = getComponentFromType(props.model + 'EditorWindow');
+			} catch(err) {
+				// No default editor window registered for this model.
+			}
+		}
+
+		const hasEditor = !!Editor;
+
+		return <WrappedComponent
+					{...props}
+					Editor={Editor}
+					canEditorViewOnly={hasEditor ? true : props.canEditorViewOnly}
+					disableAdd={hasEditor ? true : props.disableAdd}
+					disableEdit={hasEditor ? true : props.disableEdit}
+					disableDelete={hasEditor ? true : props.disableDelete}
+					disableDuplicate={hasEditor ? true : props.disableDuplicate}
+					disableView={!hasEditor ? true : props.disableView}
+					ref={ref}
+				/>;
+	});
+}
 
 export const Grid = withComponent(
 						withAlert(
@@ -2069,13 +2097,17 @@ export const Grid = withComponent(
 										withDropTarget(
 											withMultiSelection(
 												withSelection(
-													withFilters(
-														withPresetButtons(
-															withContextMenu(
-																GridComponent
+													withDefaultViewOnlyWindowedEditor(
+														withWindowedEditor(
+															withFilters(
+																withPresetButtons(
+																	withContextMenu(
+																		GridComponent
+																	)
+																),
+																true // isGrid
 															)
-														),
-														true // isGrid
+														)
 													)
 												)
 											)
