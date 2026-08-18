@@ -251,9 +251,6 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case EDIT:
-						if (!onEdit) {
-							throw Error('withPresetButtons: onEdit is required for EDIT preset button');
-						}
 						key = 'editBtn';
 						if (editDisplayMsg) {
 							text = editDisplayMsg;
@@ -271,10 +268,13 @@ export default function withPresetButtons(WrappedComponent) {
 							}
 						}
 						handler = (parent, e) => {
-							onEdit();
+							if (onEdit) {
+								onEdit();
+							}
 						};
 						icon = Edit;
-						if (isNoSelectorSelected() ||
+						if (!onEdit ||
+							isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection() ||
 							isProtectedValue() ||
@@ -284,9 +284,6 @@ export default function withPresetButtons(WrappedComponent) {
 						}
 						break;
 					case DELETE:
-						if (!onDelete) {
-							throw Error('withPresetButtons: onDelete is required for DELETE preset button');
-						}
 						key = 'deleteBtn';
 						if (deleteDisplayMsg) {
 							text = deleteDisplayMsg;
@@ -303,12 +300,14 @@ export default function withPresetButtons(WrappedComponent) {
 								text += ' ' + inflected;
 							}
 						}
-						handler = onDelete;
 						handler = (parent, e) => {
-							onDelete();
+							if (onDelete) {
+								onDelete();
+							}
 						};
 						icon = Trash;
-						if (isNoSelectorSelected() ||
+						if (!onDelete ||
+							isNoSelectorSelected() ||
 							isEmptySelection() ||
 							(isMultiSelection() && (!enableMultiDelete || isTree)) ||
 							isProtectedValue() ||
