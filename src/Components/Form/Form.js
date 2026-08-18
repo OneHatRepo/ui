@@ -105,6 +105,9 @@ function Form(props) {
 			checkIsEditingDisabled = true,
 			disableLabels = false,
 			disableDirtyIcon = false,
+			disableModeHeader = false,
+			disableClose = false,
+			disableCancel = false,
 			alwaysShowCancelButton = false,
 			onBack,
 			onReset,
@@ -1656,7 +1659,7 @@ function Form(props) {
 											)}
 											text="Back"
 										/>}
-									<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent ? 'Edit Mode (Inherited)' : 'Edit Mode'}</Text>
+									{!disableModeHeader && <Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent ? 'Edit Mode (Inherited)' : 'Edit Mode'}</Text>}
 								</HStack>
 								{onViewMode && !disableView && (!canUser || canUser(VIEW)) &&
 									<Button
@@ -1716,18 +1719,18 @@ function Form(props) {
 					// 	showCancelBtn = true;
 					// }
 					if (formState.isDirty || isPhantom) {
-						if (isSingle && onCancel) {
+						if (isSingle && !disableCancel && onCancel) {
 							showCancelBtn = true;
 						}
 					} else {
-						if (onClose) {
+						if (onClose && !disableClose) {
 							showCloseBtn = true;
 						}
 					}
 				}
 			} else {
 				// side editor only
-				if (isPhantom && isSingle && onCancel) {
+				if (isPhantom && isSingle && !disableCancel && onCancel) {
 					showCancelBtn = true;
 				}
 			}

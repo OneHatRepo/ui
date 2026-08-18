@@ -1,4 +1,4 @@
-import DisplayField from '../Form/Field/DisplayField.js';
+import DisplayField from '../../Form/Field/DisplayField.js';
 import clsx from 'clsx';
 import {
 	PM_STATUSES__OK,
@@ -8,7 +8,7 @@ import {
 	PM_STATUSES__SCHEDULED,
 	PM_STATUSES__OVERDUE,
 	PM_STATUSES__COMPLETED,
-} from '../../Constants/PmStatuses.js';
+} from '../../../Constants/PmStatuses.js';
 
 export default function PmStatusesViewer(props) {
 	let text = '';

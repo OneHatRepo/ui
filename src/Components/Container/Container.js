@@ -135,11 +135,22 @@ function Container(props) {
 			if (id) {
 				// save prevScreenSize if changed
 				const
-					height = windowSize?.height ?? parseFloat(e.nativeEvent.layout.height),
-					width = windowSize?.width ?? parseFloat(e.nativeEvent.layout.width),
+					height = windowSize?.height,
+					width = windowSize?.width,
 					key = id + '-prevScreenSize',
 					prevScreenSize = await getSaved(key);
-				const hasChanged = !prevScreenSize || Math.abs((prevScreenSize.width ?? 0) - width) > 1 || Math.abs((prevScreenSize.height ?? 0) - height) > 1;
+				if (!_.isFinite(width) || !_.isFinite(height)) {
+					return;
+				}
+				const hasPrevious = !_.isNil(prevScreenSize?.width) && !_.isNil(prevScreenSize?.height);
+				if (!hasPrevious) {
+					await setSaved(key, {
+						height,
+						width,
+					});
+					return;
+				}
+				const hasChanged = Math.abs((prevScreenSize.width ?? 0) - width) > 1 || Math.abs((prevScreenSize.height ?? 0) - height) > 1;
 				if (hasChanged) {
 					await setSaved(key, {
 						height,
@@ -374,8 +385,6 @@ function Container(props) {
 			setIsComponentsDisabled(true);
 		},
 		onSplitterDragStop = (delta, which) => {
-			setIsComponentsDisabled(false);
-			isSplitterDraggingRef.current = false;
 			switch(which) {
 				case 'north':
 					onNorthResize(delta);
@@ -390,6 +399,8 @@ function Container(props) {
 					onWestResize(delta);
 					break;
 			}
+			setIsComponentsDisabled(false);
+			isSplitterDraggingRef.current = false;
 		};
 
 	useEffect(() => {
@@ -504,6 +515,9 @@ function Container(props) {
 		componentProps.isDisabled = !!north.props?.isDisabled || isDisabled || isComponentsDisabled;
 		componentProps.className = 'h-full w-full ' + (north.props.className || '');
 		wrapperProps.onLayout = (e) => {
+			if (isSplitterDraggingRef.current) {
+				return;
+			}
 			const height = parseFloat(e.nativeEvent.layout.height);
 			if (height && height !== getNorthHeight()) {
 				setNorthHeight(height);
@@ -547,6 +561,9 @@ function Container(props) {
 		componentProps.isDisabled = !!south.props?.isDisabled || isDisabled || isComponentsDisabled;
 		componentProps.className = 'h-full w-full ' + (south.props.className || '');
 		wrapperProps.onLayout = (e) => {
+			if (isSplitterDraggingRef.current) {
+				return;
+			}
 			const height = parseFloat(e.nativeEvent.layout.height);
 			if (height && height !== getSouthHeight()) {
 				setSouthHeight(height);
@@ -590,6 +607,9 @@ function Container(props) {
 		componentProps.isDisabled = !!east.props?.isDisabled || isDisabled || isComponentsDisabled;
 		componentProps.className = 'h-full w-full ' + (east.props.className || '');
 		wrapperProps.onLayout = (e) => {
+			if (isSplitterDraggingRef.current) {
+				return;
+			}
 			const width = parseFloat(e.nativeEvent.layout.width);
 			if (width && width !== getEastWidth()) {
 				setEastWidth(width);
@@ -639,6 +659,9 @@ function Container(props) {
 		componentProps.isDisabled = !!west.props?.isDisabled || isDisabled || isComponentsDisabled;
 		componentProps.className = 'h-full w-full ' + (west.props.className || '');
 		wrapperProps.onLayout = (e) => {
+			if (isSplitterDraggingRef.current) {
+				return;
+			}
 			const width = parseFloat(e.nativeEvent.layout.width);
 			if (width && width !== getWestWidth()) {
 				setWestWidth(width);
@@ -685,6 +708,9 @@ function Container(props) {
 				<HStackNative
 					className="Container-mid w-full flex-[100] min-w-0"
 					onLayout={(e) => {
+						if (isSplitterDraggingRef.current) {
+							return;
+						}
 						// Measure available horizontal space for side panels.
 						const width = parseFloat(e.nativeEvent.layout.width);
 						if (width && width !== getCenterWidth()) {

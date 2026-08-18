@@ -4,14 +4,13 @@
  * and is subject to the terms and conditions defined in the
  * "LICENSE.txt" file, which is part of this source code package.
  */
-
-import ArrayCombo from './ArrayCombo.js';
+import ArrayCombo from '../../../../Form/Field/Combo/ArrayCombo.js';
 import {
 	METER_TYPES__HOURS,
 	METER_TYPES__MILES,
 	METER_TYPES__HOURS_TEXT,
 	METER_TYPES__MILES_TEXT,
-} from '../../../../Constants/MeterTypes.js';
+} from '../../../../../Constants/MeterTypes.js';
 
 const data = [
 	[METER_TYPES__HOURS, METER_TYPES__HOURS_TEXT],

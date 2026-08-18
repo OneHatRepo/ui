@@ -1,9 +1,9 @@
-import ArrayCombo from './ArrayCombo.js';
+import ArrayCombo from '../../../../Form/Field/Combo/ArrayCombo.js';
 
 const data = [
 	['1 day', 'Daily'], 
 	['1 week', 'Weekly'], 
-	// ['2 week', 'Bi-weekly'], // ambibuous, don't use
+	// ['2 week', 'Bi-weekly'], // ambiguous, don't use
 	['1 month', 'Monthly'], 
 	['1 quarter', 'Quarterly'], 
 	['1 year', 'Yearly']

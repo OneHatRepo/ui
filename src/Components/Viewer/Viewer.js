@@ -61,6 +61,8 @@ function Viewer(props) {
 			canRecordBeEdited,
 			viewerSetup, // this fn will be executed after the viewer setup is complete
 			disableLabels = false,
+			disableModeHeader = false,
+			disableClose = false,
 		
 			// withComponent
 			self,
@@ -527,7 +529,7 @@ function Viewer(props) {
 
 	const
 		showDeleteBtn = onDelete && viewerCanDelete,
-		showCloseBtn = !isSideEditor && !isSmartEditor && onClose,
+		showCloseBtn = !isSideEditor && !isSmartEditor && onClose && !disableClose,
 		showFooter = (showDeleteBtn || showCloseBtn),
 		hasTopLevelColumns = _.some(items, (item) => item?.type === 'Column'),
 		shouldUseHorizontalViewerLayout = !isItemsCustomLayout && hasTopLevelColumns && containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD;
@@ -621,7 +623,7 @@ function Viewer(props) {
 						>
 							{scrollToTopAnchor}
 
-							<Toolbar className="justify-end">
+							{!disableModeHeader && <Toolbar className="justify-end">
 								<HStack className="flex-1 items-center">
 										<Text className="text-[20px] ml-1 text-grey-500">{isEditorModeControlledByParent && normalizedParentEditorMode === EDITOR_MODE__VIEW ? 'View Mode (Inherited)' : 'View Mode'}</Text>
 								</HStack>
@@ -640,7 +642,7 @@ function Viewer(props) {
 										tooltip="Switch to Edit Mode"
 										isDisabled={!canEdit}
 									/>}
-							</Toolbar>
+							</Toolbar>}
 							
 							{!_.isEmpty(additionalButtons) && 
 								<Toolbar className="justify-end flex-wrap gap-2">

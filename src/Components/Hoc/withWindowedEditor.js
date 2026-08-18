@@ -12,6 +12,7 @@ import {
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../Constants/Editor.js';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
 import withEditor from './withEditor.js';
 // import withDraggable from './withDraggable.js';
 import _ from 'lodash';
@@ -37,10 +38,20 @@ import _ from 'lodash';
 
 function withAdditionalProps(WrappedComponent) {
 	return forwardRef((props, ref) => {
+		let Editor = props.Editor;
+		if (!Editor && props.model) {
+			try {
+				Editor = getComponentFromType(props.model + 'EditorWindow');
+			} catch(err) {
+				// No default editor window registered for this model.
+			}
+		}
+
 		// provide the editorType to withEditor
 		return <WrappedComponent
 					editorType={EDITOR_TYPE__WINDOWED}
 					{...props}
+					Editor={Editor}
 					ref={ref}
 				/>;
 	});
@@ -72,7 +83,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			onEditorCancel = props.onEditorCancel;
 
 		if (!Editor) {
-			throw Error('Editor is not defined');
+			return <WrappedComponent {...props} ref={ref} />;
 		}
 
 		let modalBackdrop = <ModalBackdrop className="withEditor-ModalBackdrop" />

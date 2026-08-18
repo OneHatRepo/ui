@@ -225,6 +225,9 @@ export default function withPresetButtons(WrappedComponent) {
 					isDisabled = false;
 				switch(type) {
 					case ADD:
+						if (!onAdd) {
+							throw Error('withPresetButtons: onAdd is required for ADD preset button');
+						}
 						key = 'addBtn';
 						if (addDisplayMsg) {
 							text = addDisplayMsg;
@@ -265,10 +268,13 @@ export default function withPresetButtons(WrappedComponent) {
 							}
 						}
 						handler = (parent, e) => {
-							onEdit();
+							if (onEdit) {
+								onEdit();
+							}
 						};
 						icon = Edit;
-						if (isNoSelectorSelected() ||
+						if (!onEdit ||
+							isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection() ||
 							isProtectedValue() ||
@@ -294,12 +300,14 @@ export default function withPresetButtons(WrappedComponent) {
 								text += ' ' + inflected;
 							}
 						}
-						handler = onDelete;
 						handler = (parent, e) => {
-							onDelete();
+							if (onDelete) {
+								onDelete();
+							}
 						};
 						icon = Trash;
-						if (isNoSelectorSelected() ||
+						if (!onDelete ||
+							isNoSelectorSelected() ||
 							isEmptySelection() ||
 							(isMultiSelection() && (!enableMultiDelete || isTree)) ||
 							isProtectedValue() ||
@@ -317,9 +325,13 @@ export default function withPresetButtons(WrappedComponent) {
 					case VIEW:
 						key = 'viewBtn';
 						text = 'View';
-						handler = (parent, e) => onView();
+						handler = (parent, e) => {
+							if (onView) {
+								onView();
+							}
+						};
 						icon = Eye;
-						isDisabled = !selection.length || selection.length !== 1;
+						isDisabled = !onView || !selection.length || selection.length !== 1;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection()
@@ -330,9 +342,13 @@ export default function withPresetButtons(WrappedComponent) {
 					case COPY:
 						key = 'copyBtn';
 						text = 'Copy to Clipboard';
-						handler = (parent, e) => onCopyToClipboard();
+						handler = (parent, e) => {
+							if (onCopyToClipboard) {
+								onCopyToClipboard();
+							}
+						};
 						icon = Clipboard;
-						isDisabled = !selection.length;
+						isDisabled = !onCopyToClipboard || !selection.length;
 						if (isNoSelectorSelected() ||
 							isEmptySelection()
 						) {
@@ -348,10 +364,12 @@ export default function withPresetButtons(WrappedComponent) {
 							text += ' ' + inflected;
 						}
 						handler = (parent, e) => {
-							onDuplicate();
+							if (onDuplicate) {
+								onDuplicate();
+							}
 						};
 						icon = Duplicate;
-						isDisabled = !selection.length || selection.length !== 1;
+						isDisabled = !onDuplicate || !selection.length || selection.length !== 1;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection() ||
@@ -368,14 +386,28 @@ export default function withPresetButtons(WrappedComponent) {
 					case UPLOAD_DOWNLOAD:
 						key = 'uploadDownloadBtn';
 						text = 'Upload/Download';
-						handler = (parent, e) => onUploadDownload();
+						handler = (parent, e) => {
+							if (onUploadDownload) {
+								onUploadDownload();
+							}
+						};
 						icon = UploadDownload;
+						if (!onUploadDownload) {
+							isDisabled = true;
+						}
 						break;
 					case DOWNLOAD:
 						key = 'downloadBtn';
 						text = 'Download';
-						handler = (parent, e) => onDownload();
+						handler = (parent, e) => {
+							if (onDownload) {
+								onDownload();
+							}
+						};
 						icon = Download;
+						if (!onDownload) {
+							isDisabled = true;
+						}
 						break;
 					default:
 				}
