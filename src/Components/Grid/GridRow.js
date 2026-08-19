@@ -151,6 +151,7 @@ const GridRow = forwardRef((props, ref) => {
 			isOnlyOneVisibleColumn = visibleColumns.length === 1,
 			canSelectTextOnRow = isRowTextSelectable === false ? false : isDragFromHandleOnly,
 			shouldUseTextCursor = showRowHandle && canSelectTextOnRow,
+			shouldEllipsizeCellText = !areCellsScrollable,
 			rowPropsToPass = _.omit(rowProps || {}, ['key']),
 			propsToPassToCells = _.omit(propsToPass, [
 				'canDrag',
@@ -323,7 +324,7 @@ const GridRow = forwardRef((props, ref) => {
 									let elementClassName = clsx(
 										'GridRow-Element',
 										'self-center',
-										'text-ellipsis',
+										shouldEllipsizeCellText ? 'text-ellipsis' : null,
 										'px-2',
 										'py-3',
 										'block',
@@ -358,8 +359,8 @@ const GridRow = forwardRef((props, ref) => {
 												}}
 												minimizeForRow={true}
 												className={elementClassName}
-												numberOfLines={1}
-												ellipsizeMode="head"
+												numberOfLines={shouldEllipsizeCellText ? 1 : undefined}
+												ellipsizeMode={shouldEllipsizeCellText ? 'head' : undefined}
 												{...propsToPassToCells}
 												{...elementProps}
 											/>;
@@ -429,8 +430,8 @@ const GridRow = forwardRef((props, ref) => {
 								{...testProps('cell-' + config.fieldName)}
 								key={key}
 								style={textStyle}
-								numberOfLines={1}
-								ellipsizeMode="head"
+								numberOfLines={shouldEllipsizeCellText ? 1 : undefined}
+								ellipsizeMode={shouldEllipsizeCellText ? 'head' : undefined}
 								className={textClassName}
 								{...elementPropsToPass}
 								{...propsToPassToCells}
