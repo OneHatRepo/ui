@@ -15,7 +15,6 @@ export default function withSecondaryData(WrappedComponent) {
 	const ComponentWithSecondaryData = (props) => {
 		const {
 				secondaryDisableWithData = false,
-				secondaryAlreadyHasWithData,
 				...incomingProps
 			} = props;
 

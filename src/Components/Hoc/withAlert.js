@@ -27,7 +27,6 @@ function withAlert(WrappedComponent) {
 	const ComponentWithAlert = forwardRef((props, ref) => {
 		const {
 				disableWithAlert = false,
-				alreadyHasWithAlert,
 				...incomingProps
 			} = props;
 

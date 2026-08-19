@@ -20,7 +20,6 @@ export default function withSelection(WrappedComponent) {
 	const ComponentWithSelection = forwardRef((props, ref) => {
 		const {
 				disableWithSelection = false,
-				alreadyHasWithSelection,
 				...incomingProps
 			} = props;
 

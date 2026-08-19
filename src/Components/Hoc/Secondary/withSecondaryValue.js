@@ -17,7 +17,6 @@ export default function withSecondaryValue(WrappedComponent) {
 	const ComponentWithSecondaryValue = (props) => {
 		const {
 				secondaryDisableWithValue = false,
-				secondaryAlreadyHasWithValue,
 				...incomingProps
 			} = props;
 

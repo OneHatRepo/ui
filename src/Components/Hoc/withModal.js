@@ -79,7 +79,6 @@ export default function withModal(WrappedComponent) {
 	const ComponentWithModal = forwardRef((props, ref) => {
 		const {
 				disableWithModal = false,
-				alreadyHasWithModal,
 				showModal: parentShowModal,
 				hideModal: parentHideModal,
 				updateModalBody: parentUpdateModalBody,

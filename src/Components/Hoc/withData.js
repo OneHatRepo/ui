@@ -19,7 +19,6 @@ export default function withData(WrappedComponent) {
 	const ComponentWithData = forwardRef((props, ref) => {
 		const {
 				disableWithData = false,
-				alreadyHasWithData,
 				...incomingProps
 			} = props;
 

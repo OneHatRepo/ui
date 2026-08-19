@@ -17,7 +17,6 @@ export default function withValue(WrappedComponent) {
 	const ComponentWithValue = forwardRef((props, ref) => {
 		const {
 				disableWithValue = false,
-				alreadyHasWithValue,
 				...incomingProps
 			} = props;
 

@@ -9,6 +9,10 @@ import {
 	UI_MODE_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
+
+const WITH_DRAG_SOURCE_MARKER = Symbol.for('alreadyHasWithDragSource');
+const WITH_DROP_TARGET_MARKER = Symbol.for('alreadyHasWithDropTarget');
 
 // This HOC allows components to be dragged and dropped onto another component.
 // It can't contrain the movement of the preview item, because react-dnd uses 
@@ -34,9 +38,13 @@ function defaultDragCollect(monitor, props2) { // Optional. The collecting funct
 };
 
 export function withDragSource(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_DRAG_SOURCE_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (!props.isDragSource || props.alreadyHasDragSource) {
+	const ComponentWithDragSource = forwardRef((props, ref) => {
+
+		if (!props.isDragSource) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -173,15 +181,18 @@ export function withDragSource(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...props}
-					alreadyHasDragSource={true}
+					{...withInjectedHocProps(props, {
+						canDrag: stateCanDrag,
+						isDragging: stateIsDragging,
+						dragSourceRef,
+						dragPreviewRef,
+					})}
 					ref={ref}
-					canDrag={stateCanDrag}
-					isDragging={stateIsDragging}
-					dragSourceRef={dragSourceRef}
-					dragPreviewRef={dragPreviewRef}
 				/>;
 	});
+
+	ComponentWithDragSource[WITH_DRAG_SOURCE_MARKER] = true;
+	return ComponentWithDragSource;
 }
 
 function defaultDropCollect(monitor, props) {
@@ -192,9 +203,13 @@ function defaultDropCollect(monitor, props) {
 	};
 }
 export function withDropTarget(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_DROP_TARGET_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (!props.isDropTarget || props.alreadyHasDropTarget) {
+	const ComponentWithDropTarget = forwardRef((props, ref) => {
+
+		if (!props.isDropTarget) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -252,16 +267,20 @@ export function withDropTarget(WrappedComponent) {
 		dropTargetRef(localTargetRef); // register DOM node with react-dnd
 
 		return <WrappedComponent
-					{...props}
-					alreadyHasDropTarget={true}
+					{...withInjectedHocProps(props, {
+						canDrop: stateCanDrop,
+						validateDrop: canDrop,
+						isOver,
+						dropTargetRef: localTargetRef,
+						draggedItem,
+					})}
 					ref={ref}
-					canDrop={stateCanDrop}
-					validateDrop={canDrop}
-					isOver={isOver}
-					dropTargetRef={localTargetRef}
-					draggedItem={draggedItem} // Pass the dragged item
+					// Pass the dragged item
 				/>;
 	});
+
+	ComponentWithDropTarget[WITH_DROP_TARGET_MARKER] = true;
+	return ComponentWithDropTarget;
 }
 
 

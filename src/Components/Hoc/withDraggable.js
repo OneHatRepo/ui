@@ -13,15 +13,22 @@ import {
 	v4 as uuid,
 } from 'uuid';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
+
+const WITH_DRAGGABLE_MARKER = Symbol.for('alreadyHasWithDraggable');
 
 // Note on modes in this codebase:
 // HORIZONTAL means a horizontal splitter bar, so it moves along the Y axis.
 // VERTICAL means a vertical splitter bar, so it moves along the X axis.
 
 export default function withDraggable(WrappedComponent) {
-	return forwardRef((props, ref) => {
+	if (WrappedComponent?.[WITH_DRAGGABLE_MARKER]) {
+		return WrappedComponent;
+	}
 
-		if (!props.isDraggable || props.alreadyHasDraggable) {
+	const ComponentWithDraggable = forwardRef((props, ref) => {
+
+		if (!props.isDraggable) {
 			return <WrappedComponent {...props} ref={ref} />;
 		}
 
@@ -287,7 +294,9 @@ export default function withDraggable(WrappedComponent) {
 				setNode(false);
 				setIsDragging(false);
 			};
-		propsToPass.isDragging = isDragging;
+		const wrappedComponentProps = withInjectedHocProps(propsToPass, {
+			isDragging,
+		});
 
 		
 		if (CURRENT_MODE === UI_MODE_WEB) {
@@ -304,8 +313,7 @@ export default function withDraggable(WrappedComponent) {
 						>
 							<div ref={nodeRef} className="nsResize">
 								<WrappedComponent
-									{...propsToPass}
-									alreadyHasDraggable={true}
+									{...wrappedComponentProps}
 									ref={ref}
 								/>
 							</div>
@@ -323,8 +331,7 @@ export default function withDraggable(WrappedComponent) {
 						>
 							<div ref={nodeRef} className="ewResize" style={{ height: '100%', }}>
 								<WrappedComponent
-									{...propsToPass}
-									alreadyHasDraggable={true}
+									{...wrappedComponentProps}
 									ref={ref}
 								/>
 							</div>
@@ -343,8 +350,7 @@ export default function withDraggable(WrappedComponent) {
 						{...draggableProps}
 					>
 						<WrappedComponent
-							{...propsToPass}
-							alreadyHasDraggable={true}
+							{...wrappedComponentProps}
 							ref={nodeRef}
 						/>
 					</Draggable>;
@@ -354,11 +360,13 @@ export default function withDraggable(WrappedComponent) {
 			// Really need to replace most of this, as much of it is web-centric.
 
 			return <WrappedComponent
-						{...propsToPass}
-						alreadyHasDraggable={true}
+						{...wrappedComponentProps}
 						ref={ref}
 					/>;
 
 		}
 	});
+
+	ComponentWithDraggable[WITH_DRAGGABLE_MARKER] = true;
+	return ComponentWithDraggable;
 }

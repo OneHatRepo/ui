@@ -31,7 +31,6 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 	const ComponentWithSecondaryEditor = forwardRef((props, ref) => {
 		const {
 				secondaryDisableWithEditor = false,
-				secondaryAlreadyHasWithEditor,
 				...incomingProps
 			} = props;
 

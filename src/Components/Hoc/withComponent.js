@@ -22,17 +22,12 @@ export default function withComponent(WrappedComponent) {
 	const ComponentWithComponent = forwardRef((props, ref) => {
 		const {
 				disableWithComponent = false,
-				alreadyHasWithComponent,
 				...incomingProps
 			} = props;
 
 		if (disableWithComponent) {
 			return <WrappedComponent {...incomingProps} ref={ref} />;
 		}
-
-		// if (props.disableWithComponent || props.alreadyHasWithComponent) {
-		// 	return <WrappedComponent {...props} ref={ref} />;
-		// }
 
 		let propsToUse = _.clone(incomingProps); // without cloning, I couldn't write to props
 
@@ -126,7 +121,6 @@ export default function withComponent(WrappedComponent) {
 						self: selfRef.current,
 					})}
 					ref={ref}
-					// alreadyHasWithComponent={true}
 				/>;
 	});
 

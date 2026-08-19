@@ -30,7 +30,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 	const ComponentWithEditor = forwardRef((props, ref) => {
 		const {
 				disableWithEditor = false,
-				alreadyHasWithEditor,
 				...incomingProps
 			} = props;
 

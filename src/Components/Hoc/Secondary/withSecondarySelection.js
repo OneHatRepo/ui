@@ -13,7 +13,7 @@ const WITH_SECONDARY_SELECTION_MARKER = Symbol.for('secondaryAlreadyHasWithSelec
 
 // NOTE: This is a modified version of @onehat/ui/src/Hoc/withSelection
 
-export default function withSelection(WrappedComponent) {
+export default function withSecondarySelection(WrappedComponent) {
 	if (WrappedComponent?.[WITH_SECONDARY_SELECTION_MARKER]) {
 		return WrappedComponent;
 	}
@@ -21,7 +21,6 @@ export default function withSelection(WrappedComponent) {
 	const ComponentWithSecondarySelection = forwardRef((props, ref) => {
 		const {
 				secondaryDisableWithSelection = false,
-				secondaryAlreadyHasWithSelection,
 				...incomingProps
 			} = props;
 
