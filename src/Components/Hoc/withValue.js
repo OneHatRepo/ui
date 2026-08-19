@@ -6,6 +6,7 @@ import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_VALUE_MARKER = Symbol.for('alreadyHasWithValue');
+const EMPTY_ARRAY = [];
 
 // This HOC gives the component value props, primarily for a Form Field.
 
@@ -141,15 +142,17 @@ export default function withValue(WrappedComponent) {
 		}
 		if (isValueAlwaysArray) {
 			if (_.isEmpty(convertedValue) || _.isNil(convertedValue)) {
-				convertedValue = [];
+				convertedValue = EMPTY_ARRAY;
 			}
 		}
 
 		return <WrappedComponent
-					value={convertedValue} // Gluestack components like InputField need this prop, so don't inject it in a way that later it's stripped!
 					{...withInjectedHocProps(incomingProps, {
+						value: convertedValue,
 						setValue: setValueRef.current,
 						onChangeSelection,
+					}, {
+						passthroughPropNames: ['value'], // Gluestack components like InputField need this prop, so don't strip it out later!
 					})}
 					ref={ref}
 				/>;
