@@ -1,5 +1,6 @@
 import { useState, useEffect, } from 'react';
 import oneHatData from '@onehat/data';
+import { withInjectedHocProps } from '../../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_SECONDARY_DATA_MARKER = Symbol.for('secondaryAlreadyHasWithData');
@@ -113,15 +114,16 @@ export default function withSecondaryData(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...propsToPass}
-					SecondaryRepository={LocalSecondaryRepository}
-					secondaryModel={secondaryModel}
-					secondaryData={secondaryData}
-					secondaryFields={secondaryFields}
-					secondaryIdField={secondaryIdField}
-					secondaryDisplayField={secondaryDisplayField}
-					secondaryIdIx={localIdIx}
-					secondaryDisplayIx={localDisplayIx}
+					{...withInjectedHocProps(propsToPass, {
+						SecondaryRepository: LocalSecondaryRepository,
+						secondaryModel,
+						secondaryData,
+						secondaryFields,
+						secondaryIdField,
+						secondaryDisplayField,
+						secondaryIdIx: localIdIx,
+						secondaryDisplayIx: localDisplayIx,
+					})}
 				/>;
 	};
 

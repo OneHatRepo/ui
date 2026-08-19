@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import {
 	SELECTION_MODE_MULTI,
 } from '../../Constants/Selection.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 
 export default function withMultiSelection(WrappedComponent) {
 	return forwardRef((props, ref) => {
@@ -9,8 +10,9 @@ export default function withMultiSelection(WrappedComponent) {
 				selectionMode = SELECTION_MODE_MULTI,
 			} = props;
 		return <WrappedComponent
-					selectionMode={selectionMode}
-					{...props}
+					{...withInjectedHocProps(props, {
+						selectionMode,
+					})}
 					ref={ref}
 				/>;
 	});

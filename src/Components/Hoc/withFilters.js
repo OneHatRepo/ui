@@ -27,6 +27,7 @@ import Gear from '../Icons/Gear.js';
 import Toolbar from '../Toolbar/Toolbar.js';
 import getSaved from '../../Functions/getSaved.js';
 import setSaved from '../../Functions/setSaved.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
@@ -735,9 +736,10 @@ export default function withFilters(WrappedComponent) {
 					</Toolbar>;
 		
 		return <WrappedComponent
-					{...props}
+					{...withInjectedHocProps(props, {
+						topToolbar: toolbar,
+					})}
 					ref={ref}
-					topToolbar={toolbar}
 				/>;
 
 	});

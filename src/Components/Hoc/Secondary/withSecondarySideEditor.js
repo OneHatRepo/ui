@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import {
 	EDITOR_TYPE__SIDE,
 } from '../../../Constants/Editor.js';
+import { withInjectedHocProps } from '../../../Functions/internalHocProps.js';
 import Container from '../../Container/Container.js';
 import withSecondaryEditor from './withSecondaryEditor.js';
 import _ from 'lodash';
@@ -14,8 +15,9 @@ function withAdditionalProps(WrappedComponent) {
 	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
-					editorType={EDITOR_TYPE__SIDE}
-					{...props}
+					{...withInjectedHocProps(props, {
+						editorType: EDITOR_TYPE__SIDE,
+					})}
 					ref={ref}
 				/>;
 	});
@@ -65,9 +67,10 @@ export default function withSecondarySideEditor(WrappedComponent, isTree = false
 					reference="SideEditor"
 					center={<WrappedComponent
 								ref={ref}
-								isTree={isTree}
-								isSideEditor={true}
-								{...props}
+								{...withInjectedHocProps(props, {
+									isTree,
+									isSideEditor: true,
+								})}
 							/>}
 					east={props.secondaryIsEditorShown && <Editor
 								{...propsToPass}

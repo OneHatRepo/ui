@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../Constants/Editor.js';
+import { withInjectedHocProps } from '../../../Functions/internalHocProps.js';
 import withSecondaryEditor from './withSecondaryEditor.js';
 // import withDraggable from './withDraggable.js';
 import _ from 'lodash';
@@ -18,8 +19,9 @@ function withAdditionalProps(WrappedComponent) {
 	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
-					editorType={EDITOR_TYPE__WINDOWED}
-					{...props}
+					{...withInjectedHocProps(props, {
+						editorType: EDITOR_TYPE__WINDOWED,
+					})}
 					ref={ref}
 				/>;
 	});

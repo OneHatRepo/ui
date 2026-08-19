@@ -21,6 +21,7 @@ import Print from '../Icons/Print.js';
 import UploadDownload from '../Icons/UploadDownload.js';
 import Download from '../Icons/Download.js';
 import inArray from '../../Functions/inArray.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import UploadsDownloadsWindow from '../Window/UploadsDownloadsWindow.js';
 import _ from 'lodash';
 
@@ -536,17 +537,18 @@ export default function withPresetButtons(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...propsToPass}
+					{...withInjectedHocProps(propsToPass, {
+						contextMenuItems: [
+							...localContextMenuItems,
+							...contextMenuItems,
+						],
+						additionalToolbarButtons: [
+							...localAdditionalToolbarButtons,
+							...additionalToolbarButtons,
+						],
+						onChangeColumnsConfig: onChangeColumnsConfigDecorator,
+					})}
 					ref={ref}
-					contextMenuItems={[
-						...localContextMenuItems,
-						...contextMenuItems,
-					]}
-					additionalToolbarButtons={[
-						...localAdditionalToolbarButtons,
-						...additionalToolbarButtons,
-					]}
-					onChangeColumnsConfig={onChangeColumnsConfigDecorator}
 				/>;
 	});
 

@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 
 const WITH_EVENTS_MARKER = Symbol.for('alreadyHasWithEvents');
 
@@ -13,9 +14,10 @@ export default function withEvents(WrappedComponent) {
 				onEvent,
 			} = props;
 		return <WrappedComponent
-					{...props}
+					{...withInjectedHocProps(props, {
+						fireEvent: onEvent,
+					})}
 					ref={ref}
-					fireEvent={onEvent}
 				/>;
 	});
 

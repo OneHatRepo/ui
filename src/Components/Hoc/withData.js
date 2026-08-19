@@ -1,5 +1,6 @@
 import { forwardRef, useState, useEffect, } from 'react';
 import oneHatData from '@onehat/data';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_DATA_MARKER = Symbol.for('alreadyHasWithData');
@@ -130,21 +131,22 @@ export default function withData(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						Repository: LocalRepository,
+						fields,
+						idField,
+						displayField,
+						idIx: localIdIx,
+						displayIx: localDisplayIx,
+						setBaseParams: (baseParams) => {
+							// This allows components down the hierarchy to dynamically set the baseParams
+							LocalRepository.setBaseParams(baseParams);
+							if (LocalRepository.isRemote) {
+								LocalRepository.load();
+							}
+						},
+					})}
 					ref={ref}
-					Repository={LocalRepository}
-					fields={fields}
-					idField={idField}
-					displayField={displayField}
-					idIx={localIdIx}
-					displayIx={localDisplayIx}
-					setBaseParams={(baseParams) => {
-						// This allows components down the hierarchy to dynamically set the baseParams
-						LocalRepository.setBaseParams(baseParams);
-						if (LocalRepository.isRemote) {
-							LocalRepository.load();
-						}
-					}}
 				/>;
 	});
 

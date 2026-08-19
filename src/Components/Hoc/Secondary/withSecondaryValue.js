@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useContext, useCallback, } from 'react';
 import natsort from 'natsort';
 import useForceUpdate from '../../../Hooks/useForceUpdate.js';
 import FieldSetContext from '../../../Contexts/FieldSetContext.js';
+import { withInjectedHocProps } from '../../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_SECONDARY_VALUE_MARKER = Symbol.for('secondaryAlreadyHasWithValue');
@@ -154,10 +155,11 @@ export default function withSecondaryValue(WrappedComponent) {
 		}
 
 		return <WrappedComponent
-					{...incomingProps}
-					secondaryValue={convertedValue}
-					secondarySetValue={secondarySetValue}
-					secondaryOnChangeSelection={secondaryOnChangeSelection}
+					{...withInjectedHocProps(incomingProps, {
+						secondaryValue: convertedValue,
+						secondarySetValue,
+						secondaryOnChangeSelection,
+					})}
 				/>;
 	};
 

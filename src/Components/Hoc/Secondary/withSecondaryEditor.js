@@ -16,6 +16,7 @@ import {
 import useForceUpdate from '../../../Hooks/useForceUpdate.js'
 import Button from '../../Buttons/Button.js';
 import UiGlobals from '../../../UiGlobals.js';
+import { withInjectedHocProps } from '../../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_SECONDARY_EDITOR_MARKER = Symbol.for('secondaryAlreadyHasWithEditor');
@@ -784,54 +785,55 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 		}
 
 		return <WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						secondaryCurrentRecord,
+						secondarySetCurrentRecord,
+						secondaryIsEditorShown: secondaryGetIsEditorShown(),
+						secondaryGetIsEditorShown,
+						secondaryIsEditorViewOnly,
+						secondaryIsAdding,
+						secondaryIsSaving,
+						secondaryEditorMode: secondaryGetEditorMode(),
+						secondaryGetEditorMode,
+						secondaryOnEditMode: secondarySetEditMode,
+						secondaryOnViewMode: secondarySetViewMode,
+						secondaryEditorStateRef,
+						secondarySetIsEditorShown,
+						secondarySetIsIgnoreNextSelectionChange,
+						secondaryOnAdd: (!secondaryUserCanEdit || secondaryDisableAdd) ? null : secondaryDoAdd,
+						secondaryOnEdit: (!secondaryUserCanEdit || secondaryDisableEdit) ? null : secondaryDoEdit,
+						secondaryOnDelete: (!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryDoDelete,
+						secondaryOnView: secondaryDoView,
+						secondaryOnDuplicate: secondaryDoDuplicate,
+						secondaryOnEditorSave: secondaryDoEditorSave,
+						secondaryOnEditorCancel: secondaryDoEditorCancel,
+						secondaryOnEditorDelete: (!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryDoEditorDelete,
+						secondaryOnEditorClose: secondaryDoEditorClose,
+						secondarySetWithEditListeners: setListeners,
+						secondaryIsEditor: true,
+						secondaryAncillaryEventHandlers: {
+							secondaryOnAdd,
+							secondaryOnChange,
+							secondaryOnDelete,
+							secondaryOnSave,
+						},
+						ancillaryEventHandlers: {
+							onAdd: secondaryOnAdd,
+							onChange: secondaryOnChange,
+							onDelete: secondaryOnDelete,
+							onSave: secondaryOnSave,
+						},
+						secondaryUserCanEdit,
+						secondaryUserCanView,
+						secondaryDisableAdd,
+						secondaryDisableEdit,
+						secondaryDisableDelete,
+						secondaryDisableDuplicate,
+						secondaryDisableView,
+						secondarySetSelection: secondarySetSelectionDecorated,
+						isTree,
+					})}
 					ref={ref}
-					secondaryCurrentRecord={secondaryCurrentRecord}
-					secondarySetCurrentRecord={secondarySetCurrentRecord}
-					secondaryIsEditorShown={secondaryGetIsEditorShown()}
-					secondaryGetIsEditorShown={secondaryGetIsEditorShown}
-					secondaryIsEditorViewOnly={secondaryIsEditorViewOnly}
-					secondaryIsAdding={secondaryIsAdding}
-					secondaryIsSaving={secondaryIsSaving}
-					secondaryEditorMode={secondaryGetEditorMode()}
-					secondaryGetEditorMode={secondaryGetEditorMode}
-					secondaryOnEditMode={secondarySetEditMode}
-					secondaryOnViewMode={secondarySetViewMode}
-					secondaryEditorStateRef={secondaryEditorStateRef}
-					secondarySetIsEditorShown={secondarySetIsEditorShown}
-					secondarySetIsIgnoreNextSelectionChange={secondarySetIsIgnoreNextSelectionChange}
-					secondaryOnAdd={(!secondaryUserCanEdit || secondaryDisableAdd) ? null : secondaryDoAdd}
-					secondaryOnEdit={(!secondaryUserCanEdit || secondaryDisableEdit) ? null : secondaryDoEdit}
-					secondaryOnDelete={(!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryDoDelete}
-					secondaryOnView={secondaryDoView}
-					secondaryOnDuplicate={secondaryDoDuplicate}
-					secondaryOnEditorSave={secondaryDoEditorSave}
-					secondaryOnEditorCancel={secondaryDoEditorCancel}
-					secondaryOnEditorDelete={(!secondaryUserCanEdit || secondaryDisableDelete) ? null : secondaryDoEditorDelete}
-					secondaryOnEditorClose={secondaryDoEditorClose}
-					secondarySetWithEditListeners={setListeners}
-					secondaryIsEditor={true}
-					secondaryAncillaryEventHandlers={{
-						secondaryOnAdd,
-						secondaryOnChange,
-						secondaryOnDelete,
-						secondaryOnSave,
-					}}
-					ancillaryEventHandlers={{
-						onAdd: secondaryOnAdd,
-						onChange: secondaryOnChange,
-						onDelete: secondaryOnDelete,
-						onSave: secondaryOnSave,
-					}}
-					secondaryUserCanEdit={secondaryUserCanEdit}
-					secondaryUserCanView={secondaryUserCanView}
-					secondaryDisableAdd={secondaryDisableAdd}
-					secondaryDisableEdit={secondaryDisableEdit}
-					secondaryDisableDelete={secondaryDisableDelete}
-					secondaryDisableDuplicate={secondaryDisableDuplicate}
-					secondaryDisableView ={secondaryDisableView}
-					secondarySetSelection={secondarySetSelectionDecorated}
-					isTree={isTree}
 				/>;
 	});
 

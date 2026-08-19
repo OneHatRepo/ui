@@ -2,6 +2,7 @@ import { forwardRef, useState, } from 'react';
 import {
 	EDITOR_TYPE__INLINE,
 } from '../../Constants/Editor.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import InlineEditor from '../Editor/InlineEditor.js';
 import withEditor from './withEditor.js';
 import _ from 'lodash';
@@ -12,8 +13,9 @@ function withAdditionalProps(WrappedComponent) {
 	return forwardRef((props, ref) => {
 		// provide the editorType to withEditor
 		return <WrappedComponent
-					editorType={EDITOR_TYPE__INLINE}
-					{...props}
+					{...withInjectedHocProps(props, {
+						editorType: EDITOR_TYPE__INLINE,
+					})}
 					ref={ref}
 				/>;
 	});
@@ -46,19 +48,20 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 			};
 
 		return <WrappedComponent
-					onChangeColumnsConfig={onChangeColumnsConfig}
-					isInlineEditorShown={isEditorShown}
-					inlineEditor={<InlineEditor
-									{...propsToPass}
-									{..._editor}
-									parent={self}
-									reference="editor"
-									columnsConfig={localColumnsConfig}
-									isEditorShown={isEditorShown}
-									setIsEditorShown={setIsEditorShown}
-								/>}
-					{...props}
-					disableView={true}
+					{...withInjectedHocProps(props, {
+						onChangeColumnsConfig,
+						isInlineEditorShown: isEditorShown,
+						inlineEditor: <InlineEditor
+										{...propsToPass}
+										{..._editor}
+										parent={self}
+										reference="editor"
+										columnsConfig={localColumnsConfig}
+										isEditorShown={isEditorShown}
+										setIsEditorShown={setIsEditorShown}
+									/>,
+						disableView: true,
+					})}
 					ref={ref}
 				/>;
 	});

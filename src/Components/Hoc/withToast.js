@@ -5,6 +5,7 @@ import {
 	ToastDescription,
 	useToast,
 } from '@onehat-gluestack';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import clsx from 'clsx';
 import _ from 'lodash';
 
@@ -20,7 +21,6 @@ export default function withToast(WrappedComponent) {
 	const ComponentWithToast = forwardRef((props, ref) => {
 		const {
 				disableWithToast = false,
-				alreadyHasWithToast,
 				...incomingProps
 			} = props;
 
@@ -90,9 +90,10 @@ export default function withToast(WrappedComponent) {
 			};
 		
 		return <WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						showToast,
+					})}
 					ref={ref}
-					showToast={showToast}
 				/>;
 	});
 

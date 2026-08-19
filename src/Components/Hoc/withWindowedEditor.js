@@ -13,6 +13,7 @@ import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../Constants/Editor.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import withEditor from './withEditor.js';
 // import withDraggable from './withDraggable.js';
 import _ from 'lodash';
@@ -49,9 +50,10 @@ function withAdditionalProps(WrappedComponent) {
 
 		// provide the editorType to withEditor
 		return <WrappedComponent
-					editorType={EDITOR_TYPE__WINDOWED}
-					{...props}
-					Editor={Editor}
+					{...withInjectedHocProps(props, {
+						editorType: EDITOR_TYPE__WINDOWED,
+						Editor,
+					})}
 					ref={ref}
 				/>;
 	});

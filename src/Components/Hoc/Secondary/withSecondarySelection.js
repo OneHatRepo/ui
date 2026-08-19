@@ -7,6 +7,7 @@ import {
 } from '../../../Constants/Selection.js';
 import useForceUpdate from '../../../Hooks/useForceUpdate.js';
 import inArray from '../../../Functions/inArray.js';
+import { withInjectedHocProps } from '../../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_SECONDARY_SELECTION_MARKER = Symbol.for('secondaryAlreadyHasWithSelection');
@@ -481,26 +482,27 @@ export default function withSecondarySelection(WrappedComponent) {
 		}
 		
 		return <WrappedComponent
-					{...incomingProps}
+					{...withInjectedHocProps(incomingProps, {
+						secondarySelection: secondaryGetSelection(),
+						secondaryGetSelection,
+						secondarySetSelection,
+						secondarySelectionMode,
+						secondarySelectPrev,
+						secondarySelectNext,
+						secondaryAddNextToSelection,
+						secondaryAddPrevToSelection,
+						secondaryRemoveFromSelection,
+						secondaryAddToSelection,
+						secondaryDeselectAll,
+						secondarySelectRangeTo,
+						secondaryIsInSelection,
+						secondaryGetIdsFromSelection: secondaryGetIdsFromLocalSelection,
+						secondaryGetDisplayValuesFromSelection: secondaryGetDisplayValuesFromLocalSelection,
+						disableSecondarySelectionChanges,
+						enableSecondarySelectionChanges,
+						secondaryRefreshSelection,
+					})}
 					ref={ref}
-					secondarySelection={secondaryGetSelection()}
-					secondaryGetSelection={secondaryGetSelection}
-					secondarySetSelection={secondarySetSelection}
-					secondarySelectionMode={secondarySelectionMode}
-					secondarySelectPrev={secondarySelectPrev}
-					secondarySelectNext={secondarySelectNext}
-					secondaryAddNextToSelection={secondaryAddNextToSelection}
-					secondaryAddPrevToSelection={secondaryAddPrevToSelection}
-					secondaryRemoveFromSelection={secondaryRemoveFromSelection}
-					secondaryAddToSelection={secondaryAddToSelection}
-					secondaryDeselectAll={secondaryDeselectAll}
-					secondarySelectRangeTo={secondarySelectRangeTo}
-					secondaryIsInSelection={secondaryIsInSelection}
-					secondaryGetIdsFromSelection={secondaryGetIdsFromLocalSelection}
-					secondaryGetDisplayValuesFromSelection={secondaryGetDisplayValuesFromLocalSelection}
-					disableSecondarySelectionChanges={disableSecondarySelectionChanges}
-					enableSecondarySelectionChanges={enableSecondarySelectionChanges}
-					secondaryRefreshSelection={secondaryRefreshSelection}
 				/>;
 	});
 

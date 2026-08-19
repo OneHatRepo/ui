@@ -1,4 +1,5 @@
 import { forwardRef, useState } from 'react';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 
 const WITH_COLLAPSIBLE_MARKER = Symbol.for('alreadyHasWithCollapsible');
 
@@ -18,10 +19,11 @@ export default function withCollapsible(WrappedComponent) {
 			[localIsCollapsed, setLocalIsCollapsed] = useState(startsCollapsed);
 
 		return <WrappedComponent
-					{...props}
+					{...withInjectedHocProps(props, {
+						isCollapsed: bypass ? isCollapsed : localIsCollapsed,
+						setIsCollapsed: bypass ? setIsCollapsed : setLocalIsCollapsed,
+					})}
 					ref={ref}
-					isCollapsed={bypass ? isCollapsed : localIsCollapsed}
-					setIsCollapsed={bypass ? setIsCollapsed : setLocalIsCollapsed}
 				/>;
 	});
 

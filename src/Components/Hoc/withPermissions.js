@@ -13,6 +13,7 @@ import {
 } from '../../Constants/Commands.js';
 import UiGlobals from '../../UiGlobals.js';
 import oneHatData from '@onehat/data';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_PERMISSIONS_MARKER = Symbol.for('alreadyHasWithPermissions');
@@ -146,10 +147,11 @@ export default function withPermissions(WrappedComponent, forceUsePermissions = 
 			};
 
 		return <WrappedComponent
-					{...props}
+					{...withInjectedHocProps(props, {
+						canUser: canUserDecorator,
+						showPermissionsError,
+					})}
 					ref={ref}
-					canUser={canUserDecorator}
-					showPermissionsError={showPermissionsError}
 				/>;
 	});
 

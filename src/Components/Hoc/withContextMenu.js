@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import UiGlobals from '../../UiGlobals.js';
 import Button from '../Buttons/Button.js';
 import testProps from '../../Functions/testProps.js';
+import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
 const WITH_CONTEXT_MENU_MARKER = Symbol.for('alreadyHasWithContextMenu');
@@ -176,9 +177,10 @@ export default function withContextMenu(WrappedComponent) {
 		}, [doShowContextMenu, isModalShown, whichModal]); // don't include contextMenuItems, as it will cause infinite loop
 
 		return <WrappedComponent
-					{...propsToPass}
+					{...withInjectedHocProps(propsToPass, {
+						onContextMenu,
+					})}
 					ref={ref}
-					onContextMenu={onContextMenu}
 				/>;
 	});
 
