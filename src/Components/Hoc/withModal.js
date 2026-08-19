@@ -335,6 +335,7 @@ export default function withModal(WrappedComponent) {
 					}
 				};
 				return <Pressable
+							pointerEvents="auto"
 							onPress={onBackdropPress}
 							className={clsx(
 								'withModal-ModalBackdrop-replacment',
@@ -370,11 +371,12 @@ export default function withModal(WrappedComponent) {
 									key={`modal-${modal.id}`}
 									isOpen={true}
 									onClose={onCloseHandler}
-									className="withModal-Modal"
+									className="withModal-Modal web:pointer-events-auto"
 									{...testProps(modal.testID)}
 								>
 									{renderModalBackdrop(modal, isTopModal)}
 									<ModalContent
+										pointerEvents="auto"
 										className={clsx(
 											'withModal-ModalContent',
 											'w-auto',
@@ -383,6 +385,7 @@ export default function withModal(WrappedComponent) {
 											'border-0',
 											'shadow-none',
 											'p-0',
+											'web:pointer-events-auto',
 										)}
 									>
 										{renderModalBody(modal, isTopModal)}

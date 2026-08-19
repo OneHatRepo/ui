@@ -30,7 +30,7 @@ const UIModal = createModal({
 
 
 const modalStyle = tva({
-  base: 'group/modal w-full h-full justify-center items-center web:pointer-events-none',
+  base: 'group/modal w-full h-full justify-center items-center web:pointer-events-auto',
   variants: {
     size: {
       xs: '',
@@ -43,7 +43,7 @@ const modalStyle = tva({
 });
 
 const modalBackdropStyle = tva({
-  base: 'absolute left-0 top-0 right-0 bottom-0 bg-[#000]/50 web:cursor-default',
+  base: 'absolute left-0 top-0 right-0 bottom-0 bg-[#000]/50 web:cursor-default web:pointer-events-auto',
 });
 
 const modalContentStyle = tva({
@@ -101,7 +101,7 @@ const Modal = React.forwardRef<React.ComponentRef<typeof UIModal>, IModalProps>(
     <UIModal
       ref={ref}
       {...props}
-      style={[style, { pointerEvents: 'box-none' }]}
+      style={[style, { pointerEvents: 'auto' }]}
       className={modalStyle({ size, class: className })}
       context={{ size }}
     />
