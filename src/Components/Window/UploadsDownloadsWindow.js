@@ -144,6 +144,7 @@ function UploadsDownloadsWindow(props) {
 				},
 				onPress: () => onDownload(MODES__GRID),
 				className: 'mb-5',
+				tooltip: 'Get the current grid\'s contents as an Excel file.',
 			},
 			{
 				type: 'DisplayField',
@@ -160,6 +161,7 @@ function UploadsDownloadsWindow(props) {
 				},
 				onPress: () => onDownload(MODES__BATCH),
 				className: 'mb-5',
+				tooltip: 'Batch download the current grid\'s records, so they can be edited and re-uploaded.',
 			},
 		];
 		if (!isDownloadOnly) {
@@ -172,6 +174,7 @@ function UploadsDownloadsWindow(props) {
 				name: 'file',
 				onChangeValue: setImportFile,
 				accept: '.xlsx',
+				tooltip: 'Select an Excel file to upload to the current grid.',
 			});
 			items.push({
 				type: 'Row',
@@ -187,6 +190,7 @@ function UploadsDownloadsWindow(props) {
 						},
 						isDisabled: !importFile,
 						onPress: onUploadLocal,
+						tooltip: 'Batch upload an Excel file to the current grid.',
 					},
 					{
 						type: 'Button',
@@ -194,6 +198,7 @@ function UploadsDownloadsWindow(props) {
 						icon: Download,
 						isEditable: false,
 						onPress: () => onDownload(MODES__TEMPLATE),
+						tooltip: 'Download the template Excel file.',
 					},
 
 				],
