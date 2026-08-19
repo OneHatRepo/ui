@@ -1074,7 +1074,12 @@ export const ComboComponent = forwardRef((props, ref) => {
 								className="dropdownMenu-Popover block"
 								initialFocusRef={inputCloneRef}
 							>
-								<PopoverBackdrop className="PopoverBackdrop bg-black/20" />
+								<PopoverBackdrop
+									className="PopoverBackdrop bg-black/20 fixed inset-0 z-40 web:pointer-events-auto"
+									style={{
+										backgroundColor: 'rgba(0, 0, 0, 0.20)',
+									}}
+								/>
 								<Box
 									ref={menuRef}
 									className={clsx(
@@ -1088,6 +1093,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 										'border-grey-400',
 										'shadow-md',
 										'max-w-full',
+										'z-50',
+										'web:pointer-events-auto',
 									)}
 									style={{
 										// If flipped, position above input; otherwise, below
