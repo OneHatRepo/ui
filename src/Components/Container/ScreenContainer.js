@@ -8,7 +8,7 @@ import {
 	ScrollView,
 	VStack,
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import useHeaderHeight from '../../Hooks/useHeaderHeight.js';
 import withComponent from '../Hoc/withComponent.js';

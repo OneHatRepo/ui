@@ -3,7 +3,7 @@ import {
 	Box,
 	Fab, FabIcon, FabLabel,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import IconButton from '../Buttons/IconButton.js';
 import FabWithTooltip from './FabWithTooltip.js';

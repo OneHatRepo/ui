@@ -7,7 +7,7 @@ import {
 	Text,
 	VStack,
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor';

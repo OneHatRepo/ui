@@ -3,7 +3,7 @@ import {
 	HStack,
 	HStackNative,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import testProps from '../../Functions/testProps.js';

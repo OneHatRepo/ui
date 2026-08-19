@@ -2,7 +2,7 @@ import { forwardRef, useRef } from 'react';
 import {
 	HStack,
 	Icon,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	HORIZONTAL,

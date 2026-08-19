@@ -1,4 +1,4 @@
-import { Box } from '@project-components/Gluestack';
+import { Box } from '@onehat-gluestack';
 import clsx from 'clsx';
 import _ from 'lodash';
 

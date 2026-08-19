@@ -1,6 +1,6 @@
 import {
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import CenterBox from '../../../Layout/CenterBox';
 

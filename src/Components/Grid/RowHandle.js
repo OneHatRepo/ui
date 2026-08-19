@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import {
 	Icon,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import withTooltip from '../Hoc/withTooltip';
 import clsx from 'clsx';
 import UiGlobals from '../../UiGlobals.js';

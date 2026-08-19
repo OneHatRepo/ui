@@ -2,7 +2,7 @@ import { useState, useEffect, } from 'react';
 import {
 	Text,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import oneHatData from '@onehat/data';
 import {
 	ASYNC_OPERATION_MODES__INIT,

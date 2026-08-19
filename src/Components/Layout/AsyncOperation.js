@@ -5,7 +5,7 @@ import {
 	ScrollView,
 	Text,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import * as Progress from 'react-native-progress';
 import useForceUpdate from '../../Hooks/useForceUpdate';

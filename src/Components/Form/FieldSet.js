@@ -4,7 +4,7 @@ import {
 	HStack,
 	Text,
 	TextNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import FieldSetContext from '../../Contexts/FieldSetContext.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';

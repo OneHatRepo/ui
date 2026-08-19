@@ -3,7 +3,7 @@ import {
 	HStack,
 	Icon,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import {

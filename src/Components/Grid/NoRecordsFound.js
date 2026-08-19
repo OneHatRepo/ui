@@ -2,7 +2,7 @@ import {
 	HStack,
 	Text,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import IconButton from '../Buttons/IconButton.js';
 import Rotate from '../Icons/Rotate.js';

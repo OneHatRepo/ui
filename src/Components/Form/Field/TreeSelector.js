@@ -10,7 +10,7 @@ import {
 	Text,
 	TextNative,
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	CURRENT_MODE,

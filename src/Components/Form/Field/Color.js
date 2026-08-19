@@ -4,7 +4,7 @@ import {
 	Popover, PopoverContent, PopoverBody,
 	Pressable,
 	Tooltip,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import { SketchPicker } from 'react-color';
 import {

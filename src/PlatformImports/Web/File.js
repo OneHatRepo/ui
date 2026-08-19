@@ -2,7 +2,7 @@ import { useEffect, } from 'react';
 import {
 	HStack,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,

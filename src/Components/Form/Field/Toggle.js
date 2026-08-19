@@ -5,7 +5,7 @@ import {
 	Pressable,
 	Switch,
 	TextNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import UiGlobals from '../../../UiGlobals.js';
 import IconButton from '../../Buttons/IconButton.js';

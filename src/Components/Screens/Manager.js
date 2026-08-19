@@ -1,7 +1,7 @@
 import { cloneElement, useState, useEffect, } from 'react';
 import {
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	SCREEN_MODES__FULL,

@@ -5,7 +5,7 @@ import {
 	ButtonSpinner,
 	ButtonIcon,
 	ButtonGroup,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import mapIconPropsToGluestack from '../../Functions/mapIconPropsToGluestack.js';
 import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';

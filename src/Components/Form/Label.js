@@ -1,7 +1,7 @@
 import {
 	HStack,
 	TextNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import styles from '../../Constants/Styles.js';
 

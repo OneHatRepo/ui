@@ -1,6 +1,6 @@
 import {
 	Box,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import IconButton from '../../Components/Buttons/IconButton.js';

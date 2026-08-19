@@ -1,6 +1,6 @@
 import {
 	Box,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 
 export default function Mask(props) {

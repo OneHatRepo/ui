@@ -1,7 +1,7 @@
 import {
 	Icon,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import Arcs from '../Icons/Arcs.js';
 

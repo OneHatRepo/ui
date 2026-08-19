@@ -4,7 +4,7 @@ import {
 	ScrollView,
 	VStack,
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import ChartPie from '../Icons/ChartPie.js';
 import Q from '../Icons/Q.js';

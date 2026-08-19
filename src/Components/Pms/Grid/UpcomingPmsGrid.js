@@ -1,7 +1,7 @@
 import { useState, useEffect, } from 'react';
 import {
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	PM_EVENT_TYPES__DELAY_BY_DAYS,

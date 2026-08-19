@@ -1,7 +1,7 @@
 import {
 	HStackNative,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import testProps from '../../../../Functions/testProps.js';
 import IconButton from '../../../Buttons/IconButton.js';

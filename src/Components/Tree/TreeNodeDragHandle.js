@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import {
 	Icon,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import styles from '../../Styles/StyleSheets.js';
 import GripVertical from '../Icons/GripVertical.js';

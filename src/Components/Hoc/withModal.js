@@ -5,7 +5,7 @@ import {
 	Modal, ModalHeader, ModalContent, ModalCloseButton, ModalFooter,
 	Pressable,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,

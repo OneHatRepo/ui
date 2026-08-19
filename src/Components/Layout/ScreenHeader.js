@@ -3,7 +3,7 @@ import {
 	Icon,
 	Text,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import { useEffect, useId } from 'react';
 import clsx from 'clsx';
 import {

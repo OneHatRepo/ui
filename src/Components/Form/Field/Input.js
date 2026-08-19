@@ -1,7 +1,7 @@
 import { cloneElement, forwardRef, isValidElement, useState, useEffect, useRef, } from 'react';
 import {
 	Input, InputField, InputIcon, InputSlot,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	hasWidth,

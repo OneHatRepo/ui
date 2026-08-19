@@ -5,7 +5,7 @@ import {
 	Icon,
 	Pressable,
 	TextNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	SORT_ASCENDING,

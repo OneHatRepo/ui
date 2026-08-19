@@ -1,6 +1,6 @@
 import {
 	Pressable,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import Gear from '../Icons/Gear.js';
 import IconWithTooltip from '../Icons/IconWithTooltip.js';

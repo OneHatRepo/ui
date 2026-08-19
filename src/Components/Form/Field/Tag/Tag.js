@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, } from 'react';
 import {
 	HStack,
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
 import oneHatData from '@onehat/data';

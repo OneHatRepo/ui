@@ -1,6 +1,6 @@
 import {
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import Panel from './Panel.js';
 import Form, { FormEditor } from '../Form/Form.js';

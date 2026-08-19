@@ -2,7 +2,7 @@ import { useState, } from 'react';
 import {
 	ScrollView,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import Accordion from 'react-native-collapsible/Accordion'; // https://www.npmjs.com/package/react-native-collapsible
 import testProps from '../../Functions/testProps';

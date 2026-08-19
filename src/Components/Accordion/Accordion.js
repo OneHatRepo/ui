@@ -9,7 +9,7 @@ import {
 	TextNative,
 	VStack,
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import Plus from '../Icons/Plus.js';
 import Minus from '../Icons/Minus.js';

@@ -2,7 +2,7 @@ import React from 'react';
 import {
 	HStack,
 	HStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import IconButton from './IconButton.js';
 import Plus from '../Icons/Plus.js';

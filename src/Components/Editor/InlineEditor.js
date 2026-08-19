@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import withComponent from '../Hoc/withComponent.js';
 import {

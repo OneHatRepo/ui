@@ -1,7 +1,7 @@
 import { useMemo, } from 'react';
 import {
 	HStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import Select from './Select.js';
 

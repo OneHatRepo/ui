@@ -1,7 +1,7 @@
 import {
 	Text,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 
 export default function Unauthorized(props) {

@@ -7,7 +7,7 @@ import {
 	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
 	Pressable,
 	TextNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	DATE,

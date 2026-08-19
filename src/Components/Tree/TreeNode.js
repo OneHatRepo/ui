@@ -6,7 +6,7 @@ import {
 	Icon,
 	Spinner,
 	TextNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import * as colourMixer from '@k-renwick/colour-mixer';
 import {

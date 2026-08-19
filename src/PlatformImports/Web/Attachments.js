@@ -6,7 +6,7 @@ import {
 	Spinner,
 	Text,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import {
 	CURRENT_MODE,
 	UI_MODE_WEB,

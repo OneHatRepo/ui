@@ -4,7 +4,7 @@ import {
 	Icon,
 	Select, SelectItem,
 	Tooltip,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import CaretDown from '../Icons/CaretDown.js';
 import testProps from '../../Functions/testProps.js';

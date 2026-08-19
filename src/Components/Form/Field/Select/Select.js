@@ -2,7 +2,7 @@ import { forwardRef, useState, useEffect, useRef, } from 'react';
 import {
 	Select, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectInput, SelectIcon,  SelectItem,  SelectPortal, SelectTrigger,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	hasWidth,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, } from 'react';
 import {
 	HStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import UiGlobals from '../../../../UiGlobals.js';
 import { CKEditor } from '@ckeditor/ckeditor5-react'; // https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/react.html

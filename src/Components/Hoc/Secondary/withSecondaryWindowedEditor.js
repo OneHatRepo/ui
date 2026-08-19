@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	EDITOR_TYPE__WINDOWED,

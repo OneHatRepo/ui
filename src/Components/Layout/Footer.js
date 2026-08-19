@@ -1,6 +1,6 @@
 import {
 	HStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import UiGlobals from '../../UiGlobals.js';
 

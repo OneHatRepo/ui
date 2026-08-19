@@ -4,7 +4,7 @@ import {
 	ToastTitle,
 	ToastDescription,
 	useToast,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import _ from 'lodash';
 

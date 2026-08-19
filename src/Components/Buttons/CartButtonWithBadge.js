@@ -3,7 +3,7 @@ import {
 	Icon,
 	Pressable,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	Ionicons,

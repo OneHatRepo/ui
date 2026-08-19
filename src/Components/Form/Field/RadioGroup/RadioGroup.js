@@ -1,7 +1,7 @@
 import React, { useState, useEffect, } from 'react';
 import {
 	Radio, RadioGroup,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import testProps from '../../../../Functions/testProps.js';
 import withComponent from '../../../Hoc/withComponent.js';

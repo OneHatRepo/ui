@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import {
 	HStackNative,
 	ScrollView,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	CURRENT_MODE,

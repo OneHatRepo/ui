@@ -4,7 +4,7 @@ import {
 	HStack,
 	Icon,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import withModal from './withModal.js';
 import CircleInfo from '../Icons/CircleInfo.js';

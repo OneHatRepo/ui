@@ -2,7 +2,7 @@ import {
 	BoxNative as Box,
 	TextNative,
 	Tooltip, TooltipContent,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 
 export default function TextWithTooltip(props) {

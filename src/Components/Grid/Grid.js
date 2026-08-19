@@ -8,7 +8,7 @@ import {
 	Text,
 	VStack,
 	VStackNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	ScrollView,

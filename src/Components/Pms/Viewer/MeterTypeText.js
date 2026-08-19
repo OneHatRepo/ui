@@ -1,6 +1,6 @@
 import {
 	TextNative,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	METER_TYPES__HOURS,

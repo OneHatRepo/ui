@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useRef, } from 'react';
 import { useDrag, useDrop, useDragLayer } from 'react-dnd'; // https://react-dnd.github.io/react-dnd/about don't forget the wrapping <DndProvider /> as shown here: https://react-dnd.github.io/react-dnd/docs/api/dnd-provider
 import {
 	Box,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	UI_MODE_WEB,

@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import {
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
 	Pressable,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import {
 	CURRENT_MODE,

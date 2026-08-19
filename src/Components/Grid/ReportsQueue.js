@@ -3,7 +3,7 @@ import { useState, useEffect, } from 'react';
 import {
 	Box,
 	Text,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import oneHatData from '@onehat/data';

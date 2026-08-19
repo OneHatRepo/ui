@@ -1,7 +1,7 @@
 import {
 	HStack,
 	Tooltip,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import QRCode from 'react-qr-code';
 import {

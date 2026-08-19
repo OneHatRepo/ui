@@ -2,7 +2,7 @@ import { forwardRef, useRef, useState, useEffect, } from 'react';
 import {
 	Text,
 	VStack,
-} from '@project-components/Gluestack';
+} from '@onehat-gluestack';
 import clsx from 'clsx';
 import UiGlobals from '../../UiGlobals.js';
 import Button from '../Buttons/Button.js';
