@@ -144,6 +144,7 @@ function Viewer(props) {
 				return item;
 			}
 			let {
+					key: _itemKey,
 					type,
 					viewerType,
 					title,
@@ -415,6 +416,7 @@ function Viewer(props) {
 
 				_.each(validAncillaryItems, (item, ix) => {
 					let {
+						key: _itemKey,
 						type,
 						title = null,
 						icon,

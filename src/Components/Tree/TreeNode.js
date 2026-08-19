@@ -151,10 +151,14 @@ export default function TreeNode(props) {
 		if (nodeProps.className) {
 			className += ' ' + nodeProps.className;
 		}
+		const {
+			key: _key,
+			...nodePropsToPass
+		} = nodeProps || {};
 	
 		return <HStackNative
 					{...testProps('node' + (isSelected ? '-selected' : ''))}
-					{...nodeProps}
+					{...nodePropsToPass}
 					key={hash}
 					className={className}
 					style={{

@@ -262,8 +262,16 @@ export default function DataMgt(props) {
 						selectorId: controlledByCenter ? centerSelector_id : westSelector_id,
 						selectorSelected: controlledByCenter ? centerSelected?.[0] : westSelected?.[0],
 						...associatedPanel.props,
-					};
-				return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...allAssociatedPanelProps, ...thisAssociatedPanelProps, });
+					},
+					{
+						key: _allAssociatedPanelKey,
+						...allAssociatedPanelPropsToPass
+					} = allAssociatedPanelProps,
+					{
+						key: _thisAssociatedPanelKey,
+						...thisAssociatedPanelPropsToPass
+					} = thisAssociatedPanelProps;
+				return React.cloneElement(associatedPanel, { key: ix, reference: 'associatedPanel' + ix, ...allAssociatedPanelPropsToPass, ...thisAssociatedPanelPropsToPass, });
 			});
 		
 			

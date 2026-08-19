@@ -151,6 +151,7 @@ const GridRow = forwardRef((props, ref) => {
 			isOnlyOneVisibleColumn = visibleColumns.length === 1,
 			canSelectTextOnRow = isRowTextSelectable === false ? false : isDragFromHandleOnly,
 			shouldUseTextCursor = showRowHandle && canSelectTextOnRow,
+			rowPropsToPass = _.omit(rowProps || {}, ['key']),
 			propsToPassToCells = _.omit(propsToPass, [
 				'canDrag',
 				'isDragging',
@@ -163,6 +164,7 @@ const GridRow = forwardRef((props, ref) => {
 				'isOver',
 				'draggedItem',
 				'validateDrop',
+				'key',
 			]);
 
 		const renderColumns = (item) => {
@@ -391,6 +393,7 @@ const GridRow = forwardRef((props, ref) => {
 					if (config.getCellProps) {
 						_.assign(elementProps, config.getCellProps(item));
 					}
+					const elementPropsToPass = _.omit(elementProps, ['key']);
 
 					// TODO: incorporate better scrollbar formatting with
 					// tailwind plugin 'tailwind-scrollbar' (already installed, just not yet used here)
@@ -429,7 +432,7 @@ const GridRow = forwardRef((props, ref) => {
 								numberOfLines={1}
 								ellipsizeMode="head"
 								className={textClassName}
-								{...elementProps}
+								{...elementPropsToPass}
 								{...propsToPassToCells}
 							>{isEmptyCellValue ? ' ' : value}</TextNative>;
 				});
@@ -510,7 +513,7 @@ const GridRow = forwardRef((props, ref) => {
 		let row = <HStackNative
 						ref={rowShouldHaveDragRef ? setRowRef : ref}
 						{...testProps('Row ' + (isSelected ? 'row-selected' : ''))}
-						{...rowProps}
+						{...rowPropsToPass}
 						key={hash}
 						className={rowClassName}
 						style={hasCustomBgClass ? undefined : { backgroundColor: bg }}

@@ -345,6 +345,7 @@ function Form(props) {
 				validColumnsConfig = _.filter(columnsConfig, (config) => !!config); // filter out any null/undefined configs
 			_.each(validColumnsConfig, (config, ix) => {
 				let {
+						key: _configKey,
 						fieldName,
 						isEditable = false,
 						editor = null,
@@ -622,6 +623,7 @@ function Form(props) {
 				return item;
 			}
 			let {
+					key: _itemKey,
 					type,
 					editorType: itemEditorType,
 					viewerType,
@@ -1749,11 +1751,16 @@ function Form(props) {
 					if (props.disableOnInvalid) {
 						isDisabled = !formState.isValid;
 					}
-					const key = 'additionalFooterBtn-' + ix;
+					const
+						key = 'additionalFooterBtn-' + ix,
+						{
+							key: _key,
+							...buttonProps
+						} = props;
 					return <Button
 								{...testProps(key)}
 								key={key}
-								{...props}
+								{...buttonProps}
 								onPress={(e) => props.skipSubmit ? props.onPress() : handleSubmit(props.onPress, onSubmitError)(e)}
 								icon={props.icon || null}
 								text={props.text}

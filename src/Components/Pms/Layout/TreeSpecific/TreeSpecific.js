@@ -10,13 +10,14 @@ export default function TreeSpecific(props) {
 
 	const {
 			children,
+			key: _key,
 			...propsToPass
 		} = props,
 		treeSelection = useSelector(selectTreeSelection),
 		hasTreeSelection = !_.isEmpty(treeSelection);
 
 	if (!hasTreeSelection) {
-		return <MakeTreeSelection {...props} />;
+		return <MakeTreeSelection {...propsToPass} />;
 	}
 
 	// clone children and pass down props

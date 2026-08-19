@@ -145,9 +145,13 @@ function ReportsQueue(props) {
 						isHidable: false,
 						renderer: (entity, fieldName, cellProps, key) => {
 							const
+								{
+									key: _key,
+									...cellPropsToPass
+								} = cellProps || {},
 								isUser = entity.util_queued_reports__user_id === user?.id,
 								className = clsx(
-									cellProps.className,
+									cellPropsToPass.className,
 									'flex',
 									'items-center',
 									'justify-center',
@@ -165,11 +169,11 @@ function ReportsQueue(props) {
 								tooltip = 'Requeue this failed report';
 							} else {
 								// no available action
-								return <Box {...cellProps} className={className} />;
+								return <Box {...cellPropsToPass} className={className} />;
 							}
 							return <IconButton
 										key={key}
-										{...cellProps}
+										{...cellPropsToPass}
 										className={className}
 										icon={icon}
 										_icon={{
