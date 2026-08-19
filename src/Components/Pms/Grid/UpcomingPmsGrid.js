@@ -565,9 +565,6 @@ function withBumper(WrappedComponent) {
 					model="PmEvents"
 					inheritParentEditorMode={false}
 					onAdd={reloadUpcomingPms}
-					alreadyHasWithEditor={false}
-					alreadyHasWithData={false}
-					alreadyHasWithSelection={false}
 					addWorkOrder={onAdd}
 					editWorkOrder={onEdit}
 					setWorkOrderSelection={setSelection}
@@ -577,6 +574,8 @@ function withBumper(WrappedComponent) {
 }
 
 function withWorkOrdersAdder(WrappedComponent) {
+	// This intentionally creates a second, independent HOC chain.
+	// Symbol-based HOC markers dedupe within a single wrapping chain only.
 	const Component = withAlert(withData(withSelection(withWindowedEditor(WrappedComponent))));
 	return (props) => {
 		const {
