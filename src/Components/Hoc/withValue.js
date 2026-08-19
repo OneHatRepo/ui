@@ -147,8 +147,8 @@ export default function withValue(WrappedComponent) {
 		}
 
 		return <WrappedComponent
+					value={convertedValue} // Gluestack components like InputField need this prop, so don't inject it in a way that later it's stripped!
 					{...withInjectedHocProps(incomingProps, {
-						value: convertedValue,
 						setValue: setValueRef.current,
 						onChangeSelection,
 					})}

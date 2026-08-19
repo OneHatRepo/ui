@@ -10,7 +10,6 @@ import Editor from '../../../../../ckeditor5/build/ckeditor.js'; // built using 
 import withComponent from '../../../Hoc/withComponent.js';
 import withValue from '../../../Hoc/withValue.js';
 import withTooltip from '../../../Hoc/withTooltip.js';
-import omitInternalHocProps from '../../../../Functions/omitInternalHocProps.js';
 import _ from 'lodash';
 
 
@@ -35,9 +34,7 @@ const
 			debouncedSetValueRef.current = _.debounce(setValue, autoSubmitDelay);
 		}, [setValue]);
 
-		const propsToPass = omitInternalHocProps(props);
-
-		return <HStack ref={props.outerRef} {...propsToPass} className={` h-${h} flex-1 `}>
+		return <HStack ref={props.outerRef} {...props} className={` h-${h} flex-1 `}>
 					<CKEditor
 						editor={Editor}
 						config={config}
