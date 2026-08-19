@@ -24,9 +24,9 @@ function PmEventsEditor(props) {
 	const {
 			selection,
 			isBump = false,
+			self,
 		} = props,
 		pmEvent = selection[0],
-		form = self.children?.form,
 		forceUpdate = useForceUpdate(),
 		isFirstRun = useRef(true),
 		meterId = useRef(pmEvent?.pm_events__meter_id), // EquipmentEditor.PmEventsFilteredGridEditor & UpcomingPmsGrid.onBump both add this by default
@@ -106,8 +106,15 @@ function PmEventsEditor(props) {
 			}
 			adjustForm();
 		},
+		getForm = () => {
+			return self?.children?.PmEventsEditor?.children?.form
+				|| self?.children?.editor?.children?.form
+				|| self?.children?.form
+				|| null;
+		},
 		adjustForm = async () => {
-			if (!props.self?.children?.form) {
+			const form = getForm();
+			if (!form) {
 				setTimeout(() => {
 					adjustForm();
 				}, 100);
@@ -115,7 +122,6 @@ function PmEventsEditor(props) {
 			}
 
 			let
-				form = props.self?.children?.form,
 				fv = form.formGetValues(),
 				{
 					pm_events__meter_id,
@@ -266,8 +272,11 @@ function PmEventsEditor(props) {
 		},
 		onSetCurrentMeterReading = async () => {
 			const
-				form = props.self?.children?.form,
+				form = getForm(),
 				meter = await getMeterById(getMeterId());
+			if (!form) {
+				return;
+			}
 			if (!meter) {
 				alert('Selected meter not found. Please select a different meter.');
 				return;
@@ -504,6 +513,7 @@ function PmEventsEditor(props) {
 		columnDefaults = { // defaults for each column defined in 'items', for use in Form amd Viewer
 		};
 	return <Editor
+				{...props}
 				reference="PmEventsEditor"
 				parent={self}
 				title="PmEvents"
@@ -512,7 +522,6 @@ function PmEventsEditor(props) {
 				columnDefaults={columnDefaults}
 				formSetup={formSetup}
 				viewerSetup={viewerSetup}
-				{...props}
 			/>;
 }
 
