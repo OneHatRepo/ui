@@ -37,6 +37,14 @@ const ButtonComponent = forwardRef((props, ref) => {
 	const
 		formContext = useContext(FormContext),
 		internalRef = useRef(),
+		hasBackgroundClass = (className) => {
+			if (!className || !_.isString(className)) {
+				return false;
+			}
+
+			// Match bg-* utilities with optional variant prefixes like hover:, web:, dark:, etc.
+			return /(?:^|\s)(?:[^\s:]+:)*bg-[^\s]+/.test(className);
+		},
 		getInheritedContentColorClassName = (className) => {
 			// Gluestack v5 styles ButtonText/ButtonIcon as separate slots, so root text color
 			// classes on Button do not always cascade; extract only color-like text classes
@@ -123,22 +131,28 @@ const ButtonComponent = forwardRef((props, ref) => {
 	if (propsToPass.className) {
 		className += ' ' + propsToPass.className;
 	}
+	const shouldApplyPrimaryFallback = _.isNil(propsToPass.variant) && _.isNil(propsToPass.action) && !hasBackgroundClass(className);
+	if (shouldApplyPrimaryFallback) {
+		// Preserve classic primary button appearance when callers don't set variant/action.
+		className += ' bg-primary-500 data-[hover=true]:bg-primary-600 data-[active=true]:bg-primary-600';
+	}
 
 	const
 		inheritedContentColorClassName = getInheritedContentColorClassName(className),
+		fallbackContentColorClassName = shouldApplyPrimaryFallback && !inheritedContentColorClassName ? 'text-white' : '',
 		// Merge caller-provided slot props with inherited root color classes.
 		// Explicit _icon/_rightIcon/_text classes still win because they are appended last.
 		iconPropsToUse = {
 			...(_icon || {}),
-			className: clsx(inheritedContentColorClassName, _icon?.className),
+			className: clsx(fallbackContentColorClassName, inheritedContentColorClassName, _icon?.className),
 		},
 		rightIconPropsToUse = {
 			...(_rightIcon || {}),
-			className: clsx(inheritedContentColorClassName, _rightIcon?.className),
+			className: clsx(fallbackContentColorClassName, inheritedContentColorClassName, _rightIcon?.className),
 		},
 		textPropsToUse = {
 			...(_text || {}),
-			className: clsx('ButtonText', inheritedContentColorClassName, _text?.className),
+			className: clsx('ButtonText', fallbackContentColorClassName, inheritedContentColorClassName, _text?.className),
 		};
 
 	if (icon) {
