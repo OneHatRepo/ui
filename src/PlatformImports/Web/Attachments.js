@@ -1069,6 +1069,8 @@ function AttachmentsElement(props) {
 	// switches for icon/list view
 	const buttonClassName = clsx(
 		'bg-white',
+		'min-h-0',
+		'min-w-0',
 		'w-[25px]',
 		'h-[25px]',
 		'p-[5px]',
@@ -1081,7 +1083,7 @@ function AttachmentsElement(props) {
 			>
 				<HStack
 					className={clsx(
-						'h-[40px]',
+						'h-[35px]',
 						'w-full',
 						'gap-1',
 						'p-1',
@@ -1094,8 +1096,7 @@ function AttachmentsElement(props) {
 						onPress={() => setViewMode(ATTACHMENTS_VIEW_MODES__ICON)}
 						icon={Images}
 						isDisabled={viewMode === ATTACHMENTS_VIEW_MODES__ICON}
-						className={buttonClassName}
-						size="sm"
+						className={buttonClassName + ' ml-1'}
 						tooltip="Icon View"
 					/>
 					<IconButton
@@ -1103,7 +1104,6 @@ function AttachmentsElement(props) {
 						icon={List}
 						isDisabled={viewMode === ATTACHMENTS_VIEW_MODES__LIST}
 						className={buttonClassName}
-						size="sm"
 						tooltip="List View"
 					/>
 					<Box className="spacer flex-1" />
@@ -1112,7 +1112,6 @@ function AttachmentsElement(props) {
 						icon={Download}
 						className={buttonClassName}
 						isDisabled={!effectiveModel || _.isNil(modelid.current) || _.isArray(modelid.current) || files.length === 0}
-						size="sm"
 						tooltip="Download All"
 					/>
 				</HStack>

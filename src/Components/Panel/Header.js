@@ -51,8 +51,7 @@ export default function Header(props) {
 			'min-w-0',
 			'h-[20px]',
 			'w-[20px]',
-			'px-[2px]',
-			'py-[2px]',
+			'p-[2px]',
 			styles.PANEL_HEADER_BG,
 		);
 		if (collapseDirection === HORIZONTAL && isCollapsed) {
