@@ -36,11 +36,11 @@ const IconButtonElement = forwardRef((props, ref) => {
 	return <Button
 				ref={ref}
 				{...props}
-				_icon={iconProps}
 				className={buttonClassName}
 				size="icon"
 				action="none"
 				variant="none"
+				_icon={iconProps}
 			/>;
 });
 export default IconButtonElement;
