@@ -20,7 +20,7 @@ const IconButtonElement = forwardRef((props, ref) => {
 		throw Error('IconButton requires an icon prop');
 	}
 
-	let buttonClassName = clsx(
+	const buttonClassName = clsx(
 		'IconButton',
 		'rounded-md',
 		'self-center',
@@ -28,19 +28,17 @@ const IconButtonElement = forwardRef((props, ref) => {
 		'px-[10px]',
 		'py-[10px]',
 		styles.ICON_BUTTON_CLASSNAME,
+		props.className,
 	);
-	if (props.className) {
-		buttonClassName += ' ' + props.className;
-	}
 
 	return <Button
 				ref={ref}
 				{...props}
-				className={buttonClassName}
 				size="icon"
 				action="none"
 				variant="none"
 				_icon={iconProps}
+				className={buttonClassName}
 			/>;
 });
 export default IconButtonElement;
