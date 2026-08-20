@@ -40,37 +40,6 @@ import _ from 'lodash';
 
 const FILTER_NAME = 'q';
 
-/**
- * isEmptyValue
- * _.isEmpty returns true for all integers, so we need this instead
- * @param {*} value 
- * @returns boolean
- */
-function isEmptyValue(value) {
-	return value === null ||
-			value === undefined ||
-			value === '' ||
-			value === 0 ||
-			(_.isObject(value) && _.isEmpty(value));
-};
-
-function getRowProps() {
-	return {
-		className: clsx(
-			'w-full',
-			'pl-4',
-			'pr-2',
-			'py-1',
-			'border-b-1',
-			'border-grey-300',
-			CURRENT_MODE === UI_MODE_NATIVE ? {
-				'min-h-[50px]': true,
-				'h-[50px]': true,
-			} : {},
-		),
-	};
-}
-
 export const ComboComponent = forwardRef((props, ref) => {
 
 	const {
@@ -189,9 +158,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}
 			if (CURRENT_MODE === UI_MODE_WEB && inputRef.current?.getBoundingClientRect) {
 				// For web, ensure it's in the proper place
-				const
-					rect = inputRef.current.getBoundingClientRect(),
-					inputRect = inputRef.current.getBoundingClientRect();
+				const rect = inputRef.current.getBoundingClientRect();
 
 				if (rect.top !== top) {
 					setTop(rect.top);
@@ -209,7 +176,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 					setWidth(widthToSet);
 				}
 
-				setInputHeight(inputRect.height);
+				setInputHeight(rect.height);
 			}
 			if (Repository && !Repository.isLoaded) {
 				// await Repository.load(); // this breaks when the menu (Grid) has selectorSelected
@@ -816,6 +783,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 							'self-stretch',
 							'flex-1',
 							'm-0',
+							'p-0',
 							'rounded-tr-none',
 							'rounded-br-none',
 							styles.FORM_COMBO_INPUT_CLASSNAME,
@@ -1075,7 +1043,15 @@ export const ComboComponent = forwardRef((props, ref) => {
 								initialFocusRef={inputCloneRef}
 							>
 								<PopoverBackdrop
-									className="PopoverBackdrop bg-black/20 fixed inset-0 z-40 web:pointer-events-auto"
+									className={clsx(
+										'PopoverBackdrop',
+										'fixed',
+										'inset-0',
+										'z-40',
+										'w-full',
+										'h-full',
+										'web:pointer-events-auto',
+									)}
 									style={{
 										backgroundColor: 'rgba(0, 0, 0, 0.20)',
 									}}
@@ -1258,11 +1234,9 @@ export const ComboComponent = forwardRef((props, ref) => {
 		'h-auto',
 		'self-stretch',
 		'justify-center',
-		'items-stretch'
+		'items-stretch',
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 	if (minimizeForRow) {
 		className += ' h-auto min-h-0';
 	}
@@ -1367,6 +1341,38 @@ export const ComboComponent = forwardRef((props, ref) => {
 	return assembledComponents;
 	
 });
+
+
+/**
+ * isEmptyValue
+ * _.isEmpty returns true for all integers, so we need this instead
+ * @param {*} value 
+ * @returns boolean
+ */
+function isEmptyValue(value) {
+	return value === null ||
+			value === undefined ||
+			value === '' ||
+			value === 0 ||
+			(_.isObject(value) && _.isEmpty(value));
+};
+
+function getRowProps() {
+	return {
+		className: clsx(
+			'w-full',
+			'pl-4',
+			'pr-2',
+			'py-1',
+			'border-b-1',
+			'border-grey-300',
+			CURRENT_MODE === UI_MODE_NATIVE ? {
+				'min-h-[50px]': true,
+				'h-[50px]': true,
+			} : {},
+		),
+	};
+}
 
 export const Combo = withComponent(
 						withAlert(

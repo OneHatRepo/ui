@@ -81,7 +81,7 @@ export default function FieldSet(props) {
 			}
 		};
 
-	let className = clsx(
+	const className = clsx(
 		'FieldSet-Box',
 		'mb-4',
 		'mx-0',
@@ -91,11 +91,8 @@ export default function FieldSet(props) {
 		'border',
 		'border-grey-400',
 		styles.FORM_FIELDSET_BG,
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
-
 	
 	return <Box
 				className={className}

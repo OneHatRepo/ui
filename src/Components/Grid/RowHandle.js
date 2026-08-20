@@ -13,18 +13,18 @@ const RowHandle = forwardRef((props, ref) => {
 			isDragSource,
 			isDraggable
 		} = props,
-		styles = UiGlobals.styles;
-	let className = clsx(
-		'RowHandle',
-		'h-full',
-		'w-[40px]',
-		'px-2',
-		'items-center',
-		'justify-center',
-		'select-none',
-		'cursor-pointer',
-		styles.ROW_HANDLE_CLASSNAME,
-	);
+		styles = UiGlobals.styles,
+		className = clsx(
+			'RowHandle',
+			'h-full',
+			'w-[40px]',
+			'px-2',
+			'items-center',
+			'justify-center',
+			'select-none',
+			'cursor-pointer',
+			styles.ROW_HANDLE_CLASSNAME,
+		);
 	return <VStack
 				ref={isDragSource || isDraggable ? ref : undefined}
 				className={className}

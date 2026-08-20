@@ -82,15 +82,14 @@ const TextAreaElement = forwardRef((props, ref) => {
 	}
 	let textareaClassName = clsx(
 			'Textarea',
+			'border-grey-300',
+			className,
 		),
 		inputClassName = clsx(
 			'TextAreaInput',
 			'flex-1',
 			styles.FORM_TEXTAREA_CLASSNAME,
 		);
-	if (className) {
-		textareaClassName += ' ' + className;
-	}
 	if (minimizeForRow) {
 		textareaClassName += ' h-auto min-h-0 max-h-[40px] overflow-auto';
 		inputClassName += ' py-0';

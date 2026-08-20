@@ -87,10 +87,8 @@ const
 			'items-center',
 			'px-1',
 			'py-[2px]',
+			props.className,
 		);
-		if (props.className) {
-			className += ' ' + props.className;
-		}
 		
 		return <HStack className={className} style={props.style}>
 					<Date

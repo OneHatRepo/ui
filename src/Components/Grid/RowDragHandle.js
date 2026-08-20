@@ -8,17 +8,15 @@ import styles from '../../Styles/StyleSheets.js';
 import GripVertical from '../Icons/GripVertical.js';
 
 const RowDragHandle = forwardRef(function(props, ref) {
-	let className = clsx(
+	const className = clsx(
 		'RowDragHandle',
 		'bg-grey-100',
 		'w-[17px]',
 		'items-center',
 		'justify-center',
 		'select-none',
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 	return <VStack
 				{...props}
 				ref={ref}

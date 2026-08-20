@@ -90,15 +90,13 @@ function TextWithLinksElement(props) {
 	if (CURRENT_MODE === UI_MODE_WEB) {
 		elementProps.textOverflow = 'ellipsis';
 	}
-	let className = clsx(
+	const className = clsx(
 		'overflow-auto',
 		'min-h-[40px]',
 		'px-3',
 		'py-2',
+		props.className,
 	);
-	if (props.className) {
-		className += ` ${props.className}`;
-	}
 	return <BoxNative
 				className={className}
 				{...props}

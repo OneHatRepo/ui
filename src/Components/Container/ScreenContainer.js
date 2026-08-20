@@ -41,11 +41,9 @@ function ScreenContainer(props) {
 		'justify-start',
 		'flex-1',
 		'w-full',
-		'overflow-visible'
+		'overflow-visible',
+		props.className,
 	);
-	if (props.className) {
-		className += ` ${props.className}`;
-	}
 
 	const column = <VStackNative
 						onLayout={onLayout}

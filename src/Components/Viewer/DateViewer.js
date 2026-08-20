@@ -11,12 +11,10 @@ export default function DateViewer(props) {
 	if (!moment || !moment.isValid()) {
 		return null;
 	}
-	let className = clsx(
+	const className = clsx(
 		'flex-none',
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 	return <DisplayField
 				text={moment.format(MOMENT_DATE_FORMAT_4)}
 				{...props}

@@ -21,33 +21,30 @@ const PlusMinusButton = React.forwardRef((props, ref) => {
 		} = props,
 		_icon = {
 			className: 'text-black',
-		};
-
-		let className = clsx(
+		},
+		className = clsx(
 			'PlusMinusButton-HStack',
 			'items-center',
+			props.className,
 		);
-		if (props.className) {
-			className += ' ' + props.className
-		}
 
-		return <HStack className={className}>
-					<IconButton
-						icon={Minus}
-						_icon={_icon}
-						onPress={minusHandler}
-						isDisabled={isMinusDisabled}
-						tooltip={minusTooltip}
-					/>
-					<IconButton
-						icon={Plus}
-						_icon={_icon}
-						onPress={plusHandler}
-						isDisabled={isPlusDisabled}
-						className="ml-1"
-						tooltip={plusTooltip}
-					/>
-				</HStack>;
+	return <HStack className={className}>
+				<IconButton
+					icon={Minus}
+					_icon={_icon}
+					onPress={minusHandler}
+					isDisabled={isMinusDisabled}
+					tooltip={minusTooltip}
+				/>
+				<IconButton
+					icon={Plus}
+					_icon={_icon}
+					onPress={plusHandler}
+					isDisabled={isPlusDisabled}
+					className="ml-1"
+					tooltip={plusTooltip}
+				/>
+			</HStack>;
 
 });
 

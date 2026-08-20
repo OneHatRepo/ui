@@ -29,19 +29,15 @@ export default function DynamicFab(props) {
 			setIsExpanded(prev => !prev);
 		}, []),
 		buttonSpacing = 45,
-		verticalOffset = 50; // to shift the entire expanded group up
-
-
-	let className = clsx(
-		'DynamicFab',
-		'fixed',
-		'pb-[20px]',
-		'bottom-4',
-		'right-4',
-	);
-	if (props.className) {
-		className += ` ${props.className}`;
-	}
+		verticalOffset = 50, // to shift the entire expanded group up
+		className = clsx(
+			'DynamicFab',
+			'fixed',
+			'pb-[20px]',
+			'bottom-4',
+			'right-4',
+			props.className,
+		);
 
 	return <VStack className={className}>
 				{buttons
@@ -88,13 +84,21 @@ export default function DynamicFab(props) {
 				<FabWithTooltip
 					size="lg"
 					onPress={toggleFab}
-					className="z-100 bg-primary-600"
+					className={clsx(
+						'z-100',
+						'bg-primary-600',
+					)}
 					tooltip={tooltip}
 					tooltipPlacement={tooltipPlacement}
 					tooltipClassName={tooltipClassName}
 					tooltipTriggerClassName={tooltipTriggerClassName}
 				>
-					<FabIcon as={isExpanded ? Xmark : icon || EllipsisVertical} />
+					<FabIcon
+						as={isExpanded ? Xmark : icon || EllipsisVertical}
+						className={clsx(
+							'text-white',
+						)}
+					/>
 					{label ? <FabLabel>{label}</FabLabel> : null}
 				</FabWithTooltip>
 			</VStack>;

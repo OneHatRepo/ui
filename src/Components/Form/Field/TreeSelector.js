@@ -1170,11 +1170,9 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 		'h-auto',
 		'self-stretch',
 		'justify-center',
-		'items-stretch'
+		'items-stretch',
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 	if (minimizeForRow) {
 		className += ' h-auto min-h-0';
 	}

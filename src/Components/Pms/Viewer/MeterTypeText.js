@@ -12,18 +12,16 @@ import {
 import UiGlobals from '../../../UiGlobals';
 
 export default function MeterTypeText(props) {
-	const styles = UiGlobals.styles;
-
-	let className = clsx(
-		'Text',
-		'flex-1',
-		'px-3',
-		'py-2',
-		styles.FORM_TEXT_CLASSNAME,
-	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
+	const
+		styles = UiGlobals.styles,
+		className = clsx(
+			'Text',
+			'flex-1',
+			'px-3',
+			'py-2',
+			styles.FORM_TEXT_CLASSNAME,
+			props.className,
+		);
 	let meterType = '';
 	switch(parseInt(props.value)) {
 		case METER_TYPES__HOURS:

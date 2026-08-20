@@ -145,19 +145,16 @@ function NumberElement(props) {
 
 	const
 		isIncrementDisabled = typeof maxValue !== 'undefined' && value === maxValue,
-		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0));
-
-	let className = clsx(
-		'Number',
-		'flex',
-		'h-full',
-		'items-center',
-		'max-h-[40px]',
-		'p-0',
-	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
+		isDecrementDisabled = typeof minValue !== 'undefined' && (value === minValue || (!value && minValue === 0)),
+		className = clsx(
+			'Number',
+			'flex',
+			'h-full',
+			'items-center',
+			'max-h-[40px]',
+			'p-0',
+			props.className,
+		);
 
 	return <HStack
 				className={className}

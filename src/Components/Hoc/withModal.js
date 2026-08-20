@@ -347,6 +347,9 @@ export default function withModal(WrappedComponent) {
 								'bg-black/50',
 								'web:pointer-events-auto',
 							)}
+							style={{
+								backgroundColor: 'rgba(0, 0, 0, 0.40)',
+							}}
 						/>;
 			};
 

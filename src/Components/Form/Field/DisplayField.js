@@ -14,15 +14,13 @@ const
 				value,
 				text = value,
 			} = props,
-			styles = UiGlobals.styles;
-		let className = clsx(
-			'DisplayField',
-			'flex-1',
-			styles.TEXT_FONTSIZE,
-		);
-		if (props.className) {
-			className += ' ' + props.className;
-		}
+			styles = UiGlobals.styles,
+			className = clsx(
+				'DisplayField',
+				'flex-1',
+				styles.TEXT_FONTSIZE,
+				props.className,
+			);
 		return <Text
 					ref={props.outerRef}
 					className={className}

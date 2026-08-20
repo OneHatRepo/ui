@@ -152,6 +152,7 @@ function SliderElement(props) {
 			'Slider',
 			'w-full',
 			'items-center',
+			props.className,
 		),
 		inputClassName = clsx(
 			'Input',
@@ -162,9 +163,6 @@ function SliderElement(props) {
 			'rounded-md',
 			styles.SLIDER_READOUT_FONTSIZE,
 		);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 	if (minimizeForRow) {
 		inputClassName += ' h-auto min-h-0 max-h-[50px] mr-1';
 	}

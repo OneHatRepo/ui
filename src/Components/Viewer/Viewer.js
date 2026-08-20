@@ -445,12 +445,12 @@ function Viewer(props) {
 						itemPropsToPass.onDelete = composeEventHandlers(itemPropsToPass.onDelete, effectiveAncillaryEventHandlers?.onDelete);
 						itemPropsToPass.onSave = composeEventHandlers(itemPropsToPass.onSave, effectiveAncillaryEventHandlers?.onSave);
 					}
-					let className = 'Viewer-ancillary-' + type;
-					if (itemPropsToPass.className) {
-						className += ' ' + itemPropsToPass.className;
-					}
 
 					const
+						className = clsx(
+							'Viewer-ancillary-' + type,
+							itemPropsToPass.className,
+						),
 						ancillaryEditorMode = itemPropsToPass.editorMode ?? normalizedParentEditorMode,
 						ancillaryInitialEditorMode = itemPropsToPass.initialEditorMode ?? ancillaryEditorMode ?? undefined,
 						Element = getComponentFromType(type),
@@ -565,16 +565,14 @@ function Viewer(props) {
 	if (!hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	let className = clsx(
+	const className = clsx(
 		'Viewer-VStackNative',
 		'h-full',
 		'bg-white',
 		'[transform:translateZ(0)]', // so embedded FAB will be relative to this container, not to viewport
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
-
+	
 	const footer = showFooter ? 
 			<Footer className="justify-end">
 				{showDeleteBtn && 

@@ -1947,14 +1947,13 @@ function Form(props) {
 
 	} // END if (containerWidth)
 	
-	let className = clsx(
-		'Form-VStackNative',
-		'[transform:translateZ(0)]', // so embedded FAB will be relative to this container, not to viewport
-	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
-	const scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />;
+	const
+		className = clsx(
+			'Form-VStackNative',
+			'[transform:translateZ(0)]', // so embedded FAB will be relative to this container, not to viewport
+			props.className,
+		),
+		scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />;
 	return <FormContext.Provider value={{ isValid: formState.isValid }}>
 			<VStackNative
 				ref={formRef}

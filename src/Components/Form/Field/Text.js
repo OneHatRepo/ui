@@ -19,19 +19,16 @@ const
 				testID,
 				onPress,
 			} = props,
-			styles = UiGlobals.styles;
-
-		let className = clsx(
-			'Text',
-			'flex-1',
-			'min-h-[40px]',
-			'px-3',
-			'py-2',
-			styles.FORM_TEXT_CLASSNAME,
-		);
-		if (incomingClassName) {
-			className += ' ' + incomingClassName;
-		}
+			styles = UiGlobals.styles,
+			className = clsx(
+				'Text',
+				'flex-1',
+				'min-h-[40px]',
+				'px-3',
+				'py-2',
+				styles.FORM_TEXT_CLASSNAME,
+				incomingClassName,
+			);
 		
 		return <TextNative
 					ref={outerRef}

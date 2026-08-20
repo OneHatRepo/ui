@@ -14,10 +14,13 @@ const TooltipElement = forwardRef((props, ref) => {
 			textClassName,
 			children,
 		} = props;
-	let className = 'rounded-md bg-black px-3 py-1';
-	if (props.className) {
-		className += ' ' + props.className;
-	}
+	let className = clsx(
+		'rounded-md',
+		'bg-black',
+		'px-3',
+		'py-1',
+		props.className,
+	);
 
 	let tooltipTextClassName = 'text-white';
 	if (textClassName) {

@@ -1982,17 +1982,15 @@ function GridComponent(props) {
 	if (!hasHeight(props) && !hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	let className = clsx(
+	const className = clsx(
 		'Grid-VStackNative',
 		'w-full',
 		'border',
 		'border-grey-300',
 		'focus:outline-none', // hide the focus outline
 		'focus-visible:outline-none',
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 
 	if (isDisabled) {
 		grid = <Mask />;

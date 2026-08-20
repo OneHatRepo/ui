@@ -8,7 +8,7 @@ import styles from '../../Styles/StyleSheets.js';
 import GripVertical from '../Icons/GripVertical.js';
 
 const TreeNodeDragHandle = forwardRef(function(props, ref) {
-	let className = clsx(
+	const className = clsx(
 		'TreeNodeDragHandle',
 		'h-full',
 		'w-[17px]',
@@ -17,10 +17,8 @@ const TreeNodeDragHandle = forwardRef(function(props, ref) {
 		'items-center',
 		'justify-center',
 		'select-none',
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 	return <VStack
 				{...props}
 				ref={ref}

@@ -120,6 +120,8 @@ const InputElement = forwardRef((props, ref) => {
 			'dark:bg-white',
 			styles.FORM_INPUT_CLASSNAME,
 			minimizeForRow ? 'min-h-0 py-0' : '',
+			'border-grey-300',
+			className,
 		),
 		inputFieldClassName = clsx(
 			'InputField',
@@ -133,10 +135,6 @@ const InputElement = forwardRef((props, ref) => {
 			styles.FORM_INPUT_FIELD_CLASSNAME,
 			minimizeForRow ? 'min-h-0 py-0' : '',
 		);
-	if (className) {
-		inputClassName += ' ' + className;
-	}
-
 
 	if (leftElement) {
 		leftElement = <InputSlot className="leftElementInputSlot">{leftElement}</InputSlot>;

@@ -43,17 +43,14 @@ const
 						isBlocked.current = false;
 					}, 200);
 				}
-			};
-
-		let className = clsx(
-			'Toggle',
-			'h-full',
-			'items-center',
-			'py-[2px]',
-		);
-		if (props.className) {
-			className += ' ' + props.className;
-		}
+			},
+			className = clsx(
+				'Toggle',
+				'h-full',
+				'items-center',
+				'py-[2px]',
+				props.className,
+			);
 
 		if (_.isNil(value)) {
 			return <HStack className={className}>

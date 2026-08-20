@@ -37,12 +37,10 @@ export default function PmStatusesViewer(props) {
 		default:
 			text = 'Unknown';
 	}
-	let className = clsx(
+	const className = clsx(
 		'flex-none',
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 	return <DisplayField
 				text={text}
 				{...props}

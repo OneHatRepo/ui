@@ -36,16 +36,14 @@ const SelectElement = forwardRef((props, ref) => {
 	if (!disableAutoFlex && !hasWidth(props) && !hasFlex(props)) {
 		style.flex = 1;
 	}
-	let className = clsx(
+	const className = clsx(
 		'Select',
 		'min-h-[40px]',
 		'text-left',
 		'rounded-lg',
 		styles.FORM_SELECT_CLASSNAME,
+		props.className,
 	);
-	if (props.className) {
-		className += ' ' + props.className;
-	}
 
 	return <Select
 				{...propsToPass}

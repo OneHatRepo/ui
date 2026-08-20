@@ -304,14 +304,12 @@ function Report(props) {
 	}
 
 	if (isQuickReport) {
-		let className = clsx(
+		const className = clsx(
 			'QuickReport',
 			'flex-1',
 			'm-2',
+			props.className,
 		);
-		if (props.className) {
-			className += ' ' + props.className;
-		}
 		return <VStackNative
 					{...testProps('QuickReport-' + reportId)}
 					className={className}

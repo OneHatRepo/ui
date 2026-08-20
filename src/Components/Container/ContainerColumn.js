@@ -9,12 +9,10 @@ import _ from 'lodash';
 // which the Container will translate into classNames for the VStack component.
 
 export default function ContainerColumn(props) {
-	let className = clsx(
-		'ContainerColumn'
+	const className = clsx(
+		'ContainerColumn',
+		props.className,
 	);
-	if (props.className) {
-		className += ` ${props.className}`;
-	}
 	
 	return <VStack className={className}>
 				{props.children}

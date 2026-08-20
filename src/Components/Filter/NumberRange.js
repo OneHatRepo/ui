@@ -64,16 +64,14 @@ const
 
 		}, [value]);
 
-		let className = clsx(
+		const className = clsx(
 			'flex-1',
 			'justify-center',
 			'items-center',
 			'px-1',
 			'py-[2px]',
+			props.className,
 		);
-		if (props.className) {
-			className += ' ' + props.className;
-		}
 		
 		return <HStack className={className} style={props.style}>
 					<Number

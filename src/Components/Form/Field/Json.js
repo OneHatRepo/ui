@@ -42,16 +42,14 @@ export function JsonElement(props) {
 		throw new Error('JsonElement not yet implemented for React Native');
 	}
 
-	let className = clsx(
+	const className = clsx(
 		'Json',
 		'flex-1',
 		'justify-start',
 		'w-full',
 		testID,
+		propsToPass.className,
 	);
-	if (props.className) {
-		className += ' ' + propsToPass.className;
-	}
 	// if (CURRENT_MODE === UI_MODE_WEB) {
 		const src = value ? JSON.parse(value) : {};
 		assembledComponents = 
