@@ -168,6 +168,7 @@ export default function withContextMenu(WrappedComponent) {
 						>{contextMenuItemComponents}</VStack>,
 				onCancel: hideModal,
 				whichModal: 'contextMenu',
+				stackMode: 'replace',
 			});
 
 			if (doShowContextMenu) {

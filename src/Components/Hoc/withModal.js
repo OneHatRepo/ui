@@ -56,7 +56,7 @@ const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
  *   h: 420,
  *   w: 640,
  *   showBackdrop: true,
- *   stackMode: 'push', // 'replace' is the default for backward compatibility
+ *   stackMode: 'push',
  * });
  *
  * // Close just one modal in the queue, even if another modal is above it.
@@ -67,8 +67,8 @@ const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
  * props.hideModal({ closeAll: true });
  *
  * stackMode options:
- * - 'replace': replace the current modal queue with this modal (default)
- * - 'push': append this modal to the existing stack so multiple modals can remain open
+ * - 'push': append this modal to the existing stack so multiple modals can remain open (default)
+ * - 'replace': replace the current modal queue with this modal
  */
 
 export default function withModal(WrappedComponent) {
@@ -135,6 +135,7 @@ export default function withModal(WrappedComponent) {
 				let {
 					title = null,
 					body = null,
+					bodyFactory = null, // fn that will be called to generate the body content each time the modal is rendered
 					canClose = false,
 					includeCancel = false,
 					onCancel = null,
@@ -147,20 +148,26 @@ export default function withModal(WrappedComponent) {
 					w = null,
 					whichModal = null,
 					testID = null,
-					formProps = null, // deprecated
-					stackMode = 'replace',
+					stackMode = 'push', // 'push' or 'replace'
 					showBackdrop = true,
+					formProps = null, // deprecated
 				} = args;
 
 				if (formProps) {
 					// deprecated formProps bc we were getting circular dependencies
 					throw new Error('withModal: formProps is deprecated. Instead, insert the <Form> in "body" directly from the component that called showModal.');
 				}
-				if (!body) {
+				if (!body && !bodyFactory) {
 					throw new Error('withModal: body is required for showModal');
+				}
+				if (bodyFactory && !_.isFunction(bodyFactory)) {
+					throw new Error('withModal: bodyFactory must be a function');
 				}
 
 				if (_.isFunction(body)) {
+					// eager execution of body functions remains for backward compatibility.
+					// Prefer bodyFactory for dynamic render-time content.
+					console.warn('withModal: body function will be executed eagerly. Use bodyFactory for render-time body creation.');
 					body = body();
 				}
 
@@ -170,6 +177,7 @@ export default function withModal(WrappedComponent) {
 						id: modalId,
 						title,
 						body,
+						bodyFactory,
 						canClose,
 						includeCancel,
 						onCancel,
@@ -187,7 +195,7 @@ export default function withModal(WrappedComponent) {
 
 				setModals((previous) => {
 					// 'push' keeps the existing stack and puts the new dialog on top.
-					// Any other mode replaces the current modal queue, preserving legacy behavior.
+					// Any other mode (typically 'replace') clears the queue first.
 					if (stackMode === 'push') {
 						return [...previous, modalConfig];
 					}
@@ -293,7 +301,7 @@ export default function withModal(WrappedComponent) {
 					whichModal: !_.isNil(parentWhichModal) ? parentWhichModal : whichModal,
 				},
 			renderModalBody = (modal, isTopModal) => {
-				let modalBody = modal.body;
+				let modalBody = modal.bodyFactory ? modal.bodyFactory() : modal.body;
 				const buttons = getButtonsForModal(modal);
 				if (modal.h || modal.w || modal.title) {
 					let footer = null;
@@ -331,6 +339,10 @@ export default function withModal(WrappedComponent) {
 				}
 				const onBackdropPress = () => {
 					if (isTopModal) {
+						if (modal.onCancel) {
+							modal.onCancel();
+							return;
+						}
 						hideModal({ modalId: modal.id });
 					}
 				};

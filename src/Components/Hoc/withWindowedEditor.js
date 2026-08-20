@@ -1,19 +1,11 @@
-import { forwardRef } from 'react';
-import {
-	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
-	Pressable,
-} from '@onehat-gluestack';
+import { forwardRef, useCallback, useEffect, useRef } from 'react';
 import clsx from 'clsx';
-import {
-	CURRENT_MODE,
-	UI_MODE_WEB,
-	UI_MODE_NATIVE,
-} from '../../Constants/UiModes.js';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../Constants/Editor.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
 import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
+import withModal from './withModal.js';
 import withEditor from './withEditor.js';
 // import withDraggable from './withDraggable.js';
 import _ from 'lodash';
@@ -68,6 +60,8 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				isEditorShown = false,
 				setIsEditorShown,
 				Editor,
+				showModal,
+				hideModal,
 				_editor = {},
 
 				// withComponent
@@ -82,53 +76,82 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				
 				...propsToPass
 			} = props,
-			onEditorCancel = props.onEditorCancel;
+			onEditorCancel = props.onEditorCancel,
+			editorModalIdRef = useRef(null),
+			latestEditorPropsRef = useRef(null),
+			hideEditorModal = () => {
+				if (editorModalIdRef.current !== null && hideModal) {
+					hideModal({ modalId: editorModalIdRef.current });
+					editorModalIdRef.current = null;
+				}
+			},
+			onModalCancel = () => {
+				editorModalIdRef.current = null;
+				if (onEditorCancel) {
+					onEditorCancel();
+				}
+			};
 
-		if (!Editor) {
-			return <WrappedComponent {...props} ref={ref} />;
-		}
+		latestEditorPropsRef.current = {
+			Editor,
+			propsToPass,
+			_editor,
+			self,
+		};
 
-		let modalBackdrop = <ModalBackdrop className="withEditor-ModalBackdrop" />
-		if (CURRENT_MODE === UI_MODE_NATIVE) {
-			// Gluestack's ModalBackdrop was not working on Native,
-			// so workaround is to do it manually for now
-			modalBackdrop = <Pressable
-								onPress={() => onEditorCancel()}
-								className={clsx(
-									'withEditor-ModalBackdrop-replacment',
-									'h-full',
-									'w-full',
-									'absolute',
-									'top-0',
-									'left-0',
-									'bg-black/50',
-								)}
-							/>;
-		}
+		const getEditorBody = useCallback(() => {
+			const latest = latestEditorPropsRef.current;
+			if (!latest?.Editor) {
+				return null;
+			}
 
-		return <>
-					<WrappedComponent {...props} ref={ref} />
-					{isEditorShown && 
-						<Modal
-							isOpen={true}
-							onClose={onEditorCancel}
-							className="withEditor-Modal"
-						>
-							{modalBackdrop}
-							<Editor
-								editorType={EDITOR_TYPE__WINDOWED}
-								{...propsToPass}
-								{..._editor}
-								parent={self}
-								reference="editor"
-								className={clsx(
-									'bg-white',
-									'shadow-lg',
-									'rounded-lg',
-								)}
-							/>
-						</Modal>}
-				</>;
+			const LatestEditor = latest.Editor;
+			return <LatestEditor
+					editorType={EDITOR_TYPE__WINDOWED}
+					{...latest.propsToPass}
+					{...latest._editor}
+					parent={latest.self}
+					reference="editor"
+					className={clsx(
+						'bg-white',
+						'shadow-lg',
+						'rounded-lg',
+					)}
+				/>;
+		}, []);
+
+		useEffect(() => {
+			return () => {
+				hideEditorModal();
+			};
+		}, []);
+
+		useEffect(() => {
+			if (!Editor || !showModal || !hideModal) {
+				hideEditorModal();
+				return;
+			}
+
+			if (!isEditorShown) {
+				hideEditorModal();
+				return;
+			}
+
+			if (editorModalIdRef.current !== null) {
+				return;
+			}
+
+			editorModalIdRef.current = showModal({
+				bodyFactory: getEditorBody,
+				onCancel: onModalCancel,
+				canClose: true,
+				whichModal: 'windowedEditor',
+				stackMode: 'push',
+			});
+		}, [Editor, getEditorBody, hideModal, isEditorShown, onEditorCancel, self, showModal]);
+
+		return <WrappedComponent {...props} ref={ref} />;
+
 	});
-	return withAdditionalProps(withEditor(WindowedEditor, isTree));
+	return withAdditionalProps(withEditor(withModal(WindowedEditor), isTree));
 }
