@@ -1,5 +1,6 @@
 import { useState, useEffect, } from 'react';
 import {
+	TextNative,
 	VStack,
 } from '@onehat-gluestack';
 import clsx from 'clsx';
@@ -56,6 +57,7 @@ function UpcomingPmsGrid(props) {
 
 			// withAlert
 			alert,
+			showInfo,
 
 			// withComponent
 			self,
@@ -82,6 +84,9 @@ function UpcomingPmsGrid(props) {
 				}
 				if (item.meters_pm_schedules__pm_status_id === PM_STATUSES__OVERDUE) {
 					rowProps.bg = '#ffd1d1';
+				}
+				if (item.meters_pm_schedules__equipment_path) {
+					rowProps.tooltip = 'Path: ' + item.meters_pm_schedules__equipment_path;
 				}
 				return rowProps;
 			},
@@ -121,6 +126,10 @@ function UpcomingPmsGrid(props) {
 				setWorkOrderIsIgnoreNextSelectionChange(true);
 				setWorkOrderSelection([workOrderToEdit]);
 				editWorkOrder();
+
+				setTimeout(() => {
+					showInfo('A "bump" work order is already in progress.')
+				}, 500)
 			}
 		},
 		onViewEquipment = async (metersPmSchedule) => {
@@ -405,7 +414,16 @@ function UpcomingPmsGrid(props) {
 													size: 'xl',
 												}}
 												onPress={() => onAddEditWorkOrder(entity)}
-												tooltip="Create/edit a work order to reset this PM. Only resets when work order is closed."
+												_tooltip={{
+													// multiline
+													elements: (
+														<>
+															<TextNative className="text-white">Add/edit a work order to reset this PM.</TextNative>
+															<TextNative className="text-white">Only resets when work order is closed.</TextNative>
+														</>
+													),
+												}}
+
 											/>;
 								},
 							},
