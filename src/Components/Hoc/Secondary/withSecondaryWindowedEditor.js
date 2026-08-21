@@ -1,13 +1,10 @@
-import { forwardRef } from 'react';
-import {
-	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
-} from '@onehat-gluestack';
-import clsx from 'clsx';
+import { forwardRef, useEffect, useRef } from 'react';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../Constants/Editor.js';
 import { withInjectedHocProps } from '../../../Functions/internalHocProps.js';
 import withSecondaryEditor from './withSecondaryEditor.js';
+import withModal from '../withModal.js';
 // import withDraggable from './withDraggable.js';
 import _ from 'lodash';
 
@@ -40,6 +37,10 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 
 				// withComponent
 				self,
+
+				// withModal
+				showModal,
+				hideModal,
 				
 				// pull these out, as we don't want them going to the SecondaryEditor
 				secondarySelectorId,
@@ -49,50 +50,75 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 				style,
 
 				...propsToPass
-			} = props;
+			} = props,
+			secondaryEditorModalIdRef = useRef(null),
+			hideSecondaryEditorModal = () => {
+				if (secondaryEditorModalIdRef.current !== null && hideModal) {
+					hideModal({ modalId: secondaryEditorModalIdRef.current });
+					secondaryEditorModalIdRef.current = null;
+				}
+			},
+			onModalCancel = () => {
+				secondarySetIsEditorShown(false);
+			};
 
 		if (!SecondaryEditor) {
 			throw Error('SecondaryEditor is not defined');
 		}
 
-		if (secondaryIsEditorShown) {
-			// Move the 'secondary' props over to primary
-			// for the sake of the Editor
+		useEffect(() => {
+			return () => {
+				hideSecondaryEditorModal();
+			};
+		}, []);
+
+		useEffect(() => {
+			if (!SecondaryEditor || !showModal || !hideModal) {
+				return;
+			}
+
+			if (!secondaryIsEditorShown) {
+				hideSecondaryEditorModal();
+				return;
+			}
+
+			if (secondaryEditorModalIdRef.current !== null) {
+				return;
+			}
+
+			const mappedSecondaryEditorProps = {
+				...secondaryEditorProps,
+			};
+
+			// Move the 'secondary' props over to primary naming for the secondary editor.
 			function lcfirst(str) {
 				return str.charAt(0).toLowerCase() + str.slice(1);
 			}
 			_.each(props, (prop, ix) => {
 				if (ix.match(/^secondary/)) {
 					const name = lcfirst(ix.replace(/^secondary/, ''));
-					secondaryEditorProps[name] = prop;
+					mappedSecondaryEditorProps[name] = prop;
 				}
 			});
-			secondaryEditorProps.Repository = props.SecondaryRepository;
-		}
+			mappedSecondaryEditorProps.Repository = props.SecondaryRepository;
 
-		return <>
-					<WrappedComponent {...props} ref={ref} />
-					{secondaryIsEditorShown && 
-						<Modal
-							isOpen={true}
-							onClose={() => secondarySetIsEditorShown(false)}
-							className="withSecondaryEditor-Modal"
-						>
-							<ModalBackdrop className="withSecondaryEditor-ModalBackdrop" />
-							<SecondaryEditor
-								editorType={EDITOR_TYPE__WINDOWED}
-								{...propsToPass}
-								{...secondaryEditorProps}
-								parent={self}
-								reference="secondaryEditor"
-								className={clsx(
-									'bg-white',
-									'shadow-lg',
-									'rounded-lg',
-								)}
-							/>
-						</Modal>}
-				</>;
+			secondaryEditorModalIdRef.current = showModal({
+				body: <SecondaryEditor
+						editorType={EDITOR_TYPE__WINDOWED}
+						{...propsToPass}
+						{...mappedSecondaryEditorProps}
+						parent={self}
+						reference="secondaryEditor"
+						className="bg-white shadow-lg rounded-lg"
+					/>,
+				onCancel: onModalCancel,
+				canClose: true,
+				whichModal: 'secondaryWindowedEditor',
+				stackMode: 'push',
+			});
+		}, [SecondaryEditor, secondaryEditorProps, showModal, hideModal, props, propsToPass, self, secondaryIsEditorShown]);
+
+		return <WrappedComponent {...props} ref={ref} />;
 	});
-	return withAdditionalProps(withSecondaryEditor(WindowedEditor, isTree));
+	return withAdditionalProps(withSecondaryEditor(withModal(WindowedEditor), isTree));
 }
