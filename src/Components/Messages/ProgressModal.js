@@ -28,7 +28,12 @@ export default function ProgressModal(props) {
 		[progressBarWidth, setProgressBarWidth] = useState(175),
 		[isInited, setIsInited] = useState(false);
 
-	let modalBackdrop = <ModalBackdrop className="ProgressModal-ModalBackdrop" />
+	let modalBackdrop = <ModalBackdrop
+		className="ProgressModal-ModalBackdrop"
+		style={{
+			backgroundColor: 'rgba(0, 0, 0, 0.40)',
+		}}
+	/>;
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// Gluestack's ModalBackdrop was not working on Native,
 		// so workaround is to do it manually for now

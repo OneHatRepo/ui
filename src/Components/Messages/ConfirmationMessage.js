@@ -20,7 +20,12 @@ export default function ConfirmationMessage(props) {
 			onOk = emptyFn,
 		} = props;
 
-	let modalBackdrop = <ModalBackdrop className="ConfirmationMessage-ModalBackdrop" />
+	let modalBackdrop = <ModalBackdrop
+		className="ConfirmationMessage-ModalBackdrop"
+		style={{
+			backgroundColor: 'rgba(0, 0, 0, 0.40)',
+		}}
+	/>;
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// Gluestack's ModalBackdrop was not working on Native,
 		// so workaround is to do it manually for now

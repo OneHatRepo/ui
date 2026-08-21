@@ -80,7 +80,12 @@ export default function WaitMessage(props) {
 				className="Modal"
 				aria-disabled={true}
 			>
-				<ModalBackdrop className="WaitMessage-ModalBackdrop" />
+				<ModalBackdrop
+					className="WaitMessage-ModalBackdrop"
+					style={{
+						backgroundColor: 'rgba(0, 0, 0, 0.40)',
+					}}
+				/>
 				<ModalContent
 					className={clsx(
 						'ModalContent',

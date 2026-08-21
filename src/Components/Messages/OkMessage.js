@@ -17,7 +17,12 @@ export default function OkMessage(props) {
 			onClose,
 		} = props;
 
-	let modalBackdrop = <ModalBackdrop className="OkMessage-ModalBackdrop" />
+	let modalBackdrop = <ModalBackdrop
+		className="OkMessage-ModalBackdrop"
+		style={{
+			backgroundColor: 'rgba(0, 0, 0, 0.40)',
+		}}
+	/>;
 	if (CURRENT_MODE === UI_MODE_NATIVE) {
 		// Gluestack's ModalBackdrop was not working on Native,
 		// so workaround is to do it manually for now
