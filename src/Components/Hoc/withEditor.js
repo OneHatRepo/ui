@@ -811,11 +811,23 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						await deleteRecord();
 					}
 					
+					// Prevent stale ADD mode from leaking to the next selection after a cancel.
+					if (!canEditorViewOnly && userCanEdit && !disableEdit && (!canUser || canUser(EDIT))) {
+						setEditorMode(EDITOR_MODE__EDIT);
+					} else {
+						setEditorMode(EDITOR_MODE__VIEW);
+					}
+
 					setIsAdding(false);
 					setIsEditorShown(false);
 				}
 				const formState = editorStateRef.current;
 				if (!formState) {
+					if (!canEditorViewOnly && userCanEdit && !disableEdit && (!canUser || canUser(EDIT))) {
+						setEditorMode(EDITOR_MODE__EDIT);
+					} else {
+						setEditorMode(EDITOR_MODE__VIEW);
+					}
 					setIsAdding(false);
 					setIsEditorShown(false);
 					return;

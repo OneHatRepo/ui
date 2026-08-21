@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useEffect, } from 'react';
+import { forwardRef, useRef, useLayoutEffect, } from 'react';
 import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
@@ -48,11 +48,12 @@ export default function withComponent(WrappedComponent) {
 			delete propsToUse.flex;
 		}
 
-		// now deal with parent-child relationships (if needed)
 		if (!propsToUse.reference) {
+			// if there's no reference, we can't establish a parent-child relationship, so just render the component as is.
 			return <WrappedComponent {...propsToUse} ref={ref} />;
 		}
-
+		
+		// now deal with parent-child relationships (if needed)
 		const {
 				parent,
 				reference,
@@ -104,7 +105,7 @@ export default function withComponent(WrappedComponent) {
 				children: childrenRef.current,
 			});
 
-		useEffect(() => {
+		useLayoutEffect(() => { // instead of useEffect to ensure the parent-child registration happens before the browser paints
 			if (parent?.hasChild && !parent.hasChild(selfRef.current)) {
 				parent.registerChild(selfRef.current);
 			}
