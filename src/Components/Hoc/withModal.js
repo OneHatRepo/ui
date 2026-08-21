@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState } from 'react';
+import { forwardRef, useRef, useState, useSyncExternalStore } from 'react';
 import {
 	Box,
 	Icon,
@@ -22,23 +22,48 @@ import _ from 'lodash';
 
 const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
 
-// This HOC enables usage of more complex dialogs in the wrapped component.
-// Use withAlert for simple alerts, confirmations, and info dialogs.
+function LiveModalBody(props) {
+	// LiveModalBody subscribes to the bodyStore and re-renders whenever the snapshot changes.
+	const {
+			bodyStore,
+		} = props,
+		subscribe = bodyStore?.subscribe || (() => () => {}),
+		getSnapshot = bodyStore?.getSnapshot || (() => null),
+		body = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+	return body;
+}
+
+// This HOC enables richer dialogs while preserving one consistent modal API.
+// Use withAlert for simple alerts/confirmations where no custom body is needed.
 //
-// Runtime modes (single public API, dual internal behavior):
-// 1) Owner mode: withModal manages local modal state and renders the modal stack.
-//    This is used when no parent modal API is available.
-// 2) Delegate mode: withModal reuses a parent-provided modal API and does not
-//    render a second local modal stack.
+// Runtime modes (same API in both modes):
+// 1) Owner mode:
+//    - withModal stores modal entries in local state and renders the stack itself.
+// 2) Delegate mode:
+//    - withModal forwards to parent showModal/hideModal APIs so one shared modal
+//      stack can be used across nested feature boundaries.
 //
-// Why both exist:
-// - If every nested component owned modals, multiple modal roots/backdrops could
-//   compete, causing focus, layering, and pointer-event issues.
-// - If every component only delegated, standalone components without a parent
-//   modal provider could not open modals.
+// Why this dual behavior exists:
+// - Owner mode keeps standalone components functional.
+// - Delegate mode prevents competing modal roots/backdrops and keeps stacking,
+//   focus, and pointer behavior centralized.
 //
-// So withModal keeps one external contract (showModal/hideModal/...) while
-// choosing ownership internally based on whether parent modal controls exist.
+// Body rendering strategies:
+// 1) body (snapshot)
+//    - React node captured at showModal call time.
+// 2) bodyFactory (lazy)
+//    - Function invoked during render to generate body.
+// 3) bodyStore (live subscription)
+//    - Object with subscribe(listener) and getSnapshot() used by LiveModalBody
+//      through useSyncExternalStore, so open modal content can react to upstream
+//      state changes without reopening modal. Use this when the modal content 
+//      needs to stay in sync with dynamic parent state.
+//
+// Cancel/close contract:
+// - onCancel handlers run before close.
+// - If onCancel returns false, close is vetoed.
+// - Otherwise the modal is closed by default.
 
 /*
  * withModal usage:
@@ -135,6 +160,7 @@ export default function withModal(WrappedComponent) {
 				let {
 					title = null,
 					body = null,
+					bodyStore = null, // live mode provider: { subscribe(listener), getSnapshot() }
 					bodyFactory = null, // fn that will be called to generate the body content each time the modal is rendered
 					bodyFactoryProps = null, // props to pass to the bodyFactory function when it is called
 					resolveBodyFactoryOnShow = false, // whether to immediately resolve the bodyFactory when the modal is shown
@@ -159,11 +185,14 @@ export default function withModal(WrappedComponent) {
 					// deprecated formProps bc we were getting circular dependencies
 					throw new Error('withModal: formProps is deprecated. Instead, insert the <Form> in "body" directly from the component that called showModal.');
 				}
-				if (!body && !bodyFactory) {
+				if (!body && !bodyFactory && !bodyStore) {
 					throw new Error('withModal: body is required for showModal');
 				}
 				if (bodyFactory && !_.isFunction(bodyFactory)) {
 					throw new Error('withModal: bodyFactory must be a function');
+				}
+				if (bodyStore && (!_.isFunction(bodyStore.subscribe) || !_.isFunction(bodyStore.getSnapshot))) {
+					throw new Error('withModal: bodyStore must provide subscribe(listener) and getSnapshot() functions');
 				}
 
 				if (_.isFunction(body)) {
@@ -189,7 +218,8 @@ export default function withModal(WrappedComponent) {
 				const modalConfig = {
 					id: modalId,
 					title,
-					body,
+					body, // snapshot mode
+					bodyStore,
 					bodyFactory,
 					bodyFactoryProps,
 					canClose,
@@ -219,6 +249,8 @@ export default function withModal(WrappedComponent) {
 				return modalId;
 			},
 			updateModalBody = (newBody, options = {}) => {
+				// Update the body of an existing modal.
+				// If the modalId is not specified in options, the top modal is updated.
 				setModals((previous) => {
 					if (!previous.length) {
 						return previous;
@@ -240,13 +272,25 @@ export default function withModal(WrappedComponent) {
 			topModal = modals.length ? modals[modals.length - 1] : null,
 			isModalShown = modals.length > 0,
 			whichModal = topModal?.whichModal,
+			invokeCancelAndHide = (modal) => {
+				if (!modal) {
+					return;
+				}
+
+				const result = modal.onCancel ? modal.onCancel() : undefined;
+
+				// Default-close policy with explicit veto support.
+				if (result !== false) {
+					hideModal({ modalId: modal.id });
+				}
+			},
 			hideModalOverride = (args = null) => {
 				// Determine if the hideModal call has explicit arguments (modalId or closeAll).
 				// If there are no explicit arguments and the top modal has an onCancel handler, call it.
 				// Otherwise, proceed to hide the modal using the provided arguments.
 				const hasExplicitArgs = _.isPlainObject(args) && (args.modalId || args.closeAll);
 				if (!hasExplicitArgs && topModal?.onCancel && _.isNil(args)) {
-					topModal.onCancel();
+					invokeCancelAndHide(topModal);
 					return;
 				}
 				hideModal(args);
@@ -257,7 +301,7 @@ export default function withModal(WrappedComponent) {
 					buttons.push(<Button
 									{...testProps('cancelBtn')}
 									key={`cancelBtn-${modal.id}`}
-									onPress={modal.onCancel || (() => hideModal({ modalId: modal.id }))}
+									onPress={() => invokeCancelAndHide(modal)}
 									colorScheme="coolGray"
 									className="mr-2"
 									text="Cancel"
@@ -316,13 +360,20 @@ export default function withModal(WrappedComponent) {
 					whichModal: !_.isNil(parentWhichModal) ? parentWhichModal : whichModal,
 				},
 			renderModalBody = (modal, isTopModal) => {
-				let modalBody = modal.bodyFactory
-					? modal.bodyFactory({
-						...(modal.bodyFactoryProps || {}),
-						modalId: modal.id,
-						isTopModal,
-					})
-					: modal.body;
+				let modalBody;
+				if (modal.bodyStore) {
+					// Live mode: bodyStore subscriber drives updates while modal remains open.
+					modalBody = <LiveModalBody bodyStore={modal.bodyStore} />;
+				} else {
+					// Snapshot/lazy modes: resolve body from static node or factory.
+					modalBody = modal.bodyFactory
+						? modal.bodyFactory({
+							...(modal.bodyFactoryProps || {}),
+							modalId: modal.id,
+							isTopModal,
+						})
+						: modal.body;
+				}
 				const buttons = getButtonsForModal(modal);
 				if (modal.h || modal.w || modal.title) {
 					let footer = null;
@@ -358,18 +409,13 @@ export default function withModal(WrappedComponent) {
 				if (!modal.showBackdrop) {
 					return null;
 				}
-				const onBackdropPress = () => {
-					if (isTopModal) {
-						if (modal.onCancel) {
-							modal.onCancel();
-							return;
-						}
-						hideModal({ modalId: modal.id });
-					}
-				};
 				return <Pressable
 							pointerEvents="auto"
-							onPress={onBackdropPress}
+							onPress={() => {
+								if (isTopModal) {
+									invokeCancelAndHide(modal);
+								}
+							}}
 							className={clsx(
 								'withModal-ModalBackdrop-replacment',
 								'h-full',
@@ -401,7 +447,7 @@ export default function withModal(WrappedComponent) {
 						const
 							isTopModal = index === modals.length - 1,
 							onCloseHandler = isTopModal
-								? (modal.onCancel || (modal.canClose ? () => hideModal({ modalId: modal.id }) : null))
+								? ((modal.onCancel || modal.canClose) ? () => invokeCancelAndHide(modal) : null)
 								: null;
 						return <Modal
 									key={`modal-${modal.id}`}

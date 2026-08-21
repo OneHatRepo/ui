@@ -7,7 +7,39 @@ import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import withModal from './withModal.js';
 import withEditor from './withEditor.js';
 // import withDraggable from './withDraggable.js';
-import _ from 'lodash';
+
+/*
+ * withWindowedEditor architecture notes
+ *
+ * Why this HOC changed:
+ * - Historically, windowed editors rendered their modal body directly inside this component's
+ *   render tree. That meant parent re-renders naturally re-rendered the editor body.
+ * - We migrated to shared modal stacking via withModal.showModal(...) so all modals are managed
+ *   in one stack/root. That solved stacking/layering consistency, but introduced a stale-body risk:
+ *   showModal normally stores a body snapshot at open time.
+ *
+ * Core problem that appeared:
+ * - Editor state (for example, VIEW/EDIT transitions from withEditor) can change while a windowed
+ *   modal remains open.
+ * - If the modal body is a snapshot, those changes may not re-render inside the open modal.
+ *
+ * Current solution in this file:
+ * - Provide withModal a live bodyStore (subscribe + getSnapshot) instead of static body.
+ * - Publish a fresh <Editor .../> snapshot whenever this component re-renders while the modal is open.
+ * - withModal renders a LiveModalBody subscriber that updates from the bodyStore, restoring
+ *   "parent re-render updates modal body" behavior without reopening modal or maintaining brittle
+ *   field-sync lists.
+ *
+ * Usage expectations:
+ * - Keep using withWindowedEditor for grid/tree/windowed editor flows.
+ * - Do not pass static body directly from this HOC; always use bodyStore in showModal.
+ * - The bodyStore contract lives in withModal: { subscribe(listener), getSnapshot() }.
+ * - onCancel should close the editor flow (and can optionally do extra cleanup).
+ *
+ * Notes:
+ * - The modal reference used here is "editor" so withComponent child lookup remains stable.
+ * - publishLiveBody(null) is called when modal closes to release rendered content references.
+ */
 
 
 // function withAdditionalProps(WrappedComponent) {
@@ -78,15 +110,51 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				...propsToPass
 			} = props,
 			onEditorCancel = props.onEditorCancel,
-			editorModalIdRef = useRef(null),
+			editorModalIdRef = useRef(null), // modal id returned by withModal.showModal
+			liveBodySnapshotRef = useRef(null),
+			liveBodyListenersRef = useRef(new Set()),
+			liveBodyStoreRef = useRef({
+				// withModal subscribes through this function while modal is mounted.
+				subscribe: (listener) => {
+					liveBodyListenersRef.current.add(listener);
+					return () => {
+						liveBodyListenersRef.current.delete(listener);
+					};
+				},
+				// withModal reads the latest React node snapshot from this getter.
+				getSnapshot: () => {
+					return liveBodySnapshotRef.current;
+				},
+			}),
+			renderEditorBody = () => {
+				// Build the latest windowed editor body from current props each render.
+				return <Editor
+						editorType={EDITOR_TYPE__WINDOWED}
+						{...propsToPass}
+						{..._editor}
+						parent={self}
+						reference="editor"
+						className="bg-white shadow-lg rounded-lg"
+					/>;
+			},
+			publishLiveBody = (body) => {
+				// Push snapshot and notify subscribers so open modal content re-renders.
+				liveBodySnapshotRef.current = body;
+				liveBodyListenersRef.current.forEach((listener) => {
+					listener();
+				});
+			},
 			hideEditorModal = () => {
 				if (editorModalIdRef.current !== null && hideModal) {
 					hideModal({ modalId: editorModalIdRef.current });
 					editorModalIdRef.current = null;
+					// Clear body snapshot to avoid holding stale React nodes after close.
+					publishLiveBody(null);
 				}
 			},
 			onModalCancel = () => {
 				editorModalIdRef.current = null;
+				publishLiveBody(null);
 				if (onEditorCancel) {
 					onEditorCancel();
 				}
@@ -112,15 +180,11 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				return;
 			}
 
+			publishLiveBody(renderEditorBody()); // initial snapshot before opening modal
+
 			editorModalIdRef.current = showModal({
-				body: <Editor
-						editorType={EDITOR_TYPE__WINDOWED}
-						{...propsToPass}
-						{..._editor}
-						parent={self}
-						reference="editor"
-						className="bg-white shadow-lg rounded-lg"
-					/>,
+				// Use live body channel so modal content tracks parent re-renders.
+				bodyStore: liveBodyStoreRef.current,
 				onCancel: onModalCancel,
 				canClose: true,
 				whichModal: 'windowedEditor',
@@ -128,6 +192,18 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			});
 
 		}, [Editor, _editor, showModal, hideModal, onModalCancel, propsToPass, self, isEditorShown, ]);
+
+		useEffect(() => {
+			if (!Editor) {
+				return;
+			}
+			if (!isEditorShown || editorModalIdRef.current === null) {
+				return;
+			}
+
+			// Keep the modal body live by publishing latest body while open.
+			publishLiveBody(renderEditorBody());
+		});
 
 		return <WrappedComponent {...props} ref={ref} />;
 
