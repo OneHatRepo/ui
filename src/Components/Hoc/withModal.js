@@ -136,6 +136,8 @@ export default function withModal(WrappedComponent) {
 					title = null,
 					body = null,
 					bodyFactory = null, // fn that will be called to generate the body content each time the modal is rendered
+					bodyFactoryProps = null, // props to pass to the bodyFactory function when it is called
+					resolveBodyFactoryOnShow = false, // whether to immediately resolve the bodyFactory when the modal is shown
 					canClose = false,
 					includeCancel = false,
 					onCancel = null,
@@ -172,26 +174,38 @@ export default function withModal(WrappedComponent) {
 				}
 
 				const
-					modalId = nextModalId.current++,
-					modalConfig = {
-						id: modalId,
-						title,
-						body,
-						bodyFactory,
-						canClose,
-						includeCancel,
-						onCancel,
-						onOk,
-						okBtnLabel: okBtnLabel || 'OK',
-						onYes,
-						onNo,
-						customButtons,
-						h,
-						w,
-						whichModal,
-						testID: testID || 'Modal',
-						showBackdrop,
-					};
+					modalId = nextModalId.current++;
+
+				if (bodyFactory && resolveBodyFactoryOnShow) {
+					body = bodyFactory({
+						...(bodyFactoryProps || {}),
+						modalId,
+						isTopModal: true,
+					});
+					bodyFactory = null;
+					bodyFactoryProps = null;
+				}
+
+				const modalConfig = {
+					id: modalId,
+					title,
+					body,
+					bodyFactory,
+					bodyFactoryProps,
+					canClose,
+					includeCancel,
+					onCancel,
+					onOk,
+					okBtnLabel: okBtnLabel || 'OK',
+					onYes,
+					onNo,
+					customButtons,
+					h,
+					w,
+					whichModal,
+					testID: testID || 'Modal',
+					showBackdrop,
+				};
 
 				setModals((previous) => {
 					// 'push' keeps the existing stack and puts the new dialog on top.
@@ -209,8 +223,9 @@ export default function withModal(WrappedComponent) {
 					if (!previous.length) {
 						return previous;
 					}
-					const modalId = options?.modalId || previous[previous.length - 1].id;
-					const resolvedBody = _.isFunction(newBody) ? newBody() : newBody;
+					const
+						modalId = options?.modalId || previous[previous.length - 1].id,
+						resolvedBody = _.isFunction(newBody) ? newBody() : newBody;
 					return previous.map((entry) => {
 						if (entry.id !== modalId) {
 							return entry;
@@ -225,11 +240,11 @@ export default function withModal(WrappedComponent) {
 			topModal = modals.length ? modals[modals.length - 1] : null,
 			isModalShown = modals.length > 0,
 			whichModal = topModal?.whichModal,
-			hideModalProp = (args = null) => {
-				const hasExplicitArgs = _.isPlainObject(args) && (
-					args.modalId ||
-					args.closeAll
-				);
+			hideModalOverride = (args = null) => {
+				// Determine if the hideModal call has explicit arguments (modalId or closeAll).
+				// If there are no explicit arguments and the top modal has an onCancel handler, call it.
+				// Otherwise, proceed to hide the modal using the provided arguments.
+				const hasExplicitArgs = _.isPlainObject(args) && (args.modalId || args.closeAll);
 				if (!hasExplicitArgs && topModal?.onCancel && _.isNil(args)) {
 					topModal.onCancel();
 					return;
@@ -288,7 +303,7 @@ export default function withModal(WrappedComponent) {
 			modalApi = ownsModalState
 				? {
 					showModal,
-					hideModal: hideModalProp,
+					hideModal: hideModalOverride,
 					updateModalBody,
 					isModalShown,
 					whichModal,
@@ -301,7 +316,13 @@ export default function withModal(WrappedComponent) {
 					whichModal: !_.isNil(parentWhichModal) ? parentWhichModal : whichModal,
 				},
 			renderModalBody = (modal, isTopModal) => {
-				let modalBody = modal.bodyFactory ? modal.bodyFactory() : modal.body;
+				let modalBody = modal.bodyFactory
+					? modal.bodyFactory({
+						...(modal.bodyFactoryProps || {}),
+						modalId: modal.id,
+						isTopModal,
+					})
+					: modal.body;
 				const buttons = getButtonsForModal(modal);
 				if (modal.h || modal.w || modal.title) {
 					let footer = null;

@@ -1,5 +1,4 @@
-import { forwardRef, useCallback, useEffect, useRef } from 'react';
-import clsx from 'clsx';
+import { forwardRef, useEffect, useRef } from 'react';
 import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../Constants/Editor.js';
@@ -60,12 +59,14 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				isEditorShown = false,
 				setIsEditorShown,
 				Editor,
-				showModal,
-				hideModal,
 				_editor = {},
 
 				// withComponent
 				self,
+
+				// withModal
+				showModal,
+				hideModal,
 				
 				// pull these out, as we don't want them going to the Editor
 				selectorId,
@@ -78,7 +79,6 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			} = props,
 			onEditorCancel = props.onEditorCancel,
 			editorModalIdRef = useRef(null),
-			latestEditorPropsRef = useRef(null),
 			hideEditorModal = () => {
 				if (editorModalIdRef.current !== null && hideModal) {
 					hideModal({ modalId: editorModalIdRef.current });
@@ -92,34 +92,6 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				}
 			};
 
-		latestEditorPropsRef.current = {
-			Editor,
-			propsToPass,
-			_editor,
-			self,
-		};
-
-		const getEditorBody = useCallback(() => {
-			const latest = latestEditorPropsRef.current;
-			if (!latest?.Editor) {
-				return null;
-			}
-
-			const LatestEditor = latest.Editor;
-			return <LatestEditor
-					editorType={EDITOR_TYPE__WINDOWED}
-					{...latest.propsToPass}
-					{...latest._editor}
-					parent={latest.self}
-					reference="editor"
-					className={clsx(
-						'bg-white',
-						'shadow-lg',
-						'rounded-lg',
-					)}
-				/>;
-		}, []);
-
 		useEffect(() => {
 			return () => {
 				hideEditorModal();
@@ -128,7 +100,6 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 
 		useEffect(() => {
 			if (!Editor || !showModal || !hideModal) {
-				hideEditorModal();
 				return;
 			}
 
@@ -142,13 +113,21 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			}
 
 			editorModalIdRef.current = showModal({
-				bodyFactory: getEditorBody,
+				body: <Editor
+						editorType={EDITOR_TYPE__WINDOWED}
+						{...propsToPass}
+						{..._editor}
+						parent={self}
+						reference="editor"
+						className="bg-white shadow-lg rounded-lg"
+					/>,
 				onCancel: onModalCancel,
 				canClose: true,
 				whichModal: 'windowedEditor',
 				stackMode: 'push',
 			});
-		}, [Editor, getEditorBody, hideModal, isEditorShown, onEditorCancel, self, showModal]);
+
+		}, [Editor, _editor, showModal, hideModal, onModalCancel, propsToPass, self, isEditorShown, ]);
 
 		return <WrappedComponent {...props} ref={ref} />;
 
