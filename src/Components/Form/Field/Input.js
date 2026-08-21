@@ -123,6 +123,7 @@ const InputElement = forwardRef((props, ref) => {
 			'border-grey-300',
 			className,
 		),
+		isShowingPlaceholder = localValue === '',
 		inputFieldClassName = clsx(
 			'InputField',
 			'self-stretch',
@@ -132,6 +133,7 @@ const InputElement = forwardRef((props, ref) => {
 			'dark:bg-white',
 			textAlignIsCenter ? 'text-center' : 'text-left',
 			styles.FORM_INPUT_CLASSNAME,
+			isShowingPlaceholder ? 'text-gray-300' : 'text-black',
 			styles.FORM_INPUT_FIELD_CLASSNAME,
 			minimizeForRow ? 'min-h-0 py-0' : '',
 		);
