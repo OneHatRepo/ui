@@ -61,8 +61,10 @@ function LiveModalBody(props) {
 //      needs to stay in sync with dynamic parent state.
 //
 // Cancel/close contract:
-// - onCancel handlers run before close.
-// - If onCancel returns false, close is vetoed.
+// - cancel actions run onCancel first, then onClose when present.
+// - close actions run onClose first, then onCancel when present.
+// - Only the primary hook for that action can veto close by returning false.
+// - The secondary hook still runs for loose coupling side effects.
 // - Otherwise the modal is closed by default.
 
 /*
@@ -74,6 +76,7 @@ function LiveModalBody(props) {
  *   canClose: true,
  *   includeCancel: true,
  *   onCancel: () => props.hideModal({ modalId }),
+ *   onClose: () => console.log('Modal closed'),
  *   onOk: () => {
  *     console.log('OK');
  *     props.hideModal({ modalId });
@@ -119,6 +122,7 @@ export default function withModal(WrappedComponent) {
 		const
 			[modals, setModals] = useState([]), // array of modal config objects, each representing a queued modal dialog
 			nextModalId = useRef(1),
+			isInvokingModalHook = useRef(false),
 			[windowWidth, windowHeight] = useAdjustedWindowSize(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
 			clampModalSize = (width, height) => {
 				let adjustedWidth = width,
@@ -132,6 +136,12 @@ export default function withModal(WrappedComponent) {
 				return [adjustedWidth, adjustedHeight];
 			},
 			hideModal = (args = null) => {
+				// hideModal is responsible for removing one or more modals from the stack.
+				// It can handle different scenarios: 
+				// 	- closing a specific modal by ID, 
+				// 	- closing multiple modals by an array of IDs, 
+				// 	- closing all modals, 
+				// 	- or closing the top-most modal by default.
 				const effectiveArgs = _.isNumber(args)
 					? { modalId: args }
 					: _.isPlainObject(args)
@@ -146,6 +156,9 @@ export default function withModal(WrappedComponent) {
 					if (effectiveArgs.closeAll) {
 						return [];
 					}
+					if (_.isArray(effectiveArgs.modalIds) && effectiveArgs.modalIds.length > 0) {
+						return previous.filter((entry) => !effectiveArgs.modalIds.includes(entry.id));
+					}
 					// Removing a specific modal ID lets us dismiss one dialog from the stack
 					// without disturbing the rest of the queue.
 					if (effectiveArgs.modalId !== undefined && effectiveArgs.modalId !== null) {
@@ -157,9 +170,11 @@ export default function withModal(WrappedComponent) {
 				});
 			},
 			showModal = (args = {}) => {
+				// showModal is responsible for adding a new modal to the stack.
+				// It accepts various parameters to configure the modal's content, behavior, and appearance.
 				let {
 					title = null,
-					body = null,
+					body = null, // snapshot mode
 					bodyStore = null, // live mode provider: { subscribe(listener), getSnapshot() }
 					bodyFactory = null, // fn that will be called to generate the body content each time the modal is rendered
 					bodyFactoryProps = null, // props to pass to the bodyFactory function when it is called
@@ -167,6 +182,7 @@ export default function withModal(WrappedComponent) {
 					canClose = false,
 					includeCancel = false,
 					onCancel = null,
+					onClose = null,
 					onOk = null,
 					okBtnLabel = null,
 					onYes = null,
@@ -202,9 +218,7 @@ export default function withModal(WrappedComponent) {
 					body = body();
 				}
 
-				const
-					modalId = nextModalId.current++;
-
+				const modalId = nextModalId.current++;
 				if (bodyFactory && resolveBodyFactoryOnShow) {
 					body = bodyFactory({
 						...(bodyFactoryProps || {}),
@@ -218,13 +232,14 @@ export default function withModal(WrappedComponent) {
 				const modalConfig = {
 					id: modalId,
 					title,
-					body, // snapshot mode
+					body,
 					bodyStore,
 					bodyFactory,
 					bodyFactoryProps,
 					canClose,
 					includeCancel,
 					onCancel,
+					onClose,
 					onOk,
 					okBtnLabel: okBtnLabel || 'OK',
 					onYes,
@@ -272,27 +287,93 @@ export default function withModal(WrappedComponent) {
 			topModal = modals.length ? modals[modals.length - 1] : null,
 			isModalShown = modals.length > 0,
 			whichModal = topModal?.whichModal,
+			invokeModalHook = (hook) => {
+				// Invokes a modal hook (onCancel, onClose, etc.) safely, 
+				// ensuring the isInvokingModalHook flag is set during execution,
+				// and then cleared after the hook execution completes.
+				// This is so that any modal actions triggered within the hook 
+				// are aware that a hook is currently being invoked, so if 
+				// one of those hooks is called twice, it will not cause unintended side effects.
+				if (!hook) {
+					return undefined;
+				}
+				isInvokingModalHook.current = true;
+				try {
+					return hook();
+				} finally {
+					isInvokingModalHook.current = false;
+				}
+			},
+			shouldCloseModalForAction = (modal, action = 'close') => {
+				// Determines whether a modal should be closed for a given action ('close' or 'cancel').
+				// Returns true if the modal should be closed, false otherwise.
+				if (!modal) {
+					return false;
+				}
+
+				const
+					[firstHook, secondHook] = action === 'cancel' ? [modal.onCancel, modal.onClose] : [modal.onClose, modal.onCancel],
+					firstResult = invokeModalHook(firstHook);
+
+				invokeModalHook(secondHook);
+
+				return firstResult !== false;
+			},
 			invokeCancelAndHide = (modal) => {
+				// Invokes the cancel hook for the modal and hides it if appropriate.
 				if (!modal) {
 					return;
 				}
-
-				const result = modal.onCancel ? modal.onCancel() : undefined;
-
-				// Default-close policy with explicit veto support.
-				if (result !== false) {
+				if (shouldCloseModalForAction(modal, 'cancel')) {
 					hideModal({ modalId: modal.id });
 				}
 			},
-			hideModalOverride = (args = null) => {
-				// Determine if the hideModal call has explicit arguments (modalId or closeAll).
-				// If there are no explicit arguments and the top modal has an onCancel handler, call it.
-				// Otherwise, proceed to hide the modal using the provided arguments.
-				const hasExplicitArgs = _.isPlainObject(args) && (args.modalId || args.closeAll);
-				if (!hasExplicitArgs && topModal?.onCancel && _.isNil(args)) {
-					invokeCancelAndHide(topModal);
+			invokeCloseAndHide = (modal) => {
+				// Invokes the close hook for the modal and hides it if appropriate.
+				if (!modal) {
 					return;
 				}
+				if (shouldCloseModalForAction(modal, 'close')) {
+					hideModal({ modalId: modal.id });
+				}
+			},
+			hideModalProp = (args = null) => {
+				// Hides the modal based on the provided arguments, 
+				// taking into account whether a modal hook is currently being invoked.
+				if (isInvokingModalHook.current) {
+					hideModal(args);
+					return;
+				}
+
+				const effectiveArgs = _.isNumber(args)
+					? { modalId: args }
+					: _.isPlainObject(args)
+						? args
+						: {};
+
+				if (effectiveArgs.closeAll) {
+					const modalIdsToClose = modals
+						.filter((modal) => shouldCloseModalForAction(modal, 'close'))
+						.map((modal) => modal.id);
+					if (!modalIdsToClose.length) {
+						return;
+					}
+					if (modalIdsToClose.length === modals.length) {
+						hideModal({ closeAll: true });
+						return;
+					}
+					hideModal({ modalIds: modalIdsToClose });
+					return;
+				}
+
+				const targetModal = !_.isNil(effectiveArgs.modalId)
+					? _.find(modals, (modal) => modal.id === effectiveArgs.modalId)
+					: topModal;
+				if (targetModal) {
+					invokeCloseAndHide(targetModal);
+					return;
+				}
+
 				hideModal(args);
 			},
 			getButtonsForModal = (modal) => {
@@ -345,9 +426,12 @@ export default function withModal(WrappedComponent) {
 			},
 			ownsModalState = !(_.isFunction(parentShowModal) && _.isFunction(parentHideModal)),
 			modalApi = ownsModalState
+				// Determines whether this component owns the modal state or relies on parent props.
+				// If this component owns the modal state, it will use its own show/hide/update functions.
+				// Otherwise, it will defer to the parent-provided functions and state.
 				? {
 					showModal,
-					hideModal: hideModalOverride,
+					hideModal: hideModalProp,
 					updateModalBody,
 					isModalShown,
 					whichModal,
@@ -360,6 +444,8 @@ export default function withModal(WrappedComponent) {
 					whichModal: !_.isNil(parentWhichModal) ? parentWhichModal : whichModal,
 				},
 			renderModalBody = (modal, isTopModal) => {
+				// Renders the body of the modal, including its content and footer buttons.
+				// Takes into account whether the modal is the topmost modal.
 				let modalBody;
 				if (modal.bodyStore) {
 					// Live mode: bodyStore subscriber drives updates while modal remains open.
@@ -398,7 +484,7 @@ export default function withModal(WrappedComponent) {
 							w={adjustedW}
 							isWindow={true}
 							disableAutoFlex={true}
-							onClose={isTopModal && modal.canClose ? () => hideModal({ modalId: modal.id }) : null}
+							onClose={isTopModal && modal.canClose ? () => invokeCloseAndHide(modal) : null}
 							footer={footer}
 							isScrollable={true}
 						>{modalBody}</Panel>;
@@ -447,7 +533,7 @@ export default function withModal(WrappedComponent) {
 						const
 							isTopModal = index === modals.length - 1,
 							onCloseHandler = isTopModal
-								? ((modal.onCancel || modal.canClose) ? () => invokeCancelAndHide(modal) : null)
+								? ((modal.onCancel || modal.onClose || modal.canClose) ? () => invokeCloseAndHide(modal) : null)
 								: null;
 						return <Modal
 									key={`modal-${modal.id}`}
