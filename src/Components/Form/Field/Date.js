@@ -465,7 +465,20 @@ export const DateElement = forwardRef((props, ref) => {
 								trigger={emptyFn}
 								className="Date-Popover block"
 							>
-								<PopoverBackdrop className="PopoverBackdrop bg-black/20" />
+								<PopoverBackdrop
+									className={clsx(
+										'PopoverBackdrop',
+										'fixed',
+										'inset-0',
+										'z-40',
+										'w-full',
+										'h-full',
+										'web:pointer-events-auto',
+									)}
+									style={{
+										backgroundColor: 'rgba(0, 0, 0, 0.20)',
+									}}
+								/>
 								<PopoverContent
 									ref={pickerRef}
 									onLayout={onPickerLayout}

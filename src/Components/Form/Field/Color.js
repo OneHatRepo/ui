@@ -1,7 +1,7 @@
 import React, { useState, useRef, } from 'react';
 import {
 	HStackNative,
-	Popover, PopoverContent, PopoverBody,
+	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
 	Pressable,
 	Tooltip,
 } from '@onehat-gluestack';
@@ -250,6 +250,20 @@ export function ColorElement(props) {
 					}}
 					{...translateProps}
 				>
+					<PopoverBackdrop
+						className={clsx(
+							'PopoverBackdrop',
+							'fixed',
+							'inset-0',
+							'z-40',
+							'w-full',
+							'h-full',
+							'web:pointer-events-auto',
+						)}
+						style={{
+							backgroundColor: 'rgba(0, 0, 0, 0.20)',
+						}}
+					/>
 					<PopoverBody
 						ref={pickerRef}
 						className={clsx(
