@@ -1714,6 +1714,7 @@ function Form(props) {
 			showCancelBtn = true;
 		} else {
 			if (editorType !== EDITOR_TYPE__SIDE) {
+				// inline, windowed, or smart
 				if (isEditorViewOnly) {
 					showCloseBtn = true;
 				} else {
