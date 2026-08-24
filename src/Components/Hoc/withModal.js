@@ -61,10 +61,9 @@ function LiveModalBody(props) {
 //      needs to stay in sync with dynamic parent state.
 //
 // Cancel/close contract:
-// - cancel actions run onCancel first, then onClose when present.
-// - close actions run onClose first, then onCancel when present.
-// - Only the primary hook for that action can veto close by returning false.
-// - The secondary hook still runs for loose coupling side effects.
+// - cancel actions resolve to onCancel (fallback to onClose).
+// - close actions resolve to onClose (fallback to onCancel).
+// - Returning false from the resolved hook vetoes close.
 // - Otherwise the modal is closed by default.
 
 /*
@@ -306,18 +305,16 @@ export default function withModal(WrappedComponent) {
 			},
 			shouldCloseModalForAction = (modal, action = 'close') => {
 				// Determines whether a modal should be closed for a given action ('close' or 'cancel').
-				// Returns true if the modal should be closed, false otherwise.
+				// Uses the primary hook for that action, with fallback to the counterpart hook.
+				// Returning false from the resolved hook blocks close.
 				if (!modal) {
 					return false;
 				}
 
 				const
-					[firstHook, secondHook] = action === 'cancel' ? [modal.onCancel, modal.onClose] : [modal.onClose, modal.onCancel],
-					firstResult = invokeModalHook(firstHook);
-
-				invokeModalHook(secondHook);
-
-				return firstResult !== false;
+					resolvedHook = action === 'cancel' ? (modal.onCancel || modal.onClose) : (modal.onClose || modal.onCancel),
+					hookResult = invokeModalHook(resolvedHook);
+				return hookResult !== false;
 			},
 			invokeCancelAndHide = (modal) => {
 				// Invokes the cancel hook for the modal and hides it if appropriate.
@@ -350,6 +347,13 @@ export default function withModal(WrappedComponent) {
 					: _.isPlainObject(args)
 						? args
 						: {};
+
+				if (effectiveArgs.skipModalHooks) {
+					// Internal escape hatch for state-driven teardown paths that already
+					// resolved close intent and must not re-enter cancel/close hooks.
+					hideModal(effectiveArgs);
+					return;
+				}
 
 				if (effectiveArgs.closeAll) {
 					const modalIdsToClose = modals

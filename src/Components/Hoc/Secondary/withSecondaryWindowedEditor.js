@@ -54,12 +54,24 @@ export default function withSecondaryWindowedEditor(WrappedComponent, isTree = f
 			secondaryEditorModalIdRef = useRef(null),
 			hideSecondaryEditorModal = () => {
 				if (secondaryEditorModalIdRef.current !== null && hideModal) {
-					hideModal({ modalId: secondaryEditorModalIdRef.current });
+					hideModal({ modalId: secondaryEditorModalIdRef.current, skipModalHooks: true });
 					secondaryEditorModalIdRef.current = null;
 				}
 			},
 			onModalCancel = () => {
+				if (_.isFunction(props.secondaryOnEditorCancel)) {
+					const shouldClose = props.secondaryOnEditorCancel();
+					if (shouldClose === false) {
+						// Dirty editor path: keep this modal mounted while confirm is shown.
+						return false;
+					}
+					// Secondary editor cancel completed synchronously, so close now.
+					return true;
+				}
+
 				secondarySetIsEditorShown(false);
+				// withModal closes when the cancel handler does not return false.
+				return true;
 			};
 
 		if (!SecondaryEditor) {

@@ -146,18 +146,26 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			},
 			hideEditorModal = () => {
 				if (editorModalIdRef.current !== null && hideModal) {
-					hideModal({ modalId: editorModalIdRef.current });
+					hideModal({ modalId: editorModalIdRef.current, skipModalHooks: true });
 					editorModalIdRef.current = null;
 					// Clear body snapshot to avoid holding stale React nodes after close.
 					publishLiveBody(null);
 				}
 			},
 			onModalCancel = () => {
-				editorModalIdRef.current = null;
-				publishLiveBody(null);
-				if (onEditorCancel) {
-					onEditorCancel();
+				if (!onEditorCancel) {
+					setIsEditorShown(false);
+					// withModal closes when the cancel handler does not return false.
+					return true;
 				}
+
+				const shouldClose = onEditorCancel();
+				if (shouldClose === false) {
+					// Dirty editor path: keep this modal mounted while confirm is shown.
+					return false;
+				}
+				// Editor cancel completed synchronously, so close this modal now.
+				return true;
 			};
 
 		useEffect(() => {

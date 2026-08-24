@@ -653,19 +653,28 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				if (!formState) {
 					setIsAdding(false);
 					secondarySetIsEditorShown(false);
-					return;
+					// Close is allowed immediately when nothing is dirty.
+					return true;
 				}
 				if (!_.isEmpty(formState.dirtyFields)) {
+					// Important modal contract: return false so withModal keeps the editor
+					// open while this confirm dialog is shown on top.
 					confirm('This record has unsaved changes. Are you sure you want to cancel editing? Changes will be lost.', doIt);
+					return false;
 				} else {
 					doIt();
+					// No unsaved changes, allow modal close now.
+					return true;
 				}
 			},
 			secondaryDoEditorClose = () => {
 				if (secondaryIsAdding) {
-					secondaryDoEditorCancel();
+					// Bubble boolean close intent from secondaryDoEditorCancel up to withModal.
+					return secondaryDoEditorCancel();
 				}
 				secondarySetIsEditorShown(false);
+				// Default close path when not in add flow.
+				return true;
 			},
 			secondaryDoEditorDelete = async () => {
 				if (canUser && !canUser(DELETE, secondaryModel)) {
