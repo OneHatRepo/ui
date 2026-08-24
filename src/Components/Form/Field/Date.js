@@ -234,6 +234,7 @@ export const DateElement = forwardRef((props, ref) => {
 		},
 		onToday = () => {
 			onPickerChange(moment());
+			hidePicker();
 		},
 		onPickerLayout = (e) => {
 			// This method determines if we need to flip the picker above the input
