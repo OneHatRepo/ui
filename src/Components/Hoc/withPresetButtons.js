@@ -91,6 +91,9 @@ export default function withPresetButtons(WrappedComponent) {
 				addDisplayMsg,
 				editDisplayMsg,
 				deleteDisplayMsg,
+				viewDisplayMsg,
+				copyDisplayMsg,
+				duplicateDisplayMsg,
 
 				// withAlert
 				showInfo,
@@ -331,7 +334,11 @@ export default function withPresetButtons(WrappedComponent) {
 						break;
 					case VIEW:
 						key = 'viewBtn';
-						text = 'View';
+						if (viewDisplayMsg) {
+							text = viewDisplayMsg;
+						} else {
+							text = 'View';
+						}
 						handler = (parent, e) => {
 							if (onView) {
 								onView();
@@ -348,7 +355,11 @@ export default function withPresetButtons(WrappedComponent) {
 						break;
 					case COPY:
 						key = 'copyBtn';
-						text = 'Copy to Clipboard';
+						if (copyDisplayMsg) {
+							text = copyDisplayMsg;
+						} else {
+							text = 'Copy to Clipboard';
+						}
 						handler = (parent, e) => {
 							if (onCopyToClipboard) {
 								onCopyToClipboard();
@@ -364,7 +375,11 @@ export default function withPresetButtons(WrappedComponent) {
 						break;
 					case DUPLICATE:
 						key = 'duplicateBtn';
-						text = 'Duplicate';
+						if (duplicateDisplayMsg) {
+							text = duplicateDisplayMsg;
+						} else {
+							text = 'Duplicate';
+						}
 						if (model) {
 							let inflected = Inflector.singularize(model); // can only add one at a time
 							inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
