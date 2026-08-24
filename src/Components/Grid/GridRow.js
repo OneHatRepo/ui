@@ -25,6 +25,32 @@ import RowHandle from './RowHandle.js';
 import useAsyncRenderers from './useAsyncRenderers.js';
 import _ from 'lodash';
 
+const WEB_SAFE_RENDERER_PROPS = new Set([
+	'className',
+	'style',
+	'id',
+	'title',
+	'role',
+	'tabIndex',
+	'dir',
+	'lang',
+]);
+
+function sanitizeRendererPropsForWeb(props) {
+	return _.pickBy(props, (value, key) => {
+		if (WEB_SAFE_RENDERER_PROPS.has(key)) {
+			return true;
+		}
+		if (key.startsWith('data-') || key.startsWith('aria-')) {
+			return true;
+		}
+		if (/^on[A-Z]/.test(key)) {
+			return true;
+		}
+		return false;
+	});
+}
+
 // Conditional import for web only
 let getEmptyImage = null;
 
@@ -260,13 +286,15 @@ const GridRow = forwardRef((props, ref) => {
 							if (config.className) {
 								textClassName += ' ' + config.className;
 							}
-							const rendererProps = {
-								...testProps('rendererCol-' + (config.fieldName || config.id || key)),
-								className: textClassName,
-								...propsToPassToCells,
-								...extraProps,
-								style: colStyle,
-							};
+							const
+								rawRendererProps = {
+									...testProps('rendererCol-' + (config.fieldName || config.id || key)),
+									className: textClassName,
+									...propsToPassToCells,
+									...extraProps,
+									style: colStyle,
+								},
+								rendererProps = CURRENT_MODE === UI_MODE_WEB ? sanitizeRendererPropsForWeb(rawRendererProps) : rawRendererProps;
 							if (config.isAsync) {
 								// TODO: Figure out how to pass the rendererProps to the async renderer function
 								throw Error('Not yet working correctly!');
