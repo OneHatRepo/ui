@@ -5,7 +5,6 @@ import {
 	HStackNative,
 	Icon,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
-	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
 	Pressable,
 	Text,
 	TextNative,
@@ -30,7 +29,6 @@ import withComponent from '../../../Hoc/withComponent.js';
 import withData from '../../../Hoc/withData.js';
 import withTooltip from '../../../Hoc/withTooltip.js';
 import withValue from '../../../Hoc/withValue.js';
-import emptyFn from '../../../../Functions/emptyFn.js';
 import IconButton from '../../../Buttons/IconButton.js';
 import CaretDown from '../../../Icons/CaretDown.js';
 import Check from '../../../Icons/Check.js';
@@ -356,8 +354,17 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}, 300);
 		},
 		onInputFocus = (e) => {
+			const target = e?.target;
+			if (target?.select) {
+				target.select();
+				return;
+			}
+			if (getIsMenuShown() && inputCloneRef.current?.select) {
+				inputCloneRef.current.select();
+				return;
+			}
 			if (inputRef.current?.select) {
-				inputRef.current?.select();
+				inputRef.current.select();
 			}
 		},
 		onInputBlur = (e) => {
@@ -459,13 +466,14 @@ export const ComboComponent = forwardRef((props, ref) => {
 			const {
 					relatedTarget
 				} = e;
-			return !relatedTarget ||
+			const isStillIn = !relatedTarget ||
 					!menuRef.current ||
 					!triggerRef.current ||
 					triggerRef.current === relatedTarget ||
 					triggerRef.current.contains(relatedTarget) || 
 					menuRef.current === relatedTarget || 
 					menuRef.current?.contains(relatedTarget);
+			return isStillIn;
 		},
 		getFilterName = (isId) => {
 			// Only used for remote repositories
@@ -1033,35 +1041,34 @@ export const ComboComponent = forwardRef((props, ref) => {
 								/>
 							</Box>;
 			}
-			dropdownMenu = <Popover
-								isOpen={getIsMenuShown()}
-								onClose={() => {
-									hideMenu();
-								}}
-								trigger={emptyFn}
-								className="dropdownMenu-Popover block"
-								initialFocusRef={inputCloneRef}
+			dropdownMenu = <Modal
+								isOpen={true}
+								onClose={() => hideMenu()}
+								trapFocus={false}
+								className="h-full w-full web:pointer-events-auto"
 							>
-								<PopoverBackdrop
+								<Pressable
+									onPress={() => hideMenu()}
 									className={clsx(
-										'PopoverBackdrop',
-										'fixed',
-										'inset-0',
-										'z-40',
-										'w-full',
+										'Combo-ModalBackdrop',
 										'h-full',
+										'w-full',
+										'absolute',
+										'top-0',
+										'left-0',
+										'bg-black/0',
 										'web:pointer-events-auto',
 									)}
 									style={{
 										backgroundColor: 'rgba(0, 0, 0, 0.20)',
 									}}
+
 								/>
-								<Box
+								<ModalContent
 									ref={menuRef}
+									pointerEvents="auto"
 									className={clsx(
-										'dropdownMenu-Box',
-										'flex-1',
-										'overflow-auto',
+										'dropdownMenu-ModalContent',
 										'bg-white',
 										'p-0',
 										'rounded-none',
@@ -1069,30 +1076,40 @@ export const ComboComponent = forwardRef((props, ref) => {
 										'border-grey-400',
 										'shadow-md',
 										'max-w-full',
-										'z-50',
 										'web:pointer-events-auto',
 									)}
 									style={{
-										// If flipped, position above input; otherwise, below
+										position: 'fixed',
 										top: isMenuAbove
-											? (top - menuRenderedHeight) // above
-											: (disableDirectEntry ? (top + inputHeight) : top), // below
+											? (top - menuRenderedHeight)
+											: (disableDirectEntry ? (top + inputHeight) : top),
 										left,
 										width,
 										minWidth: 100,
 									}}
 								>
-									{isMenuAbove ?
-										<>
-											{grid}
-											{inputClone}
-										</> :
-										<>
-											{inputClone}
-											{grid}
-										</>}
-								</Box>
-							</Popover>;
+									<ModalBody
+										className={clsx(
+											'dropdownMenu-ModalBody',
+											'overflow-auto',
+											'mt-0',
+											'mb-0',
+											'p-0',
+										)}
+										scrollEnabled={false}
+									>
+										{isMenuAbove ?
+											<>
+												{grid}
+												{inputClone}
+											</> :
+											<>
+												{inputClone}
+												{grid}
+											</>}
+									</ModalBody>
+								</ModalContent>
+							</Modal>;
 		}
 		if (CURRENT_MODE === UI_MODE_NATIVE) {
 			if (isEditor) {
