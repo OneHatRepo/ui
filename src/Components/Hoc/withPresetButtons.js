@@ -379,11 +379,11 @@ export default function withPresetButtons(WrappedComponent) {
 							text = duplicateDisplayMsg;
 						} else {
 							text = 'Duplicate';
-						}
-						if (model) {
-							let inflected = Inflector.singularize(model); // can only add one at a time
-							inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
-							text += ' ' + inflected;
+							if (model) {
+								let inflected = Inflector.singularize(model); // can only duplicate one at a time
+								inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
+								text += ' ' + inflected;
+							}
 						}
 						handler = (parent, e) => {
 							if (onDuplicate) {
