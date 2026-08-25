@@ -490,7 +490,7 @@ function UpcomingPmsGrid(props) {
 							isEditable: false,
 							isReorderable: false,
 							isResizable: true,
-							w: 150,
+							w: 200,
 						},
 						...(includeWorkOrderButton ? [
 							{
