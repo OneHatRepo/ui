@@ -30,7 +30,6 @@ function PmEventsEditor(props) {
 		forceUpdate = useForceUpdate(),
 		isFirstRun = useRef(true),
 		meterId = useRef(pmEvent?.pm_events__meter_id), // EquipmentEditor.PmEventsFilteredGridEditor & UpcomingPmsGrid.onBump both add this by default
-		equipmentId = useRef(null),
 		pmScheduleId = useRef(pmEvent?.pm_events__pm_schedule_id), // UpcomingPmsGrid.onBump adds this by default
 		pmEventTypeId = useRef(pmEvent?.pm_events__pm_event_type_id),
 		hasMultipleMeters = useRef(null),
@@ -67,12 +66,6 @@ function PmEventsEditor(props) {
 		},
 		setPmEventTypeId = (value) => {
 			pmEventTypeId.current = value;
-		},
-		getEquipmentId = () => {
-			return equipmentId.current;
-		},
-		setEquipmentId = (value) => {
-			equipmentId.current = value;
 		},
 		getHasMultipleMeters = () => {
 			return hasMultipleMeters.current;
@@ -129,25 +122,19 @@ function PmEventsEditor(props) {
 					pm_events__pm_event_type_id,
 				} = fv,
 				isFirstRun = getIsFirstRun(),
+				meter = pm_events__meter_id ? await getMeterById(pm_events__meter_id) : null,
 				isMeterIdChanged = pm_events__meter_id !== getMeterId(),
 				isPmScheduleIdChanged = pm_events__pm_schedule_id !== getPmScheduleId(),
-				isPmEventTypeIdChanged = pm_events__pm_event_type_id !== getPmEventTypeId(),
-				meter = pm_events__meter_id ? await getMeterById(pm_events__meter_id) : null;
+				isPmEventTypeIdChanged = pm_events__pm_event_type_id !== getPmEventTypeId();
 
 			if (isFirstRun) {
 				setIsFirstRun(false);
 			}
 
 			adjustHiddenFieldsForPmEventType(pm_events__pm_event_type_id);
-			setIsPmScheduleDisabled(!meter);
-			
+
 			let hasChangedRefs = false;
-			if (!getEquipmentId() && meter) {
-				// if no EquipmentId has been set yet, set it
-				Meters.setBaseParam('conditions[meters__equipment_id]', meter.meters__equipment_id); // so future Meter selections are limited to the same Equipment
-				setEquipmentId(meter.meters__equipment_id);
-				hasChangedRefs = true;
-			}
+			
 			if ((isMeterIdChanged || isFirstRun) && meter) {
 				// if isFirstRun, or isMeterIdChanged, set meterId and hasMultipleMeters
 				setMeterId(meter.id);
@@ -367,27 +354,24 @@ function PmEventsEditor(props) {
 		},
 	}];
 	if (!isBump) {
-		if (getHasMultipleMeters()) {
-			overviewItems.push({
-				name: 'pm_events__meter_id',
-				tooltip: "Eq/Meter associated with this PM Event.\n" + 
-						// "Dropdown list shows only meters with an assigned PM schedule.\n" +
-						"Meter name will be omitted if only the Equipment's primary meter exists, otherwise it will be shown.",
-				onChange: onChangeMeter,
-				Repository: Meters,
-			});
-		}
-		if (getHasMultiplePmSchedules()) {
-			overviewItems.push({
-				name: 'pm_events__pm_schedule_id',
-				tooltip: 'Dropdown list shows only PM schedules assigned to this meter.',
-				isDisabled: isPmScheduleDisabled,
-				Repository: PmSchedules,
-			});
-		}
+		overviewItems.unshift({ // make it the first item
+			name: 'pm_events__meter_id',
+			tooltip: "Eq/Meter associated with this PM Event.\n" + 
+					// "Dropdown list shows only meters with an assigned PM schedule.\n" +
+					"Meter name will be omitted if only the Equipment's primary meter exists, otherwise it will be shown.",
+			onChange: onChangeMeter,
+			Repository: Meters,
+		});
+		overviewItems.push({
+			name: 'pm_events__pm_schedule_id',
+			tooltip: 'Dropdown list shows only PM schedules assigned to this meter.',
+			isDisabled: isPmScheduleDisabled,
+			Repository: PmSchedules,
+		});
 	}
 
-	const items = [
+	const
+		items = [
 			{
 				"type": "Column",
 				"flex": 1,
