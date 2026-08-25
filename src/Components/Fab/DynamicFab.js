@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
 	Box,
-	Fab, FabIcon, FabLabel,
+	FabIcon, FabLabel,
 	VStack,
 } from '@onehat-gluestack';
 import clsx from 'clsx';
@@ -67,7 +67,9 @@ export default function DynamicFab(props) {
 										className={clsx(
 											'bg-primary-600',
 											'text-white',
+											'hover:bg-primary-700',
 											'data-[hover=true]:bg-primary-700',
+											'data-[active=true]:bg-primary-800',
 											'active:bg-primary-800',
 										)}
 										tooltipPlacement={tooltipPlacement}
@@ -87,6 +89,10 @@ export default function DynamicFab(props) {
 					className={clsx(
 						'z-100',
 						'bg-primary-600',
+						'hover:bg-primary-700',
+						'data-[hover=true]:bg-primary-700',
+						'active:bg-primary-800',
+						'data-[active=true]:bg-primary-800',
 					)}
 					tooltip={tooltip}
 					tooltipPlacement={tooltipPlacement}

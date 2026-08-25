@@ -27,7 +27,7 @@ const TooltipElement = forwardRef((props, ref) => {
 		tooltipTextClassName += ' ' + textClassName;
 	}
 
-	let triggerClassName = 'Tooltip-trigger';
+	let triggerClassName = 'Tooltip-trigger group';
 	if (props.triggerClassName) {
 		triggerClassName += ' ' + props.triggerClassName;
 	}
@@ -36,8 +36,8 @@ const TooltipElement = forwardRef((props, ref) => {
 				placement={placement}
 				trigger={(triggerProps) => {
 					return <Box className={triggerClassName} {...triggerProps}>
-								{children}
-							</Box>;
+							{children}
+						</Box>;
 				}}
 			>
 				<TooltipContent>
