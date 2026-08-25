@@ -21,11 +21,14 @@ import oneHatData from '@onehat/data';
 import _ from 'lodash';
 
 function PmEventsEditor(props) {
+	const MAX_SYNC_ATTEMPTS = 10;
 	const {
 			selection,
 			isBump = false,
 			self,
 		} = props,
+		getForm = () => self.children?.PmEventsEditor?.children?.form,
+		editorProps = _.omit(props, ['self', 'parent', 'reference']),
 		pmEvent = selection[0],
 		forceUpdate = useForceUpdate(),
 		isFirstRun = useRef(true),
@@ -79,6 +82,96 @@ function PmEventsEditor(props) {
 		setHasMultiplePmSchedules = (value) => {
 			hasMultiplePmSchedules.current = value;
 		},
+		syncPmScheduleBaseParams = (formGetValues, options = {}, attempt = 0) => {
+			const {
+				shouldAutoSelectPmScheduleIfOne = false,
+				showNoPmSchedulesAlert = false,
+			} = options;
+
+			const
+				form = getForm(),
+				fields = form?.children;
+			if (_.isEmpty(fields)) {
+				if (attempt < MAX_SYNC_ATTEMPTS) {
+					setTimeout(() => {
+						syncPmScheduleBaseParams(formGetValues, options, attempt + 1);
+					}, 50);
+				}
+				return;
+			}
+
+			const
+				pm_events__pm_schedule_id = fields.pm_events__pm_schedule_id,
+				fv = formGetValues(),
+				meterId = fv.pm_events__meter_id;
+
+			if (!pm_events__pm_schedule_id?.repository) {
+				if (attempt < MAX_SYNC_ATTEMPTS) {
+					setTimeout(() => {
+						syncPmScheduleBaseParams(formGetValues, options, attempt + 1);
+					}, 50);
+				}
+				return;
+			}
+
+			if (!meterId) {
+				setHasMultiplePmSchedules(null);
+				setIsPmScheduleDisabled(true);
+				pm_events__pm_schedule_id.repository.setBaseParams({
+					leftJoinWith: 'MetersPmSchedules',
+				});
+				return;
+			}
+
+			setIsPmScheduleDisabled(false);
+			pm_events__pm_schedule_id.repository.setBaseParams({
+				leftJoinWith: 'MetersPmSchedules',
+				'conditions[meters_pm_schedules__meter_id]': meterId,
+			});
+			if (shouldAutoSelectPmScheduleIfOne) {
+				queryPmSchedulesAndSetIfOne({
+					showNoPmSchedulesAlert,
+				});
+			}
+		},
+		queryPmSchedulesAndSetIfOne = async (options = {}) => {
+			const {
+				showNoPmSchedulesAlert = false,
+			} = options;
+
+			const
+				form = getForm(),
+				pm_events__pm_schedule_id = form?.children?.pm_events__pm_schedule_id,
+				Repository = pm_events__pm_schedule_id?.repository;
+
+			if (!form || !Repository) {
+				return;
+			}
+
+			await Repository.reload();
+			const total = Number(Repository.total ?? Repository.entities?.length ?? 0);
+			setHasMultiplePmSchedules(total > 1);
+
+			if (total === 1) {
+				const pmScheduleId = Repository.entities?.[0]?.id;
+				if (pmScheduleId) {
+					setPmScheduleId(pmScheduleId);
+					form.formSetValue('pm_events__pm_schedule_id', pmScheduleId);
+					form.trigger('pm_events__pm_schedule_id');
+				}
+				return;
+			}
+
+			if (total === 0) {
+				setPmScheduleId(null);
+				setIsPmScheduleDisabled(true);
+				if (showNoPmSchedulesAlert) {
+					alert('No PM schedules exist for the selected meter. Please select a different meter or create a PM schedule for this meter.');
+				}
+			} else {
+				setIsPmScheduleDisabled(false);
+			}
+		},
 		viewerSetup = (values) => {
 			const {
 					pm_events__pm_event_type_id,
@@ -98,12 +191,6 @@ function PmEventsEditor(props) {
 				});
 			}
 			adjustForm();
-		},
-		getForm = () => {
-			return self?.children?.PmEventsEditor?.children?.form
-				|| self?.children?.editor?.children?.form
-				|| self?.children?.form
-				|| null;
 		},
 		adjustForm = async () => {
 			const form = getForm();
@@ -135,34 +222,30 @@ function PmEventsEditor(props) {
 
 			let hasChangedRefs = false;
 			
-			if ((isMeterIdChanged || isFirstRun) && meter) {
-				// if isFirstRun, or isMeterIdChanged, set meterId and hasMultipleMeters
-				setMeterId(meter.id);
-				setHasMultipleMeters(meter.equipment__has_multiple_meters);
+			if ((isMeterIdChanged || isFirstRun)) {
+				setMeterId(pm_events__meter_id || null);
+				setHasMultipleMeters(meter?.equipment__has_multiple_meters || null);
 				hasChangedRefs = true;
-				if (isMeterIdChanged) {
-					// clear the pm_schedule_id field since the Meter has changed
-					form.formSetValue('pm_events__pm_schedule_id', null);
-					form.trigger('pm_events__pm_schedule_id');
-					isPmScheduleIdChanged = true; // force the next block to run, since the pm_schedule_id has been cleared
-				}
+
+				// During record hydration/reset, only sync PM schedule query filters.
+				// Do not auto-clear or auto-select; preserve existing loaded value.
+				syncPmScheduleBaseParams(form.formGetValues, {
+					shouldAutoSelectPmScheduleIfOne: false,
+					showNoPmSchedulesAlert: false,
+				});
 			}
-			if ((isPmScheduleIdChanged || isFirstRun) && meter) {
-				// if isFirstRun, or isPmScheduleIdChanged, set pmScheduleId and hasMultiplePmSchedules
+			if (isPmScheduleIdChanged || isFirstRun) {
+				if (pm_events__pm_schedule_id) {
+					await getPmScheduleById(pm_events__pm_schedule_id);
+				}
+
 				setPmScheduleId(pm_events__pm_schedule_id);
-				const pmSchedules = await getPmSchedulesForMeterId(pm_events__meter_id);
-				setHasMultiplePmSchedules(pmSchedules.length > 1);
-				if (pmSchedules.length === 1) {
-					// auto-set the pm_schedule_id since only one exists for the selected Meter
-					const pmScheduleId = pmSchedules[0].pm_schedules__id;
-					setPmScheduleId(pmScheduleId);
-					form.formSetValue('pm_events__pm_schedule_id', pmScheduleId);
-					form.trigger('pm_events__pm_schedule_id');
-				} else if (pmSchedules.length === 0) {
-					// no PmSchedules exist for the selected Meter
-					setPmScheduleId(null);
-					alert('No PM schedules exist for the selected meter. Please select a different meter or create a PM schedule for this meter.');
+				if (!pm_events__meter_id) {
+					setHasMultiplePmSchedules(null);
 					setIsPmScheduleDisabled(true);
+				} else if (pm_events__pm_schedule_id) {
+					setIsPmScheduleDisabled(false);
+					form.trigger('pm_events__pm_schedule_id');
 				}
 				hasChangedRefs = true;
 			}
@@ -239,20 +322,39 @@ function PmEventsEditor(props) {
 			}
 			return meter;
 		},
-		getPmSchedulesForMeterId = async (meterId) => {
-			// Preload or empty the PmSchedules repository based on the meterId
-			if (!meterId) {
-				PmSchedules.clearAll();
-			} else {
-				if (PmSchedules.getBaseParam('conditions[meters_pm_schedules__meter_id]') !== meterId) {
-					PmSchedules.setBaseParam('conditions[meters_pm_schedules__meter_id]', meterId);
-					await PmSchedules.load();
-				}
+		getPmScheduleById = async (pmScheduleId) => {
+			if (!pmScheduleId || !PmSchedules) {
+				return null;
 			}
-			return PmSchedules.entities;
+
+			let pmSchedule = PmSchedules.getById(pmScheduleId);
+			if (!pmSchedule) {
+				await PmSchedules.loadOneAdditionalEntity(pmScheduleId);
+				pmSchedule = PmSchedules.getById(pmScheduleId);
+			}
+			return pmSchedule;
 		},
 		onChangeMeter = async () => {
-			adjustForm();
+			setTimeout(() => {
+				const form = getForm();
+				if (!form) {
+					return;
+				}
+
+				const { pm_events__meter_id } = form.formGetValues();
+
+				// Meter changed: clear PM Schedule immediately, then repopulate options for the new meter.
+				form.formSetValue('pm_events__pm_schedule_id', null);
+				form.trigger('pm_events__pm_schedule_id');
+				setPmScheduleId(null);
+
+				syncPmScheduleBaseParams(form.formGetValues, {
+					shouldAutoSelectPmScheduleIfOne: !!pm_events__meter_id,
+					showNoPmSchedulesAlert: !!pm_events__meter_id,
+				});
+
+				adjustForm();
+			}, 0);
 		},
 		onChangePmEventType = () => {
 			adjustForm();
@@ -497,7 +599,6 @@ function PmEventsEditor(props) {
 		columnDefaults = { // defaults for each column defined in 'items', for use in Form amd Viewer
 		};
 	return <Editor
-				{...props}
 				reference="PmEventsEditor"
 				parent={self}
 				title="PmEvents"
@@ -506,6 +607,7 @@ function PmEventsEditor(props) {
 				columnDefaults={columnDefaults}
 				formSetup={formSetup}
 				viewerSetup={viewerSetup}
+				{...editorProps}
 			/>;
 }
 
