@@ -130,6 +130,10 @@ export default function withData(WrappedComponent) {
 			return null;
 		}
 
+		if (self && !self.repository && LocalRepository) {
+			self.repository = LocalRepository;
+		}
+
 		return <WrappedComponent
 					{...withInjectedHocProps(incomingProps, {
 						Repository: LocalRepository,
