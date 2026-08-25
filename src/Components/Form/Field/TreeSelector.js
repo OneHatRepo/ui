@@ -5,7 +5,6 @@ import {
 	HStackNative,
 	Icon,
 	Modal, ModalBackdrop, ModalHeader, ModalContent, ModalCloseButton, ModalBody, ModalFooter,
-	Popover, PopoverBackdrop, PopoverContent, PopoverBody,
 	Pressable,
 	Text,
 	TextNative,
@@ -30,7 +29,6 @@ import withComponent from '../../Hoc/withComponent.js';
 import withData from '../../Hoc/withData.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
-import emptyFn from '../../../Functions/emptyFn.js';
 import IconButton from '../../Buttons/IconButton.js';
 import CaretDown from '../../Icons/CaretDown.js';
 import Check from '../../Icons/Check.js';
@@ -987,39 +985,62 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 								/>
 							</Box>;
 			}
-			dropdownMenu = <Popover
-								isOpen={getIsMenuShown()}
-								onClose={() => {
-									hideMenu();
+			dropdownMenu = <Modal
+							isOpen={true}
+							onClose={() => hideMenu()}
+							trapFocus={false}
+							className="h-full w-full web:pointer-events-auto"
+						>
+							<Pressable
+								onPress={() => hideMenu()}
+								className={clsx(
+									'TreeSelector-ModalBackdrop',
+									'h-full',
+									'w-full',
+									'absolute',
+									'top-0',
+									'left-0',
+									'bg-black/0',
+									'web:pointer-events-auto',
+								)}
+								style={{
+									backgroundColor: 'rgba(0, 0, 0, 0.20)',
 								}}
-								trigger={emptyFn}
-								className="dropdownMenu-Popover block"
-								initialFocusRef={inputCloneRef}
+							/>
+							<ModalContent
+								ref={menuRef}
+								pointerEvents="auto"
+								className={clsx(
+									'dropdownMenu-ModalContent',
+									'bg-white',
+									'p-0',
+									'rounded-none',
+									'border',
+									'border-grey-400',
+									'shadow-md',
+									'max-w-full',
+									'web:pointer-events-auto',
+								)}
+								style={{
+									position: 'fixed',
+									// If flipped, position above input; otherwise, below
+									top: isMenuAbove
+										? (top - menuRenderedHeight)
+										: (disableDirectEntry ? (top + inputHeight) : top),
+									left,
+									width,
+									minWidth: 100,
+								}}
 							>
-								<PopoverBackdrop className="PopoverBackdrop bg-black/20" />
-								<Box
-									ref={menuRef}
+								<ModalBody
 									className={clsx(
-										'dropdownMenu-Box',
-										'flex-1',
+										'dropdownMenu-ModalBody',
 										'overflow-auto',
-										'bg-white',
+										'mt-0',
+										'mb-0',
 										'p-0',
-										'rounded-none',
-										'border',
-										'border-grey-400',
-										'shadow-md',
-										'max-w-full',
 									)}
-									style={{
-										// If flipped, position above input; otherwise, below
-										top: isMenuAbove
-											? (top - menuRenderedHeight) // above
-											: (disableDirectEntry ? (top + inputHeight) : top), // below
-										left,
-										width,
-										minWidth: 100,
-									}}
+									scrollEnabled={false}
 								>
 									{isMenuAbove ?
 										<>
@@ -1030,8 +1051,9 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 											{inputClone}
 											{tree}
 										</>}
-								</Box>
-							</Popover>;
+								</ModalBody>
+							</ModalContent>
+						</Modal>;
 		}
 		if (CURRENT_MODE === UI_MODE_NATIVE) {
 			if (isEditor) {
