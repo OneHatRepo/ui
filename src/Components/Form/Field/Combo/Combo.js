@@ -60,6 +60,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			loadAfterRender = false,
 			searchHasInitialPercent = false,
 			menuHeight,
+			disableMenuAnimation = true,
 			placeholder,
 			clearValueOnDisable = false,
 			clearValueWhenSelectionMissing = false,
@@ -120,6 +121,11 @@ export const ComboComponent = forwardRef((props, ref) => {
 		[width, setWidth] = useState(0),
 		[top, setTop] = useState(0),
 		[left, setLeft] = useState(0),
+		modalAnimationProps = disableMenuAnimation ? {
+			entering: undefined,
+			exiting: undefined,
+		} : {},
+		modalAnimationType = disableMenuAnimation ? 'none' : undefined,
 		getIsMenuShown = () => {
 			return isMenuShown.current;
 		},
@@ -1043,6 +1049,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}
 			dropdownMenu = <Modal
 								isOpen={true}
+								animationType={modalAnimationType}
 								onClose={() => hideMenu()}
 								trapFocus={false}
 								className="h-full w-full web:pointer-events-auto"
@@ -1087,6 +1094,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 										width,
 										minWidth: 100,
 									}}
+									{...modalAnimationProps}
 								>
 									<ModalBody
 										className={clsx(
@@ -1222,6 +1230,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}
 			dropdownMenu = <Modal
 								isOpen={true}
+								animationType={modalAnimationType}
 								safeAreaTop={true}
 								onClose={() => setIsMenuShown(false)}
 								className={clsx(
