@@ -30,7 +30,7 @@ export default function PmsManager(props) {
 	const {
 			Wrapper = EmptyWrapper,
 		} = props,
-		treeSelection = null,// useSelector(selectEquipmentLitesTreeSelection),
+		treeSelection = useSelector(selectEquipmentLitesTreeSelection),
 		isActive = useRouteIsFocused(),
 		[defaultMeterId, setDefaultMeterId] = useState(null),
 		[Equipment, setEquipment] = useState(null),
@@ -117,7 +117,7 @@ export default function PmsManager(props) {
 			canRecordBeDeleted: verifyCanCrud,
 			canRecordBeDuplicated: verifyCanCrud,
 			selectorId,
-			selectorSelected: treeSelection?.[0],
+			selectorSelected: treeSelection[0],
 			selectorSelectedField,
 			defaultValues: defaultMeterId ? {
 				pm_events__meter_id: defaultMeterId,
