@@ -2,19 +2,19 @@ import { Children, cloneElement } from 'react';
 import MakeTreeSelection from './MakeTreeSelection';
 import { useSelector } from 'react-redux';
 import {
-	selectNormalTreeSelection,
+	selectFleetsTreeSelection,
 } from '@src/Models/Slices/AppSlice';
 import _ from 'lodash';
 
-export default function NormalTreeSpecific(props) {
+export default function FleetsTreeSpecific(props) {
 
 	const {
 			children,
 			key: _key,
 			...propsToPass
 		} = props,
-		normalTreeSelection = useSelector(selectNormalTreeSelection),
-		hasTreeSelection = !_.isEmpty(normalTreeSelection);
+		fleetsTreeSelection = useSelector(selectFleetsTreeSelection),
+		hasTreeSelection = !_.isEmpty(fleetsTreeSelection);
 
 	if (!hasTreeSelection) {
 		return <MakeTreeSelection {...propsToPass} />;
