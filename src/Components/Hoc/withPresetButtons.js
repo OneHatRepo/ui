@@ -232,7 +232,8 @@ export default function withPresetButtons(WrappedComponent) {
 					text,
 					handler,
 					icon = null,
-					isDisabled = false;
+					isDisabled = false,
+					safeSelection = _.filter(selection, (item) => !item.isDestroyed);
 				switch(type) {
 					case ADD:
 						if (!onAdd) {
@@ -254,7 +255,7 @@ export default function withPresetButtons(WrappedComponent) {
 						};
 						icon = Plus;
 						if (isNoSelectorSelected() ||
-							(canRecordBeAdded && !canRecordBeAdded(selection)) ||
+							(canRecordBeAdded && !canRecordBeAdded(safeSelection)) ||
 							(isTree && isEmptySelection())
 						) {
 							isDisabled = true;
@@ -268,7 +269,7 @@ export default function withPresetButtons(WrappedComponent) {
 							text = 'Edit';
 							if (model) {
 								let inflected = model;
-								if (selection.length <= 1) {
+								if (safeSelection.length <= 1) {
 									inflected = Inflector.singularize(inflected);
 								} else {
 									inflected = Inflector.pluralize(inflected);
@@ -288,7 +289,7 @@ export default function withPresetButtons(WrappedComponent) {
 							isEmptySelection() ||
 							isMultiSelection() ||
 							isProtectedValue() ||
-							(canRecordBeEdited && !canRecordBeEdited(selection))
+							(canRecordBeEdited && !canRecordBeEdited(safeSelection))
 						) {
 							isDisabled = true;
 						}
@@ -301,7 +302,7 @@ export default function withPresetButtons(WrappedComponent) {
 							text = 'Delete';
 							if (model) {
 								let inflected = model;
-								if (selection.length <= 1) {
+								if (safeSelection.length <= 1) {
 									inflected = Inflector.singularize(inflected);
 								} else {
 									inflected = Inflector.pluralize(inflected);
@@ -321,12 +322,12 @@ export default function withPresetButtons(WrappedComponent) {
 							isEmptySelection() ||
 							(isMultiSelection() && (!enableMultiDelete || isTree)) ||
 							isProtectedValue() ||
-							(canRecordBeDeleted && !canRecordBeDeleted(selection))
+							(canRecordBeDeleted && !canRecordBeDeleted(safeSelection))
 						) {
 							isDisabled = true;
 						}
 						if (isTree) {
-							const isRootNode = !!_.find(selection, { isRoot: true, });
+							const isRootNode = !!_.find(safeSelection, { isRoot: true, });
 							if (isRootNode && !canDeleteRootNode) {
 								isDisabled = true;
 							}
@@ -345,7 +346,7 @@ export default function withPresetButtons(WrappedComponent) {
 							}
 						};
 						icon = Eye;
-						isDisabled = !onView || !selection.length || selection.length !== 1;
+						isDisabled = !onView || !safeSelection.length || safeSelection.length !== 1;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection()
@@ -366,7 +367,7 @@ export default function withPresetButtons(WrappedComponent) {
 							}
 						};
 						icon = Clipboard;
-						isDisabled = !onCopyToClipboard || !selection.length;
+						isDisabled = !onCopyToClipboard || !safeSelection.length;
 						if (isNoSelectorSelected() ||
 							isEmptySelection()
 						) {
@@ -391,11 +392,11 @@ export default function withPresetButtons(WrappedComponent) {
 							}
 						};
 						icon = Duplicate;
-						isDisabled = !onDuplicate || !selection.length || selection.length !== 1;
+						isDisabled = !onDuplicate || !safeSelection.length || safeSelection.length !== 1;
 						if (isNoSelectorSelected() ||
 							isEmptySelection() ||
 							isMultiSelection() ||
-							(canRecordBeDuplicated && !canRecordBeDuplicated(selection))
+							(canRecordBeDuplicated && !canRecordBeDuplicated(safeSelection))
 						) {
 							isDisabled = true;
 						}
