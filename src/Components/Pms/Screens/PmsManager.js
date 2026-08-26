@@ -2,7 +2,7 @@ import { useState, useEffect, } from 'react';
 import { useSelector } from 'react-redux';
 import useRouteIsFocused from '../../../Hooks/useRouteIsFocused';
 import {
-	selectTreeSelection,
+	selectEquipmentLitesTreeSelection,
 } from '@src/Models/Slices/AppSlice';
 import {
 	NODE_TYPES__FLEETS,
@@ -16,7 +16,7 @@ import Bell from '../../Icons/Bell.js';
 import ClockRegular from '../../Icons/ClockRegular.js';
 import OilCan from '../../Icons/OilCan.js';
 import TabBar from '../../Tab/TabBar.js';
-import TreeSpecific from '../Layout/TreeSpecific/TreeSpecific.js';
+import EquipmentLitesTreeSpecific from '../Layout/TreeSpecific/EquipmentLitesTreeSpecific.js';
 import UpcomingPmsGrid from '@src/Components/Grid/UpcomingPmsGrid.js';
 import PmEventsFilteredGridEditor from '@src/Components/Grid/PmEventsFilteredGridEditor.js';
 import PmEventsFilteredSideGridEditor from '@src/Components/Grid/PmEventsFilteredSideGridEditor.js';
@@ -30,7 +30,7 @@ export default function PmsManager(props) {
 	const {
 			Wrapper = EmptyWrapper,
 		} = props,
-		treeSelection = useSelector(selectTreeSelection),
+		treeSelection = null,// useSelector(selectEquipmentLitesTreeSelection),
 		isActive = useRouteIsFocused(),
 		[defaultMeterId, setDefaultMeterId] = useState(null),
 		[Equipment, setEquipment] = useState(null),
@@ -117,7 +117,7 @@ export default function PmsManager(props) {
 			canRecordBeDeleted: verifyCanCrud,
 			canRecordBeDuplicated: verifyCanCrud,
 			selectorId,
-			selectorSelected: treeSelection[0],
+			selectorSelected: treeSelection?.[0],
 			selectorSelectedField,
 			defaultValues: defaultMeterId ? {
 				pm_events__meter_id: defaultMeterId,
@@ -133,13 +133,13 @@ export default function PmsManager(props) {
 						icon: Bell,
 						...testProps('UpcomingPmsGrid'),
 						content: <Wrapper>
-									<TreeSpecific>
+									<EquipmentLitesTreeSpecific>
 										<UpcomingPmsGrid
 											reference="UpcomingPmsGrid"
 											nodeType={treeNode?.nodeType}
 											nodeId={treeNode?.[selectorSelectedField]}
 										/>
-									</TreeSpecific>
+									</EquipmentLitesTreeSpecific>
 								</Wrapper>,
 					},
 					{
@@ -151,18 +151,18 @@ export default function PmsManager(props) {
 									icon={OilCan}
 									reference="PmEventsManager"
 									fullModeComponent={<Wrapper>
-															<TreeSpecific>
+															<EquipmentLitesTreeSpecific>
 																<PmEventsFilteredGridEditor
 																	{...gridProps}
 																/>
-															</TreeSpecific>
+															</EquipmentLitesTreeSpecific>
 														</Wrapper>}
 									sideModeComponent={<Wrapper>
-															<TreeSpecific>
+															<EquipmentLitesTreeSpecific>
 																<PmEventsFilteredSideGridEditor
 																	{...gridProps}
 																/>
-															</TreeSpecific>
+															</EquipmentLitesTreeSpecific>
 														</Wrapper>}
 								/>,
 					},
