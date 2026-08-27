@@ -19,6 +19,7 @@ import {
 import {
 	WO_CLASSES__PM,
 } from '@src/Constants/WoClasses.js';
+import { canUser } from '../../Hoc/withPermissions.js';
 import oneHatData from '@onehat/data';
 import Grid from '../../Grid/Grid.js';
 import Loading from '../../Messages/Loading.js';
@@ -363,7 +364,7 @@ function UpcomingPmsGrid(props) {
 						},
 					]}
 					columnsConfig={[
-						{
+						...(canUser('add_pm_events') ? [{
 							id: 'bump',
 							header: 'Bump',
 							w: 70,
@@ -389,45 +390,43 @@ function UpcomingPmsGrid(props) {
 											tooltip="Bump"
 										/>;
 							},
-						},
-						...(includeWorkOrderButton ? [
-							{
-								id: 'wo',
-								header: '+WO',
-								w: 60,
-								isSortable: false,
-								isEditable: false,
-								isReorderable: false,
-								isResizable: false,
-								isHidable: false,
-								renderer: (entity, fieldName, cellProps, key) => {
-									const className = clsx(
-										cellProps.className,
-										buttonClassNames,
-									);
-									return <IconButton
-												key={key}
-												{...cellProps}
-												className={className}
-												icon={Clipboard}
-												_icon={{
-													size: 'xl',
-												}}
-												onPress={() => onAddEditWorkOrder(entity)}
-												_tooltip={{
-													// multiline
-													elements: (
-														<>
-															<TextNative className="text-white">Add/edit a work order to reset this PM.</TextNative>
-															<TextNative className="text-white">Only resets when work order is closed.</TextNative>
-														</>
-													),
-												}}
+						}] : []),
+						...(includeWorkOrderButton && canUser('add_work_orders') ? [{
+							id: 'wo',
+							header: '+WO',
+							w: 60,
+							isSortable: false,
+							isEditable: false,
+							isReorderable: false,
+							isResizable: false,
+							isHidable: false,
+							renderer: (entity, fieldName, cellProps, key) => {
+								const className = clsx(
+									cellProps.className,
+									buttonClassNames,
+								);
+								return <IconButton
+											key={key}
+											{...cellProps}
+											className={className}
+											icon={Clipboard}
+											_icon={{
+												size: 'xl',
+											}}
+											onPress={() => onAddEditWorkOrder(entity)}
+											_tooltip={{
+												// multiline
+												elements: (
+													<>
+														<TextNative className="text-white">Add/edit a work order to reset this PM.</TextNative>
+														<TextNative className="text-white">Only resets when work order is closed.</TextNative>
+													</>
+												),
+											}}
 
-											/>;
-								},
+										/>;
 							},
-						] : []),
+						}] : []),
 						{
 							id: 'calc',
 							header: 'Calc',
@@ -455,6 +454,33 @@ function UpcomingPmsGrid(props) {
 										/>;
 							},
 						},
+						...(canUser('view_equipment') ? [{
+							id: 'meter',
+							header: 'EQ',
+							w: 60,
+							isSortable: false,
+							isEditable: false,
+							isReorderable: false,
+							isResizable: false,
+							isHidable: false,
+							renderer: (entity, fieldName, cellProps, key) => {
+								const className = clsx(
+									cellProps.className,
+									buttonClassNames,
+								);
+								return <IconButton
+											key={key}
+											{...cellProps}
+											className={className}
+											icon={EquipmentIcon}
+											_icon={{
+												size: 'xl',
+											}}
+											onPress={() => onViewEquipment(entity)}
+											tooltip="View Equipment"
+										/>;
+							},
+						}] : []),
 						{
 							id: 'meter',
 							header: 'EQ',
