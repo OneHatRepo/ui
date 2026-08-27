@@ -179,6 +179,7 @@ function Form(props) {
 		addButtonsPreferenceKey = id ? id + '-add-buttons' : null,
 		lastSavedAddButtonsRef = useRef(),
 		ancillaryButtons = useRef([]),
+		hasInitializedEmptyFormValidityRef = useRef(false),
 		setAncillaryButtons = (array) => {
 			ancillaryButtons.current = array;
 		},
@@ -1536,7 +1537,18 @@ function Form(props) {
 
 	useEffect(() => {
 		// For forms with no items (like some reports), manually trigger validation to set valid state
-		if ((!items || items.length === 0) && !columnsConfig) {
+		const isEmptyForm = (!items || items.length === 0) && !columnsConfig;
+		if (!isEmptyForm) {
+			hasInitializedEmptyFormValidityRef.current = false;
+			return;
+		}
+
+		if (hasInitializedEmptyFormValidityRef.current) {
+			return;
+		}
+
+		hasInitializedEmptyFormValidityRef.current = true;
+		if (isEmptyForm) {
 			setTimeout(() => { // ensure the form is fully initialized
 				trigger().then(() => {
 					// Force validity to true for empty forms
