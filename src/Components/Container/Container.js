@@ -292,6 +292,18 @@ function Container(props) {
 
 			return width;
 		},
+		normalizeSideWidthValue = (width) => {
+			if (_.isNil(width)) {
+				return width;
+			}
+
+			const numericWidth = typeof width === 'string' ? parseFloat(width) : width;
+			if (_.isFinite(numericWidth)) {
+				return numericWidth;
+			}
+
+			return width;
+		},
 		clampSideWidth = (width) => {
 			if (_.isNil(width)) {
 				return width;
@@ -315,7 +327,9 @@ function Container(props) {
 				return;
 			}
 
-			const clampedWidth = clampSideWidth(width);
+			const
+				normalizedWidth = normalizeSideWidthValue(width),
+				clampedWidth = clampSideWidth(normalizedWidth);
 			if (side === 'east') {
 				eastWidthRef.current = clampedWidth;
 				if (id) {
@@ -329,25 +343,30 @@ function Container(props) {
 			}
 		},
 		normalizeSideWidthForRender = (width, initialWidth) => {
-			if (_.isNil(width)) {
-				return width;
+			const normalizedWidth = normalizeSideWidthValue(width);
+			if (_.isNil(normalizedWidth)) {
+				return normalizedWidth;
 			}
 
 			const maxSideWidth = getMaxSideWidth();
 			if (_.isNil(maxSideWidth)) {
-				return _.isFinite(initialWidth) && initialWidth > 0 ? initialWidth : width;
+				if (_.isFinite(normalizedWidth) && normalizedWidth > 0) {
+					return normalizedWidth;
+				}
+
+				return _.isFinite(initialWidth) && initialWidth > 0 ? initialWidth : normalizedWidth;
 			}
 
-			return Math.min(width, maxSideWidth);
+			return Math.min(normalizedWidth, maxSideWidth);
 		},
-		setEastWidth = (width) => {
-			setSideWidth('east', width);
+		setEastWidth = (width, opts = {}) => {
+			setSideWidth('east', width, opts);
 		},
 		getEastWidth = () => {
 			return eastWidthRef.current;
 		},
-		setWestWidth = (width) => {
-			setSideWidth('west', width);
+		setWestWidth = (width, opts = {}) => {
+			setSideWidth('west', width, opts);
 		},
 		getWestWidth = () => {
 			return westWidthRef.current;
@@ -424,6 +443,22 @@ function Container(props) {
 				if (!prevScreenSize || (prevScreenSize.width === currentScreenSize.width && prevScreenSize.height === currentScreenSize.height)) {
 				
 					// only load these saved settings if the screen size is the same as when they were saved
+					key = id + '-eastWidth';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setEastWidth(val, {
+							ignoreCollapsedCheck: true,
+						});
+					}
+
+					key = id + '-westWidth';
+					val = await getSaved(key);
+					if (!_.isNil(val)) {
+						setWestWidth(val, {
+							ignoreCollapsedCheck: true,
+						});
+					}
+
 					key = id + '-northIsCollapsed';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
@@ -458,18 +493,6 @@ function Container(props) {
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
 						setSouthHeight(val);
-					}
-
-					key = id + '-eastWidth';
-					val = await getSaved(key);
-					if (!_.isNil(val)) {
-						setEastWidth(val);
-					}
-
-					key = id + '-westWidth';
-					val = await getSaved(key);
-					if (!_.isNil(val)) {
-						setWestWidth(val);
 					}
 				
 				}
