@@ -213,7 +213,13 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 			publishLiveBody(renderEditorBody());
 		});
 
-		return <WrappedComponent {...props} ref={ref} />;
+		_editor.setIsEditorShown = setIsEditorShown;
+
+		return <WrappedComponent
+					{...props}
+					_editor={_editor}
+					ref={ref}
+				/>;
 
 	});
 	return withAdditionalProps(withEditor(withModal(WindowedEditor), isTree));
