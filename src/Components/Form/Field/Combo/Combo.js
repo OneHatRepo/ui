@@ -921,9 +921,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 							if (selection[0]?.id === value) {
 								setIsSearchMode(false);
 								resetTextInputValue();
-								if (hideMenuOnSelection && !isNavigatingViaKeyboard && !isEditor) {
-									hideMenu();
-								}
+								// Keep menu open here because this branch is also hit by programmatic
+								// selection/value conformance. Explicit row clicks are handled in onRowPress.
 								return;
 							}
 
@@ -940,9 +939,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 							if (selection[0] && selection[0][idIx] === value) {
 								setIsSearchMode(false);
 								resetTextInputValue();
-								if (hideMenuOnSelection && !isNavigatingViaKeyboard) {
-									hideMenu();
-								}
+								// Keep menu open here because this branch is also hit by programmatic
+								// selection/value conformance. Explicit row clicks are handled in onRowPress.
 								return;
 							}
 
