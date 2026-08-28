@@ -159,6 +159,7 @@ function GridComponent(props) {
 			allowToggleSelection = false, // i.e. single click with no shift key toggles the selection of the item clicked on
 			disableBottomToolbar = false,
 			disablePagination = false,
+			disableSavedColumnsConfig = false,
 			bottomToolbar = 'pagination',
 			_paginationToolbarProps = {},
 			topToolbar = null,
@@ -1565,7 +1566,7 @@ function GridComponent(props) {
 				localColumnsConfig = [],
 				savedLocalColumnsConfig,
 				calculateLocalColumnsConfig = false;
-			if (localColumnsConfigKey && !UiGlobals.disableSavedColumnsConfig) {
+			if (localColumnsConfigKey && !UiGlobals.disableSavedColumnsConfig && !disableSavedColumnsConfig) {
 				savedLocalColumnsConfig = await getSaved(localColumnsConfigKey);
 			}
 

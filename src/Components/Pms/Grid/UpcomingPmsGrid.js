@@ -363,6 +363,7 @@ function UpcomingPmsGrid(props) {
 							},
 						},
 					]}
+					disableSavedColumnsConfig={true}
 					columnsConfig={[
 						...(canUser('add_pm_events') ? [{
 							id: 'bump',
