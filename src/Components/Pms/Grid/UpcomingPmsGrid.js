@@ -482,33 +482,6 @@ function UpcomingPmsGrid(props) {
 							},
 						}] : []),
 						{
-							id: 'meter',
-							header: 'EQ',
-							w: 60,
-							isSortable: false,
-							isEditable: false,
-							isReorderable: false,
-							isResizable: false,
-							isHidable: false,
-							renderer: (entity, fieldName, cellProps, key) => {
-								const className = clsx(
-									cellProps.className,
-									buttonClassNames,
-								);
-								return <IconButton
-											key={key}
-											{...cellProps}
-											className={className}
-											icon={EquipmentIcon}
-											_icon={{
-												size: 'xl',
-											}}
-											onPress={() => onViewEquipment(entity)}
-											tooltip="View Equipment"
-										/>;
-							},
-						},
-						{
 							id: 'meters__nickname',
 							header: 'Eq/Meter',
 							fieldName: 'meters__nickname',
