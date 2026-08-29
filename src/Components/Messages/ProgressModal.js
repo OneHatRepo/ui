@@ -45,7 +45,7 @@ export default function ProgressModal(props) {
 								'absolute',
 								'top-0',
 								'left-0',
-								'bg-black/50',
+								'bg-black/20',
 							)}
 						/>;
 	}
@@ -61,6 +61,7 @@ export default function ProgressModal(props) {
 					className={clsx(
 						'ModalContent',
 						'max-w-[400px]',
+						'bg-white',
 						'shadow-lg',
 					)}
 				>
