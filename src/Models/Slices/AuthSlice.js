@@ -28,8 +28,15 @@ let onCrossTabRehydrateCallback = null;
 
 export const setUserThunk = createAsyncThunk(
 	'auth/setUser',
-	async (user, { dispatch }) => {
-		const userData = getUserData(user);
+	async (args, { dispatch }) => {
+
+		if (_.isString(args)) {
+			args = { user: args };
+		}
+		const {
+				user,
+			} = args,
+			userData = getUserData(user);
 		dispatch(setUser(userData));
 
 		const token = getUserToken(userData);
@@ -43,7 +50,7 @@ export const setUserThunk = createAsyncThunk(
 		}
 
 		if (onSetUserCallback) {
-			await onSetUserCallback(userData);
+			await onSetUserCallback(userData, args);
 		}
 	}
 );
