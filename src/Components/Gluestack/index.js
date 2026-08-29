@@ -81,7 +81,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, TabsContentWrapper, TabsTrigg
 import { Text } from './text';
 import { Text as TextNative } from './text/index.tsx'; // explicitly import the native version
 import { Textarea, TextareaInput } from './textarea';
-import { Toast } from './toast';
+import { Toast, ToastDescription, ToastTitle, useToast } from './toast';
 import { Tooltip, TooltipContent, TooltipText } from './tooltip';
 import { View } from './view';
 import { VirtualizedList } from './virtualized-list';
@@ -225,6 +225,8 @@ const SanitizedTextNative = withSanitizedPrimitiveProps(TextNative, 'SanitizedTe
 const SanitizedTextarea = withSanitizedPrimitiveProps(Textarea, 'SanitizedTextarea');
 const SanitizedTextareaInput = withSanitizedPrimitiveProps(TextareaInput, 'SanitizedTextareaInput');
 const SanitizedToast = withSanitizedPrimitiveProps(Toast, 'SanitizedToast');
+const SanitizedToastDescription = withSanitizedPrimitiveProps(ToastDescription, 'SanitizedToastDescription');
+const SanitizedToastTitle = withSanitizedPrimitiveProps(ToastTitle, 'SanitizedToastTitle');
 const SanitizedTooltip = withSanitizedPrimitiveProps(Tooltip, 'SanitizedTooltip');
 const SanitizedTooltipContent = withSanitizedPrimitiveProps(TooltipContent, 'SanitizedTooltipContent');
 const SanitizedTooltipText = withSanitizedPrimitiveProps(TooltipText, 'SanitizedTooltipText');
@@ -362,6 +364,9 @@ export {
 	SanitizedTextarea as Textarea,
 	SanitizedTextareaInput as TextareaInput,
 	SanitizedToast as Toast,
+	SanitizedToastDescription as ToastDescription,
+	SanitizedToastTitle as ToastTitle,
+	useToast,
 	SanitizedTooltip as Tooltip,
 	SanitizedTooltipContent as TooltipContent,
 	SanitizedTooltipText as TooltipText,
