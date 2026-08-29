@@ -1,15 +1,23 @@
 import React from 'react';
 import omitInternalHocProps from '@onehat/ui/src/Functions/omitInternalHocProps.js';
-import { Accordion } from './accordion';
+import { Accordion, AccordionContent, AccordionContentText, AccordionHeader, AccordionIcon, AccordionItem, AccordionTitleText, AccordionTrigger } from './accordion';
 import { ActionSheet } from './actionsheet';
-import { Alert } from './alert';
-import { AlertDialog, AlertDialogBackdrop, AlertDialogContent, AlertDialogCloseButton, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, } from './alert-dialog';
+import { Alert, AlertIcon, AlertText } from './alert';
+import {
+	AlertDialog,
+	AlertDialogBackdrop,
+	AlertDialogBody,
+	AlertDialogCloseButton,
+	AlertDialogContent,
+	AlertDialogFooter,
+	AlertDialogHeader
+} from './alert-dialog';
 import { Avatar } from './avatar';
-import { Badge } from './badge';
+import { Badge, BadgeIcon, BadgeText } from './badge';
 // import { BottomSheet } from './bottomsheet';
 import { Box } from './box';
 import { Box as BoxNative } from "./box/index.tsx"; // explicitly import the native version
-import { Button, ButtonText, ButtonSpinner, ButtonIcon, ButtonGroup, } from './button';
+import { Button, ButtonGroup, ButtonIcon, ButtonSpinner, ButtonText, } from './button';
 import {
 	Calendar,
 	CalendarHeader,
@@ -72,7 +80,7 @@ import { ScrollView } from './scroll-view';
 import { SectionList } from './section-list';
 import { Select, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectInput, SelectIcon,  SelectItem,  SelectPortal, SelectTrigger, } from './select';
 import { Skeleton } from './skeleton';
-import { Slider } from './slider';
+import { Slider, SliderFilledTrack, SliderThumb, SliderTrack } from './slider';
 import { Spinner } from './spinner';
 import { StatusBar } from './status-bar';
 import { Switch } from './switch';
@@ -105,8 +113,17 @@ function withSanitizedPrimitiveProps(Component, displayName) {
 const SanitizedBox = withSanitizedPrimitiveProps(Box, 'SanitizedBox');
 const SanitizedBoxNative = withSanitizedPrimitiveProps(BoxNative, 'SanitizedBoxNative');
 const SanitizedAccordion = withSanitizedPrimitiveProps(Accordion, 'SanitizedAccordion');
+const SanitizedAccordionContent = withSanitizedPrimitiveProps(AccordionContent, 'SanitizedAccordionContent');
+const SanitizedAccordionContentText = withSanitizedPrimitiveProps(AccordionContentText, 'SanitizedAccordionContentText');
+const SanitizedAccordionHeader = withSanitizedPrimitiveProps(AccordionHeader, 'SanitizedAccordionHeader');
+const SanitizedAccordionIcon = withSanitizedPrimitiveProps(AccordionIcon, 'SanitizedAccordionIcon');
+const SanitizedAccordionItem = withSanitizedPrimitiveProps(AccordionItem, 'SanitizedAccordionItem');
+const SanitizedAccordionTitleText = withSanitizedPrimitiveProps(AccordionTitleText, 'SanitizedAccordionTitleText');
+const SanitizedAccordionTrigger = withSanitizedPrimitiveProps(AccordionTrigger, 'SanitizedAccordionTrigger');
 const SanitizedActionSheet = withSanitizedPrimitiveProps(ActionSheet, 'SanitizedActionSheet');
 const SanitizedAlert = withSanitizedPrimitiveProps(Alert, 'SanitizedAlert');
+const SanitizedAlertIcon = withSanitizedPrimitiveProps(AlertIcon, 'SanitizedAlertIcon');
+const SanitizedAlertText = withSanitizedPrimitiveProps(AlertText, 'SanitizedAlertText');
 const SanitizedAlertDialog = withSanitizedPrimitiveProps(AlertDialog, 'SanitizedAlertDialog');
 const SanitizedAlertDialogBackdrop = withSanitizedPrimitiveProps(AlertDialogBackdrop, 'SanitizedAlertDialogBackdrop');
 const SanitizedAlertDialogContent = withSanitizedPrimitiveProps(AlertDialogContent, 'SanitizedAlertDialogContent');
@@ -116,6 +133,8 @@ const SanitizedAlertDialogBody = withSanitizedPrimitiveProps(AlertDialogBody, 'S
 const SanitizedAlertDialogFooter = withSanitizedPrimitiveProps(AlertDialogFooter, 'SanitizedAlertDialogFooter');
 const SanitizedAvatar = withSanitizedPrimitiveProps(Avatar, 'SanitizedAvatar');
 const SanitizedBadge = withSanitizedPrimitiveProps(Badge, 'SanitizedBadge');
+const SanitizedBadgeIcon = withSanitizedPrimitiveProps(BadgeIcon, 'SanitizedBadgeIcon');
+const SanitizedBadgeText = withSanitizedPrimitiveProps(BadgeText, 'SanitizedBadgeText');
 const SanitizedButton = withSanitizedPrimitiveProps(Button, 'SanitizedButton');
 const SanitizedButtonText = withSanitizedPrimitiveProps(ButtonText, 'SanitizedButtonText');
 const SanitizedButtonSpinner = withSanitizedPrimitiveProps(ButtonSpinner, 'SanitizedButtonSpinner');
@@ -208,6 +227,9 @@ const SanitizedSelectPortal = withSanitizedPrimitiveProps(SelectPortal, 'Sanitiz
 const SanitizedSelectTrigger = withSanitizedPrimitiveProps(SelectTrigger, 'SanitizedSelectTrigger');
 const SanitizedSkeleton = withSanitizedPrimitiveProps(Skeleton, 'SanitizedSkeleton');
 const SanitizedSlider = withSanitizedPrimitiveProps(Slider, 'SanitizedSlider');
+const SanitizedSliderFilledTrack = withSanitizedPrimitiveProps(SliderFilledTrack, 'SanitizedSliderFilledTrack');
+const SanitizedSliderThumb = withSanitizedPrimitiveProps(SliderThumb, 'SanitizedSliderThumb');
+const SanitizedSliderTrack = withSanitizedPrimitiveProps(SliderTrack, 'SanitizedSliderTrack');
 const SanitizedSpinner = withSanitizedPrimitiveProps(Spinner, 'SanitizedSpinner');
 const SanitizedStatusBar = withSanitizedPrimitiveProps(StatusBar, 'SanitizedStatusBar');
 const SanitizedSwitch = withSanitizedPrimitiveProps(Switch, 'SanitizedSwitch');
@@ -238,8 +260,17 @@ const SanitizedVStackNative = withSanitizedPrimitiveProps(VStackNative, 'Sanitiz
 
 export {
 	SanitizedAccordion as Accordion,
+	SanitizedAccordionContent as AccordionContent,
+	SanitizedAccordionContentText as AccordionContentText,
+	SanitizedAccordionHeader as AccordionHeader,
+	SanitizedAccordionIcon as AccordionIcon,
+	SanitizedAccordionItem as AccordionItem,
+	SanitizedAccordionTitleText as AccordionTitleText,
+	SanitizedAccordionTrigger as AccordionTrigger,
 	SanitizedActionSheet as ActionSheet,
 	SanitizedAlert as Alert,
+	SanitizedAlertIcon as AlertIcon,
+	SanitizedAlertText as AlertText,
 	SanitizedAlertDialog as AlertDialog,
 	SanitizedAlertDialogBackdrop as AlertDialogBackdrop,
 	SanitizedAlertDialogContent as AlertDialogContent,
@@ -249,6 +280,8 @@ export {
 	SanitizedAlertDialogFooter as AlertDialogFooter,
 	SanitizedAvatar as Avatar,
 	SanitizedBadge as Badge,
+	SanitizedBadgeIcon as BadgeIcon,
+	SanitizedBadgeText as BadgeText,
 	// BottomSheet,
 	SanitizedBox as Box,
 	SanitizedBoxNative as BoxNative,
@@ -347,6 +380,9 @@ export {
 	SanitizedSelectTrigger as SelectTrigger,
 	SanitizedSkeleton as Skeleton,
 	SanitizedSlider as Slider,
+	SanitizedSliderFilledTrack as SliderFilledTrack,
+	SanitizedSliderThumb as SliderThumb,
+	SanitizedSliderTrack as SliderTrack,
 	SanitizedSpinner as Spinner,
 	SanitizedStatusBar as StatusBar,
 	SanitizedSwitch as Switch,
