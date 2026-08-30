@@ -30,7 +30,7 @@ export const setUserThunk = createAsyncThunk(
 	'auth/setUser',
 	async (args, { dispatch }) => {
 
-		if (_.isString(args)) {
+		if (args.id) { // detect OneBuild entity
 			args = { user: args };
 		}
 		const {
