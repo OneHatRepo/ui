@@ -33,9 +33,10 @@ export const setUserThunk = createAsyncThunk(
 		if (args?.id) { // detect OneBuild entity
 			args = { user: args };
 		}
-		let userData;
+		let userData,
+			user;
 		if (args) {
-			const { user } = args;
+			user = args.user;
 			userData = getUserData(user);
 		}
 		dispatch(setUser(userData));
