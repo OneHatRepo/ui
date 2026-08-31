@@ -552,6 +552,9 @@ export default function withModal(WrappedComponent) {
 										className={clsx(
 											'withModal-ModalContent',
 											'w-auto',
+											'h-auto',
+											'max-h-none',
+											'overflow-visible',
 											'max-w-none',
 											'bg-transparent',
 											'border-0',
