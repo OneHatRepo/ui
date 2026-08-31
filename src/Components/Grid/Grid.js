@@ -202,6 +202,7 @@ function GridComponent(props) {
 							}
 						</VStack>;
 			},
+			customDragPermission,
 			dragPreviewOptions, // optional object for drag preview positioning options
 			areRowsDragSource = false,
 			areRowsDragFromHandleOnly,
@@ -552,7 +553,7 @@ function GridComponent(props) {
 						dragSelectionRef.current = selection;
 						const getSelection = () => dragSelectionRef.current;
 
-						const userHasPermissionToDrag = (!canUser || canUser(EDIT));
+						const userHasPermissionToDrag = customDragPermission ? (canUser && canUser(customDragPermission)) : (!canUser || canUser(EDIT));
 						if (userHasPermissionToDrag) {
 
 							// Determine whether dragging should only be allowed from a handle, based on global default and grid prop override
