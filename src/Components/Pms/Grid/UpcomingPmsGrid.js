@@ -1,4 +1,4 @@
-import { useState, useEffect, } from 'react';
+import { useState, useEffect, useRef, } from 'react';
 import {
 	TextNative,
 	VStack,
@@ -19,6 +19,7 @@ import {
 import {
 	WO_CLASSES__PM,
 } from '@src/Constants/WoClasses.js';
+import { useDispatch } from 'react-redux';
 import { canUser } from '../../Hoc/withPermissions.js';
 import oneHatData from '@onehat/data';
 import Grid from '../../Grid/Grid.js';
@@ -42,6 +43,9 @@ import {
 } from '@src/Components/Icons/index';
 import EquipmentEditor from '@src/Components/Editor/EquipmentEditor.js';
 import UiGlobals from '../../../UiGlobals.js';
+import {
+	setIsWaitModalShownAction,
+} from '../../../Models/Slices/SystemSlice.js';
 
 
 function UpcomingPmsGrid(props) {
@@ -53,6 +57,7 @@ function UpcomingPmsGrid(props) {
 			setWorkOrderSelection,
 			setWithEditListeners,
 			setIsEditorShown,
+			isEditorShown,
 			nodeId,
 			nodeType,
 
@@ -93,24 +98,59 @@ function UpcomingPmsGrid(props) {
 			},
 		} = props,
 		styles = UiGlobals.styles,
+		dispatch = useDispatch(),
 		UpcomingPms = oneHatData.getRepository('UpcomingPms'),
 		[Equipment, setEquipment] = useState(null),
 		[WorkOrders, setWorkOrders] = useState(null),
 		[isReady, setIsReady] = useState(false),
+		hasShownFirstBumpWaiterRef = useRef(false),
+		isWaitingForFirstBumpModalRef = useRef(false),
+		firstBumpDelayTimerRef = useRef(null),
 		[width, height] = useAdjustedWindowSize(styles.DEFAULT_WINDOW_WIDTH, styles.DEFAULT_WINDOW_HEIGHT),
-		onBump = async (metersPmSchedule) => {
+		onBump = (metersPmSchedule) => {
+			if (!hasShownFirstBumpWaiterRef.current) {
+				// on production, pressing the bump button was taking 5 seconds before the modal appeared
+				// so show a waiter in the meantime.
+				hasShownFirstBumpWaiterRef.current = true;
+				isWaitingForFirstBumpModalRef.current = true;
+				setBumpWaiterShown(true);
+
+				firstBumpDelayTimerRef.current = setTimeout(() => {
+					doBump(metersPmSchedule);
+				}, 0);
+				return;
+			}
+
+			doBump(metersPmSchedule);
+		},
+		doBump = async (metersPmSchedule) => {
+			// This was extracted out of onBump, because on production, I was getting a 5 sec delay
+			// before the modal appeared. Had to do this so I could show wait modal on the first
+			// time onBump ran.
 			setWithEditListeners({
 				onAfterAddSave: () => {
 					setIsEditorShown(false);
 				},
 			});
-			onAddBumper(null, {
-				pm_events__meter_id: metersPmSchedule.meters_pm_schedules__meter_id,
-				pm_events__pm_schedule_id: metersPmSchedule.meters_pm_schedules__pm_schedule_id,
-				pm_events__pm_event_type_id: PM_EVENT_TYPES__DELAY_BY_DAYS,
-				pm_events__interval: 30,
-			});
-		},	
+			try {
+				await onAddBumper(null, {
+					pm_events__meter_id: metersPmSchedule.meters_pm_schedules__meter_id,
+					pm_events__pm_schedule_id: metersPmSchedule.meters_pm_schedules__pm_schedule_id,
+					pm_events__pm_event_type_id: PM_EVENT_TYPES__DELAY_BY_DAYS,
+					pm_events__interval: 30,
+				});
+			} catch (error) {
+				if (isWaitingForFirstBumpModalRef.current) {
+					isWaitingForFirstBumpModalRef.current = false;
+					setBumpWaiterShown(false);
+				}
+				console.error(error);
+			}
+		},
+		setBumpWaiterShown = (bool) => {
+			const setWaitAction = UiGlobals.systemReducer?.setIsWaitModalShownAction || setIsWaitModalShownAction;
+			dispatch(setWaitAction(bool));
+		},
 		onAddEditWorkOrder = async (metersPmSchedule) => {
 			if (!metersPmSchedule.meters_pm_schedules__has_open_work_order) {
 				addWorkOrder(null, {
@@ -254,6 +294,28 @@ function UpcomingPmsGrid(props) {
 		})();
 		
 	}, [UpcomingPms, Equipment, WorkOrders, nodeId, nodeType]);
+
+	useEffect(() => {
+		if (!isEditorShown || !isWaitingForFirstBumpModalRef.current) {
+			return;
+		}
+		setBumpWaiterShown(false);
+		isWaitingForFirstBumpModalRef.current = false;
+	}, [isEditorShown]);
+
+	useEffect(() => {
+		return () => {
+			if (firstBumpDelayTimerRef.current) {
+				clearTimeout(firstBumpDelayTimerRef.current);
+				firstBumpDelayTimerRef.current = null;
+			}
+			if (!isWaitingForFirstBumpModalRef.current) {
+				return;
+			}
+			setBumpWaiterShown(false);
+			isWaitingForFirstBumpModalRef.current = false;
+		};
+	}, []);
 
 	if (!isReady) {
 		return <Loading />;
