@@ -699,6 +699,16 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 					secondaryIsIgnoreNextSelectionChange = true;
 				}
 			
+				const canUseEditMode = () => {
+					// Determines if the secondary editor can be used in edit mode based on various conditions.
+					return (
+						!secondaryCanEditorViewOnly &&
+						secondaryUserCanEdit &&
+						!secondaryDisableEdit &&
+						(!canUser || canUser(EDIT, secondaryModel))
+					);
+				};
+
 				// secondaryCalculateEditorMode gets called only on selection changes
 				const secondarySelection = secondaryGetSelection();
 				let mode;
@@ -725,6 +735,10 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 						mode = secondarySelection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 					}
 				}
+				if (mode === EDITOR_MODE__EDIT && !canUseEditMode()) {
+					return EDITOR_MODE__VIEW;
+				}
+
 				return mode;
 			},
 			secondarySetEditMode = () => {

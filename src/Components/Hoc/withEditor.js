@@ -925,6 +925,18 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					isIgnoreNextSelectionChange = true;
 				}
 
+				const canUseEditMode = () => {
+					// Determines if the editor can be used in edit mode based on various conditions.
+					return (
+						getCanEditorBeInEditMode() &&
+						!canEditorViewOnly &&
+						userCanEdit &&
+						!disableEdit &&
+						(!canUser || canUser(EDIT)) &&
+						(!canRecordBeEdited || canRecordBeEdited(selection) !== false)
+					);
+				};
+
 				// calculateEditorMode gets called only on selection changes
 				let mode;
 				if (editorType === EDITOR_TYPE__SIDE && !_.isNil(UiGlobals.isSideEditorAlwaysEditMode) && UiGlobals.isSideEditorAlwaysEditMode) {
@@ -950,6 +962,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						mode = selection.length > 1 ? EDITOR_MODE__EDIT : EDITOR_MODE__VIEW;
 					}
 				}
+				if (mode === EDITOR_MODE__EDIT && !canUseEditMode()) {
+					return EDITOR_MODE__VIEW;
+				}
+
 				return mode;
 			},
 			setEditMode = () => {
