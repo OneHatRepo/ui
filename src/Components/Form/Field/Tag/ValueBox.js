@@ -20,6 +20,7 @@ export default function ValueBox(props) {
 			showJoin = false,
 			onDelete,
 			minimizeForRow = false,
+			isDisabled = false,
 		} = props,
 		styles = UiGlobals.styles;
 	return <HStackNative
@@ -33,7 +34,7 @@ export default function ValueBox(props) {
 					'border',
 					'border-grey-400',
 					'rounded-md',
-					!onDelete ? 'pr-4' : '',
+					!onDelete || isDisabled ? 'pr-4' : '',
 				)}
 			>
 				{showEye &&
@@ -78,7 +79,7 @@ export default function ValueBox(props) {
 						minimizeForRow ? 'py-0' : '',
 					)}
 				>{text}</Text>
-				{onDelete &&
+				{onDelete && !isDisabled &&
 					<IconButton
 						{...testProps('xBtn')}
 						icon={Xmark}

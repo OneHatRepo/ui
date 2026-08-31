@@ -49,6 +49,7 @@ function TagComponent(props) {
 			outerValueId, // See note in useEffect
 			testID,
 			isDirty = false,
+			isDisabled = false,
 
 			// withAlert
 			alert,
@@ -280,7 +281,7 @@ function TagComponent(props) {
 			let height = 300;
 			let body;
 			const extraModalProps = {};
-			if (isViewOnly) {
+			if (isViewOnly || isDisabled) {
 				// show Viewer
 				body = <Viewer
 							record={record}
@@ -423,6 +424,7 @@ function TagComponent(props) {
 						showJoin={hasJoinData && (!mustSaveBeforeEditingJoinData || !isDirty)}
 						onDelete={!isViewOnly ? () => onValueBoxDelete(val) : null}
 						minimizeForRow={minimizeForRow}
+						isDisabled={isDisabled}
 					/>;
 		});
 
@@ -601,6 +603,7 @@ function TagComponent(props) {
 						minimizeForRow={minimizeForRow}
 						{..._selector}
 						className={selectorClassName}
+						isDisabled={isDisabled}
 					/>}
 			</VStackNative>;
 	
