@@ -15,6 +15,8 @@ import {
 	UI_MODE_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import oneHatData from '@onehat/data';
+import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import getComponentFromType from '../../Functions/getComponentFromType.js';
@@ -106,6 +108,7 @@ function Container(props) {
 			setEastIsCollapsed: setExternalEastIsCollapsed,
 			setWestIsCollapsed: setExternalWestIsCollapsed,
 		} = props,
+		UiSavesRepository = oneHatData.getRepository(UiGlobals.uiSavesRepo),
 		id = props.id || props.self?.path,
 		isWeb = CURRENT_MODE === UI_MODE_WEB,
 		useWindowSize = getComponentFromType('useWindowSize'),
@@ -172,15 +175,15 @@ function Container(props) {
 			}, 2000), // delay is signficant, as all we're trying to do is catch screen size changes
 			[]
 		),
-		setNorthIsCollapsed = (bool) => {
+		setNorthIsCollapsed = async (bool) => {
 			if (setExternalNorthIsCollapsed) {
-				setExternalNorthIsCollapsed(bool);
+				await setExternalNorthIsCollapsed(bool);
 			} else {
 				localNorthIsCollapsedRef.current = bool;
 			}
 
 			if (id) {
-				setSaved(id + '-northIsCollapsed', bool);
+				await setSaved(id + '-northIsCollapsed', bool);
 			}
 			forceUpdate();
 		},
@@ -190,15 +193,15 @@ function Container(props) {
 			}
 			return localNorthIsCollapsedRef.current;
 		},
-		setSouthIsCollapsed = (bool) => {
+		setSouthIsCollapsed = async (bool) => {
 			if (setExternalSouthIsCollapsed) {
-				setExternalSouthIsCollapsed(bool);
+				await setExternalSouthIsCollapsed(bool);
 			} else {
 				localSouthIsCollapsedRef.current = bool;
 			}
 
 			if (id) {
-				setSaved(id + '-southIsCollapsed', bool);
+				await setSaved(id + '-southIsCollapsed', bool);
 			}
 			forceUpdate();
 		},
@@ -208,21 +211,21 @@ function Container(props) {
 			}
 			return localSouthIsCollapsedRef.current;
 		},
-		setEastIsCollapsed = (bool) => {
+		setEastIsCollapsed = async (bool) => {
 			if (setExternalEastIsCollapsed) {
-				setExternalEastIsCollapsed(bool);
+				await setExternalEastIsCollapsed(bool);
 			} else {
 				localEastIsCollapsedRef.current = bool;
 			}
 
 			if (!bool) {
-				setSideWidth('east', getEastWidth() ?? eastInitialWidth, {
+				await setSideWidth('east', getEastWidth() ?? eastInitialWidth, {
 					ignoreCollapsedCheck: true,
 				});
 			}
 
 			if (id) {
-				setSaved(id + '-eastIsCollapsed', bool);
+				await setSaved(id + '-eastIsCollapsed', bool);
 			}
 			forceUpdate();
 		},
@@ -232,21 +235,21 @@ function Container(props) {
 			}
 			return localEastIsCollapsedRef.current;
 		},
-		setWestIsCollapsed = (bool) => {
+		setWestIsCollapsed = async (bool) => {
 			if (setExternalWestIsCollapsed) {
-				setExternalWestIsCollapsed(bool);
+				await setExternalWestIsCollapsed(bool);
 			} else {
 				localWestIsCollapsedRef.current = bool;
 			}
 
 			if (!bool) {
-				setSideWidth('west', getWestWidth() ?? westInitialWidth, {
+				await setSideWidth('west', getWestWidth() ?? westInitialWidth, {
 					ignoreCollapsedCheck: true,
 				});
 			}
 
 			if (id) {
-				setSaved(id + '-westIsCollapsed', bool);
+				await setSaved(id + '-westIsCollapsed', bool);
 			}
 			forceUpdate();
 		},
@@ -256,22 +259,22 @@ function Container(props) {
 			}
 			return localWestIsCollapsedRef.current;
 		},
-		setNorthHeight = (height) => {
+		setNorthHeight = async (height) => {
 			if (!getNorthIsCollapsed()) {
 				northHeightRef.current = height;
 				if (id) {
-					setSaved(id + '-northHeight', height);
+					await setSaved(id + '-northHeight', height);
 				}
 			}
 		},
 		getNorthHeight = () => {
 			return northHeightRef.current;
 		},
-		setSouthHeight = (height) => {
+		setSouthHeight = async (height) => {
 			if (!getSouthIsCollapsed()) {
 				southHeightRef.current = height;
 				if (id) {
-					setSaved(id + '-southHeight', height);
+					await setSaved(id + '-southHeight', height);
 				}
 			}
 		},
@@ -316,7 +319,7 @@ function Container(props) {
 
 			return Math.min(width, maxSideWidth);
 		},
-		setSideWidth = (side, width, opts = {}) => {
+		setSideWidth = async (side, width, opts = {}) => {
 			const
 				{
 					ignoreCollapsedCheck = false,
@@ -333,12 +336,12 @@ function Container(props) {
 			if (side === 'east') {
 				eastWidthRef.current = clampedWidth;
 				if (id) {
-					setSaved(id + '-eastWidth', clampedWidth);
+					await setSaved(id + '-eastWidth', clampedWidth);
 				}
 			} else {
 				westWidthRef.current = clampedWidth;
 				if (id) {
-					setSaved(id + '-westWidth', clampedWidth);
+					await setSaved(id + '-westWidth', clampedWidth);
 				}
 			}
 		},
@@ -359,43 +362,43 @@ function Container(props) {
 
 			return Math.min(normalizedWidth, maxSideWidth);
 		},
-		setEastWidth = (width, opts = {}) => {
-			setSideWidth('east', width, opts);
+		setEastWidth = async (width, opts = {}) => {
+			await setSideWidth('east', width, opts);
 		},
 		getEastWidth = () => {
 			return eastWidthRef.current;
 		},
-		setWestWidth = (width, opts = {}) => {
-			setSideWidth('west', width, opts);
+		setWestWidth = async (width, opts = {}) => {
+			await setSideWidth('west', width, opts);
 		},
 		getWestWidth = () => {
 			return westWidthRef.current;
 		},
-		onNorthResize = (delta) => {
+		onNorthResize = async (delta) => {
 			if (!getNorthIsCollapsed()) {
 				const newHeight = getNorthHeight() + delta;
-				setNorthHeight(newHeight);
+				await setNorthHeight(newHeight);
 				forceUpdate();
 			}
 		},
-		onSouthResize = (delta) => {
+		onSouthResize = async (delta) => {
 			if (!getSouthIsCollapsed()) {
 				const newHeight = getSouthHeight() - delta; // minus
-				setSouthHeight(newHeight);
+				await setSouthHeight(newHeight);
 				forceUpdate();
 			}
 		},
-		onEastResize = (delta) => {
+		onEastResize = async (delta) => {
 			if (!getEastIsCollapsed()) {
 				const newWidth = getEastWidth() - delta; // minus
-				setEastWidth(newWidth);
+				await setEastWidth(newWidth);
 				forceUpdate();
 			}
 		},
-		onWestResize = (delta) => {
+		onWestResize = async (delta) => {
 			if (!getWestIsCollapsed()) {
 				const newWidth = getWestWidth() + delta;
-				setWestWidth(newWidth);
+				await setWestWidth(newWidth);
 				forceUpdate();
 			}
 		},
@@ -403,19 +406,19 @@ function Container(props) {
 			isSplitterDraggingRef.current = true;
 			setIsComponentsDisabled(true);
 		},
-		onSplitterDragStop = (delta, which) => {
+		onSplitterDragStop = async (delta, which) => {
 			switch(which) {
 				case 'north':
-					onNorthResize(delta);
+					await onNorthResize(delta);
 					break;
 				case 'south':
-					onSouthResize(delta);
+					await onSouthResize(delta);
 					break;
 				case 'east':
-					onEastResize(delta);
+					await onEastResize(delta);
 					break;
 				case 'west':
-					onWestResize(delta);
+					await onWestResize(delta);
 					break;
 			}
 			setIsComponentsDisabled(false);
@@ -423,6 +426,11 @@ function Container(props) {
 		};
 
 	useEffect(() => {
+
+		if (!UiSavesRepository) {
+			return;
+		}
+
 		// Restore saved settings
 		(async () => {
 
@@ -446,7 +454,7 @@ function Container(props) {
 					key = id + '-eastWidth';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setEastWidth(val, {
+						await setEastWidth(val, {
 							ignoreCollapsedCheck: true,
 						});
 					}
@@ -454,7 +462,7 @@ function Container(props) {
 					key = id + '-westWidth';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setWestWidth(val, {
+						await setWestWidth(val, {
 							ignoreCollapsedCheck: true,
 						});
 					}
@@ -462,41 +470,40 @@ function Container(props) {
 					key = id + '-northIsCollapsed';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setNorthIsCollapsed(val);
+						await setNorthIsCollapsed(val);
 					}
 
 					key = id + '-southIsCollapsed';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setSouthIsCollapsed(val);
+						await setSouthIsCollapsed(val);
 					}
 
 					key = id + '-eastIsCollapsed';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setEastIsCollapsed(val);
+						await setEastIsCollapsed(val);
 					}
 
 					key = id + '-westIsCollapsed';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setWestIsCollapsed(val);
+						await setWestIsCollapsed(val);
 					}
 
 					key = id + '-northHeight';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setNorthHeight(val);
+						await setNorthHeight(val);
 					}
 
 					key = id + '-southHeight';
 					val = await getSaved(key);
 					if (!_.isNil(val)) {
-						setSouthHeight(val);
+						await setSouthHeight(val);
 					}
 				
 				}
-
 
 			}
 
@@ -504,7 +511,7 @@ function Container(props) {
 				setIsReady(true);
 			}
 		})();
-	}, []);
+	}, [UiSavesRepository]);
 
 	if (!isReady) {
 		return null;
