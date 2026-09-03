@@ -49,9 +49,15 @@ export default function withContextMenu(WrappedComponent) {
 					setSelection([entity]);
 				}
 
+				// Use viewport-relative coordinates for modal positioning.
+				const pageX = e?.nativeEvent?.pageX ?? e?.pageX;
+				const pageY = e?.nativeEvent?.pageY ?? e?.pageY;
+				const clientX = e?.nativeEvent?.clientX ?? e?.clientX ?? (typeof pageX === 'number' ? pageX - window.scrollX : 0);
+				const clientY = e?.nativeEvent?.clientY ?? e?.clientY ?? (typeof pageY === 'number' ? pageY - window.scrollY : 0);
+
 				setDoShowContextMenu(true);
-				setLeft(e.nativeEvent.pageX);
-				setTop(e.nativeEvent.pageY);
+				setLeft(clientX);
+				setTop(clientY);
 			},
 			createContextMenuItemComponents = () => {
 				const contextMenuItemComponents = _.map(contextMenuItems, (config, ix) => {
@@ -163,12 +169,20 @@ export default function withContextMenu(WrappedComponent) {
 
 			showModal({
 				body: <VStack
+							pointerEvents="auto"
 							className={className}
 							style={style}
 						>{contextMenuItemComponents}</VStack>,
 				onCancel: hideModal,
 				whichModal: 'contextMenu',
 				stackMode: 'replace',
+				disableContentAnimation: true,
+				modalContentPointerEvents: 'box-none',
+				modalContentClassName: clsx(
+					'w-full',
+					'h-full',
+					'rounded-none',
+				),
 			});
 
 			if (doShowContextMenu) {

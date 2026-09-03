@@ -96,6 +96,12 @@ function LiveModalBody(props) {
  * stackMode options:
  * - 'push': append this modal to the existing stack so multiple modals can remain open (default)
  * - 'replace': replace the current modal queue with this modal
+ *
+ * Optional content behavior overrides:
+ * - disableContentAnimation: true to disable ModalContent entering/exiting animations.
+ * - modalContentPointerEvents: override ModalContent pointerEvents (for example 'box-none').
+ * - modalContentClassName: extra classes merged into ModalContent.
+ * - modalContentStyle: inline style object passed to ModalContent.
  */
 
 export default function withModal(WrappedComponent) {
@@ -193,6 +199,10 @@ export default function withModal(WrappedComponent) {
 					testID = null,
 					stackMode = 'push', // 'push' or 'replace'
 					showBackdrop = true,
+					disableContentAnimation = false,
+					modalContentClassName = null,
+					modalContentPointerEvents = 'auto',
+					modalContentStyle = null,
 					formProps = null, // deprecated
 				} = args;
 
@@ -249,6 +259,10 @@ export default function withModal(WrappedComponent) {
 					whichModal,
 					testID: testID || 'Modal',
 					showBackdrop,
+					disableContentAnimation,
+					modalContentClassName,
+					modalContentPointerEvents,
+					modalContentStyle,
 				};
 
 				setModals((previous) => {
@@ -538,7 +552,13 @@ export default function withModal(WrappedComponent) {
 							isTopModal = index === modals.length - 1,
 							onCloseHandler = isTopModal
 								? ((modal.onCancel || modal.onClose || modal.canClose) ? () => invokeCloseAndHide(modal) : null)
-								: null;
+								: null,
+							modalContentAnimationProps = modal.disableContentAnimation
+								? {
+									entering: undefined,
+									exiting: undefined,
+								}
+								: {};
 						return <Modal
 									key={`modal-${modal.id}`}
 									isOpen={true}
@@ -548,7 +568,9 @@ export default function withModal(WrappedComponent) {
 								>
 									{renderModalBackdrop(modal, isTopModal)}
 									<ModalContent
-										pointerEvents="auto"
+										{...modalContentAnimationProps}
+										pointerEvents={modal.modalContentPointerEvents || 'auto'}
+										style={modal.modalContentStyle}
 										className={clsx(
 											'withModal-ModalContent',
 											'w-auto',
@@ -561,6 +583,7 @@ export default function withModal(WrappedComponent) {
 											'shadow-none',
 											'p-0',
 											'web:pointer-events-auto',
+											modal.modalContentClassName,
 										)}
 									>
 										{renderModalBody(modal, isTopModal)}
