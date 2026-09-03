@@ -50,10 +50,11 @@ export default function withContextMenu(WrappedComponent) {
 				}
 
 				// Use viewport-relative coordinates for modal positioning.
-				const pageX = e?.nativeEvent?.pageX ?? e?.pageX;
-				const pageY = e?.nativeEvent?.pageY ?? e?.pageY;
-				const clientX = e?.nativeEvent?.clientX ?? e?.clientX ?? (typeof pageX === 'number' ? pageX - window.scrollX : 0);
-				const clientY = e?.nativeEvent?.clientY ?? e?.clientY ?? (typeof pageY === 'number' ? pageY - window.scrollY : 0);
+				const
+					pageX = e?.nativeEvent?.pageX ?? e?.pageX,
+					pageY = e?.nativeEvent?.pageY ?? e?.pageY,
+					clientX = e?.nativeEvent?.clientX ?? e?.clientX ?? (typeof pageX === 'number' ? pageX - window.scrollX : 0),
+					clientY = e?.nativeEvent?.clientY ?? e?.clientY ?? (typeof pageY === 'number' ? pageY - window.scrollY : 0);
 
 				setDoShowContextMenu(true);
 				setLeft(clientX);
