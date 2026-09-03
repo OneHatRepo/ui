@@ -815,9 +815,12 @@ function GridComponent(props) {
 						}
 						
 						// context menu
-						const newSelection = [item];
-						if (!disableWithSelection) {
-							setSelection(newSelection);
+						let newSelection = selection;
+						if (!isInSelection(item)) {
+							newSelection = [item];
+							if (!disableWithSelection) {
+								setSelection(newSelection);
+							}
 						}
 						if (onEditorRowClick) { // e.g. inline editor
 							onEditorRowClick(item, index, e);
