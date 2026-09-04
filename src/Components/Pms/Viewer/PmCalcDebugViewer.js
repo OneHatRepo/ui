@@ -138,7 +138,6 @@ export default function PmCalcDebugViewer(props) {
 							className={clsx(
 								classNames,
 								'px-3',
-								'py-2',
 							)}
 						>{value}</Text>;
 			}
@@ -150,6 +149,7 @@ export default function PmCalcDebugViewer(props) {
 				"flex": 1,
 				"defaults": {
 					labelWidth: 300,
+					className: 'p-0 py-0 min-h-0',
 				},
 				"items": [
 					{
@@ -312,6 +312,7 @@ export default function PmCalcDebugViewer(props) {
 				<Viewer
 					record={record}
 					items={items}
+					disableModeHeader={true}
 				/>
 			</Panel>;
 }

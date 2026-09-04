@@ -200,10 +200,10 @@ function UpcomingPmsGrid(props) {
 							isEditorViewOnly={true}
 							selection={[record]}
 							onEditorClose={hideModal}
-							className={`
-								w-full
-								p-0
-							`}
+							className={clsx(
+								'w-full',
+								'p-0',
+							)}
 						/>,
 				onCancel: hideModal,
 				h: height,
@@ -217,10 +217,10 @@ function UpcomingPmsGrid(props) {
 							reference="viewer"
 							metersPmSchedule={metersPmSchedule}
 							onClose={hideModal}
-							className={`
-								w-full
-								p-0
-							`}
+							className={clsx(
+								'w-full',
+								'p-0',
+							)}
 						/>,
 				onCancel: hideModal,
 				h: height,
