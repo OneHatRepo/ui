@@ -689,7 +689,13 @@ function AttachmentsElement(props) {
 			});
 		},
 		onReloadDirectories = async () => {
+			if (usesDirectories && AttachmentDirectories?.isDestroyed) {
+				return;
+			}
 			await AttachmentDirectories.loadRootNodes(2);
+			if (usesDirectories && AttachmentDirectories?.isDestroyed) {
+				return;
+			}
 			const rootNodes = AttachmentDirectories.getRootNodes();
 			if (rootNodes) {
 				setTreeSelection(rootNodes);
@@ -782,11 +788,17 @@ function AttachmentsElement(props) {
 					}
 					if (doReload) {
 						// setTreeSelection([]); // clear it; otherwise we get stale nodes after reloading AttachmentDirectories
+						if (usesDirectories && AttachmentDirectories?.isDestroyed) {
+							return;
+						}
 						await AttachmentDirectories.loadRootNodes(2);
 						if (wasAlreadyLoaded) {
+							if (usesDirectories && AttachmentDirectories?.isDestroyed) {
+								return;
+							}
 							const rootNodes = AttachmentDirectories.getRootNodes();
 							if (rootNodes) {
-								self.children.tree.setSelection(rootNodes);
+								self.children.tree?.setSelection(rootNodes);
 							}
 						}
 					}
