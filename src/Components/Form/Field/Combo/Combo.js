@@ -771,6 +771,8 @@ export const ComboComponent = forwardRef((props, ref) => {
 							className={clsx(
 								'Combo-TextNative',
 								'flex-1',
+								'flex',
+								'items-center',
 								_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
 								styles.FORM_COMBO_INPUT_CLASSNAME
 							)}
