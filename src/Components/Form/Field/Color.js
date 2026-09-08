@@ -25,6 +25,7 @@ export function ColorElement(props) {
 	const {
 			value = '#000',
 			setValue,
+			testID,
 			isDisabled = false,
 			showXButton = false,
 			tooltip = 'Choose a color.',
@@ -165,6 +166,7 @@ export function ColorElement(props) {
 	let assembledComponents = null;
 	assembledComponents =
 		<HStackNative
+			testID={testID}
 			onLayout={() => setIsRendered(true)}
 			className={clsx(
 				'ColorElement-HStackNative',

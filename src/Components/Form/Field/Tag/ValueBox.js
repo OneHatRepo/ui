@@ -13,6 +13,7 @@ import _ from 'lodash';
 
 export default function ValueBox(props) {
 	const {
+			id,
 			text,
 			onView,
 			showEye = false,
@@ -22,9 +23,12 @@ export default function ValueBox(props) {
 			minimizeForRow = false,
 			isDisabled = false,
 		} = props,
-		styles = UiGlobals.styles;
+		styles = UiGlobals.styles,
+		valueBoxTestId = 'valueBox-' + (!_.isNil(id) ? id : text);
 	return <HStackNative
-				{...testProps('valueBox-' + text)}
+				{...testProps(valueBoxTestId)}
+				data-tag-id={!_.isNil(id) ? String(id) : undefined}
+				data-tag-text={!_.isNil(text) ? String(text) : ''}
 				className={clsx(
 					'ValueBox-HStackNative',
 					'max-w-full',

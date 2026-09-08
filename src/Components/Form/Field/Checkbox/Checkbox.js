@@ -16,6 +16,7 @@ const
 
 		return <CheckboxButton
 					testID={testID}
+					data-checked={value ? 'true' : 'false'}
 					isChecked={value}
 					onPress={onToggle}
 					_icon={{

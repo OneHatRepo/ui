@@ -12,6 +12,7 @@ import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withValue from '../../Hoc/withValue.js';
 import getComponentFromType from '../../../Functions/getComponentFromType.js';
+import testProps from '../../../Functions/testProps.js';
 import _ from 'lodash';
 
 
@@ -54,9 +55,25 @@ export function JsonElement(props) {
 		assembledComponents = 
 			<HStack
 				testID={testID}
+				data-json-value={_.isNil(value) ? '' : String(value)}
 				style={propsToPass.style}
 				className={className}
 			>
+				<textarea
+					{...testProps('input')}
+					value={_.isNil(value) ? '' : String(value)}
+					onChange={(e) => {
+						const raw = e.target.value;
+						setValue(raw === '' ? null : raw);
+					}}
+					style={{
+						position: 'absolute',
+						left: '-9999px',
+						opacity: 0,
+						height: 1,
+						width: 1,
+					}}
+				/>
 				<JsonEditor
 					width="100%"
 					editable={!isViewOnly}

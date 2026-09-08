@@ -168,6 +168,7 @@ function SliderElement(props) {
 	}
 	
 	return <HStack
+				testID={testID}
 				className={className}
 				style={props.style}
 			>

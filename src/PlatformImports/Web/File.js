@@ -23,6 +23,7 @@ import Xmark from '../../Components/Icons/Xmark.js'
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withValue from '../../Components/Hoc/withValue.js';
 import Loading from '../../Components/Messages/Loading.js';
+import testProps from '../../Functions/testProps.js';
 import _ from 'lodash';
 
 
@@ -46,6 +47,7 @@ function FileComponent(props) {
 			onFilesSuccessfullySelected, // called when there were no validation errors
 			onFileRemoved, // called when a file is removed from the list of selected files
 			onClear, // called when the selection is cleared
+			testID,
 
 			// withValue
 			value,
@@ -94,19 +96,45 @@ function FileComponent(props) {
 	}, [value, filesContent.length]);
 
 	if (loading) {
-		return <Loading />;
+		return <Loading {...(testID ? testProps(testID) : {})} />;
 	}
 
 	let assembledComponents = null;
 	if (_.isEmpty(filesContent)) {
 		assembledComponents = 
-			<Button
-				onPress={() => openFilePicker()}
-				text="Select File"
-			/>;
+			<HStack
+				{...(testID ? testProps(testID) : {})}
+				data-file-value=""
+				data-file-name=""
+			>
+				<input
+					{...testProps('input')}
+					type="text"
+					value={_.isNil(value) ? '' : String(value)}
+					onChange={(e) => {
+						const nextValue = e.target.value;
+						setValue(nextValue === '' ? null : nextValue);
+					}}
+					style={{
+						position: 'absolute',
+						left: '-9999px',
+						opacity: 0,
+						height: 1,
+						width: 1,
+					}}
+				/>
+				<Button
+					{...testProps('selectFileBtn')}
+					onPress={() => openFilePicker()}
+					text="Select File"
+				/>
+			</HStack>;
 	} else {
 		assembledComponents = 
 			<HStack
+				{...(testID ? testProps(testID) : {})}
+				data-file-value={_.isNil(value) ? '' : String(value)}
+				data-file-name={plainFiles[0]?.name || ''}
 				className={`
 					px-3
 					py-1
@@ -116,7 +144,24 @@ function FileComponent(props) {
 					border-primary.700
 				`}
 			>
+				<input
+					{...testProps('input')}
+					type="text"
+					value={_.isNil(value) ? '' : String(value)}
+					onChange={(e) => {
+						const nextValue = e.target.value;
+						setValue(nextValue === '' ? null : nextValue);
+					}}
+					style={{
+						position: 'absolute',
+						left: '-9999px',
+						opacity: 0,
+						height: 1,
+						width: 1,
+					}}
+				/>
 				<IconButton
+					{...testProps('xBtn')}
 					icon={Xmark}
 					_icon={{
 						size: 'sm',

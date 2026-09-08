@@ -54,7 +54,11 @@ const
 			);
 
 		if (_.isNil(value)) {
-			return <HStack className={className}>
+			return <HStack
+						{...(testID ? testProps(testID) : {})}
+						data-toggle-value="null"
+						className={className}
+					>
 						<IconButton
 							{...(testID ? testProps(`${testID}-na-btn`) : testProps('naBtn'))}
 							ref={props.outerRef}
@@ -71,7 +75,11 @@ const
 					</HStack>;
 		}
 
-		return <HStack className={className}>
+		return <HStack
+					{...(testID ? testProps(testID) : {})}
+					data-toggle-value={value ? 'true' : 'false'}
+					className={className}
+				>
 					<Pressable
 						{...testProps('nullifyBtn')}
 						onPress={onNullify}

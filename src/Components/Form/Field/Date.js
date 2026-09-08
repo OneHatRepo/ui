@@ -658,6 +658,7 @@ export const DateElement = forwardRef((props, ref) => {
 	}
 
 	assembledComponents = <HStackNative
+							testID={testID}
 							onLayout={() => setIsRendered(true)}
 							className={className}
 							style={style}

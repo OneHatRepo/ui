@@ -417,6 +417,7 @@ function TagComponent(props) {
 		valueBoxes = _.map(value, (val, ix) => {
 			return <ValueBox
 						key={ix}
+						id={val.id}
 						text={val.text}
 						onView={() => onView(val)}
 						showEye={showEye}
@@ -580,7 +581,10 @@ function TagComponent(props) {
 				className={className}
 				style={style}
 			>
-				<HStack className={valueBoxesClassName}>{valueBoxes}</HStack>
+				<HStack
+					{...testProps('valueBoxes')}
+					className={valueBoxesClassName}
+				>{valueBoxes}</HStack>
 				
 				{!isViewOnly && 
 					<WhichSelector
