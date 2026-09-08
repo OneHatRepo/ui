@@ -47,7 +47,7 @@ import { Drawer } from './drawer';
 import { Fab, FabIcon, FabLabel } from './fab';
 import { FlatList } from './flat-list';
 import { FormControl } from './form-control';
-import { Grid } from './grid';
+import { Grid, GridItem } from './grid';
 import { Heading } from './heading';
 import { HStack } from './hstack';
 import { HStack as HStackNative } from "./hstack/index.tsx"; // explicitly import the native version
@@ -175,6 +175,7 @@ const SanitizedFormControl = withSanitizedPrimitiveProps(FormControl, 'Sanitized
 const SanitizedGlassView = withSanitizedPrimitiveProps(GlassView, 'SanitizedGlassView');
 const SanitizedGlassContainer = withSanitizedPrimitiveProps(GlassContainer, 'SanitizedGlassContainer');
 const SanitizedGrid = withSanitizedPrimitiveProps(Grid, 'SanitizedGrid');
+const SanitizedGridItem = withSanitizedPrimitiveProps(GridItem, 'SanitizedGridItem');
 const SanitizedHeading = withSanitizedPrimitiveProps(Heading, 'SanitizedHeading');
 const SanitizedHStack = withSanitizedPrimitiveProps(HStack, 'SanitizedHStack');
 const SanitizedHStackNative = withSanitizedPrimitiveProps(HStackNative, 'SanitizedHStackNative');
@@ -328,6 +329,7 @@ export {
 	isLiquidGlassAvailable,
 	GluestackUIProvider,
 	SanitizedGrid as Grid,
+	SanitizedGridItem as GridItem,
 	SanitizedHeading as Heading,
 	SanitizedHStack as HStack,
 	SanitizedHStackNative as HStackNative,
