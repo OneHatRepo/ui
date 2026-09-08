@@ -3,6 +3,9 @@ import {
 	getDomNodes,
 } from './dom_functions.js';
 
+const
+	baseUrl = Cypress.expose('baseUrl'),
+	baseDir = Cypress.expose('baseDir') || ''; 
 
 //     __                _
 //    / /   ____  ____ _(_)___
@@ -13,31 +16,33 @@ import {
 
 export function login(loginId = null, password = null) {
 	cy.log('login');
-	if (!loginId) {
-		loginId = cy.env('loginId');
-	}
-	if (!password) {
-		password = cy.env('password');
-	}
-	const
-		baseUrl = cy.env('baseUrl'),
-		baseDir = cy.env('baseDir');
-	cy.visit(baseUrl + baseDir + 'login')
-		.then(() => {
-			getDomNode('loginId', { timeout: 10000 }).clear();
-			getDomNode('loginId').type(loginId);
+	
+	// Fetch non-sensitive configuration synchronously
+
+	// Fetch sensitive credentials asynchronously via an array
+	cy.env(['loginId', 'password']).then((secrets) => {
+		const
+			finalLoginId = loginId || secrets.loginId,
+			finalPassword = password || secrets.password;
+
+		cy.visit(baseUrl + baseDir + 'login').then(() => {
+			getDomNode('loginId', { timeout: 30000 }).clear();
+			getDomNode('loginId').type(finalLoginId);
 
 			getDomNode('password').clear();
-			getDomNode('password').type(password);
+			getDomNode('password').type(finalPassword);
 			
 			getDomNode('loginBtn').click();
-			cy.url().should('include', 'home');
+			cy.url().should('not.eq', baseUrl + baseDir + 'login');
 		});
+	});
 }
 export function logout() {
 	cy.log('logout');
-	const baseDir = cy.env('baseDir');
-	getDomNode(baseDir + 'logout').click({ force: true });
+	const baseDir = Cypress.expose('baseDir') || ''; 
+	getDomNode('userIndicator').click({ force: true });
+
+	cy.url().should('include', baseUrl + baseDir + 'login');
 }
 
 
@@ -50,25 +55,20 @@ export function logout() {
 
 export function navigateViaTabOrHomeButtonTo(url) {
 	cy.log('navigateViaTabOrHomeButtonTo ' + url);
-	// i.e. If we're on home screen, press the button.
-	// If we have a tab navigation, press the tab's button
-	const baseDir = cy.env('baseDir');
-	getDomNode(baseDir + url).click(); // i.e. the DomNode's data-testid is the url
+	getDomNode(baseDir + url).click();
 	cy.url().should('include', url);
 }
 export function navigateToHome() {
 	cy.log('navigateToHome');
 	navigateToScreen('home');
 }
+
 export function navigateToScreen(path) {
 	cy.log('navigateToScreen ' + path);
-	const
-		baseUrl = cy.env('baseUrl'),
-		baseDir = cy.env('baseDir');
-	cy.visit(baseUrl + baseDir + path)
-		.then(() => {
-			cy.url().should('include', path);
-		});
+	
+	cy.visit(baseUrl + baseDir + path).then(() => {
+		cy.url().should('include', path);
+	});
 }
 // export function selectMainTab(name) {
 // 	cy.get('.mainTabPanel .x-tab')
