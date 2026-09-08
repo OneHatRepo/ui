@@ -59,7 +59,7 @@ export function selectGridRowIfNotAlreadySelectedById(gridSelector, id) {
 	cy.log('selectGridRowIfNotAlreadySelectedById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
 	getDomNode([gridSelector, rowSelector]).then((row) => {
-		const found = row.find('[data-testid="row-selected"]')
+		const found = row.find('[data-testid="Row_row-selected"]')
 		if (!found.length) {
 			selectGridRowById(gridSelector, id);
 		}
@@ -128,7 +128,7 @@ export function verifyGridRecordDoesNotExistById(gridSelector, id) {
 export function verifyGridRowIsSelectedById(gridSelector, id) {
 	cy.log('verifyGridRowIsSelectedById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
-	getDomNodes([gridSelector, rowSelector, 'row-selected'])
+	getDomNodes([gridSelector, rowSelector, 'Row_row-selected'])
 		.should('exist');
 }
 

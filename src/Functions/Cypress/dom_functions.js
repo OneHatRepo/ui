@@ -1,4 +1,6 @@
 
+import _ from 'lodash';
+
 /**
  * Get the first DOM node matching the nested selectors.
  * (Note: it gets the first matching element from each selector, not just the last one.)
