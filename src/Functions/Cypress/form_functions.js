@@ -27,6 +27,15 @@ export function setCustomFormFunctions(fns) {
 }
 
 
+
+
+
+//    _____      __  __
+//   / ___/___  / /_/ /____  __________
+//   \__ \/ _ \/ __/ __/ _ \/ ___/ ___/
+//  ___/ /  __/ /_/ /_/  __/ /  (__  )
+// /____/\___/\__/\__/\___/_/  /____/
+
 /**
  * Take data and shove it into a form, using keypresses, clicks, etc
  * @param {object} fieldValues - fieldName/value pairs
@@ -120,15 +129,6 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 		}
 	});
 }
-
-
-
-//    _____      __  __
-//   / ___/___  / /_/ /____  __________
-//   \__ \/ _ \/ __/ __/ _ \/ ___/ ___/
-//  ___/ /  __/ /_/ /_/  __/ /  (__  )
-// /____/\___/\__/\__/\___/_/  /____/
-
 function getFieldRoot(selectors) {
 	return getDomNode(selectors).then(($field) => Cypress.$($field[0]));
 }
@@ -483,6 +483,13 @@ export function setJsonValue(selectors, value) {
 }
 
 
+
+//    ______     __  __
+//   / ____/__  / /_/ /____  __________
+//  / / __/ _ \/ __/ __/ _ \/ ___/ ___/
+// / /_/ /  __/ /_/ /_/  __/ /  (__  )
+// \____/\___/\__/\__/\___/_/  /____/
+
 /**
  * Given a form element/jQuery form,
  * return a URL-encoded query-string of keys and values.
@@ -595,15 +602,6 @@ export function formSerialize(form) {
 
 	return q.join('&');
 }
-
-
-
-//    ______     __  __
-//   / ____/__  / /_/ /____  __________
-//  / / __/ _ \/ __/ __/ _ \/ ___/ ___/
-// / /_/ /  __/ /_/ /_/  __/ /  (__  )
-// \____/\___/\__/\__/\___/_/  /____/
-
 /**
  * Get data from a form asynchronously.
  * Returns a Cypress chainer yielding an object of fieldName/value pairs.

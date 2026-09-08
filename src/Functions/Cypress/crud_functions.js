@@ -618,11 +618,21 @@ export function deleteTreeRecord(treeSelector, id) {
 
 
 // Manager screen
-export function runClosureTreeControlledManagerScreenCrudTests(model, schema, newData, editData) {
+export function runClosureTreeControlledManagerScreenCrudTests(args) {
+
+	const {
+		model,
+		schema,
+		newData,
+		editData,
+		ancillaryData,
+		skip = SIDE,
+		isSetup = false,
+	} = args;
 
 	const
-		Models = Inflector.camelize(Inflector.pluralize(model)),
-		url = Inflector.dasherize(Inflector.underscore(Models));
+		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
+		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
 
 	describe(Models + 'Manager', () => {
 
@@ -632,79 +642,44 @@ export function runClosureTreeControlledManagerScreenCrudTests(model, schema, ne
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
-					navigateViaTabOrHomeButtonTo(url);
+					navigateViaTabOrHomeButtonTo('/' + url, isSetup);
 				}
 			});
 			stubWindowOpen();
 		});
 		
-		afterEach(function () {
-			cy.saveLocalStorage();
-			logout();
+		// afterEach(function () {
+		// 	cy.saveLocalStorage();
+		// 	logout();
+		// });
+
+		it('CRUD in full mode', function () {
+
+			const
+				managerSelector = '/' + Models + 'Manager',
+				gridSelector = '/' + Models + 'FilteredGridEditor';
+
+			toFullMode(managerSelector);
+			cy.wait(500); // allow filtered grid to load
+
+			crudWindowedGridRecord(gridSelector, newData, editData, schema, ancillaryData);
+
 		});
 
-		// TODO: This takes the standard runManagerScreenCrudTests
-		// and adds the control of the Fleet Tree. i.e. Check that the grids
-		// respond to the tree selection.
+		if (skip !== SIDE) {
+			it('CRUD in side mode', function () {
 
+				const
+					managerSelector = '/' + Models + 'Manager',
+					gridSelector = '/' + Models + 'FilteredSideGridEditor';
 
+				toSideMode(managerSelector);
+				cy.wait(1000); // allow filtered grid to load
 
-		// it('CRUD in full mode', function() {
+				crudSideGridRecord(gridSelector, newData, editData, schema, ancillaryData);
 
-		// 	const gridSelector = '/' + Models + 'GridEditor';
-
-		// 	toFullMode();
-		// 	cy.wait(500); // wait for grid to load
-
-		// 	// add
-		// 	addWindowedGridRecord(gridSelector, newData, schema); // saves the id in @id
-			
-		// 	// cy.wrap(39).as('id');
-		// 	cy.get('@id').then((id) => {
-
-		// 		// read
-		// 		clickReloadButton(gridSelector);
-		// 		cy.wait(1000); // allow time for grid to load
-		// 		verifyGridRecordExistsById(gridSelector, id);
-
-		// 		// edit
-		// 		editWindowedGridRecord(gridSelector, editData, schema, id);
-		
-		// 		// delete
-		// 		verifyGridRecordExistsById(gridSelector, id);
-		// 		deleteGridRecord(gridSelector, id);
-		// 		verifyGridRecordDoesNotExistById(gridSelector, id);
-		// 	});
-
-		// });
-
-		// it('CRUD in side mode', function() {
-
-		// 	const gridSelector = '/' + Models + 'GridEditor';
-
-		// 	toSideMode();
-		// 	cy.wait(1000); // wait for grid to load
-
-		// 	// add
-		// 	addGridRecord(gridSelector, newData, schema); // saves the id in @id
-
-		// 	cy.get('@id').then((id) => {
-
-		// 		// read
-		// 		clickReloadButton(gridSelector);
-		// 		cy.wait(1000); // allow time for grid to load
-		// 		verifyGridRecordExistsById(gridSelector, id);
-
-		// 		// edit
-		// 		editGridRecord(gridSelector, editData, schema, id);
-		
-		// 		// delete
-		// 		verifyGridRecordExistsById(gridSelector, id);
-		// 		deleteGridRecord(gridSelector, id);
-		// 		verifyGridRecordDoesNotExistById(gridSelector, id);
-		// 	});
-
-		// });
+			});
+		}
 
 	});
 
@@ -718,6 +693,7 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 			editData,
 			ancillaryData,
 			skip = null,
+			isSetup = false,
 		} = args,
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
 		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
@@ -730,7 +706,7 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
-					navigateViaTabOrHomeButtonTo(url);
+					navigateViaTabOrHomeButtonTo(url, isSetup);
 				}
 			});
 			stubWindowOpen();
@@ -784,6 +760,7 @@ export function runManagerScreenCrudTests(args) {
 			ancillaryData,
 			fullIsInline = false,
 			skip = null,
+			isSetup = false,
 		} = args,
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
 		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models)));
@@ -796,7 +773,7 @@ export function runManagerScreenCrudTests(args) {
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
-					navigateViaTabOrHomeButtonTo(url);
+					navigateViaTabOrHomeButtonTo(url, isSetup);
 				}
 			});
 			stubWindowOpen();
@@ -844,9 +821,13 @@ export function runManagerScreenCrudTests(args) {
 	});
 
 }
-export function runReportsManagerTests(reportData) {
+export function runReportsManagerTests(args) {
 
-	const url = 'reports';
+	const {
+			reportData,
+			isSetup = false,
+		} = args,
+		url = 'reports';
 
 	describe('ReportsManager', () => {
 
@@ -856,7 +837,7 @@ export function runReportsManagerTests(reportData) {
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
 				if (!currentUrl.endsWith(url)) {
-					navigateViaTabOrHomeButtonTo(url);
+					navigateViaTabOrHomeButtonTo(url, isSetup);
 				}
 			});
 			stubWindowOpen();

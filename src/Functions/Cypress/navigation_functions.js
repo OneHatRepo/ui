@@ -53,16 +53,29 @@ export function logout() {
 // /_/ |_/\__,_/ |___/_/\__, /\__,_/\__/_/\____/_/ /_/
 //                     /____/
 
-export function navigateViaTabOrHomeButtonTo(url) {
+export function navigateViaTabOrHomeButtonTo(url, isSetup = false) {
 	cy.log('navigateViaTabOrHomeButtonTo ' + url);
-	getDomNode(baseDir + url).click();
+
+	// deal with setup mode (if needed)
+	getDomNode('setupBtn').then(($btn) => {
+		if ($btn.length) {
+			const isInSetupMode = $btn.attr('data-setup-mode') === 'true';
+			
+			// Click if we want setup mode but aren't in it, OR if we don't want setup mode but are in it
+			if (isSetup !== isInSetupMode) {
+				$btn.click();
+				cy.wait(1000); // Wait for setup mode transition
+			}
+		}
+	});
+
+	getDomNode(baseDir + url).click({ force: true, });
 	cy.url().should('include', url);
 }
 export function navigateToHome() {
 	cy.log('navigateToHome');
 	navigateToScreen('home');
 }
-
 export function navigateToScreen(path) {
 	cy.log('navigateToScreen ' + path);
 	
@@ -70,6 +83,7 @@ export function navigateToScreen(path) {
 		cy.url().should('include', path);
 	});
 }
+
 // export function selectMainTab(name) {
 // 	cy.get('.mainTabPanel .x-tab')
 // 		.contains(name)

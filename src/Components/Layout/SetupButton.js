@@ -29,6 +29,9 @@ export default function SetupButton(props) {
 				? 'text-white data-[hover=true]:text-white data-[active=true]:text-white'
 				: 'text-black data-[hover=true]:text-black data-[active=true]:text-black',
 		),
+		dataSet = {
+			setupMode: isSetupMode ? 'true' : 'false',
+		},
 		iconClassName = clsx(
 			isSetupMode ? 'fill-white' : 'fill-black',
 			isSetupMode ? 'text-white' : 'text-black',
@@ -37,6 +40,7 @@ export default function SetupButton(props) {
 	return isMinimized ? 
 			<IconButton
 				{...testProps('setupBtn')}
+				dataSet={dataSet}
 				icon={Gear}
 				_icon={{
 					className: iconClassName,
@@ -47,6 +51,7 @@ export default function SetupButton(props) {
 			/> : 
 			<Button
 				{...testProps('setupBtn')}
+				dataSet={dataSet}
 				text={isSetupMode ? 'Exit Setup' : 'Setup'}
 				icon={Gear}
 				_text={{
