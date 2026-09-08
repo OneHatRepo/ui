@@ -1,13 +1,19 @@
 import { Platform } from "react-native";
 import UiGlobals from '../UiGlobals.js';
 
-// This adds a data-testid attribute to the DOM node,
-// which can be quried in Cypress by: document.querySelector(`[data-testid='MyTestId']`);
+/*
+This adds testID attribute
+
+Target Platform    Native Component Attribute Under the Hood
+web                data-testid (queried in Cypress by: document.querySelector(`[data-testid='MyTestId']`);)
+iOS                accessibilityIdentifier
+Android            resource-id
+*/
 
 export default function testProps(id, suffix) {
-	if (!UiGlobals.debugMode) {
-		return {};
-	}
+	// if (!UiGlobals.debugMode) {
+	// 	return {};
+	// }
 	if (id?.path) { // id is actually 'self' object
 		id = id.path;
 	} else if (id?.reference) { // id is actually 'self' object
@@ -21,19 +27,6 @@ export default function testProps(id, suffix) {
 	}
 	if (suffix) {
 		id += suffix; // this is used in conjunction with 'self' object
-	}
-	if (typeof window === 'undefined' && Platform.OS === 'android') {
-		return {
-			accessibilityLabel: id,
-			accessible: true,
-		};
-	}
-	if (Platform.OS === 'web') {
-		return {
-			dataSet: {
-				testid: id,
-			},
-		};
 	}
 	return {
 		testID: id,

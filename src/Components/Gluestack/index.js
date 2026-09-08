@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import omitInternalHocProps from '@onehat/ui/src/Functions/omitInternalHocProps.js';
 import { Accordion, AccordionContent, AccordionContentText, AccordionHeader, AccordionIcon, AccordionItem, AccordionTitleText, AccordionTrigger } from './accordion';
 import { ActionSheet } from './actionsheet';
@@ -97,13 +98,10 @@ import { VStack } from './vstack';
 import { VStack as VStackNative } from "./vstack/index.tsx"; // explicitly import the native version
 import { GluestackUIProvider } from './gluestack-ui-provider';
 
-function sanitizePropsForUiPrimitive(props) {
-	return omitInternalHocProps(props);
-}
 
 function withSanitizedPrimitiveProps(Component, displayName) {
 	const Wrapped = React.forwardRef((props, ref) => {
-		return <Component ref={ref} {...sanitizePropsForUiPrimitive(props)} />;
+		return <Component ref={ref} {...omitInternalHocProps(props)} />;
 	});
 
 	Wrapped.displayName = displayName;

@@ -164,6 +164,7 @@ function InlineEditor(props) {
 							'border-b-4',
 							'border-t-primary-100',
 							'border-b-primary-100',
+							props.className,
 						)}
 					/>
 				</VStack>

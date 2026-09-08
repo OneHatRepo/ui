@@ -29,6 +29,7 @@ export default function Label(props) {
 				style={props.style || {}}
 			>
 				<TextNative
+					{...props}
 					numberOfLines={1}
 					ellipsizeMode="head"
 					className={textClassName}

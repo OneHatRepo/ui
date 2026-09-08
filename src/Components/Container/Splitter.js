@@ -28,7 +28,8 @@ function Splitter(props) {
 						'w-full',
 						'items-center',
 						'justify-center',
-						isDragging ? 'bg-secondary-600' : 'bg-primary-600'
+						isDragging ? 'bg-secondary-600' : 'bg-primary-600',
+						props.className,
 					)}
 				>
 					<HStack
@@ -50,6 +51,7 @@ function Splitter(props) {
 					'items-center',
 					'justify-center',
 					isDragging ? 'bg-secondary-600' : 'bg-primary-600',
+					props.className,
 				)}
 			>
 				<VStack

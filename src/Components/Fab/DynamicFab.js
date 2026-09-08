@@ -23,6 +23,7 @@ export default function DynamicFab(props) {
 			tooltipClassName,
 			tooltipTriggerClassName,
 			collapseOnPress = true,
+			testID,
 		} = props,
 		[isExpanded, setIsExpanded] = useState(false),
 		toggleFab = useCallback(() => {
@@ -48,6 +49,7 @@ export default function DynamicFab(props) {
 								tooltipPlacement = 'left',
 								onPress,
 								key,
+								testID: btnTestID,
 								...btnConfigToPass
 							} = btnConfig;
 
@@ -79,6 +81,7 @@ export default function DynamicFab(props) {
 												setIsExpanded(false);
 											}
 										}}
+										testID={btnTestID || (testID ? `${testID}-sub-button-${ix}` : undefined)}
 										{...btnConfigToPass}
 									/>
 								</Box>;
@@ -98,6 +101,7 @@ export default function DynamicFab(props) {
 					tooltipPlacement={tooltipPlacement}
 					tooltipClassName={tooltipClassName}
 					tooltipTriggerClassName={tooltipTriggerClassName}
+					testID={testID}
 				>
 					<FabIcon
 						as={isExpanded ? Xmark : icon || EllipsisVertical}

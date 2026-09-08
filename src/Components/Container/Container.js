@@ -732,7 +732,14 @@ function Container(props) {
 							{cloneElement(west, componentProps)}
 						</BoxNative>;
 	}
-	return <VStack className="Container-all flex-1 min-w-0">
+	return <VStack
+				className={clsx(
+					'Container-all',
+					'flex-1',
+					'min-w-0',
+					props.className,
+				)}
+			>
 				{northComponent}
 				{!getNorthIsCollapsed() && northSplitter}
 				<HStackNative

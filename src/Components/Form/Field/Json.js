@@ -47,13 +47,16 @@ export function JsonElement(props) {
 		'flex-1',
 		'justify-start',
 		'w-full',
-		testID,
 		propsToPass.className,
 	);
 	// if (CURRENT_MODE === UI_MODE_WEB) {
 		const src = value ? JSON.parse(value) : {};
 		assembledComponents = 
-			<HStack style={propsToPass.style} className={className}>
+			<HStack
+				testID={testID}
+				style={propsToPass.style}
+				className={className}
+			>
 				<JsonEditor
 					width="100%"
 					editable={!isViewOnly}

@@ -24,6 +24,7 @@ const
 				onText = 'Yes',
 				offText = 'No',
 				flex, // flex doesn't work right on mobile
+				testID,
 				...propsToPass
 			} = props,
 			isBlocked = useRef(false),
@@ -55,7 +56,7 @@ const
 		if (_.isNil(value)) {
 			return <HStack className={className}>
 						<IconButton
-							{...testProps('naBtn')}
+							{...(testID ? testProps(`${testID}-na-btn`) : testProps('naBtn'))}
 							ref={props.outerRef}
 							icon={Na}
 							_icon={{
@@ -87,11 +88,12 @@ const
 							}}
 							thumbColor="#eee"
 							activeThumbColor="#eee"
+							{...(testID ? testProps(testID) : testProps('toggle-switch'))} // Core target
 							{...propsToPass}
 						/>
 					</Pressable>
 					<Pressable
-						{...testProps('readoutBtn')}
+						{...(testID ? testProps(`${testID}-readout`) : testProps('readout'))}
 						onPress={onToggle}
 					>
 						<TextNative

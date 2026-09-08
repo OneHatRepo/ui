@@ -13,6 +13,7 @@ const
 		const {
 				value,
 				text = value,
+				testID,
 			} = props,
 			styles = UiGlobals.styles,
 			className = clsx(
@@ -22,9 +23,11 @@ const
 				props.className,
 			);
 		return <Text
+					testID={testID}
 					ref={props.outerRef}
 					className={className}
 					style={props.style || {}}
+
 				>{text}</Text>;
 	},
 	DisplayField = withComponent(withValue(DisplayElement));
