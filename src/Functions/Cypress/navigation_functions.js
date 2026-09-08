@@ -14,14 +14,14 @@ import {
 export function login(loginId = null, password = null) {
 	cy.log('login');
 	if (!loginId) {
-		loginId = Cypress.env('loginId');
+		loginId = cy.env('loginId');
 	}
 	if (!password) {
-		password = Cypress.env('password');
+		password = cy.env('password');
 	}
 	const
-		baseUrl = Cypress.env('baseUrl'),
-		baseDir = Cypress.env('baseDir');
+		baseUrl = cy.env('baseUrl'),
+		baseDir = cy.env('baseDir');
 	cy.visit(baseUrl + baseDir + 'login')
 		.then(() => {
 			getDomNode('loginId', { timeout: 10000 }).clear();
@@ -36,7 +36,7 @@ export function login(loginId = null, password = null) {
 }
 export function logout() {
 	cy.log('logout');
-	const baseDir = Cypress.env('baseDir');
+	const baseDir = cy.env('baseDir');
 	getDomNode(baseDir + 'logout').click({ force: true });
 }
 
@@ -52,7 +52,7 @@ export function navigateViaTabOrHomeButtonTo(url) {
 	cy.log('navigateViaTabOrHomeButtonTo ' + url);
 	// i.e. If we're on home screen, press the button.
 	// If we have a tab navigation, press the tab's button
-	const baseDir = Cypress.env('baseDir');
+	const baseDir = cy.env('baseDir');
 	getDomNode(baseDir + url).click(); // i.e. the DomNode's data-testid is the url
 	cy.url().should('include', url);
 }
@@ -63,8 +63,8 @@ export function navigateToHome() {
 export function navigateToScreen(path) {
 	cy.log('navigateToScreen ' + path);
 	const
-		baseUrl = Cypress.env('baseUrl'),
-		baseDir = Cypress.env('baseDir');
+		baseUrl = cy.env('baseUrl'),
+		baseDir = cy.env('baseDir');
 	cy.visit(baseUrl + baseDir + path)
 		.then(() => {
 			cy.url().should('include', path);

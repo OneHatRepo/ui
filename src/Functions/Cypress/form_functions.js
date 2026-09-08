@@ -381,7 +381,7 @@ export function formSerialize(form) {
  * Get data from a form
  * @param {object} schema - fieldName/fieldType pairs
  * @returns {object} formValues - object of fieldName/value pairs
- * /
+ */
 export function getFormValues(editor, schema) {
 	const fields = editor.find('.x-form-field'),
 		formValues = {};
@@ -424,7 +424,6 @@ export function getFormValues(editor, schema) {
 	});
 	return formValues;
 }
-*/
 
 
 /**
