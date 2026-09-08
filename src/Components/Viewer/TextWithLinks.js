@@ -11,6 +11,7 @@ import {
 	CURRENT_MODE,
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
+import testProps from '../../Functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
 import _ from 'lodash';
@@ -74,6 +75,7 @@ function TextWithLinksElement(props) {
 		
 				if (foundLink) {
 					ret = <TextNative
+								{...testProps('link_' + ix)}
 								key={foundLink.key}
 								className={clsx(
 									'text-blue-600',

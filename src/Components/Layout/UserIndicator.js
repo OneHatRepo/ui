@@ -12,6 +12,7 @@ import {
 import {
 	selectUser,
 } from '../../Models/Slices/AuthSlice.js';
+import testProps from '../../Functions/testProps.js';
 import IconButton from '../Buttons/IconButton';
 import RightFromBracket from '../Icons/RightFromBracket';
 import User from '../Icons/User';
@@ -26,6 +27,7 @@ export default function UserIndicator(props) {
 		return null;
 	}
 	return <IconButton
+				{...testProps('userIndicator')}
 				onPress={() => dispatch(logout())}
 				icon={isMinimized ? RightFromBracket : User}
 				text={isMinimized ? null : user.full_name}

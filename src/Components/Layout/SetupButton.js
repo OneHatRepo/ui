@@ -3,6 +3,7 @@ import {
 	selectIsSetupMode,
 	toggleSetupMode,
 } from '@src/Models/Slices/AppSlice';
+import testProps from '../../Functions/testProps.js';
 import clsx from 'clsx';
 import Button from '../Buttons/Button';
 import IconButton from '../Buttons/IconButton';
@@ -35,6 +36,7 @@ export default function SetupButton(props) {
 
 	return isMinimized ? 
 			<IconButton
+				{...testProps('setupBtn')}
 				icon={Gear}
 				_icon={{
 					className: iconClassName,
@@ -44,6 +46,7 @@ export default function SetupButton(props) {
 				className={buttonClassName}
 			/> : 
 			<Button
+				{...testProps('setupBtn')}
 				text={isSetupMode ? 'Exit Setup' : 'Setup'}
 				icon={Gear}
 				_text={{

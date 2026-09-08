@@ -9,8 +9,8 @@ import {
 	UI_MODE_WEB,
 	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
+import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button';
-
 export default function OkMessage(props) {
 	const {
 			textMessage,
@@ -59,6 +59,7 @@ export default function OkMessage(props) {
 						)}
 					>
 						<Button
+							{...testProps('okBtn')}
 							variant="outline"
 							onPress={onClose}
 							className="text-primary-800"

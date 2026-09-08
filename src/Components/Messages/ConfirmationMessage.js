@@ -10,6 +10,7 @@ import {
 	UI_MODE_WEB,
 	UI_MODE_NATIVE,
 } from '../../Constants/UiModes.js';
+import testProps from '../../Functions/testProps.js';
 import Button from '../Buttons/Button';
 import emptyFn from '../../Functions/emptyFn.js';
 
@@ -57,12 +58,14 @@ export default function ConfirmationMessage(props) {
 					</ModalBody>
 					<ModalFooter className="py-2 pr-4">
 						<Button
+							{...testProps('cancelBtn')}
 							onPress={onCancel}
 							className="text-grey-700"
 							variant="outline"
 							text="Cancel"
 						/>
 						<Button
+							{...testProps('okBtn')}
 							variant="outline"
 							onPress={onOk}
 							className="text-primary-800"

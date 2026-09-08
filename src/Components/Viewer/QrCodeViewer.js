@@ -9,6 +9,7 @@ import {
 	UI_MODE_NATIVE,
 	UI_MODE_WEB,
 } from '../../Constants/UiModes.js';
+import testProps from '../../Functions/testProps.js';
 import IconButton from '../Buttons/IconButton.js';
 import UiGlobals from '../../UiGlobals.js';
 import withAlert from '../Hoc/withAlert';
@@ -164,6 +165,7 @@ function QrCodeViewer(props) {
 					viewBox={`0 0 128 128`}
 				/>
 				<IconButton
+					{...testProps('eyeBtn')}
 					icon={Eye}
 					onPress={() => onView(false)}
 					isDisabled={isDisabled}
@@ -171,6 +173,7 @@ function QrCodeViewer(props) {
 					tooltip="View QR Code"
 				/>
 				<IconButton
+					{...testProps('printBtn')}
 					icon={Print}
 					onPress={() => onView(true)}
 					isDisabled={isDisabled}
@@ -178,6 +181,7 @@ function QrCodeViewer(props) {
 					tooltip="Print QR Code"
 				/>
 				<IconButton
+					{...testProps('copyBtn')}
 					icon={Clipboard}
 					onPress={() => onCopy()}
 					isDisabled={isDisabled}
