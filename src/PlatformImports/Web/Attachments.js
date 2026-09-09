@@ -256,6 +256,8 @@ function AttachmentsElement(props) {
 		},
 		[showAll, setShowAll] = useState(false),
 		[isDragging, setIsDragging] = useState(false),
+		uploadErrorKeyRef = useRef(null),
+		hasShownUploadErrorRef = useRef(false),
 		treeSelectionRaw = useRef([]),
 		setTreeSelection = (selection) => {
 			treeSelectionRaw.current = selection;
@@ -313,6 +315,7 @@ function AttachmentsElement(props) {
 					// uploadMessage: null, //	string	A message that shows the result of the upload process.
 					imageUrl: imageUrl, //	string	A string representation or web url of the image that will be set to the "src" prop of an <img/> tag. If given, the component will use this image source instead of reading the image file.
 					downloadUrl: entity.attachments__uri, //	string	The url to be used to perform a GET request in order to download the file. If defined, the download icon will be shown.
+					uploadStatus: 'success', // persisted files must never be treated as upload candidates by Dropzone autoUpload
 					// progress: null, //	number	The current percentage of upload progress. This value will have a higher priority over the upload progress value calculated inside the component.
 					// extraUploadData: null, //	Record<string, any>	The additional data that will be sent to the server when files are uploaded individually
 					// extraData: null, //	Object	Any kind of extra data that could be needed.
@@ -403,31 +406,82 @@ function AttachmentsElement(props) {
 				downloadInBackground(url, {}, Attachments.headers);
 			}
 		},
+		getUploadUrl = () => {
+			const schemaName = Attachments?.schema?.name || 'Attachments';
+			return Attachments?.api?.baseURL + schemaName + '/uploadAttachment';
+		},
 
 		// dropzone
-		onDropzoneChange = async (files) => {
+		prepareDropzoneFiles = (files) => {
+			let selectedDirectoryId = null;
+			const uploadUrl = getUploadUrl();
+
 			if (!files.length) {
-				alert('No files accepted. Perhaps they were too large or the wrong file type?');
-				return;
+				return {
+					isValid: false,
+					errorMessage: 'No files accepted. Perhaps they were too large or the wrong file type?',
+				};
 			}
+
+			if (!Attachments?.api?.baseURL || !uploadUrl || uploadUrl.includes('undefined')) {
+				return {
+					isValid: false,
+					errorMessage: 'Upload endpoint is not ready. Please reload and try again.',
+				};
+			}
+
 			if (usesDirectories) {
 				const treeSelection = getTreeSelection();
-				if (!treeSelection[0] || !treeSelection[0].id) {
-					alert('Please select a directory to upload the files to.');
-					return;
+				selectedDirectoryId = treeSelection?.[0]?.id || null;
+				if (!selectedDirectoryId) {
+					return {
+						isValid: false,
+						errorMessage: 'Please select a directory to upload the files to.',
+					};
 				}
 			}
-			setFiles(files);
+
 			_.each(files, (file) => {
-				file.extraUploadData = {
+				const uploadMeta = {
 					model: effectiveModel,
 					modelid: modelid.current,
 					...extraUploadData,
 				};
 				if (usesDirectories) {
-					file.extraUploadData.attachment_directory_id = treeSelection[0].id;
+					uploadMeta.attachment_directory_id = selectedDirectoryId;
+				}
+
+				// Files UI v2 upload pipeline reads file.extraData.
+				// Keep extraUploadData too for backward compatibility with any legacy flows.
+				file.extraData = uploadMeta;
+				file.extraUploadData = uploadMeta;
+
+				// @files-ui/react 2.1.0 may attempt upload without initializing xhr.
+				// Prime each file to guarantee XHR upload path can execute.
+				if (!file.xhr && typeof XMLHttpRequest !== 'undefined') {
+					file.xhr = new XMLHttpRequest();
+				}
+				if (!file.uploadUrl) {
+					file.uploadUrl = uploadUrl;
 				}
 			});
+
+			return {
+				isValid: true,
+				selectedDirectoryId,
+			};
+		},
+		hasNewUploadCandidates = (files) => {
+			return _.some(files || [], (file) => !file?.uploadStatus && !!file?.file);
+		},
+		processDropzoneChange = async (files) => {
+			const prep = prepareDropzoneFiles(files);
+			if (!prep.isValid) {
+				alert(prep.errorMessage);
+				return;
+			}
+
+			setFiles(files);
 			if (onAfterDropzoneChange) {
 				const isChanged = await onAfterDropzoneChange(files);
 				if (isChanged) {
@@ -435,7 +489,37 @@ function AttachmentsElement(props) {
 				}
 			}
 		},
+		onDropzoneChange = (files) => {
+			const isNewCycle = hasNewUploadCandidates(files);
+			if (isNewCycle) {
+				uploadErrorKeyRef.current = null;
+				hasShownUploadErrorRef.current = false;
+			}
+
+			if (isNewCycle) {
+				const prep = prepareDropzoneFiles(files);
+				if (!prep.isValid) {
+					queueMicrotask(() => {
+						alert(prep.errorMessage);
+					});
+					return;
+				}
+			}
+
+			// Files UI can invoke onChange while DropzoneClient is rendering;
+			// defer all stateful work to avoid React's setState-in-render warning.
+			queueMicrotask(() => {
+				setFiles(files);
+				if (isNewCycle && onAfterDropzoneChange) {
+					processDropzoneChange(files).catch((error) => {
+						console.error('Dropzone change processing failed:', error);
+						alert('Failed to process dropped files. Please try again.');
+					});
+				}
+			});
+		},
 		onUploadStart = (files) => {
+			setFiles(files);
 			setIsUploading(true);
 		},
 		onUploadFinish = (files) => {
@@ -443,7 +527,10 @@ function AttachmentsElement(props) {
 				isError = false;
 
 			_.each(files, (file) => {
-				if (!file.xhr || file.xhr.status !== 200) {
+				const status = file?.xhr?.status;
+				const isXhrSuccess = _.isNumber(status) && status >= 200 && status < 300;
+				const isUploadFinished = file?.uploadStatus === 'success' || file?.uploadStatus === 'error';
+				if (!isXhrSuccess && !isUploadFinished) {
 					isDoneUploading = false;
 					return false; // break
 				}
@@ -451,10 +538,27 @@ function AttachmentsElement(props) {
 
 			if (isDoneUploading) {
 				_.each(files, (file) => {
-					if (file.uploadStatus === 'error') {
+					const status = file?.xhr?.status;
+					const isXhrError = _.isNumber(status) && (status < 200 || status >= 300);
+					if (file.uploadStatus === 'error' || isXhrError) {
 						isError = true;
-						const msg = file.serverResponse?.payload || 'An error occurred';
-						alert(msg);
+						const payload = file?.serverResponse?.payload;
+						const payloadMessage = _.isString(payload)
+							? payload
+							: payload?.message || payload?.error;
+						const msg = payloadMessage || file?.serverResponse?.message || file?.serverResponse?.error || (file?.serverResponse ? JSON.stringify(file.serverResponse) : 'An error occurred');
+						const errorKey = JSON.stringify({
+							name: file?.name,
+							xhrStatus: file?.xhr?.status,
+							uploadStatus: file?.uploadStatus,
+							success: file?.serverResponse?.success,
+							message: msg,
+						});
+						if (!hasShownUploadErrorRef.current && uploadErrorKeyRef.current !== errorKey) {
+							uploadErrorKeyRef.current = errorKey;
+							hasShownUploadErrorRef.current = true;
+							alert(msg);
+						}
 						return false;
 					}
 				});
@@ -464,6 +568,8 @@ function AttachmentsElement(props) {
 					if (onUpload) {
 						onUpload(files);
 					}
+				} else {
+					setIsUploading(false);
 				}
 			}
 		},
@@ -1134,15 +1240,35 @@ function AttachmentsElement(props) {
 	
 	// Always wrap content in dropzone when canCrud is true, but conditionally disable functionality
 	if (canCrud && !isDragging) {
+		const
+			{
+				onChange: userDropzoneOnChange,
+				onUploadStart: userDropzoneOnUploadStart,
+				onUploadFinish: userDropzoneOnUploadFinish,
+				action: ignoredDropzoneAction,
+				fakeUpload: ignoredFakeUpload,
+				uploadConfig: ignoredUploadConfig,
+				...safeDropzoneProps
+			} = _dropZone || {},
+			hadCustomAction = !!ignoredDropzoneAction,
+			hadFakeUpload = !!ignoredFakeUpload,
+			hadCustomUploadConfig = !!ignoredUploadConfig,
+			uploadUrl = getUploadUrl();
+
 		content = <Dropzone
-						value={files}
-						onChange={isDragging ? () => {} : onDropzoneChange} // Disable onChange when dragging
+						{...safeDropzoneProps}
+						onChange={isDragging ? () => {} : (nextFiles) => {
+							onDropzoneChange(nextFiles);
+							if (userDropzoneOnChange) {
+								userDropzoneOnChange(nextFiles);
+							}
+						}} // Disable onChange when dragging
 						accept={isDragging ? undefined : accept} // Remove accept types when dragging
 						maxFiles={isDragging ? 0 : maxFiles} // Set to 0 when dragging to prevent drops
 						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
 						autoClean={true}
 						uploadConfig={{
-							url: Attachments.api.baseURL + Attachments.schema?.name + '/uploadAttachment',
+							url: uploadUrl,
 							method: 'POST',
 							headers: Attachments.headers,
 							autoUpload,
@@ -1152,14 +1278,23 @@ function AttachmentsElement(props) {
 							deleteFiles: false,
 						}}
 						className="attachments-dropzone flex-1 h-full min-w-0 overflow-x-hidden" // Keep horizontal containment while allowing vertical scrolling
-						onUploadStart={onUploadStart}
-						onUploadFinish={onUploadFinish}
+						onUploadStart={(uploadedFiles) => {
+							onUploadStart(uploadedFiles);
+							if (userDropzoneOnUploadStart) {
+								userDropzoneOnUploadStart(uploadedFiles);
+							}
+						}}
+						onUploadFinish={(uploadedFiles) => {
+							onUploadFinish(uploadedFiles);
+							if (userDropzoneOnUploadFinish) {
+								userDropzoneOnUploadFinish(uploadedFiles);
+							}
+						}}
 						background={styles.ATTACHMENTS_BG}
 						color={styles.ATTACHMENTS_COLOR}
 						minHeight={150}
 						footer={false}
 						clickable={viewMode === ATTACHMENTS_VIEW_MODES__ICON && !isDragging ? clickable : false} // Disable clickable when dragging
-						{..._dropZone}
 					>
 						{content}
 					</Dropzone>;
@@ -1292,7 +1427,6 @@ function AttachmentsElement(props) {
 
 	let className = clsx(
 		'AttachmentsElement',
-		'testx',
 		'w-full',
 		'min-w-0',
 		'overflow-x-hidden',
