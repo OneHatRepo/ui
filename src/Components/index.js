@@ -241,6 +241,7 @@ import AllPmEventTypesCombo from './Pms/Form/Field/Combo/AllPmEventTypesCombo.js
 import ArrayCheckboxGroup from './Form/Field/Checkbox/ArrayCheckboxGroup.js';
 import ArrayCombo from './Form/Field/Combo/ArrayCombo.js';
 import ArrayRadioGroup from './Form/Field/RadioGroup/ArrayRadioGroup.js';
+import ArrayTag from './Form/Field/Tag/ArrayTag.js';
 // import BackButton from './Buttons/BackButton.js';
 import Blank from './Blank.js';
 import BooleanCombo from './Form/Field/Combo/BooleanCombo.js';
@@ -277,6 +278,7 @@ import Label from './Form/Label.js';
 import MeterTypesCombo from './Pms/Form/Field/Combo/MeterTypesCombo.js';
 import MeterTypeText from './Pms/Viewer/MeterTypeText.js';
 import MonthsCombo from './Form/Field/Combo/MonthsCombo.js';
+import MonthsTag from './Form/Field/Tag/MonthsTag.js';
 import Number from './Form/Field/Number.js';
 import NumberRange from './Filter/NumberRange.js';
 import Panel from './Panel/Panel.js';
@@ -547,6 +549,7 @@ const components = {
 	ArrayCheckboxGroup,
 	ArrayCombo,
 	ArrayRadioGroup,
+	ArrayTag,
 	// BackButton,
 	Blank,
 	BooleanCombo,
@@ -583,6 +586,7 @@ const components = {
 	MeterTypesCombo,
 	MeterTypeText,
 	MonthsCombo,
+	MonthsTag,
 	Number,
 	NumberRange,
 	Panel,
