@@ -55,6 +55,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			isEditor = false,
 			isDisabled = false,
 			isInTag = false,
+			isDisplayOnly = false,
 			minimizeForRow = false,
 			reloadOnTrigger = false,
 			loadAfterRender = false,
@@ -1300,6 +1301,29 @@ export const ComboComponent = forwardRef((props, ref) => {
 				{trigger}
 				{additionalButtons}
 				{dropdownMenu}
+			</HStackNative>;
+	}
+	if (isDisplayOnly && CURRENT_MODE === UI_MODE_WEB) {
+		assembledComponents = 
+			<HStackNative
+				{...testProps(testID)}
+				onLayout={onLayout}
+				className={className}
+			>
+				{eyeButton}
+				{inputIconElement}
+				<TextNative
+					numberOfLines={1}
+					ellipsizeMode="head"
+					className={clsx(
+						'Combo-TextNative',
+						'flex-1',
+						'flex',
+						'items-center',
+						_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
+						styles.FORM_COMBO_INPUT_CLASSNAME
+					)}
+				>{textInputValue}</TextNative>
 			</HStackNative>;
 	}
 	
