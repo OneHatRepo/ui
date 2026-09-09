@@ -621,7 +621,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 		// On mount, if loadAfterRender is true, it will reload the Repository
 		// On unmount, if the Repository is not unique and not destroyed, it will clear the grid filters
 		if (!isRendered) {
-			return () => {};
+			return;
 		}
 		
 		if (loadAfterRender && Repository && !Repository.isDestroyed) {
@@ -1321,7 +1321,6 @@ export const ComboComponent = forwardRef((props, ref) => {
 						'flex',
 						'items-center',
 						_.isEmpty(textInputValue) ? 'text-grey-400' : 'text-black',
-						styles.FORM_COMBO_INPUT_CLASSNAME
 					)}
 				>{textInputValue}</TextNative>
 			</HStackNative>;
