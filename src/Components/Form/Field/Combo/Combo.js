@@ -1271,7 +1271,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<VStackNative
-				testID={testID}
+				{...testProps(testID)}
 				className="Combo-VStack"
 			>
 				<HStack
@@ -1290,7 +1290,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 	} else {
 		assembledComponents = 
 			<HStackNative
-				testID={testID}
+				{...testProps(testID)}
 				onLayout={onLayout}
 				className={className}
 			>

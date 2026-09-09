@@ -181,7 +181,7 @@ function NumberElement(props) {
 						}}
 					/>
 					<Input
-						testID={testID}
+						{...testProps(testID)}
 						value={inputValue}
 						onChangeText={onChangeText}
 						onKeyPress={onInputKeyPress}

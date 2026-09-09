@@ -1203,7 +1203,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<VStackNative
-				testID={testID}
+				{...testProps(testID)}
 				className="TreeSelector-VStack"
 			>
 				<HStack
@@ -1222,7 +1222,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 	} else {
 		assembledComponents = 
 			<HStackNative
-				testID={testID}
+				{...testProps(testID)}
 				onLayout={onLayout}
 				className={className}
 			>

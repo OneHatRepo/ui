@@ -386,7 +386,7 @@ export const DateElement = forwardRef((props, ref) => {
 				>{_.isEmpty(textInputValue) ? placeholder : textInputValue}</TextNative>
 			</Pressable> :
 			<Input
-				testID={testID}
+				{...testProps(testID)}
 				ref={inputRef}
 				value={textInputValue}
 				// setValue={onInputSetValue}
@@ -658,7 +658,7 @@ export const DateElement = forwardRef((props, ref) => {
 	}
 
 	assembledComponents = <HStackNative
-							testID={testID}
+							{...testProps(testID + '_HStackNative')}
 							onLayout={() => setIsRendered(true)}
 							className={className}
 							style={style}

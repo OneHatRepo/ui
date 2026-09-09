@@ -203,7 +203,7 @@ export default function Header(props) {
 					panelClassName += ' px-3';
 				}
 				return <Pressable
-							testID={testID}
+							{...testProps(testID)}
 							style={{ userSelect: 'none', ...doubleClickStyle, }}
 							onPress={(e) => {
 								if (isCollapsible) {
@@ -241,7 +241,7 @@ export default function Header(props) {
 			panelClassName += ' px-3';
 		}
 		return <Pressable
-					testID={testID}
+					{...testProps(testID)}
 					style={{ userSelect: 'none', ...doubleClickStyle, }}
 					onPress={(e) => {
 						if (isCollapsible) {

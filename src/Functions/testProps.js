@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import UiGlobals from '../UiGlobals.js';
+import _ from 'lodash';
 
 /*
 This adds testID attribute
@@ -14,6 +15,14 @@ export default function testProps(id, suffix) {
 	// if (!UiGlobals.debugMode) {
 	// 	return {};
 	// }
+
+	// testProps should be able to be called twice in succession, so the input needs to handle the output correctly
+	if (_.isObject(id) && id.dataset?.testid) {
+		id = id.dataset.testid;
+	}
+
+
+
 	if (id?.path) { // id is actually 'self' object
 		id = id.path;
 	} else if (id?.reference) { // id is actually 'self' object
@@ -27,6 +36,13 @@ export default function testProps(id, suffix) {
 	}
 	if (suffix) {
 		id += suffix; // this is used in conjunction with 'self' object
+	}
+	if (Platform.OS === 'web') {
+		return {
+			dataset: {
+				testid: id,
+			},
+		};
 	}
 	return {
 		testID: id,

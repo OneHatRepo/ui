@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
+import testProps from '../../../Functions/testProps.js';
 
 const
 	TextElement = (props) => {
@@ -35,7 +36,7 @@ const
 					ellipsizeMode={ellipsizeMode || 'head'}
 					numberOfLines={numberOfLines}
 					style={style}
-					testID={testID}
+					{...testProps(testID)}
 					onPress={onPress}
 					className={className}
 				>{value}</TextNative>;

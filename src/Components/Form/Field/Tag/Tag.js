@@ -577,7 +577,7 @@ function TagComponent(props) {
 	}
 	
 	return <VStackNative
-				testID={testID}
+				{...testProps(testID)}
 				className={className}
 				style={style}
 			>

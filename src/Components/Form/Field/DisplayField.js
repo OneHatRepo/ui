@@ -7,6 +7,7 @@ import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
+import testProps from '../../../Functions/testProps.js';
 
 const
 	DisplayElement = (props) => {
@@ -23,7 +24,7 @@ const
 				props.className,
 			);
 		return <Text
-					testID={testID}
+					{...testProps(testID)}
 					ref={props.outerRef}
 					className={className}
 					style={props.style || {}}

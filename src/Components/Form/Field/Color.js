@@ -166,7 +166,7 @@ export function ColorElement(props) {
 	let assembledComponents = null;
 	assembledComponents =
 		<HStackNative
-			testID={testID}
+			{...testProps(testID)}
 			onLayout={() => setIsRendered(true)}
 			className={clsx(
 				'ColorElement-HStackNative',

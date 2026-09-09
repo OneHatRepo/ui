@@ -7,6 +7,7 @@ import UiGlobals from '../../../UiGlobals.js';
 import withComponent from '../../Hoc/withComponent.js';
 import withTooltip from '../../Hoc/withTooltip.js';
 import withValue from '../../Hoc/withValue.js';
+import testProps from '../../../Functions/testProps.js';
 import _ from 'lodash';
 
 const TextAreaElement = forwardRef((props, ref) => {
@@ -98,7 +99,7 @@ const TextAreaElement = forwardRef((props, ref) => {
 	return <Textarea className={textareaClassName}>
 				<TextareaInput
 					{...propsToPass}
-					testID={testID}
+					{...testProps(testID)}
 					ref={ref}
 					onChangeText={onChangeTextLocal}
 					value={localValue}
