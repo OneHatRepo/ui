@@ -635,6 +635,7 @@ function Form(props) {
 					isEditingEnabledInPlainEditor,
 					label,
 					disableLabel = false,
+					showXButton = true,
 					labelWidth,
 					items,
 					onChange: onEditorChange,
@@ -712,7 +713,7 @@ function Form(props) {
 				}
 			}
 			
-			editorTypeProps.showXButton = true;
+			editorTypeProps.showXButton = showXButton;
 			if (inArray(type, ['Column', 'Row', 'FieldSet'])) {
 				if (_.isEmpty(items)) {
 					return null;
