@@ -616,7 +616,7 @@ function Form(props) {
 		buildFromItems = () => {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
 		},
-		buildFromItem = (item, ix, defaults) => {
+		buildFromItem = (item, ix, defaults, layoutContext = {}) => {
 			if (!item) {
 				return null;
 			}
@@ -626,6 +626,7 @@ function Form(props) {
 			let {
 					key: _itemKey,
 					type,
+					isCompactRow = false,
 					editorType: itemEditorType,
 					viewerType,
 					title,
@@ -644,7 +645,8 @@ function Form(props) {
 					...itemPropsToPass
 				} = item,
 				editorTypeProps = {},
-				viewerTypeProps = {};
+				viewerTypeProps = {},
+				isInCompactRow = !!layoutContext?.isInCompactRow;
 			if (isHidden) {
 				return null;
 			}
@@ -716,6 +718,9 @@ function Form(props) {
 					return null;
 				}
 				let children;
+				const nextLayoutContext = {
+					isInCompactRow: type === 'Row' ? !!isCompactRow : isInCompactRow,
+				};
 				const style = {};
 				if (type === 'Column') {
 					const isEverythingInOneColumn = containerWidth < styles.FORM_ONE_COLUMN_THRESHOLD;
@@ -741,7 +746,7 @@ function Form(props) {
 				}
 				const itemDefaults = item.defaults || {};
 				children = _.map(items, (item, ix) => {
-					return buildFromItem(item, ix, {...defaults, ...itemDefaults});
+					return buildFromItem(item, ix, {...defaults, ...itemDefaults}, nextLayoutContext);
 				});
 
 				let elementClassName = 'Form-ElementFromItem gap-2';
@@ -855,7 +860,15 @@ function Form(props) {
 									</VStack>;
 					}
 				}
-				return <HStack key={'Form-HStack3-' + ix} className="Form-HStack3 w-full px-2 pb-1">{element}</HStack>;
+				return <HStack
+							key={'Form-HStack3-' + ix}
+							className={clsx(
+								'Form-HStack3',
+								isInCompactRow
+									? 'w-auto px-0 pb-0 flex-none items-center'
+									: 'w-full px-2 pb-1',
+							)}
+						>{element}</HStack>;
 			}
 
 		
@@ -924,7 +937,7 @@ function Form(props) {
 								itemPropsToPass.SourceRepository = Repository;
 							}
 
-							let elementClassName = 'Form-Element field-' + name + ' w-full';
+							let elementClassName = 'Form-Element field-' + name + (isInCompactRow ? '' : ' w-full');
 							const defaultsClassName = defaults.className;
 							if (defaultsClassName) {
 								elementClassName += ' ' + defaultsClassName;
@@ -978,7 +991,10 @@ function Form(props) {
 							if (message) {
 								message = <Text className="text-[#f00]">{message}</Text>;
 							}
-							element = <VStack className="Form-VStack4 flex-1 justify-center items-left">
+							element = <VStack className={clsx(
+										'Form-VStack4',
+										isInCompactRow ? 'flex-none justify-center items-left' : 'flex-1 justify-center items-left',
+									)}>
 											{element}
 											{message}
 										</VStack>;
@@ -1042,7 +1058,7 @@ function Form(props) {
 									if (!style.width) {
 										style.width = '160px';
 									}
-									element = <HStack className="Form-HStack8 w-full">
+									element = <HStack className={clsx('Form-HStack8', isInCompactRow ? 'w-auto' : 'w-full')}>
 								 					<Label style={style}>
 														{requiredIndicator}
 														{labelToUse}
@@ -1080,11 +1096,9 @@ function Form(props) {
 										key={'Controller-HStack-' + ix}
 										className={clsx(
 											'Form-HStack11',
-											'min-h-[50px]',
-											'w-full',
-											'justify-center',
-											'items-left',
-											'flex-none',
+										isInCompactRow
+											? 'min-h-0 w-auto justify-start items-center flex-none'
+											: 'min-h-[50px] w-full justify-center items-left flex-none',
 											error ? 'bg-[#fdd]' : '',
 										)}
 									>
