@@ -1184,6 +1184,70 @@ function AttachmentsElement(props) {
 					/>;
 	}
 
+	let bodyContent = content;
+	
+	// Always wrap content in dropzone when canCrud is true, but conditionally disable functionality
+	if (canCrud && !isDragging) {
+		const
+			{
+				onChange: userDropzoneOnChange,
+				onUploadStart: userDropzoneOnUploadStart,
+				onUploadFinish: userDropzoneOnUploadFinish,
+				action: ignoredDropzoneAction,
+				fakeUpload: ignoredFakeUpload,
+				uploadConfig: ignoredUploadConfig,
+				...safeDropzoneProps
+			} = _dropZone || {},
+			hadCustomAction = !!ignoredDropzoneAction,
+			hadFakeUpload = !!ignoredFakeUpload,
+			hadCustomUploadConfig = !!ignoredUploadConfig,
+			uploadUrl = getUploadUrl();
+
+		bodyContent = <Dropzone
+						{...safeDropzoneProps}
+						onChange={isDragging ? () => {} : (nextFiles) => {
+							onDropzoneChange(nextFiles);
+							if (userDropzoneOnChange) {
+								userDropzoneOnChange(nextFiles);
+							}
+						}} // Disable onChange when dragging
+						accept={isDragging ? undefined : accept} // Remove accept types when dragging
+						maxFiles={isDragging ? 0 : maxFiles} // Set to 0 when dragging to prevent drops
+						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
+						autoClean={true}
+						uploadConfig={{
+							url: uploadUrl,
+							method: 'POST',
+							headers: Attachments.headers,
+							autoUpload,
+						}}
+						headerConfig={{
+							className: '!hidden',
+							deleteFiles: false,
+						}}
+						className="attachments-dropzone flex-1 h-full min-w-0 overflow-x-hidden" // Keep horizontal containment while allowing vertical scrolling
+						onUploadStart={(uploadedFiles) => {
+							onUploadStart(uploadedFiles);
+							if (userDropzoneOnUploadStart) {
+								userDropzoneOnUploadStart(uploadedFiles);
+							}
+						}}
+						onUploadFinish={(uploadedFiles) => {
+							onUploadFinish(uploadedFiles);
+							if (userDropzoneOnUploadFinish) {
+								userDropzoneOnUploadFinish(uploadedFiles);
+							}
+						}}
+						background={styles.ATTACHMENTS_BG}
+						color={styles.ATTACHMENTS_COLOR}
+						minHeight={150}
+						footer={false}
+						clickable={viewMode === ATTACHMENTS_VIEW_MODES__ICON && !isDragging ? clickable : false} // Disable clickable when dragging
+					>
+						{bodyContent}
+					</Dropzone>;
+	}
+
 	// switches for icon/list view
 	const buttonClassName = clsx(
 		'bg-white',
@@ -1234,71 +1298,9 @@ function AttachmentsElement(props) {
 					/>
 				</HStack>
 
-				{content}
+				{bodyContent}
 
 			</VStack>;
-	
-	// Always wrap content in dropzone when canCrud is true, but conditionally disable functionality
-	if (canCrud && !isDragging) {
-		const
-			{
-				onChange: userDropzoneOnChange,
-				onUploadStart: userDropzoneOnUploadStart,
-				onUploadFinish: userDropzoneOnUploadFinish,
-				action: ignoredDropzoneAction,
-				fakeUpload: ignoredFakeUpload,
-				uploadConfig: ignoredUploadConfig,
-				...safeDropzoneProps
-			} = _dropZone || {},
-			hadCustomAction = !!ignoredDropzoneAction,
-			hadFakeUpload = !!ignoredFakeUpload,
-			hadCustomUploadConfig = !!ignoredUploadConfig,
-			uploadUrl = getUploadUrl();
-
-		content = <Dropzone
-						{...safeDropzoneProps}
-						onChange={isDragging ? () => {} : (nextFiles) => {
-							onDropzoneChange(nextFiles);
-							if (userDropzoneOnChange) {
-								userDropzoneOnChange(nextFiles);
-							}
-						}} // Disable onChange when dragging
-						accept={isDragging ? undefined : accept} // Remove accept types when dragging
-						maxFiles={isDragging ? 0 : maxFiles} // Set to 0 when dragging to prevent drops
-						maxFileSize={styles.ATTACHMENTS_MAX_FILESIZE}
-						autoClean={true}
-						uploadConfig={{
-							url: uploadUrl,
-							method: 'POST',
-							headers: Attachments.headers,
-							autoUpload,
-						}}
-						headerConfig={{
-							className: '!hidden',
-							deleteFiles: false,
-						}}
-						className="attachments-dropzone flex-1 h-full min-w-0 overflow-x-hidden" // Keep horizontal containment while allowing vertical scrolling
-						onUploadStart={(uploadedFiles) => {
-							onUploadStart(uploadedFiles);
-							if (userDropzoneOnUploadStart) {
-								userDropzoneOnUploadStart(uploadedFiles);
-							}
-						}}
-						onUploadFinish={(uploadedFiles) => {
-							onUploadFinish(uploadedFiles);
-							if (userDropzoneOnUploadFinish) {
-								userDropzoneOnUploadFinish(uploadedFiles);
-							}
-						}}
-						background={styles.ATTACHMENTS_BG}
-						color={styles.ATTACHMENTS_COLOR}
-						minHeight={150}
-						footer={false}
-						clickable={viewMode === ATTACHMENTS_VIEW_MODES__ICON && !isDragging ? clickable : false} // Disable clickable when dragging
-					>
-						{content}
-					</Dropzone>;
-	}
 
 	// directories
 	if (usesDirectories) {
