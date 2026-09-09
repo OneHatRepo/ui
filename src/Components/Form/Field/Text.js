@@ -13,7 +13,6 @@ const
 		const {
 				outerRef,
 				value,
-				className: incomingClassName,
 				style,
 				numberOfLines,
 				ellipsizeMode,
@@ -28,7 +27,7 @@ const
 				'px-3',
 				'py-2',
 				styles.FORM_TEXT_CLASSNAME,
-				incomingClassName,
+				props.className,
 			);
 		
 		return <TextNative

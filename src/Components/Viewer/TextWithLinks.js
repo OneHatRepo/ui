@@ -50,21 +50,19 @@ function TextWithLinksElement(props) {
 				modifiedText = modifiedText.replace(link, key);
 			});
 
-			let
+			const
 				textClassName = clsx(
+					props.className,
 					'TextWithLinks-Text',
 					'text-base',
-					'overflow-hidden',
+					'flex-1',
+					'min-h-[40px]',
+					'px-3',
+					'py-2',
+					'overflow-hidden', // override parent
 					styles.FORM_TEXT_CLASSNAME,
 				),
 				textSegments = modifiedText.split(/(link_\d+)/);
-			if (props.className) {
-				const 
-					classes = props.className.split(' '),
-					newClasses = _.reject(classes, (c) => c === 'overflow-auto'),
-					className = newClasses.join(' ');
-				textClassName += ' ' + className;
-			}
 			if (textSegments.length === 1) {
 				return <Text className={textClassName}>{modifiedText}</Text>;
 			}
