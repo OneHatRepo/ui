@@ -1733,7 +1733,7 @@ function Form(props) {
 		if (onDelete && resolvedEditorMode === EDITOR_MODE__EDIT && isSingle) {
 			showDeleteBtn = true;
 		}
-		if (!isEditorViewOnly && isEditableMode && !hideResetButton) {
+		if (!isEditorViewOnly && (isEditableMode || editorType === EDITOR_TYPE__PLAIN) && !hideResetButton) {
 			showResetBtn = true;
 		}
 		// determine whether we should show the close or cancel button
@@ -1773,6 +1773,16 @@ function Form(props) {
 		}
 		footerItems =
 			<>
+				{showResetBtn && 
+					<IconButton
+						{...testProps('resetBtn')}
+						key="resetBtn"
+						onPress={() => doReset()}
+						icon={Rotate}
+						className={isInlineEditor ? 'text-white' : undefined}
+						isDisabled={!formState.isDirty}
+						tooltip="Reset Form"
+					/>}
 				{decorateAdditionalFooterItems(additionalFooterItems)}
 				{!additionalFooterItems && additionalFooterButtons && _.map(additionalFooterButtons, (props, ix) => {
 					let isDisabled = false;
@@ -1811,18 +1821,6 @@ function Form(props) {
 							text="Delete"
 						/>
 					</HStack>}
-
-				{showResetBtn && 
-					<IconButton
-						{...testProps('resetBtn')}
-						key="resetBtn"
-						onPress={() => doReset()}
-						icon={Rotate}
-						className={isInlineEditor ? 'text-white' : undefined}
-						isDisabled={!formState.isDirty}
-						tooltip="Reset Form"
-					/>}
-
 				{showCancelBtn &&
 					<Button
 						{...testProps('cancelBtn')}
