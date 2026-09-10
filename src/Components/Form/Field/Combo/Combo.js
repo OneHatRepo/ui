@@ -259,8 +259,11 @@ export const ComboComponent = forwardRef((props, ref) => {
 		},
 		setDisplayValue = async (value, requestId = null) => {
 			let displayValue = '';
-			if (isMultiSelectMode && _.isNil(value)) {
-				displayValue = getMultiSelectSummary(0);
+
+			// Multi-select summary mode does not need per-item display lookups.
+			if (isMultiSelectMode) {
+				const count = _.isArray(value) ? value.length : (_.isNil(value) ? 0 : 1);
+				displayValue = getMultiSelectSummary(count);
 			} else if (_.isNil(value)) {
 				// do nothing
 			} else if (_.isArray(value)) {
@@ -288,7 +291,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						}
 					});
 				}
-				displayValue = isMultiSelectMode ? getMultiSelectSummary(value.length) : displayValue.join(', ');
+				displayValue = displayValue.join(', ');
 			} else {
 				if (Repository) {
 					if (!Repository.isDestroyed) {
