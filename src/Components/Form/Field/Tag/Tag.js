@@ -220,7 +220,7 @@ function TagComponent(props) {
 			// Remove from value array
 			const newValue = _.filter(value, (val1) => {
 				return val1.id !== val.id;
-			});			
+			});
 			setValue(newValue);
 		},
 		onViewEditJoinData = async (item, e) => {

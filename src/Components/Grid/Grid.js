@@ -148,6 +148,8 @@ function GridComponent(props) {
 			showHeaders = true,
 			showHovers = true,
 			showSelectHandle = true,
+			getIsRowSelectable,
+			getCanSelectItem,
 			isRowTextSelectable, // if false, user can't select text in rows (e.g. to copy/paste)
 			isRowSelectable = true,
 			isRowHoverable = true,
@@ -350,6 +352,9 @@ function GridComponent(props) {
 			}
 		},
 		onRowClick = (item, e) => {
+			if (!canSelectItem(item)) {
+				return;
+			}
 			if (isInlineEditorShown) {
 				return;
 			}
@@ -499,6 +504,15 @@ function GridComponent(props) {
 
 			return isPointOnScrollbar(currentTarget);
 		},
+		canSelectItem = (item) => {
+			if (_.isFunction(getCanSelectItem)) {
+				return !!getCanSelectItem(item);
+			}
+			if (_.isFunction(getIsRowSelectable)) {
+				return !!getIsRowSelectable(item);
+			}
+			return true;
+		},
 		renderRow = (row) => {
 			if (row.item.isDestroyed) {
 				return null;
@@ -546,7 +560,7 @@ function GridComponent(props) {
 						rowReorderProps = {},
 						rowDragProps = {};
 					let WhichRow = GridRow,
-						rowCanSelect = true,
+						rowCanSelect = canSelectItem(item),
 						rowCanDrag = false;
 					if (CURRENT_MODE === UI_MODE_WEB) { // DND is currently web-only  TODO: implement for RN
 						// Create a method that gets an always-current copy of the selection ids

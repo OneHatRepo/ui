@@ -277,6 +277,7 @@ import Json from './Form/Field/Json.js';
 import Label from './Form/Label.js';
 import MeterTypesCombo from './Pms/Form/Field/Combo/MeterTypesCombo.js';
 import MeterTypeText from './Pms/Viewer/MeterTypeText.js';
+import MultiSelect from './Form/Field/MultiSelect/MultiSelect.js';
 import MonthsCombo from './Form/Field/Combo/MonthsCombo.js';
 import MonthsTag from './Form/Field/Tag/MonthsTag.js';
 import Number from './Form/Field/Number.js';
@@ -585,6 +586,7 @@ const components = {
 	Label,
 	MeterTypesCombo,
 	MeterTypeText,
+	MultiSelect,
 	MonthsCombo,
 	MonthsTag,
 	Number,

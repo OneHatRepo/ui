@@ -31,6 +31,7 @@ export default function withValue(WrappedComponent) {
 				startingValue = null,
 				isValueAlwaysArray = false,
 				isValueAsStringifiedJson = false,
+				preserveValueOrder = false,
 
 				// withComponent
 				self,
@@ -59,7 +60,7 @@ export default function withValue(WrappedComponent) {
 				if (isValueAlwaysArray && !_.isArray(newValue)) {
 					newValue = _.isNil(newValue) ? [] : [newValue];
 				}
-				if (_.isArray(newValue)) {
+				if (_.isArray(newValue) && !preserveValueOrder) {
 					const sortFn = natsort.default || natsort; // was having trouble with webpack and this solves it
 
 					// TODO: sort by the sortProperty, whatever that is, instead of just value

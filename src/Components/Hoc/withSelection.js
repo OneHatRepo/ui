@@ -36,6 +36,7 @@ export default function withSelection(WrappedComponent) {
 				defaultSelection,
 				onChangeSelection,
 				selectionMode = SELECTION_MODE_SINGLE, // SELECTION_MODE_MULTI, SELECTION_MODE_SINGLE
+				getCanSelectItem,
 				autoSelectFirstItem = false,
 				isSelectionControlled = false, // if true, selection is controlled by parent; i.e. this is a controlled component. If false, selection is managed by this HOC.
 				fireEvent,
@@ -102,6 +103,15 @@ export default function withSelection(WrappedComponent) {
 			getRepository = () => {
 				return RepositoryRef.current;
 			},
+			canSelectItem = (item) => {
+				if (!item) {
+					return false;
+				}
+				if (_.isFunction(getCanSelectItem)) {
+					return !!getCanSelectItem(item);
+				}
+				return true;
+			},
 			selectPrev = () => {
 				selectDirection(SELECT_UP);
 			},
@@ -116,31 +126,53 @@ export default function withSelection(WrappedComponent) {
 			},
 			selectDirection = (which, isAdd = false) => {
 				const { items, max, min, noSelection, } = getMaxMinSelectionIndices();
-				let newIx;
-				if (which === SELECT_DOWN) {
-					if (noSelection || max === items.length -1) {
-						// select first
-						newIx = 0;
-					} else {
-						newIx = max +1;
-					}
-				} else if (which === SELECT_UP) {
-					if (noSelection || min === 0) {
-						// select last
-						newIx = items.length -1;
-					} else {
-						newIx = min -1;
-					}
+				if (!items?.length) {
+					return;
 				}
-				if (items[newIx]) {
-					if (isAdd) {
-						addToSelection(items[newIx]);
-					} else {
-						setSelection([items[newIx]]);
+
+				const
+					delta = which === SELECT_DOWN ? 1 : -1,
+					startIx = (() => {
+						if (which === SELECT_DOWN) {
+							return noSelection ? -1 : max;
+						}
+						return noSelection ? items.length : min;
+					})(),
+					len = items.length;
+
+				let tries = 0,
+					ix = startIx,
+					nextItem = null;
+				while (tries < len) {
+					ix += delta;
+					if (ix >= len) {
+						ix = 0;
+					} else if (ix < 0) {
+						ix = len -1;
 					}
+					if (canSelectItem(items[ix])) {
+						nextItem = items[ix];
+						break;
+					}
+					tries += 1;
+				}
+
+				if (!nextItem) {
+					return;
+				}
+
+				if (isAdd) {
+					if (!isInSelection(nextItem)) {
+						addToSelection(nextItem);
+					}
+				} else {
+					setSelection([nextItem]);
 				}
 			},
 			addToSelection = (item) => {
+				if (!canSelectItem(item) || isInSelection(item)) {
+					return;
+				}
 				const newSelection = [...getSelection()]; // so we get a new object, so descendants rerender
 				newSelection.push(item);
 				setSelection(newSelection);
@@ -204,6 +236,9 @@ export default function withSelection(WrappedComponent) {
 			},
 			selectRangeTo = (item) => {
 				// Select above max or below min to this one
+				if (!canSelectItem(item)) {
+					return;
+				}
 				const
 					currentSelectionLength = getSelection().length,
 					index = getIndexOfSelectedItem(item);
@@ -218,18 +253,24 @@ export default function withSelection(WrappedComponent) {
 						// Range is from max+1 up to index
 						for (i = max +1; i < index; i++) {
 							itemAtIx = items[i];
-							newSelection.push(itemAtIx);
+							if (canSelectItem(itemAtIx) && !isInSelection(itemAtIx)) {
+								newSelection.push(itemAtIx);
+							}
 						}
 					} else if (min > index) {
 						// all other selections are above the current;
 						// Range is from min-1 down to index
 						for (i = min -1; i > index; i--) {
 							itemAtIx = items[i];
-							newSelection.push(itemAtIx);
+							if (canSelectItem(itemAtIx) && !isInSelection(itemAtIx)) {
+								newSelection.push(itemAtIx);
+							}
 						}
 					}
 				}
-				newSelection.push(item);
+				if (!isInSelection(item)) {
+					newSelection.push(item);
+				}
 				setSelection(newSelection);
 			},
 			isInSelection = (item) => {

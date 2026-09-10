@@ -44,6 +44,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			additionalButtons,
 			autoFocus = false,
 			menuMinWidth,
+			isMultiSelectMode = false,
 			disableDirectEntry = false,
 			hideMenuOnSelection = true,
 			showXButton = false,
@@ -213,9 +214,54 @@ export const ComboComponent = forwardRef((props, ref) => {
 		getDisplayValue = () => {
 			return displayValueRef.current;
 		},
+		getMultiSelectSummary = (count) => {
+			if (!count) {
+				return 'no selection';
+			}
+			if (count === 1) {
+				return '1 value';
+			}
+			return count + ' values';
+		},
+		toggleSelectionId = (id) => {
+			if (_.isNil(id)) {
+				return;
+			}
+			const ids = _.isArray(value) ? [...value] : (_.isNil(value) ? [] : [value]);
+			const ix = ids.indexOf(id);
+			if (ix === -1) {
+				ids.push(id);
+			} else {
+				ids.splice(ix, 1);
+			}
+			setValue(ids);
+		},
+		toggleCurrentGridSelection = async () => {
+			if (_.isEmpty(gridSelection)) {
+				await showMenu();
+				return;
+			}
+
+			let id = null;
+			if (gridSelection.length) {
+				if (Repository) {
+					id = valueProperty ? gridSelection[0][valueProperty] : gridSelection[0].id;
+				} else {
+					id = gridSelection[0][idIx];
+				}
+			}
+
+			toggleSelectionId(id);
+			if (onSubmit) {
+				onSubmit(id);
+			}
+			await showMenu();
+		},
 		setDisplayValue = async (value, requestId = null) => {
 			let displayValue = '';
-			if (_.isNil(value)) {
+			if (isMultiSelectMode && _.isNil(value)) {
+				displayValue = getMultiSelectSummary(0);
+			} else if (_.isNil(value)) {
 				// do nothing
 			} else if (_.isArray(value)) {
 				displayValue = [];
@@ -242,7 +288,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 						}
 					});
 				}
-				displayValue = displayValue.join(', ');
+				displayValue = isMultiSelectMode ? getMultiSelectSummary(value.length) : displayValue.join(', ');
 			} else {
 				if (Repository) {
 					if (!Repository.isDestroyed) {
@@ -296,6 +342,10 @@ export const ComboComponent = forwardRef((props, ref) => {
 					break;
 				case 'Enter':
 					e.preventDefault();
+					if (isMultiSelectMode) {
+						toggleCurrentGridSelection();
+						return;
+					}
 					if (_.isEmpty(inputValue) && !_.isNull(value)) {
 						// User pressed Enter on an empty text field, but value is set to something
 						// This means the user cleared the input and pressed enter, meaning he wants to clear the value
@@ -324,6 +374,13 @@ export const ComboComponent = forwardRef((props, ref) => {
 						onSubmit(id);
 					}
 					hideMenu();
+					break;
+				case ' ': // Spacebar
+					if (!isMultiSelectMode) {
+						break;
+					}
+					e.preventDefault();
+					toggleCurrentGridSelection();
 					break;
 				case 'ArrowDown':
 					e.preventDefault();
@@ -912,6 +969,28 @@ export const ComboComponent = forwardRef((props, ref) => {
 						}
 
 						setGridSelection(selection);
+
+						if (isMultiSelectMode) {
+							if (Repository) {
+								const ids = _.map(selection, (item) => {
+									return valueProperty ? item[valueProperty] : item.id;
+								});
+								setValue(ids);
+							} else {
+								const ids = _.map(selection, (item) => item[idIx]);
+								setValue(ids);
+							}
+
+							if (_.isEmpty(selection)) {
+								setIsSearchMode(false);
+								resetTextInputValue();
+							}
+
+							if (hideMenuOnSelection && !isNavigatingViaKeyboard && !isEditor) {
+								hideMenu();
+							}
+							return;
+						}
 
 						if (Repository) {
 
