@@ -55,7 +55,7 @@ function TextWithLinksElement(props) {
 					props.className,
 					'TextWithLinks-Text',
 					'flex-1',
-					'min-h-[40px]',
+					// 'min-h-[40px]',
 					'px-3',
 					'overflow-hidden', // override parent
 					styles.FORM_TEXT_CLASSNAME,
@@ -90,7 +90,7 @@ function TextWithLinksElement(props) {
 	}
 	const className = clsx(
 		'overflow-auto',
-		'min-h-[40px]',
+		// 'min-h-[40px]',
 		props.className,
 	);
 	return <BoxNative
