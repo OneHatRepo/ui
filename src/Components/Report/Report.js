@@ -60,6 +60,7 @@ function Report(props) {
 			disabledMessage = 'Report is Disabled',
 			additionalData = {},
 			quickReportData = {},
+			_form = {},
 
 			// withAlert
 			alert,
@@ -70,8 +71,7 @@ function Report(props) {
 			// withComponent
 			self,
 		} = props,
-		formProps = props._form || {},
-		hasFormItems = formProps?.items?.[0]?.items?.length,
+		hasFormItems = _form?.items?.[0]?.items?.length,
 		showPresets = usePresets && hasFormItems,
 		user = useSelector(selectUser),
 		[isValid, setIsValid] = useState(!hasFormItems), // if there are no form items, consider the form valid by default; otherwise, start as invalid until the form says otherwise
@@ -95,7 +95,7 @@ function Report(props) {
 				form.formSetValue(key, value);
 			});
 		},
-		footerProps = formProps.footerProps || {},
+		footerProps = _form.footerProps || {},
 		footerClassName = clsx(
 			footerProps.className,
 			'flex-wrap',
@@ -533,7 +533,7 @@ function Report(props) {
 						reference="form"
 						editorType={EDITOR_TYPE__PLAIN}
 						additionalFooterItems={footerItems}
-						{...formProps}
+						{..._form}
 						footerProps={{
 							...footerProps,
 							className: footerClassName,
