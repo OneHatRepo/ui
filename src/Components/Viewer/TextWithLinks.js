@@ -54,11 +54,9 @@ function TextWithLinksElement(props) {
 				textClassName = clsx(
 					props.className,
 					'TextWithLinks-Text',
-					'text-base',
 					'flex-1',
 					'min-h-[40px]',
 					'px-3',
-					'py-2',
 					'overflow-hidden', // override parent
 					styles.FORM_TEXT_CLASSNAME,
 				),
@@ -93,8 +91,6 @@ function TextWithLinksElement(props) {
 	const className = clsx(
 		'overflow-auto',
 		'min-h-[40px]',
-		'px-3',
-		'py-2',
 		props.className,
 	);
 	return <BoxNative
