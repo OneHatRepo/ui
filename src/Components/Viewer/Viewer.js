@@ -151,6 +151,7 @@ function Viewer(props) {
 					name,
 					label,
 					disableLabel = false,
+					labelWidth,
 					items,
 					useSelectorId = false,
 					isHidden = false,
@@ -379,10 +380,13 @@ function Viewer(props) {
 				if (defaults?.labelWidth) {
 					style.width = defaults.labelWidth;
 				}
-				if (!style.width) {
-					style.width = '50px';
+				if (labelWidth) {
+					style.width = labelWidth;
 				}
 				if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
+					if (!style.width) {
+						style.width = '160px';
+					}
 					element = <HStack className="Viewer-HStack2 py-1 w-full">
 									<Label style={style}>{label}</Label>
 									{element}
