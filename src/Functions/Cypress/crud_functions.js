@@ -102,7 +102,15 @@ export function crudCombo(args) {
 	
 	clickTrigger(selector);
 
-	crudWindowedGridRecord({ gridSelector, newData, editData, schema, ancillaryData, level: level +1, options });
+	crudWindowedGridRecord({
+		gridSelector,
+		newData,
+		editData,
+		schema,
+		ancillaryData,
+		level: level +1,
+		options,
+	});
 
 	clickTrigger(selector);
 }
@@ -128,7 +136,15 @@ export function crudTag(args) {
 	// When crudding a tag, on edit, re-selecting the row can put up "already selected value" error box.
 	// Need to explicitly ignore this, dismiss the error, and continue on
 
-	crudWindowedGridRecord({ gridSelector, newData, editData, schema, ancillaryData, level: level +1, options });
+	crudWindowedGridRecord({
+		gridSelector,
+		newData,
+		editData,
+		schema,
+		ancillaryData,
+		level: level +1,
+		options,
+	});
 
 	clickTrigger(selector);
 }
@@ -218,7 +234,12 @@ export function crudWindowedGridRecord(args) {
 
 		// edit
 		if (!skipEdit) {
-			editWindowedGridRecord({ gridSelector, fieldValues: editData, schema, id });
+			editWindowedGridRecord({
+				gridSelector,
+				fieldValues: editData,
+				schema,
+				id,
+			});
 		}
 
 		// delete
@@ -231,7 +252,13 @@ export function crudWindowedGridRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addWindowedGridRecord({ gridSelector, fieldValues: newData, schema, ancillaryData, level }); // saves the id in @id
+		addWindowedGridRecord({
+			gridSelector,
+			fieldValues: newData,
+			schema,
+			ancillaryData,
+			level,
+		}); // saves the id in @id
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -296,7 +323,13 @@ export function crudInlineGridRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addInlineGridRecord({ gridSelector, fieldValues: newData, schema, ancillaryData, level }); // saves the id in @id
+		addInlineGridRecord({
+			gridSelector,
+			fieldValues: newData,
+			schema,
+			ancillaryData,
+			level,
+		}); // saves the id in @id
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -648,7 +681,13 @@ export function crudWindowedTreeRecord(args) {
 
 		// edit
 		if (!skipEdit) {
-			editWindowedTreeRecord({ treeSelector, fieldValues: editData, schema, id, level });
+			editWindowedTreeRecord({
+				treeSelector,
+				fieldValues: editData,
+				schema,
+				id,
+				level,
+			});
 		}
 
 		// delete
@@ -661,7 +700,13 @@ export function crudWindowedTreeRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addWindowedTreeRecord({ treeSelector, fieldValues: newData, schema, ancillaryData, level }); // saves the id in @id
+		addWindowedTreeRecord({
+			treeSelector,
+			fieldValues: newData,
+			schema,
+			ancillaryData,
+			level,
+		}); // saves the id in @id
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -712,7 +757,14 @@ export function crudSideTreeRecord(args) {
 
 		// edit
 		if (!skipEdit) {
-			editTreeRecord({ treeSelector, fieldValues: editData, schema, id, level, whichEditor: SIDE });
+			editTreeRecord({
+				treeSelector,
+				fieldValues: editData,
+				schema,
+				id,
+				level,
+				whichEditor: SIDE,
+			});
 		}
 
 		// delete
@@ -725,7 +777,13 @@ export function crudSideTreeRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addTreeRecord({ treeSelector, fieldValues: newData, schema, ancillaryData, level }); // saves the id in @id
+		addTreeRecord({
+			treeSelector,
+			fieldValues: newData,
+			schema,
+			ancillaryData,
+			level,
+		}); // saves the id in @id
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -970,7 +1028,14 @@ export function runClosureTreeControlledManagerScreenCrudTests(args) {
 				toFullMode(managerSelector);
 				cy.wait(500); // allow filtered grid to load
 
-				crudWindowedGridRecord({ gridSelector, newData, editData, schema, ancillaryData, options });
+				crudWindowedGridRecord({
+					gridSelector,
+					newData,
+					editData,
+					schema,
+					ancillaryData,
+					options,
+				});
 
 			});
 		}
@@ -985,7 +1050,14 @@ export function runClosureTreeControlledManagerScreenCrudTests(args) {
 				toSideMode(managerSelector);
 				cy.wait(1000); // allow filtered grid to load
 
-				crudSideGridRecord({ gridSelector, newData, editData, schema, ancillaryData, options });
+				crudSideGridRecord({
+					gridSelector,
+					newData,
+					editData,
+					schema,
+					ancillaryData,
+					options,
+				});
 
 			});
 		}
@@ -1043,7 +1115,14 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 				toFullMode(managerSelector);
 				cy.wait(500); // wait for grid to load
 
-				crudWindowedTreeRecord({ treeSelector, newData, editData, schema, ancillaryData, options });
+				crudWindowedTreeRecord({
+					treeSelector,
+					newData,
+					editData,
+					schema,
+					ancillaryData,
+					options,
+				});
 
 			});
 		}
@@ -1058,7 +1137,14 @@ export function runClosureTreeManagerScreenCrudTests(args) {
 				toSideMode(managerSelector);
 				cy.wait(1000); // wait for grid to load
 
-				crudSideTreeRecord({ treeSelector, newData, editData, schema, ancillaryData, options });
+				crudSideTreeRecord({
+					treeSelector,
+					newData,
+					editData,
+					schema,
+					ancillaryData,
+					options,
+				});
 
 			});
 		}
@@ -1118,9 +1204,23 @@ export function runManagerScreenCrudTests(args) {
 				cy.wait(500); // wait for grid to load
 	
 				if (fullIsInline) {
-					crudInlineGridRecord({ gridSelector, newData, editData, schema, ancillaryData, options });
+					crudInlineGridRecord({
+						gridSelector,
+						newData,
+						editData,
+						schema,
+						ancillaryData,
+						options,
+					});
 				} else {
-					crudWindowedGridRecord({ gridSelector, newData, editData, schema, ancillaryData, options });
+					crudWindowedGridRecord({
+						gridSelector,
+						newData,
+						editData,
+						schema,
+						ancillaryData,
+						options,
+					});
 				}
 	
 			});
