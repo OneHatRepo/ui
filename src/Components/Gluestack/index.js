@@ -99,16 +99,18 @@ import { VStack as VStackNative } from "./vstack/index.tsx"; // explicitly impor
 import { GluestackUIProvider } from './gluestack-ui-provider';
 
 
-function withSanitizedPrimitiveProps(Component, displayName) {
+function withSanitizedPrimitiveProps(Component, displayName, options = {}) {
 	const Wrapped = React.forwardRef((props, ref) => {
-		return <Component ref={ref} {...omitInternalHocProps(props)} />;
+		return <Component ref={ref} {...omitInternalHocProps(props, options)} />;
 	});
 
 	Wrapped.displayName = displayName;
 	return Wrapped;
 }
 
-const SanitizedBox = withSanitizedPrimitiveProps(Box, 'SanitizedBox');
+const isWeb = Platform.OS === 'web';
+
+const SanitizedBox = withSanitizedPrimitiveProps(Box, 'SanitizedBox', { isDomPrimitive: isWeb });
 const SanitizedBoxNative = withSanitizedPrimitiveProps(BoxNative, 'SanitizedBoxNative');
 const SanitizedAccordion = withSanitizedPrimitiveProps(Accordion, 'SanitizedAccordion');
 const SanitizedAccordionContent = withSanitizedPrimitiveProps(AccordionContent, 'SanitizedAccordionContent');
@@ -155,8 +157,8 @@ const SanitizedCalendarDayText = withSanitizedPrimitiveProps(CalendarDayText, 'S
 const SanitizedCalendarDayIndicator = withSanitizedPrimitiveProps(CalendarDayIndicator, 'SanitizedCalendarDayIndicator');
 const SanitizedCalendarWeekNumber = withSanitizedPrimitiveProps(CalendarWeekNumber, 'SanitizedCalendarWeekNumber');
 const SanitizedCalendarFooter = withSanitizedPrimitiveProps(CalendarFooter, 'SanitizedCalendarFooter');
-const SanitizedCard = withSanitizedPrimitiveProps(Card, 'SanitizedCard');
-const SanitizedCenter = withSanitizedPrimitiveProps(Center, 'SanitizedCenter');
+const SanitizedCard = withSanitizedPrimitiveProps(Card, 'SanitizedCard', { isDomPrimitive: isWeb });
+const SanitizedCenter = withSanitizedPrimitiveProps(Center, 'SanitizedCenter', { isDomPrimitive: isWeb });
 const SanitizedCheckbox = withSanitizedPrimitiveProps(Checkbox, 'SanitizedCheckbox');
 const SanitizedCheckboxGroup = withSanitizedPrimitiveProps(CheckboxGroup, 'SanitizedCheckboxGroup');
 const SanitizedDateTimePicker = withSanitizedPrimitiveProps(DateTimePicker, 'SanitizedDateTimePicker');
@@ -172,20 +174,20 @@ const SanitizedFlatList = withSanitizedPrimitiveProps(FlatList, 'SanitizedFlatLi
 const SanitizedFormControl = withSanitizedPrimitiveProps(FormControl, 'SanitizedFormControl');
 const SanitizedGlassView = withSanitizedPrimitiveProps(GlassView, 'SanitizedGlassView');
 const SanitizedGlassContainer = withSanitizedPrimitiveProps(GlassContainer, 'SanitizedGlassContainer');
-const SanitizedGrid = withSanitizedPrimitiveProps(Grid, 'SanitizedGrid');
-const SanitizedGridItem = withSanitizedPrimitiveProps(GridItem, 'SanitizedGridItem');
+const SanitizedGrid = withSanitizedPrimitiveProps(Grid, 'SanitizedGrid', { isDomPrimitive: isWeb });
+const SanitizedGridItem = withSanitizedPrimitiveProps(GridItem, 'SanitizedGridItem', { isDomPrimitive: isWeb });
 const SanitizedHeading = withSanitizedPrimitiveProps(Heading, 'SanitizedHeading');
-const SanitizedHStack = withSanitizedPrimitiveProps(HStack, 'SanitizedHStack');
+const SanitizedHStack = withSanitizedPrimitiveProps(HStack, 'SanitizedHStack', { isDomPrimitive: isWeb });
 const SanitizedHStackNative = withSanitizedPrimitiveProps(HStackNative, 'SanitizedHStackNative');
 const SanitizedIcon = withSanitizedPrimitiveProps(Icon, 'SanitizedIcon');
 const SanitizedImage = withSanitizedPrimitiveProps(Image, 'SanitizedImage');
 const SanitizedImageBackground = withSanitizedPrimitiveProps(ImageBackground, 'SanitizedImageBackground');
-const SanitizedImageViewer = withSanitizedPrimitiveProps(ImageViewer, 'SanitizedImageViewer');
-const SanitizedImageViewerTrigger = withSanitizedPrimitiveProps(ImageViewerTrigger, 'SanitizedImageViewerTrigger');
-const SanitizedImageViewerContent = withSanitizedPrimitiveProps(ImageViewerContent, 'SanitizedImageViewerContent');
-const SanitizedImageViewerCloseButton = withSanitizedPrimitiveProps(ImageViewerCloseButton, 'SanitizedImageViewerCloseButton');
-const SanitizedImageViewerNavigation = withSanitizedPrimitiveProps(ImageViewerNavigation, 'SanitizedImageViewerNavigation');
-const SanitizedImageViewerCounter = withSanitizedPrimitiveProps(ImageViewerCounter, 'SanitizedImageViewerCounter');
+const SanitizedImageViewer = withSanitizedPrimitiveProps(ImageViewer, 'SanitizedImageViewer', { isDomPrimitive: isWeb });
+const SanitizedImageViewerTrigger = withSanitizedPrimitiveProps(ImageViewerTrigger, 'SanitizedImageViewerTrigger', { isDomPrimitive: isWeb });
+const SanitizedImageViewerContent = withSanitizedPrimitiveProps(ImageViewerContent, 'SanitizedImageViewerContent', { isDomPrimitive: isWeb });
+const SanitizedImageViewerCloseButton = withSanitizedPrimitiveProps(ImageViewerCloseButton, 'SanitizedImageViewerCloseButton', { isDomPrimitive: isWeb });
+const SanitizedImageViewerNavigation = withSanitizedPrimitiveProps(ImageViewerNavigation, 'SanitizedImageViewerNavigation', { isDomPrimitive: isWeb });
+const SanitizedImageViewerCounter = withSanitizedPrimitiveProps(ImageViewerCounter, 'SanitizedImageViewerCounter', { isDomPrimitive: isWeb });
 const SanitizedInput = withSanitizedPrimitiveProps(Input, 'SanitizedInput');
 const SanitizedInputField = withSanitizedPrimitiveProps(InputField, 'SanitizedInputField');
 const SanitizedInputIcon = withSanitizedPrimitiveProps(InputIcon, 'SanitizedInputIcon');
@@ -224,7 +226,7 @@ const SanitizedSelectIcon = withSanitizedPrimitiveProps(SelectIcon, 'SanitizedSe
 const SanitizedSelectItem = withSanitizedPrimitiveProps(SelectItem, 'SanitizedSelectItem');
 const SanitizedSelectPortal = withSanitizedPrimitiveProps(SelectPortal, 'SanitizedSelectPortal');
 const SanitizedSelectTrigger = withSanitizedPrimitiveProps(SelectTrigger, 'SanitizedSelectTrigger');
-const SanitizedSkeleton = withSanitizedPrimitiveProps(Skeleton, 'SanitizedSkeleton');
+const SanitizedSkeleton = withSanitizedPrimitiveProps(Skeleton, 'SanitizedSkeleton', { isDomPrimitive: isWeb });
 const SanitizedSlider = withSanitizedPrimitiveProps(Slider, 'SanitizedSlider');
 const SanitizedSliderFilledTrack = withSanitizedPrimitiveProps(SliderFilledTrack, 'SanitizedSliderFilledTrack');
 const SanitizedSliderThumb = withSanitizedPrimitiveProps(SliderThumb, 'SanitizedSliderThumb');
@@ -253,7 +255,7 @@ const SanitizedTooltipContent = withSanitizedPrimitiveProps(TooltipContent, 'San
 const SanitizedTooltipText = withSanitizedPrimitiveProps(TooltipText, 'SanitizedTooltipText');
 const SanitizedView = withSanitizedPrimitiveProps(View, 'SanitizedView');
 const SanitizedVirtualizedList = withSanitizedPrimitiveProps(VirtualizedList, 'SanitizedVirtualizedList');
-const SanitizedVStack = withSanitizedPrimitiveProps(VStack, 'SanitizedVStack');
+const SanitizedVStack = withSanitizedPrimitiveProps(VStack, 'SanitizedVStack', { isDomPrimitive: isWeb });
 const SanitizedVStackNative = withSanitizedPrimitiveProps(VStackNative, 'SanitizedVStackNative');
 
 
