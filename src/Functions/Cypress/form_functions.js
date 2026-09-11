@@ -82,7 +82,7 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 		if (editorType?.match(/Combo/)) {
 			if (value?.value) {
 				// First test the CRUD operations of this combo
-				crudCombo(selectors, value.newData, value.editData, value.schema, value.ancillaryData, level);
+				crudCombo({ selector: selectors, newData: value.newData, editData: value.editData, schema: value.schema, ancillaryData: value.ancillaryData, level, options: value.options });
 				value = value.value;
 			}
 			setComboValue(selectors, value);
@@ -99,7 +99,7 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 		if (editorType?.match(/Tag/)) {
 			if (value?.value) {
 				// First test the CRUD operations of this combo
-				crudTag(selectors, value.newData, value.editData, value.schema, value.ancillaryData, level);
+				crudTag({ selector: selectors, newData: value.newData, editData: value.editData, schema: value.schema, ancillaryData: value.ancillaryData, level, options: value.options });
 				value = value.value;
 			}
 			setTagValue(selectors, value);
