@@ -17,17 +17,24 @@ export default function testProps(id, suffix) {
 	// }
 
 	// testProps should be able to be called twice in succession, so the input needs to handle the output correctly
-	if (_.isObject(id) && id.dataset?.testid) {
-		id = id.dataset.testid;
+	if (_.isObject(id)) {
+		if (id.testID) {
+			id = id.testID;
+		// } else if (id['data-testid']) {
+		// 	id = id['data-testid'];
+		// } else if (id.id) {
+		// 	id = id.id;
+		// } else if (id.dataSet?.testid) {
+		// 	id = id.dataSet.testid;
+		// } else if (id.dataset?.testid) {
+		// 	id = id.dataset.testid;
+		} else if (id?.path) { // id is actually 'self' object
+			id = id.path;
+		} else if (id?.reference) { // id is actually 'self' object
+			id = id.reference;
+		}
 	}
 
-
-
-	if (id?.path) { // id is actually 'self' object
-		id = id.path;
-	} else if (id?.reference) { // id is actually 'self' object
-		id = id.reference;
-	}
 	if (!id) {
 		return {};
 	}
@@ -37,13 +44,16 @@ export default function testProps(id, suffix) {
 	if (suffix) {
 		id += suffix; // this is used in conjunction with 'self' object
 	}
-	if (Platform.OS === 'web') {
-		return {
-			dataset: {
-				testid: id,
-			},
-		};
-	}
+	// if (Platform.OS === 'web') {
+	// 	return {
+	// 		testID: id,
+	// 		id,
+	// 		dataSet: {
+	// 			testid: id,
+	// 		},
+	// 		'data-testid': id,
+	// 	};
+	// }
 	return {
 		testID: id,
 	};

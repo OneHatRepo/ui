@@ -57,19 +57,32 @@ export function navigateViaTabOrHomeButtonTo(url, isSetup = false) {
 	cy.log('navigateViaTabOrHomeButtonTo ' + url);
 
 	// deal with setup mode (if needed)
-	getDomNode('setupBtn').then(($btn) => {
-		if ($btn.length) {
-			const isInSetupMode = $btn.attr('data-setup-mode') === 'true';
+	getDomNode('setupBtn', { timeout: 10000 }).then(($btn) => {
+		if (!$btn.length) {
+			cy.log('setupBtn not found');
+			return;
+		}
+
+		// Check the current value of the custom HTML attribute
+		const isInSetupMode = $btn.attr('data-setup-mode') === 'true';
+
+		if (isSetup !== isInSetupMode) {
+			cy.log('clicking setupBtn');
+
+			// we're in the wrong UI mode. Click the button to toggle it
+			cy.get('[data-testid="setupBtn"]').first().click({ force: true });
 			
-			// Click if we want setup mode but aren't in it, OR if we don't want setup mode but are in it
-			if (isSetup !== isInSetupMode) {
-				$btn.click();
-				cy.wait(1000); // Wait for setup mode transition
-			}
+			// Assert and wait until the attribute updates
+			cy.get('[data-testid="setupBtn"]', { timeout: 10000 })
+				.first()
+				.should('have.attr', 'data-setup-mode', (isSetup ? 'true' : 'false'));
+
+			cy.log('setupBtn attribute is correct');
 		}
 	});
 
-	getDomNode(baseDir + url).click({ force: true, });
+	cy.log('about to click button for: ' + baseDir + url);
+	getDomNode('to:/' + baseDir + url).click({ force: true, });
 	cy.url().should('include', url);
 }
 export function navigateToHome() {
