@@ -46,6 +46,7 @@
 		"react-hook-form": "^7.84.0",
 		"react-native-progress": "^5.0.1",
 		"react-redux": "^9.3.0",
+		"tailwind-merge": "^3.6.0",
 		"tailwind-scrollbar": "^4.0.2",
 		"typescript": "~6.0.3",
 		"yup": "^1.7.1"
@@ -53,6 +54,7 @@
 	"peerDependencies": {
 		"@ckeditor/ckeditor5-react": "^11.2.0",
 		"@files-ui/react": "^2.1.0",
+		"@react-native-community/slider": "^5.2.0",
 		"locutus": "^3.0.36",
 		"react": "*",
 		"react-color": "^2.19.3",
@@ -64,7 +66,6 @@
 		"react-draggable": "^4.7.1",
 		"react-native": "*",
 		"react-native-draggable": "^3.3.0",
-		"@react-native-community/slider": "^5.2.0",
 		"react-native-svg": "*",
 		"react18-json-view": "^0.2.10",
 		"use-file-picker": "^2.1.4"

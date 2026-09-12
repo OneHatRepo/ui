@@ -1,5 +1,7 @@
 import React from 'react';
 import { Platform } from 'react-native';
+import clsx from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import omitInternalHocProps from '@onehat/ui/src/Functions/omitInternalHocProps.js';
 import { Accordion, AccordionContent, AccordionContentText, AccordionHeader, AccordionIcon, AccordionItem, AccordionTitleText, AccordionTrigger } from './accordion';
 import { ActionSheet } from './actionsheet';
@@ -101,7 +103,13 @@ import { GluestackUIProvider } from './gluestack-ui-provider';
 
 function withSanitizedPrimitiveProps(Component, displayName, options = {}) {
 	const Wrapped = React.forwardRef((props, ref) => {
-		return <Component ref={ref} {...omitInternalHocProps(props, options)} />;
+		const sanitizedProps = omitInternalHocProps(props, options);
+
+		if (sanitizedProps?.className !== undefined && sanitizedProps?.className !== null) {
+			sanitizedProps.className = twMerge(clsx(sanitizedProps.className));
+		}
+
+		return <Component ref={ref} {...sanitizedProps} />;
 	});
 
 	Wrapped.displayName = displayName;
@@ -256,7 +264,7 @@ const SanitizedTooltipText = withSanitizedPrimitiveProps(TooltipText, 'Sanitized
 const SanitizedView = withSanitizedPrimitiveProps(View, 'SanitizedView');
 const SanitizedVirtualizedList = withSanitizedPrimitiveProps(VirtualizedList, 'SanitizedVirtualizedList');
 const SanitizedVStack = withSanitizedPrimitiveProps(VStack, 'SanitizedVStack', { isDomPrimitive: isWeb });
-const SanitizedVStackNative = withSanitizedPrimitiveProps(VStackNative, 'SanitizedVStackNative');
+const SanitizedVStackNative = withSanitizedPrimitiveProps(VStackNative, 'SanitizedVStackNative', { isDomPrimitive: isWeb });
 
 
 export {
