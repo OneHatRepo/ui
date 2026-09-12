@@ -190,102 +190,108 @@ export default function PmCalcDebugViewer(props) {
 						"defaults": {},
 						"items": [
 							{
-								label: 'Calculation Mode',
-								name: 'calculationMode',
+								label: 'Explanation',
+								name: 'calcExplanation',
+								disableLabel: true,
+								className: 'ml-10 mb-2',
 							},
-							{
-								label: 'In Service Date',
-								name: 'inServiceDate',
-								viewerFormatter: formatDateValue,
-							},
-							...(record['isOverride'] ? [
-								// these items are only for overrides
-								{
-									label: 'Is Override',
-									name: 'isOverride',
-									viewerFormatter: formatBooleanValue,
-								},
-								{
-									label: 'Override Event Date',
-									name: 'overrideEventDate',
-									viewerFormatter: formatDateValue,
-								},
-							] : []),
-							...(!record['isOverride'] ? [
-								// these items are only for non-overrides
-								{
-									label: 'Last Reset Date',
-									name: 'resetDate',
-									viewerFormatter: formatDateValue,
-								},
-								record['workOrder.title'] && { // Gingerich
-									label: 'Work Order',
-									name: 'workOrder.title',
-								},
-								record['workOrder.service_order'] && { // MH
-									label: 'Service Order',
-									name: 'workOrder.service_order',
-								},
-								{
-									label: 'Interval Days',
-									name: 'intervalDays',
-								},
-								{
-									label: 'Days Left Until Next PM',
-									name: 'daysLeft',
-									viewerFormatter: formatDaysValue,
-								},
-								{
-									label: 'Interval Meter',
-									name: 'intervalMeter',
-									viewerFormatter: formatMeterValue,
-								},
-								typeof record['latestMeterReading.value'] !== 'undefined' && { // typeof so it allows 0
-									label: 'Latest Meter Reading',
-									name: 'latestMeterReading',
-									viewerFormatter: (value, record) => {
-										const
-											meterValue = formatMeterValue(record['latestMeterReading.value'], record),
-											meterDate = formatDateValue(record['latestMeterReading.date'], record);
-										return `${meterValue} on ${meterDate}`;
-									}
-								},
-								{
-									label: 'Meter Accrued Since Latest PM',
-									name: 'meterAccruedSinceLatestPm',
-									viewerFormatter: formatMeterValue,
-								},
-								{
-									label: 'Avg Daily Meter',
-									name: 'avgDailyMeter',
-									viewerFormatter: formatMeterValue,
-								},
-								{
-									label: 'Meter Until Next PM',
-									name: 'meterRemainingUntilNextPm',
-									viewerFormatter: formatMeterValue,
-								},
-								{
-									label: 'Controlling Method',
-									name: 'controllingMethod',
-									tooltip: 'Indicates whether the calculation was based on days or usage (meter). ' +
-											'If both methods are applicable, the one resulting in the earlier PM date is chosen.',
-								},
-							] : []),
+							// {
+							// 	label: 'Calculation Mode',
+							// 	name: 'calculationMode',
+							// },
+							// {
+							// 	label: 'In Service Date',
+							// 	name: 'inServiceDate',
+							// 	viewerFormatter: formatDateValue,
+							// },
+							// ...(record['isOverride'] ? [
+							// 	// these items are only for overrides
+							// 	{
+							// 		label: 'Is Override',
+							// 		name: 'isOverride',
+							// 		viewerFormatter: formatBooleanValue,
+							// 	},
+							// 	{
+							// 		label: 'Override Event Date',
+							// 		name: 'overrideEventDate',
+							// 		viewerFormatter: formatDateValue,
+							// 	},
+							// ] : []),
+							// ...(!record['isOverride'] ? [
+							// 	// these items are only for non-overrides
+							// 	{
+							// 		label: 'Last Reset Date',
+							// 		name: 'resetDate',
+							// 		viewerFormatter: formatDateValue,
+							// 	},
+							// 	record['workOrder.title'] && { // Gingerich
+							// 		label: 'Work Order',
+							// 		name: 'workOrder.title',
+							// 	},
+							// 	record['workOrder.service_order'] && { // MH
+							// 		label: 'Service Order',
+							// 		name: 'workOrder.service_order',
+							// 	},
+							// 	{
+							// 		label: 'Interval Days',
+							// 		name: 'intervalDays',
+							// 	},
+							// 	{
+							// 		label: 'Days Left Until Next PM',
+							// 		name: 'daysLeft',
+							// 		viewerFormatter: formatDaysValue,
+							// 	},
+							// 	{
+							// 		label: 'Interval Meter',
+							// 		name: 'intervalMeter',
+							// 		viewerFormatter: formatMeterValue,
+							// 	},
+							// 	typeof record['latestMeterReading.value'] !== 'undefined' && { // typeof so it allows 0
+							// 		label: 'Latest Meter Reading',
+							// 		name: 'latestMeterReading',
+							// 		viewerFormatter: (value, record) => {
+							// 			const
+							// 				meterValue = formatMeterValue(record['latestMeterReading.value'], record),
+							// 				meterDate = formatDateValue(record['latestMeterReading.date'], record);
+							// 			return `${meterValue} on ${meterDate}`;
+							// 		}
+							// 	},
+							// 	{
+							// 		label: 'Meter Accrued Since Latest PM',
+							// 		name: 'meterAccruedSinceLatestPm',
+							// 		viewerFormatter: formatMeterValue,
+							// 	},
+							// 	{
+							// 		label: 'Avg Daily Meter',
+							// 		name: 'avgDailyMeter',
+							// 		viewerFormatter: formatMeterValue,
+							// 	},
+							// 	{
+							// 		label: 'Meter Until Next PM',
+							// 		name: 'meterRemainingUntilNextPm',
+							// 		viewerFormatter: formatMeterValue,
+							// 	},
+							// 	{
+							// 		label: 'Controlling Method',
+							// 		name: 'controllingMethod',
+							// 		tooltip: 'Indicates whether the calculation was based on days or usage (meter). ' +
+							// 				'If both methods are applicable, the one resulting in the earlier PM date is chosen.',
+							// 	},
+							// ] : []),
 
-							...(record['isOverride'] ? [
-								// these items are only for delays
-								{
-									label: 'Is Delayed',
-									name: 'isDelayed',
-									viewerFormatter: formatBooleanValue,
-								},
-								{
-									label: 'Delay Threshold Date',
-									name: 'delayThresholdDate',
-									viewerFormatter: formatDateValue,
-								},
-							] : []),
+							// ...(record['isOverride'] ? [
+							// 	// these items are only for delays
+							// 	{
+							// 		label: 'Is Delayed',
+							// 		name: 'isDelayed',
+							// 		viewerFormatter: formatBooleanValue,
+							// 	},
+							// 	{
+							// 		label: 'Delay Threshold Date',
+							// 		name: 'delayThresholdDate',
+							// 		viewerFormatter: formatDateValue,
+							// 	},
+							// ] : []),
 						]
 					},
 

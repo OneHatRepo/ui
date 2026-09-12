@@ -106,7 +106,7 @@ function UpcomingPmsGrid(props) {
 		hasShownFirstBumpWaiterRef = useRef(false),
 		isWaitingForFirstBumpModalRef = useRef(false),
 		firstBumpDelayTimerRef = useRef(null),
-		[width, height] = useAdjustedWindowSize(styles.DEFAULT_WINDOW_WIDTH, styles.DEFAULT_WINDOW_HEIGHT),
+		[width, height] = useAdjustedWindowSize(600, 730),
 		onBump = (metersPmSchedule) => {
 			if (!hasShownFirstBumpWaiterRef.current) {
 				// on production, pressing the bump button was taking 5 seconds before the modal appeared
