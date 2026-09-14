@@ -29,13 +29,13 @@ export default function SetupButton(props) {
 				? 'text-white data-[hover=true]:text-white data-[active=true]:text-white'
 				: 'text-black data-[hover=true]:text-black data-[active=true]:text-black',
 		),
-		dataSet = {
-			setupMode: isSetupMode ? 'true' : 'false',
-		},
 		iconClassName = clsx(
 			isSetupMode ? 'fill-white' : 'fill-black',
 			isSetupMode ? 'text-white' : 'text-black',
-		);
+		),
+		dataSet = {
+			setupMode: isSetupMode ? 'true' : 'false',
+		};
 
 	return isMinimized ? 
 			<IconButton

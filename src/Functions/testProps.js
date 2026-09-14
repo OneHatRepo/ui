@@ -45,20 +45,7 @@ export default function testProps(id, fv) {
 	if (id.match(/\s/g)) {
 		id = id.replace(/\s/g, '_'); // convert any spaces to underscores
 	}
-	if (Platform.OS === 'web') {
-		const dataSet = {
-			testid: id,
-		};
-		if (fv) {
-			dataSet.fv = JSON.stringify(fv);
-		}
-		return {
-			dataSet,
-		};
-	}
 	return {
-		// TODO: add 'fv' to native
-
 		testID: id,
 	};
 }

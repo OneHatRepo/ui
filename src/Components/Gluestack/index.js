@@ -114,17 +114,28 @@ function withSanitizedProps(Component, displayName, options = {}) {
 			sanitizedProps.className = twMerge(clsx(sanitizedProps.className));
 		}
 
-		// Some Gluestack components directly wrap HTML tags, which cannot accept a dataSet prop.
+		// Some Gluestack components directly wrap HTML tags, which need a data-testid attribute.
 		// For these, map the dataSet to standard HTML data attributes
-		if (options.wrapsDom && isWeb && props.dataSet) {
-			// loop through all dataSet properties and map them to standard HTML data attributes
-			let key;
-			for (key in props.dataSet) {
-				if (props.dataSet.hasOwnProperty(key)) {
-					sanitizedProps[`data-${key}`] = props.dataSet[key];
+		if (isWeb && sanitizedProps.testID) {
+			if (options.wrapsDom) {
+				// convert testID to data-testid attribute for web
+				sanitizedProps['data-testid'] = sanitizedProps.testID;
+				delete sanitizedProps.testID;
+				
+				if (sanitizedProps.dataSet) {
+					// loop through all dataSet properties and map them to standard HTML data attributes
+					let key;
+					for (key in sanitizedProps.dataSet) {
+						if (sanitizedProps.dataSet.hasOwnProperty(key)) {
+							sanitizedProps[`data-${key}`] = sanitizedProps.dataSet[key];
+						}
+					}
+					delete sanitizedProps.dataSet;
 				}
+
+			} else {
+				// do nothing, should remain testID
 			}
-			delete sanitizedProps.dataSet;
 		}
 
 		return <Component ref={ref} {...sanitizedProps} />;
