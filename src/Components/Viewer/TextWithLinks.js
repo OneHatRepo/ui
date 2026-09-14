@@ -73,23 +73,25 @@ function TextWithLinksElement(props) {
 				return <Text className={textClassName}>{modifiedText}</Text>;
 			}
 
-			return textSegments.map((segment, ix) => {
-				const foundLink = links.find(({ key }) => segment === key);
-				let ret = <Text key={ix} className={textClassName}>{segment}</Text>;
-		
-				if (foundLink) {
-					ret = <TextNative
-								{...testProps('link_' + ix)}
-								key={foundLink.key}
-								className={clsx(
-									'text-blue-600',
-									textClassName,
-								)}
-								onPress={() => openLink(foundLink.link)}
-							>{foundLink.link}</TextNative>;
-				}
-				return ret;
-			});
+			return textSegments
+						.filter(segment => segment && segment.trim() !== '') // remove empty segments
+						.map((segment, ix) => {
+							const foundLink = links.find(({ key }) => segment === key);
+							let ret = <Text key={ix} className={textClassName}>{segment}</Text>;
+					
+							if (foundLink) {
+								ret = <TextNative
+											{...testProps('link_' + ix)}
+											key={foundLink.key}
+											className={clsx(
+												'text-blue-600',
+												textClassName,
+											)}
+											onPress={() => openLink(foundLink.link)}
+										>{foundLink.link}</TextNative>;
+							}
+							return ret;
+						});
 		};
   
 	const elementProps = {};
