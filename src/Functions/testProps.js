@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import UiGlobals from '../UiGlobals.js';
 import _ from 'lodash';
 
 /*
@@ -11,6 +12,10 @@ Android            resource-id
 */
 
 export default function testProps(id, fv) {
+
+	if (!UiGlobals.useTestProps) {
+		return {};
+	}
 
 	// testProps should be able to be called twice in succession, so the input needs to handle the output correctly
 	if (_.isObject(id)) {
@@ -41,13 +46,19 @@ export default function testProps(id, fv) {
 		id = id.replace(/\s/g, '_'); // convert any spaces to underscores
 	}
 	if (Platform.OS === 'web') {
+		const dataSet = {
+			testid: id,
+		};
+		if (fv) {
+			dataSet.fv = JSON.stringify(fv);
+		}
 		return {
-			dataSet: {
-				testid: id,
-			},
+			dataSet,
 		};
 	}
 	return {
+		// TODO: add 'fv' to native
+
 		testID: id,
 	};
 }

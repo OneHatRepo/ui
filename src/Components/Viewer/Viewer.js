@@ -91,6 +91,8 @@ function Viewer(props) {
 			selectorSelectedField,
 
 		} = props,
+		useTestProps = !!UiGlobals.useTestProps,
+		fv = useTestProps ? record.getSubmitValues() : null,
 		scrollViewRef = useRef(),
 		ancillaryItemsRef = useRef({}),
 		ancillaryButtons = useRef([]),
@@ -528,7 +530,7 @@ function Viewer(props) {
 			viewerSetup(record.getSubmitValues());
 		}
 	}, [record]);
-	
+
 	if (self) {
 		self.ref = scrollViewRef;
 	}
@@ -605,7 +607,7 @@ function Viewer(props) {
 
 	const scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />;
 	return <VStackNative
-				{...testProps(self)}
+				{...testProps(self, fv)}
 				style={style}
 				onLayout={onLayout}
 				className={className}

@@ -288,7 +288,7 @@ function Form(props) {
 			// register, 
 			// unregister,
 			reset,
-			// watch,
+			watch,
 			// resetField,
 			// setError,
 			// clearErrors,
@@ -314,6 +314,15 @@ function Form(props) {
 			resolver: yupResolver(validatorToUse),
 			context: { isPhantom },
 		}),
+		useTestProps = !!UiGlobals.useTestProps,
+		watchedFormValues = useTestProps ? watch() : null,
+		fv = useTestProps ? (() => {
+			try {
+				return JSON.stringify(formGetValues());
+			} catch (error) {
+				return JSON.stringify(watchedFormValues || {});
+			}
+		})() : null,
 		currentEditorMode = getEditorMode(),
 		resolvedEditorMode = currentEditorMode || props.editorMode || null,
 		isAddMode = resolvedEditorMode === EDITOR_MODE__ADD,
@@ -1983,7 +1992,7 @@ function Form(props) {
 	return <FormContext.Provider value={{ isValid: formState.isValid }}>
 			<VStackNative
 				ref={formRef}
-				{...testProps(self)}
+				{...testProps(self, fv)}
 				style={style}
 				onLayout={onLayoutDecorated}
 				className={className}
