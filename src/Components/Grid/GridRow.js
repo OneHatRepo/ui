@@ -541,7 +541,7 @@ const GridRow = forwardRef((props, ref) => {
 		}
 		let row = <HStackNative
 						ref={rowShouldHaveDragRef ? setRowRef : ref}
-						{...testProps('Row ' + (isSelected ? 'row-selected' : ''))}
+						{...testProps('Row' + (isSelected ? '-selected' : ''))}
 						{...rowPropsToPass}
 						key={hash}
 						className={rowClassName}

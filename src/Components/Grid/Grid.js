@@ -2067,7 +2067,7 @@ function GridComponent(props) {
 
 	if (isDropTarget) {
 		grid = <VStackNative
-					{...testProps(self, '-dropTarget')}
+					{...testProps('dropTarget')}
 					ref={dropTargetRef}
 					className={clsx(
 						'Grid-dropTarget',
