@@ -389,18 +389,18 @@ function Viewer(props) {
 					if (!style.width) {
 						style.width = '160px';
 					}
-					element = <HStack className="Viewer-HStack2 py-1 w-full">
+					element = <HStack className="Viewer-HStack2 w-full">
 									<Label style={style}>{label}</Label>
 									{element}
 								</HStack>;
 				} else {
-					element = <VStack className="Viewer-HStack3 w-full py-1 mt-3">
+					element = <VStack className="Viewer-HStack3 w-full mt-3">
 									<Label style={style}>{label}</Label>
 									{element}
 								</VStack>;
 				}
 			}
-			return <HStack key={ix} className="Viewer-HStack4 px-2 pb-1">{element}</HStack>;
+			return <HStack key={ix} className="Viewer-HStack4 px-2">{element}</HStack>;
 		},
 		buildAncillary = () => {
 			const
