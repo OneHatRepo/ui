@@ -2,7 +2,7 @@ import {
 	Linking,
 } from 'react-native';
 import {
-	BoxNative,
+	BoxNative, // because this could be in a GridRow, which adds an isRowSelectable prop
 	Text,
 	TextNative,
 } from '@onehat-gluestack';
@@ -15,6 +15,12 @@ import testProps from '../../Functions/testProps.js';
 import UiGlobals from '../../UiGlobals.js';
 import withComponent from '../Hoc/withComponent.js';
 import _ from 'lodash';
+
+function extractTextSize(className: string): string | null {
+	// Matches "text-" followed by any alphanumeric text size scale (e.g., xs, sm, base, xl, 2xl, 3xl)
+	const match = className.match(/\btext-(xs|sm|base|md|lg|xl|\d?xl)\b/);
+	return match ? 'text-' + match[1] : null; 
+}
 
 function TextWithLinksElement(props) {
 	const {
@@ -51,14 +57,16 @@ function TextWithLinksElement(props) {
 			});
 
 			const
+				textSize = extractTextSize(props.className),
 				textClassName = clsx(
-					props.className,
 					'TextWithLinks-Text',
 					'flex-1',
 					// 'min-h-[40px]',
-					'px-3',
+					// 'px-3',
 					'overflow-hidden', // override parent
 					styles.FORM_TEXT_CLASSNAME,
+					// props.className,
+					textSize,
 				),
 				textSegments = modifiedText.split(/(link_\d+)/);
 			if (textSegments.length === 1) {
@@ -89,6 +97,7 @@ function TextWithLinksElement(props) {
 		elementProps.textOverflow = 'ellipsis';
 	}
 	const className = clsx(
+		'TextWithLinks-Box',
 		'overflow-auto',
 		// 'min-h-[40px]',
 		props.className,
