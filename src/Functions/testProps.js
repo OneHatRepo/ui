@@ -17,8 +17,6 @@ export default function testProps(id, fv) {
 	if (_.isObject(id)) {
 		if (id.testID) {
 			id = id.testID;
-		} else if (id.__onehatTestId) {
-			id = id.__onehatTestId;
 		} else if (id.dataSet?.testid) {
 			id = id.dataSet.testid;
 		} else if (id.dataset?.testid) {
@@ -45,7 +43,6 @@ export default function testProps(id, fv) {
 	}
 	if (Platform.OS === 'web') {
 		return {
-			__onehatTestId: id,
 			dataSet: {
 				testid: id,
 			},
