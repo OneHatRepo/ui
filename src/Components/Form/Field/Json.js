@@ -60,7 +60,8 @@ export function JsonElement(props) {
 				className={className}
 			>
 				<textarea
-					{...testProps('input')}
+					// {...testProps('input')}
+					data-testid="input"
 					value={_.isNil(value) ? '' : String(value)}
 					onChange={(e) => {
 						const raw = e.target.value;
