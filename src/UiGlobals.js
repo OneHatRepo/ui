@@ -8,12 +8,12 @@ const Globals = {
 	customInflect: (str) => str,
 
 	// global defaults
+	useTestProps: false,
 	paginationIsShowMoreOnly: false,
 	autoAdjustPageSizeToHeight: true,
 	doubleClickingGridRowOpensEditorInViewMode: false,
 	disableSavedColumnsConfig: true,
 	autoSubmitDelay: 500,
-	useTestProps: false,
 	// gridAreRowsDragFromHandleOnly: true,
 	// stayInEditModeOnSelectionChange: true,
 	// isSideEditorAlwaysEditMode: true,

@@ -21,9 +21,9 @@ export default function testProps(id, fv) {
 	if (_.isObject(id)) {
 		if (id.testID) {
 			id = id.testID;
-		} else if (id.dataSet?.testid) {
+		} else if (id.dataSet?.testid) { // uppercase 'S'
 			id = id.dataSet.testid;
-		} else if (id.dataset?.testid) {
+		} else if (id.dataset?.testid) { // lowercase 's'
 			id = id.dataset.testid;
 		} else if (id['data-testid']) {
 			id = id['data-testid'];
