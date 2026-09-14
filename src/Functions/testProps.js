@@ -1,5 +1,4 @@
 import { Platform } from "react-native";
-import UiGlobals from '../UiGlobals.js';
 import _ from 'lodash';
 
 /*

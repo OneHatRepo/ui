@@ -82,12 +82,12 @@ import { SafeAreaView } from './safe-area-view';
 import { ScrollView } from './scroll-view';
 import { SectionList } from './section-list';
 import { Select, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectInput, SelectIcon,  SelectItem,  SelectPortal, SelectTrigger, } from './select';
-import { Skeleton } from './skeleton';
+import { Skeleton, SkeletonText } from './skeleton';
 import { Slider, SliderFilledTrack, SliderThumb, SliderTrack } from './slider';
 import { Spinner } from './spinner';
 import { StatusBar } from './status-bar';
 import { Switch } from './switch';
-import { Table } from './table';
+import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableData, TableCaption, } from './table';
 import { Tabs, TabsList, TabsTrigger, TabsContent, TabsContentWrapper, TabsTriggerText, TabsTriggerIcon, TabsIndicator } from './tabs';
 import { Text } from './text';
 import { Text as TextNative } from './text/index.tsx'; // explicitly import the native version
@@ -101,7 +101,9 @@ import { VStack as VStackNative } from "./vstack/index.tsx"; // explicitly impor
 import { GluestackUIProvider } from './gluestack-ui-provider';
 
 
-function withSanitizedProps(Component, displayName) {
+const isWeb = Platform.OS === 'web';
+
+function withSanitizedProps(Component, displayName, options = {}) {
 	const Wrapped = React.forwardRef((props, ref) => {
 
 		// omit the OneHat internal HOC props
@@ -112,6 +114,19 @@ function withSanitizedProps(Component, displayName) {
 			sanitizedProps.className = twMerge(clsx(sanitizedProps.className));
 		}
 
+		// Some Gluestack components directly wrap HTML tags, which cannot accept a dataSet prop.
+		// For these, map the dataSet to standard HTML data attributes
+		if (options.wrapsDom && isWeb && props.dataSet) {
+			// loop through all dataSet properties and map them to standard HTML data attributes
+			let key;
+			for (key in props.dataSet) {
+				if (props.dataSet.hasOwnProperty(key)) {
+					sanitizedProps[`data-${key}`] = props.dataSet[key];
+				}
+			}
+			delete sanitizedProps.dataSet;
+		}
+
 		return <Component ref={ref} {...sanitizedProps} />;
 	});
 
@@ -119,9 +134,7 @@ function withSanitizedProps(Component, displayName) {
 	return Wrapped;
 }
 
-const isWeb = Platform.OS === 'web';
-
-const SanitizedBox = withSanitizedProps(Box, 'SanitizedBox');
+const SanitizedBox = withSanitizedProps(Box, 'SanitizedBox', { wrapsDom: true });
 const SanitizedBoxNative = withSanitizedProps(BoxNative, 'SanitizedBoxNative');
 const SanitizedAccordion = withSanitizedProps(Accordion, 'SanitizedAccordion');
 const SanitizedAccordionContent = withSanitizedProps(AccordionContent, 'SanitizedAccordionContent');
@@ -168,11 +181,11 @@ const SanitizedCalendarDayText = withSanitizedProps(CalendarDayText, 'SanitizedC
 const SanitizedCalendarDayIndicator = withSanitizedProps(CalendarDayIndicator, 'SanitizedCalendarDayIndicator');
 const SanitizedCalendarWeekNumber = withSanitizedProps(CalendarWeekNumber, 'SanitizedCalendarWeekNumber');
 const SanitizedCalendarFooter = withSanitizedProps(CalendarFooter, 'SanitizedCalendarFooter');
-const SanitizedCard = withSanitizedProps(Card, 'SanitizedCard');
-const SanitizedCenter = withSanitizedProps(Center, 'SanitizedCenter');
+const SanitizedCard = withSanitizedProps(Card, 'SanitizedCard', { wrapsDom: true });
+const SanitizedCenter = withSanitizedProps(Center, 'SanitizedCenter', { wrapsDom: true });
 const SanitizedCheckbox = withSanitizedProps(Checkbox, 'SanitizedCheckbox');
 const SanitizedCheckboxGroup = withSanitizedProps(CheckboxGroup, 'SanitizedCheckboxGroup');
-const SanitizedDateTimePicker = withSanitizedProps(DateTimePicker, 'SanitizedDateTimePicker');
+const SanitizedDateTimePicker = withSanitizedProps(DateTimePicker, 'SanitizedDateTimePicker', { wrapsDom: true });
 const SanitizedDateTimePickerIcon = withSanitizedProps(DateTimePickerIcon, 'SanitizedDateTimePickerIcon');
 const SanitizedDateTimePickerInput = withSanitizedProps(DateTimePickerInput, 'SanitizedDateTimePickerInput');
 const SanitizedDateTimePickerTrigger = withSanitizedProps(DateTimePickerTrigger, 'SanitizedDateTimePickerTrigger');
@@ -185,20 +198,20 @@ const SanitizedFlatList = withSanitizedProps(FlatList, 'SanitizedFlatList');
 const SanitizedFormControl = withSanitizedProps(FormControl, 'SanitizedFormControl');
 const SanitizedGlassView = withSanitizedProps(GlassView, 'SanitizedGlassView');
 const SanitizedGlassContainer = withSanitizedProps(GlassContainer, 'SanitizedGlassContainer');
-const SanitizedGrid = withSanitizedProps(Grid, 'SanitizedGrid');
-const SanitizedGridItem = withSanitizedProps(GridItem, 'SanitizedGridItem');
-const SanitizedHeading = withSanitizedProps(Heading, 'SanitizedHeading');
-const SanitizedHStack = withSanitizedProps(HStack, 'SanitizedHStack');
+const SanitizedGrid = withSanitizedProps(Grid, 'SanitizedGrid', { wrapsDom: true });
+const SanitizedGridItem = withSanitizedProps(GridItem, 'SanitizedGridItem', { wrapsDom: true });
+const SanitizedHeading = withSanitizedProps(Heading, 'SanitizedHeading', { wrapsDom: true });
+const SanitizedHStack = withSanitizedProps(HStack, 'SanitizedHStack', { wrapsDom: true });
 const SanitizedHStackNative = withSanitizedProps(HStackNative, 'SanitizedHStackNative');
-const SanitizedIcon = withSanitizedProps(Icon, 'SanitizedIcon');
+const SanitizedIcon = withSanitizedProps(Icon, 'SanitizedIcon', { wrapsDom: true });
 const SanitizedImage = withSanitizedProps(Image, 'SanitizedImage');
 const SanitizedImageBackground = withSanitizedProps(ImageBackground, 'SanitizedImageBackground');
-const SanitizedImageViewer = withSanitizedProps(ImageViewer, 'SanitizedImageViewer');
-const SanitizedImageViewerTrigger = withSanitizedProps(ImageViewerTrigger, 'SanitizedImageViewerTrigger');
-const SanitizedImageViewerContent = withSanitizedProps(ImageViewerContent, 'SanitizedImageViewerContent');
-const SanitizedImageViewerCloseButton = withSanitizedProps(ImageViewerCloseButton, 'SanitizedImageViewerCloseButton');
-const SanitizedImageViewerNavigation = withSanitizedProps(ImageViewerNavigation, 'SanitizedImageViewerNavigation');
-const SanitizedImageViewerCounter = withSanitizedProps(ImageViewerCounter, 'SanitizedImageViewerCounter');
+const SanitizedImageViewer = withSanitizedProps(ImageViewer, 'SanitizedImageViewer', { wrapsDom: true });
+const SanitizedImageViewerTrigger = withSanitizedProps(ImageViewerTrigger, 'SanitizedImageViewerTrigger', { wrapsDom: true });
+const SanitizedImageViewerContent = withSanitizedProps(ImageViewerContent, 'SanitizedImageViewerContent', { wrapsDom: true });
+const SanitizedImageViewerCloseButton = withSanitizedProps(ImageViewerCloseButton, 'SanitizedImageViewerCloseButton', { wrapsDom: true });
+const SanitizedImageViewerNavigation = withSanitizedProps(ImageViewerNavigation, 'SanitizedImageViewerNavigation', { wrapsDom: true });
+const SanitizedImageViewerCounter = withSanitizedProps(ImageViewerCounter, 'SanitizedImageViewerCounter', { wrapsDom: true });
 const SanitizedInput = withSanitizedProps(Input, 'SanitizedInput');
 const SanitizedInputField = withSanitizedProps(InputField, 'SanitizedInputField');
 const SanitizedInputIcon = withSanitizedProps(InputIcon, 'SanitizedInputIcon');
@@ -237,7 +250,8 @@ const SanitizedSelectIcon = withSanitizedProps(SelectIcon, 'SanitizedSelectIcon'
 const SanitizedSelectItem = withSanitizedProps(SelectItem, 'SanitizedSelectItem');
 const SanitizedSelectPortal = withSanitizedProps(SelectPortal, 'SanitizedSelectPortal');
 const SanitizedSelectTrigger = withSanitizedProps(SelectTrigger, 'SanitizedSelectTrigger');
-const SanitizedSkeleton = withSanitizedProps(Skeleton, 'SanitizedSkeleton');
+const SanitizedSkeleton = withSanitizedProps(Skeleton, 'SanitizedSkeleton', { wrapsDom: true });
+const SanitizedSkeletonText = withSanitizedProps(SkeletonText, 'SanitizedSkeletonText', { wrapsDom: true });
 const SanitizedSlider = withSanitizedProps(Slider, 'SanitizedSlider');
 const SanitizedSliderFilledTrack = withSanitizedProps(SliderFilledTrack, 'SanitizedSliderFilledTrack');
 const SanitizedSliderThumb = withSanitizedProps(SliderThumb, 'SanitizedSliderThumb');
@@ -245,7 +259,14 @@ const SanitizedSliderTrack = withSanitizedProps(SliderTrack, 'SanitizedSliderTra
 const SanitizedSpinner = withSanitizedProps(Spinner, 'SanitizedSpinner');
 const SanitizedStatusBar = withSanitizedProps(StatusBar, 'SanitizedStatusBar');
 const SanitizedSwitch = withSanitizedProps(Switch, 'SanitizedSwitch');
-const SanitizedTable = withSanitizedProps(Table, 'SanitizedTable');
+const SanitizedTable = withSanitizedProps(Table, 'SanitizedTable', { wrapsDom: true });
+const SanitizedTableHeader = withSanitizedProps(TableHeader, 'SanitizedTableHeader', { wrapsDom: true });
+const SanitizedTableBody = withSanitizedProps(TableBody, 'SanitizedTableBody', { wrapsDom: true });
+const SanitizedTableFooter = withSanitizedProps(TableFooter, 'SanitizedTableFooter', { wrapsDom: true });
+const SanitizedTableHead = withSanitizedProps(TableHead, 'SanitizedTableHead', { wrapsDom: true });
+const SanitizedTableRow = withSanitizedProps(TableRow, 'SanitizedTableRow', { wrapsDom: true });
+const SanitizedTableData = withSanitizedProps(TableData, 'SanitizedTableData', { wrapsDom: true });
+const SanitizedTableCaption = withSanitizedProps(TableCaption, 'SanitizedTableCaption', { wrapsDom: true });
 const SanitizedTabs = withSanitizedProps(Tabs, 'SanitizedTabs');
 const SanitizedTabsList = withSanitizedProps(TabsList, 'SanitizedTabsList');
 const SanitizedTabsTrigger = withSanitizedProps(TabsTrigger, 'SanitizedTabsTrigger');
@@ -254,7 +275,7 @@ const SanitizedTabsContentWrapper = withSanitizedProps(TabsContentWrapper, 'Sani
 const SanitizedTabsTriggerText = withSanitizedProps(TabsTriggerText, 'SanitizedTabsTriggerText');
 const SanitizedTabsTriggerIcon = withSanitizedProps(TabsTriggerIcon, 'SanitizedTabsTriggerIcon');
 const SanitizedTabsIndicator = withSanitizedProps(TabsIndicator, 'SanitizedTabsIndicator');
-const SanitizedText = withSanitizedProps(Text, 'SanitizedText');
+const SanitizedText = withSanitizedProps(Text, 'SanitizedText', { wrapsDom: true });
 const SanitizedTextNative = withSanitizedProps(TextNative, 'SanitizedTextNative');
 const SanitizedTextarea = withSanitizedProps(Textarea, 'SanitizedTextarea');
 const SanitizedTextareaInput = withSanitizedProps(TextareaInput, 'SanitizedTextareaInput');
@@ -266,7 +287,7 @@ const SanitizedTooltipContent = withSanitizedProps(TooltipContent, 'SanitizedToo
 const SanitizedTooltipText = withSanitizedProps(TooltipText, 'SanitizedTooltipText');
 const SanitizedView = withSanitizedProps(View, 'SanitizedView');
 const SanitizedVirtualizedList = withSanitizedProps(VirtualizedList, 'SanitizedVirtualizedList');
-const SanitizedVStack = withSanitizedProps(VStack, 'SanitizedVStack');
+const SanitizedVStack = withSanitizedProps(VStack, 'SanitizedVStack', { wrapsDom: true });
 const SanitizedVStackNative = withSanitizedProps(VStackNative, 'SanitizedVStackNative');
 
 
