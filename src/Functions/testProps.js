@@ -11,7 +11,7 @@ iOS                accessibilityIdentifier
 Android            resource-id
 */
 
-export default function testProps(id, suffix) {
+export default function testProps(id, fv) {
 
 	// testProps should be able to be called twice in succession, so the input needs to handle the output correctly
 	if (_.isObject(id)) {
@@ -42,9 +42,6 @@ export default function testProps(id, suffix) {
 	}
 	if (id.match(/\s/g)) {
 		id = id.replace(/\s/g, '_'); // convert any spaces to underscores
-	}
-	if (suffix) {
-		id += suffix; // this is used in conjunction with 'self' object
 	}
 	if (Platform.OS === 'web') {
 		return {
