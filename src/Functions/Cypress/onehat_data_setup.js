@@ -11,6 +11,118 @@ const
 
 let initializePromise = null;
 
+function getAllSchemaMap() {
+	if (allSchemas?.default && typeof allSchemas.default === 'object') {
+		return allSchemas.default;
+	}
+	return allSchemas;
+}
+
+function getAllSchemaDefinitions() {
+	return Object.values(getAllSchemaMap() || {});
+}
+
+function resolveOneHatData(options = {}) {
+	return options.oneHatDataInstance || oneHatData;
+}
+
+function isRuntimeReady(ohd) {
+	const schemaDefinitions = getAllSchemaDefinitions();
+
+	for (const schemaDefinition of schemaDefinitions) {
+		const schemaName = schemaDefinition?.name;
+		if (!schemaName) {
+			continue;
+		}
+
+		const schema = ohd.getSchema(schemaName);
+		if (!schema?.getBoundRepository?.()) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function ensureSchemasExist(ohd) {
+	const schemaDefinitions = getAllSchemaDefinitions();
+
+	for (const schemaDefinition of schemaDefinitions) {
+		const schemaName = schemaDefinition?.name;
+		if (!schemaName || ohd.getSchema(schemaName)) {
+			continue;
+		}
+
+		ohd.createSchema(schemaDefinition.clone ? schemaDefinition.clone() : schemaDefinition);
+	}
+}
+
+async function ensureAllSchemaRepositoriesReady(ohd) {
+	const schemaDefinitions = getAllSchemaDefinitions();
+
+	for (const schemaDefinition of schemaDefinitions) {
+		if (!schemaDefinition?.name) {
+			continue;
+		}
+
+		let schema = ohd.getSchema(schemaDefinition.name);
+		if (!schema) {
+			ohd.createSchema(schemaDefinition.clone ? schemaDefinition.clone() : schemaDefinition);
+			schema = ohd.getSchema(schemaDefinition.name);
+		}
+
+		if (!schema?.getBoundRepository?.()) {
+			await ohd.createRepository({ schema }, true);
+		}
+	}
+}
+
+function resolveRequiredSchemaDefinitions(options = {}) {
+	const requiredSchemaDefinitions = [];
+	const requiredSchemaNames = options.requiredSchemaNames || [];
+	const requiredSchemas = options.requiredSchemas || [];
+
+	for (const schemaDefinition of requiredSchemas) {
+		if (!schemaDefinition?.name) {
+			continue;
+		}
+		requiredSchemaDefinitions.push(schemaDefinition);
+	}
+
+	for (const schemaName of requiredSchemaNames) {
+		if (!schemaName || requiredSchemaDefinitions.find((item) => item.name === schemaName)) {
+			continue;
+		}
+
+		const schemaDefinition = getAllSchemaMap()[schemaName];
+		if (!schemaDefinition) {
+			throw new Error(`Missing schema definition for required schema "${schemaName}".`);
+		}
+
+		requiredSchemaDefinitions.push(schemaDefinition);
+	}
+
+	return requiredSchemaDefinitions;
+}
+
+async function ensureRequiredRepositoriesReady(options = {}) {
+	const ohd = resolveOneHatData(options);
+	const requiredSchemaDefinitions = resolveRequiredSchemaDefinitions(options);
+
+	for (const schemaDefinition of requiredSchemaDefinitions) {
+		let schema = ohd.getSchema(schemaDefinition.name);
+
+		if (!schema) {
+			ohd.createSchema(schemaDefinition.clone ? schemaDefinition.clone() : schemaDefinition);
+			schema = ohd.getSchema(schemaDefinition.name);
+		}
+
+		if (!schema?.getBoundRepository?.()) {
+			await ohd.createRepository({ schema }, true);
+		}
+	}
+}
+
 function resolveApiBaseUrl() {
 
 	const locationHostname = window.location.hostname;
@@ -61,14 +173,21 @@ export function getLoginParams(username) {
 	});
 }
 
-function initializeOneHatData() {
-	if (window[CYPRESS_DATA_READY_KEY]) {
+function initializeOneHatData(options = {}) {
+	const ohd = resolveOneHatData(options);
+
+	if (window[CYPRESS_DATA_READY_KEY] && isRuntimeReady(ohd)) {
 		return Promise.resolve(window[CYPRESS_AUTH_CACHE_KEY]);
+	}
+
+	if (window[CYPRESS_DATA_READY_KEY] && !isRuntimeReady(ohd)) {
+		window[CYPRESS_DATA_READY_KEY] = false;
+		window[CYPRESS_AUTH_CACHE_KEY] = null;
 	}
 
 	const apiBaseUrl = resolveApiBaseUrl();
 
-	oneHatData
+	ohd
 		.setRepositoryGlobals({
 			debugMode: false,
 			api: {
@@ -86,10 +205,12 @@ function initializeOneHatData() {
 			SecureLocalStorage,
 		]);
 
-	oneHatData.createSchemas(Object.values(allSchemas));
+	ensureSchemasExist(ohd);
 
-	return oneHatData.createBoundRepositories().then(() => {
-		const Users = oneHatData.getRepository('Users');
+	return ohd.createBoundRepositories().then(async () => {
+		await ensureAllSchemaRepositoriesReady(ohd);
+
+		const Users = ohd.getRepository('Users');
 
 		return getLoginParams().then(({ loginIdField, loginId, password }) => {
 			return Users.login({
@@ -118,13 +239,51 @@ function initializeOneHatData() {
 	});
 }
 
-export function ensureOneHatDataReady() {
-	if (!initializePromise) {
-		initializePromise = initializeOneHatData();
+export function ensureOneHatDataReady(options = {}) {
+	const ohd = resolveOneHatData(options);
+
+	if (window[CYPRESS_DATA_READY_KEY] && !isRuntimeReady(ohd)) {
+		window[CYPRESS_DATA_READY_KEY] = false;
+		window[CYPRESS_AUTH_CACHE_KEY] = null;
+		initializePromise = null;
 	}
-	return initializePromise;
+
+	if (!initializePromise) {
+		initializePromise = initializeOneHatData(options).catch((error) => {
+			initializePromise = null;
+			throw error;
+		});
+	}
+
+	return initializePromise.then(async (authContext) => {
+		await ensureAllSchemaRepositoriesReady(ohd);
+		await ensureRequiredRepositoriesReady(options);
+		return authContext;
+	});
 }
 
 export function getOneHatDataAuthContext() {
 	return window[CYPRESS_AUTH_CACHE_KEY] || null;
+}
+
+export async function resetOneHatDataRuntime(options = {}) {
+	const ohd = resolveOneHatData(options);
+	const clearStorage = options.clearStorage === true;
+
+	initializePromise = null;
+	window[CYPRESS_AUTH_CACHE_KEY] = null;
+	window[CYPRESS_DATA_READY_KEY] = false;
+
+	if (clearStorage) {
+		const repositories = Object.values(ohd.getAllRepositories());
+		for (const repository of repositories) {
+			if (repository?.clearAll) {
+				await repository.clearAll();
+			}
+		}
+	}
+
+	await ohd.destroyBoundRepositories();
+
+	return true;
 }
