@@ -60,12 +60,8 @@ function TextWithLinksElement(props) {
 				textSize = extractTextSize(props.className),
 				textClassName = clsx(
 					'TextWithLinks-Text',
-					'flex-1',
-					// 'min-h-[40px]',
-					// 'px-3',
 					'overflow-hidden', // override parent
 					styles.FORM_TEXT_CLASSNAME,
-					// props.className,
 					textSize,
 				),
 				textSegments = modifiedText.split(/(link_\d+)/);
@@ -101,12 +97,15 @@ function TextWithLinksElement(props) {
 	const className = clsx(
 		'TextWithLinks-Box',
 		'overflow-auto',
-		// 'min-h-[40px]',
+		'flex-1',
 		props.className,
+		'min-h-[40px]',
+		'px-3',
+		'py-2',
 	);
 	return <BoxNative
-				className={className}
 				{...props}
+				className={className}
 			>{renderTextWithLinks()}</BoxNative>;
 };
 
