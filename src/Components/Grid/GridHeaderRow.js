@@ -357,8 +357,17 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 						rowClassName = ' ' + styles.INLINE_EDITOR_MIN_WIDTH;
 					}
 
+					let dataSet = null;
+					if (isSorter) {
+						dataSet = {
+							isSorter: isSorter ? 'true' : 'false',
+							sortDirection: isSortDirectionAsc ? 'ASC' : 'DESC',
+						};
+					}
+
 					return <Pressable
 								{...testProps('Header-' + fieldName)}
+								dataSet={dataSet}
 								key={ix}
 								onPress={(e) => {
 									if (e.preventDefault) {
