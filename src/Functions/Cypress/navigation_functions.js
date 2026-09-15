@@ -39,7 +39,6 @@ export function login(loginId = null, password = null) {
 }
 export function logout() {
 	cy.log('logout');
-	const baseDir = Cypress.expose('baseDir') || ''; 
 	getDomNode('userIndicator').click({ force: true });
 
 	cy.url().should('include', baseUrl + baseDir + 'login');
