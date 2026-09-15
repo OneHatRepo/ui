@@ -100,10 +100,13 @@ export default function withFilters(WrappedComponent) {
 			getFormattedFilter = (filter) => {
 				let formatted = null;
 				if (_.isString(filter)) {
-					const
-						field = filter,
+					const field = filter;
+					let propertyDef = null;
+					try {
 						propertyDef = Repository.getSchema().getPropertyDefinition(field);
-					
+					} catch (error) {
+						// do nothing, there will be no propertyDef for ancillary filters
+					}
 					let title, type;
 					if (propertyDef) {
 						title = propertyDef.filterTitle || propertyDef.title;
