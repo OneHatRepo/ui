@@ -387,7 +387,7 @@ function Viewer(props) {
 				}
 				if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
 					if (!style.width) {
-						style.width = '160px';
+						style.width = '170px';
 					}
 					element = <HStack className="Viewer-HStack2 w-full">
 									<Label style={style}>{label}</Label>

@@ -857,7 +857,7 @@ function Form(props) {
 					}
 					if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
 						if (!style.width) {
-							style.width = '160px';
+							style.width = '170px';
 						}
 						element = <HStack className="Form-HStack1 w-full py-1">
 										<Label style={style}>{label}</Label>
@@ -1066,7 +1066,7 @@ function Form(props) {
 								}
 								if (containerWidth > styles.FORM_STACK_ROW_THRESHOLD) {
 									if (!style.width) {
-										style.width = '160px';
+										style.width = '170px';
 									}
 									element = <HStack className={clsx('Form-HStack8', isInCompactRow ? 'w-auto' : 'w-full')}>
 								 					<Label style={style}>
