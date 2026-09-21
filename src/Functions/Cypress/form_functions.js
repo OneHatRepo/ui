@@ -129,68 +129,6 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 		}
 	});
 }
-function getFieldRoot(selectors) {
-	return getDomNode(selectors).then(($field) => Cypress.$($field[0]));
-}
-
-// helpers for withFieldInput
-const EDITABLE_INPUT_SELF_SELECTOR = [
-	'input:not([type="hidden"]):not([readonly]):not([disabled])',
-	'textarea:not([readonly]):not([disabled])',
-].join(', ');
-const EDITABLE_INPUT_DESCENDANT_SELECTOR = [
-	'[data-testid="input"] input:not([type="hidden"]):not([readonly]):not([disabled])',
-	'[data-testid="input"] textarea:not([readonly]):not([disabled])',
-	'input:not([type="hidden"]):not([readonly]):not([disabled])',
-	'textarea:not([readonly]):not([disabled])',
-].join(', ');
-const COMBO_EDITABLE_INPUT_SELECTOR = '[data-testid="input"]';
-function findFieldInputNode($root) {
-	if ($root.is(EDITABLE_INPUT_SELF_SELECTOR)) {
-		return $root.first();
-	}
-	return $root.find(EDITABLE_INPUT_DESCENDANT_SELECTOR).first();
-}
-function withComboInput(selectors, cb) {
-	const rootSelector = getTestIdSelectors(selectors, true);
-	return cy.get(rootSelector).should(($rootSubject) => {
-		const
-			$root = Cypress.$($rootSubject[0]),
-			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
-		expect(
-			$input.length,
-			'setComboValue requires an editable Combo input; disableDirectEntry combos are not supported by this setter.'
-		).to.be.greaterThan(0);
-	}).then(($rootSubject) => {
-		const
-			$root = Cypress.$($rootSubject[0]),
-			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
-		return cb($input, $root);
-	});
-}
-
-function withFieldInput(selectors, cb) {
-	const rootSelector = getTestIdSelectors(selectors, true);
-	return cy.get(rootSelector).should(($rootSubject) => {
-		const
-			$root = Cypress.$($rootSubject[0]),
-			$input = findFieldInputNode($root);
-		// Keep retrying until an editable input/textarea is present under this field root.
-		expect(
-			$input.length,
-			'No input found for selectors: ' + JSON.stringify(selectors)
-		).to.be.greaterThan(0);
-	}).then(($rootSubject) => {
-		// Recompute after the assertion passes so cb always gets the resolved live node.
-		const
-			$root = Cypress.$($rootSubject[0]),
-			$input = findFieldInputNode($root);
-		return cb($input, $root);
-	});
-}
-function normalizeEmptySetterValue(value) {
-	return _.isNil(value) || value === '';
-}
 export function setArrayComboValue(selectors, value) {
 	cy.log('setArrayComboValue ' + value);
 	getDomNode([...selectors, 'input']).then((field) => {
@@ -212,6 +150,8 @@ export function setComboValue(selectors, value) {
 
 		clickXButtonIfEnabled(selectors); // clear current value
 
+		cy.wait(300);
+
 		if (normalizeEmptySetterValue(value)) {
 			return;
 		}
@@ -220,12 +160,11 @@ export function setComboValue(selectors, value) {
 			.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 			.wait('@getWaiter'); // allow dropdown to load
 
-		cy.wrap($input)
-			.wait(500)
-			.type('{downarrow}')
-			.wait(300)
-			.type('{enter}')
-			.wait(250); // allow time to register enter key
+		resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
+			cy.wrap($keyboardInput)
+				.type('{downarrow}', { force: true })
+				.type('{enter}', { force: true });
+		});
 	});
 }
 export function setTagValue(selectors, value) {
@@ -678,76 +617,6 @@ export function getFormValues(editorSelector, schema) {
 		return chain.then(() => formValues);
 	});
 }
-function getFieldValueByType(selectors, editorType) {
-	if (editorType?.match(/Combo/)) {
-		return getComboValue(selectors);
-	}
-	if (editorType?.match(/TreeSelector/)) {
-		// Explicitly excluded by request.
-		return getInputValue(selectors);
-	}
-	if (editorType?.match(/CKEditor/)) {
-		// Explicitly excluded by request.
-		return getInputValue(selectors);
-	}
-	if (editorType?.match(/Tag/)) {
-		return getTagValue(selectors);
-	}
-	if (editorType === 'Color') {
-		return getColorValue(selectors);
-	}
-	if (editorType === 'Date') {
-		return getDateValue(selectors);
-	}
-	if (editorType === 'DisplayField') {
-		return getDisplayFieldValue(selectors);
-	}
-	if (editorType === 'File') {
-		return getFileValue(selectors);
-	}
-	if (editorType === 'Hidden') {
-		return getHiddenValue(selectors);
-	}
-	if (editorType === 'Input') {
-		return getInputValue(selectors);
-	}
-	if (editorType === 'Json') {
-		return getJsonValue(selectors);
-	}
-	if (editorType === 'Number') {
-		return getNumberValue(selectors);
-	}
-	if (editorType === 'Slider') {
-		return getSliderValue(selectors);
-	}
-	if (editorType === 'Text') {
-		return getDisplayTextValue(selectors);
-	}
-	if (editorType === 'TextArea') {
-		return getTextAreaValue(selectors);
-	}
-	if (editorType === 'Toggle') {
-		return getToggleValue(selectors);
-	}
-	if (editorType === 'Checkbox') {
-		return getCheckboxValue(selectors);
-	}
-	if (editorType === 'CheckboxGroup') {
-		return getCheckboxGroupValue(selectors);
-	}
-	if (editorType === 'ArrayCheckboxGroup') {
-		return getArrayCheckboxGroupValue(selectors);
-	}
-	if (editorType === 'RadioGroup') {
-		return getRadioGroupValue(selectors);
-	}
-	if (editorType === 'ArrayRadioGroup') {
-		return getArrayRadioGroupValue(selectors);
-	}
-	
-	// Fallback/Custom components
-	return getInputValue(selectors);
-}
 export function getComboValue(selectors) {
 	cy.log('getComboValue');
 	return getDomNode(selectors).then(($comboField) => {
@@ -811,70 +680,6 @@ export function getTagValue(selectors) {
 
 		return values.length ? JSON.stringify(values) : null;
 	});
-}
-function normalizeStringValue(value) {
-	if (_.isNil(value)) {
-		return null;
-	}
-	if (_.isString(value) && value === '') {
-		return null;
-	}
-	return value;
-}
-function normalizeNumericValue(rawValue) {
-	if (_.isNil(rawValue)) {
-		return null;
-	}
-	if (_.isNumber(rawValue)) {
-		return rawValue;
-	}
-
-	const raw = String(rawValue).trim();
-	if (raw === '') {
-		return null;
-	}
-
-	const numericValue = Number(raw);
-	if (Number.isNaN(numericValue)) {
-		throw new Error('Expected numeric value but got: ' + raw);
-	}
-
-	return numericValue;
-}
-function getIsCheckedFromNode($node) {
-	const ariaChecked = $node.attr('aria-checked');
-	if (ariaChecked === 'true') {
-		return true;
-	}
-	if (ariaChecked === 'false') {
-		return false;
-	}
-
-	const dataState = $node.attr('data-state');
-	if (dataState === 'checked' || dataState === 'on' || dataState === 'true') {
-		return true;
-	}
-	if (dataState === 'unchecked' || dataState === 'off' || dataState === 'false') {
-		return false;
-	}
-
-	const $input = $node.find('input').first();
-	if ($input.length) {
-		return !!$input.prop('checked');
-	}
-
-	return false;
-}
-function parseIdFromTestId(testId, prefix) {
-	if (!_.isString(testId) || !testId.startsWith(prefix)) {
-		return null;
-	}
-	const raw = testId.slice(prefix.length);
-	if (raw === '') {
-		return null;
-	}
-	const numeric = Number(raw);
-	return Number.isNaN(numeric) ? raw : numeric;
 }
 export function getInputValue(selectors) {
 	cy.log('getInputValue');
@@ -1110,4 +915,240 @@ export function getToggleValue(selectors) {
 		const checked = Cypress.$($switchInput[0]).prop('checked');
 		return _.isNil(checked) ? null : !!checked;
 	});
+}
+
+
+
+//     __         __
+//    / /_  ___  / /___  ___  __________
+//   / __ \/ _ \/ / __ \/ _ \/ ___/ ___/
+//  / / / /  __/ / /_/ /  __/ /  (__  )
+// /_/ /_/\___/_/ .___/\___/_/  /____/
+//             /_/
+
+function getFieldRoot(selectors) {
+	return getDomNode(selectors).then(($field) => Cypress.$($field[0]));
+}
+
+const EDITABLE_INPUT_SELF_SELECTOR = [
+	'input:not([type="hidden"]):not([readonly]):not([disabled])',
+	'textarea:not([readonly]):not([disabled])',
+].join(', ');
+const EDITABLE_INPUT_DESCENDANT_SELECTOR = [
+	'[data-testid="input"] input:not([type="hidden"]):not([readonly]):not([disabled])',
+	'[data-testid="input"] textarea:not([readonly]):not([disabled])',
+	'input:not([type="hidden"]):not([readonly]):not([disabled])',
+	'textarea:not([readonly]):not([disabled])',
+].join(', ');
+function findFieldInputNode($root) {
+	if ($root.is(EDITABLE_INPUT_SELF_SELECTOR)) {
+		return $root.first();
+	}
+	return $root.find(EDITABLE_INPUT_DESCENDANT_SELECTOR).first();
+}
+
+function withFieldInput(selectors, cb) {
+	const rootSelector = getTestIdSelectors(selectors, true);
+	return cy.get(rootSelector).should(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = findFieldInputNode($root);
+		// Keep retrying until an editable input/textarea is present under this field root.
+		expect(
+			$input.length,
+			'No input found for selectors: ' + JSON.stringify(selectors)
+		).to.be.greaterThan(0);
+	}).then(($rootSubject) => {
+		// Recompute after the assertion passes so cb always gets the resolved live node.
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = findFieldInputNode($root);
+		return cb($input, $root);
+	});
+}
+function normalizeEmptySetterValue(value) {
+	return _.isNil(value) || value === '';
+}
+
+const COMBO_EDITABLE_INPUT_SELECTOR = '[data-testid="input"]';
+function resolveComboKeyboardInput(selectors) {
+	const rootSelector = getTestIdSelectors(selectors, true);
+	return cy.get('body').then(($body) => {
+		// Prefer the currently focused Combo input (the modal inputClone when the menu is open).
+		const $focusedByAttr = $body.find(COMBO_EDITABLE_INPUT_SELECTOR + '[data-focus="true"]').first();
+		if ($focusedByAttr.length) {
+			return $focusedByAttr;
+		}
+
+		const activeElement = $body[0]?.ownerDocument?.activeElement;
+		if (activeElement) {
+			const $active = Cypress.$(activeElement);
+			if ($active.is(COMBO_EDITABLE_INPUT_SELECTOR)) {
+				return $active;
+			}
+			const $activeInput = $active.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
+			if ($activeInput.length) {
+				return $activeInput;
+			}
+		}
+
+		const $root = $body.find(rootSelector).first();
+		const $rootInput = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
+		expect(
+			$rootInput.length,
+			'No Combo input available for keyboard navigation: ' + JSON.stringify(selectors)
+		).to.be.greaterThan(0);
+		return $rootInput;
+	});
+}
+function withComboInput(selectors, cb) {
+	const rootSelector = getTestIdSelectors(selectors, true);
+	return cy.get(rootSelector).should(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
+		expect(
+			$input.length,
+			'setComboValue requires an editable Combo input; disableDirectEntry combos are not supported by this setter.'
+		).to.be.greaterThan(0);
+	}).then(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
+		return cb($input, $root);
+	});
+}
+function normalizeStringValue(value) {
+	if (_.isNil(value)) {
+		return null;
+	}
+	if (_.isString(value) && value === '') {
+		return null;
+	}
+	return value;
+}
+function normalizeNumericValue(rawValue) {
+	if (_.isNil(rawValue)) {
+		return null;
+	}
+	if (_.isNumber(rawValue)) {
+		return rawValue;
+	}
+
+	const raw = String(rawValue).trim();
+	if (raw === '') {
+		return null;
+	}
+
+	const numericValue = Number(raw);
+	if (Number.isNaN(numericValue)) {
+		throw new Error('Expected numeric value but got: ' + raw);
+	}
+
+	return numericValue;
+}
+function getIsCheckedFromNode($node) {
+	const ariaChecked = $node.attr('aria-checked');
+	if (ariaChecked === 'true') {
+		return true;
+	}
+	if (ariaChecked === 'false') {
+		return false;
+	}
+
+	const dataState = $node.attr('data-state');
+	if (dataState === 'checked' || dataState === 'on' || dataState === 'true') {
+		return true;
+	}
+	if (dataState === 'unchecked' || dataState === 'off' || dataState === 'false') {
+		return false;
+	}
+
+	const $input = $node.find('input').first();
+	if ($input.length) {
+		return !!$input.prop('checked');
+	}
+
+	return false;
+}
+function parseIdFromTestId(testId, prefix) {
+	if (!_.isString(testId) || !testId.startsWith(prefix)) {
+		return null;
+	}
+	const raw = testId.slice(prefix.length);
+	if (raw === '') {
+		return null;
+	}
+	const numeric = Number(raw);
+	return Number.isNaN(numeric) ? raw : numeric;
+}
+function getFieldValueByType(selectors, editorType) {
+	if (editorType?.match(/Combo/)) {
+		return getComboValue(selectors);
+	}
+	if (editorType?.match(/TreeSelector/)) {
+		// Explicitly excluded by request.
+		return getInputValue(selectors);
+	}
+	if (editorType?.match(/CKEditor/)) {
+		// Explicitly excluded by request.
+		return getInputValue(selectors);
+	}
+	if (editorType?.match(/Tag/)) {
+		return getTagValue(selectors);
+	}
+	if (editorType === 'Color') {
+		return getColorValue(selectors);
+	}
+	if (editorType === 'Date') {
+		return getDateValue(selectors);
+	}
+	if (editorType === 'DisplayField') {
+		return getDisplayFieldValue(selectors);
+	}
+	if (editorType === 'File') {
+		return getFileValue(selectors);
+	}
+	if (editorType === 'Hidden') {
+		return getHiddenValue(selectors);
+	}
+	if (editorType === 'Input') {
+		return getInputValue(selectors);
+	}
+	if (editorType === 'Json') {
+		return getJsonValue(selectors);
+	}
+	if (editorType === 'Number') {
+		return getNumberValue(selectors);
+	}
+	if (editorType === 'Slider') {
+		return getSliderValue(selectors);
+	}
+	if (editorType === 'Text') {
+		return getDisplayTextValue(selectors);
+	}
+	if (editorType === 'TextArea') {
+		return getTextAreaValue(selectors);
+	}
+	if (editorType === 'Toggle') {
+		return getToggleValue(selectors);
+	}
+	if (editorType === 'Checkbox') {
+		return getCheckboxValue(selectors);
+	}
+	if (editorType === 'CheckboxGroup') {
+		return getCheckboxGroupValue(selectors);
+	}
+	if (editorType === 'ArrayCheckboxGroup') {
+		return getArrayCheckboxGroupValue(selectors);
+	}
+	if (editorType === 'RadioGroup') {
+		return getRadioGroupValue(selectors);
+	}
+	if (editorType === 'ArrayRadioGroup') {
+		return getArrayRadioGroupValue(selectors);
+	}
+	
+	// Fallback/Custom components
+	return getInputValue(selectors);
 }
