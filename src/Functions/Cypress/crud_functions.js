@@ -211,12 +211,13 @@ export function crudWindowedGridRecord(args) {
 	} = args;
 
 	cy.log('crudWindowedGridRecord ' + gridSelector);
+
 	const {
 		skipView = false,
 		skipAdd = false,
 		skipEdit = false,
 		skipDelete = false,
-		id: existingId = null,
+		idObj = null,
 	} = options || {};
 
 	getDomNode(gridSelector).scrollIntoView();
@@ -265,14 +266,14 @@ export function crudWindowedGridRecord(args) {
 		return;
 	}
 
-	// skipAdd = true, see if an id was provided in the options
-	if (!_.isNil(existingId)) {
-		// If so, run the CRUD operations using the provided existingId.
-		runCrudById(existingId);
+	// skipAdd = true, see if an idObj with id was provided in the options
+	if (!_.isNil(idObj) && !_.isNil(idObj.id)) {
+		// If so, run the CRUD operations using the provided idObj.id.
+		runCrudById(idObj.id);
 		return;
 	}
 
-	cy.log('crudWindowedGridRecord: skipAdd was true with no options.id; skipping id-based phases.');
+	cy.log('crudWindowedGridRecord: skipAdd was true with no options.idObj.id; skipping id-based phases.');
 }
 export function crudInlineGridRecord(args) {
 
@@ -287,12 +288,13 @@ export function crudInlineGridRecord(args) {
 	} = args;
 
 	cy.log('crudInlineGridRecord ' + gridSelector);
+
 	const {
 		skipView = false,
 		skipAdd = false,
 		skipEdit = false,
 		skipDelete = false,
-		id: existingId = null,
+		idObj = null,
 	} = options || {};
 
 	getDomNode(gridSelector).scrollIntoView();
@@ -336,12 +338,12 @@ export function crudInlineGridRecord(args) {
 		return;
 	}
 
-	if (!_.isNil(existingId)) {
-		runCrudById(existingId);
+	if (!_.isNil(idObj) && !_.isNil(idObj.id)) {
+		runCrudById(idObj.id);
 		return;
 	}
 
-	cy.log('crudInlineGridRecord: skipAdd was true with no options.id; skipping id-based phases.');
+	cy.log('crudInlineGridRecord: skipAdd was true with no options.idObj.id; skipping id-based phases.');
 }
 export function crudSideGridRecord(args) {
 
@@ -358,13 +360,15 @@ export function crudSideGridRecord(args) {
 	// NOTE: the 'level' arg allows this fn to be called recursively 
 	// and to use the @id alias correctly, keeping track of the level of recursion
 	// so the CRUD operations don't step on each other at different levels.
+
 	cy.log('crudSideGridRecord ' + gridSelector);
+
 	const {
 		skipView = false,
 		skipAdd = false,
 		skipEdit = false,
 		skipDelete = false,
-		id: existingId = null,
+		idObj = null,
 	} = options || {};
 	
 	getDomNode(gridSelector).scrollIntoView();
@@ -400,12 +404,12 @@ export function crudSideGridRecord(args) {
 		return;
 	}
 
-	if (!_.isNil(existingId)) {
-		runCrudById(existingId);
+	if (!_.isNil(idObj) && !_.isNil(idObj.id)) {
+		runCrudById(idObj.id);
 		return;
 	}
 
-	cy.log('crudSideGridRecord: skipAdd was true with no options.id; skipping id-based phases.');
+	cy.log('crudSideGridRecord: skipAdd was true with no options.idObj.id; skipping id-based phases.');
 }
 export function addGridRecord(args) {
 
@@ -658,12 +662,13 @@ export function crudWindowedTreeRecord(args) {
 	} = args;
 
 	cy.log('crudWindowedTreeRecord ' + treeSelector);
+
 	const {
 		skipView = false,
 		skipAdd = false,
 		skipEdit = false,
 		skipDelete = false,
-		id: existingId = null,
+		idObj = null,
 	} = options || {};
 
 	getDomNode(treeSelector).scrollIntoView();
@@ -713,12 +718,12 @@ export function crudWindowedTreeRecord(args) {
 		return;
 	}
 
-	if (!_.isNil(existingId)) {
-		runCrudById(existingId);
+	if (!_.isNil(idObj) && !_.isNil(idObj.id)) {
+		runCrudById(idObj.id);
 		return;
 	}
 
-	cy.log('crudWindowedTreeRecord: skipAdd was true with no options.id; skipping id-based phases.');
+	cy.log('crudWindowedTreeRecord: skipAdd was true with no options.idObj.id; skipping id-based phases.');
 }
 export function crudSideTreeRecord(args) {
 
@@ -735,13 +740,15 @@ export function crudSideTreeRecord(args) {
 	// NOTE: the 'level' arg allows this fn to be called recursively 
 	// and to use the @id alias correctly, keeping track of the level of recursion
 	// so the CRUD operations don't step on each other at different levels.
+	
 	cy.log('crudSideTreeRecord ' + treeSelector);
+
 	const {
 		skipView = false,
 		skipAdd = false,
 		skipEdit = false,
 		skipDelete = false,
-		id: existingId = null,
+		idObj = null,
 	} = options || {};
 	
 	getDomNode(treeSelector).scrollIntoView();
@@ -790,12 +797,12 @@ export function crudSideTreeRecord(args) {
 		return;
 	}
 
-	if (!_.isNil(existingId)) {
-		runCrudById(existingId);
+	if (!_.isNil(idObj) && !_.isNil(idObj.id)) {
+		runCrudById(idObj.id);
 		return;
 	}
 
-	cy.log('crudSideTreeRecord: skipAdd was true with no options.id; skipping id-based phases.');
+	cy.log('crudSideTreeRecord: skipAdd was true with no options.idObj.id; skipping id-based phases.');
 }
 export function addTreeRecord(args) {
 
