@@ -978,184 +978,26 @@ export function deleteTreeRecord(treeSelector, id) {
 
 // Manager screen
 export function runClosureTreeControlledManagerScreenCrudTests(args) {
-
-	// const {
-	// 		model,
-	// 		schema,
-	// 		newData,
-	// 		editData,
-	// 		ancillaryData,
-	// 		fullIsInline = false,
-	// 		isSetup = false,
-	// 		options = {},
-	// 	} = args,
-	// 	Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-	// 	url = fixInflector(Inflector.dasherize(Inflector.underscore(Models))),
-	// 	managerSelector = '/' + Models + 'Manager',
-	// 	gridSelector = managerSelector + '/' + Models + 'GridEditor';
-
-	// if (!options.hasOwnProperty('skipFull')) {
-	// 	options.skipFull = false;
-	// }
-	// if (!options.hasOwnProperty('skipSide')) {
-	// 	options.skipSide = false;
-	// }
-
-	// describe(Models + 'Manager', () => {
-
-	// 	beforeEach(function () {
-	// 		bootstrapRouteWaiters();
-	// 		login();
-	// 		cy.restoreLocalStorage();
-	// 		cy.url().then((currentUrl) => {
-	// 			if (!currentUrl.endsWith(url)) {
-	// 				navigateViaTabOrHomeButtonTo('/' + url, isSetup);
-	// 			}
-	// 		});
-	// 		stubWindowOpen();
-	// 	});
-		
-	// 	// afterEach(function () {
-	// 	// 	cy.saveLocalStorage();
-	// 	// 	logout();
-	// 	// });
-
-	// 	if (!options.skipFull) {
-	// 		it('CRUD in full mode', function () {
-
-	// 			toFullMode(managerSelector);
-	// 			cy.wait(500); // allow filtered grid to load
-
-	// 			if (fullIsInline) {
-	// 				crudInlineGridRecord({
-	// 					gridSelector,
-	// 					newData,
-	// 					editData,
-	// 					schema,
-	// 					ancillaryData,
-	// 					options,
-	// 				});
-	// 			} else {
-	// 				crudWindowedGridRecord({
-	// 					gridSelector,
-	// 					newData,
-	// 					editData,
-	// 					schema,
-	// 					ancillaryData,
-	// 					options,
-	// 				});
-	// 			}
-
-	// 		});
-	// 	}
-
-	// 	if (!options.skipSide) {
-	// 		it('CRUD in side mode', function () {
-
-	// 			toSideMode(managerSelector);
-	// 			cy.wait(1000); // allow filtered grid to load
-
-	// 			crudSideGridRecord({
-	// 				gridSelector,
-	// 				newData,
-	// 				editData,
-	// 				schema,
-	// 				ancillaryData,
-	// 				options,
-	// 			});
-
-	// 		});
-	// 	}
-
-	// });
-
+	// this alias is for backward compatibility.
+	return runTreeManagerScreenCrudTests(args);
 }
 export function runClosureTreeManagerScreenCrudTests(args) {
-
-	// const {
-	// 		model,
-	// 		schema,
-	// 		newData,
-	// 		editData,
-	// 		ancillaryData,
-	// 		isSetup = false,
-	// 		options = {},
-	// 	} = args,
-	// 	Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-	// 	url = fixInflector(Inflector.dasherize(Inflector.underscore(Models))),
-	// 	managerSelector = '/' + Models + 'Manager',
-	// 	treeSelector = managerSelector + '/' + Models + 'TreeEditor';
-
-	// if (!options.hasOwnProperty('skipFull')) {
-	// 	options.skipFull = false;
-	// }
-	// if (!options.hasOwnProperty('skipSide')) {
-	// 	options.skipSide = false;
-	// }
-
-	// describe(Models + 'Manager', () => {
-
-	// 	beforeEach(function () {
-	// 		bootstrapRouteWaiters();
-	// 		login();
-	// 		cy.restoreLocalStorage();
-	// 		cy.url().then((currentUrl) => {
-	// 			if (!currentUrl.endsWith(url)) {
-	// 				navigateViaTabOrHomeButtonTo(url, isSetup);
-	// 			}
-	// 		});
-	// 		stubWindowOpen();
-	// 	});
-		
-	// 	// afterEach(function () {
-	// 	// 	cy.saveLocalStorage();
-	// 	// 	logout();
-	// 	// });
-
-	// 	if (!options.skipFull) {
-	// 		it('CRUD in full mode', function() {
-
-	// 			toFullMode(managerSelector);
-	// 			cy.wait(500); // wait for grid to load
-
-	// 			crudWindowedTreeRecord({
-	// 				treeSelector,
-	// 				newData,
-	// 				editData,
-	// 				schema,
-	// 				ancillaryData,
-	// 				options,
-	// 			});
-
-	// 		});
-	// 	}
-
-	// 	if (!options.skipSide) {
-	// 		it('CRUD in side mode', function() {
-
-	// 			toSideMode(managerSelector);
-	// 			cy.wait(1000); // wait for grid to load
-
-	// 			crudSideTreeRecord({
-	// 				treeSelector,
-	// 				newData,
-	// 				editData,
-	// 				schema,
-	// 				ancillaryData,
-	// 				options,
-	// 			});
-
-	// 		});
-	// 	}
-
-	// });
-
+	// this alias is for backward compatibility.
+	return runTreeManagerScreenCrudTests(args);
+}
+export function runTreeManagerScreenCrudTests(args) {
+	return runManagerScreenCrudTests({ ...args, type: 'Tree' });
+}
+export function runGridManagerScreenCrudTests(args) {
+	// This is just an alias, as runManagerScreenCrudTests defaults to 'Grid' type.
+	return runManagerScreenCrudTests(args);
 }
 export function runManagerScreenCrudTests(args) {
 
 	const {
 			model,
 			schema,
+			type = 'Grid',
 			newData,
 			editData,
 			ancillaryData,
@@ -1166,7 +1008,7 @@ export function runManagerScreenCrudTests(args) {
 		Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
 		url = fixInflector(Inflector.dasherize(Inflector.underscore(Models))),
 		managerSelector = '/' + Models + 'Manager',
-		gridSelector = managerSelector + '/' + Models + 'GridEditor';
+		typeSelector = managerSelector + '/' + Models + type + 'Editor';
 
 	if (!options.hasOwnProperty('skipFull')) {
 		options.skipFull = false;
@@ -1199,26 +1041,41 @@ export function runManagerScreenCrudTests(args) {
 	
 				toFullMode(managerSelector);
 				cy.wait(500); // wait for grid to load
-	
-				if (fullIsInline) {
-					crudInlineGridRecord({
-						gridSelector,
-						newData,
-						editData,
-						schema,
-						ancillaryData,
-						options,
-					});
-				} else {
-					crudWindowedGridRecord({
-						gridSelector,
-						newData,
-						editData,
-						schema,
-						ancillaryData,
-						options,
-					});
+
+				switch(type) {
+					case 'Grid':
+						if (fullIsInline) {
+							crudInlineGridRecord({
+								gridSelector: typeSelector,
+								newData,
+								editData,
+								schema,
+								ancillaryData,
+								options,
+							});
+						} else {
+							crudWindowedGridRecord({
+								gridSelector: typeSelector,
+								newData,
+								editData,
+								schema,
+								ancillaryData,
+								options,
+							});
+						}
+						break;
+					case 'Tree':
+						crudWindowedGridRecord({
+							gridSelector: typeSelector,
+							newData,
+							editData,
+							schema,
+							ancillaryData,
+							options,
+						});
+						break;
 				}
+	
 	
 			});
 		}
@@ -1229,8 +1086,29 @@ export function runManagerScreenCrudTests(args) {
 				toSideMode(managerSelector);
 				cy.wait(1000); // wait for grid to load
 	
-				crudSideGridRecord({ gridSelector, newData, editData, schema, ancillaryData, options });
-	
+				switch(type) {
+					case 'Grid':
+						crudSideGridRecord({
+							gridSelector: typeSelector,
+							newData,
+							editData,
+							schema,
+							ancillaryData,
+							options,
+						});
+						break;
+					case 'Tree':
+						crudSideTreeRecord({
+							treeSelector: typeSelector,
+							newData,
+							editData,
+							schema,
+							ancillaryData,
+							options,
+						});
+						break;
+				}
+
 			});
 		}
 
