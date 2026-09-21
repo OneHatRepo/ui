@@ -16,6 +16,9 @@ import {
 import {
 	clickXButtonIfEnabled
 } from './button_functions.js';
+import {
+	getModelFromGridSelector,
+} from './grid_functions.js';
 import natsort from 'natsort';
 import _ from 'lodash';
 const $ = Cypress.$;
@@ -136,11 +139,19 @@ export function setArrayComboValue(selectors, value) {
 		if (value) {
 			cy.wrap(field)
 				.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
-				.wait(1000) // allow time to load dropdown
-				.type('{downarrow}')
-				.wait(300)
-				.type('{enter}')
-				.wait(250); // allow time to register enter key
+				.wait('@getWaiter'); // allow dropdown to load
+
+			clickComboResultRow(selectors, value).then((didClickRow) => {
+				if (didClickRow) {
+					return;
+				}
+
+				resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
+					cy.wrap($keyboardInput)
+						.type('{downarrow}', { force: true })
+						.type('{enter}', { force: true });
+				});
+			});
 		}
 	});
 }
@@ -160,10 +171,20 @@ export function setComboValue(selectors, value) {
 			.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 			.wait('@getWaiter'); // allow dropdown to load
 
-		resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
-			cy.wrap($keyboardInput)
-				.type('{downarrow}', { force: true })
-				.type('{enter}', { force: true });
+		clickComboResultRow(selectors, value).then((didClickRow) => {
+			if (didClickRow) {
+				return;
+			}
+
+			// setComboValue now primarily relies on clicking the dropdown result row rather than using keyboard input,
+			// because when a Cypress test runner is backgrounded, Chrome agressively throttles timers, paint, focus 
+			// updates, and some event scheduling; thus the keyboard inputs often failed. Keep it as a fallback.
+
+			resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
+				cy.wrap($keyboardInput)
+					.type('{downarrow}', { force: true })
+					.type('{enter}', { force: true });
+			});
 		});
 	});
 }
@@ -206,13 +227,18 @@ export function setTagValue(selectors, value) {
 			cy.wrap(field)
 				.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 				.wait('@getWaiter'); // allow dropdown to load
-				
-			cy.wrap(field)
-				.wait(500)
-				.type('{downarrow}')
-				.wait(300)
-				.type('{enter}')
-				.wait(250); // allow time to register enter key
+
+			clickComboResultRow(selectors, 'id:' + id).then((didClickRow) => {
+				if (didClickRow) {
+					return;
+				}
+
+				resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
+					cy.wrap($keyboardInput)
+						.type('{downarrow}', { force: true })
+						.type('{enter}', { force: true });
+				});
+			});
 		});
 
 		// press trigger to hide dropdown
@@ -971,10 +997,100 @@ function normalizeEmptySetterValue(value) {
 }
 
 const COMBO_EDITABLE_INPUT_SELECTOR = '[data-testid="input"]';
+function getComboGridSelector(selectors) {
+	if (!_.isArray(selectors) || selectors.length < 2) {
+		return null;
+	}
+
+	const
+		formSelector = selectors[0],
+		fieldSelector = selectors[1],
+		fieldMatch = _.isString(fieldSelector) ? fieldSelector.match(/^field-(.*)$/) : null;
+
+	if (!_.isString(formSelector) || !fieldMatch?.[1]) {
+		return null;
+	}
+
+	return formSelector + '/' + fieldMatch[1] + '/grid';
+}
+function getComboTargetId(value) {
+	if (_.isNumber(value)) {
+		return String(value);
+	}
+
+	if (_.isString(value)) {
+		const
+			trimmed = value.trim(),
+			idMatch = trimmed.match(/^id:(.+)$/i);
+
+		if (idMatch?.[1]) {
+			return String(idMatch[1]).trim();
+		}
+
+		if (/^\d+$/.test(trimmed)) {
+			return trimmed;
+		}
+	}
+
+	return null;
+}
+function clickComboResultRow(selectors, value) {
+	const gridSelector = getComboGridSelector(selectors);
+	if (!gridSelector) {
+		return cy.wrap(false, { log: false });
+	}
+
+	const model = getModelFromGridSelector(gridSelector);
+	if (!model) {
+		return cy.wrap(false, { log: false });
+	}
+
+	const
+		targetId = getComboTargetId(value),
+		rowSelector = targetId ?
+			'[data-testid="' + model + '-' + targetId + '"]' :
+			'[data-testid^="' + model + '-"]',
+		gridDomSelector = getTestIdSelectors(gridSelector, true),
+		startedAt = Date.now(),
+		timeout = 15000,
+		interval = 100;
+
+	const waitForRowThenClick = () => cy.get('body', { log: false }).then(($body) => {
+		const $grid = $body.find(gridDomSelector).first();
+		if ($grid.length) {
+			const $row = $grid.find(rowSelector).first();
+			if ($row.length) {
+				return cy.wrap($row, { log: false })
+					.click({ force: true })
+					.then(() => true);
+			}
+		}
+
+		if (Date.now() - startedAt >= timeout) {
+			return false;
+		}
+
+		return cy.wait(interval, { log: false }).then(waitForRowThenClick);
+	});
+
+	return waitForRowThenClick();
+}
 function resolveComboKeyboardInput(selectors) {
 	const rootSelector = getTestIdSelectors(selectors, true);
 	return cy.get('body').then(($body) => {
-		// Prefer the currently focused Combo input (the modal inputClone when the menu is open).
+		const $root = $body.find(rootSelector).first();
+
+		// Prefer the inputClone rendered in the menu modal after typing.
+		// It lives outside the field root, so this avoids reusing the original input.
+		const $externalClone = $body
+			.find('.Combo-inputClone-Input' + COMBO_EDITABLE_INPUT_SELECTOR)
+			.filter((ix, el) => !$root.has(el).length)
+			.first();
+		if ($externalClone.length) {
+			return $externalClone;
+		}
+
+		// Fallback: currently focused Combo input.
 		const $focusedByAttr = $body.find(COMBO_EDITABLE_INPUT_SELECTOR + '[data-focus="true"]').first();
 		if ($focusedByAttr.length) {
 			return $focusedByAttr;
@@ -992,7 +1108,6 @@ function resolveComboKeyboardInput(selectors) {
 			}
 		}
 
-		const $root = $body.find(rootSelector).first();
 		const $rootInput = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
 		expect(
 			$rootInput.length,

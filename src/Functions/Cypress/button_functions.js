@@ -120,6 +120,6 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 			});
 		}
 
-		cy.log('clickButtonIfExists did not find node within timeout');
+		cy.log('clickButtonIfExists did not find node within timeout of ' + (options?.timeout || 'default'));
 	});
 }
