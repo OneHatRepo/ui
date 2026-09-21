@@ -132,13 +132,59 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 function getFieldRoot(selectors) {
 	return getDomNode(selectors).then(($field) => Cypress.$($field[0]));
 }
+
+// helpers for withFieldInput
+const EDITABLE_INPUT_SELF_SELECTOR = [
+	'input:not([type="hidden"]):not([readonly]):not([disabled])',
+	'textarea:not([readonly]):not([disabled])',
+].join(', ');
+const EDITABLE_INPUT_DESCENDANT_SELECTOR = [
+	'[data-testid="input"] input:not([type="hidden"]):not([readonly]):not([disabled])',
+	'[data-testid="input"] textarea:not([readonly]):not([disabled])',
+	'input:not([type="hidden"]):not([readonly]):not([disabled])',
+	'textarea:not([readonly]):not([disabled])',
+].join(', ');
+const COMBO_EDITABLE_INPUT_SELECTOR = '[data-testid="input"]';
+function findFieldInputNode($root) {
+	if ($root.is(EDITABLE_INPUT_SELF_SELECTOR)) {
+		return $root.first();
+	}
+	return $root.find(EDITABLE_INPUT_DESCENDANT_SELECTOR).first();
+}
+function withComboInput(selectors, cb) {
+	const rootSelector = getTestIdSelectors(selectors, true);
+	return cy.get(rootSelector).should(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
+		expect(
+			$input.length,
+			'setComboValue requires an editable Combo input; disableDirectEntry combos are not supported by this setter.'
+		).to.be.greaterThan(0);
+	}).then(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
+		return cb($input, $root);
+	});
+}
+
 function withFieldInput(selectors, cb) {
-	return getFieldRoot(selectors).then(($root) => {
-		cy.log('withFieldInput $root', $root);
-		const $input = $root.find('input, textarea').first();
-		if (!$input.length) {
-			throw new Error('No input found for selectors: ' + JSON.stringify(selectors));
-		}
+	const rootSelector = getTestIdSelectors(selectors, true);
+	return cy.get(rootSelector).should(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = findFieldInputNode($root);
+		// Keep retrying until an editable input/textarea is present under this field root.
+		expect(
+			$input.length,
+			'No input found for selectors: ' + JSON.stringify(selectors)
+		).to.be.greaterThan(0);
+	}).then(($rootSubject) => {
+		// Recompute after the assertion passes so cb always gets the resolved live node.
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = findFieldInputNode($root);
 		return cb($input, $root);
 	});
 }
@@ -162,17 +208,12 @@ export function setArrayComboValue(selectors, value) {
 }
 export function setComboValue(selectors, value) {
 	cy.log('setComboValue ' + value);
-	getFieldRoot(selectors).then(($root) => {
-		const $input = $root.find('[data-testid="input"]').first();
+	withComboInput(selectors, ($input) => {
 
 		clickXButtonIfEnabled(selectors); // clear current value
 
 		if (normalizeEmptySetterValue(value)) {
 			return;
-		}
-
-		if (!$input.length) {
-			throw new Error('setComboValue requires an editable Combo input; disableDirectEntry combos are not supported by this setter.');
 		}
 
 		cy.wrap($input)
@@ -837,9 +878,24 @@ function parseIdFromTestId(testId, prefix) {
 }
 export function getInputValue(selectors) {
 	cy.log('getInputValue');
-	return getDomNode(selectors).then(($el) => {
-		const value = Cypress.$($el[0]).val();
-		return normalizeStringValue(value);
+	const rootSelector = getTestIdSelectors(selectors, true);
+	return cy.get(rootSelector).should(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = findFieldInputNode($root),
+			rootValue = $root.val(),
+			hasRootValue = !_.isNil(rootValue) && String(rootValue) !== '';
+		expect(
+			$input.length > 0 || hasRootValue,
+			'No input found for selectors: ' + JSON.stringify(selectors)
+		).to.equal(true);
+	}).then(($rootSubject) => {
+		const $root = Cypress.$($rootSubject[0]);
+		const $input = findFieldInputNode($root);
+		if ($input.length) {
+			return normalizeStringValue($input.val());
+		}
+		return normalizeStringValue($root.val());
 	});
 }
 export function getNumberValue(selectors) {

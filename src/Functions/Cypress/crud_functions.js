@@ -556,7 +556,6 @@ export function editGridRecord(args) {
 	cy.wait('@editWaiter');
 
 	verifyNoErrorBox();
-	// cy.wait(1000);
 
 	if (whichEditor !== INLINE) {
 		viewPdf(editorSelector, formSelector);
@@ -617,7 +616,6 @@ export function deleteGridRecord(gridSelector, id) {
 	cy.wait('@deleteWaiter');
 
 	verifyNoErrorBox();
-	// cy.wait(1000);
 }
 export function switchToEditModeIfNecessary(editorSelector) {
 	cy.log('switchToEditModeIfNecessary ' + editorSelector);
@@ -934,7 +932,6 @@ export function editTreeRecord(args) {
 	cy.wait('@editWaiter');
 
 	verifyNoErrorBox();
-	// cy.wait(1000);
 
 	if (whichEditor !== INLINE) {
 		viewPdf(editorSelector, formSelector);
@@ -976,7 +973,6 @@ export function deleteTreeRecord(treeSelector, id) {
 	cy.wait('@deleteWaiter');
 
 	verifyNoErrorBox();
-	// cy.wait(1000);
 }
 
 
