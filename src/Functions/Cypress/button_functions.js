@@ -1,7 +1,7 @@
-import 'cypress-if'; // for clickButtonIfExists only!
 import {
 	getDomNode,
 	getDomNodes,
+	getDomNodeIfExists,
 } from './dom_functions.js';
 import _ from 'lodash';
 const $ = Cypress.$;
@@ -73,7 +73,7 @@ export function clickToEditButton(parentSelectors) {
 }
 export function clickToEditButtonIfExists(parentSelectors) {
 	cy.log('clickToEditButtonIfExists');
-	return clickButtonIfExists(parentSelectors, 'toEditBtn');
+	return clickButtonIfExists(parentSelectors, 'toEditBtn', { timeout: 2000 });
 }
 export function clickToViewButton(parentSelectors) {
 	cy.log('clickToViewButton');
@@ -81,7 +81,7 @@ export function clickToViewButton(parentSelectors) {
 }
 export function clickToViewButtonIfExists(parentSelectors) {
 	cy.log('clickToViewButtonIfExists');
-	return clickButtonIfExists(parentSelectors, 'toViewBtn');
+	return clickButtonIfExists(parentSelectors, 'toViewBtn', { timeout: 5000 });
 }
 export function toFullMode(parentSelectors) {
 	cy.log('toFullMode');
@@ -111,9 +111,15 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
-	return getDomNode([...parentSelectors, name], options).if().then((node) => { // NOTE if() is a cypress-if function
-		if (node) {
-			cy.get(node).click();
+
+	return getDomNodeIfExists(parentSelectors, name, options).then((node) => {
+		if (node?.length) {
+			cy.log('clickButtonIfExists found node');
+			return cy.wrap(node).click({ force: true }).then(() => {
+				cy.log('clickButtonIfExists clicked node');
+			});
 		}
+
+		cy.log('clickButtonIfExists did not find node within timeout');
 	});
 }

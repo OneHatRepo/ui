@@ -62,13 +62,11 @@ import {
 	clickOkButton,
 	clickYesButton,
 	clickNoButton,
-	clickToEditButton,
 	clickToEditButtonIfExists,
 	clickToViewButton,
 	clickToViewButtonIfExists,
 	clickTrigger,
 	clickButton,
-	clickButtonIfExists,
 	toFullMode,
 	toSideMode,
 } from './button_functions.js';
@@ -548,7 +546,6 @@ export function editGridRecord(args) {
 		cy.log('click editBtn ' + gridSelector);
 		clickEditButton(gridSelector);
 	}
-	cy.wait(1500); // allow form to build
 	getDomNode(formSelector).should('exist');
 
 	fillForm(formSelector, fieldValues, schema, level +1);
@@ -927,7 +924,6 @@ export function editTreeRecord(args) {
 		cy.log('click editBtn ' + treeSelector);
 		clickEditButton(treeSelector);
 	}
-	cy.wait(1500); // allow form to build
 	getDomNode(formSelector).should('exist');
 
 	fillForm(formSelector, fieldValues, schema, level +1);

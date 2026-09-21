@@ -134,6 +134,7 @@ function getFieldRoot(selectors) {
 }
 function withFieldInput(selectors, cb) {
 	return getFieldRoot(selectors).then(($root) => {
+		cy.log('withFieldInput $root', $root);
 		const $input = $root.find('input, textarea').first();
 		if (!$input.length) {
 			throw new Error('No input found for selectors: ' + JSON.stringify(selectors));

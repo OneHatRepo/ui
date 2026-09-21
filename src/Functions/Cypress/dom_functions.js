@@ -1,4 +1,4 @@
-
+import 'cypress-if'; // so ifExists works (creates getDomNode().if())
 import _ from 'lodash';
 
 /**
@@ -29,6 +29,51 @@ export function getDomNode(selectors, options = {}) {
  */
 export function getDomNodes(selectors, options = {}) {
 	return cy.get(getTestIdSelectors(selectors), options);
+}
+
+/**
+ * Tries to find a child node inside a parent scope within a timeout window.
+ * If found, yields the node; otherwise yields null without failing the test.
+ * @argument {string | string[]} parentSelectors - parent scope selectors
+ * @argument {string} name - child selector token or raw selector
+ * @argument {object} options - supports timeout and interval
+ * @return Cypress chain yielding JQuery node or null
+ */
+export function getDomNodeIfExists(parentSelectors, name, options = {}) {
+	if (_.isString(parentSelectors)) {
+		parentSelectors = [parentSelectors];
+	}
+
+	const {
+		interval = 100,
+		...domOptions
+	} = options || {};
+
+	const
+		selector = getTestIdSelectors(name, true),
+		timeout = domOptions.timeout ?? Cypress.config('defaultCommandTimeout'),
+		startedAt = Date.now(),
+		parentOptions = {
+			...domOptions,
+			timeout: timeout + interval,
+		};
+
+	return getDomNode(parentSelectors, parentOptions).then(($parent) => {
+		const findNode = () => {
+			const node = $parent.find(selector).first();
+			if (node.length) {
+				return cy.wrap(node, { log: false });
+			}
+
+			if (Date.now() - startedAt >= timeout) {
+				return cy.wrap(null, { log: false });
+			}
+
+			return cy.wait(interval, { log: false }).then(findNode);
+		};
+
+		return findNode();
+	});
 }
 
 /**
