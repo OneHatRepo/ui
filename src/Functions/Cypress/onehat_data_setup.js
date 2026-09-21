@@ -1,5 +1,9 @@
 import oneHatData from '@onehat/data';
-import { getUserToken, setRepositoryAuthHeaders } from '@onehat/ui/src/Functions/authFunctions.js';
+import {
+	getUserToken,
+	setRepositoryAuthHeaders,
+	getRepositoryAuthHeaders,
+} from '@onehat/ui/src/Functions/authFunctions.js';
 import allSchemas from '@src/Models/Schemas/AllSchemas.js';
 import LocalStorage from '@onehat/data/src/Integration/Browser/Repository/LocalStorage.js';
 import SecureLocalStorage from '@onehat/data/src/Integration/Browser/Repository/SecureLocalStorage.js';
@@ -11,23 +15,45 @@ const
 
 let initializePromise = null;
 
-function getAllSchemaMap() {
+function getAllSchemaMap(options = {}) {
+	if (options.schemaMap && typeof options.schemaMap === 'object') {
+		if (options.schemaMap?.default && typeof options.schemaMap.default === 'object') {
+			return options.schemaMap.default;
+		}
+		return options.schemaMap;
+	}
+
 	if (allSchemas?.default && typeof allSchemas.default === 'object') {
 		return allSchemas.default;
 	}
 	return allSchemas;
 }
 
-function getAllSchemaDefinitions() {
-	return Object.values(getAllSchemaMap() || {});
+function getAllSchemaDefinitions(options = {}) {
+	if (Array.isArray(options.schemaDefinitions) && options.schemaDefinitions.length) {
+		return options.schemaDefinitions;
+	}
+
+	return Object.values(getAllSchemaMap(options) || {});
 }
 
 function resolveOneHatData(options = {}) {
 	return options.oneHatDataInstance || oneHatData;
 }
 
-function isRuntimeReady(ohd) {
-	const schemaDefinitions = getAllSchemaDefinitions();
+function applyAuthHeadersToOneHatData(ohd, token) {
+	const headers = getRepositoryAuthHeaders(token);
+
+	// Keep existing shared behavior and also apply to the explicit runtime instance.
+	setRepositoryAuthHeaders(token);
+	ohd.setOptionsOnAllRepositories({ headers });
+	ohd.setRepositoryGlobals({ headers });
+
+	return headers;
+}
+
+function isRuntimeReady(ohd, options = {}) {
+	const schemaDefinitions = getAllSchemaDefinitions(options);
 
 	for (const schemaDefinition of schemaDefinitions) {
 		const schemaName = schemaDefinition?.name;
@@ -44,8 +70,8 @@ function isRuntimeReady(ohd) {
 	return true;
 }
 
-function ensureSchemasExist(ohd) {
-	const schemaDefinitions = getAllSchemaDefinitions();
+function ensureSchemasExist(ohd, options = {}) {
+	const schemaDefinitions = getAllSchemaDefinitions(options);
 
 	for (const schemaDefinition of schemaDefinitions) {
 		const schemaName = schemaDefinition?.name;
@@ -57,8 +83,8 @@ function ensureSchemasExist(ohd) {
 	}
 }
 
-async function ensureAllSchemaRepositoriesReady(ohd) {
-	const schemaDefinitions = getAllSchemaDefinitions();
+async function ensureAllSchemaRepositoriesReady(ohd, options = {}) {
+	const schemaDefinitions = getAllSchemaDefinitions(options);
 
 	for (const schemaDefinition of schemaDefinitions) {
 		if (!schemaDefinition?.name) {
@@ -94,7 +120,7 @@ function resolveRequiredSchemaDefinitions(options = {}) {
 			continue;
 		}
 
-		const schemaDefinition = getAllSchemaMap()[schemaName];
+		const schemaDefinition = getAllSchemaMap(options)[schemaName];
 		if (!schemaDefinition) {
 			throw new Error(`Missing schema definition for required schema "${schemaName}".`);
 		}
@@ -148,8 +174,8 @@ export function getLoginParams(username) {
 
 	const
 		loginIdField = Cypress.expose('loginIdField'),
-		envKeys = ['loginId', 'password'],
-		hasUsername = typeof username === 'string' && username.trim().length > 0;
+		hasUsername = typeof username === 'string' && username.trim().length > 0,
+		envKeys = ['loginId', 'password', 'superLoginId', 'superPassword'];
 
 	if (hasUsername) {
 		envKeys.unshift(username);
@@ -158,11 +184,11 @@ export function getLoginParams(username) {
 	return cy.env(envKeys).then((secrets) => {
 		const
 			user = hasUsername ? secrets[username] : undefined,
-			loginId = user?.loginId || secrets.loginId,
-			password = user?.password || secrets.password;
+			loginId = user?.loginId || secrets.superLoginId || secrets.loginId,
+			password = user?.password || secrets.superPassword || secrets.password;
 
 		if (!loginId || !password) {
-			throw new Error('Missing Cypress auth credentials. Set env.loginId/env.password.');
+			throw new Error('Missing Cypress auth credentials. Set env.loginId/env.password or env.superLoginId/env.superPassword.');
 		}
 
 		return {
@@ -176,11 +202,11 @@ export function getLoginParams(username) {
 function initializeOneHatData(options = {}) {
 	const ohd = resolveOneHatData(options);
 
-	if (window[CYPRESS_DATA_READY_KEY] && isRuntimeReady(ohd)) {
+	if (window[CYPRESS_DATA_READY_KEY] && isRuntimeReady(ohd, options)) {
 		return Promise.resolve(window[CYPRESS_AUTH_CACHE_KEY]);
 	}
 
-	if (window[CYPRESS_DATA_READY_KEY] && !isRuntimeReady(ohd)) {
+	if (window[CYPRESS_DATA_READY_KEY] && !isRuntimeReady(ohd, options)) {
 		window[CYPRESS_DATA_READY_KEY] = false;
 		window[CYPRESS_AUTH_CACHE_KEY] = null;
 	}
@@ -205,10 +231,10 @@ function initializeOneHatData(options = {}) {
 			SecureLocalStorage,
 		]);
 
-	ensureSchemasExist(ohd);
+	ensureSchemasExist(ohd, options);
 
 	return ohd.createBoundRepositories().then(async () => {
-		await ensureAllSchemaRepositoriesReady(ohd);
+		await ensureAllSchemaRepositoriesReady(ohd, options);
 
 		const Users = ohd.getRepository('Users');
 
@@ -222,7 +248,7 @@ function initializeOneHatData(options = {}) {
 					throw new Error('Login succeeded but no auth token was returned.');
 				}
 
-				setRepositoryAuthHeaders(token);
+				applyAuthHeadersToOneHatData(ohd, token);
 
 				const authContext = {
 					loginId,
@@ -242,7 +268,7 @@ function initializeOneHatData(options = {}) {
 export function ensureOneHatDataReady(options = {}) {
 	const ohd = resolveOneHatData(options);
 
-	if (window[CYPRESS_DATA_READY_KEY] && !isRuntimeReady(ohd)) {
+	if (window[CYPRESS_DATA_READY_KEY] && !isRuntimeReady(ohd, options)) {
 		window[CYPRESS_DATA_READY_KEY] = false;
 		window[CYPRESS_AUTH_CACHE_KEY] = null;
 		initializePromise = null;
@@ -256,7 +282,7 @@ export function ensureOneHatDataReady(options = {}) {
 	}
 
 	return initializePromise.then(async (authContext) => {
-		await ensureAllSchemaRepositoriesReady(ohd);
+		await ensureAllSchemaRepositoriesReady(ohd, options);
 		await ensureRequiredRepositoriesReady(options);
 		return authContext;
 	});
