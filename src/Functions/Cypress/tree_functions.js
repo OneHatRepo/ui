@@ -30,8 +30,16 @@ export function getNodeWithFieldValue(treeSelector, field, value) {
 }
 export function getFirstTreeRootNode(treeSelector) {
 	cy.log('getFirstTreeRootNode ' + treeSelector);
-	return cy.get('[data-testid="' + treeSelector + '"]:first ' + 
-					'[data-testid="ScrollView"]:first > div > div:first'); // this is fragile!
+	const model = getModelFromTreeSelector(treeSelector);
+	if (!model) {
+		throw new Error('Could not determine model from tree selector: ' + treeSelector);
+	}
+
+	const inflected = fixInflector(Inflector.camelize(Inflector.pluralize(model)));
+	return getDomNode(treeSelector)
+				.find('[data-testid^="' + inflected + '-"]')
+				.filter(':has([data-testid="node"]), :has([data-testid="node-selected"])')
+				.first();
 }
 // export function getNodeWithText(tree, text) {
 // 	return getNodes(tree).contains(text);
