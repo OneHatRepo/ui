@@ -87,6 +87,7 @@ export default function Header(props) {
 			collapseClassName += ' mb-1';
 		}
 		collapseBtn = <IconButton
+						{...testProps('collapseBtn')}
 						onPress={onToggleCollapse}
 						icon={isCollapsed ? Plus : Minus}
 						_icon={{
@@ -95,6 +96,7 @@ export default function Header(props) {
 						}}
 						className={collapseClassName}
 						tooltip="Toggle expand/collapse"
+						dataSet={{ isCollapsed: isCollapsed ? 'true' : 'false' }}
 					/>;
 	}
 	
@@ -135,6 +137,7 @@ export default function Header(props) {
 							}}
 						>
 							<VStack
+								{...testProps(testID)}
 								style={{ userSelect: 'none', }}
 								className={panelClassName}
 							>
@@ -174,6 +177,7 @@ export default function Header(props) {
 					}}
 				>
 					<HStack
+						{...testProps(testID)}
 						style={{ userSelect: 'none', }}
 						className={panelClassName}
 					>

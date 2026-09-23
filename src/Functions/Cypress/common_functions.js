@@ -25,6 +25,27 @@ export function waitForNavigationTo(url) {
 }
 
 
+export function minimizeHeader(selectors) {
+	cy.log('minimize the Header');
+	return getDomNode(selectors)
+		.then(($node) => {
+			if ($node.attr('data-is-collapsed') === 'false') {
+				$node.click();
+			}
+		});
+}
+export function maximizeHeader(selectors) {
+	cy.log('maximize the Header');
+	return getDomNode(selectors)
+		.then(($node) => {
+			if ($node.attr('data-is-collapsed') === 'true') {
+				$node.click();
+			}
+		});
+}
+
+
+
 
 //     __  ___                                ____
 //    /  |/  /__  ______________ _____ ____  / __ )____  _  __
