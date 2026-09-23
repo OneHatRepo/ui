@@ -77,7 +77,9 @@ function FileCardCustom(props) {
 			type: mimetype,
 			onDelete,
 			onSee,
+			onDownload,
 			downloadUrl,
+			downloadHeaders,
 			uploadStatus,
 			// Drag props
 			isDragSource = false,
@@ -85,13 +87,17 @@ function FileCardCustom(props) {
 			dragSourceItem = {},
 			item, // The actual attachment entity
 		} = props,
-		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading', 'success']),
+		isDownloading = uploadStatus && inArray(uploadStatus, ['preparing', 'uploading']),
 		isPdf = mimetype === 'application/pdf';
 
 	let cardContent = 
 		<Pressable
 			onPress={() => {
-				downloadInBackground(downloadUrl);
+				if (onDownload) {
+					onDownload(id, downloadUrl);
+				} else {
+					downloadInBackground(downloadUrl, {}, downloadHeaders || {});
+				}
 			}}
 			className="Pressable max-w-full px-3 py-1 items-center flex-row rounded-[5px] border border-primary.700"
 		>
@@ -1055,6 +1061,8 @@ function AttachmentsElement(props) {
 														backgroundBlurImage={false}
 														{..._fileMosaic}
 														{...eyeProps}
+														onDownload={onDownload}
+														downloadHeaders={Attachments.headers}
 														isDragSource={canCrud && usesDirectories}
 														dragSourceType="Attachments"
 														dragSourceItem={dragSourceItem}
