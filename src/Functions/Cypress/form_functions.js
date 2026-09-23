@@ -157,6 +157,7 @@ export function setArrayComboValue(selectors, value) {
 }
 export function setComboValue(selectors, value) {
 	cy.log('setComboValue ' + value);
+	const expectedDataValue = String(getComboTargetId(value) ?? value);
 	const rootSelector = getTestIdSelectors(selectors, true);
 	cy.get(rootSelector).then(($rootSubject) => {
 		const
@@ -191,6 +192,9 @@ export function setComboValue(selectors, value) {
 						.type('{enter}', { force: true });
 				});
 			});
+
+			// confirm value was set (data-value of main component -- not input -- has string-coerced 'value')
+			cy.wrap($root).should('have.attr', 'data-value', expectedDataValue);
 			return;
 		}
 
@@ -205,6 +209,9 @@ export function setComboValue(selectors, value) {
 				'Non-direct Combo option row not found for value: ' + resolvedValue
 			).to.equal(true);
 		});
+
+		// confirm value was set (data-value of main component -- not input -- has string-coerced 'value')
+		cy.wrap($root).should('have.attr', 'data-value', expectedDataValue);
 	});
 }
 export function setTagValue(selectors, value) {
@@ -1055,34 +1062,47 @@ function getComboTargetId(value) {
 }
 function clickComboResultRow(selectors, value) {
 	const gridSelector = getComboGridSelector(selectors);
-	if (!gridSelector) {
-		return cy.wrap(false, { log: false });
-	}
-
-	const model = getModelFromGridSelector(gridSelector);
-	if (!model) {
-		return cy.wrap(false, { log: false });
-	}
+	const model = gridSelector ? getModelFromGridSelector(gridSelector) : null;
 
 	const
 		targetId = getComboTargetId(value),
-		rowSelector = targetId ?
-			'[data-testid="' + model + '-' + targetId + '"]' :
-			'[data-testid^="' + model + '-"]',
-		gridDomSelector = getTestIdSelectors(gridSelector, true),
+		rowSelector = model ?
+			(targetId ?
+				'[data-testid="' + model + '-' + targetId + '"]' :
+				'[data-testid^="' + model + '-"]') :
+			(targetId ?
+				'[data-testid$="-' + targetId + '"]' :
+				'[data-ix="0"]'),
+		gridDomSelector = gridSelector ? getTestIdSelectors(gridSelector, true) : null,
 		startedAt = Date.now(),
 		timeout = 15000,
 		interval = 100;
 
+	if (!rowSelector) {
+		return cy.wrap(false, { log: false });
+	}
+
 	const waitForRowThenClick = () => cy.get('body', { log: false }).then(($body) => {
-		const $grid = $body.find(gridDomSelector).first();
-		if ($grid.length) {
-			const $row = $grid.find(rowSelector).first();
-			if ($row.length) {
-				return cy.wrap($row, { log: false })
-					.click({ force: true })
-					.then(() => true);
+		if (gridDomSelector) {
+			const $grid = $body.find(gridDomSelector).first();
+			if ($grid.length) {
+				const $row = $grid.find(rowSelector).first();
+				if ($row.length) {
+					return cy.wrap($row, { log: false })
+						.click({ force: true })
+						.then(() => true);
+				}
 			}
+		}
+
+		// Standalone Combo fallback (e.g. EnterpriseSelector): search within the open Combo menu modal.
+		const $rowInOpenCombo = $body
+			.find('.dropdownMenu-ModalContent ' + rowSelector)
+			.first();
+		if ($rowInOpenCombo.length) {
+			return cy.wrap($rowInOpenCombo, { log: false })
+				.click({ force: true })
+				.then(() => true);
 		}
 
 		if (Date.now() - startedAt >= timeout) {
