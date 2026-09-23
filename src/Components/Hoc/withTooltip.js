@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import Tooltip from '../Tooltip/Tooltip.js';
+import UiGlobals from '../../UiGlobals.js';
 import _ from 'lodash';
 
 const WITH_TOOLTIP_MARKER = Symbol.for('alreadyHasWithTooltip');
@@ -28,6 +29,10 @@ export default function withTooltip(WrappedComponent) {
 							{...propsToPass}
 							ref={ref}
 						/>;
+
+		if (UiGlobals.disableTooltips) {
+			return component;
+		}
 
 		// Only render the tooltip wrapper when content/options are provided.
 		if (tooltip || !_.isEmpty(_tooltip)) {

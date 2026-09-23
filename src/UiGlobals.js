@@ -8,6 +8,7 @@ const Globals = {
 	customInflect: (str) => str,
 
 	// global defaults
+	disableTooltips: false,
 	useTestProps: false,
 	paginationIsShowMoreOnly: false,
 	autoAdjustPageSizeToHeight: true,
