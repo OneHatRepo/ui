@@ -1021,6 +1021,9 @@ export function runManagerScreenCrudTests(args) {
 
 		beforeEach(function () {
 			bootstrapRouteWaiters();
+			if (options.preBeforeEach) {
+				options.preBeforeEach();
+			}
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -1028,6 +1031,9 @@ export function runManagerScreenCrudTests(args) {
 					navigateViaTabOrHomeButtonTo(url, isSetup);
 				}
 			});
+			if (options.beforeEach) {
+				options.beforeEach();
+			}
 			stubWindowOpen();
 		});
 		
@@ -1065,8 +1071,8 @@ export function runManagerScreenCrudTests(args) {
 						}
 						break;
 					case 'Tree':
-						crudWindowedGridRecord({
-							gridSelector: typeSelector,
+						crudWindowedTreeRecord({
+							treeSelector: typeSelector,
 							newData,
 							editData,
 							schema,

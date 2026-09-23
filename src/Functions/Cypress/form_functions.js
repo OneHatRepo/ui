@@ -157,7 +157,11 @@ export function setArrayComboValue(selectors, value) {
 }
 export function setComboValue(selectors, value) {
 	cy.log('setComboValue ' + value);
-	withComboInput(selectors, ($input) => {
+	const rootSelector = getTestIdSelectors(selectors, true);
+	cy.get(rootSelector).then(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
 
 		clickXButtonIfEnabled(selectors); // clear current value
 
@@ -167,24 +171,39 @@ export function setComboValue(selectors, value) {
 			return;
 		}
 
-		cy.wrap($input)
-			.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
-			.wait('@getWaiter'); // allow dropdown to load
+		if ($input.length) {
+			cy.wrap($input)
+				.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
+				.wait('@getWaiter'); // allow dropdown to load
 
-		clickComboResultRow(selectors, value).then((didClickRow) => {
-			if (didClickRow) {
-				return;
-			}
+			clickComboResultRow(selectors, value).then((didClickRow) => {
+				if (didClickRow) {
+					return;
+				}
 
-			// setComboValue now primarily relies on clicking the dropdown result row rather than using keyboard input,
-			// because when a Cypress test runner is backgrounded, Chrome agressively throttles timers, paint, focus 
-			// updates, and some event scheduling; thus the keyboard inputs often failed. Keep it as a fallback.
+				// setComboValue now primarily relies on clicking the dropdown result row rather than using keyboard input,
+				// because when a Cypress test runner is backgrounded, Chrome agressively throttles timers, paint, focus 
+				// updates, and some event scheduling; thus the keyboard inputs often failed. Keep it as a fallback.
 
-			resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
-				cy.wrap($keyboardInput)
-					.type('{downarrow}', { force: true })
-					.type('{enter}', { force: true });
+				resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
+					cy.wrap($keyboardInput)
+						.type('{downarrow}', { force: true })
+						.type('{enter}', { force: true });
+				});
 			});
+			return;
+		}
+
+		const
+			resolvedValue = _.isString(value) ? value.trim() : String(value),
+			rowLookupValue = /^id:/i.test(resolvedValue) ? resolvedValue : 'id:' + resolvedValue;
+
+		getDomNode([...selectors, 'trigger']).click({ force: true });
+		clickComboResultRow(selectors, rowLookupValue).then((didClickRow) => {
+			expect(
+				didClickRow,
+				'Non-direct Combo option row not found for value: ' + resolvedValue
+			).to.equal(true);
 		});
 	});
 }
