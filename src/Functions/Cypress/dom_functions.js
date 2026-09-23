@@ -75,7 +75,6 @@ export function getDomNodeIfExists(parentSelectors, name, options = {}) {
 	}
 	const {
 			interval = 100,
-			isSelectorsRaw = false,
 			...domOptions
 		} = options || {},
 		timeout = domOptions.timeout ?? Cypress.config('defaultCommandTimeout'),
@@ -85,7 +84,6 @@ export function getDomNodeIfExists(parentSelectors, name, options = {}) {
 			...domOptions,
 			timeout: timeout + interval,
 			first: true,
-			isSelectorsRaw,
 		};
 
 	return getDomNode(parentSelectors, parentOptions).then(($parent) => {

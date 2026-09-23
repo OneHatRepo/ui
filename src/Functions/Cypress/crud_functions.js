@@ -1041,6 +1041,13 @@ export function runManagerScreenCrudTests(args) {
 		// 	cy.saveLocalStorage();
 		// 	logout();
 		// });
+		const crudMethods = {
+			crudWindowedGridRecord,
+			crudInlineGridRecord,
+			crudWindowedTreeRecord,
+			crudSideGridRecord,
+			crudSideTreeRecord,
+		};
 
 		if (!options.skipFull) {
 			it('CRUD in full mode', function() {
@@ -1048,40 +1055,28 @@ export function runManagerScreenCrudTests(args) {
 				toFullMode(managerSelector);
 				cy.wait(500); // wait for grid to load
 
-				switch(type) {
-					case 'Grid':
-						if (fullIsInline) {
-							crudInlineGridRecord({
-								gridSelector: typeSelector,
-								newData,
-								editData,
-								schema,
-								ancillaryData,
-								options,
-							});
-						} else {
-							crudWindowedGridRecord({
-								gridSelector: typeSelector,
-								newData,
-								editData,
-								schema,
-								ancillaryData,
-								options,
-							});
-						}
-						break;
-					case 'Tree':
-						crudWindowedTreeRecord({
-							treeSelector: typeSelector,
-							newData,
-							editData,
-							schema,
-							ancillaryData,
-							options,
-						});
-						break;
+				let editorType = 'Windowed';
+				if (type === 'Grid' && fullIsInline) {
+					editorType = 'Inline';
 				}
-	
+
+				const
+					methodName = 'crud' + editorType + type + 'Record',
+					crudMethod = crudMethods[methodName];
+
+				if (!crudMethod) {
+					throw new Error('Unknown CRUD method: ' + methodName);
+				}
+
+				crudMethod({
+					gridSelector: typeSelector,
+					treeSelector: typeSelector,
+					newData,
+					editData,
+					schema,
+					ancillaryData,
+					options,
+				});
 	
 			});
 		}
@@ -1090,30 +1085,20 @@ export function runManagerScreenCrudTests(args) {
 			it('CRUD in side mode', function() {
 	
 				toSideMode(managerSelector);
-				cy.wait(1000); // wait for grid to load
+				cy.wait(500); // wait for grid to load
 	
-				switch(type) {
-					case 'Grid':
-						crudSideGridRecord({
-							gridSelector: typeSelector,
-							newData,
-							editData,
-							schema,
-							ancillaryData,
-							options,
-						});
-						break;
-					case 'Tree':
-						crudSideTreeRecord({
-							treeSelector: typeSelector,
-							newData,
-							editData,
-							schema,
-							ancillaryData,
-							options,
-						});
-						break;
-				}
+				const
+					methodName = 'crudSide' + type + 'Record', // e.g. 'crudSideGridRecord'
+					crudMethod = crudMethods[methodName];
+				crudMethod({
+					gridSelector: typeSelector,
+					treeSelector: typeSelector,
+					newData,
+					editData,
+					schema,
+					ancillaryData,
+					options,
+				});
 
 			});
 		}
