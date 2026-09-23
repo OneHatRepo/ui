@@ -1988,14 +1988,19 @@ function Form(props) {
 			'[transform:translateZ(0)]', // so embedded FAB will be relative to this container, not to viewport
 			props.className,
 		),
-		scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />;
+		scrollToTopAnchor = <Box ref={(el) => (ancillaryItemsRef.current[0] = el)} className="h-0" />,
+		dataSet = {};
+	if (UiGlobals.useTestProps) {
+		dataSet.fv = fv;
+	}
 	return <FormContext.Provider value={{ isValid: formState.isValid }}>
 			<VStackNative
 				ref={formRef}
-				{...testProps(self, fv)}
+				{...testProps(self)}
 				style={style}
 				onLayout={onLayoutDecorated}
 				className={className}
+				dataSet={dataSet}
 			>
 				{!!containerWidth && <>
 					{editorType === EDITOR_TYPE__INLINE && editor}

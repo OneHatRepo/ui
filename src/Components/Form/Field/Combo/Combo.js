@@ -1351,7 +1351,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 	}
 	
 	let dataSet = null;
-	if (!isEmptyValue(value)) {
+	if (UiGlobals.useTestProps && !isEmptyValue(value)) {
 		dataSet = { value };
 	}
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {

@@ -11,7 +11,7 @@ iOS                accessibilityIdentifier
 Android            resource-id
 */
 
-export default function testProps(id, fv) {
+export default function testProps(id) {
 
 	if (!UiGlobals.useTestProps) {
 		return {};

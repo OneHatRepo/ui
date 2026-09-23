@@ -357,8 +357,8 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 						rowClassName = ' ' + styles.INLINE_EDITOR_MIN_WIDTH;
 					}
 
-					let dataSet = null;
-					if (isSorter) {
+					let dataSet = {};
+					if (UiGlobals.useTestProps && isSorter) {
 						dataSet = {
 							isSorter: isSorter ? 'true' : 'false',
 							sortDirection: isSortDirectionAsc ? 'ASC' : 'DESC',

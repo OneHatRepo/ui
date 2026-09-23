@@ -737,9 +737,13 @@ function GridComponent(props) {
 								/>;
 				};
 
+			const dataSet = {};
+			if (UiGlobals.useTestProps) {
+				dataSet.ix = index;
+			}
 			let rowComponent =
 				<Pressable
-					dataSet={{ ix: index }}
+					dataSet={dataSet}
 					{...testProps(getRowTestId ? getRowTestId(row) : ((Repository ? Repository.schema.name : 'GridRow') + '-' + item?.id))}
 					delayLongPress={rowLongPressDelay}
 					onPress={(e) => {

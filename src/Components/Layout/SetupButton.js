@@ -7,6 +7,7 @@ import testProps from '../../Functions/testProps.js';
 import clsx from 'clsx';
 import Button from '../Buttons/Button';
 import IconButton from '../Buttons/IconButton';
+import UiGlobals from '../../UiGlobals.js';
 import Gear from '../Icons/Gear';
 
 export default function SetupButton(props) {
@@ -33,9 +34,11 @@ export default function SetupButton(props) {
 			isSetupMode ? 'fill-white' : 'fill-black',
 			isSetupMode ? 'text-white' : 'text-black',
 		),
-		dataSet = {
-			setupMode: isSetupMode ? 'true' : 'false',
-		};
+		dataSet = {};
+	
+	if (UiGlobals.useTestProps) {
+		dataSet.setupMode = isSetupMode ? 'true' : 'false';
+	}
 
 	return isMinimized ? 
 			<IconButton
