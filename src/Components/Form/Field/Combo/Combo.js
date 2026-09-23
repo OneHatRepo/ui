@@ -1350,12 +1350,18 @@ export const ComboComponent = forwardRef((props, ref) => {
 		className += ' h-auto min-h-0';
 	}
 	
+	let dataSet = null;
+	if (!isEmptyValue(value)) {
+		dataSet = { value };
+	}
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<VStackNative
 				{...testProps(testID)}
+				onLayout={onLayout}
 				className="Combo-VStack"
+				dataSet={dataSet}
 			>
 				<HStack
 					className={className}
@@ -1376,6 +1382,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 				{...testProps(testID)}
 				onLayout={onLayout}
 				className={className}
+				dataSet={dataSet}
 			>
 				{xButton}
 				{eyeButton}
