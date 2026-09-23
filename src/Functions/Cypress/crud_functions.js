@@ -101,7 +101,7 @@ export function crudCombo(args) {
 	clickTrigger(selector);
 
 	crudWindowedGridRecord({
-		gridSelector,
+		selector: gridSelector,
 		newData,
 		editData,
 		schema,
@@ -135,7 +135,7 @@ export function crudTag(args) {
 	// Need to explicitly ignore this, dismiss the error, and continue on
 
 	crudWindowedGridRecord({
-		gridSelector,
+		selector: gridSelector,
 		newData,
 		editData,
 		schema,
@@ -199,7 +199,7 @@ export function emailPdf(editorSelector, formSelector) {
 // Grid
 export function crudWindowedGridRecord(args) {
 	const {
-		gridSelector,
+		selector,
 		newData,
 		editData,
 		schema,
@@ -208,7 +208,7 @@ export function crudWindowedGridRecord(args) {
 		options = {},
 	} = args;
 
-	cy.log('crudWindowedGridRecord ' + gridSelector);
+	cy.log('crudWindowedGridRecord ' + selector);
 
 	const {
 		skipView = false,
@@ -218,23 +218,23 @@ export function crudWindowedGridRecord(args) {
 		idObj = null,
 	} = options || {};
 
-	getDomNode(gridSelector).scrollIntoView();
+	getDomNode(selector).scrollIntoView();
 
 	const runCrudById = (id) => {
 
-		cy.log('crudWindowedGridRecord: continue thru CRUD ' + gridSelector);
+		cy.log('crudWindowedGridRecord: continue thru CRUD ' + selector);
 
 		// read
 		if (!skipView) {
-			clickReloadButton(gridSelector);
+			clickReloadButton(selector);
 			cy.wait(1000); // allow time for grid to load
-			verifyGridRecordExistsById(gridSelector, id);
+			verifyGridRecordExistsById(selector, id);
 		}
 
 		// edit
 		if (!skipEdit) {
 			editWindowedGridRecord({
-				gridSelector,
+				selector,
 				fieldValues: editData,
 				schema,
 				id,
@@ -243,16 +243,16 @@ export function crudWindowedGridRecord(args) {
 
 		// delete
 		if (!skipDelete) {
-			verifyGridRecordExistsById(gridSelector, id);
-			deleteGridRecord(gridSelector, id);
-			verifyGridRecordDoesNotExistById(gridSelector, id);
+			verifyGridRecordExistsById(selector, id);
+			deleteGridRecord(selector, id);
+			verifyGridRecordDoesNotExistById(selector, id);
 		}
 	};
 
 	if (!skipAdd) {
 		// add
 		addWindowedGridRecord({
-			gridSelector,
+			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
@@ -276,7 +276,7 @@ export function crudWindowedGridRecord(args) {
 export function crudInlineGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		newData,
 		editData,
 		schema,
@@ -285,7 +285,7 @@ export function crudInlineGridRecord(args) {
 		options = {},
 	} = args;
 
-	cy.log('crudInlineGridRecord ' + gridSelector);
+	cy.log('crudInlineGridRecord ' + selector);
 
 	const {
 		skipView = false,
@@ -295,36 +295,36 @@ export function crudInlineGridRecord(args) {
 		idObj = null,
 	} = options || {};
 
-	getDomNode(gridSelector).scrollIntoView();
+	getDomNode(selector).scrollIntoView();
 
 	const runCrudById = (id) => {
 
-		cy.log('crudInlineGridRecord: continue thru CRUD ' + gridSelector);
+		cy.log('crudInlineGridRecord: continue thru CRUD ' + selector);
 
 		// read
 		if (!skipView) {
-			clickReloadButton(gridSelector);
+			clickReloadButton(selector);
 			cy.wait(1000); // allow time for grid to load
-			verifyGridRecordExistsById(gridSelector, id);
+			verifyGridRecordExistsById(selector, id);
 		}
 
 		// edit
 		if (!skipEdit) {
-			editInlineGridRecord({ gridSelector, fieldValues: editData, schema, id });
+			editInlineGridRecord({ selector, fieldValues: editData, schema, id });
 		}
 
 		// delete
 		if (!skipDelete) {
-			verifyGridRecordExistsById(gridSelector, id);
-			deleteGridRecord(gridSelector, id);
-			verifyGridRecordDoesNotExistById(gridSelector, id);
+			verifyGridRecordExistsById(selector, id);
+			deleteGridRecord(selector, id);
+			verifyGridRecordDoesNotExistById(selector, id);
 		}
 	};
 
 	if (!skipAdd) {
 		// add
 		addInlineGridRecord({
-			gridSelector,
+			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
@@ -346,7 +346,7 @@ export function crudInlineGridRecord(args) {
 export function crudSideGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		newData,
 		editData,
 		schema,
@@ -359,7 +359,7 @@ export function crudSideGridRecord(args) {
 	// and to use the @id alias correctly, keeping track of the level of recursion
 	// so the CRUD operations don't step on each other at different levels.
 
-	cy.log('crudSideGridRecord ' + gridSelector);
+	cy.log('crudSideGridRecord ' + selector);
 
 	const {
 		skipView = false,
@@ -369,33 +369,33 @@ export function crudSideGridRecord(args) {
 		idObj = null,
 	} = options || {};
 	
-	getDomNode(gridSelector).scrollIntoView();
+	getDomNode(selector).scrollIntoView();
 
 	const runCrudById = (id) => {
 
 		// read
 		if (!skipView) {
-			clickReloadButton(gridSelector);
+			clickReloadButton(selector);
 			cy.wait(1000); // allow time for grid to load
-			verifyGridRecordExistsById(gridSelector, id);
+			verifyGridRecordExistsById(selector, id);
 		}
 
 		// edit
 		if (!skipEdit) {
-			editGridRecord({ gridSelector, fieldValues: editData, schema, id, level: 0, whichEditor: SIDE });
+			editGridRecord({ selector, fieldValues: editData, schema, id, level: 0, whichEditor: SIDE });
 		}
 
 		// delete
 		if (!skipDelete) {
-			verifyGridRecordExistsById(gridSelector, id);
-			deleteGridRecord(gridSelector, id);
-			verifyGridRecordDoesNotExistById(gridSelector, id);
+			verifyGridRecordExistsById(selector, id);
+			deleteGridRecord(selector, id);
+			verifyGridRecordDoesNotExistById(selector, id);
 		}
 	};
 
 	if (!skipAdd) {
 		// add
-		addGridRecord({ gridSelector, fieldValues: newData, schema, ancillaryData, level }); // saves the id in @id
+		addGridRecord({ selector, fieldValues: newData, schema, ancillaryData, level }); // saves the id in @id
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -412,22 +412,22 @@ export function crudSideGridRecord(args) {
 export function addGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		fieldValues,
 		schema,
 		ancillaryData,
 		level = 0,
 	} = args;
 
-	cy.log('addGridRecord ' + gridSelector);
+	cy.log('addGridRecord ' + selector);
 
 	const
-		editorSelector = gridSelector + '/editor',
+		editorSelector = selector + '/editor',
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form',
 		isRemotePhantomMode = schema.repository.isRemotePhantomMode;
 
-	clickAddButton(gridSelector);
+	clickAddButton(selector);
 	if (isRemotePhantomMode) {
 		cy.wait('@addWaiter');
 	}
@@ -449,7 +449,7 @@ export function addGridRecord(args) {
 	cy.wait(1000); // allow temp id to be replaced by real one
 
 	// Get and save id of new record
-	getDomNode([gridSelector, 'Row_row-selected']).then((row) => {
+	getDomNode([selector, 'Row_row-selected']).then((row) => {
 		const parent = row[0].parentNode;
 		cy.wrap(parent).invoke('attr', 'data-testid').then((testId) => {
 			const id = testId.split('-')[1];
@@ -472,14 +472,14 @@ export function addGridRecord(args) {
 			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
 				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
 			}
-			crudWindowedGridRecord({ gridSelector: ancillaryGridSelector, newData, editData, schema, ancillaryData, level: level+1, options });
+			crudWindowedGridRecord({ selector: ancillaryGridSelector, newData, editData, schema, ancillaryData, level: level+1, options });
 		});
 	}
 }
 export function addWindowedGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		fieldValues,
 		schema,
 		ancillaryData,
@@ -487,12 +487,12 @@ export function addWindowedGridRecord(args) {
 	} = args;
 	// adds the record as normal, then closes the editor window
 
-	cy.log('addWindowedGridRecord ' + gridSelector);
+	cy.log('addWindowedGridRecord ' + selector);
 
-	addGridRecord({ gridSelector, fieldValues, schema, ancillaryData, level });
+	addGridRecord({ selector, fieldValues, schema, ancillaryData, level });
 
-	cy.log('addWindowedGridRecord: close window ' + gridSelector);
-	const formSelector = gridSelector + '/editor/form';
+	cy.log('addWindowedGridRecord: close window ' + selector);
+	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -500,7 +500,7 @@ export function addWindowedGridRecord(args) {
 export function addInlineGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		fieldValues,
 		schema,
 		ancillaryData,
@@ -508,12 +508,12 @@ export function addInlineGridRecord(args) {
 	} = args;
 	// adds the record as normal, then closes the editor window
 
-	cy.log('addInlineGridRecord ' + gridSelector);
+	cy.log('addInlineGridRecord ' + selector);
 
-	addGridRecord({ gridSelector, fieldValues, schema, ancillaryData: [], level }); // NOTE: ancillaryData is not passed to addGridRecord because can't edit ancillary data in an inline editor
+	addGridRecord({ selector, fieldValues, schema, ancillaryData: [], level }); // NOTE: ancillaryData is not passed to addGridRecord because can't edit ancillary data in an inline editor
 
-	cy.log('addInlineGridRecord: close window ' + gridSelector);
-	const formSelector = gridSelector + '/editor/form';
+	cy.log('addInlineGridRecord: close window ' + selector);
+	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -521,7 +521,7 @@ export function addInlineGridRecord(args) {
 export function editGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		fieldValues,
 		schema,
 		id,
@@ -529,12 +529,12 @@ export function editGridRecord(args) {
 		whichEditor = WINDOWED,
 	} = args;
 	
-	cy.log('editGridRecord ' + gridSelector + ' ' + id);
+	cy.log('editGridRecord ' + selector + ' ' + id);
 	
-	selectGridRowIfNotAlreadySelectedById(gridSelector, id);
+	selectGridRowIfNotAlreadySelectedById(selector, id);
 
 	const
-		editorSelector = gridSelector + '/editor',
+		editorSelector = selector + '/editor',
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
@@ -543,8 +543,8 @@ export function editGridRecord(args) {
 		clickToEditButtonIfExists(viewerSelector);
 	} else {
 		// windowed or inline editor
-		cy.log('click editBtn ' + gridSelector);
-		clickEditButton(gridSelector);
+		cy.log('click editBtn ' + selector);
+		clickEditButton(selector);
 	}
 	getDomNode(formSelector).should('exist');
 
@@ -565,7 +565,7 @@ export function editGridRecord(args) {
 export function editWindowedGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		fieldValues,
 		schema,
 		id,
@@ -574,11 +574,11 @@ export function editWindowedGridRecord(args) {
 
 	// edits the record as normal, then closes the editor window
 
-	cy.log('editWindowedGridRecord ' + gridSelector + ' ' + id);
+	cy.log('editWindowedGridRecord ' + selector + ' ' + id);
 	
-	editGridRecord({ gridSelector, fieldValues, schema, id, level, whichEditor: WINDOWED });
+	editGridRecord({ selector, fieldValues, schema, id, level, whichEditor: WINDOWED });
 
-	const formSelector = gridSelector + '/editor/form';
+	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -586,7 +586,7 @@ export function editWindowedGridRecord(args) {
 export function editInlineGridRecord(args) {
 
 	const {
-		gridSelector,
+		selector,
 		fieldValues,
 		schema,
 		id,
@@ -595,20 +595,20 @@ export function editInlineGridRecord(args) {
 
 	// edits the record as normal, then closes the editor window
 
-	cy.log('editInlineGridRecord ' + gridSelector + ' ' + id);
+	cy.log('editInlineGridRecord ' + selector + ' ' + id);
 	
-	editGridRecord({ gridSelector, fieldValues, schema, id, level, whichEditor: INLINE });
+	editGridRecord({ selector, fieldValues, schema, id, level, whichEditor: INLINE });
 
-	const formSelector = gridSelector + '/editor/form';
+	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
 }
-export function deleteGridRecord(gridSelector, id) {
-	cy.log('deleteGridRecord ' + gridSelector + ' ' + id);
+export function deleteGridRecord(selector, id) {
+	cy.log('deleteGridRecord ' + selector + ' ' + id);
 	
-	selectGridRowIfNotAlreadySelectedById(gridSelector, id);
-	clickDeleteButton(gridSelector);
+	selectGridRowIfNotAlreadySelectedById(selector, id);
+	clickDeleteButton(selector);
 	cy.wait(500); // allow confirmation box to appear
 	
 	// Click OK on confirmation box
@@ -647,7 +647,7 @@ export function switchToViewModeIfNecessary(editorSelector) {
 export function crudWindowedTreeRecord(args) {
 
 	const {
-		treeSelector,
+		selector,
 		newData,
 		editData,
 		schema,
@@ -656,7 +656,7 @@ export function crudWindowedTreeRecord(args) {
 		options = {},
 	} = args;
 
-	cy.log('crudWindowedTreeRecord ' + treeSelector);
+	cy.log('crudWindowedTreeRecord ' + selector);
 
 	const {
 		skipView = false,
@@ -666,23 +666,23 @@ export function crudWindowedTreeRecord(args) {
 		idObj = null,
 	} = options || {};
 
-	getDomNode(treeSelector).scrollIntoView();
+	getDomNode(selector).scrollIntoView();
 
 	const runCrudById = (id) => {
 
-		cy.log('crudWindowedTreeRecord: continue thru CRUD ' + treeSelector);
+		cy.log('crudWindowedTreeRecord: continue thru CRUD ' + selector);
 		
 		// read
 		if (!skipView) {
-			clickReloadButton(treeSelector);
+			clickReloadButton(selector);
 			cy.wait(1000); // allow time for tree to load
-			verifyTreeRecordExistsById(treeSelector, id);
+			verifyTreeRecordExistsById(selector, id);
 		}
 
 		// edit
 		if (!skipEdit) {
 			editWindowedTreeRecord({
-				treeSelector,
+				selector,
 				fieldValues: editData,
 				schema,
 				id,
@@ -692,16 +692,16 @@ export function crudWindowedTreeRecord(args) {
 
 		// delete
 		if (!skipDelete) {
-			verifyTreeRecordExistsById(treeSelector, id);
-			deleteTreeRecord(treeSelector, id);
-			verifyTreeRecordDoesNotExistById(treeSelector, id);
+			verifyTreeRecordExistsById(selector, id);
+			deleteTreeRecord(selector, id);
+			verifyTreeRecordDoesNotExistById(selector, id);
 		}
 	};
 
 	if (!skipAdd) {
 		// add
 		addWindowedTreeRecord({
-			treeSelector,
+			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
@@ -723,7 +723,7 @@ export function crudWindowedTreeRecord(args) {
 export function crudSideTreeRecord(args) {
 
 	const {
-		treeSelector,
+		selector,
 		newData,
 		editData,
 		schema,
@@ -736,7 +736,7 @@ export function crudSideTreeRecord(args) {
 	// and to use the @id alias correctly, keeping track of the level of recursion
 	// so the CRUD operations don't step on each other at different levels.
 	
-	cy.log('crudSideTreeRecord ' + treeSelector);
+	cy.log('crudSideTreeRecord ' + selector);
 
 	const {
 		skipView = false,
@@ -746,21 +746,21 @@ export function crudSideTreeRecord(args) {
 		idObj = null,
 	} = options || {};
 	
-	getDomNode(treeSelector).scrollIntoView();
+	getDomNode(selector).scrollIntoView();
 
 	const runCrudById = (id) => {
 
 		// read
 		if (!skipView) {
-			clickReloadButton(treeSelector);
+			clickReloadButton(selector);
 			cy.wait(1000); // allow time for tree to load
-			verifyTreeRecordExistsById(treeSelector, id);
+			verifyTreeRecordExistsById(selector, id);
 		}
 
 		// edit
 		if (!skipEdit) {
 			editTreeRecord({
-				treeSelector,
+				selector,
 				fieldValues: editData,
 				schema,
 				id,
@@ -771,16 +771,16 @@ export function crudSideTreeRecord(args) {
 
 		// delete
 		if (!skipDelete) {
-			verifyTreeRecordExistsById(treeSelector, id);
-			deleteTreeRecord(treeSelector, id);
-			verifyTreeRecordDoesNotExistById(treeSelector, id);
+			verifyTreeRecordExistsById(selector, id);
+			deleteTreeRecord(selector, id);
+			verifyTreeRecordDoesNotExistById(selector, id);
 		}
 	};
 
 	if (!skipAdd) {
 		// add
 		addTreeRecord({
-			treeSelector,
+			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
@@ -802,32 +802,32 @@ export function crudSideTreeRecord(args) {
 export function addTreeRecord(args) {
 
 	const {
-		treeSelector,
+		selector,
 		fieldValues,
 		schema,
 		ancillaryData,
 		level = 0,
 	} = args;
 
-	cy.log('addTreeRecord ' + treeSelector);
+	cy.log('addTreeRecord ' + selector);
 
 	const
-		editorSelector = treeSelector + '/editor',
+		editorSelector = selector + '/editor',
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
 	// BEGIN MOD
 	// select the root node
-	getFirstTreeRootNode(treeSelector).then ((rootNode) => {
+	getFirstTreeRootNode(selector).then ((rootNode) => {
 
 		// get the rootNodeId
 		const id = rootNode.attr('data-testid').split('-')[1];
-		selectTreeNodeIfNotAlreadySelectedById(treeSelector, id)
+		selectTreeNodeIfNotAlreadySelectedById(selector, id)
 	});
 	// END MOD
 
 
-	clickAddButton(treeSelector);
+	clickAddButton(selector);
 	getDomNode(formSelector).should('exist');
 
 	fillForm(formSelector, fieldValues, schema, level +1);
@@ -846,7 +846,7 @@ export function addTreeRecord(args) {
 	cy.wait(1000); // allow temp id to be replaced by real one
 
 	// Get and save id of new record
-	getDomNode([treeSelector, 'node-selected']).then((row) => {
+	getDomNode([selector, 'node-selected']).then((row) => {
 		const parent = row[0].parentNode;
 		cy.wrap(parent).invoke('attr', 'data-testid').then((testId) => {
 			const id = testId.split('-')[1];
@@ -869,14 +869,14 @@ export function addTreeRecord(args) {
 			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
 				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
 			}
-			crudWindowedGridRecord({ gridSelector: ancillaryGridSelector, newData, editData, schema, ancillaryData, level: level+1, options });
+			crudWindowedGridRecord({ selector: ancillaryGridSelector, newData, editData, schema, ancillaryData, level: level+1, options });
 		});
 	}
 }
 export function addWindowedTreeRecord(args) {
 
 	const {
-		treeSelector,
+		selector,
 		fieldValues,
 		schema,
 		ancillaryData,
@@ -885,12 +885,12 @@ export function addWindowedTreeRecord(args) {
 
 	// adds the record as normal, then closes the editor window
 
-	cy.log('addWindowedTreeRecord ' + treeSelector);
+	cy.log('addWindowedTreeRecord ' + selector);
 
-	addTreeRecord({ treeSelector, fieldValues, schema, ancillaryData, level });
+	addTreeRecord({ selector, fieldValues, schema, ancillaryData, level });
 
-	cy.log('addWindowedTreeRecord: close window ' + treeSelector);
-	const formSelector = treeSelector + '/editor/form';
+	cy.log('addWindowedTreeRecord: close window ' + selector);
+	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -898,7 +898,7 @@ export function addWindowedTreeRecord(args) {
 export function editTreeRecord(args) {
 
 	const {
-		treeSelector,
+		selector,
 		fieldValues,
 		schema,
 		id,
@@ -906,12 +906,12 @@ export function editTreeRecord(args) {
 		whichEditor = WINDOWED,
 	} = args;
 	
-	cy.log('editTreeRecord ' + treeSelector + ' ' + id);
+	cy.log('editTreeRecord ' + selector + ' ' + id);
 	
-	selectTreeNodeIfNotAlreadySelectedById(treeSelector, id);
+	selectTreeNodeIfNotAlreadySelectedById(selector, id);
 
 	const
-		editorSelector = treeSelector + '/editor',
+		editorSelector = selector + '/editor',
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
@@ -919,8 +919,8 @@ export function editTreeRecord(args) {
 		cy.log('switch to Edit mode if necessary ' + viewerSelector);
 		clickToEditButtonIfExists(viewerSelector);
 	} else {
-		cy.log('click editBtn ' + treeSelector);
-		clickEditButton(treeSelector);
+		cy.log('click editBtn ' + selector);
+		clickEditButton(selector);
 	}
 	getDomNode(formSelector).should('exist');
 
@@ -942,7 +942,7 @@ export function editTreeRecord(args) {
 export function editWindowedTreeRecord(args) {
 
 	const {
-		treeSelector,
+		selector,
 		fieldValues,
 		schema,
 		id,
@@ -951,21 +951,21 @@ export function editWindowedTreeRecord(args) {
 
 	// edits the record as normal, then closes the editor window
 
-	cy.log('editWindowedTreeRecord ' + treeSelector + ' ' + id);
+	cy.log('editWindowedTreeRecord ' + selector + ' ' + id);
 	
-	editTreeRecord({ treeSelector, fieldValues, schema, id, level, whichEditor: WINDOWED });
+	editTreeRecord({ selector, fieldValues, schema, id, level, whichEditor: WINDOWED });
 
-	const formSelector = treeSelector + '/editor/form';
+	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
 }
-export function deleteTreeRecord(treeSelector, id) {
+export function deleteTreeRecord(selector, id) {
 
-	cy.log('deleteTreeRecord ' + treeSelector + ' ' + id);
+	cy.log('deleteTreeRecord ' + selector + ' ' + id);
 	
-	selectTreeNodeIfNotAlreadySelectedById(treeSelector, id);
-	clickDeleteButton(treeSelector);
+	selectTreeNodeIfNotAlreadySelectedById(selector, id);
+	clickDeleteButton(selector);
 	cy.wait(500); // allow confirmation box to appear
 	
 	// Click OK on confirmation box
@@ -1069,8 +1069,8 @@ export function runManagerScreenCrudTests(args) {
 				}
 
 				crudMethod({
-					gridSelector: typeSelector,
-					treeSelector: typeSelector,
+					selector: typeSelector,
+					selector: typeSelector,
 					newData,
 					editData,
 					schema,
@@ -1091,8 +1091,8 @@ export function runManagerScreenCrudTests(args) {
 					methodName = 'crudSide' + type + 'Record', // e.g. 'crudSideGridRecord'
 					crudMethod = crudMethods[methodName];
 				crudMethod({
-					gridSelector: typeSelector,
-					treeSelector: typeSelector,
+					selector: typeSelector,
+					selector: typeSelector,
 					newData,
 					editData,
 					schema,
