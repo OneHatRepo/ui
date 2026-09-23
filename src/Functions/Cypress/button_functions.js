@@ -2,6 +2,7 @@ import {
 	getDomNode,
 	getDomNodes,
 	getDomNodeIfExists,
+	getTestIdSelectors,
 } from './dom_functions.js';
 import _ from 'lodash';
 const $ = Cypress.$;
@@ -112,14 +113,31 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 		parentSelectors = [parentSelectors];
 	}
 
-	return getDomNodeIfExists(parentSelectors, name, options).then((node) => {
-		if (node?.length) {
+	const
+		timeout = options?.timeout ?? Cypress.config('defaultCommandTimeout'),
+		interval = options?.interval ?? 100,
+		startedAt = Date.now(),
+		isSelectorsRaw = options?.isSelectorsRaw || false,
+		selector = isSelectorsRaw
+			? ((_.isString(parentSelectors) ? parentSelectors : parentSelectors.join(' ')) + ' ' + getTestIdSelectors(name, true))
+			: getTestIdSelectors([...parentSelectors, name], true);
+
+	const findAndClick = () => cy.get('body', { log: false }).then(($body) => {
+		const node = $body.find(selector).first();
+		if (node.length) {
 			cy.log('clickButtonIfExists found node');
 			return cy.wrap(node).click({ force: true }).then(() => {
 				cy.log('clickButtonIfExists clicked node');
 			});
 		}
 
-		cy.log('clickButtonIfExists did not find node within timeout of ' + (options?.timeout || 'default'));
+		if (Date.now() - startedAt >= timeout) {
+			cy.log('clickButtonIfExists did not find node within timeout of ' + timeout);
+			return;
+		}
+
+		return cy.wait(interval, { log: false }).then(findAndClick);
 	});
+
+	return findAndClick();
 }

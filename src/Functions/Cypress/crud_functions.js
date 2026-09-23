@@ -127,24 +127,85 @@ export function crudTag(args) {
 
 	const
 		fieldName = selector[1].match(/^field-(.*)$/)[1],
-		gridSelector = selector[0] + '/' + fieldName + '/combo/grid';
+		comboGridSelector = selector[0] + '/' + fieldName + '/combo/grid',
+		flatGridSelector = selector[0] + '/' + fieldName + '/grid';
 	
 	clickTrigger(selector);
 
 	// When crudding a tag, on edit, re-selecting the row can put up "already selected value" error box.
 	// Need to explicitly ignore this, dismiss the error, and continue on
 
-	crudWindowedGridRecord({
-		selector: gridSelector,
-		newData,
-		editData,
-		schema,
-		ancillaryData,
-		level: level +1,
-		options,
-	});
+	const
+		startedAt = Date.now(),
+		timeout = 10000,
+		interval = 100,
+		resolveGridSelector = () => cy.get('body', { log: false }).then(($body) => {
+			if ($body.find('[data-testid="' + comboGridSelector + '"]').length) {
+				return comboGridSelector;
+			}
 
-	clickTrigger(selector);
+			if ($body.find('[data-testid="' + flatGridSelector + '"]').length) {
+				return flatGridSelector;
+			}
+
+			const dynamicGridTestId = $body
+				.find('.dropdownMenu-ModalContent [data-testid$="/grid"]:visible')
+				.first()
+				.attr('data-testid');
+			if (dynamicGridTestId) {
+				return dynamicGridTestId;
+			}
+
+			if (Date.now() - startedAt >= timeout) {
+				cy.log(
+					'crudTag: no ancillary CRUD grid found; skipping ancillary CRUD for selectors: '
+					+ comboGridSelector
+					+ ' or '
+					+ flatGridSelector
+				);
+				return null;
+			}
+
+			return cy.wait(interval, { log: false }).then(resolveGridSelector);
+		});
+
+	return resolveGridSelector().then((resolvedGridSelector) => {
+		if (!resolvedGridSelector) {
+			return;
+		}
+
+		return cy.get('body', { log: false }).then(($body) => {
+			const candidateCrudSelectors = [
+				resolvedGridSelector,
+				resolvedGridSelector.replace(/\/grid$/, ''),
+			];
+
+			const crudSelector = _.find(candidateCrudSelectors, (candidateSelector) => {
+				if (!candidateSelector) {
+					return false;
+				}
+				const gridRootSelector = '[data-testid="' + candidateSelector + '"]';
+				return $body.find(gridRootSelector + ' [data-testid="addBtn"]').length > 0;
+			});
+
+			if (!crudSelector) {
+				cy.log('crudTag: resolved selector has no addBtn; skipping ancillary CRUD for ' + resolvedGridSelector);
+				return;
+			}
+
+			crudWindowedGridRecord({
+				selector: crudSelector,
+				newData,
+				editData,
+				schema,
+				ancillaryData,
+				level: level +1,
+				options,
+			});
+		});
+	}).then(() => {
+		clickTrigger(selector);
+	});
 }
 export function crudJson(args) {
 

@@ -514,6 +514,7 @@ export default function withModal(WrappedComponent) {
 					return null;
 				}
 				return <Pressable
+							{...testProps(`withModal-ModalBackdrop-${modal.id}`)}
 							pointerEvents="auto"
 							onPress={() => {
 								if (isTopModal) {

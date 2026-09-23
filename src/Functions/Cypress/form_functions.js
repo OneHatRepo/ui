@@ -156,6 +156,8 @@ export function setArrayComboValue(selectors, value) {
 				});
 			});
 		}
+
+		settleOverlaysAfterCombo(selectors);
 	}).then(() => {
 		assertFieldDataValue(selectors, expectedDataValue);
 	});
@@ -198,6 +200,8 @@ export function setComboValue(selectors, value) {
 				});
 			});
 
+			settleOverlaysAfterCombo(selectors);
+
 			// confirm value was set (data-value of main component -- not input -- has string-coerced 'value')
 			cy.wrap($root).should('have.attr', 'data-value', expectedDataValue);
 			return;
@@ -214,6 +218,8 @@ export function setComboValue(selectors, value) {
 				'Non-direct Combo option row not found for value: ' + resolvedValue
 			).to.equal(true);
 		});
+
+		settleOverlaysAfterCombo(selectors);
 
 		// confirm value was set (data-value of main component -- not input -- has string-coerced 'value')
 		cy.wrap($root).should('have.attr', 'data-value', expectedDataValue);
@@ -251,10 +257,28 @@ export function setTagValue(selectors, value) {
 				return;
 			}
 
+			const normalizedValues = _.map(values, (item) => {
+				if (_.isObject(item)) {
+					if (_.isNil(item.id) || item.id === '') {
+						throw new Error(
+							'setTagValue requires each object value to include a non-empty id. Received: '
+							+ JSON.stringify(item)
+						);
+					}
+					return item;
+				}
+
+				if (_.isNil(item) || item === '') {
+					throw new Error('setTagValue received an empty tag id value.');
+				}
+
+				return item;
+			});
+
 			// Now add the new tags
 			return getDomNode([...selectors, 'input']).then((field) => {
 				cy.wrap(field).clear({ force: true });
-				_.each(values, (value) => {
+				_.each(normalizedValues, (value) => {
 					const id = _.isObject(value) ? value.id : value;
 					cy.wrap(field)
 						.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
@@ -283,6 +307,7 @@ export function setTagValue(selectors, value) {
 }
 export function setDateValue(selectors, value) {
 	cy.log('setDateValue ' + value);
+	dismissOpenDatePicker();
 	return withFieldInput(selectors, ($input) => {
 		cy.wrap($input).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
@@ -290,6 +315,7 @@ export function setDateValue(selectors, value) {
 				.type(value, { force: true })
 				.type('{enter}');
 		}
+		dismissOpenDatePicker();
 	}).then(() => {
 		assertMatchesValueGetter(selectors, getDateValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'Date');
 	});
@@ -1325,6 +1351,72 @@ function withComboInput(selectors, cb) {
 			$root = Cypress.$($rootSubject[0]),
 			$input = $root.find(COMBO_EDITABLE_INPUT_SELECTOR).first();
 		return cb($input, $root);
+	});
+}
+function settleOverlaysAfterCombo(selectors = null) {
+	return cy.get('body', { log: false }).then(($body) => {
+		const hasVisibleComboOverlay = $body.find('.dropdownMenu-ModalContent:visible').length > 0;
+		if (!hasVisibleComboOverlay) {
+			return;
+		}
+
+		if (_.isArray(selectors) && selectors.length) {
+			const
+				triggerSelector = getTestIdSelectors([...selectors, 'trigger'], true),
+				$trigger = $body.find(triggerSelector).first();
+
+			if ($trigger.length) {
+				return cy.wrap($trigger, { log: false }).click({ force: true, log: false });
+			}
+		}
+
+		const $comboBackdrops = $body
+			.find('[class*="ModalBackdrop"]:visible, [data-testid*="ModalBackdrop"]:visible, [class*="backdrop"]:visible, [data-testid*="backdrop"]:visible')
+			.filter((ix, el) => {
+				const
+					$el = Cypress.$(el),
+					className = String($el.attr('class') || '').toLowerCase(),
+					testId = String($el.attr('data-testid') || '').toLowerCase(),
+					hasComboBackdropMarker = className.includes('combo-modalbackdrop')
+						|| className.includes('treeselector-modalbackdrop')
+						|| testId.includes('combo-modalbackdrop')
+						|| testId.includes('treeselector-modalbackdrop');
+
+				if (!hasComboBackdropMarker) {
+					return false;
+				}
+
+				const rect = el.getBoundingClientRect();
+				return rect.width > 0 && rect.height > 0;
+			});
+
+		if ($comboBackdrops.length) {
+			const $topmostBackdrop = Cypress.$(
+				$comboBackdrops
+					.toArray()
+					.sort((a, b) => {
+						const aZ = Number.parseInt(Cypress.$(a).css('z-index') || '0', 10);
+						const bZ = Number.parseInt(Cypress.$(b).css('z-index') || '0', 10);
+						if (aZ !== bZ) {
+							return aZ - bZ;
+						}
+						return 0;
+					})
+					.pop()
+			);
+
+			return cy.wrap($topmostBackdrop, { log: false }).click('center', { force: true, log: false });
+		}
+	});
+}
+function dismissOpenDatePicker() {
+	return cy.get('body', { log: false }).then(($body) => {
+		if ($body.find('.rdtPicker:visible').length === 0) {
+			return;
+		}
+
+		cy.wrap($body, { log: false }).type('{esc}', { force: true, log: false });
+		cy.wait(60, { log: false });
 	});
 }
 function normalizeStringValue(value) {
