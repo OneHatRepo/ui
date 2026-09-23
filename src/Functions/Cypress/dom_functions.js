@@ -7,17 +7,32 @@ import _ from 'lodash';
  * @argument {string | string[]} selectors - data-testid attribute values
  * If an array is given, these will be considered nested selectors.
  * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
+ * @argument {object} options - supports first and isSelectorsRaw
+ * isSelectorsRaw - if true, selectors are treated as raw CSS selectors.
  * @return Cypress chainer
  */
 export function getDomNode(selectors, options = {}) {
-	let useFirst;
-	if (options?.hasOwnProperty('first')) {
-		useFirst = options.first;
-		delete options.first;
+	const
+		useFirst = options?.hasOwnProperty('first') ? options.first : true,
+		isSelectorsRaw = options?.isSelectorsRaw || false,
+		domOptions = {
+			...options,
+		};
+
+	delete domOptions.first;
+	delete domOptions.isSelectorsRaw;
+
+	let selectorString;
+	if (isSelectorsRaw) {
+		selectorString = _.isString(selectors) ? selectors : selectors.join(' ');
+		if (useFirst) {
+			selectorString += ':first';
+		}
 	} else {
-		useFirst = true;
+		selectorString = getTestIdSelectors(selectors, useFirst);
 	}
-	return cy.get(getTestIdSelectors(selectors, useFirst), options);
+
+	return cy.get(selectorString, domOptions);
 }
 
 /**
@@ -25,10 +40,24 @@ export function getDomNode(selectors, options = {}) {
  * @argument {string | string[]} selectors - data-testid attribute values
  * If an array is given, these will be considered nested selectors.
  * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
+ * @argument {object} options - supports isSelectorsRaw
+ * isSelectorsRaw - if true, selectors are treated as raw CSS selectors.
  * @return Cypress chainer
  */
 export function getDomNodes(selectors, options = {}) {
-	return cy.get(getTestIdSelectors(selectors), options);
+	const
+		isSelectorsRaw = options?.isSelectorsRaw || false,
+		domOptions = {
+			...options,
+		};
+
+	delete domOptions.isSelectorsRaw;
+
+	const selectorString = isSelectorsRaw
+		? (_.isString(selectors) ? selectors : selectors.join(' '))
+		: getTestIdSelectors(selectors);
+
+	return cy.get(selectorString, domOptions);
 }
 
 /**
@@ -36,31 +65,32 @@ export function getDomNodes(selectors, options = {}) {
  * If found, yields the node; otherwise yields null without failing the test.
  * @argument {string | string[]} parentSelectors - parent scope selectors
  * @argument {string} name - child selector token or raw selector
- * @argument {object} options - supports timeout and interval
+ * @argument {object} options - supports timeout, interval, isSelectorsRaw
+ * isSelectorsRaw - if true, the parentSelectors are treated as raw CSS selectors rather than data-testid tokens.
  * @return Cypress chain yielding JQuery node or null
  */
 export function getDomNodeIfExists(parentSelectors, name, options = {}) {
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
 	}
-
 	const {
-		interval = 100,
-		...domOptions
-	} = options || {};
-
-	const
-		selector = getTestIdSelectors(name, true),
+			interval = 100,
+			isSelectorsRaw = false,
+			...domOptions
+		} = options || {},
 		timeout = domOptions.timeout ?? Cypress.config('defaultCommandTimeout'),
 		startedAt = Date.now(),
+		childSelector = getTestIdSelectors(name, true),
 		parentOptions = {
 			...domOptions,
 			timeout: timeout + interval,
+			first: true,
+			isSelectorsRaw,
 		};
 
 	return getDomNode(parentSelectors, parentOptions).then(($parent) => {
 		const findNode = () => {
-			const node = $parent.find(selector).first();
+			const node = $parent.find(childSelector).first();
 			if (node.length) {
 				return cy.wrap(node, { log: false });
 			}

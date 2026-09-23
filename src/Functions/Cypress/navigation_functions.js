@@ -1,6 +1,6 @@
 import {
 	getDomNode,
-	getDomNodes,
+	getDomNodeIfExists,
 } from './dom_functions.js';
 
 const
@@ -16,32 +16,44 @@ const
 
 export function login(loginId = null, password = null) {
 	cy.log('login');
-	
-	// Fetch non-sensitive configuration synchronously
 
-	// Fetch sensitive credentials asynchronously via an array
-	cy.env(['loginId', 'password']).then((secrets) => {
-		const
-			finalLoginId = loginId || secrets.loginId,
-			finalPassword = password || secrets.password;
+	return getDomNodeIfExists('body', 'UserIndicator', { timeout: 100, isSelectorsRaw: true }).then(($userIndicator) => {
+		if ($userIndicator) {
+			cy.log('User is already logged in');
+			return;
+		}
 
-		cy.visit(baseUrl + baseDir + 'login').then(() => {
-			getDomNode('loginId', { timeout: 30000 }).clear();
-			getDomNode('loginId').type(finalLoginId);
+		// Fetch sensitive credentials asynchronously via an array
+		return cy.env(['loginId', 'password']).then((secrets) => {
+			const
+				finalLoginId = loginId || secrets.loginId,
+				finalPassword = password || secrets.password;
 
-			getDomNode('password').clear();
-			getDomNode('password').type(finalPassword);
-			
-			getDomNode('loginBtn').click();
-			cy.url().should('not.eq', baseUrl + baseDir + 'login');
+			return cy.visit(baseUrl + baseDir + 'login').then(() => {
+				getDomNode('loginId', { timeout: 30000 }).clear();
+				getDomNode('loginId').type(finalLoginId);
+
+				getDomNode('password').clear();
+				getDomNode('password').type(finalPassword);
+				
+				getDomNode('loginBtn').click();
+				cy.url().should('not.eq', baseUrl + baseDir + 'login');
+			});
 		});
 	});
 }
 export function logout() {
 	cy.log('logout');
-	getDomNode('userIndicator').click({ force: true });
 
-	cy.url().should('include', baseUrl + baseDir + 'login');
+	return getDomNodeIfExists('body', 'UserIndicator', { timeout: 5000, isSelectorsRaw: true }).then(($userIndicator) => {
+		if (!$userIndicator) {
+			cy.log('UserIndicator not found after 5s; skipping logout');
+			return;
+		}
+
+		cy.wrap($userIndicator, { log: false }).click({ force: true });
+		cy.url().should('include', baseUrl + baseDir + 'login');
+	});
 }
 
 

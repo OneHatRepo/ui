@@ -27,7 +27,7 @@ export default function UserIndicator(props) {
 		return null;
 	}
 	return <IconButton
-				{...testProps('userIndicator')}
+				{...testProps('UserIndicator')}
 				onPress={() => dispatch(logout())}
 				icon={isMinimized ? RightFromBracket : User}
 				text={isMinimized ? null : user.full_name}

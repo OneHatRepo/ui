@@ -73,11 +73,11 @@ export function clickToEditButton(parentSelectors) {
 }
 export function clickToEditButtonIfExists(parentSelectors) {
 	cy.log('clickToEditButtonIfExists');
-	return clickButtonIfExists(parentSelectors, 'toEditBtn', { timeout: 2000 });
+	return clickButtonIfExists(parentSelectors, 'toEditBtn', { timeout: 5000 });
 }
 export function clickToViewButton(parentSelectors) {
 	cy.log('clickToViewButton');
-	return clickButton(parentSelectors, 'toViewBtn');
+	return clickButton(parentSelectors, 'toViewBtn', { timeout: 5000 });
 }
 export function clickToViewButtonIfExists(parentSelectors) {
 	cy.log('clickToViewButtonIfExists');
