@@ -19,6 +19,7 @@ import {
 import {
 	getModelFromGridSelector,
 } from './grid_functions.js';
+import isEmptyValue from '../isEmptyValue.js';
 import natsort from 'natsort';
 import _ from 'lodash';
 const $ = Cypress.$;
@@ -134,7 +135,9 @@ export function fillForm(selector, fieldValues, schema, level = 0) {
 }
 export function setArrayComboValue(selectors, value) {
 	cy.log('setArrayComboValue ' + value);
-	getDomNode([...selectors, 'input']).then((field) => {
+	const expectedDataValue = String(getComboTargetId(value) ?? value);
+
+	return getDomNode([...selectors, 'input']).then((field) => {
 		cy.wrap(field).clear({ force: true });
 		if (value) {
 			cy.wrap(field)
@@ -153,6 +156,8 @@ export function setArrayComboValue(selectors, value) {
 				});
 			});
 		}
+	}).then(() => {
+		assertFieldDataValue(selectors, expectedDataValue);
 	});
 }
 export function setComboValue(selectors, value) {
@@ -228,74 +233,83 @@ export function setTagValue(selectors, value) {
 	function clickButtonsWithRemove(selector) {
 		// This function allows Cypress to click on multiple elements in one command,
 		// when clicking the elements removes them from the DOM.
-		cy.get('body').then((body) => {
+		return cy.get('body').then((body) => {
 			if (body.find(selector).length === 0) {
 				return;
 			}
-			cy.get(selector).eq(0)
+			return cy.get(selector).eq(0)
 				.click({ force: true })
 				.then(() => {
-					clickButtonsWithRemove(selector); // Recursive call for the next element
+					return clickButtonsWithRemove(selector); // Recursive call for the next element
 				});
 		});
 	}
-	clickButtonsWithRemove(getTestIdSelectors([...selectors, 'xBtn']));
 
-	if (_.isEmpty(values)) {
-		return;
-	}
+	return clickButtonsWithRemove(getTestIdSelectors([...selectors, 'xBtn']))
+		.then(() => {
+			if (_.isEmpty(values)) {
+				return;
+			}
 
-	// Now add the new tags
-	getDomNode([...selectors, 'input']).then((field) => {
-		cy.wrap(field).clear({ force: true });
-		_.each(values, (value) => {
-			const id = _.isObject(value) ? value.id : value;
-			cy.wrap(field)
-				.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
-				.wait('@getWaiter'); // allow dropdown to load
+			// Now add the new tags
+			return getDomNode([...selectors, 'input']).then((field) => {
+				cy.wrap(field).clear({ force: true });
+				_.each(values, (value) => {
+					const id = _.isObject(value) ? value.id : value;
+					cy.wrap(field)
+						.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
+						.wait('@getWaiter'); // allow dropdown to load
 
-			clickComboResultRow(selectors, 'id:' + id).then((didClickRow) => {
-				if (didClickRow) {
-					return;
-				}
+					clickComboResultRow(selectors, 'id:' + id).then((didClickRow) => {
+						if (didClickRow) {
+							return;
+						}
 
-				resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
-					cy.wrap($keyboardInput)
-						.type('{downarrow}', { force: true })
-						.type('{enter}', { force: true });
+						resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
+							cy.wrap($keyboardInput)
+								.type('{downarrow}', { force: true })
+								.type('{enter}', { force: true });
+						});
+					});
 				});
+
+				// press trigger to hide dropdown
+				getDomNode([...selectors, 'trigger']).click({ force: true });
 			});
+		})
+		.then(() => {
+			assertTagContainsExpectedIds(selectors, values);
 		});
-
-		// press trigger to hide dropdown
-		getDomNode([...selectors, 'trigger']).click({ force: true });
-	});
 }
 export function setDateValue(selectors, value) {
 	cy.log('setDateValue ' + value);
-	withFieldInput(selectors, ($input) => {
+	return withFieldInput(selectors, ($input) => {
 		cy.wrap($input).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap($input)
 				.type(value, { force: true })
 				.type('{enter}');
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getDateValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'Date');
 	});
 }
 export function setNumberValue(selectors, value) {
 	cy.log('setNumberValue ' + value);
-	withFieldInput(selectors, ($input) => {
+	return withFieldInput(selectors, ($input) => {
 		cy.wrap($input).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap($input)
 				.type(String(value), { delay: 100, force: true })
 				.type('{enter}');
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getNumberValue, value, normalizeNumericValue, normalizeNumericValue, 'Number');
 	});
 }
 export function setToggleValue(selectors, value) {
 	cy.log('setToggleValue ' + value);
-	getToggleValue(selectors).then((currentValue) => {
+	return getToggleValue(selectors).then((currentValue) => {
 		if (_.isNil(value)) {
 			if (_.isNil(currentValue)) {
 				return;
@@ -318,6 +332,8 @@ export function setToggleValue(selectors, value) {
 		if (currentValue !== desired) {
 			getDomNode([...selectors, 'input[role="switch"]']).click({ force: true });
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getToggleValue, _.isNil(value) ? null : !!value, (v) => v, (v) => v, 'Toggle');
 	});
 }
 export function getToggleState(selectors) {
@@ -335,28 +351,32 @@ export function clickToggle(selectors, options = {}) {
 }
 export function setTextValue(selectors, value) {
 	cy.log('setTextValue ' + value);
-	withFieldInput(selectors, ($input) => {
+	return withFieldInput(selectors, ($input) => {
 		cy.wrap($input).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap($input)
 				.type(String(value), { force: true })
 				.type('{enter}');
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getTextValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'Text');
 	});
 }
 export function setTextAreaValue(selectors, value) {
 	cy.log('setTextAreaValue ' + value);
-	withFieldInput(selectors, ($input) => {
+	return withFieldInput(selectors, ($input) => {
 		cy.wrap($input).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap($input)
 				.type(String(value), { force: true });
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getTextAreaValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'TextArea');
 	});
 }
 export function setInputValue(selectors, value) {
 	cy.log('setInputValue ' + value);
-	setTextValue(selectors, value);
+	return setTextValue(selectors, value);
 }
 export function setDisplayValue(selectors, value) {
 	cy.log('setDisplayValue (no-op)');
@@ -368,37 +388,46 @@ export function setHiddenValue(selectors, value) {
 	return getDomNode(selectors)
 		.invoke('val', serialized)
 		.trigger('input', { force: true })
-		.trigger('change', { force: true });
+		.trigger('change', { force: true })
+		.then(() => {
+			assertMatchesValueGetter(selectors, getHiddenValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'Hidden');
+		});
 }
 export function setColorValue(selectors, value) {
 	cy.log('setColorValue ' + value);
-	withFieldInput(selectors, ($input) => {
+	return withFieldInput(selectors, ($input) => {
 		cy.wrap($input).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap($input)
 				.type(String(value), { force: true })
 				.type('{enter}');
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getColorValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'Color');
 	});
 }
 export function setSliderValue(selectors, value) {
 	cy.log('setSliderValue ' + value);
-	getDomNode([...selectors, 'readout']).then((field) => {
+	return getDomNode([...selectors, 'readout']).then((field) => {
 		cy.wrap(field).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap(field)
 				.type(String(value), { force: true })
 				.type('{enter}');
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getSliderValue, value, normalizeNumericValue, normalizeNumericValue, 'Slider');
 	});
 }
 export function setCheckboxValue(selectors, value) {
 	cy.log('setCheckboxValue ' + value);
 	const desired = !!value;
-	getCheckboxValue(selectors).then((currentValue) => {
+	return getCheckboxValue(selectors).then((currentValue) => {
 		if (currentValue !== desired) {
 			getDomNode(selectors).click({ force: true });
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getCheckboxValue, desired, (v) => !!v, (v) => !!v, 'Checkbox');
 	});
 }
 export function setCheckboxGroupValue(selectors, value) {
@@ -424,7 +453,7 @@ export function setCheckboxGroupValue(selectors, value) {
 		return String(v);
 	});
 
-	getDomNode(selectors).then(($group) => {
+	return getDomNode(selectors).then(($group) => {
 		const $root = Cypress.$($group[0]);
 		$root.find('[data-testid^="checkbox-"]').each((ix, el) => {
 			const $checkbox = Cypress.$(el);
@@ -434,6 +463,16 @@ export function setCheckboxGroupValue(selectors, value) {
 			if (shouldBeChecked !== isChecked) {
 				cy.wrap($checkbox).click({ force: true });
 			}
+		});
+	}).then(() => {
+		const sortFn = natsort.default || natsort;
+		const expectedValues = desiredValues.slice().sort(sortFn());
+		return getCheckboxGroupValue(selectors).then((actualValues) => {
+			const actual = _.isNil(actualValues) ? [] : _.map(actualValues, (item) => String(item)).sort(sortFn());
+			expect(
+				actual,
+				'CheckboxGroup value mismatch under selectors: ' + JSON.stringify(selectors)
+			).to.deep.equal(expectedValues);
 		});
 	});
 }
@@ -454,7 +493,7 @@ export function setRadioValue(selectors, value) {
 		desiredValue = desiredValue.id;
 	}
 	const desiredValueStr = String(desiredValue);
-	getDomNode(selectors).then(($group) => {
+	return getDomNode(selectors).then(($group) => {
 		const $root = Cypress.$($group[0]);
 		let isFound = false;
 		$root.find('[data-testid^="radio-"]').each((ix, el) => {
@@ -470,29 +509,34 @@ export function setRadioValue(selectors, value) {
 		if (!isFound) {
 			throw new Error('Radio value not found: ' + desiredValueStr);
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getRadioGroupValue, desiredValue, normalizeToComparablePrimitive, normalizeToComparablePrimitive, 'RadioGroup');
 	});
 }
 export function setFileValue(selectors, value) {
 	cy.log('setFileValue');
 	if (normalizeEmptySetterValue(value)) {
-		getFieldRoot(selectors).then(($root) => {
+		return getFieldRoot(selectors).then(($root) => {
 			const $xBtn = $root.find('[data-testid="xBtn"]').first();
 			if ($xBtn.length) {
 				cy.wrap($xBtn).click({ force: true });
 			}
+		}).then(() => {
+			assertMatchesValueGetter(selectors, getFileValue, null, normalizeToStringOrNull, normalizeToStringOrNull, 'File');
 		});
-		return;
 	}
 
 	if (_.isObject(value) && !_.isArray(value)) {
 		value = JSON.stringify(value);
 	}
-	getDomNode([...selectors, 'input']).then((field) => {
+	return getDomNode([...selectors, 'input']).then((field) => {
 		cy.wrap(field).clear({ force: true });
 		cy.wrap(field).type(String(value), {
 			force: true,
 			parseSpecialCharSequences: false,
 		});
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getFileValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'File');
 	});
 }
 export function setJsonValue(selectors, value) {
@@ -504,7 +548,7 @@ export function setJsonValue(selectors, value) {
 		value = JSON.stringify(value);
 	}
 
-	getDomNode([...selectors, 'input']).then((field) => {
+	return getDomNode([...selectors, 'input']).then((field) => {
 		cy.wrap(field).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap(field).type(String(value), {
@@ -512,6 +556,8 @@ export function setJsonValue(selectors, value) {
 				parseSpecialCharSequences: false,
 			});
 		}
+	}).then(() => {
+		assertMatchesValueGetter(selectors, getJsonValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'Json');
 	});
 }
 
@@ -674,6 +720,11 @@ export function getComboValue(selectors) {
 	return getDomNode(selectors).then(($comboField) => {
 		const $root = Cypress.$($comboField[0]);
 
+		const dataValue = getRootDataValue($root);
+		if (!_.isNil(dataValue)) {
+			return dataValue;
+		}
+
 		// Default editable Combo path
 		const $input = $root.find('[data-testid="input"]:first');
 		if ($input.length) {
@@ -702,6 +753,12 @@ export function getTagValue(selectors) {
 	cy.log('getTagValue');
 	return getDomNode(selectors).then(($field) => {
 		const $root = Cypress.$($field[0]);
+
+		const dataValue = getRootDataValue($root);
+		if (!_.isNil(dataValue)) {
+			return dataValue;
+		}
+
 		const $container = $root.find('[data-testid="valueBoxes"]:first, .Tag-valueBoxes-container:first').first();
 		if (!$container.length) {
 			return null;
@@ -819,9 +876,9 @@ export function getJsonValue(selectors) {
 	cy.log('getJsonValue');
 	return getDomNode(selectors).then(($jsonField) => {
 		const $root = Cypress.$($jsonField[0]);
-		const attrValue = $root.attr('data-json-value');
-		if (!_.isNil(attrValue)) {
-			return normalizeStringValue(attrValue);
+		const $input = $root.find('[data-testid="input"]:first, textarea[data-testid="input"]:first, textarea:first');
+		if ($input.length) {
+			return normalizeStringValue($input.val());
 		}
 
 		return null;
@@ -831,9 +888,15 @@ export function getFileValue(selectors) {
 	cy.log('getFileValue');
 	return getDomNode(selectors).then(($fileField) => {
 		const $root = Cypress.$($fileField[0]);
-		const attrValue = $root.attr('data-file-value');
-		if (!_.isNil(attrValue)) {
-			return normalizeStringValue(attrValue);
+
+		const dataValue = getRootDataValue($root);
+		if (!_.isNil(dataValue)) {
+			return dataValue;
+		}
+
+		const $valueInput = $root.find('[data-testid="input"]:first, input[data-testid="input"]:first, input[type="text"]:first');
+		if ($valueInput.length) {
+			return normalizeStringValue($valueInput.val());
 		}
 
 		const $fileInput = $root.find('input[type="file"]:first');
@@ -848,14 +911,6 @@ export function getCheckboxValue(selectors) {
 	cy.log('getCheckboxValue');
 	return getDomNode(selectors).then(($checkboxField) => {
 		const $root = Cypress.$($checkboxField[0]);
-
-		const attrChecked = $root.attr('data-checked');
-		if (attrChecked === 'true') {
-			return true;
-		}
-		if (attrChecked === 'false') {
-			return false;
-		}
 
 		return getIsCheckedFromNode($root);
 	});
@@ -948,17 +1003,6 @@ export function getToggleValue(selectors) {
 	return getDomNode(selectors).then(($toggleField) => {
 		const $root = Cypress.$($toggleField[0]);
 
-		const attrValue = $root.attr('data-toggle-value');
-		if (attrValue === 'null') {
-			return null;
-		}
-		if (attrValue === 'true') {
-			return true;
-		}
-		if (attrValue === 'false') {
-			return false;
-		}
-
 		const $switchInput = $root.find('input[role="switch"]:first, [role="switch"] input:first, [role="switch"]:first');
 		if (!$switchInput.length) {
 			return null;
@@ -1022,6 +1066,117 @@ function normalizeEmptySetterValue(value) {
 	return _.isNil(value) || value === '';
 }
 
+function normalizeToStringOrNull(value) {
+	if (_.isNil(value) || value === '') {
+		return null;
+	}
+	return String(value);
+}
+
+function normalizeToComparablePrimitive(value) {
+	if (_.isNil(value)) {
+		return null;
+	}
+	if (_.isNumber(value)) {
+		return value;
+	}
+	if (_.isString(value)) {
+		const trimmed = value.trim();
+		if (trimmed === '') {
+			return null;
+		}
+		if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+			const numeric = Number(trimmed);
+			if (!Number.isNaN(numeric)) {
+				return numeric;
+			}
+		}
+		return trimmed;
+	}
+	return value;
+}
+function assertMatchesValueGetter(selectors, getterFn, expectedValue, normalizeExpected, normalizeActual, label) {
+	return getterFn(selectors).then((actualValue) => {
+		expect(
+			normalizeActual(actualValue),
+			label + ' value mismatch under selectors: ' + JSON.stringify(selectors)
+		).to.deep.equal(normalizeExpected(expectedValue));
+	});
+}
+function assertTagContainsExpectedIds(selectors, expectedValues) {
+	let values = expectedValues;
+	if (_.isString(values) && !_.isEmpty(values)) {
+		values = JSON.parse(values);
+	}
+	if (_.isNil(values)) {
+		values = [];
+	}
+	if (!_.isArray(values)) {
+		values = [values];
+	}
+
+	const expectedIds = _.map(values, (item) => {
+		if (_.isObject(item) && !_.isNil(item.id)) {
+			return String(item.id);
+		}
+		return String(item);
+	}).sort();
+
+	return getTagValue(selectors).then((actualJson) => {
+		const actual = _.isEmpty(actualJson) ? [] : JSON.parse(actualJson);
+		const actualIds = _.map(actual, (item) => String(item.id)).sort();
+
+		expect(
+			actualIds,
+			'Tag selected IDs mismatch under selectors: ' + JSON.stringify(selectors)
+		).to.deep.equal(expectedIds);
+	});
+}
+
+function shouldVerifyDataValue(value) {
+	return !isEmptyValue(value);
+}
+function getDataValueCandidates($root) {
+	const values = [];
+
+	const rootDataValue = $root.attr('data-value');
+	if (!_.isNil(rootDataValue)) {
+		values.push(String(rootDataValue));
+	}
+
+	$root.find('[data-value]').each((ix, el) => {
+		const nestedDataValue = Cypress.$(el).attr('data-value');
+		if (!_.isNil(nestedDataValue)) {
+			values.push(String(nestedDataValue));
+		}
+	});
+
+	return values;
+}
+function assertFieldDataValue(selectors, expectedValue) {
+	if (!shouldVerifyDataValue(expectedValue)) {
+		return;
+	}
+
+	const
+		expected = String(expectedValue),
+		rootSelector = getTestIdSelectors(selectors, true);
+
+	cy.get(rootSelector).should(($rootSubject) => {
+		const
+			$root = Cypress.$($rootSubject[0]),
+			dataValues = getDataValueCandidates($root);
+
+		expect(
+			dataValues.length,
+			'No data-value found under selectors: ' + JSON.stringify(selectors)
+		).to.be.greaterThan(0);
+		expect(
+			dataValues,
+			'data-value mismatch under selectors: ' + JSON.stringify(selectors)
+		).to.include(expected);
+	});
+}
 const COMBO_EDITABLE_INPUT_SELECTOR = '[data-testid="input"]';
 function getComboGridSelector(selectors) {
 	if (!_.isArray(selectors) || selectors.length < 2) {
@@ -1180,6 +1335,13 @@ function normalizeStringValue(value) {
 		return null;
 	}
 	return value;
+}
+function getRootDataValue($root) {
+	const attrValue = $root.attr('data-value');
+	if (_.isNil(attrValue)) {
+		return null;
+	}
+	return normalizeStringValue(attrValue);
 }
 function normalizeNumericValue(rawValue) {
 	if (_.isNil(rawValue)) {

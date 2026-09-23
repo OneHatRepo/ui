@@ -20,6 +20,7 @@ import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../../Constants/Editor.js';
 import testProps from '../../../../Functions/testProps.js';
+import isEmptyValue from '../../../../Functions/isEmptyValue.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import Input from '../Input.js';
 import { Grid, WindowedGridEditor } from '../../../Grid/Grid.js';
@@ -296,7 +297,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 				if (Repository) {
 					if (!Repository.isDestroyed) {
 						let entity;
-						if (!isEmptyValue(value)) {
+						if (!isEmptyValue(value, { treatZeroAsEmpty: true })) {
 							if (!Repository.isLoaded) {
 								entity = await Repository.getSingleEntityFromServer(value);
 							} else {
@@ -645,7 +646,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 			setIsSearchMode(true);
 		};
 
-	const valueIsSet = !isEmptyValue(value);
+	const valueIsSet = !isEmptyValue(value, { treatZeroAsEmpty: true });
 
 	useEffect(() => {
 		// if the Combo is disabled and clearValueOnDisable is true, clear the value
@@ -723,7 +724,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 	const
 		inputIconElement = icon ? <Icon as={icon} size="md" className="text-grey-300 ml-1 mr-2" /> : null,
 		// these next three lines are used to determine if the X and Eye buttons should be disabled
-		hasSelectionValue = !isEmptyValue(value),
+		hasSelectionValue = !isEmptyValue(value, { treatZeroAsEmpty: true }),
 		isSelectionInRepository = !Repository || !hasSelectionValue || !Repository.isLoaded || Repository.isLoading || !!Repository.getById(value),
 		shouldDisableSelectionActionButtons = isDisabled || !hasSelectionValue || !isSelectionInRepository;
 	let xButton = null,
@@ -1351,7 +1352,7 @@ export const ComboComponent = forwardRef((props, ref) => {
 	}
 	
 	let dataSet = null;
-	if (UiGlobals.useTestProps && !isEmptyValue(value)) {
+	if (UiGlobals.useTestProps && !isEmptyValue(value, { treatZeroAsEmpty: true })) {
 		dataSet = { value };
 	}
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
@@ -1480,20 +1481,6 @@ export const ComboComponent = forwardRef((props, ref) => {
 	
 });
 
-
-/**
- * isEmptyValue
- * _.isEmpty returns true for all integers, so we need this instead
- * @param {*} value 
- * @returns boolean
- */
-function isEmptyValue(value) {
-	return value === null ||
-			value === undefined ||
-			value === '' ||
-			value === 0 ||
-			(_.isObject(value) && _.isEmpty(value));
-};
 
 function getRowProps() {
 	return {

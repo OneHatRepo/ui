@@ -20,6 +20,7 @@ import {
 	EDITOR_TYPE__WINDOWED,
 } from '../../../Constants/Editor.js';
 import testProps from '../../../Functions/testProps.js';
+import isEmptyValue from '../../../Functions/isEmptyValue.js';
 import UiGlobals from '../../../UiGlobals.js';
 import Input from './Input.js';
 import { Tree, WindowedTreeEditor } from '../../Tree/Tree.js';
@@ -40,21 +41,6 @@ import _ from 'lodash';
 // This component acts like a Combo, but shows a Tree in the dropdown menu instead of a Grid.
 
 const FILTER_NAME = 'q';
-
-/**
- * isEmptyValue
- * _.isEmpty returns true for all integers, so we need this instead
- * @param {*} value 
- * @returns boolean
- */
-function isEmptyValue(value) {
-	return value === null ||
-			value === undefined ||
-			value === '' ||
-			value === 0 ||
-			(_.isObject(value) && _.isEmpty(value));
-};
-
 
 export const TreeSelectorComponent = forwardRef((props, ref) => {
 
@@ -251,7 +237,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 				if (Repository) {
 					if (!Repository.isDestroyed) {
 						let entity;
-						if (!isEmptyValue(value)) {
+						if (!isEmptyValue(value, { treatZeroAsEmpty: true })) {
 							if (!Repository.isLoaded) {
 								entity = await Repository.getSingleEntityFromServer(value);
 							} else {
@@ -1198,12 +1184,18 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 	if (minimizeForRow) {
 		className += ' h-auto min-h-0';
 	}
+
+	let dataSet = null;
+	if (UiGlobals.useTestProps && !isEmptyValue(value, { treatZeroAsEmpty: true })) {
+		dataSet = { value };
+	}
 	
 	if (isRendered && additionalButtons?.length && containerWidth < 500) {
 		// be responsive for small screen sizes and bump additionalButtons to the next line
 		assembledComponents = 
 			<VStackNative
 				{...testProps(testID)}
+				dataSet={dataSet}
 				className="TreeSelector-VStack"
 			>
 				<HStack
@@ -1223,6 +1215,7 @@ export const TreeSelectorComponent = forwardRef((props, ref) => {
 		assembledComponents = 
 			<HStackNative
 				{...testProps(testID)}
+				dataSet={dataSet}
 				onLayout={onLayout}
 				className={className}
 			>

@@ -55,7 +55,6 @@ export function JsonElement(props) {
 		assembledComponents = 
 			<HStack
 				{...testProps(testID)}
-				data-json-value={_.isNil(value) ? '' : String(value)}
 				style={propsToPass.style}
 				className={className}
 			>

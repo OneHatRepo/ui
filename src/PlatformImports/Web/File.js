@@ -24,6 +24,7 @@ import withAlert from '../../Components/Hoc/withAlert.js';
 import withValue from '../../Components/Hoc/withValue.js';
 import Loading from '../../Components/Messages/Loading.js';
 import testProps from '../../Functions/testProps.js';
+import isEmptyValue from '../../Functions/isEmptyValue.js';
 import _ from 'lodash';
 
 
@@ -99,11 +100,17 @@ function FileComponent(props) {
 		return <Loading {...(testID ? testProps(testID) : {})} />;
 	}
 
+	let dataSet = null;
+	if (UiGlobals.useTestProps && !isEmptyValue(value)) {
+		dataSet = { value };
+	}
+
 	let assembledComponents = null;
 	if (_.isEmpty(filesContent)) {
 		assembledComponents = 
 			<HStack
 				{...(testID ? testProps(testID) : {})}
+				dataSet={dataSet}
 				data-file-value=""
 				data-file-name=""
 			>
@@ -133,6 +140,7 @@ function FileComponent(props) {
 		assembledComponents = 
 			<HStack
 				{...(testID ? testProps(testID) : {})}
+				dataSet={dataSet}
 				data-file-value={_.isNil(value) ? '' : String(value)}
 				data-file-name={plainFiles[0]?.name || ''}
 				className={`

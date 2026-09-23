@@ -26,6 +26,7 @@ import ValueBox from './ValueBox.js';
 import Inflector from 'inflector-js';
 import Combo, { ComboEditor } from '../Combo/Combo.js';
 import TreeSelector, { TreeSelectorEditor } from '../TreeSelector.js';
+import isEmptyValue from '../../../../Functions/isEmptyValue.js';
 import UiGlobals from '../../../../UiGlobals.js';
 import _ from 'lodash';
 
@@ -575,9 +576,17 @@ function TagComponent(props) {
 			selectorClassName += ' h-auto min-h-0 max-h-[25px] flex-1';
 		}
 	}
+
+	let dataSet = null;
+	if (UiGlobals.useTestProps && !isEmptyValue(value)) {
+		dataSet = {
+			value: JSON.stringify(value),
+		};
+	}
 	
 	return <VStackNative
 				{...testProps(testID)}
+				dataSet={dataSet}
 				className={className}
 				style={style}
 			>
