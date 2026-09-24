@@ -259,6 +259,7 @@ export function emailPdf(editorSelector, formSelector) {
 
 // Grid
 export function crudWindowedGridRecord(args) {
+
 	const {
 		selector,
 		newData,
@@ -299,6 +300,7 @@ export function crudWindowedGridRecord(args) {
 				fieldValues: editData,
 				schema,
 				id,
+				options,
 			});
 		}
 
@@ -312,13 +314,14 @@ export function crudWindowedGridRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addWindowedGridRecord({
+		addWindowedGridRecord({ // saves the id in @id
 			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
 			level,
-		}); // saves the id in @id
+			options,
+		});
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -371,7 +374,13 @@ export function crudInlineGridRecord(args) {
 
 		// edit
 		if (!skipEdit) {
-			editInlineGridRecord({ selector, fieldValues: editData, schema, id });
+			editInlineGridRecord({ 
+				selector,
+				fieldValues: editData,
+				schema,
+				id,
+				options,
+			});
 		}
 
 		// delete
@@ -384,13 +393,14 @@ export function crudInlineGridRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addInlineGridRecord({
+		addInlineGridRecord({ // saves the id in @id
 			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
 			level,
-		}); // saves the id in @id
+			options,
+		});
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -443,7 +453,15 @@ export function crudSideGridRecord(args) {
 
 		// edit
 		if (!skipEdit) {
-			editGridRecord({ selector, fieldValues: editData, schema, id, level: 0, whichEditor: SIDE });
+			editGridRecord({
+				selector,
+				fieldValues: editData,
+				schema,
+				id,
+				level: 0,
+				whichEditor: SIDE,
+				options,
+			});
 		}
 
 		// delete
@@ -456,7 +474,14 @@ export function crudSideGridRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addGridRecord({ selector, fieldValues: newData, schema, ancillaryData, level }); // saves the id in @id
+		addGridRecord({ // saves the id in @id
+			selector,
+			fieldValues: newData,
+			schema,
+			ancillaryData,
+			level,
+			options,
+		});
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -478,12 +503,13 @@ export function addGridRecord(args) {
 		schema,
 		ancillaryData,
 		level = 0,
+		options = {},
 	} = args;
 
 	cy.log('addGridRecord ' + selector);
 
 	const
-		editorSelector = selector + '/editor',
+		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form',
 		isRemotePhantomMode = schema.repository.isRemotePhantomMode;
@@ -533,7 +559,15 @@ export function addGridRecord(args) {
 			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
 				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
 			}
-			crudWindowedGridRecord({ selector: ancillaryGridSelector, newData, editData, schema, ancillaryData, level: level+1, options });
+			crudWindowedGridRecord({
+				selector: ancillaryGridSelector,
+				newData,
+				editData,
+				schema,
+				ancillaryData,
+				level: level+1,
+				options,
+			});
 		});
 	}
 }
@@ -545,12 +579,20 @@ export function addWindowedGridRecord(args) {
 		schema,
 		ancillaryData,
 		level = 0,
+		options = {},
 	} = args;
 	// adds the record as normal, then closes the editor window
 
 	cy.log('addWindowedGridRecord ' + selector);
 
-	addGridRecord({ selector, fieldValues, schema, ancillaryData, level });
+	addGridRecord({
+		selector,
+		fieldValues,
+		schema,
+		ancillaryData,
+		level,
+		options,
+	});
 
 	cy.log('addWindowedGridRecord: close window ' + selector);
 	const formSelector = selector + '/editor/form';
@@ -566,12 +608,20 @@ export function addInlineGridRecord(args) {
 		schema,
 		ancillaryData,
 		level = 0,
+		options = {},
 	} = args;
 	// adds the record as normal, then closes the editor window
 
 	cy.log('addInlineGridRecord ' + selector);
 
-	addGridRecord({ selector, fieldValues, schema, ancillaryData: [], level }); // NOTE: ancillaryData is not passed to addGridRecord because can't edit ancillary data in an inline editor
+	addGridRecord({ // NOTE: ancillaryData is not passed to addGridRecord because can't edit ancillary data in an inline editor
+		selector,
+		fieldValues,
+		schema,
+		ancillaryData: [],
+		level,
+		options,
+	});
 
 	cy.log('addInlineGridRecord: close window ' + selector);
 	const formSelector = selector + '/editor/form';
@@ -588,6 +638,7 @@ export function editGridRecord(args) {
 		id,
 		level = 0,
 		whichEditor = WINDOWED,
+		options = {},
 	} = args;
 	
 	cy.log('editGridRecord ' + selector + ' ' + id);
@@ -595,7 +646,7 @@ export function editGridRecord(args) {
 	selectGridRowIfNotAlreadySelectedById(selector, id);
 
 	const
-		editorSelector = selector + '/editor',
+		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
@@ -631,13 +682,22 @@ export function editWindowedGridRecord(args) {
 		schema,
 		id,
 		level = 0,
+		options = {},
 	} = args;
 
 	// edits the record as normal, then closes the editor window
 
 	cy.log('editWindowedGridRecord ' + selector + ' ' + id);
 	
-	editGridRecord({ selector, fieldValues, schema, id, level, whichEditor: WINDOWED });
+	editGridRecord({
+		selector,
+		fieldValues,
+		schema,
+		id,
+		level,
+		whichEditor: WINDOWED,
+		options
+	});
 
 	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
@@ -652,13 +712,22 @@ export function editInlineGridRecord(args) {
 		schema,
 		id,
 		level = 0,
+		options = {},
 	} = args;
 
 	// edits the record as normal, then closes the editor window
 
 	cy.log('editInlineGridRecord ' + selector + ' ' + id);
 	
-	editGridRecord({ selector, fieldValues, schema, id, level, whichEditor: INLINE });
+	editGridRecord({
+		selector,
+		fieldValues,
+		schema,
+		id,
+		level,
+		whichEditor: INLINE,
+		options,
+	});
 
 	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
@@ -748,6 +817,8 @@ export function crudWindowedTreeRecord(args) {
 				schema,
 				id,
 				level,
+				whichEditor: WINDOWED,
+				options,
 			});
 		}
 
@@ -761,13 +832,14 @@ export function crudWindowedTreeRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addWindowedTreeRecord({
+		addWindowedTreeRecord({ // saves the id in @id
 			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
 			level,
-		}); // saves the id in @id
+			options,
+		});
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -827,6 +899,7 @@ export function crudSideTreeRecord(args) {
 				id,
 				level,
 				whichEditor: SIDE,
+				options,
 			});
 		}
 
@@ -840,13 +913,14 @@ export function crudSideTreeRecord(args) {
 
 	if (!skipAdd) {
 		// add
-		addTreeRecord({
+		addTreeRecord({ // saves the id in @id
 			selector,
 			fieldValues: newData,
 			schema,
 			ancillaryData,
 			level,
-		}); // saves the id in @id
+			options,
+		});
 		cy.get('@id' + level).then((id) => {
 			runCrudById(id);
 		});
@@ -868,12 +942,13 @@ export function addTreeRecord(args) {
 		schema,
 		ancillaryData,
 		level = 0,
+		options,
 	} = args;
 
 	cy.log('addTreeRecord ' + selector);
 
 	const
-		editorSelector = selector + '/editor',
+		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
@@ -930,7 +1005,15 @@ export function addTreeRecord(args) {
 			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
 				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
 			}
-			crudWindowedGridRecord({ selector: ancillaryGridSelector, newData, editData, schema, ancillaryData, level: level+1, options });
+			crudWindowedGridRecord({
+				selector: ancillaryGridSelector,
+				newData,
+				editData,
+				schema,
+				ancillaryData,
+				level: level+1,
+				options,
+			});
 		});
 	}
 }
@@ -942,13 +1025,21 @@ export function addWindowedTreeRecord(args) {
 		schema,
 		ancillaryData,
 		level = 0,
+		options,
 	} = args;
 
 	// adds the record as normal, then closes the editor window
 
 	cy.log('addWindowedTreeRecord ' + selector);
 
-	addTreeRecord({ selector, fieldValues, schema, ancillaryData, level });
+	addTreeRecord({
+		selector,
+		fieldValues,
+		schema,
+		ancillaryData,
+		level,
+		options,
+	});
 
 	cy.log('addWindowedTreeRecord: close window ' + selector);
 	const formSelector = selector + '/editor/form';
@@ -965,6 +1056,7 @@ export function editTreeRecord(args) {
 		id,
 		level = 0,
 		whichEditor = WINDOWED,
+		options,
 	} = args;
 	
 	cy.log('editTreeRecord ' + selector + ' ' + id);
@@ -972,7 +1064,7 @@ export function editTreeRecord(args) {
 	selectTreeNodeIfNotAlreadySelectedById(selector, id);
 
 	const
-		editorSelector = selector + '/editor',
+		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
@@ -1008,13 +1100,22 @@ export function editWindowedTreeRecord(args) {
 		schema,
 		id,
 		level = 0,
+		options,
 	} = args;
 
 	// edits the record as normal, then closes the editor window
 
 	cy.log('editWindowedTreeRecord ' + selector + ' ' + id);
 	
-	editTreeRecord({ selector, fieldValues, schema, id, level, whichEditor: WINDOWED });
+	editTreeRecord({
+		selector,
+		fieldValues,
+		schema,
+		id,
+		level,
+		whichEditor: WINDOWED,
+		options,
+	});
 
 	const formSelector = selector + '/editor/form';
 	clickCloseButton(formSelector);
