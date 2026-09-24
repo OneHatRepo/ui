@@ -300,6 +300,7 @@ export function crudWindowedGridRecord(args) {
 				fieldValues: editData,
 				schema,
 				id,
+				ancillaryData,
 				options,
 			});
 		}
@@ -318,7 +319,6 @@ export function crudWindowedGridRecord(args) {
 			selector,
 			fieldValues: newData,
 			schema,
-			ancillaryData,
 			level,
 			options,
 		});
@@ -344,7 +344,6 @@ export function crudInlineGridRecord(args) {
 		newData,
 		editData,
 		schema,
-		ancillaryData,
 		level = 0,
 		options = {},
 	} = args;
@@ -397,7 +396,6 @@ export function crudInlineGridRecord(args) {
 			selector,
 			fieldValues: newData,
 			schema,
-			ancillaryData,
 			level,
 			options,
 		});
@@ -458,6 +456,7 @@ export function crudSideGridRecord(args) {
 				fieldValues: editData,
 				schema,
 				id,
+				ancillaryData,
 				level: 0,
 				whichEditor: SIDE,
 				options,
@@ -478,7 +477,6 @@ export function crudSideGridRecord(args) {
 			selector,
 			fieldValues: newData,
 			schema,
-			ancillaryData,
 			level,
 			options,
 		});
@@ -501,7 +499,6 @@ export function addGridRecord(args) {
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData,
 		level = 0,
 		options = {},
 	} = args;
@@ -536,40 +533,14 @@ export function addGridRecord(args) {
 	cy.wait(1000); // allow temp id to be replaced by real one
 
 	// Get and save id of new record
-	getDomNode([selector, 'Row-selected']).then((row) => {
+	getDomNode([selector, 'row-selected']).then((row) => {
 		const parent = row[0].parentNode;
-		cy.wrap(parent).invoke('attr', 'data-testid').then((testId) => {
-			const id = testId.split('-')[1];
+		cy.wrap(parent).invoke('attr', 'data-id').then((testId) => {
+			const id = parseInt(testId);
 			cy.wrap(id).as('id' + level);
 		});
 	});
 
-	if (!_.isEmpty(ancillaryData)) {
-		_.each(ancillaryData, (data) => {
-			const
-				model = data.model,
-				Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-				gridType = data.gridType,
-				schema = data.schema,
-				newData = data.newData,
-				editData = data.editData,
-				ancillaryData = data.ancillaryData,
-				options = data.options;
-			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
-			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
-				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
-			}
-			crudWindowedGridRecord({
-				selector: ancillaryGridSelector,
-				newData,
-				editData,
-				schema,
-				ancillaryData,
-				level: level+1,
-				options,
-			});
-		});
-	}
 }
 export function addWindowedGridRecord(args) {
 
@@ -577,7 +548,6 @@ export function addWindowedGridRecord(args) {
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData,
 		level = 0,
 		options = {},
 	} = args;
@@ -589,7 +559,6 @@ export function addWindowedGridRecord(args) {
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData,
 		level,
 		options,
 	});
@@ -606,7 +575,6 @@ export function addInlineGridRecord(args) {
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData,
 		level = 0,
 		options = {},
 	} = args;
@@ -614,11 +582,10 @@ export function addInlineGridRecord(args) {
 
 	cy.log('addInlineGridRecord ' + selector);
 
-	addGridRecord({ // NOTE: ancillaryData is not passed to addGridRecord because can't edit ancillary data in an inline editor
+	addGridRecord({
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData: [],
 		level,
 		options,
 	});
@@ -636,6 +603,7 @@ export function editGridRecord(args) {
 		fieldValues,
 		schema,
 		id,
+		ancillaryData,
 		level = 0,
 		whichEditor = WINDOWED,
 		options = {},
@@ -673,6 +641,33 @@ export function editGridRecord(args) {
 		viewPdf(editorSelector, formSelector);
 		emailPdf(editorSelector, formSelector);
 	}
+
+	if (!_.isEmpty(ancillaryData) && !options.skipAncillaryOnAdd) {
+		_.each(ancillaryData, (data) => {
+			const
+				model = data.model,
+				Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
+				gridType = data.gridType,
+				schema = data.schema,
+				newData = data.newData,
+				editData = data.editData,
+				ancillaryData = data.ancillaryData,
+				options = data.options;
+			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
+				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
+			}
+			crudWindowedGridRecord({
+				selector: ancillaryGridSelector,
+				newData,
+				editData,
+				schema,
+				ancillaryData,
+				level: level+1,
+				options,
+			});
+		});
+	}
 }
 export function editWindowedGridRecord(args) {
 
@@ -681,6 +676,7 @@ export function editWindowedGridRecord(args) {
 		fieldValues,
 		schema,
 		id,
+		ancillaryData,
 		level = 0,
 		options = {},
 	} = args;
@@ -694,9 +690,10 @@ export function editWindowedGridRecord(args) {
 		fieldValues,
 		schema,
 		id,
+		ancillaryData,
 		level,
 		whichEditor: WINDOWED,
-		options
+		options,
 	});
 
 	const formSelector = selector + '/editor/form';
@@ -816,6 +813,7 @@ export function crudWindowedTreeRecord(args) {
 				fieldValues: editData,
 				schema,
 				id,
+				ancillaryData,
 				level,
 				whichEditor: WINDOWED,
 				options,
@@ -836,7 +834,6 @@ export function crudWindowedTreeRecord(args) {
 			selector,
 			fieldValues: newData,
 			schema,
-			ancillaryData,
 			level,
 			options,
 		});
@@ -897,6 +894,7 @@ export function crudSideTreeRecord(args) {
 				fieldValues: editData,
 				schema,
 				id,
+				ancillaryData,
 				level,
 				whichEditor: SIDE,
 				options,
@@ -917,7 +915,6 @@ export function crudSideTreeRecord(args) {
 			selector,
 			fieldValues: newData,
 			schema,
-			ancillaryData,
 			level,
 			options,
 		});
@@ -940,7 +937,6 @@ export function addTreeRecord(args) {
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData,
 		level = 0,
 		options,
 	} = args;
@@ -990,32 +986,6 @@ export function addTreeRecord(args) {
 		});
 	});
 
-	if (!_.isEmpty(ancillaryData)) {
-		_.each(ancillaryData, (data) => {
-			const
-				model = data.model,
-				Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
-				gridType = data.gridType,
-				schema = data.schema,
-				newData = data.newData,
-				editData = data.editData,
-				ancillaryData = data.ancillaryData,
-				options = data.options;
-			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
-			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
-				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
-			}
-			crudWindowedGridRecord({
-				selector: ancillaryGridSelector,
-				newData,
-				editData,
-				schema,
-				ancillaryData,
-				level: level+1,
-				options,
-			});
-		});
-	}
 }
 export function addWindowedTreeRecord(args) {
 
@@ -1023,7 +993,6 @@ export function addWindowedTreeRecord(args) {
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData,
 		level = 0,
 		options,
 	} = args;
@@ -1036,7 +1005,6 @@ export function addWindowedTreeRecord(args) {
 		selector,
 		fieldValues,
 		schema,
-		ancillaryData,
 		level,
 		options,
 	});
@@ -1054,6 +1022,7 @@ export function editTreeRecord(args) {
 		fieldValues,
 		schema,
 		id,
+		ancillaryData,
 		level = 0,
 		whichEditor = WINDOWED,
 		options,
@@ -1090,6 +1059,33 @@ export function editTreeRecord(args) {
 		viewPdf(editorSelector, formSelector);
 		emailPdf(editorSelector, formSelector);
 	}
+
+	if (!_.isEmpty(ancillaryData)) {
+		_.each(ancillaryData, (data) => {
+			const
+				model = data.model,
+				Models = fixInflector(Inflector.camelize(Inflector.pluralize(model))),
+				gridType = data.gridType,
+				schema = data.schema,
+				newData = data.newData,
+				editData = data.editData,
+				ancillaryData = data.ancillaryData,
+				options = data.options;
+			let ancillaryGridSelector = formSelector + '/' + (gridType || Models + 'GridEditor');
+			if (ancillaryGridSelector.match(/^(.*)Side(A|B)(.*)$/)) {
+				ancillaryGridSelector = ancillaryGridSelector.replace(/^(.*)Side(A|B)(.*)$/, '$1$3Side$2');
+			}
+			crudWindowedGridRecord({
+				selector: ancillaryGridSelector,
+				newData,
+				editData,
+				schema,
+				ancillaryData,
+				level: level+1,
+				options,
+			});
+		});
+	}
 	
 }
 export function editWindowedTreeRecord(args) {
@@ -1099,6 +1095,7 @@ export function editWindowedTreeRecord(args) {
 		fieldValues,
 		schema,
 		id,
+		ancillaryData,
 		level = 0,
 		options,
 	} = args;
@@ -1113,6 +1110,7 @@ export function editWindowedTreeRecord(args) {
 		schema,
 		id,
 		level,
+		ancillaryData,
 		whichEditor: WINDOWED,
 		options,
 	});

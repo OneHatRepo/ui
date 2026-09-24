@@ -539,10 +539,15 @@ const GridRow = forwardRef((props, ref) => {
 		if (isOver) {
 			rowClassName += ' border-4 border-[#0ff]';
 		}
+		const dataSet = {};
+		if (!item.isPhantom && item.id && UiGlobals.useTestProps) {
+			dataSet['id'] = item.id;
+		}
 		let row = <HStackNative
 						ref={rowShouldHaveDragRef ? setRowRef : ref}
-						{...testProps('Row' + (isSelected ? '-selected' : ''))}
+						{...testProps('row' + (isSelected ? '-selected' : ''))}
 						{...rowPropsToPass}
+						dataSet={dataSet}
 						key={hash}
 						className={rowClassName}
 						style={hasCustomBgClass ? undefined : { backgroundColor: bg }}

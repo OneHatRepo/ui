@@ -156,9 +156,14 @@ export default function TreeNode(props) {
 			...nodePropsToPass
 		} = nodeProps || {};
 	
+		const dataSet = {};
+		if (!item.isPhantom && item.id && UiGlobals.useTestProps) {
+			dataSet['id'] = item.id;
+		}
 		return <HStackNative
 					{...testProps('node' + (isSelected ? '-selected' : ''))}
 					{...nodePropsToPass}
+					dataSet={dataSet}
 					key={hash}
 					className={className}
 					style={{
