@@ -536,7 +536,7 @@ export function addGridRecord(args) {
 	cy.wait(1000); // allow temp id to be replaced by real one
 
 	// Get and save id of new record
-	getDomNode([selector, 'Row_row-selected']).then((row) => {
+	getDomNode([selector, 'Row-selected']).then((row) => {
 		const parent = row[0].parentNode;
 		cy.wrap(parent).invoke('attr', 'data-testid').then((testId) => {
 			const id = testId.split('-')[1];
