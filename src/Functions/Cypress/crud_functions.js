@@ -534,9 +534,10 @@ export function addGridRecord(args) {
 
 	// Get and save id of new record
 	getDomNode([selector, 'row-selected']).then((row) => {
-		const parent = row[0].parentNode;
-		cy.wrap(parent).invoke('attr', 'data-id').then((testId) => {
-			const id = parseInt(testId);
+		const idNode = row[0].closest('[data-id]');
+		const testId = idNode && idNode.getAttribute('data-id');
+		cy.wrap(testId).should('exist').then((value) => {
+			const id = parseInt(value, 10);
 			cy.wrap(id).as('id' + level);
 		});
 	});
@@ -979,9 +980,10 @@ export function addTreeRecord(args) {
 
 	// Get and save id of new record
 	getDomNode([selector, 'node-selected']).then((row) => {
-		const parent = row[0].parentNode;
-		cy.wrap(parent).invoke('attr', 'data-testid').then((testId) => {
-			const id = testId.split('-')[1];
+		const idNode = row[0].closest('[data-testid]');
+		const testId = idNode && idNode.getAttribute('data-testid');
+		cy.wrap(testId).should('exist').then((value) => {
+			const id = value.split('-')[1];
 			cy.wrap(id).as('id' + level);
 		});
 	});
