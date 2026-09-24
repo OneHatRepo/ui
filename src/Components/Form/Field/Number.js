@@ -43,7 +43,7 @@ function NumberElement(props) {
 					break;
 				case 'Enter':
 					debouncedSetValueRef.current?.cancel();
-					setValue(value);
+					setValue(localValue);
 					break;
 				case 'ArrowLeft':
 				case 'ArrowRight':
