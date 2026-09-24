@@ -1244,30 +1244,68 @@ function getComboTargetId(value) {
 function clickComboResultRow(selectors, value) {
 	const gridSelector = getComboGridSelector(selectors);
 	const model = gridSelector ? getModelFromGridSelector(gridSelector) : null;
+	const targetId = getComboTargetId(value);
+	const targetIdAsNumber = _.isNil(targetId) ? Number.NaN : Number(targetId);
+	const nonModelRowSelectors = [];
+
+	if (!_.isNil(targetId)) {
+		nonModelRowSelectors.push('[data-testid$="-' + targetId + '"]');
+		nonModelRowSelectors.push('[data-testid="GridRow-' + targetId + '"]');
+		nonModelRowSelectors.push('[data-id="' + targetId + '"]');
+
+		if (!Number.isNaN(targetIdAsNumber)) {
+			nonModelRowSelectors.push('[data-ix="' + Math.max(0, targetIdAsNumber - 1) + '"]');
+		}
+	}
+
+	nonModelRowSelectors.push('[data-ix="0"]');
 
 	const
-		targetId = getComboTargetId(value),
-		rowSelector = model ?
+		rowSelectors = model ?
 			(targetId ?
-				'[data-testid="' + model + '-' + targetId + '"]' :
-				'[data-testid^="' + model + '-"]') :
-			(targetId ?
-				'[data-testid$="-' + targetId + '"]' :
-				'[data-ix="0"]'),
+				['[data-testid="' + model + '-' + targetId + '"]', '[data-testid^="' + model + '-"]'] :
+				['[data-testid^="' + model + '-"]']) :
+			nonModelRowSelectors,
 		gridDomSelector = gridSelector ? getTestIdSelectors(gridSelector, true) : null,
 		startedAt = Date.now(),
 		timeout = 15000,
 		interval = 100;
 
-	if (!rowSelector) {
+	const candidateRowSelectors = model ? [...rowSelectors, ...nonModelRowSelectors] : rowSelectors;
+
+	if (!candidateRowSelectors.length) {
 		return cy.wrap(false, { log: false });
 	}
+
+	const findFirstMatchingRow = ($container) => {
+		for (const selector of candidateRowSelectors) {
+			const $row = $container.find(selector).first();
+			if ($row.length) {
+				return $row;
+			}
+		}
+
+		const $genericRows = $container.find('[data-testid^="GridRow-"]');
+		if ($genericRows.length) {
+			if (!Number.isNaN(targetIdAsNumber)) {
+				const ix = Math.max(0, targetIdAsNumber - 1);
+				const $rowByIndex = $genericRows.eq(ix);
+				if ($rowByIndex.length) {
+					return $rowByIndex;
+				}
+			}
+
+			return $genericRows.first();
+		}
+
+		return Cypress.$();
+	};
 
 	const waitForRowThenClick = () => cy.get('body', { log: false }).then(($body) => {
 		if (gridDomSelector) {
 			const $grid = $body.find(gridDomSelector).first();
 			if ($grid.length) {
-				const $row = $grid.find(rowSelector).first();
+				const $row = findFirstMatchingRow($grid);
 				if ($row.length) {
 					return cy.wrap($row, { log: false })
 						.click({ force: true })
@@ -1277,9 +1315,8 @@ function clickComboResultRow(selectors, value) {
 		}
 
 		// Standalone Combo fallback (e.g. EnterpriseSelector): search within the open Combo menu modal.
-		const $rowInOpenCombo = $body
-			.find('.dropdownMenu-ModalContent ' + rowSelector)
-			.first();
+		const $openComboMenu = $body.find('.dropdownMenu-ModalContent').first();
+		const $rowInOpenCombo = $openComboMenu.length ? findFirstMatchingRow($openComboMenu) : Cypress.$();
 		if ($rowInOpenCombo.length) {
 			return cy.wrap($rowInOpenCombo, { log: false })
 				.click({ force: true })
