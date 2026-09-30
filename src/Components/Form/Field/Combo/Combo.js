@@ -422,17 +422,12 @@ export const ComboComponent = forwardRef((props, ref) => {
 			}, 300);
 		},
 		onInputFocus = (e) => {
-			const target = e?.target;
-			if (target?.select) {
-				target.select();
-				return;
-			}
-			if (getIsMenuShown() && inputCloneRef.current?.select) {
-				inputCloneRef.current.select();
-				return;
-			}
-			if (inputRef.current?.select) {
-				inputRef.current.select();
+			// move the cursor to the end of the text, so the user can keep typing,
+			// (previously we'd select all text, but the existing text then got replaced when user kept typing)
+			const target = e?.target || (getIsMenuShown() ? inputCloneRef.current : inputRef.current);
+			if (target?.setSelectionRange && _.isString(target?.value)) {
+				const end = target.value.length;
+				target.setSelectionRange(end, end);
 			}
 		},
 		onInputBlur = (e) => {
