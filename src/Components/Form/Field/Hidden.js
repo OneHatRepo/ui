@@ -9,10 +9,12 @@ const HiddenElement = (props) => {
 			setValue,
 			name,
 			testID,
-		} = props;
+		} = props,
+		testIdProps = testID ? testProps(testID) : {},
+		domSafeTestProps = testIdProps.testID ? { 'data-testid': testIdProps.testID } : testIdProps;
 
 	return <input
-				{...(testID ? testProps(testID) : {})}
+				{...domSafeTestProps}
 				type="hidden"
 				data-hidden-input="true"
 				name={name}
