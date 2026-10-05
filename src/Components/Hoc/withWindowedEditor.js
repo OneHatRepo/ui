@@ -104,6 +104,7 @@ export default function withWindowedEditor(WrappedComponent, isTree = false) {
 				selectorId,
 				selectorSelected,
 				selectorSelectedField,
+				topToolbar,
 				h,
 				style,
 				

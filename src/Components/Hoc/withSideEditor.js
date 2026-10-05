@@ -38,6 +38,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 				selectorId,
 				selectorSelected,
 				selectorSelectedField,
+				topToolbar,
 				style,
 				
 				...propsToPass
