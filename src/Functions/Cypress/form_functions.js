@@ -181,6 +181,8 @@ export function setComboValue(selectors, value) {
 
 		if ($input.length) {
 			cy.wrap($input)
+				.focus({ force: true })
+				.type('{selectall}{backspace}', { force: true })
 				.type(value, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
 				.wait('@getWaiter'); // allow dropdown to load
 
