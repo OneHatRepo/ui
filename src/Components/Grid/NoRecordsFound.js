@@ -11,7 +11,7 @@ export default function NoRecordsFound(props) {
 	const 
 		{
 			onRefresh,
-			text = 'No Records found.',
+			text = 'No Records Found.',
 		} = props,
 		textComponent = <Text
 							className="text-center"
