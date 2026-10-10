@@ -859,8 +859,11 @@ function TreeComponent(props) {
 		},
 		reloadTree = (cause = LOAD_CAUSES__UNKNOWN) => {
 			setLoadCause(cause);
+			if (!Repository) {
+				return buildAndSetTreeNodeData();
+			}
 			Repository.areRootNodesLoaded = false;
-			return buildAndSetTreeNodeData();
+			return Repository.loadRootNodes(1);
 		},
 		reloadNode = async (node) => {
 			// mark node as loading
