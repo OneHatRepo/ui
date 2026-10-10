@@ -28,6 +28,15 @@ import {
 	UI_MODE_NATIVE,
 	CURRENT_MODE,
 } from '../../Constants/UiModes.js';
+import {
+	LOAD_CAUSES__UNKNOWN,
+	LOAD_CAUSES__RELOAD_BTN,
+	LOAD_CAUSES__RELOAD_PROP,
+	LOAD_CAUSES__AUTO_LOAD_ROOTS,
+	LOAD_CAUSES__FILTERS_CHANGED,
+	LOAD_CAUSES__SORTERS_CHANGED,
+	LOAD_CAUSES__EMPTY_STATE_REFRESH,
+} from '../../Constants/LoadCauses.js';
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
@@ -214,6 +223,7 @@ function TreeComponent(props) {
 		forceUpdate = useForceUpdate(),
 		treeRef = useRef(),
 		treeNodeData = useRef(),
+		loadCauseRef = useRef(LOAD_CAUSES__UNKNOWN),
 		dragSelectionRef = useRef([]),
 		[isReady, setIsReady] = useState(false),
 		[isLoading, setIsLoading] = useState(false),
@@ -230,6 +240,12 @@ function TreeComponent(props) {
 		setTreeNodeData = (tnd) => {
 			treeNodeData.current = tnd;
 			forceUpdate();
+		},
+		getLoadCause = () => {
+			return loadCauseRef.current || LOAD_CAUSES__UNKNOWN;
+		},
+		setLoadCause = (cause) => {
+			loadCauseRef.current = cause || LOAD_CAUSES__UNKNOWN;
 		},
 
 		// event handers
@@ -650,8 +666,9 @@ function TreeComponent(props) {
 			setTreeNodeData(treeNodeData);
 
 			if (onTreeLoad) {
-				onTreeLoad(self);
+				onTreeLoad(self, getLoadCause());
 			}
+			setLoadCause(LOAD_CAUSES__UNKNOWN); // reset to unknown for next load
 			return treeNodeData;
 		},
 		buildAndSetOneTreeNodeData = (entity) => {
@@ -840,7 +857,8 @@ function TreeComponent(props) {
 		isChildOf = (potentialChild, potentialParent) => {
 			return potentialChild.parent?.id === potentialParent.id;
 		},
-		reloadTree = () => {
+		reloadTree = (cause = LOAD_CAUSES__UNKNOWN) => {
+			setLoadCause(cause);
 			Repository.areRootNodesLoaded = false;
 			return buildAndSetTreeNodeData();
 		},
@@ -1432,7 +1450,7 @@ function TreeComponent(props) {
 		if (!isReady) {
 			return () => {};
 		}
-		reloadTree();
+		reloadTree(LOAD_CAUSES__RELOAD_PROP);
 	}, [reload]);
 		
 	useEffect(() => {
@@ -1448,7 +1466,13 @@ function TreeComponent(props) {
 		// set up @onehat/data repository
 		const
 			setTrue = () => setIsLoading(true),
-			setFalse = () => setIsLoading(false);
+			setFalse = () => setIsLoading(false),
+			onChangeFilters = () => {
+				reloadTree(LOAD_CAUSES__FILTERS_CHANGED);
+			},
+			onChangeSorters = () => {
+				reloadTree(LOAD_CAUSES__SORTERS_CHANGED);
+			};
 		
 		if (Repository.isLoading) {
 			setTrue();
@@ -1459,12 +1483,12 @@ function TreeComponent(props) {
 		Repository.on('loadRootNodes', setFalse);
 		Repository.on('loadRootNodes', buildAndSetTreeNodeData);
 		Repository.on('add', buildAndSetOneTreeNodeData);
-		Repository.on('changeFilters', reloadTree);
-		Repository.on('changeSorters', reloadTree);
+		Repository.on('changeFilters', onChangeFilters);
+		Repository.on('changeSorters', onChangeSorters);
 
 		(async () => {
 			if (autoLoadRootNodes) {
-				await reloadTree();
+				await reloadTree(LOAD_CAUSES__AUTO_LOAD_ROOTS);
 			}
 			if (autoSelectRootNode) {
 				const rootNodes = Repository.getRootNodes();
@@ -1481,8 +1505,8 @@ function TreeComponent(props) {
 			Repository.off('loadRootNodes', setFalse);
 			Repository.off('loadRootNodes', buildAndSetTreeNodeData);
 			Repository.off('add', buildAndSetOneTreeNodeData);
-			Repository.off('changeFilters', reloadTree);
-			Repository.off('changeSorters', reloadTree);
+			Repository.off('changeFilters', onChangeFilters);
+			Repository.off('changeSorters', onChangeSorters);
 		};
 	}, []);
 
@@ -1614,7 +1638,9 @@ function TreeComponent(props) {
 						>
 							{!treeNodes?.length ? 
 							<CenterBox>
-								{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={reloadTree} />}
+								{Repository.isLoading ? <Loading /> : <NoRecordsFound text={noneFoundText} onRefresh={() => {
+									reloadTree(LOAD_CAUSES__EMPTY_STATE_REFRESH);
+								}} />}
 							</CenterBox> :
 							treeNodes}
 						</ScrollView>

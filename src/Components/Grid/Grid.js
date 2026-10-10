@@ -29,6 +29,12 @@ import {
 	DROP_POSITION_AFTER,
 } from '../../Constants/Grid.js';
 import {
+	LOAD_CAUSES__UNKNOWN,
+	LOAD_CAUSES__FILTERS_CHANGED,
+	LOAD_CAUSES__SORTERS_CHANGED,
+	LOAD_CAUSES__EMPTY_STATE_REFRESH,
+} from '../../Constants/LoadCauses.js';
+import {
 	UI_MODE_WEB,
 	UI_MODE_NATIVE,
 	CURRENT_MODE,
@@ -136,6 +142,7 @@ function GridComponent(props) {
 			flatListProps = {},
 			onRowPress,
 			onRender,
+			onGridLoad,
 			onLayout,
 			disableLoadOnRender = false,
 			forceLoadOnRender = false,
@@ -288,6 +295,7 @@ function GridComponent(props) {
 		isAddingRaw = useRef(),
 		measurementPhaseRaw = useRef(PHASES__INITIAL),
 		measuredRowHeightRaw = useRef(null),
+		loadCauseRef = useRef(LOAD_CAUSES__UNKNOWN),
 		containerRef = useRef(),
 		gridRef = useRef(),
 		gridContainerRef = useRef(),
@@ -322,6 +330,19 @@ function GridComponent(props) {
 		setIsExpanded = (index, isExpanded) => {
 			expandedRowsRef.current[index] = isExpanded;
 			forceUpdate();
+		},
+		getLoadCause = () => {
+			return loadCauseRef.current || LOAD_CAUSES__UNKNOWN;
+		},
+		setLoadCause = (cause) => {
+			loadCauseRef.current = cause || LOAD_CAUSES__UNKNOWN;
+		},
+		reloadGrid = (cause = LOAD_CAUSES__UNKNOWN) => {
+			if (!Repository) {
+				return;
+			}
+			setLoadCause(cause);
+			return Repository.reload();
 		},
 		setLocalColumnsConfig = (config) => {
 			if (localColumnsConfigKey) {
@@ -414,11 +435,11 @@ function GridComponent(props) {
 				}
 			}
 		},
-		onRefresh = () => {
+		onRefresh = (cause = LOAD_CAUSES__UNKNOWN) => {
 			if (!Repository) {
 				return;
 			}
-			const promise = Repository.reload();
+			const promise = reloadGrid(cause);
 			if (promise) { // Some repository types don't use promises
 				promise.then(() => {
 					setIsLoading(false);
@@ -1686,6 +1707,16 @@ function GridComponent(props) {
 				setIsLoading(false);
 				clearPaginationSelectionGuard();
 			},
+			onLoad = () => {
+				setFalse();
+				try {
+					if (onGridLoad) {
+						onGridLoad(self, getLoadCause());
+					}
+				} finally {
+					setLoadCause(LOAD_CAUSES__UNKNOWN); // reset to unknown for next load
+				}
+			},
 			onPaginationEvent = (eventType) => {
 				if (consumePaginationSelectionGuard(eventType)) {
 					return;
@@ -1708,12 +1739,12 @@ function GridComponent(props) {
 					console.log('onChangeFilters, reload and re-measure');
 				}
 				if (!Repository.isAutoLoad) {
-					Repository.reload();
+					reloadGrid(LOAD_CAUSES__FILTERS_CHANGED);
 				}
 			},
 			onChangeSorters = () => {
 				if (!Repository.isAutoLoad) {
-					Repository.reload();
+					reloadGrid(LOAD_CAUSES__SORTERS_CHANGED);
 				}
 			},
 			onChangePage = () => {
@@ -1721,7 +1752,7 @@ function GridComponent(props) {
 			};
 
 		Repository.on('beforeLoad', setTrue);
-		Repository.on('load', setFalse);
+		Repository.on('load', onLoad);
 		Repository.on('changePage', onChangePage);
 		Repository.on('changePageSize', onChangePageSize);
 		Repository.ons(['changeData', 'change'], forceUpdate);
@@ -1744,7 +1775,7 @@ function GridComponent(props) {
 
 		return () => {
 			Repository.off('beforeLoad', setTrue);
-			Repository.off('load', setFalse);
+			Repository.off('load', onLoad);
 			Repository.off('changePage', onChangePage);
 			Repository.off('changePageSize', onChangePageSize);
 			Repository.offs(['changeData', 'change'], forceUpdate);
@@ -1855,6 +1886,7 @@ function GridComponent(props) {
 	if (self) {
 		self.ref = containerRef;
 		self.gridRef = gridRef;
+		self.reloadGrid = reloadGrid;
 	}
 
 	isAddingRaw.current = isAdding;
@@ -1983,7 +2015,9 @@ function GridComponent(props) {
 		} else {
 			grid = <NoRecordsFound 
 						text={noneFoundText}
-						onRefresh={onRefresh}
+						onRefresh={() => {
+							onRefresh(LOAD_CAUSES__EMPTY_STATE_REFRESH);
+						}}
 					/>;
 		}
 	}
