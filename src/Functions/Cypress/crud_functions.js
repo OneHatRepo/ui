@@ -13,6 +13,7 @@ import {
 	getDomNode,
 	getDomNodes,
 	ifExists,
+	verifyElementExists,
 } from './dom_functions.js';
 import {
 	hasRowWithFieldValue,
@@ -945,14 +946,17 @@ export function addTreeRecord(args) {
 	cy.log('addTreeRecord ' + selector);
 
 	const
+		treeNodesSelector = selector + '/treeNodes',
 		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
 	// BEGIN MOD
+	// wait until the tree has rendered its root node
+	verifyElementExists(treeNodesSelector);
+	
 	// select the root node
-	getFirstTreeRootNode(selector).then ((rootNode) => {
-
+	getFirstTreeRootNode(selector).then((rootNode) => {
 		// get the rootNodeId
 		const id = rootNode.attr('data-testid').split('-')[1];
 		selectTreeNodeIfNotAlreadySelectedById(selector, id)
@@ -980,7 +984,7 @@ export function addTreeRecord(args) {
 
 	// Get and save id of new record
 	getDomNode([selector, 'node-selected']).then((row) => {
-		const idNode = row[0].closest('[data-testid]');
+		const idNode = row[0].parentNode; // fragile!
 		const testId = idNode && idNode.getAttribute('data-testid');
 		cy.wrap(testId).should('exist').then((value) => {
 			const id = value.split('-')[1];
@@ -1038,6 +1042,8 @@ export function editTreeRecord(args) {
 		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
+		
+	cy.wait(1000); // allow form to re-render after selection churn (we refreshed the new TreeNode, and this temporarily deselects and reselects it)
 
 	if (whichEditor === SIDE) {
 		cy.log('switch to Edit mode if necessary ' + viewerSelector);
