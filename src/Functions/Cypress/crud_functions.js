@@ -620,6 +620,8 @@ export function editGridRecord(args) {
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form';
 
+	cy.wait(1000); // allow form to re-render after selection churn (we refreshed the new GridRow, and this temporarily deselects and reselects it)
+
 	if (whichEditor === SIDE) {
 		cy.log('switch to Edit mode if necessary ' + viewerSelector);
 		clickToEditButtonIfExists(viewerSelector);
