@@ -1010,14 +1010,18 @@ export default function withEditor(WrappedComponent, isTree = false) {
 		useEffect(() => {
 
 			if (editorType === EDITOR_TYPE__SIDE) {
-				if (isEditorDisabledByParent) {
-					setIsEditorShown(false);
-				} else if (selection?.length) { // || isAdding
-					// there is a selection, so show the editor
-					setIsEditorShown(true);
-				} else {
-					// no selection, so close the editor
-					setIsEditorShown(false);
+				const
+					isBusy = isSaving || isAdding,
+					shouldKeepEditorOpen = !selection?.length && !!lastSelection?.length && getIsEditorShown();
+				if (!isBusy) {
+					if (isEditorDisabledByParent) {
+						setIsEditorShown(false);
+					} else if (selection?.length || shouldKeepEditorOpen) { // keep the side editor open during transient empty-selection churn while a save/reload is in flight
+						setIsEditorShown(true);
+					} else {
+						// no selection, so close the editor
+						setIsEditorShown(false);
+					}
 				}
 			}
 
@@ -1048,7 +1052,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			Promise.resolve().then(() => {
 				setIsIgnoreNextSelectionChange(false);
 			});
-		}, [selection, inheritedEditorMode, isEditorDisabledByParent]);
+		}, [selection, inheritedEditorMode, isEditorDisabledByParent, isSaving, isAdding]);
 
 		if (self) {
 			self.add = doAdd;
