@@ -273,6 +273,7 @@ function GridComponent(props) {
 			deselectAll,
 			selectRangeTo,
 			isInSelection,
+			refreshSelection,
 			selectNext,
 			selectPrev,
 			addNextToSelection,
@@ -1710,6 +1711,9 @@ function GridComponent(props) {
 			onLoad = () => {
 				setFalse();
 				try {
+					if (_.isFunction(refreshSelection)) {
+						refreshSelection();
+					}
 					if (onGridLoad) {
 						onGridLoad(self, getLoadCause());
 					}

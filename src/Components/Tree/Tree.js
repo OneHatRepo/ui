@@ -664,6 +664,9 @@ function TreeComponent(props) {
 
 			const treeNodeData = buildTreeNodeData(nodes);
 			setTreeNodeData(treeNodeData);
+			if (_.isFunction(refreshSelection)) {
+				refreshSelection();
+			}
 
 			if (onTreeLoad) {
 				onTreeLoad(self, getLoadCause());
@@ -1645,7 +1648,11 @@ function TreeComponent(props) {
 									reloadTree(LOAD_CAUSES__EMPTY_STATE_REFRESH);
 								}} />}
 							</CenterBox> :
-							treeNodes}
+							<VStackNative
+								{...testProps(self.path + '/treeNodes')}
+							>
+								{treeNodes}
+							</VStackNative>}
 						</ScrollView>
 					</ScrollView>
 				</VStack>
