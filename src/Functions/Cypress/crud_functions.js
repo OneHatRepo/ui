@@ -80,6 +80,11 @@ export const INLINE = 'INLINE';
 export const SIDE = 'SIDE';
 export const FULL = 'FULL';
 
+function getEditorFormSelector(selector, options = {}) {
+	const editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : '');
+	return editorSelector + '/form';
+}
+
 
 // Form fields
 export function crudCombo(args) {
@@ -566,7 +571,7 @@ export function addWindowedGridRecord(args) {
 	});
 
 	cy.log('addWindowedGridRecord: close window ' + selector);
-	const formSelector = selector + '/editor/form';
+	const formSelector = getEditorFormSelector(selector, options);
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -593,7 +598,7 @@ export function addInlineGridRecord(args) {
 	});
 
 	cy.log('addInlineGridRecord: close window ' + selector);
-	const formSelector = selector + '/editor/form';
+	const formSelector = getEditorFormSelector(selector, options);
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -700,7 +705,7 @@ export function editWindowedGridRecord(args) {
 		options,
 	});
 
-	const formSelector = selector + '/editor/form';
+	const formSelector = getEditorFormSelector(selector, options);
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -730,7 +735,7 @@ export function editInlineGridRecord(args) {
 		options,
 	});
 
-	const formSelector = selector + '/editor/form';
+	const formSelector = getEditorFormSelector(selector, options);
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -1018,7 +1023,7 @@ export function addWindowedTreeRecord(args) {
 	});
 
 	cy.log('addWindowedTreeRecord: close window ' + selector);
-	const formSelector = selector + '/editor/form';
+	const formSelector = getEditorFormSelector(selector, options);
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed
@@ -1125,7 +1130,7 @@ export function editWindowedTreeRecord(args) {
 		options,
 	});
 
-	const formSelector = selector + '/editor/form';
+	const formSelector = getEditorFormSelector(selector, options);
 	clickCloseButton(formSelector);
 	cy.wait(500); // allow window to close
 	// TODO: Change this to wait until window is closed

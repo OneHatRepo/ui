@@ -280,27 +280,27 @@ export function setTagValue(selectors, value) {
 			// Now add the new tags
 			return getDomNode([...selectors, 'input']).then((field) => {
 				cy.wrap(field).clear({ force: true });
-				_.each(normalizedValues, (value) => {
-					const id = _.isObject(value) ? value.id : value;
-					cy.wrap(field)
+				return cy.wrap(normalizedValues).each((item) => {
+					const id = _.isObject(item) ? item.id : item;
+					return cy.wrap(field)
 						.type('id:' + id, { delay: 40, force: true }) // slow it down a bit, so React has time to re-render
-						.wait('@getWaiter'); // allow dropdown to load
+						.wait('@getWaiter') // allow dropdown to load
+						.then(() => clickComboResultRow(selectors, 'id:' + id))
+						.then((didClickRow) => {
+							if (didClickRow) {
+								return;
+							}
 
-					clickComboResultRow(selectors, 'id:' + id).then((didClickRow) => {
-						if (didClickRow) {
-							return;
-						}
-
-						resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
-							cy.wrap($keyboardInput)
-								.type('{downarrow}', { force: true })
-								.type('{enter}', { force: true });
+							return resolveComboKeyboardInput(selectors).then(($keyboardInput) => {
+								return cy.wrap($keyboardInput)
+									.type('{downarrow}', { force: true })
+									.type('{enter}', { force: true });
+							});
 						});
-					});
+				}).then(() => {
+					// press trigger to hide dropdown
+					return getDomNode([...selectors, 'trigger']).click({ force: true });
 				});
-
-				// press trigger to hide dropdown
-				getDomNode([...selectors, 'trigger']).click({ force: true });
 			});
 		})
 		.then(() => {
@@ -1133,8 +1133,8 @@ function assertMatchesValueGetter(selectors, getterFn, expectedValue, normalizeE
 }
 function assertTagContainsExpectedIds(selectors, expectedValues) {
 	let values = expectedValues;
-	if (_.isString(values) && !_.isEmpty(values)) {
-		values = JSON.parse(values);
+	if (_.isString(values)) {
+		values = _.isEmpty(values) ? [] : JSON.parse(values);
 	}
 	if (_.isNil(values)) {
 		values = [];
@@ -1150,15 +1150,48 @@ function assertTagContainsExpectedIds(selectors, expectedValues) {
 		return String(item);
 	}).sort();
 
-	return getTagValue(selectors).then((actualJson) => {
-		const actual = _.isEmpty(actualJson) ? [] : JSON.parse(actualJson);
-		const actualIds = _.map(actual, (item) => String(item.id)).sort();
+	return getDomNode(selectors).should(($field) => {
+		const $root = Cypress.$($field[0]);
+		const actualIds = getTagSelectedIdsFromRoot($root);
 
 		expect(
 			actualIds,
 			'Tag selected IDs mismatch under selectors: ' + JSON.stringify(selectors)
 		).to.deep.equal(expectedIds);
 	});
+}
+function getTagSelectedIdsFromRoot($root) {
+	const dataValue = getRootDataValue($root);
+	if (!_.isNil(dataValue)) {
+		try {
+			const parsed = JSON.parse(dataValue);
+			if (_.isArray(parsed)) {
+				return _.chain(parsed)
+					.map((item) => _.isObject(item) ? item.id : item)
+					.filter((id) => !_.isNil(id) && id !== '')
+					.map((id) => String(id))
+					.sort()
+					.value();
+			}
+		} catch (_error) {
+			// Ignore non-JSON data-value and fall back to rendered value boxes.
+		}
+	}
+
+	const $container = $root.find('[data-testid="valueBoxes"]:first, .Tag-valueBoxes-container:first').first();
+	if (!$container.length) {
+		return [];
+	}
+
+	const ids = [];
+	$container.find('.ValueBox-HStackNative').each((ix, el) => {
+		const rawId = Cypress.$(el).attr('data-tag-id');
+		if (!_.isNil(rawId) && rawId !== '') {
+			ids.push(String(rawId));
+		}
+	});
+
+	return _.sortBy(ids);
 }
 
 function shouldVerifyDataValue(value) {
