@@ -37,6 +37,11 @@ export function getRowWithFieldValue(gridSelector, field, value) {
 		return $(cell).closest('[data-testid="row"]')[0];
 	});
 }
+export function getIdOfFirstRow(gridSelector) {
+	cy.log('getIdOfFirstRow ' + gridSelector);
+	const firstRow = getDomNode([gridSelector, 'row']).first();
+	return firstRow.invoke('attr', 'data-id');
+}
 // export function getRowWithText(grid, text) {
 // 	return getRows(grid).contains(text);
 // }

@@ -27,6 +27,7 @@ import {
 	verifyGridRowIsSelectedById,
 	getModelFromGridName,
 	getModelFromGridSelector,
+	getIdOfFirstRow,
 	getGridRowSelectorById,
 } from './grid_functions.js';
 import {
@@ -281,6 +282,7 @@ export function crudWindowedGridRecord(args) {
 	const {
 		skipView = false,
 		skipAdd = false,
+		useFirstRowForId = false,
 		skipEdit = false,
 		skipDelete = false,
 		idObj = null,
@@ -334,14 +336,23 @@ export function crudWindowedGridRecord(args) {
 		return;
 	}
 
-	// skipAdd = true, see if an idObj with id was provided in the options
+	// skipAdd = true
+	if (useFirstRowForId) {
+		// There should already be an existing record to use. Get the id of it
+		getIdOfFirstRow(selector).then((id) => {
+			runCrudById(id);
+		});
+		return;
+	}
+
+	// see if an idObj with id was provided in the options
 	if (!_.isNil(idObj) && !_.isNil(idObj.id)) {
 		// If so, run the CRUD operations using the provided idObj.id.
 		runCrudById(idObj.id);
 		return;
 	}
 
-	cy.log('crudWindowedGridRecord: skipAdd was true with no options.idObj.id; skipping id-based phases.');
+	cy.log('crudWindowedGridRecord: skipAdd was true, useFirstRowForId was false, no options.idObj.id given; skipping id-based phases.');
 }
 export function crudInlineGridRecord(args) {
 
