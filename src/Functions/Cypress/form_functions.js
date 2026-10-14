@@ -1037,7 +1037,9 @@ export function getToggleValue(selectors) {
 		}
 
 		const checked = Cypress.$($switchInput[0]).prop('checked');
-		return _.isNil(checked) ? null : !!checked;
+		const value = _.isNil(checked) ? null : !!checked;
+		cy.log('getToggleValue value', value);
+		return value;
 	});
 }
 
@@ -1125,10 +1127,15 @@ function normalizeToComparablePrimitive(value) {
 }
 function assertMatchesValueGetter(selectors, getterFn, expectedValue, normalizeExpected, normalizeActual, label) {
 	return getterFn(selectors).then((actualValue) => {
+		const normalizedActual = normalizeActual(actualValue);
+		const normalizedExpected = normalizeExpected(expectedValue);
+		cy.log(label + ' expected:', normalizedExpected);
+		cy.log(label + ' actual:', normalizedActual);
+
 		expect(
-			normalizeActual(actualValue),
-			label + ' value mismatch under selectors: ' + JSON.stringify(selectors)
-		).to.deep.equal(normalizeExpected(expectedValue));
+			normalizedActual,
+			label + ' value under selectors: ' + JSON.stringify(selectors)
+		).to.deep.equal(normalizedExpected);
 	});
 }
 function assertTagContainsExpectedIds(selectors, expectedValues) {

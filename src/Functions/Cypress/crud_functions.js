@@ -283,6 +283,7 @@ export function crudWindowedGridRecord(args) {
 		skipView = false,
 		skipAdd = false,
 		useFirstRowForId = false,
+		useId = null,
 		skipEdit = false,
 		skipDelete = false,
 		idObj = null,
@@ -342,6 +343,12 @@ export function crudWindowedGridRecord(args) {
 		getIdOfFirstRow(selector).then((id) => {
 			runCrudById(id);
 		});
+		return;
+	}
+
+	// see if a useId was provided in the options
+	if (!_.isNil(useId)) {
+		runCrudById(useId);
 		return;
 	}
 
@@ -450,6 +457,8 @@ export function crudSideGridRecord(args) {
 	const {
 		skipView = false,
 		skipAdd = false,
+		useFirstRowForId = false,
+		useId = null,
 		skipEdit = false,
 		skipDelete = false,
 		idObj = null,
@@ -458,6 +467,8 @@ export function crudSideGridRecord(args) {
 	getDomNode(selector).scrollIntoView();
 
 	const runCrudById = (id) => {
+
+		cy.log('crudSideGridRecord: continue thru CRUD ' + selector);
 
 		// read
 		if (!skipView) {
@@ -503,12 +514,27 @@ export function crudSideGridRecord(args) {
 		return;
 	}
 
+	// skipAdd = true
+	if (useFirstRowForId) {
+		// There should already be an existing record to use. Get the id of it
+		getIdOfFirstRow(selector).then((id) => {
+			runCrudById(id);
+		});
+		return;
+	}
+
+	// see if a useId was provided in the options
+	if (!_.isNil(useId)) {
+		runCrudById(useId);
+		return;
+	}
+
 	if (!_.isNil(idObj) && !_.isNil(idObj.id)) {
 		runCrudById(idObj.id);
 		return;
 	}
 
-	cy.log('crudSideGridRecord: skipAdd was true with no options.idObj.id; skipping id-based phases.');
+	cy.log('crudSideGridRecord: skipAdd was true, useFirstRowForId was false, no options.idObj.id given; skipping id-based phases.');
 }
 export function addGridRecord(args) {
 
