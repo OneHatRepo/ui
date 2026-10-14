@@ -66,6 +66,9 @@ export function userIsInGroupId(group_id) {
  * canUser('add', 'PmEvents') // check if user can perform 'add' action on a specific model
  * canUser('do_something_else) // check if user has a custom permission
  * 
+ * For CRUD permissions, if a model schema defines `groupCrudPermission`,
+ * that permission is accepted as an alternative to per-model CRUD permissions.
+ * 
  * @param {string} permission - The permission to check for.
  * @param {string} modelToCheck - The model to check for the permission on.
  * @returns {boolean} - Whether user has permission
@@ -102,6 +105,12 @@ export function canUser(permission, modelToCheck = null) {
 
 		// standard CRUD permissions
 		if (inArray(permission, [VIEW, ADD, EDIT, DELETE])) {
+			const
+				repository = oneHatData.getRepository(modelToCheck),
+				groupCrudPermission = repository?.schema?.groupCrudPermission;
+			if (groupCrudPermission && checkPermission(groupCrudPermission)) {
+				return true;
+			}
 			modelToCheck = Inflector.underscore(modelToCheck); // 'PmEvents' -> 'pm_events'
 			permission += '_' + modelToCheck; // e.g. 'view_pm_events'
 		}
