@@ -172,6 +172,47 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			secondaryGetNewEntityDisplayValue = () => {
 				return secondaryNewEntityDisplayValueRef.current;
 			},
+			secondaryIsSameSelectionIdentity = (previousSelection, nextSelection) => {
+				// Compares the id values of two selections to determine if they are the same.
+				// This is used to check if the selection has changed in a meaningful way.
+				const
+					prev = _.isArray(previousSelection) ? previousSelection : [],
+					next = _.isArray(nextSelection) ? nextSelection : [];
+				if (prev.length !== next.length) {
+					return false;
+				}
+				for (let i = 0; i < prev.length; i++) {
+					const
+						previousItem = prev[i],
+						nextItem = next[i];
+					if (previousItem === nextItem) {
+						continue;
+					}
+					let previousId = null,
+						nextId = null,
+						previousIsPhantom = null,
+						nextIsPhantom = null;
+					try {
+						previousId = previousItem?.id ?? null;
+						nextId = nextItem?.id ?? null;
+						if (!previousItem?.isDestroyed) {
+							previousIsPhantom = !!previousItem?.isPhantom;
+						}
+						if (!nextItem?.isDestroyed) {
+							nextIsPhantom = !!nextItem?.isPhantom;
+						}
+					} catch (err) {
+						return false;
+					}
+					if (previousId !== nextId) {
+						return false;
+					}
+					if (!_.isNil(previousIsPhantom) && !_.isNil(nextIsPhantom) && previousIsPhantom !== nextIsPhantom) {
+						return false;
+					}
+				}
+				return true;
+			},
 			secondaryDoAdd = async (e, values) => {
 				if (canUser && !canUser(ADD, secondaryModel)) {
 					showPermissionsError(ADD, secondaryModel);
@@ -767,6 +808,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			};
 
 		useEffect(() => {
+			const shouldIgnoreTransientEmptySelection = !secondarySelection?.length && !!secondaryLastSelection?.length && (secondaryIsSaving || secondaryIsAdding);
 
 			if (secondaryEditorType === EDITOR_TYPE__SIDE) {
 				if (secondarySelection?.length) { //  || isAdding
@@ -778,8 +820,14 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 				}
 			}
 
+			if (shouldIgnoreTransientEmptySelection || secondaryIsSameSelectionIdentity(secondaryLastSelection, secondarySelection)) {
+				secondarySetIsIgnoreNextSelectionChange(true);
+			}
+
 			secondarySetEditorMode(secondaryCalculateEditorMode());
-			setLastSelection(secondarySelection);
+			if (!shouldIgnoreTransientEmptySelection) {
+				setLastSelection(secondarySelection);
+			}
 			
 			// Push isIgnoreNextSelectionChange until after a microtask to ensure all
 			// synchronous operations (including listener callbacks) are complete
@@ -787,7 +835,7 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 			Promise.resolve().then(() => {
 				secondarySetIsIgnoreNextSelectionChange(false);
 			});
-		}, [secondarySelection]);
+		}, [secondarySelection, secondaryIsSaving, secondaryIsAdding]);
 	
 		if (self) {
 			self.secondaryAdd = secondaryDoAdd;
@@ -800,7 +848,8 @@ export default function withSecondaryEditor(WrappedComponent, isTree = false) {
 		}
 		secondaryNewEntityDisplayValueRef.current = secondaryNewEntityDisplayValue;
 
-		if (secondaryLastSelection !== secondarySelection) {
+		const shouldIgnoreTransientEmptySelection = !secondarySelection?.length && !!secondaryLastSelection?.length && (secondaryIsSaving || secondaryIsAdding);
+		if (!shouldIgnoreTransientEmptySelection && !secondaryIsSameSelectionIdentity(secondaryLastSelection, secondarySelection)) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
 			// (basically redo what's in the useEffect, above)

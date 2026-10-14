@@ -245,6 +245,47 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			setNewEntityDisplayValue = (val) => {
 				newEntityDisplayValueRef.current = val;
 			},
+			isSameSelectionIdentity = (previousSelection, nextSelection) => {
+				// Compares the id values of two selections to determine if they are the same.
+				// This is used to check if the selection has changed in a meaningful way.
+				const
+					prev = _.isArray(previousSelection) ? previousSelection : [],
+					next = _.isArray(nextSelection) ? nextSelection : [];
+				if (prev.length !== next.length) {
+					return false;
+				}
+				for (let i = 0; i < prev.length; i++) {
+					const
+						previousItem = prev[i],
+						nextItem = next[i];
+					if (previousItem === nextItem) {
+						continue;
+					}
+					let previousId = null,
+						nextId = null,
+						previousIsPhantom = null,
+						nextIsPhantom = null;
+					try {
+						previousId = previousItem?.id ?? null;
+						nextId = nextItem?.id ?? null;
+						if (!previousItem?.isDestroyed) {
+							previousIsPhantom = !!previousItem?.isPhantom;
+						}
+						if (!nextItem?.isDestroyed) {
+							nextIsPhantom = !!nextItem?.isPhantom;
+						}
+					} catch (err) {
+						return false;
+					}
+					if (previousId !== nextId) {
+						return false;
+					}
+					if (!_.isNil(previousIsPhantom) && !_.isNil(nextIsPhantom) && previousIsPhantom !== nextIsPhantom) {
+						return false;
+					}
+				}
+				return true;
+			},
 			showViewFallback = async () => {
 				// helper for doEdit
 				// If the editor is forced into EDIT mode by parent inheritance, 
@@ -1008,6 +1049,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			isCrudBlockedByInheritedView = inheritedEditorMode === EDITOR_MODE__VIEW;
 
 		useEffect(() => {
+			const shouldIgnoreTransientEmptySelection = !selection?.length && !!lastSelection?.length && (isSaving || isAdding);
 
 			if (editorType === EDITOR_TYPE__SIDE) {
 				const
@@ -1043,8 +1085,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsEditorViewOnly(!canEditInInheritedMode);
 			}
 
+			if (shouldIgnoreTransientEmptySelection || isSameSelectionIdentity(lastSelection, selection)) {
+				setIsIgnoreNextSelectionChange(true);
+			}
+
 			setEditorMode(calculateEditorMode());
-			setLastSelection(selection);
+			if (!shouldIgnoreTransientEmptySelection) {
+				setLastSelection(selection);
+			}
 			
 			// Push isIgnoreNextSelectionChange until after a microtask to ensure all
 			// synchronous operations (including listener callbacks) are complete
@@ -1066,7 +1114,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 		setNewEntityDisplayValue(newEntityDisplayValue);
 		setDefaultValues(defaultValues);
 
-		if (lastSelection !== selection) {
+		const shouldIgnoreTransientEmptySelection = !selection?.length && !!lastSelection?.length && (isSaving || isAdding);
+		if (!shouldIgnoreTransientEmptySelection && !isSameSelectionIdentity(lastSelection, selection)) {
 			// NOTE: If I don't calculate this on the fly for selection changes,
 			// we see a flash of the previous state, since useEffect hasn't yet run.
 			// (basically redo what's in the useEffect, above)
