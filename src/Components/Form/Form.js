@@ -129,6 +129,7 @@ function Form(props) {
 			disableFooter = false,
 			hideResetButton = false,
 			showSelectHandle = false,
+			showSkipToFieldSets = false,
 			
 			// sizing of outer container
 			maxHeight,
@@ -176,6 +177,7 @@ function Form(props) {
 		id = props.id || props.self?.path,
 		formRef = useRef(),
 		ancillaryItemsRef = useRef({}),
+		fieldSetAnchorsRef = useRef({}),
 		addButtonsPreferenceKey = id ? id + '-add-buttons' : null,
 		lastSavedAddButtonsRef = useRef(),
 		ancillaryButtons = useRef([]),
@@ -782,7 +784,9 @@ function Form(props) {
 					defaultsToPass = defaults;
 					itemDefaultsToPass = itemDefaults;
 				}
-				return <Element
+				const
+					fieldSetReference = type === 'FieldSet' && _.isString(itemPropsToPass.reference) ? itemPropsToPass.reference.trim() : null,
+					element = <Element
 							key={'column-Element-' + type + '-' + ix}
 							title={title}
 							{...defaultsToPass}
@@ -792,6 +796,21 @@ function Form(props) {
 							className={elementClassName}
 							style={style}
 						>{children}</Element>;
+				if (!fieldSetReference) {
+					return element;
+				}
+				// if the element has a fieldSetReference, wrap it in a Box with a ref and id for anchoring.
+				return <Box
+							key={'fieldSetAnchor-' + fieldSetReference + '-' + ix}
+							ref={(el) => {
+								if (!el) {
+									delete fieldSetAnchorsRef.current[fieldSetReference];
+									return;
+								}
+								fieldSetAnchorsRef.current[fieldSetReference] = el;
+							}}
+							id={fieldSetReference}
+						>{element}</Box>;
 			}
 
 			if (!label && Repository && propertyDef?.title) {
@@ -1328,6 +1347,55 @@ function Form(props) {
 				block: 'start',
 			});
 		},
+		getSkipToFieldSetColumns = (itemsToInspect) => {
+			const
+				seenReferences = new Set(),
+				canUseMultiColumnLayout = (
+					!isItemsCustomLayout &&
+					containerWidth >= styles.FORM_ONE_COLUMN_THRESHOLD
+				),
+				collectFieldSets = (itemsToSearch) => {
+					const definitions = [];
+					_.each(itemsToSearch, (item) => {
+						if (!item || isValidElement(item) || !_.isObject(item)) {
+							return;
+						}
+
+						const
+							reference = _.isString(item.reference) ? item.reference.trim() : '',
+							title = _.isString(item.title) ? item.title.trim() : '';
+						if (item.type === 'FieldSet' && title && reference && !seenReferences.has(reference)) {
+							seenReferences.add(reference);
+							definitions.push({
+								title,
+								reference,
+							});
+						}
+
+						if (_.isArray(item.items) && item.items.length) {
+							definitions.push(...collectFieldSets(item.items));
+						}
+					});
+					return definitions;
+				},
+				topLevelColumns = _.filter(itemsToInspect, (item) => {
+					return item && !isValidElement(item) && _.isObject(item) && item.type === 'Column' && _.isArray(item.items);
+				});
+
+			if (topLevelColumns.length > 1 && canUseMultiColumnLayout) {
+				const fieldSetColumns = _.map(topLevelColumns, (column) => collectFieldSets(column.items));
+				return _.some(fieldSetColumns, (columnItems) => columnItems.length > 0) ? fieldSetColumns : [];
+			}
+
+			const allFieldSets = collectFieldSets(itemsToInspect);
+			return allFieldSets.length ? [allFieldSets] : [];
+		},
+		scrollToFieldSet = (reference) => {
+			fieldSetAnchorsRef.current[reference]?.scrollIntoView({
+				behavior: 'auto',
+				block: 'start',
+			});
+		},
 		saveAddButtonPreferences = async (nextVisibleButtons) => {
 			// save the user's add button preferences, if they have changed
 			setVisibleAddButtonTypes(nextVisibleButtons);
@@ -1632,6 +1700,7 @@ function Form(props) {
 		footer = null,
 		footerItems = null,
 		formComponents,
+		skipToFieldSets = null,
 		editor,
 		additionalButtons,
 		fab = null,
@@ -1728,6 +1797,29 @@ function Form(props) {
 							tooltip="Scroll to Ancillary Item"
 						/>
 					</Animated.View>;
+			}
+			if (showSkipToFieldSets) {
+				const fieldSetColumns = getSkipToFieldSetColumns(items);
+				if (fieldSetColumns.length) {
+					skipToFieldSets = <VStack className="w-full gap-1 p-4">
+										<Text>Skip to:</Text>
+										<HStack className="w-full items-start gap-2">
+											{_.map(fieldSetColumns, (fieldSetColumn, columnIx) => {
+												return <VStack key={'skipToFieldSetColumn-' + columnIx} className="flex-1 items-start gap-1">
+															{_.map(fieldSetColumn, ({ title, reference }) => {
+																return <Button
+																			key={'skipToFieldSet-' + reference}
+																			text={title}
+																			variant="link"
+																			className="self-start px-0 py-0"
+																			onPress={() => scrollToFieldSet(reference)}
+																		/>;
+															})}
+														</VStack>;
+											})}
+										</HStack>
+									</VStack>;
+				}
 			}
 		}
 
@@ -2029,6 +2121,7 @@ function Form(props) {
 									<Text>Scroll:</Text>
 									{buildAdditionalButtons(_.omitBy(getAncillaryButtons(), (btnConfig) => btnConfig.reference === 'scrollToTop'))}
 								</Toolbar>}
+							{skipToFieldSets}
 							{editor}
 						</ScrollView>}
 					{editorType !== EDITOR_TYPE__INLINE && !isHeaderScrollable && 
@@ -2059,6 +2152,7 @@ function Form(props) {
 								}}
 							>
 								{scrollToTopAnchor}
+								{skipToFieldSets}
 								{editor}
 							</ScrollView>
 						</>}
