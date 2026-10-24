@@ -1649,7 +1649,7 @@ function TreeComponent(props) {
 								}} />}
 							</CenterBox> :
 							<VStackNative
-								{...testProps(self.path + '/treeNodes')}
+								{...testProps('treeNodes')}
 							>
 								{treeNodes}
 							</VStackNative>}

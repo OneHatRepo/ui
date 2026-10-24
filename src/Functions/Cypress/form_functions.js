@@ -1038,7 +1038,7 @@ export function getToggleValue(selectors) {
 
 		const checked = Cypress.$($switchInput[0]).prop('checked');
 		const value = _.isNil(checked) ? null : !!checked;
-		cy.log('getToggleValue value', value);
+		Cypress.log({ name: 'getToggleValue', message: String(value) }); // use Cypress.log instead of cy.log because cy.log doesn't work inside .then() callbacks that return a value
 		return value;
 	});
 }

@@ -31,8 +31,6 @@ import {
 	getGridRowSelectorById,
 } from './grid_functions.js';
 import {
-	hasNodeWithFieldValue,
-	getNodeWithFieldValue,
 	selectTreeNodeById,
 	selectTreeNodeIfNotAlreadySelectedById,
 	verifyTreeRecordDoesNotExistByValue,
@@ -43,7 +41,7 @@ import {
 	getModelFromTreeName,
 	getModelFromTreeSelector,
 	getTreeNodeSelectorById,
-	getFirstTreeRootNode,
+	getFirstRootNode,
 } from './tree_functions.js';
 import {
 	verifyNoErrorBox,
@@ -1000,7 +998,7 @@ export function addTreeRecord(args) {
 	verifyElementExists(treeNodesSelector);
 	
 	// select the root node
-	getFirstTreeRootNode(selector).then((rootNode) => {
+	getFirstRootNode(selector).then((rootNode) => {
 		// get the rootNodeId
 		const id = rootNode.attr('data-testid').split('-')[1];
 		selectTreeNodeIfNotAlreadySelectedById(selector, id)

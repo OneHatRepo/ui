@@ -64,6 +64,10 @@ export function clickXButtonIfEnabled(parentSelectors) {
 	cy.log('clickXButtonIfEnabled');
 	return clickButtonIfEnabled(parentSelectors, 'xBtn');
 }
+export function clickClearFiltersButton(parentSelectors) {
+	cy.log('clickClearFiltersButton');
+	return clickButton(parentSelectors, 'clearFiltersBtn');
+}
 export function clickTrigger(parentSelectors) {
 	cy.log('clickTrigger');
 	return clickButton(parentSelectors, 'trigger');

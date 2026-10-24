@@ -6,6 +6,7 @@ import {
 import clsx from 'clsx';
 import IconButton from '../Buttons/IconButton.js';
 import Rotate from '../Icons/Rotate.js';
+import testProps from '../../Functions/testProps.js';
 
 export default function NoRecordsFound(props) {
 	const 
@@ -13,9 +14,10 @@ export default function NoRecordsFound(props) {
 			onRefresh,
 			text = 'No Records Found.',
 		} = props,
-		textComponent = <Text
+		textComponent = <TextNative
+							{...testProps('NoRecordsFound')}
 							className="text-center"
-						>{text}</Text>;
+						>{text}</TextNative>;
 
 	let component = textComponent;
 	if (onRefresh) {
