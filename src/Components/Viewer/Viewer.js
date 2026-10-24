@@ -92,7 +92,7 @@ function Viewer(props) {
 
 		} = props,
 		useTestProps = !!UiGlobals.useTestProps,
-		fv = useTestProps ? record.getSubmitValues() : null,
+		fv = useTestProps && record?.getSubmitValues ? record.getSubmitValues() : null,
 		scrollViewRef = useRef(),
 		ancillaryItemsRef = useRef({}),
 		ancillaryButtons = useRef([]),
