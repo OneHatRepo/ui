@@ -175,7 +175,7 @@ export function getLoginParams(username) {
 	const
 		loginIdField = Cypress.expose('loginIdField'),
 		hasUsername = typeof username === 'string' && username.trim().length > 0,
-		envKeys = ['loginId', 'password', 'superLoginId', 'superPassword'];
+		envKeys = ['loginId', 'password', 'test'];
 
 	if (hasUsername) {
 		envKeys.unshift(username);
@@ -184,11 +184,12 @@ export function getLoginParams(username) {
 	return cy.env(envKeys).then((secrets) => {
 		const
 			user = hasUsername ? secrets[username] : undefined,
-			loginId = user?.loginId || secrets.superLoginId || secrets.loginId,
-			password = user?.password || secrets.superPassword || secrets.password;
+			testUser = secrets.test,
+			loginId = user?.loginId || (!hasUsername ? testUser?.loginId : null) || secrets.loginId,
+			password = user?.password || (!hasUsername ? testUser?.password : null) || secrets.password;
 
 		if (!loginId || !password) {
-			throw new Error('Missing Cypress auth credentials. Set env.loginId/env.password or env.superLoginId/env.superPassword.');
+			throw new Error('Missing Cypress auth credentials. Set env.loginId/env.password or env.test.loginId/env.test.password.');
 		}
 
 		return {
