@@ -109,14 +109,21 @@ export function getDomNodeIfExists(parentSelectors, name, options = {}) {
  * @argument {string | string[]} selectors - data-testid attribute values
  * If an array is given, these will be considered nested selectors.
  * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
+ * @argument {object} options - Cypress get options, including timeout and isSelectorsRaw
+ * isSelectorsRaw - if true, selectors are treated as raw CSS selectors.
  */
-export function verifyElementDoesNotExist(selectors) {
-	cy.get('body').then(($body) => {
-		const selectorString = getTestIdSelectors(selectors);
-		if ($body.find(selectorString).length > 0) {
-			throw new Error(`Element with selectors ${selectorString} exists in the DOM, when it should not`);
-		}
-	});
+export function verifyElementDoesNotExist(selectors, options = {}) {
+	const
+		isSelectorsRaw = options?.isSelectorsRaw || false,
+		domOptions = {
+			...options,
+		};
+
+	delete domOptions.isSelectorsRaw;
+
+	const selectorString = isSelectorsRaw ? (_.isString(selectors) ? selectors : selectors.join(' ')) : getTestIdSelectors(selectors);
+
+	cy.get(selectorString, domOptions).should('not.exist');
 }
 
 /**
@@ -127,6 +134,16 @@ export function verifyElementDoesNotExist(selectors) {
  */
 export function verifyElementExists(selectors) {
 	cy.get(getTestIdSelectors(selectors)).should('exist');
+}
+
+/**
+ * Verifies that an element with the given selectors AND TEXT exists in the DOM.
+ * @argument {string | string[]} selectors - data-testid attribute values
+ * If an array is given, these will be considered nested selectors.
+ * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
+ */
+export function verifyElementWithTextExists(selectors, text) {
+	cy.get(getTestIdSelectors(selectors)).contains(text).should('exist');
 }
 
 /**

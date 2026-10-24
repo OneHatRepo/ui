@@ -5,31 +5,36 @@ import {
 import {
 	getDomNode,
 	getDomNodes,
+	verifyElementWithTextExists,
+	verifyElementDoesNotExist,
 } from './dom_functions.js';
+import {
+	clickClearFiltersButton,
+} from './button_functions.js';
 import Inflector from 'inflector-js';
 import _ from 'lodash';
 const $ = Cypress.$;
 
 
 
-// Get rows
-export function hasNodeWithFieldValue(treeSelector, field, value) {
-	cy.log('hasNodeWithFieldValue ' + treeSelector + ' ' + field + ' ' + value);
-	return getDomNodes([treeSelector, 'row', 'cell-' + field]).contains(value);
-}
-export function getNodeWithFieldValue(treeSelector, field, value) {
-	cy.log('getNodeWithFieldValue ' + treeSelector + ' ' + field + ' ' + value);
-	return getDomNodes([treeSelector, 'row', 'cell-' + field]).contains(value).then((cells) => {
-		if (!cells.length) {
-			return null;
-		}
+// Get treeNodes
+// export function hasNodeWithFieldValue(treeSelector, field, value) {
+// 	cy.log('hasNodeWithFieldValue ' + treeSelector + ' ' + field + ' ' + value);
+// 	return getDomNodes([treeSelector, 'row', 'cell-' + field]).contains(value);
+// }
+// export function getNodeWithFieldValue(treeSelector, field, value) {
+// 	cy.log('getNodeWithFieldValue ' + treeSelector + ' ' + field + ' ' + value);
+// 	return getDomNodes([treeSelector, 'row', 'cell-' + field]).contains(value).then((cells) => {
+// 		if (!cells.length) {
+// 			return null;
+// 		}
 		
-		const cell = cells[0];
-		return $(cell).closest('[data-testid="row"]')[0];
-	});
-}
-export function getFirstTreeRootNode(treeSelector) {
-	cy.log('getFirstTreeRootNode ' + treeSelector);
+// 		const cell = cells[0];
+// 		return $(cell).closest('[data-testid="row"]')[0];
+// 	});
+// }
+export function getFirstRootNode(treeSelector) {
+	cy.log('getFirstRootNode ' + treeSelector);
 	const model = getModelFromTreeSelector(treeSelector);
 	if (!model) {
 		throw new Error('Could not determine model from tree selector: ' + treeSelector);
@@ -40,6 +45,9 @@ export function getFirstTreeRootNode(treeSelector) {
 				.find('[data-testid^="' + inflected + '-"]')
 				.filter(':has([data-testid="node"]), :has([data-testid="node-selected"])')
 				.first();
+}
+export function getLastNode(treeSelector) {
+	return getDomNodes([treeSelector, 'node']).last();
 }
 // export function getNodeWithText(tree, text) {
 // 	return getNodes(tree).contains(text);
@@ -52,22 +60,30 @@ export function getFirstTreeRootNode(treeSelector) {
 // }
 
 
-// Select rows
+// Select treeNodes
 export function selectTreeNodeById(treeSelector, id) {
 	cy.log('selectTreeNodeById ' + treeSelector + ' ' + id);
-	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
-	getDomNode([treeSelector, rowSelector])
+	const treeNodeSelector = getTreeNodeSelectorById(treeSelector, id);
+	getDomNode([treeSelector, treeNodeSelector])
 		.click();
 }
 export function selectTreeNodeIfNotAlreadySelectedById(treeSelector, id) {
 	cy.log('selectTreeNodeIfNotAlreadySelectedById ' + treeSelector + ' ' + id);
-	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
-	getDomNode([treeSelector, rowSelector]).then((row) => {
+	const treeNodeSelector = getTreeNodeSelectorById(treeSelector, id);
+	getDomNode([treeSelector, treeNodeSelector]).then((row) => {
 		const found = row.find('[data-testid="node-selected"]')
 		if (!found.length) {
 			selectTreeNodeById(treeSelector, id);
 		}
 	})
+}
+export function findAndSelectTreeNode(treeSelector, q, nodeText = null) {
+	cy.log('findAndSelectTreeNode ' + treeSelector + ' ' + q);
+	filterTreeByQ(treeSelector, q, nodeText);
+	selectLastNode(treeSelector);
+}
+export function selectLastNode(treeSelector) {
+	getLastNode(treeSelector).click(5, 5);
 }
 // export function selectNodeWithText(tree, text) {
 // 	getNodeWithText(tree, text).click(5, 5);
@@ -80,7 +96,7 @@ export function selectTreeNodeIfNotAlreadySelectedById(treeSelector, id) {
 // }
 
 
-// // Double-click rows
+// // Double-click treeNodes
 // export function doubleClickNodeWithText(tree, text) {
 // 	getNodeWithText(tree, text).dblclick();
 // }
@@ -115,24 +131,43 @@ export function verifyTreeRecordExistsByValue(treeSelector, fieldValues, schema)
 export function verifyTreeRecordExistsById(treeSelector, id) {
 	cy.log('verifyTreeRecordExistsById ' + treeSelector + ' ' + id);
 	
-	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
-	getDomNodes([treeSelector, rowSelector])
+	const treeNodeSelector = getTreeNodeSelectorById(treeSelector, id);
+	getDomNodes([treeSelector, treeNodeSelector])
 		.should('exist');
 }
 export function verifyTreeRecordDoesNotExistById(treeSelector, id) {
 	cy.log('verifyTreeRecordDoesNotExistById ' + treeSelector + ' ' + id);
-	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
-	getDomNodes([treeSelector, rowSelector])
+	const treeNodeSelector = getTreeNodeSelectorById(treeSelector, id);
+	getDomNodes([treeSelector, treeNodeSelector])
 		.should('not.exist');
 }
 export function verifyTreeNodeIsSelectedById(treeSelector, id) {
 	cy.log('verifyTreeNodeIsSelectedById ' + treeSelector + ' ' + id);
-	const rowSelector = getTreeNodeSelectorById(treeSelector, id);
-	getDomNodes([treeSelector, rowSelector, 'node-selected'])
+	const treeNodeSelector = getTreeNodeSelectorById(treeSelector, id);
+	getDomNodes([treeSelector, treeNodeSelector, 'node-selected'])
 		.should('exist');
 }
 
 
+// filter Tree
+export function filterTreeByQ(treeSelector, q, nodeText = null) {
+	cy.log('filterTree ' + treeSelector + ' ' + q);
+
+	clickClearFiltersButton(treeSelector);
+
+	// filter for that treeNode
+	getDomNodes([treeSelector, 'filter-q'])
+		.clear()
+		.type(q);
+
+	if (nodeText) {
+		verifyElementWithTextExists([treeSelector, 'treeNodes'], nodeText);
+	} else {
+		verifyElementDoesNotExist([treeSelector, 'NoRecordsFound'], {
+			timeout: 5000,
+		});
+	}
+}
 
 
 
