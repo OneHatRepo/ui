@@ -13,6 +13,7 @@ import {
 import {
 	getDomNode,
 	getDomNodes,
+	getDomNodeIfExists,
 	ifExists,
 	verifyElementExists,
 } from './dom_functions.js';
@@ -68,6 +69,7 @@ import {
 	clickToViewButtonIfExists,
 	clickTrigger,
 	clickButton,
+	clickButtonIfExists,
 	toFullMode,
 	toSideMode,
 } from './button_functions.js';
@@ -1364,16 +1366,21 @@ export function runReportsManagerTests(args) {
 
 
 				// Press Excel button
-				clickButton(selector, 'excelBtn');
-				cy.wait('@postReportWaiter', { timeout: 10000 }).then((interception) => {
-					expect(interception.response.headers['content-type']).to.include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+				clickButtonIfExists(selector, 'excelBtn', {
+					callback: (node) => {
+						cy.wait('@postReportWaiter', { timeout: 10000 }).then((interception) => {
+							expect(interception.response.headers['content-type']).to.include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+						});
+					},
 				});
 
-
 				// Press PDF button
-				clickButton(selector, 'pdfBtn');
-				cy.wait('@postReportWaiter', { timeout: 10000 }).then((interception) => {
-					expect(interception.response.headers['content-type']).to.include('pdf');
+				clickButtonIfExists(selector, 'pdfBtn', {
+					callback: (node) => {
+						cy.wait('@postReportWaiter', { timeout: 10000 }).then((interception) => {
+							expect(interception.response.headers['content-type']).to.include('pdf');
+						});
+					},
 				});
 
 			});

@@ -122,6 +122,7 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 		interval = options?.interval ?? 100,
 		startedAt = Date.now(),
 		isSelectorsRaw = options?.isSelectorsRaw || false,
+		callback = options?.callback,
 		selector = isSelectorsRaw
 			? ((_.isString(parentSelectors) ? parentSelectors : parentSelectors.join(' ')) + ' ' + getTestIdSelectors(name, true))
 			: getTestIdSelectors([...parentSelectors, name], true);
@@ -131,6 +132,10 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 		if (node.length) {
 			cy.log('clickButtonIfExists found node');
 			return cy.wrap(node).click({ force: true }).then(() => {
+				if (_.isFunction(callback)) {
+					return callback(node);
+				}
+			}).then(() => {
 				cy.log('clickButtonIfExists clicked node');
 			});
 		}
