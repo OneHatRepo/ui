@@ -1,8 +1,14 @@
 import moment from 'moment';
 
+export const MOMENT_DATE_FORMAT_1 = 'YYYY-MM-DD HH:mm:ss';
+export const MOMENT_DATE_FORMAT_2 = 'MMM D YYYY, h:mm:ssa'; // pretty datetime
+export const MOMENT_DATE_FORMAT_3 = 'h:mma'; // pretty time
+export const MOMENT_DATE_FORMAT_4 = 'YYYY-MM-DD';
+export const MOMENT_DATE_FORMAT_5 = 'HH:mm:ss';
+export const MOMENT_DATE_FORMAT_6 = 'MMM D, YYYY'; // pretty date
 export const TODAY = moment();
-export const TODAY_START = TODAY.format('YYYY-MM-DD') + ' 00:00:00';
-export const TODAY_END = TODAY.format('YYYY-MM-DD') + ' 23:59:59';
+export const TODAY_START = TODAY.format(MOMENT_DATE_FORMAT_4) + ' 00:00:00';
+export const TODAY_END = TODAY.format(MOMENT_DATE_FORMAT_4) + ' 23:59:59';
 export const TOMORROW = moment().add(1, 'days');
 export const YESTERDAY = moment().add(-1, 'days');
 export const TWO_WEEKS_AGO = moment().add(-2, 'weeks');
@@ -14,9 +20,3 @@ export const START_OF_THIS_MONTH = moment().startOf('month');
 export const START_OF_LAST_MONTH = moment().subtract(1, 'months').startOf('month');
 export const END_OF_LAST_MONTH = moment().subtract(1, 'months').endOf('month');
 export const ONE_YEAR_AGO = moment().add(-1, 'years');
-export const MOMENT_DATE_FORMAT_1 = 'YYYY-MM-DD HH:mm:ss';
-export const MOMENT_DATE_FORMAT_2 = 'MMM D YYYY, h:mm:ssa'; // pretty datetime
-export const MOMENT_DATE_FORMAT_3 = 'h:mma'; // pretty time
-export const MOMENT_DATE_FORMAT_4 = 'YYYY-MM-DD';
-export const MOMENT_DATE_FORMAT_5 = 'HH:mm:ss';
-export const MOMENT_DATE_FORMAT_6 = 'MMM D, YYYY'; // pretty date

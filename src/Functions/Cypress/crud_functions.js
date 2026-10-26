@@ -8,6 +8,7 @@ import {
 	login,
 	logout,
 	navigateViaTabOrHomeButtonTo,
+	clickTab,
 } from './navigation_functions.js';
 import {
 	getDomNode,
@@ -1321,6 +1322,7 @@ export function runReportsManagerTests(args) {
 	const {
 			reportData,
 			isSetup = false,
+			options = {},
 		} = args,
 		url = 'reports';
 
@@ -1328,6 +1330,9 @@ export function runReportsManagerTests(args) {
 
 		beforeEach(function () {
 			bootstrapRouteWaiters();
+			if (options.preBeforeEach) {
+				options.preBeforeEach();
+			}
 			login();
 			cy.restoreLocalStorage();
 			cy.url().then((currentUrl) => {
@@ -1335,6 +1340,9 @@ export function runReportsManagerTests(args) {
 					navigateViaTabOrHomeButtonTo(url, isSetup);
 				}
 			});
+			if (options.beforeEach) {
+				options.beforeEach();
+			}
 			stubWindowOpen();
 		});
 
@@ -1343,6 +1351,10 @@ export function runReportsManagerTests(args) {
 			it('Report ' + report.id, function() {
 
 				cy.log('report ' + report.id);
+
+				if (report.hasOwnProperty('tabIx')) {
+					clickTab('ReportsManager-reportTabs', report.tabIx);
+				}
 
 				const selector = 'Report-' + report.id;
 
@@ -1353,7 +1365,7 @@ export function runReportsManagerTests(args) {
 
 				// Press Excel button
 				clickButton(selector, 'excelBtn');
-				cy.wait('@getReportWaiter', { timeout: 10000 }).then((interception) => {
+				cy.wait('@postReportWaiter', { timeout: 10000 }).then((interception) => {
 					expect(interception.response.headers['content-type']).to.include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 				});
 

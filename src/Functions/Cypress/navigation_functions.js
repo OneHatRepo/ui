@@ -107,6 +107,10 @@ export function navigateToScreen(path) {
 		cy.url().should('include', path);
 	});
 }
+export function clickTab(tabContainerTestId, tabIx) {
+	cy.log('clickTab ' + tabContainerTestId + ' to:' + tabIx);
+	getDomNode('to:' + tabIx).click({ force: true, });
+}
 
 // export function selectMainTab(name) {
 // 	cy.get('.mainTabPanel .x-tab')

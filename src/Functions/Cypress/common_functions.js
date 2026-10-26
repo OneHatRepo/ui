@@ -27,19 +27,51 @@ export function waitForNavigationTo(url) {
 
 export function minimizeHeader(selectors) {
 	cy.log('minimize the Header');
-	return getDomNode(selectors)
-		.then(($node) => {
+	return getDomNodes(selectors)
+		.then(($nodes) => {
+			// Multiple matching collapse buttons can exist during re-renders/transitions.
+			// Act only on the currently visible one to match real user behavior.
+			const $node = $nodes.filter(':visible').first();
+			if (!$node.length) {
+				throw new Error('minimizeHeader: no visible node found for selectors ' + JSON.stringify(selectors));
+			}
+
 			if ($node.attr('data-is-collapsed') === 'false') {
-				$node.click();
+				cy.wrap($node).click();
+				return getDomNodes(selectors).then(($updatedNodes) => {
+					// Re-query after click because the original node may be replaced in the DOM.
+					// We only pass when a visible matching button now reports collapsed=true.
+					const hasCollapsedVisible = $updatedNodes.toArray().some((node) => {
+						const $updatedNode = Cypress.$(node);
+						return $updatedNode.is(':visible') && $updatedNode.attr('data-is-collapsed') === 'true';
+					});
+					expect(hasCollapsedVisible).to.eq(true);
+				});
 			}
 		});
 }
 export function maximizeHeader(selectors) {
 	cy.log('maximize the Header');
-	return getDomNode(selectors)
-		.then(($node) => {
+	return getDomNodes(selectors)
+		.then(($nodes) => {
+			// Multiple matching collapse buttons can exist during re-renders/transitions.
+			// Act only on the currently visible one to match real user behavior.
+			const $node = $nodes.filter(':visible').first();
+			if (!$node.length) {
+				throw new Error('maximizeHeader: no visible node found for selectors ' + JSON.stringify(selectors));
+			}
+
 			if ($node.attr('data-is-collapsed') === 'true') {
-				$node.click();
+				cy.wrap($node).click();
+				return getDomNodes(selectors).then(($updatedNodes) => {
+					// Re-query after click because the original node may be replaced in the DOM.
+					// We only pass when a visible matching button now reports collapsed=false.
+					const hasExpandedVisible = $updatedNodes.toArray().some((node) => {
+						const $updatedNode = Cypress.$(node);
+						return $updatedNode.is(':visible') && $updatedNode.attr('data-is-collapsed') === 'false';
+					});
+					expect(hasExpandedVisible).to.eq(true);
+				});
 			}
 		});
 }

@@ -278,7 +278,7 @@ function TabBar(props) {
 
 				const WhichTabType = tabsAreButtons ? TabButton : Tab
 				tabComponents.push(<WhichTabType
-										{...testProps('to:' + (tab.testPath || tab.url || tab.path))}
+										{...testProps('to:' + (tab.testPath || tab.url || tab.path || ix))}
 										key={'tab' + ix}
 										onPress={onPress}
 										{...tabPropsToPass}
