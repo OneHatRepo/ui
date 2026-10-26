@@ -1,6 +1,7 @@
 import {
 	HStack,
 	Text,
+	TextNative,
 	VStack,
 } from '@onehat-gluestack';
 import clsx from 'clsx';
