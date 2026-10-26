@@ -161,7 +161,7 @@ export function filterTreeByQ(treeSelector, q, nodeText = null) {
 		.type(q);
 
 	if (nodeText) {
-		verifyElementWithTextExists([treeSelector, 'treeNodes'], nodeText);
+		verifyElementWithTextExists(treeSelector + '/treeNodes', nodeText);
 	} else {
 		verifyElementDoesNotExist([treeSelector, 'NoRecordsFound'], {
 			timeout: 5000,
