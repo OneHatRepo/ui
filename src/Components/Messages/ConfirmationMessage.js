@@ -43,7 +43,12 @@ export default function ConfirmationMessage(props) {
 						/>;
 	}
 
-	return <Modal isOpen={true} {...props} _backdrop={{ bg: "#000" }}>
+	return <Modal
+				{...testProps('ConfirmationModal')}
+				isOpen={true}
+				{...props}
+				_backdrop={{ bg: "#000" }}
+			>
 				{modalBackdrop}
 				<ModalContent maxWidth="400px">
 					<ModalHeader>Confirm</ModalHeader>

@@ -48,7 +48,11 @@ export default function ErrorMessage(props) {
 						/>;
 	}
 
-	return <Modal isOpen={true} {...props} {...testProps('ErrorMessage')}>
+	return <Modal
+				{...testProps('ErrorMessage')}
+				isOpen={true}
+				{...props}
+			>
 				{modalBackdrop}
 
 				<Panel

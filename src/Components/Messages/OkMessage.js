@@ -39,7 +39,12 @@ export default function OkMessage(props) {
 						/>;
 	}
 
-	return <Modal {...props} _backdrop={{ bg: "#000" }}>
+	return <Modal
+				{...testProps('OkMessage')}
+				isOpen={true}
+				{...props}
+				_backdrop={{ bg: "#000" }}
+			>
 				{modalBackdrop}
 				<ModalContent maxWidth="400px">
 					<ModalBody
