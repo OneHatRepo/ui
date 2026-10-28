@@ -33,11 +33,11 @@ export default function Accordion(props) {
 			activeSections = [],
 			setActiveSections = emptyFn,
 			renderHeader = (section, ix, isActive) => {
-				const headerEncoded = (section?.header || '').replace(
-					/\s+/g,
-					'-'
-				);
-				const testID = `Accordion-${headerEncoded}`;
+				let testID = 'AccordionHeader';
+				if (section?.header) {
+					const headerEncoded = section.header.replace(/\s+/g, '-');
+					testID += `-${headerEncoded}`;
+				}
 				return (
 					<Header
 						testID={testID}
