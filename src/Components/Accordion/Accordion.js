@@ -2,17 +2,13 @@ import { useState, useEffect, useRef, } from 'react';
 import {
 	Box,
 	HStack,
-	Icon,
 	Pressable,
 	ScrollView,
-	Text,
-	TextNative,
 	VStack,
 	VStackNative,
 } from '@onehat-gluestack';
 import clsx from 'clsx';
-import Plus from '../Icons/Plus.js';
-import Minus from '../Icons/Minus.js';
+import Header from '../Panel/Header.js';
 import inArray from '../../Functions/inArray.js';
 import emptyFn from '../../Functions/emptyFn.js';
 import UiGlobals from '../../UiGlobals.js';
@@ -37,37 +33,35 @@ export default function Accordion(props) {
 			activeSections = [],
 			setActiveSections = emptyFn,
 			renderHeader = (section, ix, isActive) => {
-				return <HStack
-							className={clsx(
-								'Header',
-								'bg-grey-300',
-								'items-center',
-								'justify-start',
-								'py-1',
-								'px-2',
-								'border-b-grey-400',
-								'border-b-1',
-								styles.PANEL_HEADER_BG,
-							)}
-						>
-							{/* <Text className="text-white flex-1">{section.header}</Text> */}
-							
-							<TextNative
-								numberOfLines={1}
-								ellipsizeMode="head"
-								className={clsx(
-									'Header-TextNative1',
-									'flex-1',
-									'font-bold',
-									styles.PANEL_HEADER_TEXT_CLASSNAME,
-								)}>{section.header}</TextNative>
-							<Icon
-								as={isActive ? Minus : Plus} 
-								className={clsx(
-									'text-black',
-								)}
-							/>
-						</HStack>;
+				const headerEncoded = (section?.header || '').replace(
+					/\s+/g,
+					'-'
+				);
+				const testID = `Accordion-${headerEncoded}`;
+				return (
+					<Header
+						testID={testID}
+						title={section.header}
+						isCollapsed={!isActive}
+						onToggleCollapse={() => {
+							if (isActive) {
+								// collapse it
+								if (onlyOne) {
+									setActiveSections([]);
+								} else {
+									setActiveSections(_.without(activeSections, ix));
+								}
+							} else {
+								// expand it
+								if (onlyOne) {
+									setActiveSections([ix]);
+								} else {
+									setActiveSections([...activeSections, ix]);
+								}
+							}
+						}}
+					/>
+				);
 			},
 			unmountInactiveContent = true,
 			renderContent = (section, ix, isActive, ref) => {
@@ -176,7 +170,7 @@ export default function Accordion(props) {
 			scrollTo = sectionHeight * activeIx;
 		}
 		if (scrollView) {
-			setTimeout(()=> {
+			setTimeout(() => {
 				scrollView.scrollTo({ x: 0, y: scrollTo, animated: true });
 			}, 10); // delay so render can finish
 		}
