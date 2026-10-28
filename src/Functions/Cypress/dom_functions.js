@@ -57,7 +57,8 @@ export function getDomNodes(selectors, options = {}) {
 		? (_.isString(selectors) ? selectors : selectors.join(' '))
 		: getTestIdSelectors(selectors);
 
-	return cy.get(selectorString, domOptions);
+	return cy.get(selectorString, domOptions)
+			.filter(':visible');
 }
 
 /**
