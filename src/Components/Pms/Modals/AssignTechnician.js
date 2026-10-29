@@ -225,6 +225,7 @@ function AssignTechnician(props) {
 	};
 
 	return <AsyncOperation
+				{...props}
 				className="h-full"
 				Repository={selection[0]?.nodeType === 'Fleets' ? Fleets : Equipment}
 				title="Assign Technician"

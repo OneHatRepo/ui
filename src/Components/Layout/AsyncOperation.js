@@ -27,6 +27,7 @@ import {
 import {
 	MOMENT_DATE_FORMAT_2,
 } from '../../Constants/Dates.js';
+import testProps from '../../Functions/testProps.js';
 import inArray from '../../Functions/inArray.js';
 import isJson from '../../Functions/isJson.js';
 import Form from '../Form/Form.js';
@@ -132,6 +133,7 @@ function AsyncOperation(props) {
 				case ASYNC_OPERATION_MODES__START:
 					return <Toolbar>
 								<Button
+									{...testProps('startBtn')}
 									text="Start"
 									rightIcon={ChevronRight}
 									onPress={() => startProcess()}
@@ -153,12 +155,14 @@ function AsyncOperation(props) {
 					let button;
 					if (getIsStuck()) {
 						button = <Button
+									{...testProps('unstickBtn')}
 									text="Unstick"
 									icon={RotateLeft}
 									onPress={() => unstick()}
 								/>;
 					} else {
 						button = <Button
+									{...testProps('resetBtn')}
 									text="Reset"
 									icon={ChevronLeft}
 									onPress={() => resetToInitialState()}
