@@ -112,6 +112,20 @@ export function clickButtonIfEnabled(parentSelectors, name, options) { // allows
 	return getDomNode([...parentSelectors, name], options)
 				.click({ force: true });
 }
+
+/**
+ * Clicks a button if it exists within the specified parent selectors.
+ * @param {string|string[]} parentSelectors - The parent selectors to scope the search.
+ * @param {string} name - The test ID of the button to click.
+ * @param {object} options - Optional settings for the click operation.
+ * @param {number} options.timeout - Maximum time to wait for the button to appear.
+ * @param {number} options.interval - Interval between retries.
+ * @param {boolean} options.isSelectorsRaw - Whether the parent selectors are raw CSS selectors.
+ * @param {boolean} options.checkDataDisabled - Whether to check the 'data-disabled' attribute.
+ * @param {boolean} options.errorIfDisabled - Whether to throw an error if the button is disabled.
+ * @param {function} options.callback - Callback function to execute after clicking the button.
+ * @returns {Cypress.Chainable|null} - The clicked node or null if not found.
+ */
 export function clickButtonIfExists(parentSelectors, name, options) {
 	if (_.isString(parentSelectors)) {
 		parentSelectors = [parentSelectors];
