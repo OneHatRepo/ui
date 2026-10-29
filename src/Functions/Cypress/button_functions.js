@@ -137,12 +137,13 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 				}
 			}).then(() => {
 				cy.log('clickButtonIfExists clicked node');
+				return node;
 			});
 		}
 
 		if (Date.now() - startedAt >= timeout) {
 			cy.log('clickButtonIfExists did not find node within timeout of ' + timeout);
-			return;
+			return null;
 		}
 
 		return cy.wait(interval, { log: false }).then(findAndClick);
