@@ -122,6 +122,8 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 		interval = options?.interval ?? 100,
 		startedAt = Date.now(),
 		isSelectorsRaw = options?.isSelectorsRaw || false,
+		shouldCheckDataDisabled = options?.checkDataDisabled ?? true,
+		shouldErrorIfDisabled = options?.errorIfDisabled || false,
 		callback = options?.callback,
 		selector = isSelectorsRaw
 			? ((_.isString(parentSelectors) ? parentSelectors : parentSelectors.join(' ')) + ' ' + getTestIdSelectors(name, true))
@@ -131,6 +133,15 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 		const node = $body.find(selector).first();
 		if (node.length) {
 			Cypress.log({ name: 'clickButtonIfExists', message: 'found node' });
+			const isDisabled = shouldCheckDataDisabled && _.toString(node.attr('data-disabled')).toLowerCase() === 'true';
+			if (isDisabled) {
+				Cypress.log({ name: 'clickButtonIfExists', message: 'found disabled node' });
+				if (shouldErrorIfDisabled) {
+					throw new Error('clickButtonIfExists found a disabled button: ' + selector);
+				}
+				return null;
+			}
+
 			return cy.wrap(node).click({ force: true }).then(() => {
 				if (_.isFunction(callback)) {
 					return callback(node);
