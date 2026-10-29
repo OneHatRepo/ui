@@ -134,7 +134,8 @@ export function verifyElementDoesNotExist(selectors, options = {}) {
  * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
  */
 export function verifyElementExists(selectors) {
-	cy.get(getTestIdSelectors(selectors)).should('exist');
+	return cy.get(getTestIdSelectors(selectors))
+			.should('exist');
 }
 
 /**
@@ -144,7 +145,9 @@ export function verifyElementExists(selectors) {
  * e.g. ['parent', 'child'] will be converted to '[data-testid="parent"] [data-testid="child"]'
  */
 export function verifyElementWithTextExists(selectors, text) {
-	cy.get(getTestIdSelectors(selectors)).contains(text).should('exist');
+	return cy.get(getTestIdSelectors(selectors))
+			.contains(text)
+			.should('exist');
 }
 
 /**
