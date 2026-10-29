@@ -130,19 +130,19 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 	const findAndClick = () => cy.get('body', { log: false }).then(($body) => {
 		const node = $body.find(selector).first();
 		if (node.length) {
-			cy.log('clickButtonIfExists found node');
+			Cypress.log({ name: 'clickButtonIfExists', message: 'found node' });
 			return cy.wrap(node).click({ force: true }).then(() => {
 				if (_.isFunction(callback)) {
 					return callback(node);
 				}
 			}).then(() => {
-				cy.log('clickButtonIfExists clicked node');
+				Cypress.log({ name: 'clickButtonIfExists', message: 'clicked node' });
 				return node;
 			});
 		}
 
 		if (Date.now() - startedAt >= timeout) {
-			cy.log('clickButtonIfExists did not find node within timeout of ' + timeout);
+			Cypress.log({ name: 'clickButtonIfExists', message: 'did not find node within timeout of ' + timeout });
 			return null;
 		}
 
