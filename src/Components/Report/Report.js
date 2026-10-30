@@ -310,38 +310,59 @@ function Report(props) {
 			'm-2',
 			props.className,
 		);
-		return <VStackNative
+		return <Pressable
 					{...testProps('QuickReport-' + reportId)}
-					className={className}
+					isDisabled={isDisabled}
+					onPress={!isDisabled ? onPressQuickReport : null}
+					className={clsx(
+						className,
+						'relative', // creates the positioning context for absolute children
+						'flex-1',
+						'items-center',
+						'justify-center',
+						'flex-col',
+						'bg-white',
+						'p-3',
+						'rounded-lg',
+						'border',
+						'border-primary-300',
+						!isDisabled ? 'data-[hover=true]:bg-primary-300' : null,
+					)}
 				>
-					<Pressable
-						onPress={!isDisabled ? onPressQuickReport : null}
+					{icon}
+					<Text
 						className={clsx(
-							'relative', // creates the positioning context for absolute children
-							'flex-1',
-							'items-center',
-							'justify-center',
-							'flex-col',
-							'bg-white',
-							'p-3',
-							'rounded-lg',
-							'border',
-							'border-primary-300',
-							!isDisabled ? 'data-[hover=true]:bg-primary-300' : null,
+							'text-black',
+							'text-center',
+							'text-[17px]',
+							'leading-tight',
+							'mt-2',
 						)}
-					>
-						{icon}
-						<Text
+					>{title}</Text>
+					{isDisabled &&
+						<Box
 							className={clsx(
-								'text-black',
-								'text-center',
-								'text-[17px]',
-								'leading-tight',
-								'mt-2',
+								'absolute',
+								'h-full',
+								'w-full',
+								'z-1000',
+								'flex',
+								'items-center',
+								'justify-center',
 							)}
-						>{title}</Text>
-						{isDisabled &&
+						>
 							<Box
+								className={clsx(
+									'absolute',
+									'h-full',
+									'w-full',
+									'rounded-lg',
+									'z-0',
+									'bg-white',
+									'opacity-[0.8]',
+								)}
+							/>
+							<Text
 								className={clsx(
 									'absolute',
 									'h-full',
@@ -350,38 +371,15 @@ function Report(props) {
 									'flex',
 									'items-center',
 									'justify-center',
+									'px-[20px]',
+									'text-center',
+									'text-[23px]',
+									'text-red-500',
+									'italic',
 								)}
-							>
-								<Box
-									className={clsx(
-										'absolute',
-										'h-full',
-										'w-full',
-										'rounded-lg',
-										'z-0',
-										'bg-white',
-										'opacity-[0.8]',
-									)}
-								/>
-								<Text
-									className={clsx(
-										'absolute',
-										'h-full',
-										'w-full',
-										'z-1000',
-										'flex',
-										'items-center',
-										'justify-center',
-										'px-[20px]',
-										'text-center',
-										'text-[23px]',
-										'text-red-500',
-										'italic',
-									)}
-								>Disabled</Text>
-							</Box>}
-					</Pressable>
-				</VStackNative>;
+							>Disabled</Text>
+						</Box>}
+				</Pressable>;
 	}
 
 	let footerItems = [];
