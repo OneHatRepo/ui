@@ -131,6 +131,7 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 		parentSelectors = [parentSelectors];
 	}
 
+	Cypress.log({ name: 'clickButtonIfExists', message: 'name: ' + name + ', parentSelectors: ' + JSON.stringify(parentSelectors) });
 	const
 		timeout = options?.timeout ?? Cypress.config('defaultCommandTimeout'),
 		interval = options?.interval ?? 100,
