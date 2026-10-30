@@ -311,7 +311,7 @@ function Report(props) {
 			props.className,
 		);
 		return <Pressable
-					{...testProps('QuickReport-' + reportId)}
+					{...testProps(self?.reference || 'QuickReport-' + reportId)}
 					isDisabled={isDisabled}
 					onPress={!isDisabled ? onPressQuickReport : null}
 					className={clsx(
