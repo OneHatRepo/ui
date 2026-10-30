@@ -177,3 +177,63 @@ export function clickButtonIfExists(parentSelectors, name, options) {
 
 	return findAndClick();
 }
+
+/**
+ * Clicks a quick report button and validates the report response.
+ * @param {string|string[]} parentSelectors - The parent selectors to scope the search.
+ * @param {string} name - The test ID of the quick report button to click.
+ * @param {object} options - Optional settings for request/assert/modal handling.
+ * @param {string} options.requestAlias - Intercept alias to wait on (default: @postReportWaiter).
+ * @param {number} options.requestTimeout - Timeout for waiting on the report request.
+ * @param {string} options.expectedContentType - Expected content-type value in response headers.
+ * @param {boolean} options.handleAlertModal - Whether to handle the download AlertModal if it appears.
+ * @param {number} options.alertModalTimeout - Timeout when checking for AlertModal.
+ * @param {string} options.alertModalSelector - AlertModal selector token.
+ * @param {string} options.alertText - Text to verify inside AlertModal.
+ * @param {string} options.alertOkButtonName - AlertModal OK button token.
+ * @returns {Cypress.Chainable<JQuery|null>} - The clicked node or null if report button not found.
+ */
+export function clickQuickReport(parentSelectors, name, options = {}) {
+	const
+		requestAlias = options.requestAlias ?? '@postReportWaiter',
+		requestTimeout = options.requestTimeout ?? 10000,
+		expectedContentType = options.expectedContentType ?? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+		handleAlertModal = options.handleAlertModal ?? true,
+		alertModalTimeout = options.alertModalTimeout ?? 1000,
+		alertModalSelector = options.alertModalSelector ?? 'AlertModal',
+		alertText = options.alertText ?? 'Download started',
+		alertOkButtonName = options.alertOkButtonName ?? 'okBtn',
+		originalCallback = options.callback;
+
+	return clickButtonIfExists(parentSelectors, name, {
+		...options,
+		callback: (node) => {
+			return cy.wait(requestAlias, { timeout: requestTimeout })
+				.then((interception) => {
+					expect(interception.response.headers['content-type']).to.include(expectedContentType);
+				})
+				.then(() => {
+					if (!handleAlertModal) {
+						return null;
+					}
+
+					return getDomNodeIfExists(alertModalSelector, alertOkButtonName, { timeout: alertModalTimeout })
+						.then(($okBtn) => {
+							if (!$okBtn) {
+								return null;
+							}
+
+							return getDomNode(alertModalSelector, { timeout: alertModalTimeout })
+								.should('contain.text', alertText)
+								.then(() => cy.wrap($okBtn).click({ force: true }));
+						});
+				})
+				.then(() => {
+					if (_.isFunction(originalCallback)) {
+						return originalCallback(node);
+					}
+					return null;
+				});
+		},
+	});
+}
