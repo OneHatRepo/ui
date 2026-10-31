@@ -553,7 +553,8 @@ export function addGridRecord(args) {
 		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
 		formSelector = editorSelector + '/form',
-		isRemotePhantomMode = schema.repository.isRemotePhantomMode;
+		isRemotePhantomMode = schema.repository.isRemotePhantomMode,
+		isInline = !!options.isInline;
 
 	clickAddButton(selector);
 	if (isRemotePhantomMode) {
@@ -569,7 +570,20 @@ export function addGridRecord(args) {
 	if (isRemotePhantomMode) {
 		method = 'edit';
 	}
-	clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
+
+	if (isInline) {
+		cy.get('body').then(($body) => {
+			const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
+			if (isFormStillOpen) {
+				clickSaveButton(formSelector); // Enter did not auto-submit in this run
+				return;
+			}
+			cy.log('addGridRecord: inline form auto-closed after Enter submit');
+		});
+	} else {
+		clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
+	}
+
 	cy.wait('@' + method + 'Waiter');
 
 	verifyNoErrorBox();
@@ -632,14 +646,24 @@ export function addInlineGridRecord(args) {
 		fieldValues,
 		schema,
 		level,
-		options,
+		options: {
+			...options,
+			isInline: true,
+		},
 	});
 
 	cy.log('addInlineGridRecord: close window ' + selector);
 	const formSelector = getEditorFormSelector(selector, options);
-	clickCloseButton(formSelector);
-	cy.wait(500); // allow window to close
-	// TODO: Change this to wait until window is closed
+	cy.get('body').then(($body) => {
+		const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
+		if (isFormStillOpen) {
+			clickCloseButton(formSelector);
+			cy.wait(500); // allow window to close
+			// TODO: Change this to wait until window is closed
+			return;
+		}
+		cy.log('addInlineGridRecord: form already closed');
+	});
 }
 export function editGridRecord(args) {
 
@@ -661,7 +685,8 @@ export function editGridRecord(args) {
 	const
 		editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : ''),
 		viewerSelector = editorSelector + '/viewer',
-		formSelector = editorSelector + '/form';
+		formSelector = editorSelector + '/form',
+		isInline = !!options.isInline;
 
 	cy.wait(1000); // allow form to re-render after selection churn (we refreshed the new GridRow, and this temporarily deselects and reselects it)
 
@@ -679,7 +704,18 @@ export function editGridRecord(args) {
 	cy.wait(500); // allow validator to enable save button
 	// TODO: Change this to wait until save button is enabled
 	
-	clickSaveButton(formSelector);
+	if (isInline) {
+		cy.get('body').then(($body) => {
+			const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
+			if (isFormStillOpen) {
+				clickSaveButton(formSelector); // Enter did not auto-submit in this run
+				return;
+			}
+			cy.log('editGridRecord: inline form auto-closed after Enter submit');
+		});
+	} else {
+		clickSaveButton(formSelector);
+	}
 	cy.wait('@editWaiter');
 
 	verifyNoErrorBox();
@@ -770,13 +806,23 @@ export function editInlineGridRecord(args) {
 		id,
 		level,
 		whichEditor: INLINE,
-		options,
+		options: {
+			...options,
+			isInline: true,
+		},
 	});
 
 	const formSelector = getEditorFormSelector(selector, options);
-	clickCloseButton(formSelector);
-	cy.wait(500); // allow window to close
-	// TODO: Change this to wait until window is closed
+	cy.get('body').then(($body) => {
+		const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
+		if (isFormStillOpen) {
+			clickCloseButton(formSelector);
+			cy.wait(500); // allow window to close
+			// TODO: Change this to wait until window is closed
+			return;
+		}
+		cy.log('editInlineGridRecord: form already closed');
+	});
 }
 export function deleteGridRecord(selector, id) {
 	cy.log('deleteGridRecord ' + selector + ' ' + id);
