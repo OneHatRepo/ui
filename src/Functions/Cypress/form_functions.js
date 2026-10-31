@@ -380,11 +380,14 @@ export function clickToggle(selectors, options = {}) {
 export function setTextValue(selectors, value) {
 	cy.log('setTextValue ' + value);
 	return withFieldInput(selectors, ($input) => {
+		const isInlineEditorField = Cypress.$($input).closest('.InlineEditor-Form').length > 0;
 		cy.wrap($input).clear({ force: true });
 		if (!normalizeEmptySetterValue(value)) {
-			cy.wrap($input)
-				.type(String(value), { force: true })
-				.type('{enter}');
+			const chain = cy.wrap($input)
+				.type(String(value), { force: true });
+			if (!isInlineEditorField) {
+				chain.type('{enter}');
+			}
 		}
 	}).then(() => {
 		assertMatchesValueGetter(selectors, getTextValue, value, normalizeToStringOrNull, normalizeToStringOrNull, 'Text');
