@@ -5,6 +5,7 @@ import {
 import {
 	getDomNode,
 	getDomNodes,
+	verifyElementDoesNotExist,
 } from './dom_functions.js';
 import Inflector from 'inflector-js';
 import _ from 'lodash';
@@ -127,8 +128,7 @@ export function verifyGridRecordExistsById(gridSelector, id) {
 export function verifyGridRecordDoesNotExistById(gridSelector, id) {
 	cy.log('verifyGridRecordDoesNotExistById ' + gridSelector + ' ' + id);
 	const rowSelector = getGridRowSelectorById(gridSelector, id);
-	getDomNodes([gridSelector, rowSelector])
-		.should('not.exist');
+	verifyElementDoesNotExist([gridSelector, rowSelector]);
 }
 export function verifyGridRowIsSelectedById(gridSelector, id) {
 	cy.log('verifyGridRowIsSelectedById ' + gridSelector + ' ' + id);

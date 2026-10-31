@@ -124,7 +124,9 @@ export function verifyElementDoesNotExist(selectors, options = {}) {
 
 	const selectorString = isSelectorsRaw ? (_.isString(selectors) ? selectors : selectors.join(' ')) : getTestIdSelectors(selectors);
 
-	cy.get(selectorString, domOptions).should('not.exist');
+	cy.get('body', domOptions).should(($body) => {
+		expect($body.find(selectorString).length).to.equal(0);
+	});
 }
 
 /**
