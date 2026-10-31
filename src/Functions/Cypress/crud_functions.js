@@ -1283,7 +1283,6 @@ export function runManagerScreenCrudTests(args) {
 
 				crudMethod({
 					selector: typeSelector,
-					selector: typeSelector,
 					newData,
 					editData,
 					schema,
@@ -1304,7 +1303,6 @@ export function runManagerScreenCrudTests(args) {
 					methodName = 'crudSide' + type + 'Record', // e.g. 'crudSideGridRecord'
 					crudMethod = crudMethods[methodName];
 				crudMethod({
-					selector: typeSelector,
 					selector: typeSelector,
 					newData,
 					editData,
