@@ -86,6 +86,19 @@ function getEditorFormSelector(selector, options = {}) {
 	const editorSelector = selector + '/editor' + (options.editorReference ? '/' + options.editorReference : '');
 	return editorSelector + '/form';
 }
+function clickInlineButtonIfPresent(formSelector, buttonName, contextName) {
+	return clickButtonIfExists(formSelector, buttonName, {
+		timeout: 750,
+		interval: 100,
+		checkDataDisabled: true,
+		errorIfDisabled: false,
+	}).then((node) => {
+		if (!node) {
+			cy.log(contextName + ': ' + buttonName + ' not present; inline form likely auto-submitted/closed');
+		}
+		return node;
+	});
+}
 
 
 // Form fields
@@ -654,16 +667,13 @@ export function addInlineGridRecord(args) {
 
 	cy.log('addInlineGridRecord: close window ' + selector);
 	const formSelector = getEditorFormSelector(selector, options);
-	cy.get('body').then(($body) => {
-		const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
-		if (isFormStillOpen) {
-			clickCloseButton(formSelector);
-			cy.wait(500); // allow window to close
-			// TODO: Change this to wait until window is closed
-			return;
-		}
-		cy.log('addInlineGridRecord: form already closed');
-	});
+	clickInlineButtonIfPresent(formSelector, 'closeBtn', 'addInlineGridRecord')
+		.then((node) => { // NOTE: The inline editor auto-closes when a text field is changed
+			if (node) {
+				cy.wait(500); // allow window to close
+				// TODO: Change this to wait until window is closed
+			}
+		});
 }
 export function editGridRecord(args) {
 
@@ -813,16 +823,13 @@ export function editInlineGridRecord(args) {
 	});
 
 	const formSelector = getEditorFormSelector(selector, options);
-	cy.get('body').then(($body) => {
-		const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
-		if (isFormStillOpen) {
-			clickCloseButton(formSelector);
-			cy.wait(500); // allow window to close
-			// TODO: Change this to wait until window is closed
-			return;
-		}
-		cy.log('editInlineGridRecord: form already closed');
-	});
+	clickInlineButtonIfPresent(formSelector, 'closeBtn', 'editInlineGridRecord')
+		.then((node) => { // NOTE: The inline editor auto-closes when a text field is changed
+			if (node) {
+				cy.wait(500); // allow window to close
+				// TODO: Change this to wait until window is closed
+			}
+		});
 }
 export function deleteGridRecord(selector, id) {
 	cy.log('deleteGridRecord ' + selector + ' ' + id);
