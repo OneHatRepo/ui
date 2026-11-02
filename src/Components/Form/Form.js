@@ -354,8 +354,10 @@ function Form(props) {
 					'px-1',
 					styles.INLINE_EDITOR_MIN_WIDTH,
 				),
-				validColumnsConfig = _.filter(columnsConfig, (config) => !!config); // filter out any null/undefined configs
-			_.each(validColumnsConfig, (config, ix) => {
+				validColumnsConfig = _.filter(columnsConfig, (config) => !!config), // filter out any null/undefined configs
+				visibleColumnsConfig = _.filter(validColumnsConfig, (config) => !config?.isHidden),
+				hasSingleVisibleColumn = visibleColumnsConfig.length === 1;
+			_.each(visibleColumnsConfig, (config, ix) => {
 				let {
 						key: _configKey,
 						fieldName,
@@ -433,9 +435,7 @@ function Form(props) {
 					}
 				}
 				
-				if (editorType !== EDITOR_TYPE__INLINE) {
-					editorTypeProps.showXButton = true;
-				}
+				editorTypeProps.showXButton = true;
 				if ((isEditorViewOnly || !isEditable) && !shouldHideFieldUi) {
 					const effectiveViewOnly = true; // some components use 'isEditable' and some use 'isViewOnly', so we set both for consistency
 					let value = null;
@@ -489,10 +489,13 @@ function Form(props) {
 										className={elementClassName}
 									/>;
 					const style = {};
-					if (boxFlex) {
+					if (hasSingleVisibleColumn) {
+						style.width = '100%';
+						style.flex = 1;
+					} else if (boxFlex) {
 						style.flex = boxFlex;
 					}
-					if (boxW) {
+					if (!hasSingleVisibleColumn && boxW) {
 						style.width = boxW;
 					}
 					elements.push(<Box
@@ -615,14 +618,14 @@ function Form(props) {
 														columnClassName,
 													)}
 													style={{ 
-														width: w,
+														width: hasSingleVisibleColumn ? '100%' : w,
 													}}
 												>{dirtyIcon}{element}</HStack>;
 									}}
 								/>);
 			
 			});
-			return <HStack>{elements}</HStack>;
+			return <HStack className={hasSingleVisibleColumn ? 'w-full' : null}>{elements}</HStack>;
 		},
 		buildFromItems = () => {
 			return _.map(items, (item, ix) => buildFromItem(item, ix, columnDefaults));
