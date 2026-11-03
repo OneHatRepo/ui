@@ -329,7 +329,8 @@ export function setNumberValue(selectors, value) {
 		if (!normalizeEmptySetterValue(value)) {
 			cy.wrap($input)
 				.type(String(value), { delay: 100, force: true })
-				.type('{enter}');
+				.blur({ force: true });
+			cy.wait(650); // allow Number/Input autoSubmit debounce to flush
 		}
 	}).then(() => {
 		assertMatchesValueGetter(selectors, getNumberValue, value, normalizeNumericValue, normalizeNumericValue, 'Number');

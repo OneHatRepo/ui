@@ -575,29 +575,61 @@ export function addGridRecord(args) {
 	}
 	getDomNode(formSelector).should('exist');
 
-	fillForm(formSelector, fieldValues, schema, level +1);
-	cy.wait(500); // allow validator to enable save button
-	// TODO: Change this to wait until save button is enabled
+	const saveRequestAlias = 'saveWaiter_' + level + '_' + Date.now();
+	cy.intercept('POST', /\/(add|edit)(\/|\?|$)/i).as(saveRequestAlias);
 
-	let method = 'add';
-	if (isRemotePhantomMode) {
-		method = 'edit';
-	}
+	fillForm(formSelector, fieldValues, schema, level +1);
 
 	if (isInline) {
+		cy.wait(650); // allow field autoSubmit debounce to flush before deciding submit strategy
 		cy.get('body').then(($body) => {
+			let resolvedFormSelector = formSelector;
 			const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
-			if (isFormStillOpen) {
-				clickSaveButton(formSelector); // Enter did not auto-submit in this run
+			if (!isFormStillOpen) {
+				const $forms = $body.find('[data-testid$="/editor/form"]');
+				if ($forms.length > 0) {
+					resolvedFormSelector = $forms.first().attr('data-testid') || formSelector;
+				}
+			}
+			const hasResolvableForm = !!resolvedFormSelector && (
+				isFormStillOpen ||
+				$body.find('[data-testid="' + resolvedFormSelector + '"]').length > 0
+			);
+			if (hasResolvableForm) {
+				const submitButtonNames = ['saveBtn', 'addBtn', 'addAndCloseBtn', 'addAndNewBtn', 'submitBtn'];
+				for (const buttonName of submitButtonNames) {
+					const selector = '[data-testid="' + resolvedFormSelector + '"]:first [data-testid="' + buttonName + '"]:first';
+					const $button = $body.find(selector).first();
+					if ($button.length > 0) {
+						cy.wrap($button).click({ force: true });
+						return;
+					}
+				}
+				const inputSelector = '[data-testid="' + resolvedFormSelector + '"]:first input:first, [data-testid="' + resolvedFormSelector + '"]:first textarea:first';
+				const $input = $body.find(inputSelector).first();
+				if ($input.length > 0) {
+					cy.wrap($input).type('{enter}', { force: true });
+					return;
+				}
+				cy.log('addGridRecord: inline form open but no submit button or input found; assuming Enter submit in progress');
 				return;
 			}
 			cy.log('addGridRecord: inline form auto-closed after Enter submit');
 		});
 	} else {
+		getDomNode([formSelector, 'saveBtn'])
+			.should('not.have.attr', 'data-disabled', 'true')
+			.should(($btn) => {
+				expect($btn.prop('disabled') || $btn.attr('aria-disabled') === 'true').to.equal(false);
+			});
 		clickSaveButton(formSelector); // it's labeled 'Add' in the form, but is really the save button
 	}
 
-	cy.wait('@' + method + 'Waiter');
+	if (isInline) {
+		cy.wait(500);
+	} else {
+		cy.wait('@' + saveRequestAlias);
+	}
 
 	verifyNoErrorBox();
 
@@ -709,24 +741,49 @@ export function editGridRecord(args) {
 		clickEditButton(selector);
 	}
 	getDomNode(formSelector).should('exist');
+	const editRequestAlias = 'editWaiter_' + level + '_' + Date.now();
+	cy.intercept('POST', '**/edit**').as(editRequestAlias);
 
 	fillForm(formSelector, fieldValues, schema, level +1);
-	cy.wait(500); // allow validator to enable save button
-	// TODO: Change this to wait until save button is enabled
 	
 	if (isInline) {
+		cy.wait(650); // allow field autoSubmit debounce to flush before deciding submit strategy
 		cy.get('body').then(($body) => {
 			const isFormStillOpen = $body.find('[data-testid="' + formSelector + '"]').length > 0;
 			if (isFormStillOpen) {
-				clickSaveButton(formSelector); // Enter did not auto-submit in this run
+				const submitButtonNames = ['saveBtn', 'submitBtn'];
+				for (const buttonName of submitButtonNames) {
+					const selector = '[data-testid="' + formSelector + '"]:first [data-testid="' + buttonName + '"]:first';
+					const $button = $body.find(selector).first();
+					if ($button.length > 0) {
+						cy.wrap($button).click({ force: true });
+						return;
+					}
+				}
+				const inputSelector = '[data-testid="' + formSelector + '"]:first input:first, [data-testid="' + formSelector + '"]:first textarea:first';
+				const $input = $body.find(inputSelector).first();
+				if ($input.length > 0) {
+					cy.wrap($input).type('{enter}', { force: true });
+					return;
+				}
+				cy.log('editGridRecord: inline form open but no submit button or input found; assuming Enter submit in progress');
 				return;
 			}
 			cy.log('editGridRecord: inline form auto-closed after Enter submit');
 		});
 	} else {
+		getDomNode([formSelector, 'saveBtn'])
+			.should('not.have.attr', 'data-disabled', 'true')
+			.should(($btn) => {
+				expect($btn.prop('disabled') || $btn.attr('aria-disabled') === 'true').to.equal(false);
+			});
 		clickSaveButton(formSelector);
 	}
-	cy.wait('@editWaiter');
+	if (isInline) {
+		cy.wait(500);
+	} else {
+		cy.wait('@' + editRequestAlias);
+	}
 
 	verifyNoErrorBox();
 
