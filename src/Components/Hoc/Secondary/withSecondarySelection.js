@@ -85,7 +85,8 @@ export default function withSecondarySelection(WrappedComponent) {
 				if (!getIsSecondarySelectionChangesEnabled()) {
 					return;
 				}
-				if (_.isEqual(secondarySelection, secondaryGetSelection())) {
+				const previousSelection = secondaryGetSelection();
+				if (_.isEqual(secondarySelection, previousSelection)) {
 					return;
 				}
 
@@ -162,6 +163,7 @@ export default function withSecondarySelection(WrappedComponent) {
 				} else {
 					newSelection = _.filter(secondaryGetSelection(), (sel) => sel[secondaryIdIx] !== item[secondaryIdIx]);
 				}
+
 				secondarySetSelection(newSelection);
 			},
 			secondaryDeselectAll = () => {
@@ -175,15 +177,35 @@ export default function withSecondarySelection(WrappedComponent) {
 				// If so, select these new ones.
 				// That way, after a load event, we'll keep the same selection, if possible.
 				const
+					previousSelection = secondaryGetSelection(),
 					newSelection = [],
-					ids = _.map(secondaryGetSelection(), (item) => item.id),
 					SecondaryRepository = secondaryGetRepository();
-				_.each(ids, (id) => {
-					const found = SecondaryRepository.getById(id);
+
+				_.each(previousSelection, (selectedItem) => {
+					if (!selectedItem) {
+						return;
+					}
+					const found = SecondaryRepository.getById(selectedItem.id);
 					if (found) {
 						newSelection.push(found);
+						return;
+					}
+
+					// Keep local unsaved phantom selection through reloads.
+					// Phantom ids are client-side temp ids and won't exist in loaded data until saved.
+					if (!selectedItem.isDestroyed && (selectedItem.isPhantom || selectedItem.isRemotePhantom)) {
+						newSelection.push(selectedItem);
 					}
 				});
+				const hasTempIdSelection = _.some(previousSelection, (selectedItem) => {
+					const id = selectedItem?.id;
+					return _.isNumber(id) && id >= 100000000000;
+				});
+				if (hasTempIdSelection && _.isEmpty(newSelection)) {
+					// During add flows, a reload can happen before the temp record is persisted.
+					// Do not clear selection in that transient state.
+					return;
+				}
 				secondarySetSelection(newSelection);
 			},
 			getMaxMinSelectionIndices = () => {

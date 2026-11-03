@@ -19,6 +19,8 @@ import {
 } from '../../Constants/Selection.js';
 import {
 	EDITOR_TYPE__SIDE,
+	EDITOR_TYPE__INLINE,
+	EDITOR_TYPE__PLAIN,
 } from '../../Constants/Editor.js';
 import {
 	EDIT,
@@ -45,7 +47,6 @@ import {
 	hasFlex,
 } from '../../Functions/tailwindFunctions.js';
 import * as yup from 'yup'; // https://github.com/jquense/yup#string
-import { EDITOR_TYPE__PLAIN } from '../../Constants/Editor.js';
 import UiGlobals from '../../UiGlobals.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
 import withContextMenu from '../Hoc/withContextMenu.js';
@@ -1450,6 +1451,12 @@ function GridComponent(props) {
 				
 				// Recalculate pageSize with actual measurements
 				if (lastMeasuredContainerHeight > 0) {
+					if (editorType === EDITOR_TYPE__INLINE && (getIsEditorShown() || isAddingRaw.current)) {
+						if (DEBUG) {
+							console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B skip setPageSize while inline editor is active`);
+						}
+						return;
+					}
 					if (DEBUG) {
 						console.log(`${getMeasurementPhase()}, applyMeasuredRowHeight B call calculatePageSize(${lastMeasuredContainerHeight}, true)`);
 					}
@@ -1491,6 +1498,12 @@ function GridComponent(props) {
 				heightChanged = Math.abs(containerHeight - lastMeasuredContainerHeight) > 5, // 5px tolerance
 				isFirstMeasurement = lastMeasuredContainerHeight === 0;
 			if (containerHeight > 0 && (isFirstMeasurement || heightChanged || forceRemeasure)) {
+				if (editorType === EDITOR_TYPE__INLINE && (getIsEditorShown() || isAddingRaw.current)) {
+					if (DEBUG) {
+						console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A4 inline editor active, skipping remeasurement`);
+					}
+					return;
+				}
 				if (editorType === EDITOR_TYPE__SIDE && getIsEditorShown()) {
 					// When side editor is shown, skip adjustment to avoid layout thrashing
 					console.log(`${getMeasurementPhase()}, adjustPageSizeToHeight A4 height changed significantly, but side editor is shown, skipping remeasurement`);
@@ -1723,6 +1736,14 @@ function GridComponent(props) {
 			},
 			onPaginationEvent = (eventType) => {
 				if (consumePaginationSelectionGuard(eventType)) {
+					return;
+				}
+				const
+					currentSelection = _.isFunction(getSelection) ? getSelection() : selection,
+					hasUnsavedPhantomSelection = _.some(currentSelection, (selected) => {
+						return selected && !selected?.isDestroyed && selected?.isPhantom;
+					});
+				if (hasUnsavedPhantomSelection) {
 					return;
 				}
 				if (!disableWithSelection && deselectAll) {

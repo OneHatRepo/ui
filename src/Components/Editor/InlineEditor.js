@@ -65,6 +65,9 @@ function InlineEditor(props) {
 			editorStyle.top = (-1 * delta) + 'px';
 		},
 		onEditorShown = () => {
+			if (!selection?.[0]) {
+				return;
+			}
 			// determine which row to move the editor to
 			const
 				data = self.parent.gridRef.current.props.data, // This is okay, because (for now) the inlineEditor is only for use with Grids
