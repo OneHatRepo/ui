@@ -88,63 +88,66 @@ export default function Pagination(props) {
 								self={self}
 							/>);
 			}
-			if (totalPages > 1) {
-				isDisabled = page === 1;
-				if (showPagination) {
-					items.push(<IconButton
-									{...testProps('firstPageBtn')}
-									key="firstPageBtn"
-									reference="firstPageBtn"
-									className="Pagination-firstPageBtn"
-									parent={self}
-									isDisabled={isDisabled}
-									icon={AnglesLeft}
-									_icon={iconProps}
-									onPress={() => Repository.setPage(1)}
-									tooltip="First Page"
-								/>);
-					items.push(<IconButton
-									{...testProps('prevPageBtn')}
-									key="prevPageBtn"
-									reference="prevPageBtn"
-									className="Pagination-prevPageBtn"
-									parent={self}
-									isDisabled={isDisabled}
-									icon={AngleLeft}
-									_icon={iconProps}
-									onPress={() => Repository.prevPage()}
-									tooltip="Previous Page"
-								/>);
+			isDisabled = page === 1;
+			if (showPagination) {
+				items.push(<IconButton
+								{...testProps('firstPageBtn')}
+								key="firstPageBtn"
+								reference="firstPageBtn"
+								className="Pagination-firstPageBtn"
+								parent={self}
+								isDisabled={isDisabled}
+								icon={AnglesLeft}
+								_icon={iconProps}
+								onPress={() => Repository.setPage(1)}
+								tooltip="First Page"
+							/>);
+				items.push(<IconButton
+								{...testProps('prevPageBtn')}
+								key="prevPageBtn"
+								reference="prevPageBtn"
+								className="Pagination-prevPageBtn"
+								parent={self}
+								isDisabled={isDisabled}
+								icon={AngleLeft}
+								_icon={iconProps}
+								onPress={() => Repository.prevPage()}
+								tooltip="Previous Page"
+							/>);
 
-					isDisabled = page === totalPages || totalPages <= 1;
-					items.push(<IconButton
-									{...testProps('nextPageBtn')}
-									key="nextPageBtn"
-									reference="nextPageBtn"
-									className="Pagination-nextPageBtn"
-									parent={self}
-									isDisabled={isDisabled}
-									icon={AngleRight}
-									_icon={iconProps}
-									onPress={() => Repository.nextPage()}
-									tooltip="Next Page"
-								/>);
-					items.push(<IconButton
-									{...testProps('lastPageBtn')}
-									key="lastPageBtn"
-									reference="lastPageBtn"
-									className="Pagination-lastPageBtn"
-									parent={self}
-									isDisabled={isDisabled}
-									icon={AnglesRight}
-									_icon={iconProps}
-									onPress={() => Repository.setPage(totalPages)}
-									tooltip="Last Page"
-								/>);
-					if (!minimize) {
+				isDisabled = page === totalPages || totalPages <= 1;
+				items.push(<IconButton
+								{...testProps('nextPageBtn')}
+								key="nextPageBtn"
+								reference="nextPageBtn"
+								className="Pagination-nextPageBtn"
+								parent={self}
+								isDisabled={isDisabled}
+								icon={AngleRight}
+								_icon={iconProps}
+								onPress={() => Repository.nextPage()}
+								tooltip="Next Page"
+							/>);
+				items.push(<IconButton
+								{...testProps('lastPageBtn')}
+								key="lastPageBtn"
+								reference="lastPageBtn"
+								className="Pagination-lastPageBtn"
+								parent={self}
+								isDisabled={isDisabled}
+								icon={AnglesRight}
+								_icon={iconProps}
+								onPress={() => Repository.setPage(totalPages)}
+								tooltip="Last Page"
+							/>);
+				if (!minimize) {
+					if (totalPages > 1) {
 						items.push(<Text
 										key="page"
-										className="Pagination-page mx-1"
+										className={clsx(
+											'Pagination-page',
+											'mx-1',
+										)}
 									>Page</Text>);
 						items.push(<Input
 										{...testProps('pageInput')}
@@ -177,19 +180,16 @@ export default function Pagination(props) {
 										)}
 									>{`of ${totalPages}`}</Text>);
 					}
-				}
-
-				if (showPagination && !minimize && !disablePageSize) {
-					items.push(<PageSizeSelect
-									{...testProps('pageSize')}
-									key="pageSize"
-									reference="pageSize"
-									parent={self}
-									pageSize={pageSize}
-									Repository={Repository}
-								/>);
-				}
-				if (showPagination && !minimize) {
+					if (!disablePageSize) {
+						items.push(<PageSizeSelect
+										{...testProps('pageSize')}
+										key="pageSize"
+										reference="pageSize"
+										parent={self}
+										pageSize={pageSize}
+										Repository={Repository}
+									/>);
+					}
 					let pageSpan = `${pageStart} – ${pageEnd}`;
 					if (pageStart === pageEnd) {
 						pageSpan = pageStart;
