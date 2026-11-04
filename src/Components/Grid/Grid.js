@@ -641,11 +641,15 @@ function GridComponent(props) {
 									rowDragProps.dragSourceType = rowDragSourceType;
 									rowDragProps.isDragFromHandleOnly = dragFromRowHandleOnly;
 									if (getRowDragSourceItem) {
-										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, isInSelection, rowDragSourceType);
-										// Ensure all drag items have a component reference
-										if (!rowDragProps.dragSourceItem.sourceComponentRef) {
-											rowDragProps.dragSourceItem.sourceComponentRef = gridRef;
-										}
+										rowDragProps.dragSourceItem = getRowDragSourceItem(item, getSelection, isInSelection, rowDragSourceType) || {};
+										Object.assign(rowDragProps.dragSourceItem, {
+											id: rowDragProps.dragSourceItem.id || item.id,
+											item: rowDragProps.dragSourceItem.item || item,
+											getSelection: typeof rowDragProps.dragSourceItem.getSelection === 'function' ? rowDragProps.dragSourceItem.getSelection : getSelection,
+											isInSelection: typeof rowDragProps.dragSourceItem.isInSelection === 'function' ? rowDragProps.dragSourceItem.isInSelection : isInSelection,
+											type: rowDragProps.dragSourceItem.type || rowDragSourceType,
+											sourceComponentRef: rowDragProps.dragSourceItem.sourceComponentRef || gridRef,
+										});
 									} else {
 										const sourceItemId = item?.id || index;
 										if (!rowDragSourceItemsRef.current[sourceItemId]) {

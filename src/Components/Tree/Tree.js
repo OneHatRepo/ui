@@ -555,7 +555,7 @@ function TreeComponent(props) {
 		// internal DND
 		onInternalNodeDrop = async (droppedOn, droppedItem) => {
 			let selectedNodes = [];
-			if (droppedItem.getSelection) {
+			if (typeof droppedItem.getSelection === 'function') {
 				selectedNodes = droppedItem.getSelection();
 			}
 			if (_.isEmpty(selectedNodes)) {
@@ -1287,8 +1287,15 @@ function TreeComponent(props) {
 										
 										// Add external drag properties if needed
 										if (shouldSupportExternalDrag && getNodeDragSourceItem) {
-											const externalDragItem = getNodeDragSourceItem(item, getSelection, isInSelection, nodeDragSourceType);
-											Object.assign(baseDragSourceItem, externalDragItem);
+											const externalDragItem = getNodeDragSourceItem(item, getSelection, isInSelection, nodeDragSourceType) || {};
+											Object.assign(baseDragSourceItem, externalDragItem, {
+												id: baseDragSourceItem.id || item.id,
+												item: baseDragSourceItem.item || item,
+												getSelection: typeof baseDragSourceItem.getSelection === 'function' ? baseDragSourceItem.getSelection : getSelection,
+												isInSelection: typeof baseDragSourceItem.isInSelection === 'function' ? baseDragSourceItem.isInSelection : isInSelection,
+												type: baseDragSourceItem.type || nodeDragProps.dragSourceType,
+												sourceComponentRef: baseDragSourceItem.sourceComponentRef || treeRef,
+											});
 										}
 										
 										nodeDragProps.dragSourceItem = baseDragSourceItem;
