@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState, useSyncExternalStore } from 'react';
+import { forwardRef, useRef, useState, useSyncExternalStore, useEffect, } from 'react';
 import {
 	Box,
 	Icon,
@@ -18,21 +18,11 @@ import Footer from '../Layout/Footer.js';
 import useAdjustedWindowSize from '../../Hooks/useAdjustedWindowSize.js';
 import testProps from '../../Functions/testProps.js';
 import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
+import getIconButtonFromConfig from '../../Functions/getIconButtonFromConfig.js';
 import _ from 'lodash';
 
 const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
 
-function LiveModalBody(props) {
-	// LiveModalBody subscribes to the bodyStore and re-renders whenever the snapshot changes.
-	const {
-			bodyStore,
-		} = props,
-		subscribe = bodyStore?.subscribe || (() => () => {}),
-		getSnapshot = bodyStore?.getSnapshot || (() => null),
-		body = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-
-	return body;
-}
 
 // This HOC enables richer dialogs while preserving one consistent modal API.
 // Use withAlert for simple alerts/confirmations where no custom body is needed.
@@ -80,6 +70,12 @@ function LiveModalBody(props) {
  *     console.log('OK');
  *     props.hideModal({ modalId });
  *   },
+ *   customButtons: [
+ *     { key: 'saveBtn', text: 'Save', handler: () => onSave(), icon: Save },
+ *     <Button key="moreBtn" text="More" onPress={() => onMore()} variant="outline" />,
+ *   ],
+ *   defaultFooterButton: 'ok', // optional: 'cancel' | 'no' | 'ok' | 'yes' | 'custom'
+ *   defaultCustomButtonIndex: 0, // required when defaultFooterButton is 'custom'
  *   h: 420,
  *   w: 640,
  *   showBackdrop: true,
@@ -192,6 +188,8 @@ export default function withModal(WrappedComponent) {
 					okBtnLabel = null,
 					onYes = null,
 					onNo = null,
+					defaultFooterButton = null, // 'cancel' | 'no' | 'ok' | 'yes' | 'custom'
+					defaultCustomButtonIndex = null, // required when defaultFooterButton is 'custom'
 					customButtons = null,
 					h = null,
 					w = null,
@@ -218,6 +216,41 @@ export default function withModal(WrappedComponent) {
 				}
 				if (bodyStore && (!_.isFunction(bodyStore.subscribe) || !_.isFunction(bodyStore.getSnapshot))) {
 					throw new Error('withModal: bodyStore must provide subscribe(listener) and getSnapshot() functions');
+				}
+				if (_.isNil(defaultFooterButton) && !_.isNil(defaultCustomButtonIndex)) {
+					throw new Error('withModal: defaultCustomButtonIndex requires defaultFooterButton to be "custom"');
+				}
+				if (!_.isNil(defaultFooterButton)) {
+					if (!_.isString(defaultFooterButton)) {
+						throw new Error('withModal: defaultFooterButton must be a string when provided');
+					}
+					defaultFooterButton = defaultFooterButton.toLowerCase();
+					const allowedDefaultFooterButtons = ['cancel', 'no', 'ok', 'yes', 'custom'];
+					if (!allowedDefaultFooterButtons.includes(defaultFooterButton)) {
+						throw new Error('withModal: defaultFooterButton must be one of: cancel, no, ok, yes, custom');
+					}
+					if (!_.isNil(defaultCustomButtonIndex) && defaultFooterButton !== 'custom') {
+						throw new Error('withModal: defaultCustomButtonIndex can only be used when defaultFooterButton is "custom"');
+					}
+
+					const hasDeclaredButton = (defaultFooterButton === 'cancel' && includeCancel)
+						|| (defaultFooterButton === 'no' && _.isFunction(onNo))
+						|| (defaultFooterButton === 'ok' && _.isFunction(onOk))
+						|| (defaultFooterButton === 'yes' && _.isFunction(onYes));
+					if (!hasDeclaredButton) {
+						if (defaultFooterButton === 'custom') {
+							if (!_.isInteger(defaultCustomButtonIndex) || defaultCustomButtonIndex < 0) {
+								throw new Error('withModal: defaultCustomButtonIndex must be a non-negative integer when defaultFooterButton is "custom"');
+							}
+							const customButton = _.isArray(customButtons) ? customButtons[defaultCustomButtonIndex] : null;
+							const customButtonAction = getCustomButtonAction(customButton, null);
+							if (!customButtonAction) {
+								throw new Error(`withModal: customButtons[${defaultCustomButtonIndex}] must exist and include either a config.handler or an onPress/onClick handler when used as defaultFooterButton`);
+							}
+						} else {
+							throw new Error(`withModal: defaultFooterButton "${defaultFooterButton}" requires the matching footer button to be configured`);
+						}
+					}
 				}
 
 				if (_.isFunction(body)) {
@@ -253,6 +286,8 @@ export default function withModal(WrappedComponent) {
 					okBtnLabel: okBtnLabel || 'OK',
 					onYes,
 					onNo,
+					defaultFooterButton,
+					defaultCustomButtonIndex,
 					customButtons,
 					h,
 					w,
@@ -395,14 +430,19 @@ export default function withModal(WrappedComponent) {
 				hideModal(args);
 			},
 			getButtonsForModal = (modal) => {
-				const buttons = [];
+				const
+					buttons = [],
+					defaultFooterButtonKey = getDefaultFooterButtonKey(modal);
 				if (modal.includeCancel) {
 					buttons.push(<Button
 									{...testProps('cancelBtn')}
 									key={`cancelBtn-${modal.id}`}
 									onPress={() => invokeCancelAndHide(modal)}
+									autoFocus={defaultFooterButtonKey === 'cancel'}
 									colorScheme="coolGray"
-									className="mr-2"
+									className={clsx('mr-2', {
+										'withModal-DefaultFooterBtn': defaultFooterButtonKey === 'cancel',
+									})}
 									text="Cancel"
 									variant="outline" // or unstyled
 								/>);
@@ -412,7 +452,10 @@ export default function withModal(WrappedComponent) {
 									{...testProps('noBtn')}
 									key={`noBtn-${modal.id}`}
 									onPress={modal.onNo}
-									className="text-grey-800 mr-2"
+									autoFocus={defaultFooterButtonKey === 'no'}
+									className={clsx('text-grey-800 mr-2', {
+										'withModal-DefaultFooterBtn': defaultFooterButtonKey === 'no',
+									})}
 									text="No"
 									variant="outline"
 								/>);
@@ -422,8 +465,11 @@ export default function withModal(WrappedComponent) {
 									{...testProps('okBtn')}
 									key={`okBtn-${modal.id}`}
 									onPress={modal.onOk}
+									autoFocus={defaultFooterButtonKey === 'ok'}
 									text={modal.okBtnLabel}
-									className="text-white"
+									className={clsx('text-white', {
+										'withModal-DefaultFooterBtn': defaultFooterButtonKey === 'ok',
+									})}
 								/>);
 				}
 				if (modal.onYes) {
@@ -431,16 +477,49 @@ export default function withModal(WrappedComponent) {
 									{...testProps('yesBtn')}
 									key={`yesBtn-${modal.id}`}
 									onPress={modal.onYes}
+									autoFocus={defaultFooterButtonKey === 'yes'}
 									text="Yes"
-									className="text-white"
+									className={clsx('text-white', {
+										'withModal-DefaultFooterBtn': defaultFooterButtonKey === 'yes',
+									})}
 								/>);
 				}
 				if (modal.customButtons) {
 					_.each(modal.customButtons, (button, index) => {
-						buttons.push(<Box key={`customBtn-${modal.id}-${index}`}>{button}</Box>);
+						buttons.push(
+							<Box
+								key={`customBtn-${modal.id}-${index}`}
+								className={clsx({
+									'withModal-DefaultFooterBtn': defaultFooterButtonKey === 'custom' && modal.defaultCustomButtonIndex === index,
+								})}
+							>
+								{getCustomButtonNode(button, index, modal)}
+							</Box>
+						);
 					});
 				}
 				return buttons;
+			},
+			getDefaultFooterAction = (modal) => {
+				if (!modal || (!modal.h && !modal.w && !modal.title)) {
+					return null;
+				}
+
+				const actionByButton = {
+					cancel: modal.includeCancel ? () => invokeCancelAndHide(modal) : null,
+					no: _.isFunction(modal.onNo) ? modal.onNo : null,
+					ok: _.isFunction(modal.onOk) ? modal.onOk : null,
+					yes: _.isFunction(modal.onYes) ? modal.onYes : null,
+					custom: _.isInteger(modal.defaultCustomButtonIndex)
+						? getCustomButtonAction(
+							_.isArray(modal.customButtons) ? modal.customButtons[modal.defaultCustomButtonIndex] : null,
+							modal,
+						)
+						: null,
+				};
+				const defaultButton = getDefaultFooterButtonKey(modal);
+
+				return defaultButton ? actionByButton[defaultButton] : null;
 			},
 			ownsModalState = !(_.isFunction(parentShowModal) && _.isFunction(parentHideModal)),
 			modalApi = ownsModalState
@@ -537,6 +616,100 @@ export default function withModal(WrappedComponent) {
 						/>;
 			};
 
+		useEffect(() => {
+			if (CURRENT_MODE !== UI_MODE_WEB || !ownsModalState || !isModalShown || !topModal) {
+				return;
+			}
+
+			const defaultFooterButtonKey = getDefaultFooterButtonKey(topModal);
+			if (!defaultFooterButtonKey) {
+				return;
+			}
+
+			let attempts = 0,
+				isCancelled = false,
+				rafId = null;
+			const scheduleNextAttempt = () => {
+				if (isCancelled || attempts >= 10) {
+					return;
+				}
+				attempts += 1;
+				rafId = window.requestAnimationFrame(tryFocusDefaultFooterButton);
+			};
+			const tryFocusDefaultFooterButton = () => {
+				if (isCancelled) {
+					return;
+				}
+				const modalNodes = document.querySelectorAll('.withModal-Modal');
+				const topModalNode = modalNodes.length ? modalNodes[modalNodes.length - 1] : null;
+				const defaultButtonNode = topModalNode?.querySelector?.('.withModal-DefaultFooterBtn');
+				if (!defaultButtonNode) {
+					scheduleNextAttempt();
+					return;
+				}
+
+				const focusTarget = getFocusableElement(defaultButtonNode);
+				if (!focusTarget) {
+					scheduleNextAttempt();
+					return;
+				}
+				focusTarget.focus({ preventScroll: true });
+				if (document.activeElement !== focusTarget) {
+					scheduleNextAttempt();
+				}
+			};
+
+			rafId = window.requestAnimationFrame(tryFocusDefaultFooterButton);
+			return () => {
+				isCancelled = true;
+				if (!_.isNil(rafId)) {
+					window.cancelAnimationFrame(rafId);
+				}
+			};
+		}, [ownsModalState, isModalShown, topModal]);
+
+		useEffect(() => {
+			if (CURRENT_MODE !== UI_MODE_WEB || !ownsModalState || !isModalShown || !topModal) {
+				return;
+			}
+
+			const onKeyDown = (event) => {
+				if (event?.key !== 'Enter' || event.defaultPrevented || event.isComposing) {
+					return;
+				}
+
+				const target = event.target;
+				if (target?.isContentEditable) {
+					return;
+				}
+				const tagName = target?.tagName?.toLowerCase?.();
+				if (tagName === 'textarea' || tagName === 'input') {
+					return;
+				}
+
+				const defaultFooterAction = getDefaultFooterAction(topModal);
+				if (!defaultFooterAction) {
+					return;
+				}
+
+				if (!(target instanceof Element) || !target.closest('.withModal-Modal')) {
+					return;
+				}
+
+				event.preventDefault();
+				event.stopPropagation();
+				if (_.isFunction(event.stopImmediatePropagation)) {
+					event.stopImmediatePropagation();
+				}
+				defaultFooterAction();
+			};
+
+			window.addEventListener('keydown', onKeyDown, true);
+			return () => {
+				window.removeEventListener('keydown', onKeyDown, true);
+			};
+		}, [ownsModalState, isModalShown, topModal]);
+
 		return <>
 					<WrappedComponent
 						{...withInjectedHocProps(incomingProps, {
@@ -596,4 +769,109 @@ export default function withModal(WrappedComponent) {
 
 	ComponentWithModal[WITH_MODAL_MARKER] = true;
 	return ComponentWithModal;
+}
+
+
+// helper fns
+function getButtonActionFromNode(node) {
+	if (!node) {
+		return null;
+	}
+
+	if (_.isFunction(node?.props?.onPress)) {
+		return node.props.onPress;
+	}
+	if (_.isFunction(node?.props?.onClick)) {
+		return node.props.onClick;
+	}
+
+	const children = node?.props?.children;
+	if (_.isArray(children)) {
+		for (const child of children) {
+			const childAction = getButtonActionFromNode(child);
+			if (childAction) {
+				return childAction;
+			}
+		}
+		return null;
+	}
+	if (!_.isNil(children)) {
+		return getButtonActionFromNode(children);
+	}
+
+	return null;
+}
+
+function isCustomButtonConfig(button) {
+	return _.isPlainObject(button) && _.isFunction(button.handler);
+}
+
+function getCustomButtonAction(button, parent) {
+	if (isCustomButtonConfig(button)) {
+		return () => button.handler(parent);
+	}
+	return getButtonActionFromNode(button);
+}
+
+function getCustomButtonNode(button, index, parent) {
+	if (isCustomButtonConfig(button)) {
+		return getIconButtonFromConfig(button, index, parent);
+	}
+	return button;
+}
+
+function getDefaultFooterButtonKey(modal) {
+	if (!modal || (!modal.h && !modal.w && !modal.title)) {
+		return null;
+	}
+
+	const hasActionByButton = {
+		cancel: !!modal.includeCancel,
+		no: _.isFunction(modal.onNo),
+		ok: _.isFunction(modal.onOk),
+		yes: _.isFunction(modal.onYes),
+		custom: _.isInteger(modal.defaultCustomButtonIndex),
+	};
+	const fallbackButton = hasActionByButton.ok
+		? 'ok'
+		: hasActionByButton.yes
+			? 'yes'
+			: null;
+	const defaultButton = modal.defaultFooterButton || fallbackButton;
+	return defaultButton && hasActionByButton[defaultButton] ? defaultButton : null;
+}
+
+function isElementFocusable(element) {
+	if (!(element instanceof HTMLElement)) {
+		return false;
+	}
+	if (element.hasAttribute('disabled')) {
+		return false;
+	}
+	if (element.tabIndex >= 0) {
+		return true;
+	}
+	return element.matches('button,[href],input,select,textarea,[contenteditable="true"]');
+}
+
+function getFocusableElement(node) {
+	if (!node) {
+		return null;
+	}
+	if (isElementFocusable(node)) {
+		return node;
+	}
+	return node.querySelector('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"]),[contenteditable="true"]');
+}
+
+function LiveModalBody(props) {
+	// LiveModalBody subscribes to the bodyStore and re-renders whenever the snapshot changes.
+	const {
+			bodyStore,
+		} = props,
+		subscribe = bodyStore?.subscribe || (() => () => {}),
+		getSnapshot = bodyStore?.getSnapshot || (() => null),
+		body = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+	return body;
 }
