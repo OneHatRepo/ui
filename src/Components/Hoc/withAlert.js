@@ -92,7 +92,7 @@ function withAlert(WrappedComponent) {
 					message,
 					buttons,
 					suppressOnOk = false,
-					// h = 250,
+					h = null,
 					w = 400;
 				
 				if (_.isString(arg1)) {
