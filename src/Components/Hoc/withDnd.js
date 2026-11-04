@@ -37,6 +37,40 @@ function defaultDragCollect(monitor, props2) { // Optional. The collecting funct
 	};
 };
 
+function normalizeDroppedItem(rawItem) {
+	const droppedItem = (rawItem && typeof rawItem === 'object') ? rawItem : {};
+	// Preferred contract: drag sources provide a getSelection() function.
+	// When this exists, avoid rewriting the payload so source-defined semantics win.
+	if (typeof droppedItem.getSelection === 'function') {
+		return droppedItem;
+	}
+
+	// Compatibility layer:
+	// Some drag payloads are plain objects (or custom payloads) that omit getSelection.
+	// Reconstruct a stable selection array from the common shapes we see in the app.
+	let selection = [];
+	if (Array.isArray(droppedItem.selection)) {
+		selection = droppedItem.selection.filter(Boolean);
+	} else if (Array.isArray(droppedItem.items)) {
+		selection = droppedItem.items.filter(Boolean);
+	} else if (droppedItem.item) {
+		selection = [droppedItem.item].filter(Boolean);
+	} else if (droppedItem.id) {
+		selection = [droppedItem];
+	}
+
+	// Always return a normalized item that satisfies the drop-handler contract.
+	// This keeps handlers simple: they can call droppedItem.getSelection() safely.
+	return {
+		...droppedItem,
+		getSelection: () => selection,
+		isInSelection: typeof droppedItem.isInSelection === 'function' ?
+			droppedItem.isInSelection :
+			(itemToCheck) => selection.some((selectedItem) => selectedItem?.id === itemToCheck?.id),
+		item: droppedItem.item || selection[0] || null,
+	};
+}
+
 export function withDragSource(WrappedComponent) {
 	if (WrappedComponent?.[WITH_DRAG_SOURCE_MARKER]) {
 		return WrappedComponent;
@@ -231,9 +265,9 @@ export function withDropTarget(WrappedComponent) {
 				return {
 					accept: dropTargetAccept, // Required. A string, a symbol, or an array of either. This drop target will only react to the items produced by the drag sources of the specified type or types. Read the overview to learn more about the items and types.
 					options: dropOptions, // Optional. A plain object. If some of the props to your component are not scalar (that is, are not primitive values or functions), specifying a custom arePropsEqual(props, otherProps) function inside the options object can improve the performance. Unless you have performance problems, don't worry about it.
-					drop: onDrop, // (item, monitor): Optional. Called when a compatible item is dropped on the target. You may either return undefined, or a plain object. If you return an object, it is going to become the drop result and will be available to the drag source in its endDragmethod as monitor.getDropResult(). This is useful in case you want to perform different actions depending on which target received the drop. If you have nested drop targets, you can test whether a nested target has already handled dropby checking monitor.didDrop()and monitor.getDropResult(). Both this method and the source's endDragmethod are good places to fire Flux actions. This method will not be called if canDrop()is defined and returns false.
-					hover: onDropHover, // (item, monitor): Optional. Called when an item is hovered over the component. You can check monitor.isOver({ shallow: true })to test whether the hover happens over only the current target, or over a nested one. Unlike drop(), this method will be called even if canDrop()is defined and returns false. You can check monitor.canDrop()to test whether this is the case.
-					canDrop, // (item, monitor): Optional. Use it to specify whether the drop target is able to accept the item. If you want to always allow it, omit this method. Specifying it is handy if you'd like to disable dropping based on some predicate over props or monitor.getItem(). Note: You may not call monitor.canDrop() inside this method.
+					drop: onDrop ? (item, monitor) => onDrop(normalizeDroppedItem(item), monitor) : null, // (item, monitor): Optional. Called when a compatible item is dropped on the target. You may either return undefined, or a plain object. If you return an object, it is going to become the drop result and will be available to the drag source in its endDragmethod as monitor.getDropResult(). This is useful in case you want to perform different actions depending on which target received the drop. If you have nested drop targets, you can test whether a nested target has already handled dropby checking monitor.didDrop()and monitor.getDropResult(). Both this method and the source's endDragmethod are good places to fire Flux actions. This method will not be called if canDrop()is defined and returns false.
+					hover: onDropHover ? (item, monitor) => onDropHover(normalizeDroppedItem(item), monitor) : null, // (item, monitor): Optional. Called when an item is hovered over the component. You can check monitor.isOver({ shallow: true })to test whether the hover happens over only the current target, or over a nested one. Unlike drop(), this method will be called even if canDrop()is defined and returns false. You can check monitor.canDrop()to test whether this is the case.
+					canDrop: canDrop ? (item, monitor) => canDrop(normalizeDroppedItem(item), monitor) : null, // (item, monitor): Optional. Use it to specify whether the drop target is able to accept the item. If you want to always allow it, omit this method. Specifying it is handy if you'd like to disable dropping based on some predicate over props or monitor.getItem(). Note: You may not call monitor.canDrop() inside this method.
 					collect: dropCollect, /*: (monitor, props) => { // Optional. The collecting function. It should return a plain object of the props to return for injection into your component. It receives two parameters, monitorand props. Read the overview for an introduction to the monitors and the collecting function. See the collecting function described in detail in the next section.
 						return {
 							canDrop: !!monitor.canDrop(),

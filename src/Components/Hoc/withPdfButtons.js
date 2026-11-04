@@ -465,6 +465,7 @@ export default function withPdfButtons(WrappedComponent) {
 						additionalEditButtons,
 						additionalViewButtons,
 					})}
+					getPdf={getPdf}
 					ref={ref}
 				/>;
 	}));
