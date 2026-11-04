@@ -45,10 +45,9 @@ function withAlert(WrappedComponent) {
 					textColor = 'text-black',
 					fillColor = 'fill-black',
 				} = args;
-				return <HStack className="withAlert-HStack flex-1 w-full">
+				return <HStack className="withAlert-HStack w-full max-h-[65vh]">
 							<Box className={clsx(
 								'withAlert-Box1',
-								'h-full',
 								'w-[100px]',
 								'flex',
 								'items-end',
@@ -67,12 +66,12 @@ function withAlert(WrappedComponent) {
 							</Box>
 							<Box className={clsx(
 								'withAlert-Box2',
-								'h-full',
 								'flex',
 								'flex-1',
 								'items-start',
 								'justify-center',
 								'p-4',
+								'overflow-y-auto',
 							)}>
 								<Text className={clsx(
 									'withAlert-Text',
@@ -93,7 +92,7 @@ function withAlert(WrappedComponent) {
 					message,
 					buttons,
 					suppressOnOk = false,
-					h = 250,
+					// h = 250,
 					w = 400;
 				
 				if (_.isString(arg1)) {
@@ -174,7 +173,6 @@ function withAlert(WrappedComponent) {
 					},
 					includeCancel,
 					canClose: true,
-					h: 250,
 					w: 400,
 					whichModal: 'confirm',
 					stackMode: 'push',
@@ -192,7 +190,6 @@ function withAlert(WrappedComponent) {
 					}),
 					onOk: () => hideModal({ modalId }),
 					canClose: true,
-					h: 250,
 					w: 400,
 					whichModal: 'info',
 					stackMode: 'push',
