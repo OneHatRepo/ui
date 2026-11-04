@@ -1054,7 +1054,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			if (editorType === EDITOR_TYPE__SIDE) {
 				const
 					isBusy = isSaving || isAdding,
-					shouldKeepEditorOpen = !selection?.length && !!lastSelection?.length && getIsEditorShown();
+					shouldKeepEditorOpen = isBusy && !selection?.length && !!lastSelection?.length && getIsEditorShown();
 				if (!isBusy) {
 					if (isEditorDisabledByParent) {
 						setIsEditorShown(false);
