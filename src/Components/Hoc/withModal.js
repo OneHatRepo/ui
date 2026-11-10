@@ -77,6 +77,9 @@ const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
  *   defaultFooterButton: 'ok', // optional: 'cancel' | 'no' | 'ok' | 'yes' | 'custom'
  *   defaultCustomButtonIndex: 0, // required when defaultFooterButton is 'custom'
  *   h: 420,
+ *   // Optional cap that allows the modal to shrink to content while still
+ *   // scrolling when content exceeds this height.
+ *   maxH: 420,
  *   w: 640,
  *   showBackdrop: true,
  *   stackMode: 'push',
@@ -94,6 +97,7 @@ const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
  * - 'replace': replace the current modal queue with this modal
  *
  * Optional content behavior overrides:
+ * - maxH: cap modal height while allowing content-driven height when content is shorter.
  * - disableContentAnimation: true to disable ModalContent entering/exiting animations.
  * - modalContentPointerEvents: override ModalContent pointerEvents (for example 'box-none').
  * - modalContentClassName: extra classes merged into ModalContent.
@@ -125,16 +129,20 @@ export default function withModal(WrappedComponent) {
 			nextModalId = useRef(1),
 			isInvokingModalHook = useRef(false),
 			[windowWidth, windowHeight] = useAdjustedWindowSize(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
-			clampModalSize = (width, height) => {
+			clampModalSize = (width, height, maxHeight) => {
 				let adjustedWidth = width,
-					adjustedHeight = height;
+					adjustedHeight = height,
+					adjustedMaxHeight = maxHeight;
 				if (adjustedWidth && windowWidth && adjustedWidth > windowWidth) {
 					adjustedWidth = windowWidth;
 				}
 				if (adjustedHeight && windowHeight && adjustedHeight > windowHeight) {
 					adjustedHeight = windowHeight;
 				}
-				return [adjustedWidth, adjustedHeight];
+				if (adjustedMaxHeight && windowHeight && adjustedMaxHeight > windowHeight) {
+					adjustedMaxHeight = windowHeight;
+				}
+				return [adjustedWidth, adjustedHeight, adjustedMaxHeight];
 			},
 			hideModal = (args = null) => {
 				// hideModal is responsible for removing one or more modals from the stack.
@@ -192,6 +200,7 @@ export default function withModal(WrappedComponent) {
 					defaultCustomButtonIndex = null, // required when defaultFooterButton is 'custom'
 					customButtons = null,
 					h = null,
+					maxH = null, // optional max-height that preserves auto-fit behavior
 					w = null,
 					whichModal = null,
 					testID = null,
@@ -290,6 +299,7 @@ export default function withModal(WrappedComponent) {
 					defaultCustomButtonIndex,
 					customButtons,
 					h,
+					maxH,
 					w,
 					whichModal,
 					testID: testID || 'Modal',
@@ -501,7 +511,7 @@ export default function withModal(WrappedComponent) {
 				return buttons;
 			},
 			getDefaultFooterAction = (modal) => {
-				if (!modal || (!modal.h && !modal.w && !modal.title)) {
+				if (!modal || (!modal.h && !modal.maxH && !modal.w && !modal.title)) {
 					return null;
 				}
 
@@ -558,7 +568,7 @@ export default function withModal(WrappedComponent) {
 						: modal.body;
 				}
 				const buttons = getButtonsForModal(modal);
-				if (modal.h || modal.w || modal.title) {
+				if (modal.h || modal.maxH || modal.w || modal.title) {
 					let footer = null;
 					if (buttons.length > 0) {
 						footer = <Footer
@@ -571,13 +581,14 @@ export default function withModal(WrappedComponent) {
 								>{buttons}</Footer>;
 					}
 
-					const [adjustedW, adjustedH] = clampModalSize(modal.w, modal.h);
+					const [adjustedW, adjustedH, adjustedMaxH] = clampModalSize(modal.w, modal.h, modal.maxH);
 					modalBody =
 						<Panel
 							title={modal.title}
 							isCollapsible={false}
 							className="withModal-Panel bg-white"
 							h={adjustedH}
+							maxHeight={!adjustedH ? adjustedMaxH : null}
 							w={adjustedW}
 							isWindow={true}
 							disableAutoFlex={true}
@@ -821,7 +832,7 @@ function getCustomButtonNode(button, index, parent) {
 }
 
 function getDefaultFooterButtonKey(modal) {
-	if (!modal || (!modal.h && !modal.w && !modal.title)) {
+	if (!modal || (!modal.h && !modal.maxH && !modal.w && !modal.title)) {
 		return null;
 	}
 

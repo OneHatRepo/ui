@@ -206,7 +206,7 @@ function UpcomingPmsGrid(props) {
 							)}
 						/>,
 				onCancel: hideModal,
-				h: height,
+				maxH: height,
 				w: width,
 			});
 		},
@@ -223,7 +223,7 @@ function UpcomingPmsGrid(props) {
 							)}
 						/>,
 				onCancel: hideModal,
-				h: height,
+				maxH: height,
 				w: width,
 			});
 		};

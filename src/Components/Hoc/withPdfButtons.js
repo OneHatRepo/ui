@@ -261,7 +261,7 @@ export default function withPdfButtons(WrappedComponent) {
 					title: modalTitle,
 					includeReset: true,
 					includeCancel: true,
-					h,
+					maxH: h,
 					w: styles.FORM_STACK_ROW_THRESHOLD + 10,
 					body: <Form
 								parent={self}
@@ -303,7 +303,7 @@ export default function withPdfButtons(WrappedComponent) {
 					title: 'Email To',
 					includeCancel: true,
 					w: 510, // 510 so it's over the stack threshold
-					h: 500,
+					maxH: 500,
 					body: <Form
 								parent={self}
 								reference="chooseEmailAddressForm"

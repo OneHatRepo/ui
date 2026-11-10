@@ -654,7 +654,7 @@ function AttachmentsElement(props) {
 				canClose: true,
 				includeCancel: true,
 				w: 1920,
-				h: 1080,
+				maxH: 1080,
 				onClose: cleanupModalBlobUrls,
 			});
 		},
@@ -665,7 +665,7 @@ function AttachmentsElement(props) {
 			showModal({
 				title: 'New Directory',
 				w: 400,
-				h: 200,
+				maxH: 200,
 				canClose: true,
 				includeReset: false,
 				includeCancel: false,
@@ -757,7 +757,7 @@ function AttachmentsElement(props) {
 			showModal({
 				title: 'Rename Directory',
 				w: 400,
-				h: 200,
+				maxH: 200,
 				canClose: true,
 				includeReset: false,
 				includeCancel: false,

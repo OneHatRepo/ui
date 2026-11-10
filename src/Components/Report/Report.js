@@ -169,7 +169,7 @@ function Report(props) {
 						/>,
 				canClose: true,
 				whichModal: 'schedulesModal',
-				h: 800,
+				maxH: 800,
 				w: 1100,
 			});
 		},
@@ -284,7 +284,7 @@ function Report(props) {
 					/>,
 				canClose: true,
 				whichModal: 'shareReportPresetModal',
-				h: 220,
+				maxH: 220,
 				w: 500,
 			});
 		};

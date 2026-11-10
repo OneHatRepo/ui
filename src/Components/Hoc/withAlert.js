@@ -144,7 +144,7 @@ function withAlert(WrappedComponent) {
 					includeCancel,
 					canClose,
 					customButtons: buttons ?? null,
-					h,
+					maxH: h,
 					w,
 					whichModal: 'alert',
 					stackMode: 'push',

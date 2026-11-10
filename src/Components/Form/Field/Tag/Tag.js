@@ -346,7 +346,7 @@ function TagComponent(props) {
 			showModal({
 				title: 'Extra data for "' + item.text + '"',
 				w: 400,
-				h: height,
+				maxH: height,
 				canClose: true,
 				includeReset: false,
 				includeCancel: false,

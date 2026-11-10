@@ -1224,7 +1224,7 @@ function GridComponent(props) {
 				title: 'Column Selector',
 				includeReset: true,
 				includeCancel: true,
-				h: 800,
+				maxH: 800,
 				w: styles.FORM_STACK_ROW_THRESHOLD + 10,
 				body: <Form
 							editorType={EDITOR_TYPE__PLAIN}

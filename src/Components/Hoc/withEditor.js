@@ -634,7 +634,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				joinModalIdRef.current = showModal({
 					title: linkDisplayMsg || `Link ${joinModel}`,
 					w: 600,
-					h: 500,
+					maxH: 500,
 					whichModal: 'windowedEditor',
 					stackMode: 'push',
 					canClose: true,
