@@ -12,7 +12,6 @@ export default function MetersEditor(props) {
 
 			// Customization
 			includeExtendedCalculatedFields = false,
-			onManagePmTemplates,
 		} = props,
 		meter = selection[0],
 		meter_id = meter?.id,
@@ -21,28 +20,6 @@ export default function MetersEditor(props) {
 		[w1, h1] = useAdjustedWindowSize(500, 500),
 		[w2, h2] = useAdjustedWindowSize(700, 500),
 		Equipment = oneHatData.getRepository('Equipment'),
-		handleManagePmTemplates = () => {
-			if (!onManagePmTemplates) {
-				return;
-			}
-
-			const
-				equipment = Equipment.getById(equipment_id),
-				equipment_display = equipment?.displayValue;
-
-			onManagePmTemplates({
-				equipment_id,
-				equipment_display,
-				meter_id,
-				meter_display,
-				showModal,
-				hideModal,
-				h1,
-				w1,
-				h2,
-				w2,
-			});
-		},
 		items = [
 			{
 				type: 'Column',
@@ -89,16 +66,6 @@ export default function MetersEditor(props) {
 										},
 									},
 								},
-							},
-							onManagePmTemplates && {
-								name: 'managePmTemplatesBtn',
-								type: 'Button',
-								text: 'Manage PM Templates',
-								isEditable: false,
-								isEditingEnabledInPlainEditor: true,
-								isHiddenInViewMode: true,
-								isDisabled: true, // TODO: flesh this out when new PM Manager is built
-								onPress: handleManagePmTemplates,
 							},
 							{
 								name: 'meters__comments',
