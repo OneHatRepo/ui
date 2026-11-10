@@ -7,3 +7,5 @@ export const DUPLICATE = 'duplicate';
 export const PRINT = 'print';
 export const UPLOAD_DOWNLOAD = 'uploadDownload';
 export const DOWNLOAD = 'download';
+export const LINK = 'LINK';
+export const UNLINK = 'UNLINK';

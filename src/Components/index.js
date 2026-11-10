@@ -263,6 +263,7 @@ import DateTimeViewer from './Viewer/DateTimeViewer.js';
 import DateRange from './Filter/DateRange.js';
 import DisplayField from './Form/Field/DisplayField.js';
 import ExpandButton from './Buttons/ExpandButton.js';
+import SmartEditor from './Editor/SmartEditor.js';
 import FieldSet from './Form/FieldSet.js';
 import FiltersForm from './Form/FiltersForm.js';
 // import FiltersToolbar from './Toolbar/FiltersToolbar.js';
@@ -572,6 +573,7 @@ const components = {
 	DateRange,
 	DisplayField,
 	ExpandButton,
+	SmartEditor,
 	FieldSet,
 	FiltersForm,
 	// FiltersToolbar,

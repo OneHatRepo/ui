@@ -15,6 +15,8 @@ function Editor(props) {
 			onEditorSave: onSave,
 			onEditorClose: onClose,
 			onEditorDelete: onDelete,
+			onEditorLink: onLink,
+			onEditorUnlink: onUnlink,
 			getEditorMode = () => {
 				return props.editorMode;
 			},
@@ -74,6 +76,8 @@ function Editor(props) {
 				onSave={onSave}
 				onClose={onClose}
 				onDelete={onDelete}
+				onLink={onLink}
+				onUnlink={onUnlink}
 				parent={self}
 				reference="form"
 			/>;

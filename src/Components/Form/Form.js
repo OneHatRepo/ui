@@ -56,6 +56,7 @@ import Pencil from '../Icons/Pencil.js';
 import Plus from '../Icons/Plus.js';
 import FloppyDiskRegular from '../Icons/FloppyDiskRegular.js';
 import Trash from '../Icons/Trash.js';
+import Unlink from '../Icons/Unlink.js';
 import ArrowUp from '../Icons/ArrowUp.js';
 import Xmark from '../Icons/Xmark.js';
 import Check from '../Icons/Check.js';
@@ -124,6 +125,9 @@ function Form(props) {
 			formSetup, // this fn will be executed after the form setup is complete
 			additionalEditButtons,
 			useAdditionalEditButtons = true,
+			addDisplayMsg,
+			deleteDisplayMsg,
+			unlinkDisplayMsg,
 			additionalFooterItems, // overrides additionalFooterButtons if both are provided
 			additionalFooterButtons,
 			disableFooter = false,
@@ -154,8 +158,11 @@ function Form(props) {
 			onSave,
 			onClose,
 			onDelete,
+			onUnlink,
 			editorStateRef,
 			disableView,
+			disableDelete = false,
+			crudJoinedRecordDirectly = false,
 			isEditorModeControlledByParent = false,
 			shouldRouteAncillaryEvents = false,
 			ancillaryEventHandlers,
@@ -1909,8 +1916,8 @@ function Form(props) {
 								isDisabled={isDisabled}
 							/>;
 				})}
-				{onDelete && getEditorMode() === EDITOR_MODE__EDIT && isSingle &&
-
+				{onDelete && !crudJoinedRecordDirectly && getEditorMode() === EDITOR_MODE__EDIT && isSingle &&
+					// Delete button for single record in edit mode, not part of a joined record
 					<HStack className="flex-1 justify-start">
 						<Button
 							{...testProps('deleteBtn')}
@@ -1922,7 +1929,26 @@ function Form(props) {
 								'data-[hover=true]:bg-warning-700',
 								'text-white',
 							)}
-							text="Delete"
+							text={deleteDisplayMsg || 'Delete'}
+						/>
+					</HStack>}
+				{onUnlink && crudJoinedRecordDirectly && getEditorMode() === EDITOR_MODE__EDIT && isSingle &&
+					// Unlink button for single record in edit mode, part of a joined record
+					// Delete is not available, bc we'd be deleting the joined record directly,
+					// and it would disappear from other records it's linked to!
+					<HStack className="flex-1 justify-start">
+						<Button
+							{...testProps('unlinkBtn')}
+							key="unlinkBtn"
+							onPress={onUnlink}
+							icon={Unlink}
+							isDisabled={disableDelete}
+							className={clsx(
+								'bg-warning-500',
+								'data-[hover=true]:bg-warning-700',
+								'text-white',
+							)}
+							text={unlinkDisplayMsg || 'Unlink'}
 						/>
 					</HStack>}
 				{showCancelBtn &&
@@ -1960,16 +1986,17 @@ function Form(props) {
 					/>}
 
 				{showSaveBtn && isAddMode && _.includes(resolvedVisibleAddButtonTypes, ADD_NORMAL_BUTTON) &&
-					<Button
-						{...testProps('saveBtn')}
-						key="saveBtn"
-						onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e), onSubmitError)(e)}
-						icon={Plus}
-						isDisabled={isSaveDisabled}
-						className="text-white"
-						tooltip="Add this record and keep it in editor"
-						text={'Add' + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
-					/>}
+						<Button
+							{...testProps('saveAndKeepBtn')}
+							key="saveAndKeepBtn"
+							onPress={(e) => handleSubmit((data) => onSaveDecorated(data, e), onSubmitError)(e)}
+							icon={Plus}
+							isDisabled={isSaveDisabled}
+							className="text-white"
+							tooltip="Add this record and keep it in editor"
+							text={(addDisplayMsg || 'Add') + (props.record?.length > 1 ? ` (${props.record.length})` : '')}
+						/>
+					}
 
 				{showSaveBtn && isAddMode && _.includes(resolvedVisibleAddButtonTypes, ADD_AND_NEW_BUTTON) &&
 					<Button

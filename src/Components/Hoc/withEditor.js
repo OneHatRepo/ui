@@ -17,6 +17,9 @@ import useForceUpdate from '../../Hooks/useForceUpdate.js'
 import Button from '../Buttons/Button.js';
 import EditorModeContext from '../../Contexts/EditorModeContext.js';
 import UiGlobals from '../../UiGlobals.js';
+import oneHatData from '@onehat/data';
+import getComponentFromType from '../../Functions/getComponentFromType.js';
+import extractErrorMessage from '../../Functions/extractErrorMessage.js';
 import { withInjectedHocProps } from '../../Functions/internalHocProps.js';
 import _ from 'lodash';
 
@@ -50,6 +53,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				enableMultiDelete = false, // deleting multiple records at once is opt-in only
 				disableDuplicate = false,
 				disableView = false,
+				crudJoinedRecordDirectly = false,
+				joinModel,
+				linkDisplayMsg,
+				unlinkDisplayMsg,
 				waitWhileSaving = false, // when true, show global wait modal while doEditorSave is in-flight
 				useRemoteDuplicate = false, // call specific copyToNew function on server, rather than simple duplicate on client
 				getDuplicateValues, // fn(entity) to get default values for duplication
@@ -101,6 +108,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				confirm,
 				hideAlert,
 				showInfo,
+
+				// withModal
+				showModal,
+				hideModal,
 			} = incomingProps,
 			parentEditorModeContext = useContext(EditorModeContext),
 			forceUpdate = useForceUpdate(),
@@ -110,6 +121,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			editorModeRef = useRef(initialEditorMode),
 			isIgnoreNextSelectionChangeRef = useRef(false),
 			isEditorShownRef = useRef(false),
+			isJoinEditorShownRef = useRef(false),
+			joinModalIdRef = useRef(null),
 			defaultValuesRef = useRef(defaultValues),
 			canEditorBeInEditModeRef = useRef(true), // whether the editor is allowed to be in edit mode based on canRecordBeEdited
 			[currentRecord, setCurrentRecord] = useState(null),
@@ -232,6 +245,52 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return false;
 				}
 				return !!record.isPhantom;
+			},
+			getJoinRepository = () => {
+				if (!crudJoinedRecordDirectly || !joinModel) {
+					return null;
+				}
+				return oneHatData.getRepository(joinModel);
+			},
+			getJoinPermissionsModel = () => {
+				const joinRepository = getJoinRepository();
+				return joinRepository?.schema?.permissionsModel || joinRepository?.schema?.name || joinModel;
+			},
+			getParentRecordId = () => {
+				// Ensure there is a selected parent record for the join operation.
+				if (_.isEmpty(selectorSelected)) {
+					throw Error('Cannot continue: no parent selection was found for join operation.');
+				}
+				const parentId = selectorSelected?.[selectorSelectedField];
+				if (_.isNil(parentId)) {
+					throw Error('Cannot continue: parent selection id was not found for join operation.');
+				}
+				return parentId;
+			},
+			getJoinFields = () => {
+				// delegate join FK inference to Repository so this logic remains consistent across Grid/Tree/SmartEditor entry points.
+				const joinFieldsConfig = {
+					joinModel,
+					parentSelectorId: selectorId,
+					currentModelName: Repository?.schema?.name,
+				};
+				try {
+					return Repository.getJoinFields(joinFieldsConfig);
+				} catch (err) {
+					throw err;
+				}
+			},
+			getJoinRequestParams = () => {
+				// these params are sent at the top-level request payload so backend can
+				// auto-create the join row when adding a joined record directly.
+				if (!crudJoinedRecordDirectly) {
+					return null;
+				}
+				return {
+					autoCreateJoin: true,
+					joinModel,
+					joinParentId: getParentRecordId(),
+				};
 			},
 			getIsEditorDisabledByParent = () => {
 				return getIsParentSaveLocked();
@@ -420,8 +479,45 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				setIsAdding(true);
 				setIsSaving(true);
-				const entity = await Repository.add(addValues, false, true);
-				setIsSaving(false);
+				let entity = null;
+				try {
+					entity = await Repository.add(addValues, false, true, {
+						requestParams: getJoinRequestParams(),
+					});
+				} catch (err) {
+					const
+						message = extractErrorMessage(err),
+						loweredMessage = message.toLowerCase(),
+						isDuplicateError = !!crudJoinedRecordDirectly && (loweredMessage.includes('already exists') || loweredMessage.includes('duplicate'));
+					if (isDuplicateError) {
+						setIsAdding(false);
+						alert({
+							title: 'Duplicate Record',
+							message: message || 'This link already exists.',
+							buttons: [
+								<Button
+									key="linkBtn"
+									onPress={async () => {
+										hideAlert();
+										doEditorClose({ force: true });
+										await doLink();
+									}}
+									icon={null}
+									text={linkDisplayMsg || 'Link Existing'}
+									className="mr-2"
+								/>,
+							],
+						});
+						return;
+					}
+					setIsAdding(false);
+					throw err;
+				} finally {
+					setIsSaving(false);
+				}
+				if (!entity) {
+					return;
+				}
 				setIsIgnoreNextSelectionChange(true);
 				setSelection([entity]);
 				if (getListeners().onAfterAdd) {
@@ -478,7 +574,184 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setEditorMode(EDITOR_MODE__EDIT);
 				setIsEditorShown(true);
 			},
+			doLink = async () => {
+				// like "doAdd", but for a join record.
+				// creates the join row and opens it for editing in a SmartEditor.
+				if (!crudJoinedRecordDirectly) {
+					return;
+				}
+				if (!joinModel) {
+					throw Error('joinModel is required when crudJoinedRecordDirectly=true.');
+				}
+				if (!showModal || !hideModal) {
+					throw Error('Cannot link: modal handlers are unavailable.');
+				}
+				const joinPermissionsModel = getJoinPermissionsModel();
+				if (canUser && !canUser(ADD, joinPermissionsModel)) {
+					showPermissionsError(ADD, joinPermissionsModel);
+					return;
+				}
+				if (isJoinEditorShownRef.current) {
+					return;
+				}
+				const {
+						parentJoinField,
+					} = getJoinFields(),
+					parentId = getParentRecordId(),
+					addValues = {
+						[parentJoinField]: parentId,
+					},
+					joinRepository = await oneHatData.getUniqueRepository(joinModel),
+					joinRecord = await joinRepository.add(addValues, false, true),
+					initialRecordId = joinRecord?.actualId || joinRecord?.id;
+				if (_.isNil(initialRecordId)) {
+					// If we cannot resolve the created id, do not leak the unique repository.
+					if (joinRepository?.id) {
+						oneHatData.deleteRepository(joinRepository.id);
+					}
+					throw Error('Could not create join record for link flow.');
+				}
+
+				const SmartEditor = getComponentFromType('SmartEditor'); // instead of direct import, so we don't have a circular dependency issue
+				let isJoinEditorClosed = false;
+				const closeJoinEditor = () => {
+					// Guard against duplicate close paths (modal cancel + editor close).
+					if (isJoinEditorClosed) {
+						return;
+					}
+					isJoinEditorClosed = true;
+					if (joinModalIdRef.current) {
+						hideModal({ modalId: joinModalIdRef.current, skipModalHooks: true });
+					}
+					joinModalIdRef.current = null;
+					isJoinEditorShownRef.current = false;
+					if (joinRepository?.id) {
+						// Unique repository is owned by this modal session; always release it.
+						oneHatData.deleteRepository(joinRepository.id);
+					}
+				};
+				isJoinEditorShownRef.current = true;
+				joinModalIdRef.current = showModal({
+					title: linkDisplayMsg || `Link ${joinModel}`,
+					w: 600,
+					h: 500,
+					whichModal: 'windowedEditor',
+					stackMode: 'push',
+					canClose: true,
+					body: <SmartEditor
+								parent={self}
+								reference="joinEditor"
+								model={joinModel}
+								Repository={joinRepository}
+								selection={[joinRecord]}
+								initialRecordId={initialRecordId}
+								selectorId={selectorId}
+								selectorSelected={selectorSelected}
+								selectorSelectedField={selectorSelectedField}
+								initialEditorMode={EDITOR_MODE__EDIT}
+								editorMode={EDITOR_MODE__EDIT}
+								onEditorClose={closeJoinEditor}
+							/>,
+					onCancel: closeJoinEditor,
+				});
+			},
+			resolveJoinRecordForSelection = async (selectedRecord, joinRepository, parentJoinField, childJoinField) => {
+				// Convert a selected child record into its concrete join row (AB) by A.id + B.id.
+				// We must delete AB on unlink, not delete the child B record itself.
+				if (!joinRepository?.loadOneAdditionalEntity) {
+					throw Error('joinModel repository does not support loadOneAdditionalEntity.');
+				}
+				const parentId = getParentRecordId();
+				const childId = selectedRecord?.id;
+				if (_.isNil(childId)) {
+					return null;
+				}
+				const conditions = {
+					[parentJoinField]: parentId,
+					[childJoinField]: childId,
+				};
+				const joinRecord = await joinRepository.loadOneAdditionalEntity({
+					conditions,
+				});
+				return joinRecord || null;
+			},
+			doUnlink = async () => {
+				// Unlink flow in joined-direct mode:
+				// resolve AB rows for selected children, delete AB rows, then reload B grid.
+				if (!crudJoinedRecordDirectly) {
+					return;
+				}
+				if (!joinModel) {
+					throw Error('joinModel is required when crudJoinedRecordDirectly=true.');
+				}
+				if (getIsEditorDisabledByParent()) {
+					return;
+				}
+				const joinPermissionsModel = getJoinPermissionsModel();
+				if (canUser && !canUser(DELETE, joinPermissionsModel)) {
+					showPermissionsError(DELETE, joinPermissionsModel);
+					return;
+				}
+				if (canProceedWithCrud && !canProceedWithCrud()) {
+					return;
+				}
+				const selectedRecords = getSelection();
+				if (_.isEmpty(selectedRecords) || (_.isArray(selectedRecords) && selectedRecords[0]?.isDestroyed)) {
+					return;
+				}
+				if (_.isArray(selectedRecords) && selectedRecords.length > 1 && !enableMultiDelete) {
+					return;
+				}
+				if (onBeforeDelete) {
+					const listenerResult = await onBeforeDelete(selectedRecords);
+					if (listenerResult === false) {
+						return;
+					}
+				}
+				if (getListeners().onBeforeDelete) {
+					const listenerResult = await getListeners().onBeforeDelete(selectedRecords);
+					if (listenerResult === false) {
+						return;
+					}
+				}
+
+				const {
+						joinRepository,
+						parentJoinField,
+						childJoinField,
+					} = getJoinFields(),
+					resolvedJoinRecords = [];
+				for (const selectedRecord of selectedRecords) {
+					// Resolve each selected B to its AB join row for this current parent A.
+					const joinRecord = await resolveJoinRecordForSelection(selectedRecord, joinRepository, parentJoinField, childJoinField);
+					if (joinRecord) {
+						resolvedJoinRecords.push(joinRecord);
+					}
+				}
+				if (!resolvedJoinRecords.length) {
+					// Keep UI consistent even when no join rows were found to remove.
+					await Repository.reload();
+					return;
+				}
+				await joinRepository.delete(resolvedJoinRecords);
+				if (!joinRepository.isAutoSave) {
+					await joinRepository.save();
+				}
+				if (getListeners().onAfterDelete) {
+					await getListeners().onAfterDelete(selectedRecords);
+				}
+				if (onChange) {
+					onChange(selectedRecords);
+				}
+				if (onDelete) {
+					onDelete(selectedRecords);
+				}
+				await Repository.reload();
+			},
 			doDelete = async (args) => {
+				if (!!crudJoinedRecordDirectly) {
+					return doUnlink(args);
+				}
 				if (getIsEditorDisabledByParent()) {
 					return;
 				}
@@ -785,13 +1058,17 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsWaitModalShown(true);
 				}
 				let success = true;
-				const tempListener = (msg, data) => {
+				let latestErrorMessage = '';
+				const tempListener = (...args) => {
 					success = false;
+					latestErrorMessage = extractErrorMessage(...args);
 				};
 
 				try {
 					Repository.on('error', tempListener); // add a temporary listener for the error event
-					await Repository.save(null, useStaged);
+					await Repository.save(null, useStaged, {
+						requestParams: getEditorMode() === EDITOR_MODE__ADD ? getJoinRequestParams() : null,
+					});
 				} finally {
 					Repository.off('error', tempListener); // remove the temporary listener
 					setIsSaving(false);
@@ -838,11 +1115,34 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (editorType === EDITOR_TYPE__INLINE) {
 						setIsEditorShown(false);
 					}
+				} else if (!!crudJoinedRecordDirectly) {
+					const errorMessage = (latestErrorMessage || '').toLowerCase();
+					const isDuplicateError = errorMessage.includes('already exists') || errorMessage.includes('duplicate');
+					if (isDuplicateError) {
+						alert({
+							title: 'Duplicate Record',
+							message: latestErrorMessage || 'This link already exists.',
+							buttons: [
+								<Button
+									key="linkBtn"
+									onPress={async () => {
+										hideAlert();
+										doEditorClose({ force: true });
+										await doLink();
+									}}
+									icon={null}
+									text={linkDisplayMsg || 'Link Existing'}
+									className="mr-2"
+								/>,
+							],
+						});
+					}
 				}
 
 				return success;
 			},
-			doEditorCancel =  () => {
+			doEditorCancel = (options = {}) => {
+				const shouldForceClose = !!options.force;
 				async function doIt() {
 					const
 						selection = getSelection(),
@@ -861,6 +1161,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 					setIsAdding(false);
 					setIsEditorShown(false);
+				}
+				if (shouldForceClose) {
+					setIsAdding(false);
+					setIsEditorShown(false);
+					return true;
 				}
 				const formState = editorStateRef.current;
 				if (!formState) {
@@ -885,16 +1190,19 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					return true;
 				}
 			},
-			doEditorClose = () => {
+			doEditorClose = (options = {}) => {
 				if (isAdding) {
 					// Bubble boolean close intent from doEditorCancel up to withModal.
-					return doEditorCancel();
+					return doEditorCancel(options);
 				}
 				setIsEditorShown(false);
 				// Default close path when not in add flow.
 				return true;
 			},
 			doEditorDelete = async () => {
+				if (!!crudJoinedRecordDirectly) {
+					return doEditorUnlink();
+				}
 				if (getIsEditorDisabledByParent()) {
 					return;
 				}
@@ -910,6 +1218,14 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setEditorMode(EDITOR_MODE__VIEW);
 					setIsEditorShown(false);
 				});
+			},
+			doEditorLink = async () => {
+				return doLink();
+			},
+			doEditorUnlink = async () => {
+				await doUnlink();
+				setEditorMode(EDITOR_MODE__VIEW);
+				setIsEditorShown(false);
 			},
 			calculateEditorMode = () => {
 				// Calculate the editor's effective mode based on parent inheritance, permissions, and local selection state.
@@ -1046,7 +1362,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			isEditorModeControlledByParent = getIsEditorModeControlledByParent(),
 			isCurrentSelectionUnsaved = getIsCurrentSelectionUnsaved(),
 			isAnyAncestorUnsaved = getIsParentSaveLocked() || isCurrentSelectionUnsaved,
-			isCrudBlockedByInheritedView = inheritedEditorMode === EDITOR_MODE__VIEW;
+			isCrudBlockedByInheritedView = inheritedEditorMode === EDITOR_MODE__VIEW,
+			joinPermissionsModel = getJoinPermissionsModel(),
+			canUseJoinAdd = !crudJoinedRecordDirectly || (!!joinModel && (!canUser || canUser(ADD, joinPermissionsModel))),
+			canUseJoinDelete = !crudJoinedRecordDirectly || (!!joinModel && (!canUser || canUser(DELETE, joinPermissionsModel)));
 
 		useEffect(() => {
 			const shouldIgnoreTransientEmptySelection = !selection?.length && !!lastSelection?.length && (isSaving || isAdding);
@@ -1106,6 +1425,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			self.add = doAdd;
 			self.edit = doEdit;
 			self.delete = doDelete;
+			self.link = doLink;
+			self.unlink = doUnlink;
 			self.moveChildren = doMoveChildren;
 			self.deleteChildren = doDeleteChildren;
 			self.duplicate = doDuplicate;
@@ -1149,11 +1470,15 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						onAdd: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableAdd) ? null : doAdd,
 						onEdit: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableEdit || (canRecordBeEdited && !canRecordBeEdited(selection))) ? null : doEdit,
 						onDelete: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete || (canRecordBeDeleted && !canRecordBeDeleted(selection))) ? null : doDelete,
+						onLink: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !crudJoinedRecordDirectly || disableAdd || !canUseJoinAdd) ? null : doLink,
+						onUnlink: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !crudJoinedRecordDirectly || !canUseJoinDelete) ? null : doUnlink,
 						onView: isEditorDisabledByParent ? null : doView,
 						onDuplicate: (isEditorDisabledByParent || isCrudBlockedByInheritedView) ? null : doDuplicate,
 						onEditorSave: doEditorSave,
 						onEditorCancel: doEditorCancel,
 						onEditorDelete: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !userCanEdit || disableDelete) ? null : doEditorDelete,
+						onEditorLink: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !crudJoinedRecordDirectly || disableAdd || !canUseJoinAdd) ? null : doEditorLink,
+						onEditorUnlink: (isEditorDisabledByParent || isCrudBlockedByInheritedView || !crudJoinedRecordDirectly || !canUseJoinDelete) ? null : doEditorUnlink,
 						onEditorClose: doEditorClose,
 						setWithEditListeners: setListeners,
 						isEditor: true,
@@ -1171,6 +1496,11 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						disableDelete: disableDelete || isEditorDisabledByParent || isCrudBlockedByInheritedView,
 						disableDuplicate: disableDuplicate || isEditorDisabledByParent || isCrudBlockedByInheritedView,
 						disableView: disableView || isEditorDisabledByParent,
+						crudJoinedRecordDirectly,
+						linkDisplayMsg,
+						unlinkDisplayMsg,
+						joinModel,
+						joinPermissionsModel,
 						setSelection: setSelectionDecorated,
 						isTree,
 					})}

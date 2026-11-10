@@ -9,6 +9,8 @@ import {
 	PRINT,
 	UPLOAD_DOWNLOAD,
 	DOWNLOAD,
+	LINK,
+	UNLINK,
 } from '../../Constants/Commands.js';
 import Inflector from 'inflector-js';
 import Clipboard from '../Icons/Clipboard.js';
@@ -17,6 +19,8 @@ import Edit from '../Icons/Edit.js';
 import Eye from '../Icons/Eye.js';
 import Trash from '../Icons/Trash.js';
 import Plus from '../Icons/Plus.js';
+import Link from '../Icons/Link.js';
+import Unlink from '../Icons/Unlink.js';
 import Print from '../Icons/Print.js';
 import UploadDownload from '../Icons/UploadDownload.js';
 import Download from '../Icons/Download.js';
@@ -94,6 +98,8 @@ export default function withPresetButtons(WrappedComponent) {
 				viewDisplayMsg,
 				copyDisplayMsg,
 				duplicateDisplayMsg,
+				linkDisplayMsg,
+				unlinkDisplayMsg,
 
 				// withAlert
 				showInfo,
@@ -120,6 +126,11 @@ export default function withPresetButtons(WrappedComponent) {
 				onDelete,
 				onView,
 				onDuplicate,
+				onLink,
+				onUnlink,
+				crudJoinedRecordDirectly = false,
+				joinModel,
+				joinPermissionsModel,
 
 				// withSelection
 				selection,
@@ -148,6 +159,13 @@ export default function withPresetButtons(WrappedComponent) {
 							isDisabled = true;
 						}
 						break;
+					case LINK:
+						if (!crudJoinedRecordDirectly || !joinModel || disableAdd || canEditorViewOnly) {
+							isDisabled = true;
+						} else if (canUser && !canUser(ADD, joinPermissionsModel || joinModel)) {
+							isDisabled = true;
+						}
+						break;
 					case EDIT:
 						if (disableEdit || canEditorViewOnly || isSideEditor) {
 							isDisabled = true;
@@ -159,6 +177,13 @@ export default function withPresetButtons(WrappedComponent) {
 						if (disableDelete || canEditorViewOnly) {
 							isDisabled = true;
 						} else if (canUser && !canUser(DELETE)) { // check Permissions
+							isDisabled = true;
+						}
+						break;
+					case UNLINK:
+						if (!crudJoinedRecordDirectly || !joinModel || disableDelete || canEditorViewOnly) {
+							isDisabled = true;
+						} else if (canUser && !canUser(DELETE, joinPermissionsModel || joinModel)) {
 							isDisabled = true;
 						}
 						break;
@@ -261,6 +286,31 @@ export default function withPresetButtons(WrappedComponent) {
 							isDisabled = true;
 						}
 						break;
+					case LINK:
+						key = 'linkBtn';
+						if (linkDisplayMsg) {
+							text = linkDisplayMsg;
+						} else {
+							text = 'Link Existing';
+							if (model) {
+								let inflected = Inflector.singularize(model); // can only add one at a time
+								inflected = Inflector.camel2words(Inflector.humanize(Inflector.underscore(inflected))); // Separate with spaces, capitalize each word
+								text += ' ' + inflected;
+							}
+						}
+						handler = () => {
+							onLink();
+						};
+						icon = Link;
+						if (!onLink ||
+							disableAdd ||
+							isNoSelectorSelected() ||
+							(canRecordBeAdded && !canRecordBeAdded(safeSelection)) ||
+							(isTree && isEmptySelection())
+						) {
+							isDisabled = true;
+						}
+						break;
 					case EDIT:
 						key = 'editBtn';
 						if (editDisplayMsg) {
@@ -331,6 +381,25 @@ export default function withPresetButtons(WrappedComponent) {
 							if (isRootNode && !canDeleteRootNode) {
 								isDisabled = true;
 							}
+						}
+						break;
+					case UNLINK:
+						key = 'unlinkBtn';
+						text = unlinkDisplayMsg || 'Unlink';
+						handler = () => {
+							if (onUnlink) {
+								onUnlink();
+							}
+						};
+						icon = Unlink;
+						if (!onUnlink ||
+							isNoSelectorSelected() ||
+							isEmptySelection() ||
+							(isMultiSelection() && (!enableMultiDelete || isTree)) ||
+							disableDelete ||
+							(canRecordBeDeleted && !canRecordBeDeleted(safeSelection))
+						) {
+							isDisabled = true;
 						}
 						break;
 					case VIEW:
@@ -447,13 +516,24 @@ export default function withPresetButtons(WrappedComponent) {
 			generatePresetButtons = () => {
 				const
 					localContextMenuItems = [],
-					localAdditionalToolbarButtons = [];
+					localAdditionalToolbarButtons = [],
+					types = [...presetButtons];
+				if (crudJoinedRecordDirectly) {
+					const addIx = types.indexOf(ADD);
+					if (addIx >= 0) {
+						types.splice(addIx, 0, LINK);
+					}
+					const deleteIx = types.indexOf(DELETE);
+					if (deleteIx >= 0) {
+						types.splice(deleteIx, 1, UNLINK);
+					}
+				}
 				
-				_.each(presetButtons, (type) => {
+				_.each(types, (type) => {
 					if (isTypeDisabledCompletely(type)) { // i.e. not just temporarily disabled because of selection
 						return;
 					}
-					if ((!userCanEdit && inArray(type, [ADD, EDIT, DELETE, DUPLICATE,])) ||
+					if ((!userCanEdit && inArray(type, [ADD, EDIT, DELETE, DUPLICATE, LINK, UNLINK,])) ||
 						(!userCanView && type === VIEW)) {
 						return;
 					}
