@@ -66,15 +66,20 @@ export default function withPdfButtons(WrappedComponent) {
 			} = props,
 			styles = UiGlobals.styles,
 			resolvedModel = model || Repository?.schema?.name || Repository?.name,
-			propertyNames = [],
-			buildModalItems = () => {
-				// Build a cloned PDF item tree so we never mutate source items by reference.
-				const
-					itemsToUse = pdfItems || _.filter(items, (item) => item?.type !== 'Hidden'),
-					ancillaryItemsToUse = pdfAncillaryItems || ancillaryItems,
-					modalItems = _.compact(_.map(itemsToUse, (item, ix) => buildNextLayer(item, ix, columnDefaults)));
+			buildModalItems = (options = {}) => {
+				const {
+						includeMainItems = true,
+						includeAncillaryItems = true,
+						mainItemsOverride = null,
+						ancillaryItemsOverride = null,
+					} = options,
+					propertyNames = [],
+					// Build a cloned PDF item tree so we never mutate source items by reference.
+					itemsToUse = mainItemsOverride ?? pdfItems ?? _.filter(items, (item) => item?.type !== 'Hidden'),
+					ancillaryItemsToUse = ancillaryItemsOverride ?? pdfAncillaryItems ?? ancillaryItems,
+					modalItems = includeMainItems ? _.compact(_.map(itemsToUse, (item, ix) => buildNextLayer(item, ix, columnDefaults, propertyNames))) : [];
 
-				if (!_.isEmpty(ancillaryItemsToUse)) {
+				if (includeAncillaryItems && !_.isEmpty(ancillaryItemsToUse)) {
 					const
 						ancillaryItemsClone = _.cloneDeepWith(ancillaryItemsToUse, (value) => {
 							// Exclude the 'parent' property from being cloned, as it would introduce an infinitely recursive loop
@@ -117,9 +122,12 @@ export default function withPdfButtons(WrappedComponent) {
 					});
 				}
 	
-				return modalItems;
+				return {
+					modalItems,
+					propertyNames,
+				};
 			},
-			buildNextLayer = (item, ix, defaults) => {
+			buildNextLayer = (item, ix, defaults, propertyNames = []) => {
 				if (!item) {
 					return null;
 				}
@@ -159,7 +167,7 @@ export default function withPdfButtons(WrappedComponent) {
 					}
 
 					if (!_.isEmpty(childItems)) {
-						nextItem.items = _.compact(_.map(childItems, (childItem, childIx) => buildNextLayer(childItem, childIx, nextDefaults)));
+						nextItem.items = _.compact(_.map(childItems, (childItem, childIx) => buildNextLayer(childItem, childIx, nextDefaults, propertyNames)));
 					}
 
 					return nextItem;
@@ -190,7 +198,7 @@ export default function withPdfButtons(WrappedComponent) {
 					label: resolvedTitle,
 				};
 			},
-			buildValidator = () => {
+			buildValidator = (propertyNames = []) => {
 				const propertyValidatorDefs = {};
 				_.each(propertyNames, (name) => {
 					propertyValidatorDefs[name] = yup.boolean().required();
@@ -220,17 +228,26 @@ export default function withPdfButtons(WrappedComponent) {
 				_.each(modalItems, walkTreeToSetStartingValues);
 				return startingValues;
 			},
-			onChooseFields = (userWantsToEmail = false) => {
-				const
-					modalItems = buildModalItems(),
+			onChooseFields = (options = {}) => {
+				const {
+						isEmail = false,
+						modalTitle = 'PDF Fields to Show',
+						instructionsText = 'Please select which fields to show in the PDF.',
+						submitBtnLabelOverride = null,
+						h = 800,
+					} = options,
+					{
+						modalItems,
+						propertyNames,
+					} = buildModalItems(options),
 					startingValues = getStartingValues(modalItems),
-					validator = buildValidator();
+					validator = buildValidator(propertyNames);
 
 				showModal({
-					title: 'PDF Fields to Show',
+					title: modalTitle,
 					includeReset: true,
 					includeCancel: true,
-					h: 800,
+					h,
 					w: styles.FORM_STACK_ROW_THRESHOLD + 10,
 					body: <Form
 								parent={self}
@@ -245,7 +262,7 @@ export default function withPdfButtons(WrappedComponent) {
 									{
 										name: 'instructions',
 										type: 'DisplayField',
-										text: 'Please select which fields to show in the PDF.',
+										text: instructionsText,
 										className: 'mb-3',
 									},
 									...modalItems,
@@ -253,11 +270,11 @@ export default function withPdfButtons(WrappedComponent) {
 								Repository={Repository}
 								startingValues={startingValues}
 								validator={validator}
-								submitBtnLabel={userWantsToEmail ? 'Choose Email' : 'Get PDF'}
+								submitBtnLabel={submitBtnLabelOverride || (isEmail ? 'Choose Email' : 'Get PDF')}
 								onSubmit={(values)=> {
 									hideModal();
 
-									if (userWantsToEmail) {
+									if (isEmail) {
 										onChooseEmailAddress(values);
 									} else {
 										getPdf(values);
@@ -436,7 +453,7 @@ export default function withPdfButtons(WrappedComponent) {
 				text: 'Email PDF',
 				icon: Pdf,
 				isDisabled: selection.length !== 1,
-				handler: () => onChooseFields(true),
+				handler: () => onChooseFields({ isEmail: true }),
 				tooltip: 'Email the selected item as a PDF.',
 			},
 			{
@@ -459,13 +476,17 @@ export default function withPdfButtons(WrappedComponent) {
 				additionalViewButtons.push(button);
 			}
 		});
+
+		self.withPdfButtons = {
+			onChooseFields, // so it can be accessed from a higher level component
+		};
 	
 		return <WrappedComponent
 					{...withInjectedHocProps(props, {
 						additionalEditButtons,
 						additionalViewButtons,
+						getPdf,
 					})}
-					getPdf={getPdf}
 					ref={ref}
 				/>;
 	}));
