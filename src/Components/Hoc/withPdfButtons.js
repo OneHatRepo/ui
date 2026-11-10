@@ -14,6 +14,16 @@ import UiGlobals from '../../UiGlobals.js';
 import inArray from '../../Functions/inArray.js';
 import _ from 'lodash';
 
+// This HOC adds two PDF-related buttons to a component, and also
+// exposes onChooseFields to self, so higher-level components can create
+// custom buttons to get PDF output.
+//
+// prop options:
+// - useWithPdfButtons: bool. Enables this HOC if true. Defaults to false.
+// - hidePdfButtons: bool. Disables PDF buttons if true, but leaves the HOC itself active, so onChooseFields still works. Defaults to false.
+// - showPdfBtns: deprecated, kept for backward compatibility. use useWithPdfButtons instead. Enables this HOC if true.
+
+
 const WITH_PDF_BUTTONS_MARKER = Symbol.for('alreadyHasWithPdfButtons');
 
 export default function withPdfButtons(WrappedComponent) {
@@ -22,14 +32,15 @@ export default function withPdfButtons(WrappedComponent) {
 	}
 
 	const ComponentWithPdfButtons = withModal(forwardRef((props, ref) => {
-		let showButtons = true;
-		if (!props.showPdfBtns) {
-			showButtons = false;
+		const
+			shouldUseWithPdfButtons = _.isBoolean(props.useWithPdfButtons) ? props.useWithPdfButtons : !!props.showPdfBtns,
+			shouldShowPdfButtons = _.isBoolean(props.hidePdfButtons) ? !props.hidePdfButtons : (_.isBoolean(props.showPdfBtns) ? props.showPdfBtns : true);
+
+		if (props.canUser && !props.canUser(VIEW)) {
+			// permission check should bypass both methods and buttons
+			return <WrappedComponent {...props} ref={ref} />;
 		}
-		if (props.canUser && !props.canUser(VIEW)) { // permissions
-			showButtons = false;
-		}
-		if (!showButtons) {
+		if (!shouldUseWithPdfButtons) {
 			// bypass everything.
 			// If we don't do this, we get an infinite recursion with Form
 			// because this HOC wraps Form and uses Form itself.
@@ -461,35 +472,37 @@ export default function withPdfButtons(WrappedComponent) {
 				showInfo('Email sent successfully.');
 			};
 
-		const buttons = [
-			{
-				key: 'emailPdfBtn',
-				text: 'Email PDF',
-				icon: Pdf,
-				isDisabled: selection.length !== 1,
-				handler: () => onChooseFields({ isEmail: true }),
-				tooltip: 'Email the selected item as a PDF.',
-			},
-			{
-				key: 'viewPdfBtn',
-				text: 'View PDF',
-				icon: Pdf,
-				isDisabled: selection.length !== 1,
-				handler: () => onChooseFields(),
-				tooltip: 'View the selected item as a PDF.',
-			},
-		];
-		_.each(buttons, (button) => {
-			if (!button) {
-				return; // guard against null/undefined
-			}
-			if (!_.find(additionalEditButtons, btn => button.key === btn.key)) { 
-				additionalEditButtons.push(button);
-			}
-			if (!_.find(additionalViewButtons, btn => button.key === btn.key)) { 
-				additionalViewButtons.push(button);
-			}
-		});
+		if (shouldShowPdfButtons) {
+			const buttons = [
+				{
+					key: 'emailPdfBtn',
+					text: 'Email PDF',
+					icon: Pdf,
+					isDisabled: selection.length !== 1,
+					handler: () => onChooseFields({ isEmail: true }),
+					tooltip: 'Email the selected item as a PDF.',
+				},
+				{
+					key: 'viewPdfBtn',
+					text: 'View PDF',
+					icon: Pdf,
+					isDisabled: selection.length !== 1,
+					handler: () => onChooseFields(),
+					tooltip: 'View the selected item as a PDF.',
+				},
+			];
+			_.each(buttons, (button) => {
+				if (!button) {
+					return; // guard against null/undefined
+				}
+				if (!_.find(additionalEditButtons, btn => button.key === btn.key)) { 
+					additionalEditButtons.push(button);
+				}
+				if (!_.find(additionalViewButtons, btn => button.key === btn.key)) { 
+					additionalViewButtons.push(button);
+				}
+			});
+		}
 
 		self.withPdfButtons = {
 			onChooseFields, // so it can be accessed from a higher level component

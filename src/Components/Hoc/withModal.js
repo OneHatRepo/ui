@@ -77,6 +77,8 @@ const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
  *   defaultFooterButton: 'ok', // optional: 'cancel' | 'no' | 'ok' | 'yes' | 'custom'
  *   defaultCustomButtonIndex: 0, // required when defaultFooterButton is 'custom'
  *   h: 420,
+ *   // Optional floor that keeps modal from collapsing too short.
+ *   minH: 280,
  *   // Optional cap that allows the modal to shrink to content while still
  *   // scrolling when content exceeds this height.
  *   maxH: 420,
@@ -97,6 +99,7 @@ const WITH_MODAL_MARKER = Symbol.for('alreadyHasWithModal');
  * - 'replace': replace the current modal queue with this modal
  *
  * Optional content behavior overrides:
+ * - minH: minimum modal height.
  * - maxH: cap modal height while allowing content-driven height when content is shorter.
  * - disableContentAnimation: true to disable ModalContent entering/exiting animations.
  * - modalContentPointerEvents: override ModalContent pointerEvents (for example 'box-none').
@@ -129,9 +132,10 @@ export default function withModal(WrappedComponent) {
 			nextModalId = useRef(1),
 			isInvokingModalHook = useRef(false),
 			[windowWidth, windowHeight] = useAdjustedWindowSize(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
-			clampModalSize = (width, height, maxHeight) => {
+			clampModalSize = (width, height, minHeight, maxHeight) => {
 				let adjustedWidth = width,
 					adjustedHeight = height,
+					adjustedMinHeight = minHeight,
 					adjustedMaxHeight = maxHeight;
 				if (adjustedWidth && windowWidth && adjustedWidth > windowWidth) {
 					adjustedWidth = windowWidth;
@@ -139,10 +143,16 @@ export default function withModal(WrappedComponent) {
 				if (adjustedHeight && windowHeight && adjustedHeight > windowHeight) {
 					adjustedHeight = windowHeight;
 				}
+				if (adjustedMinHeight && windowHeight && adjustedMinHeight > windowHeight) {
+					adjustedMinHeight = windowHeight;
+				}
 				if (adjustedMaxHeight && windowHeight && adjustedMaxHeight > windowHeight) {
 					adjustedMaxHeight = windowHeight;
 				}
-				return [adjustedWidth, adjustedHeight, adjustedMaxHeight];
+				if (adjustedMinHeight && adjustedMaxHeight && adjustedMinHeight > adjustedMaxHeight) {
+					adjustedMinHeight = adjustedMaxHeight;
+				}
+				return [adjustedWidth, adjustedHeight, adjustedMinHeight, adjustedMaxHeight];
 			},
 			hideModal = (args = null) => {
 				// hideModal is responsible for removing one or more modals from the stack.
@@ -200,6 +210,7 @@ export default function withModal(WrappedComponent) {
 					defaultCustomButtonIndex = null, // required when defaultFooterButton is 'custom'
 					customButtons = null,
 					h = null,
+					minH = null, // optional minimum modal height
 					maxH = null, // optional max-height that preserves auto-fit behavior
 					w = null,
 					whichModal = null,
@@ -299,6 +310,7 @@ export default function withModal(WrappedComponent) {
 					defaultCustomButtonIndex,
 					customButtons,
 					h,
+					minH,
 					maxH,
 					w,
 					whichModal,
@@ -511,7 +523,7 @@ export default function withModal(WrappedComponent) {
 				return buttons;
 			},
 			getDefaultFooterAction = (modal) => {
-				if (!modal || (!modal.h && !modal.maxH && !modal.w && !modal.title)) {
+				if (!modal || (!modal.h && !modal.minH && !modal.maxH && !modal.w && !modal.title)) {
 					return null;
 				}
 
@@ -568,7 +580,7 @@ export default function withModal(WrappedComponent) {
 						: modal.body;
 				}
 				const buttons = getButtonsForModal(modal);
-				if (modal.h || modal.maxH || modal.w || modal.title) {
+				if (modal.h || modal.minH || modal.maxH || modal.w || modal.title) {
 					let footer = null;
 					if (buttons.length > 0) {
 						footer = <Footer
@@ -581,13 +593,14 @@ export default function withModal(WrappedComponent) {
 								>{buttons}</Footer>;
 					}
 
-					const [adjustedW, adjustedH, adjustedMaxH] = clampModalSize(modal.w, modal.h, modal.maxH);
+					const [adjustedW, adjustedH, adjustedMinH, adjustedMaxH] = clampModalSize(modal.w, modal.h, modal.minH, modal.maxH);
 					modalBody =
 						<Panel
 							title={modal.title}
 							isCollapsible={false}
 							className="withModal-Panel bg-white"
 							h={adjustedH}
+							minHeight={!adjustedH ? adjustedMinH : null}
 							maxHeight={!adjustedH ? adjustedMaxH : null}
 							w={adjustedW}
 							isWindow={true}
@@ -832,7 +845,7 @@ function getCustomButtonNode(button, index, parent) {
 }
 
 function getDefaultFooterButtonKey(modal) {
-	if (!modal || (!modal.h && !modal.maxH && !modal.w && !modal.title)) {
+	if (!modal || (!modal.h && !modal.minH && !modal.maxH && !modal.w && !modal.title)) {
 		return null;
 	}
 

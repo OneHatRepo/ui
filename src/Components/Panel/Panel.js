@@ -34,6 +34,7 @@ function Panel(props) {
 			frame = false,
 			isScrollable = false,
 			isWindow = false,
+			minHeight,
 			maxHeight,
 			maxWidth,
 			disableAutoFlex = false,
@@ -102,12 +103,23 @@ function Panel(props) {
 	}
 
 	let className = 'Panel';
-	const style = props.style || {};
+	const
+		style = props.style || {},
+		hasExplicitHeight = !_.isNil(style.height),
+		shouldFillContentHeight = hasExplicitHeight || _.isNil(maxHeight),
+		hasHeightConstraints = hasExplicitHeight || !_.isNil(minHeight) || !_.isNil(maxHeight),
+		scrollViewContentContainerStyle = {
+			...(hasExplicitHeight ? { height: '100%', } : {}),
+			...(hasHeightConstraints ? { flexGrow: 1, justifyContent: 'center', } : {}),
+		};
 	if (!hasWidth(props) && !hasFlex(props) && !disableAutoFlex) {
 		style.flex = 1;
 	}
 	if (maxWidth) {
 		style.maxWidth = maxWidth;
+	}
+	if (minHeight) {
+		style.minHeight = minHeight;
 	}
 	if (maxHeight) {
 		style.maxHeight = maxHeight;
@@ -145,7 +157,8 @@ function Panel(props) {
 					<VStack
 						className={clsx(
 							'Panel-VSstack',
-							'flex-1',
+							shouldFillContentHeight && 'flex-1',
+							hasHeightConstraints && !isScrollable && 'justify-center',
 							'w-full',
 							'overflow-hidden',
 						)}
@@ -153,9 +166,7 @@ function Panel(props) {
 						{isScrollable ?
 							<ScrollView
 								className="Panel-ScrollView"
-								contentContainerStyle={{
-									height: '100%',
-								}}
+								contentContainerStyle={!_.isEmpty(scrollViewContentContainerStyle) ? scrollViewContentContainerStyle : undefined}
 							>
 								{children}
 							</ScrollView> : 
