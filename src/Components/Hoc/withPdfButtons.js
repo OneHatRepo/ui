@@ -93,6 +93,15 @@ export default function withPdfButtons(WrappedComponent) {
 						if (ancillaryItem.skipInPdfButtons) {
 							return;
 						}
+						if (ancillaryItem.type === 'DisplayField') {
+							// short-circuit DisplayFields so they appear as normal, without a checkbox
+							items.push({
+								..._.omit(ancillaryItem, ['skipInPdfButtons']), // pass through all props except internal control flag
+								disableWithValue: true, // so checkboxes aren't broken by the presence of DisplayFields
+								type: 'DisplayField',
+							});
+							return;
+						}
 						let name;
 						if (ancillaryItem.pdfModel) {
 							name = ancillaryItem.pdfModel;
@@ -101,7 +110,12 @@ export default function withPdfButtons(WrappedComponent) {
 						} else {
 							name = ancillaryItem.title;
 						}
-						name = 'ancillary___' + name;
+						if (!name) {
+							return;
+						}
+						if (!name.startsWith('ancillary___')) {
+							name = 'ancillary___' + name;
+						}
 						propertyNames.push(name); // for validator
 						items.push({
 							title: ancillaryItem.title,
