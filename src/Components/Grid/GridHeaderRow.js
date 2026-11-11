@@ -256,12 +256,21 @@ export default forwardRef(function GridHeaderRow(props, ref) {
 			setDragColumnSlot({ ix: newIx, marker, });
 		},
 		onColumnReorderDragStop = (delta, e, config) => {
-			const columnsConfig = [...localColumnsConfig]; // work with a copy, so that setter forces rerender
+			const
+				columnsConfig = [...localColumnsConfig], // work with a copy, so setter forces a rerender
+				fromIx = columnsConfig.indexOf(config);
+			let toIx = dragColumnSlot?.ix ?? fromIx;
+
+			// `toIx` is computed against the pre-removal array. When moving right, removing the source column shifts the target left by one.
+			// This is to fix a bug where moving right would be one column off.
+			if (toIx > fromIx) {
+				toIx -= 1;
+			}
 
 			 _.pull(columnsConfig, config);
 
-			// Stick the column at the new ix (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
-			columnsConfig.splice(dragColumnSlot.ix, 0, config);
+			// Stick the column at the new ix
+			columnsConfig.splice(toIx, 0, config);
 
 			setLocalColumnsConfig(columnsConfig);
 			setColumnsConfig(columnsConfig);
