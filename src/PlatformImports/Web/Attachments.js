@@ -1316,7 +1316,7 @@ function AttachmentsElement(props) {
 						<TreePanel
 							_panel={{
 								title: 'Directories',
-								isScrollable: true,
+								isScrollable: false, // Tree handles its own scrolling; making Panel scrollable prevents the Tree from stretching.
 								isCollapsible: false,
 								isCollapsed: false,
 								collapseDirection: HORIZONTAL,
