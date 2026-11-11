@@ -586,6 +586,7 @@ export default function withModal(WrappedComponent) {
 						footer = <Footer
 									className={clsx(
 										'justify-end',
+										'min-h-[60px]',
 										'py-2',
 										'pr-4',
 										'bg-grey-100',
