@@ -655,26 +655,6 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					onCancel: closeJoinEditor,
 				});
 			},
-			resolveJoinRecordForSelection = async (selectedRecord, joinRepository, parentJoinField, childJoinField) => {
-				// Convert a selected child record into its concrete join row (AB) by A.id + B.id.
-				// We must delete AB on unlink, not delete the child B record itself.
-				if (!joinRepository?.loadOneAdditionalEntity) {
-					throw Error('joinModel repository does not support loadOneAdditionalEntity.');
-				}
-				const parentId = getParentRecordId();
-				const childId = selectedRecord?.id;
-				if (_.isNil(childId)) {
-					return null;
-				}
-				const conditions = {
-					[parentJoinField]: parentId,
-					[childJoinField]: childId,
-				};
-				const joinRecord = await joinRepository.loadOneAdditionalEntity({
-					conditions,
-				});
-				return joinRecord || null;
-			},
 			doUnlink = async () => {
 				// Unlink flow in joined-direct mode:
 				// resolve AB rows for selected children, delete AB rows, then reload B grid.
@@ -720,18 +700,25 @@ export default function withEditor(WrappedComponent, isTree = false) {
 						parentJoinField,
 						childJoinField,
 					} = getJoinFields(),
+					parentId = getParentRecordId(),
 					resolvedJoinRecords = [];
 				for (const selectedRecord of selectedRecords) {
 					// Resolve each selected B to its AB join row for this current parent A.
-					const joinRecord = await resolveJoinRecordForSelection(selectedRecord, joinRepository, parentJoinField, childJoinField);
+					const childId = selectedRecord?.id;
+					if (!childId) {
+						continue;
+					}
+					const
+						params = {
+							['conditions[' + parentJoinField + ']']: parentId,
+							['conditions[' + childJoinField + ']']: childId,
+						},
+						joinRecords = await joinRepository.getMultipleEntitiesFromServerByParams(params),
+						joinRecord = joinRecords[0] ?? null; // NOTE: Using the first record assumes there is only one valid AB join record. There could be many!
+
 					if (joinRecord) {
 						resolvedJoinRecords.push(joinRecord);
 					}
-				}
-				if (!resolvedJoinRecords.length) {
-					// Keep UI consistent even when no join rows were found to remove.
-					await Repository.reload();
-					return;
 				}
 				await joinRepository.delete(resolvedJoinRecords);
 				if (!joinRepository.isAutoSave) {
