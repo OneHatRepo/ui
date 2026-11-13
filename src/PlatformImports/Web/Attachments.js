@@ -50,7 +50,6 @@ import ChevronRight from '../../Components/Icons/ChevronRight.js';
 import withAlert from '../../Components/Hoc/withAlert.js';
 import withComponent from '../../Components/Hoc/withComponent.js';
 import withData from '../../Components/Hoc/withData.js';
-import CenterBox from '../../Components/Layout/CenterBox.js';
 import downloadInBackground from '../../Functions/downloadInBackground.js';
 import downloadWithFetch from '../../Functions/downloadWithFetch.js';
 import useForceUpdate from '../../Hooks/useForceUpdate.js';
@@ -623,9 +622,12 @@ function AttachmentsElement(props) {
 							className="w-full h-full"
 						/>;
 			} else {
-				body = <CenterBox className="w-full h-full">
-							<img src={url} />
-						</CenterBox>;
+				body = <Box className="w-full h-full overflow-y-auto">
+							<img
+								src={url}
+								className="w-full h-auto"
+							/>
+						</Box>;
 			}
 			return <HStack
 						className="w-full h-full"
