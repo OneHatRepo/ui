@@ -654,7 +654,7 @@ function AttachmentsElement(props) {
 				canClose: true,
 				includeCancel: true,
 				w: 1920,
-				maxH: 1080,
+				h: 1080,
 				onClose: cleanupModalBlobUrls,
 			});
 		},
