@@ -306,6 +306,32 @@ export default function withEditor(WrappedComponent, isTree = false) {
 			getNewEntityDisplayValue = () => {
 				return newEntityDisplayValueRef.current;
 			},
+			isJoinDuplicateError = (message = '') => {
+				if (!duplicatesAreDisallowedButCanBeLinked || !crudJoinedRecordDirectly) {
+					return false;
+				}
+				const loweredMessage = (message || '').toLowerCase();
+				return loweredMessage.includes('already exists') || loweredMessage.includes('duplicate');
+			},
+			showDuplicateRecordAlert = (message = '') => {
+				alert({
+					title: 'Duplicate Record',
+					message: message || 'This link already exists.',
+					buttons: [
+						<Button
+							key="linkBtn"
+							onPress={async () => {
+								hideAlert();
+								doEditorClose({ force: true });
+								await doLink();
+							}}
+							icon={null}
+							text={linkDisplayMsg || 'Link Existing'}
+							className="mr-2"
+						/>,
+					],
+				});
+			},
 			setNewEntityDisplayValue = (val) => {
 				newEntityDisplayValueRef.current = val;
 			},
@@ -690,42 +716,35 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				setIsAdding(true);
 				setIsSaving(true);
 				let entity = null;
+				let interceptedDuplicateMessage = '';
+				const previousErrorHandler = Repository.errorHandler;
 				try {
+					// temporarily override the error handler to catch join duplicate errors
+					Repository.setErrorHandler((...args) => {
+						const message = extractErrorMessage(...args);
+						if (isJoinDuplicateError(message)) {
+							interceptedDuplicateMessage = message || 'This link already exists.';
+							return;
+						}
+						if (_.isFunction(previousErrorHandler)) {
+							previousErrorHandler(...args);
+						} else {
+							Repository.emit('error', ...args);
+						}
+					});
 					entity = await Repository.add(addValues, false, true, { // isPersisted=false, isDelayedSave=true
 						requestParams: getJoinRequestParams(),
 					});
-				} catch (err) {
-					if (duplicatesAreDisallowedButCanBeLinked) {
-						// Check if the error is a duplicate error, and if so, offer linking
-						const
-							message = extractErrorMessage(err),
-							loweredMessage = message.toLowerCase(),
-							isDuplicateError = !!crudJoinedRecordDirectly && (loweredMessage.includes('already exists') || loweredMessage.includes('duplicate'));
-						if (isDuplicateError) {
-							setIsAdding(false);
-							alert({
-								title: 'Duplicate Record',
-								message: message || 'This link already exists.',
-								buttons: [
-									<Button
-										key="linkBtn"
-										onPress={async () => {
-											hideAlert();
-											doEditorClose({ force: true });
-											await doLink();
-										}}
-										icon={null}
-										text={linkDisplayMsg || 'Link Existing'}
-										className="mr-2"
-									/>,
-								],
-							});
-							return;
-						}
+					if (interceptedDuplicateMessage) {
+						setIsAdding(false);
+						showDuplicateRecordAlert(interceptedDuplicateMessage);
+						return;
 					}
+				} catch (err) {
 					setIsAdding(false);
 					throw err;
 				} finally {
+					Repository.setErrorHandler(previousErrorHandler || null); // restore the previous error handler
 					setIsSaving(false);
 				}
 				if (!entity) {
@@ -1251,27 +1270,41 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (waitWhileSaving) {
 					setIsWaitModalShown(true);
 				}
-				let success = true;
-				let latestErrorMessage = '';
-				const tempListener = (...args) => {
-					success = false;
-					latestErrorMessage = extractErrorMessage(...args);
-				};
+				let hasSaveError = false;
+				let interceptedDuplicateMessage = '';
+				const previousErrorHandler = Repository.errorHandler;
 
 				try {
-					Repository.on('error', tempListener); // add a temporary listener for the error event
+					Repository.setErrorHandler((...args) => {
+						const message = extractErrorMessage(...args);
+						if (isJoinDuplicateError(message)) {
+							interceptedDuplicateMessage = message || 'This link already exists.';
+							return;
+						}
+						hasSaveError = true;
+						if (_.isFunction(previousErrorHandler)) {
+							previousErrorHandler(...args);
+						} else {
+							Repository.emit('error', ...args);
+						}
+					});
 					await Repository.save(null, useStaged, {
 						requestParams: getEditorMode() === EDITOR_MODE__ADD ? getJoinRequestParams() : null,
 					});
 				} finally {
-					Repository.off('error', tempListener); // remove the temporary listener
+					Repository.setErrorHandler(previousErrorHandler || null);
 					setIsSaving(false);
 					if (waitWhileSaving) {
 						setIsWaitModalShown(false);
 					}
 				}
 
-				if (_.isBoolean(success) && success) {
+				if (interceptedDuplicateMessage) {
+					showDuplicateRecordAlert(interceptedDuplicateMessage);
+					return false;
+				}
+
+				if (!hasSaveError) {
 					if (onChange) {
 						onChange(selection);
 					}
@@ -1309,31 +1342,9 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					if (editorType === EDITOR_TYPE__INLINE) {
 						setIsEditorShown(false);
 					}
-				} else if (!!crudJoinedRecordDirectly) {
-					const errorMessage = (latestErrorMessage || '').toLowerCase();
-					const isDuplicateError = errorMessage.includes('already exists') || errorMessage.includes('duplicate');
-					if (isDuplicateError) {
-						alert({
-							title: 'Duplicate Record',
-							message: latestErrorMessage || 'This link already exists.',
-							buttons: [
-								<Button
-									key="linkBtn"
-									onPress={async () => {
-										hideAlert();
-										doEditorClose({ force: true });
-										await doLink();
-									}}
-									icon={null}
-									text={linkDisplayMsg || 'Link Existing'}
-									className="mr-2"
-								/>,
-							],
-						});
-					}
 				}
 
-				return success;
+				return !hasSaveError;
 			},
 			doEditorCancel = (options = {}) => {
 				const shouldForceClose = !!options.force;
