@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, } from 'react';
 import {
+	Text,
 	TextNative,
 	VStack,
 } from '@onehat-gluestack';
@@ -74,6 +75,7 @@ function UpcomingPmsGrid(props) {
 
 			// config
 			includeWorkOrderButton = false,
+			includeBusinessPartner = false,
 			getRowProps = (item) => {
 				const rowProps = {
 					borderBottomWidth: 1,
@@ -552,7 +554,7 @@ function UpcomingPmsGrid(props) {
 							isEditable: false,
 							isReorderable: true,
 							isResizable: true,
-							w: 200,
+							w: 150,
 						},
 						...(includeWorkOrderButton ? [
 							{
@@ -606,6 +608,25 @@ function UpcomingPmsGrid(props) {
 							isResizable: true,
 							w: 250,
 						},
+						...(includeBusinessPartner ? [
+							{
+								id: 'meters_pm_schedules__business_partner_id',
+								header: 'BP',
+								fieldName: 'meters_pm_schedules__business_partner_id',
+								isSortable: true,
+								isEditable: false,
+								isReorderable: true,
+								isResizable: true,
+								w: 100,
+								renderer: (entity, fieldName, props, key) => {
+									return <TextNative
+												key={key}
+												className={props.className}
+												style={props.style}
+											>{entity.business_partners__name}</TextNative>;
+								},
+							},
+						] : []),
 						{
 							id: 'meters_pm_schedules__display_path',
 							header: 'Path',
