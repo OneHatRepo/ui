@@ -307,6 +307,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return newEntityDisplayValueRef.current;
 			},
 			isJoinDuplicateError = (message = '') => {
+				// duplicate module
+				// Checks if the error message indicates a duplicate join record.
 				if (!duplicatesAreDisallowedButCanBeLinked || !crudJoinedRecordDirectly) {
 					return false;
 				}
@@ -314,6 +316,8 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				return loweredMessage.includes('already exists') || loweredMessage.includes('duplicate');
 			},
 			showDuplicateRecordAlert = (message = '') => {
+				// duplicate module
+				// Shows an alert for a duplicate join record.
 				alert({
 					title: 'Duplicate Record',
 					message: message || 'This link already exists.',
@@ -715,27 +719,31 @@ export default function withEditor(WrappedComponent, isTree = false) {
 
 				setIsAdding(true);
 				setIsSaving(true);
-				let entity = null;
-				let interceptedDuplicateMessage = '';
+				let entity = null,
+					interceptedDuplicateMessage = '';
 				const previousErrorHandler = Repository.errorHandler;
 				try {
-					// temporarily override the error handler to catch join duplicate errors
-					Repository.setErrorHandler((...args) => {
-						const message = extractErrorMessage(...args);
-						if (isJoinDuplicateError(message)) {
-							interceptedDuplicateMessage = message || 'This link already exists.';
-							return;
-						}
-						if (_.isFunction(previousErrorHandler)) {
-							previousErrorHandler(...args);
-						} else {
-							Repository.emit('error', ...args);
-						}
-					});
+					if (duplicatesAreDisallowedButCanBeLinked) {
+						// duplicate module
+						// temporarily override the error handler to catch join duplicate errors
+						Repository.setErrorHandler((...args) => {
+							const message = extractErrorMessage(...args);
+							if (isJoinDuplicateError(message)) {
+								interceptedDuplicateMessage = message || 'This link already exists.';
+								return;
+							}
+							if (_.isFunction(previousErrorHandler)) {
+								previousErrorHandler(...args);
+							} else {
+								Repository.emit('error', ...args);
+							}
+						});
+					}
 					entity = await Repository.add(addValues, false, true, { // isPersisted=false, isDelayedSave=true
 						requestParams: getJoinRequestParams(),
 					});
-					if (interceptedDuplicateMessage) {
+					if (duplicatesAreDisallowedButCanBeLinked && interceptedDuplicateMessage) {
+						// duplicate module
 						setIsAdding(false);
 						showDuplicateRecordAlert(interceptedDuplicateMessage);
 						return;
@@ -744,7 +752,10 @@ export default function withEditor(WrappedComponent, isTree = false) {
 					setIsAdding(false);
 					throw err;
 				} finally {
-					Repository.setErrorHandler(previousErrorHandler || null); // restore the previous error handler
+					if (duplicatesAreDisallowedButCanBeLinked) {
+						// duplicate module
+						Repository.setErrorHandler(previousErrorHandler || null); // restore the previous error handler
+					}
 					setIsSaving(false);
 				}
 				if (!entity) {
@@ -1270,29 +1281,35 @@ export default function withEditor(WrappedComponent, isTree = false) {
 				if (waitWhileSaving) {
 					setIsWaitModalShown(true);
 				}
-				let hasSaveError = false;
-				let interceptedDuplicateMessage = '';
+				let hasSaveError = false,
+					interceptedDuplicateMessage = '';
 				const previousErrorHandler = Repository.errorHandler;
 
 				try {
-					Repository.setErrorHandler((...args) => {
-						const message = extractErrorMessage(...args);
-						if (isJoinDuplicateError(message)) {
-							interceptedDuplicateMessage = message || 'This link already exists.';
-							return;
-						}
-						hasSaveError = true;
-						if (_.isFunction(previousErrorHandler)) {
-							previousErrorHandler(...args);
-						} else {
-							Repository.emit('error', ...args);
-						}
-					});
+					if (duplicatesAreDisallowedButCanBeLinked) {
+						// duplicate module
+						// temporarily override the error handler to catch join duplicate errors
+						Repository.setErrorHandler((...args) => {
+							const message = extractErrorMessage(...args);
+							if (isJoinDuplicateError(message)) {
+								interceptedDuplicateMessage = message || 'This link already exists.';
+								return;
+							}
+							hasSaveError = true;
+							if (_.isFunction(previousErrorHandler)) {
+								previousErrorHandler(...args);
+							} else {
+								Repository.emit('error', ...args);
+							}
+						});
+					}
 					await Repository.save(null, useStaged, {
 						requestParams: getEditorMode() === EDITOR_MODE__ADD ? getJoinRequestParams() : null,
 					});
 				} finally {
-					Repository.setErrorHandler(previousErrorHandler || null);
+					if (duplicatesAreDisallowedButCanBeLinked) {
+						Repository.setErrorHandler(previousErrorHandler || null);
+					}
 					setIsSaving(false);
 					if (waitWhileSaving) {
 						setIsWaitModalShown(false);
