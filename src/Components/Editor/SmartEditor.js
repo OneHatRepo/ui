@@ -16,6 +16,7 @@ const SmartEditor = forwardRef((props, ref) => {
 	const {
 			model,
 			Editor,
+			side, // 'A' or 'B'; ignored if Editor is provided directly
 			self,
 			...propsToPass
 		} = props;
@@ -25,7 +26,14 @@ const SmartEditor = forwardRef((props, ref) => {
 		if (!model) {
 			throw Error('SmartEditor requires model when Editor is not provided.');
 		}
-		LocalEditor = getComponentFromType(model + 'Editor');
+		let whichEditor = model + 'Editor';
+		if (side) {
+			if (side !== 'A' && side !== 'B') {
+				throw Error('SmartEditor "side" must be either "A" or "B" when Editor is not provided.');
+			}
+			whichEditor = whichEditor + 'Side' + side;
+		}
+		LocalEditor = getComponentFromType(whichEditor);
 	}
 
 	return <LocalEditor
