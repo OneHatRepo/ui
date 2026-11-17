@@ -41,7 +41,7 @@ function Panel(props) {
 			fillParentHeight = true,
 			
 			// Header
-			title = props.model ? UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))) : '',
+			title = props.model ? UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(Inflector.singularize(props.model)))) : '',
 			showHeader = true,
 			header = null,
 			onClose,
@@ -61,6 +61,10 @@ function Panel(props) {
 			...propsToPass
 		} = props,
 		self = props.self,
+		titleSelectorSelected = props.titleSelectorSelected ?? props.selectorSelected,
+		titleSelectedRecord = _.isArray(titleSelectorSelected) ? titleSelectorSelected[0] : titleSelectorSelected,
+		titleSelectedDisplayValue = titleSelectedRecord?.displayValue,
+		selectorSuffix = titleSelectedDisplayValue ? ` for ${titleSelectedDisplayValue}` : '',
 		[titleSuffix, setTitleSuffix] = useState(''),
 		onToggleCollapse = () => {
 			setIsCollapsed(!isCollapsed);
@@ -68,7 +72,6 @@ function Panel(props) {
 
 	if (!disableTitleChange) {
 		const
-			selectorSelected = props.selectorSelected,
 			[isReady, setIsReady] = useState(disableTitleChange);
 
 		useEffect(() => {
@@ -76,14 +79,14 @@ function Panel(props) {
 			if (props.titleSuffix) {
 				titleSuffix += ' ' + props.titleSuffix;
 			}
-			if (selectorSelected?.[0]?.displayValue) {
-				titleSuffix += ' for ' + selectorSelected[0].displayValue;
+			if (selectorSuffix) {
+				titleSuffix += selectorSuffix;
 			} 
 			setTitleSuffix(titleSuffix);
 			if (!isReady) {
 				setIsReady(true);
 			}
-		}, [selectorSelected, props.titleSuffix]);
+		}, [selectorSuffix, props.titleSuffix]);
 	
 		if (!isReady) {
 			return null;
@@ -92,8 +95,11 @@ function Panel(props) {
 	
 	let headerComponent = header;
 	if (showHeader && title) {
+		const
+			normalizedTitle = selectorSuffix && title.includes(selectorSuffix) ? title.replace(selectorSuffix, '') : title,
+			headerTitle = `${normalizedTitle}${titleSuffix}`.replace(/\s+/g, ' ').trim();
 		headerComponent = <Header
-								title={title + titleSuffix}
+								title={headerTitle}
 								onClose={onClose}
 								isCollapsible={isCollapsible}
 								isCollapsed={isCollapsed}

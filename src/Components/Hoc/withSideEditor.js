@@ -75,6 +75,7 @@ export default function withSideEditor(WrappedComponent, isTree = false) {
 								{...propsToPass}
 								editorType={EDITOR_TYPE__SIDE}
 								{..._editor}
+								titleSelectorSelected={selectorSelected}
 								parent={self}
 								reference="editor"
 							/>}

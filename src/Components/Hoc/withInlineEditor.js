@@ -54,6 +54,7 @@ export default function withInlineEditor(WrappedComponent, skipWrappers = false)
 						inlineEditor: <InlineEditor
 										{...propsToPass}
 										{..._editor}
+										titleSelectorSelected={selectorSelected}
 										parent={self}
 										reference="editor"
 										columnsConfig={localColumnsConfig}
