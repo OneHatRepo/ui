@@ -38,6 +38,7 @@ function Panel(props) {
 			maxHeight,
 			maxWidth,
 			disableAutoFlex = false,
+			fillParentHeight = true,
 			
 			// Header
 			title = props.model ? UiGlobals.customInflect(Inflector.camel2words(Inflector.underscore(props.model))) : '',
@@ -106,11 +107,12 @@ function Panel(props) {
 	const
 		style = props.style || {},
 		hasExplicitHeight = !_.isNil(style.height),
-		shouldFillContentHeight = hasExplicitHeight || _.isNil(maxHeight),
+		shouldFillContentHeight = fillParentHeight && (hasExplicitHeight || _.isNil(maxHeight)),
 		hasHeightConstraints = hasExplicitHeight || !_.isNil(minHeight) || !_.isNil(maxHeight),
 		scrollViewContentContainerStyle = {
 			...(hasExplicitHeight ? { height: '100%', } : {}),
-			...(hasHeightConstraints ? { flexGrow: 1, justifyContent: 'center', } : {}),
+			...(shouldFillContentHeight ? { flexGrow: 1, } : {}),
+			...(hasHeightConstraints ? { justifyContent: 'center', } : {}),
 		};
 	if (!hasWidth(props) && !hasFlex(props) && !disableAutoFlex) {
 		style.flex = 1;
