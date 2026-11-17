@@ -113,10 +113,11 @@ function Panel(props) {
 	const
 		style = props.style || {},
 		hasExplicitHeight = !_.isNil(style.height),
-		shouldFillContentHeight = fillParentHeight && (hasExplicitHeight || _.isNil(maxHeight)),
+		hasMinimumHeight = !_.isNil(minHeight),
+		shouldFillContentHeight = fillParentHeight && (hasExplicitHeight || hasMinimumHeight || _.isNil(maxHeight)),
 		hasHeightConstraints = hasExplicitHeight || !_.isNil(minHeight) || !_.isNil(maxHeight),
 		scrollViewContentContainerStyle = {
-			...(hasExplicitHeight ? { height: '100%', } : {}),
+			...(hasExplicitHeight || hasMinimumHeight ? { height: '100%', } : {}),
 			...(shouldFillContentHeight ? { flexGrow: 1, } : {}),
 			...(hasHeightConstraints ? { justifyContent: 'center', } : {}),
 		};

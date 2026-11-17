@@ -606,7 +606,7 @@ export default function withModal(WrappedComponent) {
 							w={adjustedW}
 							isWindow={true}
 							disableAutoFlex={true}
-							fillParentHeight={false}
+							fillParentHeight={!!adjustedH || !!adjustedMinH}
 							onClose={isTopModal && modal.canClose ? () => invokeCloseAndHide(modal) : null}
 							footer={footer}
 							isScrollable={true}
