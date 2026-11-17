@@ -10,6 +10,6 @@ export default function Unauthorized(props) {
 			text = 'Unauthorized.',
 		} = props;
 	return <VStack className="w-full flex-1 justify-center items-center">
-				<Text className="text-center text-[#f00]">{text}</Text>
+				<Text className="text-center p-3 text-[#f00]">{text}</Text>
 			</VStack>;
 }
