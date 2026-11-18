@@ -39,6 +39,7 @@ function TagComponent(props) {
 			selectorType = 'combo', // 'combo' || 'tree'. What should the dropdown menu be?
 			showEye = true,
 			minimizeForRow = false,
+			hideEmptyValueBoxes = false, // should we hide the whole container for ValueBoxes if there are none to show?
 			Selector,
 			Editor,
 			_combo = {},
@@ -568,8 +569,8 @@ function TagComponent(props) {
 	}
 	if (minimizeForRow) {
 		if (isViewOnly) {
-			// selector is not shown, so allow valueBoxes to take up more space
-			valueBoxesClassName += ' min-h-[25px] h-full overflow-auto flex-1';
+			// selector is not shown, so keep valueBoxes shrink-to-fit even when wrapping
+			valueBoxesClassName += ' min-h-[25px] h-auto overflow-auto w-fit max-w-full flex-none self-start';
 		} else {
 			// shrink both down
 			valueBoxesClassName += ' h-auto min-h-[25px] max-h-[35px] overflow-auto flex-1';
@@ -590,10 +591,11 @@ function TagComponent(props) {
 				className={className}
 				style={style}
 			>
-				<HStack
-					{...testProps('valueBoxes')}
-					className={valueBoxesClassName}
-				>{valueBoxes}</HStack>
+				{(!hideEmptyValueBoxes || valueBoxes.length > 0) && 
+					<HStack
+						{...testProps('valueBoxes')}
+						className={valueBoxesClassName}
+					>{valueBoxes}</HStack>}
 				
 				{!isViewOnly && 
 					<WhichSelector

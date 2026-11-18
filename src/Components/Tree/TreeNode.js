@@ -2,10 +2,13 @@ import { useMemo, useEffect, } from 'react';
 import {
 	Box,
 	BoxNative,
+	HStack,
 	HStackNative,
 	Icon,
 	Spinner,
 	TextNative,
+	VStack,
+	VStackNative,
 } from '@onehat-gluestack';
 import clsx from 'clsx';
 import * as colourMixer from '@k-renwick/colour-mixer';
@@ -160,7 +163,7 @@ export default function TreeNode(props) {
 		if (!item.isPhantom && item.id && UiGlobals.useTestProps) {
 			dataSet['id'] = item.id;
 		}
-		return <HStackNative
+		return <VStackNative
 					{...testProps('node' + (isSelected ? '-selected' : ''))}
 					{...nodePropsToPass}
 					dataSet={dataSet}
@@ -179,78 +182,82 @@ export default function TreeNode(props) {
 						}
 					}}
 				>
-					{isPhantom && <Box className="absolute t-0 l-0 bg-[#f00] h-[2px] w-[2px]" />}
-					
-					{showNodeHandle &&
-						<RowHandle
-							ref={dragSourceRef}
-							isDragSource={isDragSource}
-							isDraggable={isDraggable}
-							canSelect={nodeCanSelect}
-							canDrag={nodeCanDrag}
-						/>}
+					<HStack className="w-full min-w-0 items-center">
+						{isPhantom && <Box className="absolute t-0 l-0 bg-[#f00] h-[2px] w-[2px]" />}
+						{showNodeHandle &&
+							<RowHandle
+								ref={dragSourceRef}
+								isDragSource={isDragSource}
+								isDraggable={isDraggable}
+								canSelect={nodeCanSelect}
+								canDrag={nodeCanDrag}
+							/>}
 
-					{hasChildren ?
-						<IconButton
-							{...testProps('expandBtn')}
-							icon={isExpanded ? ChevronDown : ChevronRight}
-							_icon={{
-								className: clsx(
-									'text-gray-400',
-								),
-							}}
-							onPress={(e) => onToggle(datum, e)}
-							className={clsx(
-								'TreeNode-expandBtn',
-								'ml-2',
-								styles.TREE_NODE_EXPAND_BTN_CLASSNAME,
-							)}
-							tooltip="Toggle expand/collapse"
-						/> :
-						<BoxNative
-							{...testProps('spacer')}
-							className={clsx(
-								'TreeNode-spacer',
-								'ml-2',
-								styles.TREE_NODE_SPACER_CLASSNAME,
-							)}
-						/>}
-
-					{isLoading && <Spinner className="px-2" />}
-
-					{!isLoading && icon && 
-						<Icon
-							as={icon}
-							className={clsx(
-								'TreeNode-icon',
-								'ml-2',
-								'mr-1',
-								styles.TREE_NODE_ICON_CLASSNAME,
-								nodeProps?._icon?.className ?? null,
-							)}
-						/>}
-
-					{text && <TextNative
-								// allow multi-line wrapping instead of truncation so content can wrap to available width
-								// removed numberOfLines and ellipsizeMode to allow wrapping
-								// {...propsToPass}
+						{hasChildren ?
+							<IconButton
+								{...testProps('expandBtn')}
+								icon={isExpanded ? ChevronDown : ChevronRight}
+								_icon={{
+									className: clsx(
+										'text-gray-400',
+									),
+								}}
+								onPress={(e) => onToggle(datum, e)}
 								className={clsx(
-									'TreeNode-TextNative',
-									'self-center',
-									'overflow-visible',
-									'flex',
-									'flex-1',
-									'min-w-0',
-									'break-words',
-									'whitespace-normal',
-									styles.TREE_NODE_CLASSNAME,
-									nodeProps?._text?.className ?? null,
+									'TreeNode-expandBtn',
+									'ml-2',
+									styles.TREE_NODE_EXPAND_BTN_CLASSNAME,
 								)}
-							>{text}</TextNative>}
+								tooltip="Toggle expand/collapse"
+							/> :
+							<BoxNative
+								{...testProps('spacer')}
+								className={clsx(
+									'TreeNode-spacer',
+									'ml-2',
+									styles.TREE_NODE_SPACER_CLASSNAME,
+								)}
+							/>}
 
-					{content && <Box className="flex-1 min-w-0 break-words whitespace-normal">{content}</Box>}
+						{isLoading && <Spinner className="px-2" />}
 
-				</HStackNative>;
+						{!isLoading && icon && 
+							<Icon
+								as={icon}
+								className={clsx(
+									'TreeNode-icon',
+									'ml-2',
+									'mr-1',
+									styles.TREE_NODE_ICON_CLASSNAME,
+									nodeProps?._icon?.className ?? null,
+								)}
+							/>}
+
+
+						{(text || content) &&
+							<VStack className="flex-1 min-w-0">
+								{text && <TextNative
+											// allow multi-line wrapping instead of truncation so content can wrap to available width
+											// removed numberOfLines and ellipsizeMode to allow wrapping
+											// {...propsToPass}
+											className={clsx(
+												'TreeNode-TextNative',
+												'self-start',
+												'overflow-visible',
+												'flex',
+												'min-w-0',
+												'break-words',
+												'whitespace-normal',
+												styles.TREE_NODE_CLASSNAME,
+												nodeProps?._text?.className ?? null,
+											)}
+										>{text}</TextNative>}
+								{content && <Box className="min-w-0 self-start break-words whitespace-normal">{content}</Box>}
+							</VStack>}
+
+					</HStack>
+
+				</VStackNative>;
 	}, [
 		nodeProps,
 		bg,
