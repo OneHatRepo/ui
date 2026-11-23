@@ -105,7 +105,7 @@ function TreeComponent(props) {
 			getDisplayTextFromSearchResults = (item) => {
 				return item.id
 			},
-			getNodeIcon = (item) => {
+			getNodeIcon = (item, state) => {
 				// TODO: Allow for dynamic props on the icon (e.g. special color for some icons)
 				return Dot;
 			},
@@ -622,18 +622,23 @@ function TreeComponent(props) {
 		// utilities
 		buildTreeNodeDatum = (treeNode, defaultToExpanded = false) => {
 			// Build the data-representation of one node and its children,
-			// caching text & icon, keeping track of the state for whole tree
+			// caching text, keeping track of the state for whole tree
 			// renderTreeNode uses this to render the nodes.
 			const
 				isRoot = treeNode.isRoot,
+				isExpanded = treeNode.isExpanded || defaultToExpanded || isRoot,
 				children = buildTreeNodeData(treeNode.children, defaultToExpanded), // recursively get data for children
 				datum = {
 					item: treeNode,
 					treeRef,
 					text: getNodeText(treeNode),
 					content: getNodeContent ? getNodeContent(treeNode) : null,
-					icon: getNodeIcon(treeNode),
-					isExpanded: treeNode.isExpanded || defaultToExpanded || isRoot, // all non-root treeNodes are collapsed by default
+					icon: getNodeIcon(treeNode, {
+						hasChildren: treeNode.hasChildren,
+						isExpanded,
+						isLeaf: !treeNode.hasChildren,
+					}),
+					isExpanded, // all non-root treeNodes are collapsed by default
 					isVisible: isRoot ? areRootsVisible : true,
 					isLoading: false,
 					children,
@@ -1127,7 +1132,18 @@ function TreeComponent(props) {
 			if (item.isDestroyed) {
 				return null;
 			}
-			const depth = item.depth;
+			const
+				depth = item.depth,
+				datumWithResolvedIcon = {
+					// previously, the icon was cached; now we get it dynamically each render
+					// so we can get icons based on state (e.g., expanded, has children)
+					...datum,
+					icon: getNodeIcon(item, {
+						hasChildren: item.hasChildren,
+						isExpanded: datum.isExpanded,
+						isLeaf: !item.hasChildren,
+					}),
+				};
 
 			let nodeProps = getNodeProps ? getNodeProps(item) : {},
 				isSelected = isInSelection(item);
@@ -1422,7 +1438,7 @@ function TreeComponent(props) {
 							}
 							
 							return <WhichNode
-										datum={datum}
+										datum={datumWithResolvedIcon}
 										nodeProps={nodeProps}
 										onToggle={onToggle}
 										isNodeSelectable={isNodeSelectable}
