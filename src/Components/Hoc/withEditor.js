@@ -331,7 +331,7 @@ export default function withEditor(WrappedComponent, isTree = false) {
 							}}
 							icon={null}
 							text={linkDisplayMsg || 'Link Existing'}
-							className="mr-2"
+							className="ml-2"
 						/>,
 					],
 				});
