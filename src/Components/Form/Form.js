@@ -1148,6 +1148,9 @@ function Form(props) {
 					/>;
 		},
 		buildAncillary = () => {
+			if (record.isPhantom) {
+				return [];
+			}
 			const
 				effectiveShouldRouteAncillaryEvents = shouldRouteAncillaryEvents || !!props.secondaryShouldRouteAncillaryEvents,
 				effectiveAncillaryEventHandlers = ancillaryEventHandlers || props.secondaryAncillaryEventHandlers,
