@@ -1132,18 +1132,12 @@ function TreeComponent(props) {
 			if (item.isDestroyed) {
 				return null;
 			}
-			const
-				depth = item.depth,
-				datumWithResolvedIcon = {
-					// previously, the icon was cached; now we get it dynamically each render
-					// so we can get icons based on state (e.g., expanded, has children)
-					...datum,
-					icon: getNodeIcon(item, {
-						hasChildren: item.hasChildren,
-						isExpanded: datum.isExpanded,
-						isLeaf: !item.hasChildren,
-					}),
-				};
+			const depth = item.depth;
+			datum.icon = getNodeIcon(item, {
+				hasChildren: item.hasChildren,
+				isExpanded: datum.isExpanded,
+				isLeaf: !item.hasChildren,
+			});
 
 			let nodeProps = getNodeProps ? getNodeProps(item) : {},
 				isSelected = isInSelection(item);
@@ -1438,7 +1432,7 @@ function TreeComponent(props) {
 							}
 							
 							return <WhichNode
-										datum={datumWithResolvedIcon}
+										datum={datum}
 										nodeProps={nodeProps}
 										onToggle={onToggle}
 										isNodeSelectable={isNodeSelectable}
