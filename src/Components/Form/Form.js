@@ -1148,7 +1148,7 @@ function Form(props) {
 					/>;
 		},
 		buildAncillary = () => {
-			if (record.isPhantom) {
+			if (record?.isPhantom) {
 				return [];
 			}
 			const
