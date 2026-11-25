@@ -758,7 +758,14 @@ export default function withModal(WrappedComponent) {
 									entering: undefined,
 									exiting: undefined,
 								}
-								: {};
+								: {},
+							modalContentStyle = {
+								// Ensure modal content is centered on the screen for web mode
+								// This fixes a positioning bug where the modal content would not be centered on screen
+								// if modal body changes size
+								...(modal.modalContentStyle || {}),
+								...(CURRENT_MODE === UI_MODE_WEB ? { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } : {}),
+							};
 						return <Modal
 									key={`modal-${modal.id}`}
 									isOpen={true}
@@ -770,7 +777,7 @@ export default function withModal(WrappedComponent) {
 									<ModalContent
 										{...modalContentAnimationProps}
 										pointerEvents={modal.modalContentPointerEvents || 'auto'}
-										style={modal.modalContentStyle}
+										style={modalContentStyle}
 										className={clsx(
 											'withModal-ModalContent',
 											'w-auto',
